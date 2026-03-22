@@ -11,7 +11,7 @@ import Register from './pages/Register'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/STAYLO">
       <AuthProvider>
         <Layout>
           <Routes>
