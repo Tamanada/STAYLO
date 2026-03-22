@@ -1,0 +1,223 @@
+{
+  "nav": {
+    "home": "首页",
+    "vision": "愿景",
+    "survey": "参与调查",
+    "submit": "登记房源",
+    "dashboard": "控制面板",
+    "login": "登录",
+    "register": "立即加入",
+    "logout": "退出登录"
+  },
+  "hero": {
+    "badge": "Alpha 内测 — 仅限创始会员",
+    "title": "由酒店业主拥有的预订平台",
+    "subtitle": "不再支付 15–25% 的佣金。Staylo 由房源业主打造，为房源业主服务。公平费率，完全掌控，真正拥有。",
+    "cta": "加入我们",
+    "secondary_cta": "了解愿景",
+    "early_adopters": "已有 {{count}} 位酒店业主加入"
+  },
+  "commission": {
+    "title": "看看您能省多少",
+    "subtitle": "拖动滑块到您当前的佣金比例",
+    "current_label": "您目前支付",
+    "staylo_label": "使用 Staylo 您只需支付",
+    "staylo_rate": "8%",
+    "savings_label": "您的年度节省",
+    "per_year": "/年",
+    "rooms_label": "房间数量",
+    "rate_label": "平均每晚房价（美元）",
+    "occupancy_label": "入住率"
+  },
+  "how_it_works": {
+    "title": "Staylo 如何运作",
+    "subtitle": "三步加入公平预订的未来",
+    "step1_title": "介绍您自己",
+    "step1_desc": "完成一份关于您的房源和当前使用平台的简短调查",
+    "step2_title": "登记您的房源",
+    "step2_desc": "提交房源详情或粘贴您的 Booking.com/Airbnb 链接",
+    "step3_title": "共同成长",
+    "step3_desc": "邀请同行酒店业主，获得创始会员权益，共同塑造平台"
+  },
+  "social_proof": {
+    "title": "加入 {{count}}+ 位有远见的酒店业主",
+    "countries": "覆盖国家",
+    "properties": "已注册房源",
+    "saved": "已计算的潜在节省"
+  },
+  "cta_section": {
+    "title": "准备好掌控您的预订了吗？",
+    "subtitle": "创始会员永久享受最低佣金。名额有限。",
+    "button": "成为创始会员"
+  },
+  "survey": {
+    "title": "快速调查",
+    "subtitle": "帮助我们打造您真正需要的平台。仅需 2 分钟。",
+    "progress": "第 {{current}} 步，共 {{total}} 步",
+    "q1": "您目前使用哪些平台？",
+    "q1_options": {
+      "booking": "Booking.com",
+      "airbnb": "Airbnb",
+      "expedia": "Expedia",
+      "agoda": "Agoda",
+      "tripadvisor": "TripAdvisor",
+      "direct": "仅直接预订",
+      "other": "其他"
+    },
+    "q2": "您目前支付多少佣金比例？",
+    "q3": "您对当前平台最大的不满是什么？",
+    "q3_placeholder": "例如：佣金过高、无法控制定价、客服支持差...",
+    "q4": "您对 Staylo 的兴趣程度？（1 = 完全没兴趣，10 = 非常感兴趣）",
+    "q5": "如果佣金为 10% 或更低，您会加入吗？",
+    "q5_yes": "是的，毫无疑问",
+    "q5_no": "需要了解更多",
+    "q6": "您管理多少间客房/单元？",
+    "next": "下一步",
+    "back": "返回",
+    "submit": "提交调查",
+    "success_title": "感谢您！",
+    "success_message": "您的反馈非常宝贵。现在登记您的房源，锁定创始会员名额。",
+    "success_cta": "登记我的房源"
+  },
+  "property": {
+    "title": "登记您的房源",
+    "subtitle": "注册您的房源，锁定创始会员资格。",
+    "name": "房源名称",
+    "name_placeholder": "例如：日落海滩度假村",
+    "type": "房源类型",
+    "types": {
+      "hotel": "酒店",
+      "guesthouse": "民宿",
+      "resort": "度假村",
+      "villa": "别墅",
+      "hostel": "青年旅舍"
+    },
+    "country": "国家",
+    "country_placeholder": "例如：泰国",
+    "city": "城市",
+    "city_placeholder": "例如：帕岸岛",
+    "booking_link": "Booking.com 主页链接",
+    "booking_link_placeholder": "https://www.booking.com/hotel/...",
+    "airbnb_link": "Airbnb 主页链接",
+    "airbnb_link_placeholder": "https://www.airbnb.com/rooms/...",
+    "rooms": "房间数量",
+    "avg_rate": "平均每晚房价（美元）",
+    "email": "联系邮箱",
+    "phone": "电话号码（选填）",
+    "submit": "提交房源",
+    "parsing": "正在获取您的房源信息...",
+    "parse_success": "已找到您的房源！请核实以下信息。",
+    "success_title": "房源已提交！",
+    "success_message": "您的房源正在审核中。审核通过后我们会通知您。",
+    "success_cta": "前往控制面板"
+  },
+  "auth": {
+    "login_title": "欢迎回来",
+    "login_subtitle": "登录您的 Staylo 账户",
+    "register_title": "加入 Staylo",
+    "register_subtitle": "创建账户，成为创始会员",
+    "email": "邮箱",
+    "email_placeholder": "you@hotel.com",
+    "password": "密码",
+    "password_placeholder": "至少 8 个字符",
+    "full_name": "姓名",
+    "full_name_placeholder": "您的全名",
+    "login_button": "登录",
+    "register_button": "创建账户",
+    "no_account": "还没有账户？",
+    "have_account": "已有账户？",
+    "register_link": "注册",
+    "login_link": "登录",
+    "or": "或",
+    "referred_by": "推荐人：{{code}}"
+  },
+  "dashboard": {
+    "title": "控制面板",
+    "welcome": "欢迎，{{name}}！",
+    "member_since": "创始会员，加入于 {{date}}",
+    "referral_title": "您的推荐链接",
+    "referral_copy": "复制链接",
+    "referral_copied": "已复制！",
+    "referral_count": "已推荐 {{count}} 位酒店业主",
+    "referral_rank": "推荐排名：第 {{rank}} 名",
+    "properties_title": "您的房源",
+    "no_properties": "尚未登记任何房源。",
+    "add_property": "添加房源",
+    "status": {
+      "pending": "待处理",
+      "reviewing": "审核中",
+      "validated": "已验证",
+      "live": "已上线"
+    },
+    "savings_title": "预计年度节省",
+    "savings_description": "基于您的房源数据与传统平台费用的对比",
+    "coming_soon": "即将推出",
+    "features": {
+      "booking_engine": "直接预订引擎",
+      "channel_manager": "渠道管理器",
+      "revenue_share": "收益分配面板",
+      "guest_reviews": "住客评价"
+    },
+    "founding_position": "创始会员 #{{position}}"
+  },
+  "vision": {
+    "title": "愿景",
+    "hero_title": "一个属于您的预订平台",
+    "hero_subtitle": "Staylo 不只是另一个在线旅行社。它是由酒店业主、餐厅和体验提供者共同拥有的平台。",
+    "ownership_title": "真正的所有权",
+    "ownership_desc": "创始会员不仅仅使用 Staylo — 他们拥有它的一部分。收益公平地重新分配给创造价值的社区。",
+    "roadmap_title": "发展路线图",
+    "phase1": "住宿",
+    "phase1_desc": "酒店、民宿、度假村 — 低佣金的公平预订",
+    "phase2": "餐饮",
+    "phase2_desc": "餐厅、美食体验 — TheFork 和 OpenTable 的公平替代",
+    "phase3": "体验",
+    "phase3_desc": "活动、旅游、健康、夜生活 — 重新定义体验预订",
+    "phase4": "出行",
+    "phase4_desc": "航班和接送 — 完善旅行全程",
+    "phase5": "超级应用",
+    "phase5_desc": "集成平台，通过代币治理实现全球服务商共同拥有",
+    "revenue_title": "公平的收益模式",
+    "revenue_desc": "传统平台收取 15–25%。Staylo 固定收取 8% — 并将部分收益回馈社区。",
+    "founding_title": "创始会员权益",
+    "founding_benefits": {
+      "lowest_commission": "永久锁定最低佣金率",
+      "revenue_share": "按贡献比例分享平台收益",
+      "governance": "对平台决策和功能优先级进行投票",
+      "early_access": "抢先体验每项新功能和新市场",
+      "badge": "房源页面展示创始会员徽章"
+    },
+    "faq_title": "常见问题",
+    "faq": {
+      "q1": "Staylo 与 Booking.com 有什么不同？",
+      "a1": "Staylo 由服务提供者拥有，而非股东。佣金仅为 8%，而非 15–25%，收益回馈社区。",
+      "q2": "所有权具体意味着什么？",
+      "a2": "创始会员参与收益分配和治理决策。平台越发展，您的份额越大。",
+      "q3": "Staylo 何时面向旅行者开放？",
+      "a3": "我们目前正在吸纳酒店业主。当验证房源达到 500+ 时，将推出面向旅行者的功能。",
+      "q4": "加入需要付费吗？",
+      "a4": "在 Alpha 阶段，成为创始会员完全免费。只有在收到预订时才需支付佣金。",
+      "q5": "你们支持哪些地区？",
+      "a5": "我们从东南亚（泰国帕岸岛）起步，根据需求向全球扩展。"
+    },
+    "cta_title": "成为未来的一部分",
+    "cta_button": "成为创始会员"
+  },
+  "footer": {
+    "tagline": "预订一切，掌控体验。",
+    "made_with": "为全球独立酒店业主用心打造。",
+    "links": {
+      "vision": "愿景",
+      "survey": "调查",
+      "contact": "联系我们"
+    },
+    "copyright": "© {{year}} Staylo. 保留所有权利。"
+  },
+  "common": {
+    "loading": "加载中...",
+    "error": "出了点问题，请重试。",
+    "required": "此字段为必填项",
+    "save": "保存",
+    "cancel": "取消"
+  }
+}

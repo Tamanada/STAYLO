@@ -1,0 +1,223 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "vision": "Vision",
+    "survey": "Répondre au sondage",
+    "submit": "Inscrire un bien",
+    "dashboard": "Tableau de bord",
+    "login": "Se connecter",
+    "register": "Rejoindre",
+    "logout": "Se déconnecter"
+  },
+  "hero": {
+    "badge": "Alpha — Membres fondateurs uniquement",
+    "title": "La plateforme de réservation détenue par les hôteliers",
+    "subtitle": "Arrêtez de payer 15–25 % de commissions. Staylo est conçu pour les propriétaires, par les propriétaires. Des frais justes. Un contrôle total. Une vraie propriété.",
+    "cta": "Rejoindre le mouvement",
+    "secondary_cta": "Découvrir la vision",
+    "early_adopters": "{{count}} hôteliers déjà inscrits"
+  },
+  "commission": {
+    "title": "Voyez combien vous économiseriez",
+    "subtitle": "Déplacez le curseur vers votre taux de commission actuel",
+    "current_label": "Vous payez actuellement",
+    "staylo_label": "Avec Staylo vous paieriez",
+    "staylo_rate": "8%",
+    "savings_label": "Vos économies annuelles",
+    "per_year": "/an",
+    "rooms_label": "Nombre de chambres",
+    "rate_label": "Tarif moyen par nuit (USD)",
+    "occupancy_label": "Taux d'occupation"
+  },
+  "how_it_works": {
+    "title": "Comment fonctionne Staylo",
+    "subtitle": "Trois étapes pour rejoindre l'avenir de la réservation équitable",
+    "step1_title": "Parlez-nous de vous",
+    "step1_desc": "Remplissez un court sondage sur votre établissement et vos plateformes actuelles",
+    "step2_title": "Inscrivez votre bien",
+    "step2_desc": "Soumettez les détails de votre propriété ou collez votre lien Booking.com/Airbnb",
+    "step3_title": "Grandissons ensemble",
+    "step3_desc": "Invitez d'autres hôteliers, bénéficiez des avantages fondateurs et façonnez la plateforme"
+  },
+  "social_proof": {
+    "title": "Rejoignez {{count}}+ hôteliers visionnaires",
+    "countries": "Pays représentés",
+    "properties": "Établissements inscrits",
+    "saved": "Économies potentielles calculées"
+  },
+  "cta_section": {
+    "title": "Prêt à maîtriser vos réservations ?",
+    "subtitle": "Les membres fondateurs obtiennent les commissions les plus basses pour toujours. Places limitées.",
+    "button": "Devenir membre fondateur"
+  },
+  "survey": {
+    "title": "Sondage rapide",
+    "subtitle": "Aidez-nous à créer la plateforme que vous souhaitez vraiment. 2 minutes suffisent.",
+    "progress": "Étape {{current}} sur {{total}}",
+    "q1": "Quelles plateformes utilisez-vous actuellement ?",
+    "q1_options": {
+      "booking": "Booking.com",
+      "airbnb": "Airbnb",
+      "expedia": "Expedia",
+      "agoda": "Agoda",
+      "tripadvisor": "TripAdvisor",
+      "direct": "Réservations directes uniquement",
+      "other": "Autre"
+    },
+    "q2": "Quel pourcentage de commission payez-vous actuellement ?",
+    "q3": "Quelle est votre plus grande frustration avec les plateformes actuelles ?",
+    "q3_placeholder": "Ex. : Commissions élevées, aucun contrôle sur les prix, support insuffisant...",
+    "q4": "Quel est votre intérêt pour Staylo ? (1 = pas du tout, 10 = très intéressé)",
+    "q5": "Rejoindriez-vous si les commissions étaient de 10 % ou moins ?",
+    "q5_yes": "Oui, sans hésiter",
+    "q5_no": "J'ai besoin d'en savoir plus",
+    "q6": "Combien de chambres/unités gérez-vous ?",
+    "next": "Suivant",
+    "back": "Retour",
+    "submit": "Envoyer le sondage",
+    "success_title": "Merci !",
+    "success_message": "Vos retours sont précieux. Inscrivez maintenant votre bien pour réserver votre place de membre fondateur.",
+    "success_cta": "Inscrire mon bien"
+  },
+  "property": {
+    "title": "Inscrire votre bien",
+    "subtitle": "Enregistrez votre propriété pour garantir votre statut de membre fondateur.",
+    "name": "Nom de l'établissement",
+    "name_placeholder": "Ex. : Sunset Beach Resort",
+    "type": "Type de bien",
+    "types": {
+      "hotel": "Hôtel",
+      "guesthouse": "Maison d'hôtes",
+      "resort": "Resort",
+      "villa": "Villa",
+      "hostel": "Auberge"
+    },
+    "country": "Pays",
+    "country_placeholder": "Ex. : Thaïlande",
+    "city": "Ville",
+    "city_placeholder": "Ex. : Koh Phangan",
+    "booking_link": "Lien du profil Booking.com",
+    "booking_link_placeholder": "https://www.booking.com/hotel/...",
+    "airbnb_link": "Lien du profil Airbnb",
+    "airbnb_link_placeholder": "https://www.airbnb.com/rooms/...",
+    "rooms": "Nombre de chambres",
+    "avg_rate": "Tarif moyen par nuit (USD)",
+    "email": "E-mail de contact",
+    "phone": "Numéro de téléphone (facultatif)",
+    "submit": "Soumettre le bien",
+    "parsing": "Récupération des informations de votre établissement...",
+    "parse_success": "Nous avons trouvé votre établissement ! Veuillez vérifier les détails ci-dessous.",
+    "success_title": "Bien soumis !",
+    "success_message": "Votre propriété est en cours d'examen. Nous vous informerons dès son approbation.",
+    "success_cta": "Aller au tableau de bord"
+  },
+  "auth": {
+    "login_title": "Bon retour",
+    "login_subtitle": "Connectez-vous à votre compte Staylo",
+    "register_title": "Rejoindre Staylo",
+    "register_subtitle": "Créez votre compte et devenez membre fondateur",
+    "email": "E-mail",
+    "email_placeholder": "vous@hotel.com",
+    "password": "Mot de passe",
+    "password_placeholder": "Min. 8 caractères",
+    "full_name": "Nom complet",
+    "full_name_placeholder": "Votre nom complet",
+    "login_button": "Se connecter",
+    "register_button": "Créer un compte",
+    "no_account": "Vous n'avez pas de compte ?",
+    "have_account": "Vous avez déjà un compte ?",
+    "register_link": "S'inscrire",
+    "login_link": "Se connecter",
+    "or": "ou",
+    "referred_by": "Parrainé par : {{code}}"
+  },
+  "dashboard": {
+    "title": "Votre tableau de bord",
+    "welcome": "Bienvenue, {{name}} !",
+    "member_since": "Membre fondateur depuis {{date}}",
+    "referral_title": "Votre lien de parrainage",
+    "referral_copy": "Copier le lien",
+    "referral_copied": "Copié !",
+    "referral_count": "{{count}} hôteliers parrainés",
+    "referral_rank": "Classement parrainage : #{{rank}}",
+    "properties_title": "Vos propriétés",
+    "no_properties": "Aucun bien inscrit pour le moment.",
+    "add_property": "Ajouter un bien",
+    "status": {
+      "pending": "En attente",
+      "reviewing": "En cours d'examen",
+      "validated": "Validé",
+      "live": "En ligne"
+    },
+    "savings_title": "Économies annuelles estimées",
+    "savings_description": "Basées sur les données de votre propriété par rapport aux frais des plateformes traditionnelles",
+    "coming_soon": "Bientôt disponible",
+    "features": {
+      "booking_engine": "Moteur de réservation directe",
+      "channel_manager": "Gestionnaire de canaux",
+      "revenue_share": "Tableau de partage des revenus",
+      "guest_reviews": "Avis des clients"
+    },
+    "founding_position": "Membre fondateur #{{position}}"
+  },
+  "vision": {
+    "title": "La vision",
+    "hero_title": "Une plateforme de réservation qui vous appartient",
+    "hero_subtitle": "Staylo n'est pas juste une OTA de plus. C'est une plateforme détenue collectivement par les hôteliers, restaurants et prestataires d'expériences qui la font vivre.",
+    "ownership_title": "Une vraie propriété",
+    "ownership_desc": "Les membres fondateurs ne font pas que d'utiliser Staylo — ils en possèdent une part. Les revenus sont redistribués équitablement à la communauté qui les génère.",
+    "roadmap_title": "La feuille de route",
+    "phase1": "Séjourner",
+    "phase1_desc": "Hôtels, maisons d'hôtes, resorts — réservation équitable avec des commissions réduites",
+    "phase2": "Manger",
+    "phase2_desc": "Restaurants, expériences culinaires — l'alternative équitable à TheFork et OpenTable",
+    "phase3": "Faire",
+    "phase3_desc": "Activités, excursions, bien-être, vie nocturne — la réservation d'expériences réinventée",
+    "phase4": "Voler",
+    "phase4_desc": "Vols et transferts — compléter le parcours de voyage",
+    "phase5": "Super App",
+    "phase5_desc": "Plateforme complète avec gouvernance par tokens et propriété mondiale par les prestataires",
+    "revenue_title": "Un modèle de revenus équitable",
+    "revenue_desc": "Les plateformes traditionnelles facturent 15–25 %. Staylo facture un forfait de 8 % — et en redistribue une partie à la communauté.",
+    "founding_title": "Avantages des membres fondateurs",
+    "founding_benefits": {
+      "lowest_commission": "Taux de commission le plus bas garanti à vie",
+      "revenue_share": "Part des revenus de la plateforme proportionnelle à votre contribution",
+      "governance": "Votez sur les décisions et les priorités de la plateforme",
+      "early_access": "Accès anticipé à chaque nouvelle fonctionnalité et nouveau marché",
+      "badge": "Badge de membre fondateur sur votre fiche d'établissement"
+    },
+    "faq_title": "Questions fréquentes",
+    "faq": {
+      "q1": "En quoi Staylo est-il différent de Booking.com ?",
+      "a1": "Staylo appartient à ses prestataires, pas à des actionnaires. Les commissions sont de 8 % au lieu de 15–25 %, et les revenus sont partagés avec la communauté.",
+      "q2": "Que signifie exactement « propriété » ?",
+      "a2": "Les membres fondateurs participent au partage des revenus et aux décisions de gouvernance. À mesure que la plateforme grandit, votre part aussi.",
+      "q3": "Quand Staylo sera-t-il disponible pour les voyageurs ?",
+      "a3": "Nous intégrons actuellement les hôteliers. Les fonctionnalités pour les voyageurs seront lancées dès que nous aurons plus de 500 propriétés vérifiées.",
+      "q4": "L'inscription est-elle payante ?",
+      "a4": "Devenir membre fondateur est entièrement gratuit pendant la phase alpha. Vous ne payez des commissions que lorsque vous recevez des réservations.",
+      "q5": "Quelles régions sont couvertes ?",
+      "a5": "Nous commençons en Asie du Sud-Est (Koh Phangan, Thaïlande) et nous nous développons mondialement selon la demande."
+    },
+    "cta_title": "Faites partie de l'avenir",
+    "cta_button": "Devenir membre fondateur"
+  },
+  "footer": {
+    "tagline": "Réservez tout. Vivez l'expérience.",
+    "made_with": "Créé avec conviction pour les hôteliers indépendants du monde entier.",
+    "links": {
+      "vision": "Vision",
+      "survey": "Sondage",
+      "contact": "Contact"
+    },
+    "copyright": "© {{year}} Staylo. Tous droits réservés."
+  },
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue. Veuillez réessayer.",
+    "required": "Ce champ est obligatoire",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
+  }
+}

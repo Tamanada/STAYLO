@@ -1,0 +1,223 @@
+{
+  "nav": {
+    "home": "Beranda",
+    "vision": "Visi",
+    "survey": "Ikuti Survei",
+    "submit": "Daftarkan Properti",
+    "dashboard": "Dasbor",
+    "login": "Masuk",
+    "register": "Gabung Sekarang",
+    "logout": "Keluar"
+  },
+  "hero": {
+    "badge": "Alpha — Khusus Anggota Pendiri",
+    "title": "Platform pemesanan milik para pelaku perhotelan",
+    "subtitle": "Berhenti bayar komisi 15–25%. Staylo dibangun untuk pemilik properti, oleh pemilik properti. Biaya adil. Kontrol penuh. Kepemilikan nyata.",
+    "cta": "Bergabung dengan Gerakan",
+    "secondary_cta": "Lihat Visi Kami",
+    "early_adopters": "{{count}} pelaku perhotelan sudah bergabung"
+  },
+  "commission": {
+    "title": "Lihat berapa banyak yang bisa Anda hemat",
+    "subtitle": "Geser slider ke tarif komisi Anda saat ini",
+    "current_label": "Anda saat ini membayar",
+    "staylo_label": "Dengan Staylo Anda membayar",
+    "staylo_rate": "8%",
+    "savings_label": "Penghematan tahunan Anda",
+    "per_year": "/tahun",
+    "rooms_label": "Jumlah kamar",
+    "rate_label": "Tarif rata-rata per malam (USD)",
+    "occupancy_label": "Tingkat hunian"
+  },
+  "how_it_works": {
+    "title": "Cara Kerja Staylo",
+    "subtitle": "Tiga langkah menuju masa depan pemesanan yang adil",
+    "step1_title": "Ceritakan tentang Anda",
+    "step1_desc": "Isi survei singkat tentang properti dan platform yang Anda gunakan saat ini",
+    "step2_title": "Daftarkan properti Anda",
+    "step2_desc": "Kirim detail properti Anda atau tempel tautan Booking.com/Airbnb Anda",
+    "step3_title": "Berkembang bersama",
+    "step3_desc": "Undang sesama pelaku perhotelan, dapatkan manfaat anggota pendiri, dan ikut bentuk platform ini"
+  },
+  "social_proof": {
+    "title": "Bergabung dengan {{count}}+ pelaku perhotelan berwawasan maju",
+    "countries": "Negara terwakili",
+    "properties": "Properti terdaftar",
+    "saved": "Potensi penghematan yang dihitung"
+  },
+  "cta_section": {
+    "title": "Siap memiliki pemesanan Anda sendiri?",
+    "subtitle": "Anggota pendiri mendapat komisi terendah selamanya. Kuota terbatas.",
+    "button": "Jadi Anggota Pendiri"
+  },
+  "survey": {
+    "title": "Survei Singkat",
+    "subtitle": "Bantu kami membangun platform yang benar-benar Anda inginkan. Hanya 2 menit.",
+    "progress": "Langkah {{current}} dari {{total}}",
+    "q1": "Platform apa yang Anda gunakan saat ini?",
+    "q1_options": {
+      "booking": "Booking.com",
+      "airbnb": "Airbnb",
+      "expedia": "Expedia",
+      "agoda": "Agoda",
+      "tripadvisor": "TripAdvisor",
+      "direct": "Hanya pemesanan langsung",
+      "other": "Lainnya"
+    },
+    "q2": "Berapa persen komisi yang Anda bayar saat ini?",
+    "q3": "Apa keluhan terbesar Anda terhadap platform saat ini?",
+    "q3_placeholder": "mis. Komisi tinggi, tidak bisa kontrol harga, dukungan buruk...",
+    "q4": "Seberapa tertarik Anda dengan Staylo? (1 = tidak sama sekali, 10 = sangat)",
+    "q5": "Apakah Anda akan bergabung jika komisi 10% atau kurang?",
+    "q5_yes": "Ya, tentu saja",
+    "q5_no": "Perlu tahu lebih lanjut",
+    "q6": "Berapa kamar/unit yang Anda kelola?",
+    "next": "Selanjutnya",
+    "back": "Kembali",
+    "submit": "Kirim Survei",
+    "success_title": "Terima kasih!",
+    "success_message": "Masukan Anda sangat berharga. Sekarang daftarkan properti Anda untuk mengamankan posisi anggota pendiri.",
+    "success_cta": "Daftarkan Properti Saya"
+  },
+  "property": {
+    "title": "Daftarkan Properti Anda",
+    "subtitle": "Daftarkan properti Anda untuk mengamankan posisi Anggota Pendiri.",
+    "name": "Nama Properti",
+    "name_placeholder": "mis. Resort Pantai Matahari",
+    "type": "Tipe Properti",
+    "types": {
+      "hotel": "Hotel",
+      "guesthouse": "Wisma Tamu",
+      "resort": "Resort",
+      "villa": "Villa",
+      "hostel": "Hostel"
+    },
+    "country": "Negara",
+    "country_placeholder": "mis. Indonesia",
+    "city": "Kota",
+    "city_placeholder": "mis. Bali",
+    "booking_link": "Tautan Profil Booking.com",
+    "booking_link_placeholder": "https://www.booking.com/hotel/...",
+    "airbnb_link": "Tautan Profil Airbnb",
+    "airbnb_link_placeholder": "https://www.airbnb.com/rooms/...",
+    "rooms": "Jumlah Kamar",
+    "avg_rate": "Tarif Rata-rata per Malam (USD)",
+    "email": "Email Kontak",
+    "phone": "Nomor Telepon (opsional)",
+    "submit": "Kirim Properti",
+    "parsing": "Mengambil informasi properti Anda...",
+    "parse_success": "Kami menemukan properti Anda! Silakan verifikasi detail di bawah ini.",
+    "success_title": "Properti Terkirim!",
+    "success_message": "Properti Anda sedang ditinjau. Kami akan memberi tahu Anda saat disetujui.",
+    "success_cta": "Ke Dasbor"
+  },
+  "auth": {
+    "login_title": "Selamat Datang Kembali",
+    "login_subtitle": "Masuk ke akun Staylo Anda",
+    "register_title": "Bergabung dengan Staylo",
+    "register_subtitle": "Buat akun Anda dan jadilah Anggota Pendiri",
+    "email": "Email",
+    "email_placeholder": "anda@hotel.com",
+    "password": "Kata Sandi",
+    "password_placeholder": "Min. 8 karakter",
+    "full_name": "Nama Lengkap",
+    "full_name_placeholder": "Nama lengkap Anda",
+    "login_button": "Masuk",
+    "register_button": "Buat Akun",
+    "no_account": "Belum punya akun?",
+    "have_account": "Sudah punya akun?",
+    "register_link": "Daftar",
+    "login_link": "Masuk",
+    "or": "atau",
+    "referred_by": "Direferensikan oleh: {{code}}"
+  },
+  "dashboard": {
+    "title": "Dasbor Anda",
+    "welcome": "Selamat datang, {{name}}!",
+    "member_since": "Anggota Pendiri sejak {{date}}",
+    "referral_title": "Tautan Referral Anda",
+    "referral_copy": "Salin Tautan",
+    "referral_copied": "Tersalin!",
+    "referral_count": "{{count}} pelaku perhotelan direferensikan",
+    "referral_rank": "Peringkat Referral: #{{rank}}",
+    "properties_title": "Properti Anda",
+    "no_properties": "Belum ada properti yang terdaftar.",
+    "add_property": "Tambah Properti",
+    "status": {
+      "pending": "Menunggu",
+      "reviewing": "Sedang Ditinjau",
+      "validated": "Tervalidasi",
+      "live": "Aktif"
+    },
+    "savings_title": "Estimasi Penghematan Tahunan",
+    "savings_description": "Berdasarkan data properti Anda dibandingkan biaya platform tradisional",
+    "coming_soon": "Segera Hadir",
+    "features": {
+      "booking_engine": "Mesin Pemesanan Langsung",
+      "channel_manager": "Channel Manager",
+      "revenue_share": "Dasbor Bagi Hasil",
+      "guest_reviews": "Ulasan Tamu"
+    },
+    "founding_position": "Anggota Pendiri #{{position}}"
+  },
+  "vision": {
+    "title": "Visi",
+    "hero_title": "Platform pemesanan yang menjadi milik Anda",
+    "hero_subtitle": "Staylo bukan sekadar OTA biasa. Ini adalah platform yang dimiliki secara kolektif oleh para pelaku perhotelan, restoran, dan penyedia pengalaman yang menggerakkannya.",
+    "ownership_title": "Kepemilikan Sejati",
+    "ownership_desc": "Anggota Pendiri tidak sekadar menggunakan Staylo — mereka memiliki bagian darinya. Pendapatan didistribusikan secara adil kepada komunitas yang menghasilkannya.",
+    "roadmap_title": "Peta Jalan",
+    "phase1": "Menginap",
+    "phase1_desc": "Hotel, wisma tamu, resort — pemesanan adil dengan komisi rendah",
+    "phase2": "Makan",
+    "phase2_desc": "Restoran, pengalaman kuliner — alternatif adil untuk TheFork & OpenTable",
+    "phase3": "Beraktivitas",
+    "phase3_desc": "Aktivitas, tur, kebugaran, kehidupan malam — pemesanan pengalaman yang dirancang ulang",
+    "phase4": "Terbang",
+    "phase4_desc": "Penerbangan dan transfer — melengkapi perjalanan wisata",
+    "phase5": "Super App",
+    "phase5_desc": "Platform lengkap dengan tata kelola token dan kepemilikan penyedia global",
+    "revenue_title": "Model Pendapatan yang Adil",
+    "revenue_desc": "Platform tradisional mengenakan biaya 15–25%. Staylo mengenakan tarif tetap 8% — dan membagikan sebagian kembali kepada komunitas.",
+    "founding_title": "Manfaat Anggota Pendiri",
+    "founding_benefits": {
+      "lowest_commission": "Tarif komisi terendah yang terkunci selamanya",
+      "revenue_share": "Bagian dari pendapatan platform sesuai kontribusi",
+      "governance": "Hak suara dalam keputusan platform dan prioritas fitur",
+      "early_access": "Akses awal ke setiap fitur dan pasar baru",
+      "badge": "Lencana Anggota Pendiri di daftar properti Anda"
+    },
+    "faq_title": "Pertanyaan yang Sering Diajukan",
+    "faq": {
+      "q1": "Apa bedanya Staylo dengan Booking.com?",
+      "a1": "Staylo dimiliki oleh para penyedianya, bukan pemegang saham. Komisi hanya 8% bukan 15–25%, dan pendapatan dibagikan kembali kepada komunitas.",
+      "q2": "Apa arti 'kepemilikan' secara tepat?",
+      "a2": "Anggota Pendiri berpartisipasi dalam bagi hasil dan keputusan tata kelola. Seiring platform berkembang, begitu pula bagian Anda.",
+      "q3": "Kapan Staylo diluncurkan untuk wisatawan?",
+      "a3": "Saat ini kami sedang melakukan onboarding pelaku perhotelan. Fitur untuk wisatawan diluncurkan setelah kami memiliki 500+ properti terverifikasi.",
+      "q4": "Apakah ada biaya untuk bergabung?",
+      "a4": "Bergabung sebagai Anggota Pendiri sepenuhnya gratis selama fase alpha. Anda hanya membayar komisi saat menerima pemesanan.",
+      "q5": "Wilayah mana yang didukung?",
+      "a5": "Kami memulai di Asia Tenggara (Koh Phangan, Thailand) dan berekspansi secara global berdasarkan permintaan."
+    },
+    "cta_title": "Jadilah bagian dari masa depan",
+    "cta_button": "Jadi Anggota Pendiri"
+  },
+  "footer": {
+    "tagline": "Pesan segalanya. Miliki pengalamannya.",
+    "made_with": "Dibuat dengan tujuan untuk pelaku perhotelan independen di seluruh dunia.",
+    "links": {
+      "vision": "Visi",
+      "survey": "Survei",
+      "contact": "Kontak"
+    },
+    "copyright": "© {{year}} Staylo. Hak cipta dilindungi."
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan. Silakan coba lagi.",
+    "required": "Kolom ini wajib diisi",
+    "save": "Simpan",
+    "cancel": "Batal"
+  }
+}

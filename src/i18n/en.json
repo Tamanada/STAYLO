@@ -1,0 +1,223 @@
+{
+  "nav": {
+    "home": "Home",
+    "vision": "Vision",
+    "survey": "Take Survey",
+    "submit": "List Property",
+    "dashboard": "Dashboard",
+    "login": "Log In",
+    "register": "Join Now",
+    "logout": "Log Out"
+  },
+  "hero": {
+    "badge": "Alpha — Founding Members Only",
+    "title": "The booking platform owned by hoteliers",
+    "subtitle": "Stop paying 15–25% commissions. Staylo is built for property owners, by property owners. Fair fees. Full control. Real ownership.",
+    "cta": "Join the Movement",
+    "secondary_cta": "See the Vision",
+    "early_adopters": "{{count}} hoteliers already joined"
+  },
+  "commission": {
+    "title": "See how much you'd save",
+    "subtitle": "Move the slider to your current commission rate",
+    "current_label": "You currently pay",
+    "staylo_label": "With Staylo you'd pay",
+    "staylo_rate": "8%",
+    "savings_label": "Your annual savings",
+    "per_year": "/year",
+    "rooms_label": "Number of rooms",
+    "rate_label": "Average nightly rate (USD)",
+    "occupancy_label": "Occupancy rate"
+  },
+  "how_it_works": {
+    "title": "How Staylo Works",
+    "subtitle": "Three steps to join the future of fair booking",
+    "step1_title": "Tell us about you",
+    "step1_desc": "Complete a quick survey about your property and current platforms",
+    "step2_title": "List your property",
+    "step2_desc": "Submit your property details or paste your Booking.com/Airbnb link",
+    "step3_title": "Grow together",
+    "step3_desc": "Invite fellow hoteliers, earn founding member benefits, and shape the platform"
+  },
+  "social_proof": {
+    "title": "Join {{count}}+ forward-thinking hoteliers",
+    "countries": "Countries represented",
+    "properties": "Properties registered",
+    "saved": "Potential savings calculated"
+  },
+  "cta_section": {
+    "title": "Ready to own your bookings?",
+    "subtitle": "Founding members get the lowest commissions forever. Limited spots.",
+    "button": "Become a Founding Member"
+  },
+  "survey": {
+    "title": "Quick Survey",
+    "subtitle": "Help us build the platform you actually want. Takes 2 minutes.",
+    "progress": "Step {{current}} of {{total}}",
+    "q1": "Which platforms do you currently use?",
+    "q1_options": {
+      "booking": "Booking.com",
+      "airbnb": "Airbnb",
+      "expedia": "Expedia",
+      "agoda": "Agoda",
+      "tripadvisor": "TripAdvisor",
+      "direct": "Direct bookings only",
+      "other": "Other"
+    },
+    "q2": "What commission % do you currently pay?",
+    "q3": "What's your biggest frustration with current platforms?",
+    "q3_placeholder": "e.g., High commissions, no control over pricing, poor support...",
+    "q4": "How interested are you in Staylo? (1 = not at all, 10 = very)",
+    "q5": "Would you join if commissions were 10% or less?",
+    "q5_yes": "Yes, absolutely",
+    "q5_no": "Need to learn more",
+    "q6": "How many rooms/units do you manage?",
+    "next": "Next",
+    "back": "Back",
+    "submit": "Submit Survey",
+    "success_title": "Thank you!",
+    "success_message": "Your feedback is invaluable. Now list your property to secure your founding member spot.",
+    "success_cta": "List My Property"
+  },
+  "property": {
+    "title": "List Your Property",
+    "subtitle": "Register your property to secure your Founding Member position.",
+    "name": "Property Name",
+    "name_placeholder": "e.g., Sunset Beach Resort",
+    "type": "Property Type",
+    "types": {
+      "hotel": "Hotel",
+      "guesthouse": "Guesthouse",
+      "resort": "Resort",
+      "villa": "Villa",
+      "hostel": "Hostel"
+    },
+    "country": "Country",
+    "country_placeholder": "e.g., Thailand",
+    "city": "City",
+    "city_placeholder": "e.g., Koh Phangan",
+    "booking_link": "Booking.com Profile Link",
+    "booking_link_placeholder": "https://www.booking.com/hotel/...",
+    "airbnb_link": "Airbnb Profile Link",
+    "airbnb_link_placeholder": "https://www.airbnb.com/rooms/...",
+    "rooms": "Number of Rooms",
+    "avg_rate": "Average Nightly Rate (USD)",
+    "email": "Contact Email",
+    "phone": "Phone Number (optional)",
+    "submit": "Submit Property",
+    "parsing": "Fetching your property info...",
+    "parse_success": "We found your property! Please verify the details below.",
+    "success_title": "Property Submitted!",
+    "success_message": "Your property is under review. We'll notify you when it's approved.",
+    "success_cta": "Go to Dashboard"
+  },
+  "auth": {
+    "login_title": "Welcome Back",
+    "login_subtitle": "Log in to your Staylo account",
+    "register_title": "Join Staylo",
+    "register_subtitle": "Create your account and become a Founding Member",
+    "email": "Email",
+    "email_placeholder": "you@hotel.com",
+    "password": "Password",
+    "password_placeholder": "Min. 8 characters",
+    "full_name": "Full Name",
+    "full_name_placeholder": "Your full name",
+    "login_button": "Log In",
+    "register_button": "Create Account",
+    "no_account": "Don't have an account?",
+    "have_account": "Already have an account?",
+    "register_link": "Sign up",
+    "login_link": "Log in",
+    "or": "or",
+    "referred_by": "Referred by: {{code}}"
+  },
+  "dashboard": {
+    "title": "Your Dashboard",
+    "welcome": "Welcome, {{name}}!",
+    "member_since": "Founding Member since {{date}}",
+    "referral_title": "Your Referral Link",
+    "referral_copy": "Copy Link",
+    "referral_copied": "Copied!",
+    "referral_count": "{{count}} hoteliers referred",
+    "referral_rank": "Referral Rank: #{{rank}}",
+    "properties_title": "Your Properties",
+    "no_properties": "No properties listed yet.",
+    "add_property": "Add Property",
+    "status": {
+      "pending": "Pending",
+      "reviewing": "Under Review",
+      "validated": "Validated",
+      "live": "Live"
+    },
+    "savings_title": "Estimated Annual Savings",
+    "savings_description": "Based on your property data vs. traditional platform fees",
+    "coming_soon": "Coming Soon",
+    "features": {
+      "booking_engine": "Direct Booking Engine",
+      "channel_manager": "Channel Manager",
+      "revenue_share": "Revenue Share Dashboard",
+      "guest_reviews": "Guest Reviews"
+    },
+    "founding_position": "Founding Member #{{position}}"
+  },
+  "vision": {
+    "title": "The Vision",
+    "hero_title": "A booking platform that belongs to you",
+    "hero_subtitle": "Staylo isn't just another OTA. It's a platform owned collectively by the hoteliers, restaurants, and experience providers who power it.",
+    "ownership_title": "True Ownership",
+    "ownership_desc": "Founding Members don't just use Staylo — they own a piece of it. Revenue is redistributed fairly to the community that generates it.",
+    "roadmap_title": "The Roadmap",
+    "phase1": "Stay",
+    "phase1_desc": "Hotels, guesthouses, resorts — fair booking with low commissions",
+    "phase2": "Eat",
+    "phase2_desc": "Restaurants, food experiences — the fair alternative to TheFork & OpenTable",
+    "phase3": "Do",
+    "phase3_desc": "Activities, tours, wellness, nightlife — experience booking reimagined",
+    "phase4": "Fly",
+    "phase4_desc": "Flights and transfers — completing the travel journey",
+    "phase5": "Super App",
+    "phase5_desc": "Full platform with token governance and global provider ownership",
+    "revenue_title": "Fair Revenue Model",
+    "revenue_desc": "Traditional platforms charge 15–25%. Staylo charges a flat 8% — and shares a portion back with the community.",
+    "founding_title": "Founding Member Benefits",
+    "founding_benefits": {
+      "lowest_commission": "Locked-in lowest commission rate forever",
+      "revenue_share": "Share of platform revenue proportional to contribution",
+      "governance": "Vote on platform decisions and feature priorities",
+      "early_access": "Early access to every new feature and market",
+      "badge": "Founding Member badge on your property listing"
+    },
+    "faq_title": "Frequently Asked Questions",
+    "faq": {
+      "q1": "How is Staylo different from Booking.com?",
+      "a1": "Staylo is owned by its providers, not shareholders. Commissions are 8% instead of 15–25%, and revenue is shared back with the community.",
+      "q2": "What does 'ownership' mean exactly?",
+      "a2": "Founding Members participate in revenue sharing and governance decisions. As the platform grows, so does your stake.",
+      "q3": "When will Staylo launch for travelers?",
+      "a3": "We're currently onboarding hoteliers. Traveler-facing features launch once we have 500+ verified properties.",
+      "q4": "Is there a cost to join?",
+      "a4": "Joining as a Founding Member is completely free during alpha. You only pay commissions when you receive bookings.",
+      "q5": "What regions do you support?",
+      "a5": "We're starting in Southeast Asia (Koh Phangan, Thailand) and expanding globally based on demand."
+    },
+    "cta_title": "Be part of the future",
+    "cta_button": "Become a Founding Member"
+  },
+  "footer": {
+    "tagline": "Book everything. Own the experience.",
+    "made_with": "Made with purpose for independent hoteliers worldwide.",
+    "links": {
+      "vision": "Vision",
+      "survey": "Survey",
+      "contact": "Contact"
+    },
+    "copyright": "© {{year}} Staylo. All rights reserved."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Something went wrong. Please try again.",
+    "required": "This field is required",
+    "save": "Save",
+    "cancel": "Cancel"
+  }
+}

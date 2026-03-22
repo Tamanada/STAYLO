@@ -1,0 +1,223 @@
+{
+  "nav": {
+    "home": "Startseite",
+    "vision": "Vision",
+    "survey": "Umfrage",
+    "submit": "Unterkunft eintragen",
+    "dashboard": "Dashboard",
+    "login": "Anmelden",
+    "register": "Jetzt beitreten",
+    "logout": "Abmelden"
+  },
+  "hero": {
+    "badge": "Alpha — Nur für Gründungsmitglieder",
+    "title": "Die Buchungsplattform, die Hoteliers gehört",
+    "subtitle": "Schluss mit 15–25 % Provision. Staylo wurde von Eigentümern für Eigentümer entwickelt. Faire Gebühren. Volle Kontrolle. Echtes Eigentum.",
+    "cta": "Werde Teil der Bewegung",
+    "secondary_cta": "Unsere Vision",
+    "early_adopters": "{{count}} Hoteliers sind bereits dabei"
+  },
+  "commission": {
+    "title": "Berechne deine Ersparnis",
+    "subtitle": "Bewege den Regler auf deine aktuelle Provisionsrate",
+    "current_label": "Du zahlst derzeit",
+    "staylo_label": "Mit Staylo würdest du zahlen",
+    "staylo_rate": "8 %",
+    "savings_label": "Deine jährliche Ersparnis",
+    "per_year": "/Jahr",
+    "rooms_label": "Anzahl der Zimmer",
+    "rate_label": "Durchschnittlicher Übernachtungspreis (USD)",
+    "occupancy_label": "Auslastung"
+  },
+  "how_it_works": {
+    "title": "So funktioniert Staylo",
+    "subtitle": "Drei Schritte in die Zukunft fairer Buchungen",
+    "step1_title": "Erzähl uns von dir",
+    "step1_desc": "Beantworte eine kurze Umfrage über deine Unterkunft und deine aktuellen Plattformen",
+    "step2_title": "Trage deine Unterkunft ein",
+    "step2_desc": "Übermittle deine Unterkunftsdaten oder füge deinen Booking.com-/Airbnb-Link ein",
+    "step3_title": "Gemeinsam wachsen",
+    "step3_desc": "Lade andere Hoteliers ein, sichere dir Gründungsmitglieder-Vorteile und gestalte die Plattform mit"
+  },
+  "social_proof": {
+    "title": "Schließe dich {{count}}+ vorausschauenden Hoteliers an",
+    "countries": "Vertretene Länder",
+    "properties": "Registrierte Unterkünfte",
+    "saved": "Berechnetes Einsparpotenzial"
+  },
+  "cta_section": {
+    "title": "Bereit, deine Buchungen selbst zu besitzen?",
+    "subtitle": "Gründungsmitglieder sichern sich die niedrigsten Provisionen für immer. Begrenzte Plätze.",
+    "button": "Gründungsmitglied werden"
+  },
+  "survey": {
+    "title": "Kurze Umfrage",
+    "subtitle": "Hilf uns, die Plattform zu bauen, die du wirklich willst. Dauert 2 Minuten.",
+    "progress": "Schritt {{current}} von {{total}}",
+    "q1": "Welche Plattformen nutzt du derzeit?",
+    "q1_options": {
+      "booking": "Booking.com",
+      "airbnb": "Airbnb",
+      "expedia": "Expedia",
+      "agoda": "Agoda",
+      "tripadvisor": "TripAdvisor",
+      "direct": "Nur Direktbuchungen",
+      "other": "Andere"
+    },
+    "q2": "Wie viel Prozent Provision zahlst du aktuell?",
+    "q3": "Was ist dein größter Frust mit aktuellen Plattformen?",
+    "q3_placeholder": "z. B. Hohe Provisionen, keine Preiskontrolle, schlechter Support...",
+    "q4": "Wie interessiert bist du an Staylo? (1 = gar nicht, 10 = sehr)",
+    "q5": "Würdest du beitreten, wenn die Provisionen 10 % oder weniger wären?",
+    "q5_yes": "Ja, auf jeden Fall",
+    "q5_no": "Ich möchte mehr erfahren",
+    "q6": "Wie viele Zimmer/Einheiten verwaltest du?",
+    "next": "Weiter",
+    "back": "Zurück",
+    "submit": "Umfrage absenden",
+    "success_title": "Vielen Dank!",
+    "success_message": "Dein Feedback ist sehr wertvoll. Trage jetzt deine Unterkunft ein, um dir deinen Platz als Gründungsmitglied zu sichern.",
+    "success_cta": "Meine Unterkunft eintragen"
+  },
+  "property": {
+    "title": "Unterkunft eintragen",
+    "subtitle": "Registriere deine Unterkunft, um dir deine Position als Gründungsmitglied zu sichern.",
+    "name": "Name der Unterkunft",
+    "name_placeholder": "z. B. Strandhotel Sonnenuntergang",
+    "type": "Art der Unterkunft",
+    "types": {
+      "hotel": "Hotel",
+      "guesthouse": "Pension",
+      "resort": "Resort",
+      "villa": "Villa",
+      "hostel": "Hostel"
+    },
+    "country": "Land",
+    "country_placeholder": "z. B. Deutschland",
+    "city": "Stadt",
+    "city_placeholder": "z. B. München",
+    "booking_link": "Booking.com-Profillink",
+    "booking_link_placeholder": "https://www.booking.com/hotel/...",
+    "airbnb_link": "Airbnb-Profillink",
+    "airbnb_link_placeholder": "https://www.airbnb.com/rooms/...",
+    "rooms": "Anzahl der Zimmer",
+    "avg_rate": "Durchschnittlicher Übernachtungspreis (USD)",
+    "email": "Kontakt-E-Mail",
+    "phone": "Telefonnummer (optional)",
+    "submit": "Unterkunft einreichen",
+    "parsing": "Unterkunftsdaten werden abgerufen...",
+    "parse_success": "Wir haben deine Unterkunft gefunden! Bitte überprüfe die Angaben unten.",
+    "success_title": "Unterkunft eingereicht!",
+    "success_message": "Deine Unterkunft wird geprüft. Wir benachrichtigen dich, sobald sie genehmigt ist.",
+    "success_cta": "Zum Dashboard"
+  },
+  "auth": {
+    "login_title": "Willkommen zurück",
+    "login_subtitle": "Melde dich bei deinem Staylo-Konto an",
+    "register_title": "Staylo beitreten",
+    "register_subtitle": "Erstelle dein Konto und werde Gründungsmitglied",
+    "email": "E-Mail",
+    "email_placeholder": "du@hotel.com",
+    "password": "Passwort",
+    "password_placeholder": "Mind. 8 Zeichen",
+    "full_name": "Vollständiger Name",
+    "full_name_placeholder": "Dein vollständiger Name",
+    "login_button": "Anmelden",
+    "register_button": "Konto erstellen",
+    "no_account": "Noch kein Konto?",
+    "have_account": "Bereits ein Konto?",
+    "register_link": "Registrieren",
+    "login_link": "Anmelden",
+    "or": "oder",
+    "referred_by": "Empfohlen von: {{code}}"
+  },
+  "dashboard": {
+    "title": "Dein Dashboard",
+    "welcome": "Willkommen, {{name}}!",
+    "member_since": "Gründungsmitglied seit {{date}}",
+    "referral_title": "Dein Empfehlungslink",
+    "referral_copy": "Link kopieren",
+    "referral_copied": "Kopiert!",
+    "referral_count": "{{count}} Hoteliers empfohlen",
+    "referral_rank": "Empfehlungs-Rang: #{{rank}}",
+    "properties_title": "Deine Unterkünfte",
+    "no_properties": "Noch keine Unterkünfte eingetragen.",
+    "add_property": "Unterkunft hinzufügen",
+    "status": {
+      "pending": "Ausstehend",
+      "reviewing": "In Prüfung",
+      "validated": "Bestätigt",
+      "live": "Online"
+    },
+    "savings_title": "Geschätzte jährliche Ersparnis",
+    "savings_description": "Basierend auf deinen Unterkunftsdaten im Vergleich zu herkömmlichen Plattformgebühren",
+    "coming_soon": "Demnächst verfügbar",
+    "features": {
+      "booking_engine": "Direktbuchungs-Engine",
+      "channel_manager": "Channel Manager",
+      "revenue_share": "Umsatzbeteiligungs-Dashboard",
+      "guest_reviews": "Gästebewertungen"
+    },
+    "founding_position": "Gründungsmitglied #{{position}}"
+  },
+  "vision": {
+    "title": "Die Vision",
+    "hero_title": "Eine Buchungsplattform, die dir gehört",
+    "hero_subtitle": "Staylo ist nicht einfach eine weitere OTA. Es ist eine Plattform im gemeinsamen Besitz der Hoteliers, Restaurants und Erlebnisanbieter, die sie antreiben.",
+    "ownership_title": "Echtes Eigentum",
+    "ownership_desc": "Gründungsmitglieder nutzen Staylo nicht nur — sie besitzen einen Teil davon. Einnahmen werden fair an die Gemeinschaft zurückverteilt, die sie erzeugt.",
+    "roadmap_title": "Die Roadmap",
+    "phase1": "Übernachten",
+    "phase1_desc": "Hotels, Pensionen, Resorts — faire Buchungen mit niedrigen Provisionen",
+    "phase2": "Essen",
+    "phase2_desc": "Restaurants, kulinarische Erlebnisse — die faire Alternative zu TheFork & OpenTable",
+    "phase3": "Erleben",
+    "phase3_desc": "Aktivitäten, Touren, Wellness, Nachtleben — Erlebnisbuchungen neu gedacht",
+    "phase4": "Fliegen",
+    "phase4_desc": "Flüge und Transfers — die Reise komplett machen",
+    "phase5": "Super App",
+    "phase5_desc": "Vollständige Plattform mit Token-Governance und globalem Anbieter-Eigentum",
+    "revenue_title": "Faires Erlösmodell",
+    "revenue_desc": "Herkömmliche Plattformen verlangen 15–25 %. Staylo berechnet pauschal 8 % — und gibt einen Teil an die Gemeinschaft zurück.",
+    "founding_title": "Vorteile als Gründungsmitglied",
+    "founding_benefits": {
+      "lowest_commission": "Dauerhaft niedrigste Provisionsrate garantiert",
+      "revenue_share": "Anteil an Plattformeinnahmen proportional zum Beitrag",
+      "governance": "Stimmrecht bei Plattformentscheidungen und Feature-Prioritäten",
+      "early_access": "Frühzeitiger Zugang zu jeder neuen Funktion und jedem neuen Markt",
+      "badge": "Gründungsmitglied-Abzeichen auf deinem Unterkunftseintrag"
+    },
+    "faq_title": "Häufig gestellte Fragen",
+    "faq": {
+      "q1": "Wie unterscheidet sich Staylo von Booking.com?",
+      "a1": "Staylo gehört seinen Anbietern, nicht Aktionären. Die Provisionen betragen 8 % statt 15–25 %, und die Einnahmen werden mit der Gemeinschaft geteilt.",
+      "q2": "Was bedeutet 'Eigentum' genau?",
+      "a2": "Gründungsmitglieder nehmen an der Umsatzbeteiligung und an Governance-Entscheidungen teil. Wenn die Plattform wächst, wächst auch dein Anteil.",
+      "q3": "Wann startet Staylo für Reisende?",
+      "a3": "Wir onboarden derzeit Hoteliers. Funktionen für Reisende starten, sobald wir 500+ verifizierte Unterkünfte haben.",
+      "q4": "Gibt es Kosten für den Beitritt?",
+      "a4": "Der Beitritt als Gründungsmitglied ist während der Alpha-Phase komplett kostenlos. Du zahlst nur Provisionen, wenn du Buchungen erhältst.",
+      "q5": "Welche Regionen werden unterstützt?",
+      "a5": "Wir starten in Südostasien (Koh Phangan, Thailand) und expandieren weltweit basierend auf der Nachfrage."
+    },
+    "cta_title": "Werde Teil der Zukunft",
+    "cta_button": "Gründungsmitglied werden"
+  },
+  "footer": {
+    "tagline": "Alles buchen. Das Erlebnis besitzen.",
+    "made_with": "Mit Überzeugung gemacht für unabhängige Hoteliers weltweit.",
+    "links": {
+      "vision": "Vision",
+      "survey": "Umfrage",
+      "contact": "Kontakt"
+    },
+    "copyright": "© {{year}} Staylo. Alle Rechte vorbehalten."
+  },
+  "common": {
+    "loading": "Wird geladen...",
+    "error": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
+    "required": "Dieses Feld ist erforderlich",
+    "save": "Speichern",
+    "cancel": "Abbrechen"
+  }
+}

@@ -1,0 +1,223 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "vision": "ビジョン",
+    "survey": "アンケートに回答",
+    "submit": "物件を登録",
+    "dashboard": "ダッシュボード",
+    "login": "ログイン",
+    "register": "今すぐ参加",
+    "logout": "ログアウト"
+  },
+  "hero": {
+    "badge": "アルファ版 — 創設メンバー限定",
+    "title": "ホテル経営者が所有する予約プラットフォーム",
+    "subtitle": "15〜25%のコミッションを払い続けるのはもうやめましょう。Stayloは宿泊施設オーナーのために、オーナーが作ったプラットフォームです。公正な手数料。完全なコントロール。本当のオーナーシップ。",
+    "cta": "ムーブメントに参加",
+    "secondary_cta": "ビジョンを見る",
+    "early_adopters": "{{count}}名のホテル経営者が参加済み"
+  },
+  "commission": {
+    "title": "どれだけ節約できるか見てみましょう",
+    "subtitle": "スライダーを現在のコミッション率に合わせてください",
+    "current_label": "現在のお支払い額",
+    "staylo_label": "Stayloなら",
+    "staylo_rate": "8%",
+    "savings_label": "年間節約額",
+    "per_year": "/年",
+    "rooms_label": "客室数",
+    "rate_label": "平均宿泊料金（USD）",
+    "occupancy_label": "稼働率"
+  },
+  "how_it_works": {
+    "title": "Stayloの仕組み",
+    "subtitle": "公正な予約の未来へ、3つのステップ",
+    "step1_title": "あなたについて教えてください",
+    "step1_desc": "施設と現在ご利用中のプラットフォームについての簡単なアンケートにお答えください",
+    "step2_title": "物件を登録する",
+    "step2_desc": "施設の詳細を送信するか、Booking.com/Airbnbのリンクを貼り付けてください",
+    "step3_title": "一緒に成長する",
+    "step3_desc": "他のホテル経営者を招待し、創設メンバー特典を獲得し、プラットフォームを一緒に作りましょう"
+  },
+  "social_proof": {
+    "title": "{{count}}名以上の先進的なホテル経営者と一緒に",
+    "countries": "参加国数",
+    "properties": "登録施設数",
+    "saved": "試算された節約可能額"
+  },
+  "cta_section": {
+    "title": "予約を自分のものにする準備はできていますか？",
+    "subtitle": "創設メンバーは最低コミッション率を永久に確保できます。枠数限定。",
+    "button": "創設メンバーになる"
+  },
+  "survey": {
+    "title": "クイックアンケート",
+    "subtitle": "あなたが本当に求めるプラットフォームを作るためにご協力ください。所要時間2分。",
+    "progress": "ステップ {{current}} / {{total}}",
+    "q1": "現在どのプラットフォームをご利用ですか？",
+    "q1_options": {
+      "booking": "Booking.com",
+      "airbnb": "Airbnb",
+      "expedia": "Expedia",
+      "agoda": "Agoda",
+      "tripadvisor": "TripAdvisor",
+      "direct": "直接予約のみ",
+      "other": "その他"
+    },
+    "q2": "現在のコミッション率は何%ですか？",
+    "q3": "現在のプラットフォームで最も不満に感じることは何ですか？",
+    "q3_placeholder": "例：高いコミッション、料金設定をコントロールできない、サポートが不十分...",
+    "q4": "Stayloへの関心度は？（1 = 全く興味なし、10 = 非常に興味あり）",
+    "q5": "コミッションが10%以下なら参加しますか？",
+    "q5_yes": "はい、ぜひ",
+    "q5_no": "もう少し詳しく知りたい",
+    "q6": "管理されている客室・ユニット数は？",
+    "next": "次へ",
+    "back": "戻る",
+    "submit": "アンケートを送信",
+    "success_title": "ありがとうございます！",
+    "success_message": "貴重なご意見をいただきありがとうございます。創設メンバーの枠を確保するために、物件をご登録ください。",
+    "success_cta": "物件を登録する"
+  },
+  "property": {
+    "title": "物件を登録する",
+    "subtitle": "施設を登録して、創設メンバーの資格を確保しましょう。",
+    "name": "施設名",
+    "name_placeholder": "例：Sunset Beach Resort",
+    "type": "施設タイプ",
+    "types": {
+      "hotel": "ホテル",
+      "guesthouse": "ゲストハウス",
+      "resort": "リゾート",
+      "villa": "ヴィラ",
+      "hostel": "ホステル"
+    },
+    "country": "国",
+    "country_placeholder": "例：タイ",
+    "city": "都市",
+    "city_placeholder": "例：コパンガン",
+    "booking_link": "Booking.comプロフィールリンク",
+    "booking_link_placeholder": "https://www.booking.com/hotel/...",
+    "airbnb_link": "Airbnbプロフィールリンク",
+    "airbnb_link_placeholder": "https://www.airbnb.com/rooms/...",
+    "rooms": "客室数",
+    "avg_rate": "平均宿泊料金（USD）",
+    "email": "連絡先メールアドレス",
+    "phone": "電話番号（任意）",
+    "submit": "物件を送信",
+    "parsing": "施設情報を取得中...",
+    "parse_success": "施設が見つかりました！以下の詳細をご確認ください。",
+    "success_title": "物件が送信されました！",
+    "success_message": "施設は審査中です。承認されましたらお知らせいたします。",
+    "success_cta": "ダッシュボードへ"
+  },
+  "auth": {
+    "login_title": "おかえりなさい",
+    "login_subtitle": "Stayloアカウントにログイン",
+    "register_title": "Stayloに参加",
+    "register_subtitle": "アカウントを作成して創設メンバーになりましょう",
+    "email": "メールアドレス",
+    "email_placeholder": "you@hotel.com",
+    "password": "パスワード",
+    "password_placeholder": "8文字以上",
+    "full_name": "氏名",
+    "full_name_placeholder": "あなたのお名前",
+    "login_button": "ログイン",
+    "register_button": "アカウントを作成",
+    "no_account": "アカウントをお持ちでないですか？",
+    "have_account": "すでにアカウントをお持ちですか？",
+    "register_link": "新規登録",
+    "login_link": "ログイン",
+    "or": "または",
+    "referred_by": "紹介者: {{code}}"
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "welcome": "ようこそ、{{name}}さん！",
+    "member_since": "{{date}}から創設メンバー",
+    "referral_title": "紹介リンク",
+    "referral_copy": "リンクをコピー",
+    "referral_copied": "コピーしました！",
+    "referral_count": "{{count}}名のホテル経営者を紹介",
+    "referral_rank": "紹介ランキング: #{{rank}}",
+    "properties_title": "あなたの施設",
+    "no_properties": "まだ施設が登録されていません。",
+    "add_property": "施設を追加",
+    "status": {
+      "pending": "保留中",
+      "reviewing": "審査中",
+      "validated": "承認済み",
+      "live": "公開中"
+    },
+    "savings_title": "年間推定節約額",
+    "savings_description": "施設データと従来のプラットフォーム手数料との比較に基づく",
+    "coming_soon": "近日公開",
+    "features": {
+      "booking_engine": "直接予約エンジン",
+      "channel_manager": "チャネルマネージャー",
+      "revenue_share": "収益配分ダッシュボード",
+      "guest_reviews": "ゲストレビュー"
+    },
+    "founding_position": "創設メンバー #{{position}}"
+  },
+  "vision": {
+    "title": "ビジョン",
+    "hero_title": "あなたのものになる予約プラットフォーム",
+    "hero_subtitle": "Stayloは単なるOTAではありません。ホテル経営者、レストラン、体験プロバイダーが共同で所有するプラットフォームです。",
+    "ownership_title": "真のオーナーシップ",
+    "ownership_desc": "創設メンバーはStayloを利用するだけではなく、その一部を所有します。収益はそれを生み出すコミュニティに公正に還元されます。",
+    "roadmap_title": "ロードマップ",
+    "phase1": "泊まる",
+    "phase1_desc": "ホテル、ゲストハウス、リゾート — 低コミッションで公正な予約",
+    "phase2": "食べる",
+    "phase2_desc": "レストラン、フード体験 — TheForkやOpenTableに代わる公正な選択肢",
+    "phase3": "遊ぶ",
+    "phase3_desc": "アクティビティ、ツアー、ウェルネス、ナイトライフ — 体験予約を再定義",
+    "phase4": "飛ぶ",
+    "phase4_desc": "フライトと送迎 — 旅の全行程をカバー",
+    "phase5": "Super App",
+    "phase5_desc": "トークンガバナンスとグローバルプロバイダーオーナーシップを備えた完全なプラットフォーム",
+    "revenue_title": "公正な収益モデル",
+    "revenue_desc": "従来のプラットフォームは15〜25%を請求します。Stayloは一律8% — しかもその一部をコミュニティに還元します。",
+    "founding_title": "創設メンバー特典",
+    "founding_benefits": {
+      "lowest_commission": "最低コミッション率を永久に確保",
+      "revenue_share": "貢献度に応じたプラットフォーム収益の分配",
+      "governance": "プラットフォームの意思決定と機能の優先順位に投票",
+      "early_access": "すべての新機能と新市場への早期アクセス",
+      "badge": "施設リスティングに創設メンバーバッジを表示"
+    },
+    "faq_title": "よくある質問",
+    "faq": {
+      "q1": "StayloはBooking.comとどう違いますか？",
+      "a1": "Stayloはプロバイダーが所有しており、株主のものではありません。コミッションは15〜25%ではなく8%で、収益はコミュニティに還元されます。",
+      "q2": "「オーナーシップ」とは具体的に何を意味しますか？",
+      "a2": "創設メンバーは収益配分とガバナンスの意思決定に参加します。プラットフォームの成長とともに、あなたの持分も成長します。",
+      "q3": "Stayloはいつ旅行者向けにローンチしますか？",
+      "a3": "現在ホテル経営者の受け入れを行っています。500以上の認証済み施設が集まり次第、旅行者向け機能をローンチします。",
+      "q4": "参加費用はかかりますか？",
+      "a4": "アルファ期間中の創設メンバーへの参加は完全無料です。コミッションが発生するのは予約を受けた時のみです。",
+      "q5": "どの地域に対応していますか？",
+      "a5": "東南アジア（タイ、コパンガン）からスタートし、需要に応じてグローバルに展開していきます。"
+    },
+    "cta_title": "未来の一員になりましょう",
+    "cta_button": "創設メンバーになる"
+  },
+  "footer": {
+    "tagline": "すべてを予約。体験を自分のものに。",
+    "made_with": "世界中の独立系ホテル経営者のために、想いを込めて作りました。",
+    "links": {
+      "vision": "ビジョン",
+      "survey": "アンケート",
+      "contact": "お問い合わせ"
+    },
+    "copyright": "© {{year}} Staylo. All rights reserved."
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました。もう一度お試しください。",
+    "required": "この項目は必須です",
+    "save": "保存",
+    "cancel": "キャンセル"
+  }
+}
