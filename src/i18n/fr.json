@@ -22,7 +22,7 @@
     "subtitle": "Déplacez le curseur vers votre taux de commission actuel",
     "current_label": "Vous payez actuellement",
     "staylo_label": "Avec Staylo vous paieriez",
-    "staylo_rate": "8%",
+    "staylo_rate": "10%",
     "savings_label": "Vos économies annuelles",
     "per_year": "/an",
     "rooms_label": "Nombre de chambres",
@@ -178,7 +178,7 @@
     "phase5": "Super App",
     "phase5_desc": "Plateforme complète avec gouvernance par tokens et propriété mondiale par les prestataires",
     "revenue_title": "Un modèle de revenus équitable",
-    "revenue_desc": "Les plateformes traditionnelles facturent 15–25 %. Staylo facture un forfait de 8 % — et en redistribue une partie à la communauté.",
+    "revenue_desc": "Les plateformes traditionnelles facturent 15–25 %. Staylo facture un forfait de 10 % — et en redistribue une partie à la communauté.",
     "founding_title": "Avantages des membres fondateurs",
     "founding_benefits": {
       "lowest_commission": "Taux de commission le plus bas garanti à vie",
@@ -190,7 +190,7 @@
     "faq_title": "Questions fréquentes",
     "faq": {
       "q1": "En quoi Staylo est-il différent de Booking.com ?",
-      "a1": "Staylo appartient à ses prestataires, pas à des actionnaires. Les commissions sont de 8 % au lieu de 15–25 %, et les revenus sont partagés avec la communauté.",
+      "a1": "Staylo appartient à ses prestataires, pas à des actionnaires. Les commissions sont de 10% au lieu de 15–25 %, et les revenus sont partagés avec la communauté.",
       "q2": "Que signifie exactement « propriété » ?",
       "a2": "Les membres fondateurs participent au partage des revenus et aux décisions de gouvernance. À mesure que la plateforme grandit, votre part aussi.",
       "q3": "Quand Staylo sera-t-il disponible pour les voyageurs ?",

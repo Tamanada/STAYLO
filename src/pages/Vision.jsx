@@ -91,7 +91,7 @@ export default function Vision() {
             </div>
             <div className="bg-gradient-to-br from-libre/10 to-libre/20 rounded-2xl p-6 text-center border-2 border-libre/30">
               <p className="text-sm text-gray-500 mb-1">Staylo</p>
-              <p className="text-4xl font-extrabold text-libre">8%</p>
+              <p className="text-4xl font-extrabold text-libre">10%</p>
             </div>
           </div>
         </div>

@@ -71,10 +71,10 @@ export function BreakFree() {
               <div className="space-y-4 mb-6">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-libre/20 rounded-lg flex items-center justify-center shrink-0">
-                    <span className="text-libre font-bold text-xs">8%</span>
+                    <span className="text-libre font-bold text-xs">10%</span>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Flat 8% commission</p>
+                    <p className="text-sm font-medium">Flat 10% commission</p>
                     <p className="text-xs text-white/40">Lowest in the industry. Period.</p>
                   </div>
                 </div>
@@ -101,7 +101,7 @@ export function BreakFree() {
               {/* Savings highlight */}
               <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-5 text-center">
                 <p className="text-white/60 text-xs mb-1">For a 20-room hotel at $80/night</p>
-                <p className="text-3xl font-extrabold text-gradient-gold mb-1">Save $37,960</p>
+                <p className="text-3xl font-extrabold text-gradient-gold mb-1">Save $30,368</p>
                 <p className="text-white/40 text-xs">per year compared to Booking.com</p>
               </div>
             </div>

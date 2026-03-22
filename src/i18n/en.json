@@ -22,7 +22,7 @@
     "subtitle": "Move the slider to your current commission rate",
     "current_label": "You currently pay",
     "staylo_label": "With Staylo you'd pay",
-    "staylo_rate": "8%",
+    "staylo_rate": "10%",
     "savings_label": "Your annual savings",
     "per_year": "/year",
     "rooms_label": "Number of rooms",
@@ -178,7 +178,7 @@
     "phase5": "Super App",
     "phase5_desc": "Full platform with token governance and global provider ownership",
     "revenue_title": "Fair Revenue Model",
-    "revenue_desc": "Traditional platforms charge 15–25%. Staylo charges a flat 8% — and shares a portion back with the community.",
+    "revenue_desc": "Traditional platforms charge 15–25%. Staylo charges a flat 10% — and shares a portion back with the community.",
     "founding_title": "Founding Member Benefits",
     "founding_benefits": {
       "lowest_commission": "Locked-in lowest commission rate forever",
@@ -190,7 +190,7 @@
     "faq_title": "Frequently Asked Questions",
     "faq": {
       "q1": "How is Staylo different from Booking.com?",
-      "a1": "Staylo is owned by its providers, not shareholders. Commissions are 8% instead of 15–25%, and revenue is shared back with the community.",
+      "a1": "Staylo is owned by its providers, not shareholders. Commissions are 10% instead of 15–25%, and revenue is shared back with the community.",
       "q2": "What does 'ownership' mean exactly?",
       "a2": "Founding Members participate in revenue sharing and governance decisions. As the platform grows, so does your stake.",
       "q3": "When will Staylo launch for travelers?",

@@ -10,7 +10,7 @@ export function CommissionCalculator() {
   const [rate, setRate] = useState(80)
   const [occupancy, setOccupancy] = useState(65)
 
-  const stayloRate = 8
+  const stayloRate = 10
   const annualRevenue = rooms * rate * 365 * (occupancy / 100)
   const currentFees = annualRevenue * (commission / 100)
   const stayloFees = annualRevenue * (stayloRate / 100)

@@ -22,7 +22,7 @@
     "subtitle": "拖动滑块到您当前的佣金比例",
     "current_label": "您目前支付",
     "staylo_label": "使用 Staylo 您只需支付",
-    "staylo_rate": "8%",
+    "staylo_rate": "10%",
     "savings_label": "您的年度节省",
     "per_year": "/年",
     "rooms_label": "房间数量",
@@ -178,7 +178,7 @@
     "phase5": "超级应用",
     "phase5_desc": "集成平台，通过代币治理实现全球服务商共同拥有",
     "revenue_title": "公平的收益模式",
-    "revenue_desc": "传统平台收取 15–25%。Staylo 固定收取 8% — 并将部分收益回馈社区。",
+    "revenue_desc": "传统平台收取 15–25%。Staylo 固定收取 10% — 并将部分收益回馈社区。",
     "founding_title": "创始会员权益",
     "founding_benefits": {
       "lowest_commission": "永久锁定最低佣金率",
@@ -190,7 +190,7 @@
     "faq_title": "常见问题",
     "faq": {
       "q1": "Staylo 与 Booking.com 有什么不同？",
-      "a1": "Staylo 由服务提供者拥有，而非股东。佣金仅为 8%，而非 15–25%，收益回馈社区。",
+      "a1": "Staylo 由服务提供者拥有，而非股东。佣金仅为 10%，而非 15–25%，收益回馈社区。",
       "q2": "所有权具体意味着什么？",
       "a2": "创始会员参与收益分配和治理决策。平台越发展，您的份额越大。",
       "q3": "Staylo 何时面向旅行者开放？",

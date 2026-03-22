@@ -22,7 +22,7 @@
     "subtitle": "Bewege den Regler auf deine aktuelle Provisionsrate",
     "current_label": "Du zahlst derzeit",
     "staylo_label": "Mit Staylo würdest du zahlen",
-    "staylo_rate": "8 %",
+    "staylo_rate": "10%",
     "savings_label": "Deine jährliche Ersparnis",
     "per_year": "/Jahr",
     "rooms_label": "Anzahl der Zimmer",
@@ -178,7 +178,7 @@
     "phase5": "Super App",
     "phase5_desc": "Vollständige Plattform mit Token-Governance und globalem Anbieter-Eigentum",
     "revenue_title": "Faires Erlösmodell",
-    "revenue_desc": "Herkömmliche Plattformen verlangen 15–25 %. Staylo berechnet pauschal 8 % — und gibt einen Teil an die Gemeinschaft zurück.",
+    "revenue_desc": "Herkömmliche Plattformen verlangen 15–25 %. Staylo berechnet pauschal 10% — und gibt einen Teil an die Gemeinschaft zurück.",
     "founding_title": "Vorteile als Gründungsmitglied",
     "founding_benefits": {
       "lowest_commission": "Dauerhaft niedrigste Provisionsrate garantiert",

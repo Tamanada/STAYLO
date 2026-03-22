@@ -22,7 +22,7 @@
     "subtitle": "Geser slider ke tarif komisi Anda saat ini",
     "current_label": "Anda saat ini membayar",
     "staylo_label": "Dengan Staylo Anda membayar",
-    "staylo_rate": "8%",
+    "staylo_rate": "10%",
     "savings_label": "Penghematan tahunan Anda",
     "per_year": "/tahun",
     "rooms_label": "Jumlah kamar",
@@ -178,7 +178,7 @@
     "phase5": "Super App",
     "phase5_desc": "Platform lengkap dengan tata kelola token dan kepemilikan penyedia global",
     "revenue_title": "Model Pendapatan yang Adil",
-    "revenue_desc": "Platform tradisional mengenakan biaya 15–25%. Staylo mengenakan tarif tetap 8% — dan membagikan sebagian kembali kepada komunitas.",
+    "revenue_desc": "Platform tradisional mengenakan biaya 15–25%. Staylo mengenakan tarif tetap 10% — dan membagikan sebagian kembali kepada komunitas.",
     "founding_title": "Manfaat Anggota Pendiri",
     "founding_benefits": {
       "lowest_commission": "Tarif komisi terendah yang terkunci selamanya",

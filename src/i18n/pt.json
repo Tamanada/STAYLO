@@ -22,7 +22,7 @@
     "subtitle": "Mova o controle até sua taxa de comissão atual",
     "current_label": "Você paga atualmente",
     "staylo_label": "Com Staylo você pagaria",
-    "staylo_rate": "8%",
+    "staylo_rate": "10%",
     "savings_label": "Sua economia anual",
     "per_year": "/ano",
     "rooms_label": "Número de quartos",
@@ -178,7 +178,7 @@
     "phase5": "Super App",
     "phase5_desc": "Plataforma completa com governança por tokens e propriedade global dos prestadores",
     "revenue_title": "Modelo de Receita Justo",
-    "revenue_desc": "Plataformas tradicionais cobram 15–25%. Staylo cobra apenas 8% — e compartilha uma parte com a comunidade.",
+    "revenue_desc": "Plataformas tradicionais cobram 15–25%. Staylo cobra apenas 10% — e compartilha uma parte com a comunidade.",
     "founding_title": "Benefícios de Membro Fundador",
     "founding_benefits": {
       "lowest_commission": "Taxa de comissão mais baixa garantida para sempre",

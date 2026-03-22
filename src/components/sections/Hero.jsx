@@ -99,7 +99,7 @@ export function Hero() {
                     <ShieldCheck size={16} className="text-libre" />
                     Staylo
                   </span>
-                  <span className="text-libre font-bold">-8%</span>
+                  <span className="text-libre font-bold">-10%</span>
                 </div>
               </div>
 
@@ -108,7 +108,7 @@ export function Hero() {
                 <p className="text-golden text-xs font-medium mb-1">Average annual savings</p>
                 <p className="text-white text-2xl font-extrabold flex items-center justify-center gap-1">
                   <TrendingUp size={20} className="text-libre" />
-                  $37,960
+                  $30,368
                 </p>
               </div>
             </div>
