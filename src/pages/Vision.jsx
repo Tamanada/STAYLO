@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { supabase } from '../lib/supabase'
+import { SketchDecorations } from '../components/ui/SketchDecorations'
 
 const phases = [
   { key: 'phase1', icon: Hotel, gradient: 'from-ocean to-electric', status: 'Alpha', timeline: 'Now' },
@@ -49,7 +50,8 @@ export default function Vision() {
   }, [])
 
   return (
-    <div>
+    <div className="relative">
+      <SketchDecorations lightMode />
       {/* Hero */}
       <section className="bg-gradient-to-br from-deep via-[#0d1f3c] to-ocean/90 text-white py-20 sm:py-28 relative overflow-hidden animate-gradient">
         <div className="absolute inset-0">

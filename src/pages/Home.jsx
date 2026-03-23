@@ -5,15 +5,19 @@ import { HowItWorks } from '../components/sections/HowItWorks'
 import { FoundingMembers } from '../components/sections/FoundingMembers'
 import { CTASection } from '../components/sections/CTASection'
 import { SloganTicker } from '../components/sections/SloganTicker'
+import { SketchDecorations } from '../components/ui/SketchDecorations'
 
 export default function Home() {
   return (
     <>
       <Hero />
       <SloganTicker />
-      <BreakFree />
-      <CommissionCalculator />
-      <HowItWorks />
+      <div className="relative">
+        <SketchDecorations lightMode />
+        <BreakFree />
+        <CommissionCalculator />
+        <HowItWorks />
+      </div>
       <FoundingMembers />
       <CTASection />
     </>
