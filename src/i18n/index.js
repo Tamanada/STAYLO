@@ -25,6 +25,7 @@ const langModules = {
   de: () => import('./de.json'),
   id: () => import('./id.json'),
   my: () => import('./my.json'),
+  it: () => import('./it.json'),
 }
 
 export async function changeLanguage(lang) {

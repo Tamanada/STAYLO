@@ -20,6 +20,7 @@ const languages = [
   { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
   { code: 'id', label: 'Bahasa', flag: '🇮🇩' },
   { code: 'my', label: 'မြန်မာ', flag: '🇲🇲' },
+  { code: 'it', label: 'Italiano', flag: '🇮🇹' },
 ]
 
 export function Navbar() {
