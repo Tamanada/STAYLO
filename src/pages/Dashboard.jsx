@@ -30,6 +30,16 @@ const futureFeatures = [
   { key: 'guest_reviews', icon: MessageSquare },
 ]
 
+function getFoundingTier(position) {
+  if (position <= 10) return { emoji: '🏆', label: 'Pioneer — Top 10', color: 'golden' }
+  if (position <= 50) return { emoji: '💎', label: 'Early Founder — Top 50', color: 'electric' }
+  if (position <= 100) return { emoji: '🥇', label: 'Founding 100', color: 'ocean' }
+  if (position <= 500) return { emoji: '⭐', label: 'Founding 500', color: 'libre' }
+  if (position <= 1000) return { emoji: '🌟', label: 'Founding 1,000', color: 'sunrise' }
+  if (position <= 2000) return { emoji: '🔥', label: 'Builder — Top 2,000', color: 'sunset' }
+  return { emoji: '✅', label: 'Member', color: 'gray' }
+}
+
 export default function Dashboard() {
   const { t } = useTranslation()
   const { user, profile, loading: authLoading } = useAuth()
@@ -38,6 +48,7 @@ export default function Dashboard() {
   const [properties, setProperties] = useState([])
   const [shares, setShares] = useState([])
   const [copied, setCopied] = useState(false)
+  const [memberPosition, setMemberPosition] = useState(1)
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/login')
@@ -52,6 +63,12 @@ export default function Dashboard() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => setProperties(data || []))
+    // Fetch member position (how many users signed up before this user)
+    supabase
+      .from('users')
+      .select('id', { count: 'exact', head: true })
+      .lte('created_at', profile?.created_at || new Date().toISOString())
+      .then(({ count }) => setMemberPosition(count || 1))
     // Fetch shares
     supabase
       .from('shares')
@@ -99,9 +116,15 @@ export default function Dashboard() {
         <p className="text-gray-500 mt-1">
           {t('dashboard.member_since', { date: new Date(profile?.created_at).toLocaleDateString() })}
         </p>
-        <Badge variant="navy" className="mt-2">
-          {t('dashboard.founding_position', { position: 42 })}
-        </Badge>
+        {(() => {
+          const tier = getFoundingTier(memberPosition)
+          return (
+            <div className="mt-3 inline-flex items-center gap-2 bg-gradient-to-r from-deep/5 to-ocean/10 border border-ocean/20 rounded-full px-4 py-2">
+              <span className="text-xl">{tier.emoji}</span>
+              <span className="font-bold text-deep text-sm">{tier.label}</span>
+            </div>
+          )
+        })()}
       </div>
 
       {/* LOI / Shares Status — NEW */}
