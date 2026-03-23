@@ -293,75 +293,100 @@ export default function Survey() {
 
         {/* Step 4: Investment interest */}
         {step === 4 && (
-          <div className="text-center">
-            <div className="w-14 h-14 bg-libre/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Wallet size={28} className="text-libre" />
+          <div>
+            {/* Big emotional header */}
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-libre to-ocean rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg shadow-libre/30">
+                <Wallet size={32} className="text-white" />
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-bold text-deep mb-3">
+                {t('survey.step4_title', 'What if your hotel became a shareholder in Staylo?')}
+              </h3>
+              <p className="text-gray-500 mb-4 max-w-md mx-auto">
+                {t('survey.step4_subtitle', 'Your business, your tool — imagine owning a piece of the platform that works for you.')}
+              </p>
             </div>
-            <h3 className="text-xl font-bold text-deep mb-2">
-              {t('survey.step4_title', 'What if your hotel became a shareholder in Staylo?')}</h3>
-            <p className="text-gray-400 text-sm mb-2">
-              {t('survey.step4_subtitle', 'Your business, your tool — imagine owning a piece of the platform that works for you. How much would you invest?')}
+
+            {/* Commission reminder — big and bold */}
+            <div className="bg-gradient-to-r from-sunset/10 to-electric/10 border-2 border-sunset/30 rounded-2xl p-6 mb-6 text-center">
+              <p className="text-sm text-gray-500 mb-1">{t('survey.step4_hint', 'You currently pay')}</p>
+              <p className="text-4xl font-black text-sunset mb-1">${answers.monthly_commission.toLocaleString()}<span className="text-lg font-medium text-gray-400">/{t('survey.per_month', 'month')}</span></p>
+              <p className="text-sm text-gray-500">{t('survey.step4_hint2', 'in commissions — invest the equivalent of just 1 month.')}</p>
+            </div>
+
+            {/* The question */}
+            <p className="text-center text-lg font-semibold text-deep mb-4">
+              {t('survey.step4_question', 'How much would you invest?')}
             </p>
-            <div className="bg-sunset/5 border border-sunset/20 rounded-xl px-4 py-2 mb-4 inline-block">
-              <p className="text-sm text-gray-500">
-                {t('survey.step4_hint', 'You currently pay')} <span className="font-bold text-sunset">${answers.monthly_commission.toLocaleString()}/{t('survey.per_month', 'month')}</span> {t('survey.step4_hint2', 'in commissions — invest the equivalent of just 1 month.')}
-              </p>
+
+            {/* Investment grid — big cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+              {investmentOptions.map(opt => {
+                const isSelected = answers.intended_investment === opt.value
+                const isClosest = !answers.intended_investment && opt.value === investmentOptions.reduce((prev, curr) =>
+                  Math.abs(curr.value - answers.monthly_commission) < Math.abs(prev.value - answers.monthly_commission) ? curr : prev
+                ).value
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => setAnswers(prev => ({ ...prev, intended_investment: opt.value }))}
+                    className={`relative py-6 px-4 rounded-2xl border-2 text-center transition-all ${
+                      isSelected
+                        ? 'border-libre bg-libre/10 shadow-xl shadow-libre/20 scale-105'
+                        : isClosest
+                          ? 'border-sunset/50 bg-sunset/5'
+                          : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
+                    }`}
+                  >
+                    {isClosest && !answers.intended_investment && (
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-sunset text-white text-[10px] font-bold px-3 py-1 rounded-full">
+                        {t('survey.suggested', 'SUGGESTED')}
+                      </span>
+                    )}
+                    <span className={`text-3xl font-black block ${isSelected ? 'text-libre' : 'text-deep'}`}>
+                      {opt.label}
+                    </span>
+                    <span className={`text-sm mt-1 block ${isSelected ? 'text-libre/70' : 'text-gray-400'}`}>
+                      {opt.desc}
+                    </span>
+                    {isSelected && (
+                      <CheckCircle size={20} className="text-libre mt-3 mx-auto" />
+                    )}
+                  </button>
+                )
+              })}
             </div>
 
-            {/* Governance rule */}
-            <div className="bg-gradient-to-r from-ocean/10 via-electric/10 to-ocean/10 border-2 border-ocean/30 rounded-2xl p-6 mb-8">
-              <div className="flex items-center justify-center gap-3 mb-3">
-                <div className="w-12 h-12 bg-ocean rounded-xl flex items-center justify-center">
-                  <span className="text-white text-2xl font-black">1</span>
-                </div>
-                <span className="text-3xl font-black text-deep">=</span>
-                <div className="w-12 h-12 bg-ocean rounded-xl flex items-center justify-center">
-                  <span className="text-white text-2xl font-black">1</span>
-                </div>
-              </div>
-              <p className="text-xl font-bold text-deep mb-1">{t('survey.governance_title', '1 Hotel = 1 Governance Vote')}</p>
-              <p className="text-sm text-gray-500">
-                {t('survey.governance_desc', 'Regardless of how many shares you hold. Every property gets equal voice.')}
-              </p>
-              <div className="mt-3 flex items-center justify-center gap-6 text-sm">
-                <span className="text-ocean font-semibold">$1,000 / {t('survey.share', 'share')}</span>
-                <span className="text-gray-300">|</span>
-                <span className="text-ocean font-semibold">1–10 {t('survey.shares_per', 'shares per property')}</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {investmentOptions.map(opt => (
-                <button
-                  key={opt.value}
-                  onClick={() => setAnswers(prev => ({ ...prev, intended_investment: opt.value }))}
-                  className={`py-5 px-4 rounded-2xl border-2 text-center transition-all ${
-                    answers.intended_investment === opt.value
-                      ? 'border-libre bg-libre/5 shadow-lg shadow-libre/10'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <span className={`text-2xl font-bold block ${answers.intended_investment === opt.value ? 'text-libre' : 'text-deep'}`}>
-                    {opt.label}
-                  </span>
-                  <span className="text-xs text-gray-400 mt-1 block">{opt.desc}</span>
-                  {answers.intended_investment === opt.value && (
-                    <CheckCircle size={16} className="text-libre mt-2 mx-auto" />
-                  )}
-                </button>
-              ))}
-            </div>
+            {/* ROI summary — only when selected */}
             {answers.intended_investment && (
-              <div className="mt-6 bg-libre/5 border border-libre/20 rounded-2xl p-5">
-                <p className="text-sm text-gray-500">
-                  {t('survey.your_investment', 'Your investment')}: <span className="font-bold text-libre">${answers.intended_investment.toLocaleString()}</span>
-                  {' '}— {t('survey.est_saving', 'Estimated yearly saving')}: <span className="font-bold text-libre">${annualSaving.toLocaleString()}</span>
-                </p>
-                <p className="text-xs text-gray-400 mt-1">
-                  ROI: {(annualSaving / answers.intended_investment).toFixed(1)}x {t('survey.in_year1', 'in year 1')}
-                </p>
+              <div className="bg-gradient-to-r from-libre/5 to-ocean/5 border-2 border-libre/20 rounded-2xl p-6 text-center">
+                <div className="flex items-center justify-center gap-8 mb-3">
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider">{t('survey.your_investment', 'Your investment')}</p>
+                    <p className="text-2xl font-black text-deep">${answers.intended_investment.toLocaleString()}</p>
+                  </div>
+                  <ArrowRight size={24} className="text-libre" />
+                  <div>
+                    <p className="text-xs text-gray-400 uppercase tracking-wider">{t('survey.est_saving', 'Yearly saving')}</p>
+                    <p className="text-2xl font-black text-libre">${annualSaving.toLocaleString()}</p>
+                  </div>
+                </div>
+                <div className="bg-libre/10 rounded-xl py-2 px-4 inline-block">
+                  <span className="text-libre font-black text-lg">ROI: {(annualSaving / answers.intended_investment).toFixed(1)}x</span>
+                  <span className="text-gray-500 text-sm ml-2">{t('survey.in_year1', 'in year 1')}</span>
+                </div>
               </div>
             )}
+
+            {/* Governance note — compact */}
+            <div className="mt-6 flex items-center gap-3 bg-ocean/5 border border-ocean/20 rounded-xl p-4">
+              <div className="w-10 h-10 bg-ocean rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-white font-black">1=1</span>
+              </div>
+              <p className="text-sm text-gray-500">
+                <span className="font-semibold text-deep">{t('survey.governance_title', '1 Hotel = 1 Governance Vote')}</span> — {t('survey.governance_desc', 'Regardless of how many shares you hold. Every property gets equal voice.')}
+              </p>
+            </div>
           </div>
         )}
 
