@@ -684,143 +684,143 @@ function VanGoghFieldLines({ className = '', style = {}, color = 'white', opacit
    ═══════════════════════════════════════════════════════════════ */
 
 const starryElements = [
-  // Large swirling sky — top area
+  // Large swirling sky — top area — BOLD like Van Gogh
   {
     Component: VanGoghSwirlingsky,
-    style: { position: 'absolute', top: '-2%', left: '-3%', width: '55%', maxWidth: '440px' },
-    opacity: 0.16,
+    style: { position: 'absolute', top: '-5%', left: '-5%', width: '70%', maxWidth: '600px' },
+    opacity: 0.45,
   },
-  // Stars — top right
+  // Stars — top right — clearly visible
   {
     Component: VanGoghStars,
-    style: { position: 'absolute', top: '2%', right: '3%', width: '30%', maxWidth: '260px' },
-    opacity: 0.14,
+    style: { position: 'absolute', top: '0%', right: '0%', width: '45%', maxWidth: '400px' },
+    opacity: 0.40,
   },
-  // Crescent moon — upper right
+  // Crescent moon — upper right — iconic
   {
     Component: VanGoghMoon,
-    style: { position: 'absolute', top: '5%', right: '15%', width: '10%', maxWidth: '90px' },
-    opacity: 0.18,
+    style: { position: 'absolute', top: '3%', right: '10%', width: '15%', maxWidth: '140px' },
+    opacity: 0.50,
   },
-  // Cypress tree — bottom left
+  // Cypress tree — bottom left — tall and dramatic
   {
     Component: VanGoghCypress,
-    style: { position: 'absolute', bottom: '0%', left: '5%', width: '8%', maxWidth: '70px' },
-    opacity: 0.16,
+    style: { position: 'absolute', bottom: '-2%', left: '3%', width: '12%', maxWidth: '110px' },
+    opacity: 0.40,
   },
-  // Rolling hills — bottom
+  // Rolling hills — bottom — full width
   {
     Component: VanGoghHills,
-    style: { position: 'absolute', bottom: '2%', left: '10%', width: '60%', maxWidth: '500px' },
-    opacity: 0.12,
+    style: { position: 'absolute', bottom: '0%', left: '0%', width: '100%', maxWidth: '900px' },
+    opacity: 0.30,
   },
-  // Small stars scattered — mid left
+  // Stars scattered — mid left
   {
     Component: VanGoghStars,
-    style: { position: 'absolute', top: '35%', left: '2%', width: '14%', maxWidth: '120px' },
-    opacity: 0.08,
+    style: { position: 'absolute', top: '40%', left: '0%', width: '25%', maxWidth: '200px' },
+    opacity: 0.25,
   },
-  // Small cypress — bottom right
+  // Cypress — bottom right — mirrored
   {
     Component: VanGoghCypress,
-    style: { position: 'absolute', bottom: '0%', right: '8%', width: '5%', maxWidth: '45px', transform: 'scaleX(-1)' },
-    opacity: 0.10,
+    style: { position: 'absolute', bottom: '-2%', right: '5%', width: '10%', maxWidth: '90px', transform: 'scaleX(-1)' },
+    opacity: 0.35,
   },
 ]
 
 const cafeElements = [
-  // Buildings — top left
+  // Buildings — top left — bold
   {
     Component: VanGoghBuildings,
-    style: { position: 'absolute', top: '-1%', left: '-2%', width: '35%', maxWidth: '300px' },
-    opacity: 0.15,
+    style: { position: 'absolute', top: '-3%', left: '-3%', width: '50%', maxWidth: '450px' },
+    opacity: 0.40,
   },
-  // Street lamp — center left
+  // Street lamp — center left — iconic warm glow
   {
     Component: VanGoghLamp,
-    style: { position: 'absolute', top: '10%', left: '35%', width: '10%', maxWidth: '100px' },
-    opacity: 0.16,
+    style: { position: 'absolute', top: '5%', left: '30%', width: '15%', maxWidth: '140px' },
+    opacity: 0.45,
   },
-  // Cobblestones — bottom center
+  // Cobblestones — bottom center — wide
   {
     Component: VanGoghCobblestones,
-    style: { position: 'absolute', bottom: '-2%', left: '25%', width: '30%', maxWidth: '250px' },
-    opacity: 0.13,
+    style: { position: 'absolute', bottom: '-3%', left: '15%', width: '50%', maxWidth: '420px' },
+    opacity: 0.35,
   },
-  // Cafe table — bottom right
+  // Cafe table — bottom right — visible
   {
     Component: VanGoghCafeTable,
-    style: { position: 'absolute', bottom: '5%', right: '8%', width: '14%', maxWidth: '120px' },
-    opacity: 0.14,
+    style: { position: 'absolute', bottom: '3%', right: '5%', width: '20%', maxWidth: '180px' },
+    opacity: 0.38,
   },
-  // Stars above — top right
+  // Stars above — top right — bright
   {
     Component: VanGoghCafeStars,
-    style: { position: 'absolute', top: '3%', right: '5%', width: '28%', maxWidth: '240px' },
-    opacity: 0.13,
+    style: { position: 'absolute', top: '0%', right: '0%', width: '40%', maxWidth: '350px' },
+    opacity: 0.35,
   },
   // Buildings right — top right
   {
     Component: VanGoghBuildings,
-    style: { position: 'absolute', top: '-1%', right: '-2%', width: '30%', maxWidth: '260px', transform: 'scaleX(-1)' },
-    opacity: 0.10,
+    style: { position: 'absolute', top: '-3%', right: '-3%', width: '45%', maxWidth: '400px', transform: 'scaleX(-1)' },
+    opacity: 0.30,
   },
-  // Small lamp — bottom left
+  // Lamp — bottom left
   {
     Component: VanGoghLamp,
-    style: { position: 'absolute', bottom: '15%', left: '4%', width: '5%', maxWidth: '50px' },
-    opacity: 0.08,
+    style: { position: 'absolute', bottom: '10%', left: '3%', width: '8%', maxWidth: '80px' },
+    opacity: 0.30,
   },
 ]
 
 const wheatElements = [
-  // Wheat stalks — bottom spread
+  // Wheat stalks — bottom spread — golden fields
   {
     Component: VanGoghWheat,
-    style: { position: 'absolute', bottom: '-2%', left: '-2%', width: '45%', maxWidth: '380px' },
-    opacity: 0.16,
+    style: { position: 'absolute', bottom: '-3%', left: '-3%', width: '60%', maxWidth: '550px' },
+    opacity: 0.42,
   },
-  // More wheat — bottom right
+  // More wheat — bottom right — mirrored
   {
     Component: VanGoghWheat,
-    style: { position: 'absolute', bottom: '-2%', right: '-2%', width: '40%', maxWidth: '340px', transform: 'scaleX(-1)' },
-    opacity: 0.14,
+    style: { position: 'absolute', bottom: '-3%', right: '-3%', width: '55%', maxWidth: '480px', transform: 'scaleX(-1)' },
+    opacity: 0.38,
   },
-  // Lone cypress — left side
+  // Lone cypress — left side — dramatic
   {
     Component: VanGoghCypress,
-    style: { position: 'absolute', bottom: '8%', left: '20%', width: '7%', maxWidth: '60px' },
-    opacity: 0.18,
+    style: { position: 'absolute', bottom: '5%', left: '18%', width: '12%', maxWidth: '100px' },
+    opacity: 0.45,
   },
-  // Swirling clouds — top
+  // Swirling clouds — top — dramatic sky
   {
     Component: VanGoghClouds,
-    style: { position: 'absolute', top: '-1%', left: '5%', width: '50%', maxWidth: '420px' },
-    opacity: 0.14,
+    style: { position: 'absolute', top: '-3%', left: '0%', width: '65%', maxWidth: '560px' },
+    opacity: 0.38,
   },
-  // Sun — top right
+  // Sun — top right — blazing
   {
     Component: VanGoghSun,
-    style: { position: 'absolute', top: '2%', right: '8%', width: '14%', maxWidth: '120px' },
-    opacity: 0.16,
+    style: { position: 'absolute', top: '0%', right: '5%', width: '20%', maxWidth: '180px' },
+    opacity: 0.50,
   },
-  // Crows — upper area
+  // Crows — upper area — ominous
   {
     Component: VanGoghCrows,
-    style: { position: 'absolute', top: '15%', left: '30%', width: '25%', maxWidth: '200px' },
-    opacity: 0.12,
+    style: { position: 'absolute', top: '12%', left: '25%', width: '35%', maxWidth: '300px' },
+    opacity: 0.35,
   },
-  // Field lines — bottom
+  // Field lines — bottom — wide texture
   {
     Component: VanGoghFieldLines,
-    style: { position: 'absolute', bottom: '15%', left: '0%', width: '100%', maxWidth: '600px' },
-    opacity: 0.10,
+    style: { position: 'absolute', bottom: '10%', left: '0%', width: '100%', maxWidth: '900px' },
+    opacity: 0.28,
   },
-  // Small clouds — top right
+  // Clouds — top right — mirrored
   {
     Component: VanGoghClouds,
-    style: { position: 'absolute', top: '0%', right: '-3%', width: '35%', maxWidth: '280px', transform: 'scaleX(-1)' },
-    opacity: 0.08,
+    style: { position: 'absolute', top: '-2%', right: '-3%', width: '50%', maxWidth: '420px', transform: 'scaleX(-1)' },
+    opacity: 0.25,
   },
 ]
 
