@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { CheckCircle, ArrowRight, ArrowLeft, DollarSign, BarChart3, Wallet, Building2, AlertTriangle } from 'lucide-react'
@@ -69,6 +69,16 @@ export default function Survey() {
   const annualSaving = annualCommission - annualWithStaylo
 
   const stepIcons = [DollarSign, BarChart3, AlertTriangle, Wallet, Building2]
+
+  // Auto-suggest investment based on monthly commission when entering step 4
+  useEffect(() => {
+    if (step === 4 && answers.intended_investment === null) {
+      const closest = investmentOptions.reduce((prev, curr) =>
+        Math.abs(curr.value - answers.monthly_commission) < Math.abs(prev.value - answers.monthly_commission) ? curr : prev
+      )
+      setAnswers(prev => ({ ...prev, intended_investment: closest.value }))
+    }
+  }, [step])
 
   function toggleFrustration(key) {
     setAnswers(prev => ({
@@ -282,16 +292,7 @@ export default function Survey() {
         )}
 
         {/* Step 4: Investment interest */}
-        {step === 4 && (() => {
-          // Auto-suggest: closest investment option to their monthly commission
-          const suggested = answers.intended_investment || investmentOptions.reduce((prev, curr) =>
-            Math.abs(curr.value - answers.monthly_commission) < Math.abs(prev.value - answers.monthly_commission) ? curr : prev
-          ).value
-          if (!answers.intended_investment) {
-            setAnswers(prev => ({ ...prev, intended_investment: suggested }))
-          }
-          return true
-        })() && (
+        {step === 4 && (
           <div className="text-center">
             <div className="w-14 h-14 bg-libre/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Wallet size={28} className="text-libre" />
