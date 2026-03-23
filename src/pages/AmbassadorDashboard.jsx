@@ -64,6 +64,9 @@ export default function AmbassadorDashboard() {
         <p className="text-gray-500 mt-1">
           Ambassador Code: <code className="font-mono bg-gray-100 px-2 py-0.5 rounded text-ocean">{ambassador.referral_code}</code>
         </p>
+        <Link to="/ambassador/guide" className="inline-flex items-center gap-2 mt-3 text-sm text-ocean hover:text-electric transition-colors no-underline">
+          📖 Read the Ambassador Guide
+        </Link>
       </div>
 
       {/* Referral Link */}

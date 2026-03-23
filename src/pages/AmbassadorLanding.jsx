@@ -58,12 +58,19 @@ export default function AmbassadorLanding() {
           <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10">
             Bring hotels to Staylo and earn lifetime passive income on every booking they receive. No cap, no expiry — forever.
           </p>
-          <Link to="/ambassador/register">
-            <Button variant="golden" size="lg" className="min-w-[260px]">
-              Become an Ambassador
-              <ArrowRight size={20} />
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/ambassador/register">
+              <Button variant="golden" size="lg" className="min-w-[260px]">
+                Become an Ambassador
+                <ArrowRight size={20} />
+              </Button>
+            </Link>
+            <Link to="/ambassador/guide">
+              <Button variant="secondary" size="lg" className="min-w-[200px]">
+                Read the Guide
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
