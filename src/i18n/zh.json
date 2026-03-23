@@ -12,6 +12,13 @@
   "hero": {
     "badge": "Alpha 内测 — 仅限创始会员",
     "title": "由酒店业主拥有的预订平台",
+    "eyebrow": "房源业主？",
+    "title_line1": "如果我们成为",
+    "title_line2": "合作伙伴呢？",
+    "highlight": "10% 佣金。真正拥有。您做主。",
+    "trust_line": "免费加入。无合同。随时取消。",
+    "card_title": "摆脱OTA束缚",
+    "card_savings_label": "平均年度节省",
     "subtitle": "不再支付 15–25% 的佣金。Staylo 由房源业主打造，为房源业主服务。公平费率，完全掌控，真正拥有。",
     "cta": "加入我们",
     "secondary_cta": "了解愿景",

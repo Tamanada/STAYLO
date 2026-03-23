@@ -11,11 +11,18 @@
   },
   "hero": {
     "badge": "Alpha — Membres fondateurs uniquement",
+    "eyebrow": "Propriétaire d'hébergement ?",
     "title": "La plateforme de réservation détenue par les hôteliers",
+    "title_line1": "Et si nous devenions",
+    "title_line2": "partenaires ?",
+    "highlight": "10 % de commission. Une vraie propriété. Vos règles.",
     "subtitle": "Arrêtez de payer 15–25 % de commissions. Staylo est conçu pour les propriétaires, par les propriétaires. Des frais justes. Un contrôle total. Une vraie propriété.",
+    "trust_line": "Inscription gratuite. Sans engagement. Annulez à tout moment.",
     "cta": "Rejoindre le mouvement",
     "secondary_cta": "Découvrir la vision",
-    "early_adopters": "{{count}} hôteliers déjà inscrits"
+    "early_adopters": "{{count}} hôteliers déjà inscrits",
+    "card_title": "Libérez-vous des OTA",
+    "card_savings_label": "Économies annuelles moyennes"
   },
   "commission": {
     "title": "Voyez combien vous économiseriez",
