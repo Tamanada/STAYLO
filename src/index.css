@@ -91,6 +91,20 @@ body {
   background-clip: text;
 }
 
+/* Infinite ticker scroll */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-ticker {
+  animation: ticker 30s linear infinite;
+}
+
+.animate-ticker:hover {
+  animation-play-state: paused;
+}
+
 .text-gradient-gold {
   background: linear-gradient(135deg, #FFBE0B, #FF6B35);
   -webkit-background-clip: text;
