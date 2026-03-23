@@ -244,7 +244,13 @@
       "q4": "Is there a cost to join?",
       "a4": "Joining as a Founding Member is completely free during alpha. You only pay commissions when you receive bookings.",
       "q5": "What regions do you support?",
-      "a5": "We're starting in Southeast Asia (Koh Phangan, Thailand) and expanding globally based on demand."
+      "a5": "We're starting in Southeast Asia (Koh Phangan, Thailand) and expanding globally based on demand.",
+      "q6": "How are shares priced and how many can I buy?",
+      "a6": "Alpha shares are $1,000 each. Each property can hold 1 to 10 shares. Alpha price is the lowest — Phase V1 will be $1,500, Phase V2+ at market price.",
+      "q7": "What happens to my investment if Staylo doesn't work out?",
+      "a7": "All funds are held in a dedicated company account with full transparency. If the project doesn't reach critical mass, remaining funds are redistributed to shareholders proportionally.",
+      "q8": "How are dividends distributed?",
+      "a8": "30% of net platform revenue is distributed as dividends, proportional to shares held. Dividends begin once the platform reaches operational profitability."
     },
     "cta_title": "Be part of the future",
     "cta_button": "Become a Founding Member"
