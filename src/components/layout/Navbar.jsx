@@ -5,6 +5,7 @@ import { Menu, X, Globe, ChevronDown } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { changeLanguage } from '../../i18n'
 import { Button } from '../ui/Button'
+import { getFeatureFlags } from '../../pages/admin/AdminSettings'
 
 const languages = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -31,6 +32,7 @@ export function Navbar() {
   const [langOpen, setLangOpen] = useState(false)
 
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0]
+  const flags = getFeatureFlags()
 
   async function handleLangChange(code) {
     await changeLanguage(code)
@@ -52,12 +54,16 @@ export function Navbar() {
             <Link to="/vision" className="text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
               {t('nav.vision')}
             </Link>
-            <Link to="/survey" className="text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
-              {t('nav.survey')}
-            </Link>
-            <Link to="/ambassador" className="text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
-              {t('nav.ambassador', 'Ambassador')}
-            </Link>
+            {flags.survey && (
+              <Link to="/survey" className="text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
+                {t('nav.survey')}
+              </Link>
+            )}
+            {flags.ambassadors && (
+              <Link to="/ambassador" className="text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
+                {t('nav.ambassador', 'Ambassador')}
+              </Link>
+            )}
 
             {/* Language selector */}
             <div className="relative">
@@ -126,12 +132,16 @@ export function Navbar() {
             <Link to="/vision" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
               {t('nav.vision')}
             </Link>
-            <Link to="/survey" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
-              {t('nav.survey')}
-            </Link>
-            <Link to="/ambassador" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
-              {t('nav.ambassador', 'Ambassador')}
-            </Link>
+            {flags.survey && (
+              <Link to="/survey" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
+                {t('nav.survey')}
+              </Link>
+            )}
+            {flags.ambassadors && (
+              <Link to="/ambassador" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
+                {t('nav.ambassador', 'Ambassador')}
+              </Link>
+            )}
             <Link to="/submit" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
               {t('nav.submit')}
             </Link>
