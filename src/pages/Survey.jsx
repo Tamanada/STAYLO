@@ -10,10 +10,12 @@ import { supabase } from '../lib/supabase'
 import { trackEvent, EVENTS } from '../lib/analytics'
 
 const investmentOptions = [
-  { value: 1000, label: '$1,000 (1 share)' },
-  { value: 2000, label: '$2,000 (2 shares)' },
-  { value: 5000, label: '$5,000 (5 shares)' },
-  { value: 10000, label: '$10,000 (10 shares)' },
+  { value: 100, label: '$100', desc: '0.1 share' },
+  { value: 500, label: '$500', desc: '0.5 share' },
+  { value: 1000, label: '$1,000', desc: '1 share' },
+  { value: 2000, label: '$2,000', desc: '2 shares' },
+  { value: 5000, label: '$5,000', desc: '5 shares' },
+  { value: 10000, label: '$10,000', desc: '10 shares' },
 ]
 
 const otaDependencyOptions = ['<30%', '30-50%', '50-70%', '>70%']
@@ -56,7 +58,7 @@ export default function Survey() {
     monthly_commission: 2000,
     ota_dependency: '50-70%',
     frustrations: [],
-    intended_investment: 1000,
+    intended_investment: null,
     property_name: '',
     contact_email: '',
   })
@@ -280,19 +282,30 @@ export default function Survey() {
         )}
 
         {/* Step 4: Investment interest */}
-        {step === 4 && (
+        {step === 4 && (() => {
+          // Auto-suggest: closest investment option to their monthly commission
+          const suggested = answers.intended_investment || investmentOptions.reduce((prev, curr) =>
+            Math.abs(curr.value - answers.monthly_commission) < Math.abs(prev.value - answers.monthly_commission) ? curr : prev
+          ).value
+          if (!answers.intended_investment) {
+            setAnswers(prev => ({ ...prev, intended_investment: suggested }))
+          }
+          return true
+        })() && (
           <div className="text-center">
             <div className="w-14 h-14 bg-libre/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Wallet size={28} className="text-libre" />
             </div>
             <h3 className="text-xl font-bold text-deep mb-2">
               {t('survey.step4_title', 'What if your hotel became a shareholder in Staylo?')}</h3>
-            <p className="text-gray-400 text-sm mb-4">
+            <p className="text-gray-400 text-sm mb-2">
               {t('survey.step4_subtitle', 'Your business, your tool — imagine owning a piece of the platform that works for you. How much would you invest?')}
             </p>
-            <h3 className="text-lg font-semibold text-deep mb-4 hidden">
-              {/* kept for backward compat */}
-            </h3>
+            <div className="bg-sunset/5 border border-sunset/20 rounded-xl px-4 py-2 mb-4 inline-block">
+              <p className="text-sm text-gray-500">
+                {t('survey.step4_hint', 'You currently pay')} <span className="font-bold text-sunset">${answers.monthly_commission.toLocaleString()}/{t('survey.per_month', 'month')}</span> {t('survey.step4_hint2', 'in commissions — invest the equivalent of just 1 month.')}
+              </p>
+            </div>
 
             {/* Governance rule */}
             <div className="bg-gradient-to-r from-ocean/10 via-electric/10 to-ocean/10 border-2 border-ocean/30 rounded-2xl p-6 mb-8">
@@ -316,22 +329,23 @@ export default function Survey() {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {investmentOptions.map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => setAnswers(prev => ({ ...prev, intended_investment: opt.value }))}
-                  className={`w-full py-4 px-6 rounded-2xl border-2 text-left transition-all flex items-center justify-between ${
+                  className={`py-5 px-4 rounded-2xl border-2 text-center transition-all ${
                     answers.intended_investment === opt.value
                       ? 'border-libre bg-libre/5 shadow-lg shadow-libre/10'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <span className={`font-semibold ${answers.intended_investment === opt.value ? 'text-libre' : 'text-deep'}`}>
+                  <span className={`text-2xl font-bold block ${answers.intended_investment === opt.value ? 'text-libre' : 'text-deep'}`}>
                     {opt.label}
                   </span>
+                  <span className="text-xs text-gray-400 mt-1 block">{opt.desc}</span>
                   {answers.intended_investment === opt.value && (
-                    <CheckCircle size={20} className="text-libre" />
+                    <CheckCircle size={16} className="text-libre mt-2 mx-auto" />
                   )}
                 </button>
               ))}
