@@ -55,6 +55,25 @@
     "step3_title": "Berkembang bersama",
     "step3_desc": "Undang sesama pelaku perhotelan, dapatkan manfaat anggota pendiri, dan ikut bentuk platform ini"
   },
+  "giants": {
+    "title_before": "Berhenti memberi makan para",
+    "title_highlight": "raksasa",
+    "subtitle": "OTA tradisional mengambil uang, data, dan kemandirian Anda. Saatnya membebaskan diri.",
+    "old_way": "Cara lama",
+    "old_way_sub": "Rugi di setiap pemesanan",
+    "old_pains": ["Aturan paritas harga", "Biaya tersembunyi", "Tidak ada kontrol merek", "Pembayaran terlambat"],
+    "new_way": "Cara Staylo",
+    "new_way_sub": "Miliki kembali bisnis Anda",
+    "feat1_title": "Komisi tetap 10%",
+    "feat1_desc": "Terendah di industri. Titik.",
+    "feat2_title": "Bagi hasil",
+    "feat2_desc": "Anda mendapat penghasilan dari platform yang Anda bangun",
+    "feat3_title": "Kepemilikan sejati",
+    "feat3_desc": "Ikut memilih keputusan. Bentuk masa depan.",
+    "savings_context": "Untuk hotel 20 kamar seharga $80/malam",
+    "savings_amount": "Hemat $30,368",
+    "savings_compare": "per tahun dibandingkan Booking.com"
+  },
   "social_proof": {
     "title": "Bergabung dengan {{count}}+ pelaku perhotelan berwawasan maju",
     "countries": "Negara terwakili",

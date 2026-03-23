@@ -55,6 +55,25 @@
     "step3_title": "一緒に成長する",
     "step3_desc": "他のホテル経営者を招待し、創設メンバー特典を獲得し、プラットフォームを一緒に作りましょう"
   },
+  "giants": {
+    "title_before": "巨大企業に",
+    "title_highlight": "貢ぐのをやめよう",
+    "subtitle": "従来のOTAはあなたのお金、データ、そして独立性を奪います。今こそ解放される時です。",
+    "old_way": "従来のやり方",
+    "old_way_sub": "予約のたびに損をする",
+    "old_pains": ["料金パリティルール", "隠れた手数料", "ブランド管理ができない", "入金の遅延"],
+    "new_way": "Stayloのやり方",
+    "new_way_sub": "ビジネスを取り戻そう",
+    "feat1_title": "一律10%の手数料",
+    "feat1_desc": "業界最安。それだけです。",
+    "feat2_title": "収益シェア",
+    "feat2_desc": "あなたが築いたプラットフォームから収益を得る",
+    "feat3_title": "真のオーナーシップ",
+    "feat3_desc": "意思決定に投票。未来を形作る。",
+    "savings_context": "20室・$80/泊のホテルの場合",
+    "savings_amount": "$30,368の節約",
+    "savings_compare": "Booking.comと比較して年間"
+  },
   "social_proof": {
     "title": "{{count}}名以上の先進的なホテル経営者と一緒に",
     "countries": "参加国数",

@@ -54,6 +54,25 @@
     "step3_title": "Grow together",
     "step3_desc": "Invite fellow hoteliers, earn founding member benefits, and shape the platform"
   },
+  "giants": {
+    "title_before": "Stop feeding the",
+    "title_highlight": "giants",
+    "subtitle": "Traditional OTAs take your money, your data, and your independence. It's time to break free.",
+    "old_way": "The old way",
+    "old_way_sub": "Lose money every booking",
+    "old_pains": ["Price parity rules", "Hidden fees", "No brand control", "Late payouts"],
+    "new_way": "The Staylo way",
+    "new_way_sub": "Own your business again",
+    "feat1_title": "Flat 10% commission",
+    "feat1_desc": "Lowest in the industry. Period.",
+    "feat2_title": "Revenue sharing",
+    "feat2_desc": "You earn from the platform you build",
+    "feat3_title": "True ownership",
+    "feat3_desc": "Vote on decisions. Shape the future.",
+    "savings_context": "For a 20-room hotel at $80/night",
+    "savings_amount": "Save $30,368",
+    "savings_compare": "per year compared to Booking.com"
+  },
   "social_proof": {
     "title": "Join {{count}}+ forward-thinking hoteliers",
     "countries": "Countries represented",

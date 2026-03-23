@@ -54,6 +54,25 @@
     "step3_title": "Cresciamo insieme",
     "step3_desc": "Invita altri albergatori, ottieni i vantaggi da membro fondatore e contribuisci a plasmare la piattaforma"
   },
+  "giants": {
+    "title_before": "Smetti di nutrire i",
+    "title_highlight": "giganti",
+    "subtitle": "Le OTA tradizionali prendono i tuoi soldi, i tuoi dati e la tua indipendenza. È ora di liberarsi.",
+    "old_way": "Il vecchio modo",
+    "old_way_sub": "Perdi soldi ad ogni prenotazione",
+    "old_pains": ["Regole di parità tariffaria", "Commissioni nascoste", "Nessun controllo del brand", "Pagamenti in ritardo"],
+    "new_way": "Il modo Staylo",
+    "new_way_sub": "Riprendi il controllo della tua attività",
+    "feat1_title": "Commissione fissa del 10%",
+    "feat1_desc": "La più bassa del settore. Punto.",
+    "feat2_title": "Condivisione dei ricavi",
+    "feat2_desc": "Guadagni dalla piattaforma che contribuisci a costruire",
+    "feat3_title": "Vera proprietà",
+    "feat3_desc": "Vota sulle decisioni. Plasma il futuro.",
+    "savings_context": "Per un hotel da 20 camere a $80/notte",
+    "savings_amount": "Risparmia $30,368",
+    "savings_compare": "all'anno rispetto a Booking.com"
+  },
   "social_proof": {
     "title": "Unisciti a {{count}}+ albergatori lungimiranti",
     "countries": "Paesi rappresentati",

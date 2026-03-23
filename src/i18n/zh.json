@@ -55,6 +55,25 @@
     "step3_title": "共同成长",
     "step3_desc": "邀请同行酒店业主，获得创始会员权益，共同塑造平台"
   },
+  "giants": {
+    "title_before": "别再喂养",
+    "title_highlight": "巨头",
+    "subtitle": "传统OTA拿走你的钱、你的数据和你的独立性。是时候摆脱束缚了。",
+    "old_way": "旧方式",
+    "old_way_sub": "每笔预订都在亏钱",
+    "old_pains": ["价格一致性规则", "隐藏费用", "无品牌控制权", "延迟付款"],
+    "new_way": "Staylo方式",
+    "new_way_sub": "重新掌控你的生意",
+    "feat1_title": "固定10%佣金",
+    "feat1_desc": "行业最低，没有之一。",
+    "feat2_title": "收入共享",
+    "feat2_desc": "从你参与建设的平台中获益",
+    "feat3_title": "真正的所有权",
+    "feat3_desc": "参与投票决策，塑造未来。",
+    "savings_context": "以20间客房、$80/晚的酒店为例",
+    "savings_amount": "节省 $30,368",
+    "savings_compare": "与Booking.com相比每年"
+  },
   "social_proof": {
     "title": "加入 {{count}}+ 位有远见的酒店业主",
     "countries": "覆盖国家",

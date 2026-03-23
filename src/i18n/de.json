@@ -55,6 +55,25 @@
     "step3_title": "Gemeinsam wachsen",
     "step3_desc": "Lade andere Hoteliers ein, sichere dir Gründungsmitglieder-Vorteile und gestalte die Plattform mit"
   },
+  "giants": {
+    "title_before": "Hör auf, die",
+    "title_highlight": "Riesen",
+    "subtitle": "Traditionelle OTAs nehmen dein Geld, deine Daten und deine Unabhängigkeit. Zeit, sich zu befreien.",
+    "old_way": "Der alte Weg",
+    "old_way_sub": "Bei jeder Buchung Geld verlieren",
+    "old_pains": ["Preisparitätsregeln", "Versteckte Gebühren", "Keine Markenkontrolle", "Verspätete Auszahlungen"],
+    "new_way": "Der Staylo-Weg",
+    "new_way_sub": "Übernimm wieder die Kontrolle über dein Geschäft",
+    "feat1_title": "Pauschale 10% Provision",
+    "feat1_desc": "Die niedrigste der Branche. Punkt.",
+    "feat2_title": "Umsatzbeteiligung",
+    "feat2_desc": "Du verdienst an der Plattform, die du mitaufbaust",
+    "feat3_title": "Echtes Eigentum",
+    "feat3_desc": "Stimme über Entscheidungen ab. Gestalte die Zukunft.",
+    "savings_context": "Für ein 20-Zimmer-Hotel bei $80/Nacht",
+    "savings_amount": "Spare $30,368",
+    "savings_compare": "pro Jahr im Vergleich zu Booking.com"
+  },
   "social_proof": {
     "title": "Schließe dich {{count}}+ vorausschauenden Hoteliers an",
     "countries": "Vertretene Länder",
