@@ -351,15 +351,17 @@ export default function Survey() {
                 </button>
               ))}
             </div>
-            <div className="mt-6 bg-libre/5 border border-libre/20 rounded-2xl p-5">
-              <p className="text-sm text-gray-500">
-                {t('survey.your_investment', 'Your investment')}: <span className="font-bold text-libre">${answers.intended_investment.toLocaleString()}</span>
-                {' '}— {t('survey.est_saving', 'Estimated yearly saving')}: <span className="font-bold text-libre">${annualSaving.toLocaleString()}</span>
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                ROI: {(annualSaving / answers.intended_investment).toFixed(1)}x {t('survey.in_year1', 'in year 1')}
-              </p>
-            </div>
+            {answers.intended_investment && (
+              <div className="mt-6 bg-libre/5 border border-libre/20 rounded-2xl p-5">
+                <p className="text-sm text-gray-500">
+                  {t('survey.your_investment', 'Your investment')}: <span className="font-bold text-libre">${answers.intended_investment.toLocaleString()}</span>
+                  {' '}— {t('survey.est_saving', 'Estimated yearly saving')}: <span className="font-bold text-libre">${annualSaving.toLocaleString()}</span>
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  ROI: {(annualSaving / answers.intended_investment).toFixed(1)}x {t('survey.in_year1', 'in year 1')}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
