@@ -24,6 +24,15 @@
     "secondary_cta": "Conheça a Visão",
     "early_adopters": "{{count}} hoteleiros já aderiram"
   },
+  "breakfree": {
+    "title": "Eles cobram 25%. Nós cobramos 10%.",
+    "subtitle": "Veja para onde seu dinheiro realmente vai.",
+    "card1_title": "OTAs Tradicionais",
+    "card1_items": ["15–25% de comissão em cada reserva", "Sem controle sobre seus preços", "Seus hóspedes, os dados deles", "Você paga mais, eles lucram mais"],
+    "card2_title": "Com Staylo",
+    "card2_items": ["Comissão fixa de 10% — garantida para sempre", "Controle total sobre suas tarifas e regras", "Seus hóspedes, seus dados, sua marca", "Receita compartilhada com a comunidade"],
+    "verdict": "Os mesmos hóspedes. As mesmas reservas. Mas desta vez, VOCÊ fica com o lucro."
+  },
   "commission": {
     "title": "Veja quanto você economizaria",
     "subtitle": "Mova o controle até sua taxa de comissão atual",

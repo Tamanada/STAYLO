@@ -24,6 +24,15 @@
     "secondary_cta": "Unsere Vision",
     "early_adopters": "{{count}} Hoteliers sind bereits dabei"
   },
+  "breakfree": {
+    "title": "Die verlangen 25 %. Wir verlangen 10 %.",
+    "subtitle": "Sieh, wohin dein Geld wirklich fließt.",
+    "card1_title": "Traditionelle OTAs",
+    "card1_items": ["15–25 % Provision auf jede Buchung", "Keine Kontrolle über deine Preise", "Deine Gäste, deren Daten", "Du zahlst mehr, die verdienen mehr"],
+    "card2_title": "Mit Staylo",
+    "card2_items": ["Pauschal 10 % Provision — für immer festgeschrieben", "Volle Kontrolle über deine Preise und Regeln", "Deine Gäste, deine Daten, deine Marke", "Einnahmen werden mit der Gemeinschaft geteilt"],
+    "verdict": "Dieselben Gäste. Dieselben Buchungen. Aber diesmal behältst DU den Gewinn."
+  },
   "commission": {
     "title": "Berechne deine Ersparnis",
     "subtitle": "Bewege den Regler auf deine aktuelle Provisionsrate",

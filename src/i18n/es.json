@@ -24,6 +24,15 @@
     "card_title": "Libérate de las OTA",
     "card_savings_label": "Ahorro anual promedio"
   },
+  "breakfree": {
+    "title": "Ellos te cobran el 25%. Nosotros, el 10%.",
+    "subtitle": "Mira a dónde va realmente tu dinero.",
+    "card1_title": "OTA tradicionales",
+    "card1_items": ["15–25% de comisión en cada reserva", "Sin control sobre tus precios", "Tus huéspedes, sus datos", "Tú pagas más, ellos ganan más"],
+    "card2_title": "Con Staylo",
+    "card2_items": ["10% de comisión fija — garantizado para siempre", "Control total sobre tus tarifas y reglas", "Tus huéspedes, tus datos, tu marca", "Los ingresos se comparten con la comunidad"],
+    "verdict": "Mismos huéspedes. Mismas reservas. Pero esta vez, TÚ te quedas con las ganancias."
+  },
   "commission": {
     "title": "Mira cuánto ahorrarías",
     "subtitle": "Mueve el control deslizante a tu tasa de comisión actual",

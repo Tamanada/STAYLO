@@ -24,6 +24,15 @@
     "secondary_cta": "Lihat Visi Kami",
     "early_adopters": "{{count}} pelaku perhotelan sudah bergabung"
   },
+  "breakfree": {
+    "title": "Mereka memungut 25%. Kami hanya 10%.",
+    "subtitle": "Lihat ke mana uang Anda sebenarnya pergi.",
+    "card1_title": "OTA Tradisional",
+    "card1_items": ["Komisi 15–25% untuk setiap pemesanan", "Tidak ada kontrol atas harga Anda", "Tamu Anda, data mereka", "Anda bayar lebih, mereka untung lebih"],
+    "card2_title": "Dengan Staylo",
+    "card2_items": ["Komisi tetap 10% — terkunci selamanya", "Kontrol penuh atas tarif dan aturan Anda", "Tamu Anda, data Anda, merek Anda", "Pendapatan dibagikan kembali ke komunitas"],
+    "verdict": "Tamu yang sama. Pemesanan yang sama. Tapi kali ini, ANDA yang menikmati keuntungannya."
+  },
   "commission": {
     "title": "Lihat berapa banyak yang bisa Anda hemat",
     "subtitle": "Geser slider ke tarif komisi Anda saat ini",

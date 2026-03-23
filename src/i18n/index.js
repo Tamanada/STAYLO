@@ -4,14 +4,7 @@ import en from './en.json'
 
 const savedLang = typeof window !== 'undefined' ? localStorage.getItem('staylo-lang') : null
 
-i18n.use(initReactI18next).init({
-  resources: { en: { translation: en } },
-  lng: savedLang || 'en',
-  fallbackLng: 'en',
-  interpolation: { escapeValue: false },
-})
-
-// Lazy-load other languages
+// Lazy-load language modules
 const langModules = {
   fr: () => import('./fr.json'),
   th: () => import('./th.json'),
@@ -28,11 +21,27 @@ const langModules = {
   it: () => import('./it.json'),
 }
 
+i18n.use(initReactI18next).init({
+  resources: { en: { translation: en } },
+  lng: savedLang || 'en',
+  fallbackLng: 'en',
+  interpolation: { escapeValue: false },
+})
+
+// Preload saved language immediately on startup
+if (savedLang && savedLang !== 'en' && langModules[savedLang]) {
+  langModules[savedLang]().then(mod => {
+    i18n.addResourceBundle(savedLang, 'translation', mod.default, true, true)
+    i18n.changeLanguage(savedLang)
+    document.documentElement.dir = savedLang === 'ar' ? 'rtl' : 'ltr'
+  })
+}
+
 export async function changeLanguage(lang) {
   if (lang !== 'en' && !i18n.hasResourceBundle(lang, 'translation')) {
     if (langModules[lang]) {
       const mod = await langModules[lang]()
-      i18n.addResourceBundle(lang, 'translation', mod.default)
+      i18n.addResourceBundle(lang, 'translation', mod.default, true, true)
     }
   }
   await i18n.changeLanguage(lang)
