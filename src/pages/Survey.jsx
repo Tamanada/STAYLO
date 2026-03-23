@@ -285,8 +285,13 @@ export default function Survey() {
             <div className="w-14 h-14 bg-libre/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Wallet size={28} className="text-libre" />
             </div>
-            <h3 className="text-xl font-bold text-deep mb-4">
-              {t('survey.step4_title', 'How much would you invest to own the platform?')}
+            <h3 className="text-xl font-bold text-deep mb-2">
+              {t('survey.step4_title', 'What if your hotel became a shareholder in Staylo?')}</h3>
+            <p className="text-gray-400 text-sm mb-4">
+              {t('survey.step4_subtitle', 'Your business, your tool — imagine owning a piece of the platform that works for you. How much would you invest?')}
+            </p>
+            <h3 className="text-lg font-semibold text-deep mb-4 hidden">
+              {/* kept for backward compat */}
             </h3>
 
             {/* Governance rule */}
