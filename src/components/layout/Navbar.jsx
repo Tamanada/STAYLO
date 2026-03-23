@@ -55,6 +55,9 @@ export function Navbar() {
             <Link to="/survey" className="text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
               {t('nav.survey')}
             </Link>
+            <Link to="/ambassador" className="text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
+              {t('nav.ambassador', 'Ambassador')}
+            </Link>
 
             {/* Language selector */}
             <div className="relative">
@@ -125,6 +128,9 @@ export function Navbar() {
             </Link>
             <Link to="/survey" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
               {t('nav.survey')}
+            </Link>
+            <Link to="/ambassador" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
+              {t('nav.ambassador', 'Ambassador')}
             </Link>
             <Link to="/submit" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
               {t('nav.submit')}

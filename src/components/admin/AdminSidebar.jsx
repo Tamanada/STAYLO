@@ -12,7 +12,8 @@ import {
   LogOut,
   Menu,
   X,
-  Shield
+  Shield,
+  Handshake
 } from 'lucide-react'
 
 const navItems = [
@@ -21,6 +22,7 @@ const navItems = [
   { to: '/admin/properties', icon: Building2, label: 'Properties' },
   { to: '/admin/surveys', icon: ClipboardList, label: 'Surveys' },
   { to: '/admin/referrals', icon: Share2, label: 'Referrals' },
+  { to: '/admin/ambassadors', icon: Handshake, label: 'Ambassadors' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
 ]
 

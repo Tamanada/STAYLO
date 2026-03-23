@@ -11,11 +11,15 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import LOI from './pages/LOI'
+import AmbassadorLanding from './pages/AmbassadorLanding'
+import AmbassadorRegister from './pages/AmbassadorRegister'
+import AmbassadorDashboard from './pages/AmbassadorDashboard'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminProperties from './pages/admin/AdminProperties'
 import AdminSurveys from './pages/admin/AdminSurveys'
 import AdminReferrals from './pages/admin/AdminReferrals'
+import AdminAmbassadors from './pages/admin/AdminAmbassadors'
 import AdminSettings from './pages/admin/AdminSettings'
 
 export default function App() {
@@ -30,6 +34,7 @@ export default function App() {
             <Route path="properties" element={<AdminProperties />} />
             <Route path="surveys" element={<AdminSurveys />} />
             <Route path="referrals" element={<AdminReferrals />} />
+            <Route path="ambassadors" element={<AdminAmbassadors />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
@@ -45,6 +50,9 @@ export default function App() {
             <Route path="/join" element={<Register />} />
             <Route path="/loi" element={<LOI />} />
             <Route path="/loi/:ref" element={<LOI />} />
+            <Route path="/ambassador" element={<AmbassadorLanding />} />
+            <Route path="/ambassador/register" element={<AmbassadorRegister />} />
+            <Route path="/ambassador/dashboard" element={<AmbassadorDashboard />} />
           </Route>
         </Routes>
       </AuthProvider>
