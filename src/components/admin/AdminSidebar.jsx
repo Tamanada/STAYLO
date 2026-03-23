@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { getFeatureFlags } from '../../pages/admin/AdminSettings'
 import {
   LayoutDashboard,
   Users,
@@ -16,13 +17,13 @@ import {
   Handshake
 } from 'lucide-react'
 
-const navItems = [
+const allNavItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/admin/properties', icon: Building2, label: 'Properties' },
-  { to: '/admin/surveys', icon: ClipboardList, label: 'Surveys' },
-  { to: '/admin/referrals', icon: Share2, label: 'Referrals' },
-  { to: '/admin/ambassadors', icon: Handshake, label: 'Ambassadors' },
+  { to: '/admin/surveys', icon: ClipboardList, label: 'Surveys', flag: 'survey' },
+  { to: '/admin/referrals', icon: Share2, label: 'Referrals', flag: 'referrals' },
+  { to: '/admin/ambassadors', icon: Handshake, label: 'Ambassadors', flag: 'ambassadors' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
 ]
 
@@ -30,6 +31,17 @@ export function AdminSidebar() {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [flags, setFlags] = useState(getFeatureFlags())
+
+  // Re-check flags when localStorage changes (from Settings page)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setFlags(getFeatureFlags())
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const navItems = allNavItems.filter(item => !item.flag || flags[item.flag])
 
   async function handleSignOut() {
     await signOut()

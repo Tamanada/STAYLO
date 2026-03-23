@@ -1,6 +1,54 @@
-import { Settings, Shield, Database, Globe } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Settings, Shield, Database, Globe, ToggleLeft, ToggleRight, Handshake, Sparkles, MapPin } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
+
+const FEATURE_FLAGS_KEY = 'staylo_feature_flags'
+
+const defaultFlags = {
+  ambassadors: true,
+  splash: true,
+  survey: true,
+  referrals: true,
+}
+
+function useFeatureFlags() {
+  const [flags, setFlags] = useState(() => {
+    try {
+      const saved = localStorage.getItem(FEATURE_FLAGS_KEY)
+      return saved ? { ...defaultFlags, ...JSON.parse(saved) } : defaultFlags
+    } catch { return defaultFlags }
+  })
+
+  useEffect(() => {
+    localStorage.setItem(FEATURE_FLAGS_KEY, JSON.stringify(flags))
+    // Also store in Supabase for cross-device sync
+    async function syncFlags() {
+      try {
+        await supabase.from('app_settings').upsert({
+          key: 'feature_flags',
+          value: JSON.stringify(flags)
+        }, { onConflict: 'key' })
+      } catch(e) { /* localStorage fallback */ }
+    }
+    syncFlags()
+  }, [flags])
+
+  const toggle = (key) => setFlags(prev => ({ ...prev, [key]: !prev[key] }))
+
+  return { flags, toggle }
+}
+
+// Export for use in other components
+export function getFeatureFlags() {
+  try {
+    const saved = localStorage.getItem(FEATURE_FLAGS_KEY)
+    return saved ? { ...defaultFlags, ...JSON.parse(saved) } : defaultFlags
+  } catch { return defaultFlags }
+}
 
 export default function AdminSettings() {
+  const { flags, toggle } = useFeatureFlags()
+
   return (
     <div>
       <div className="mb-6">
@@ -96,6 +144,91 @@ export default function AdminSettings() {
           </div>
           <p className="text-xs text-gray-400 mt-3">13 languages supported</p>
         </div>
+      </div>
+
+      {/* Feature Toggles */}
+      <div className="mt-8 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="p-2 rounded-xl bg-electric/10 text-electric">
+            <Sparkles size={20} />
+          </div>
+          <div>
+            <h3 className="font-semibold text-deep">Feature Toggles</h3>
+            <p className="text-xs text-gray-400">Enable or disable sections of the app</p>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {/* Ambassadors Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Handshake size={20} className={flags.ambassadors ? 'text-ocean' : 'text-gray-300'} />
+              <div>
+                <p className="font-medium text-deep text-sm">Ambassador Program</p>
+                <p className="text-xs text-gray-400">Show ambassador pages, navbar link, and admin tab</p>
+              </div>
+            </div>
+            <button onClick={() => toggle('ambassadors')} className="cursor-pointer">
+              {flags.ambassadors
+                ? <ToggleRight size={36} className="text-ocean" />
+                : <ToggleLeft size={36} className="text-gray-300" />
+              }
+            </button>
+          </div>
+
+          {/* Splash Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <MapPin size={20} className={flags.splash ? 'text-golden' : 'text-gray-300'} />
+              <div>
+                <p className="font-medium text-deep text-sm">Splash Page (Koh Phangan)</p>
+                <p className="text-xs text-gray-400">Show the /splash exclusivity page</p>
+              </div>
+            </div>
+            <button onClick={() => toggle('splash')} className="cursor-pointer">
+              {flags.splash
+                ? <ToggleRight size={36} className="text-golden" />
+                : <ToggleLeft size={36} className="text-gray-300" />
+              }
+            </button>
+          </div>
+
+          {/* Survey Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Database size={20} className={flags.survey ? 'text-libre' : 'text-gray-300'} />
+              <div>
+                <p className="font-medium text-deep text-sm">Survey</p>
+                <p className="text-xs text-gray-400">Show the survey link in navbar</p>
+              </div>
+            </div>
+            <button onClick={() => toggle('survey')} className="cursor-pointer">
+              {flags.survey
+                ? <ToggleRight size={36} className="text-libre" />
+                : <ToggleLeft size={36} className="text-gray-300" />
+              }
+            </button>
+          </div>
+
+          {/* Referrals Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Shield size={20} className={flags.referrals ? 'text-sunrise' : 'text-gray-300'} />
+              <div>
+                <p className="font-medium text-deep text-sm">Referral System</p>
+                <p className="text-xs text-gray-400">Show referral links and tracking</p>
+              </div>
+            </div>
+            <button onClick={() => toggle('referrals')} className="cursor-pointer">
+              {flags.referrals
+                ? <ToggleRight size={36} className="text-sunrise" />
+                : <ToggleLeft size={36} className="text-gray-300" />
+              }
+            </button>
+          </div>
+        </div>
+
+        <p className="text-xs text-gray-400 mt-4 italic">Changes take effect immediately across the app.</p>
       </div>
 
       {/* Future features */}
