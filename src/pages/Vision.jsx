@@ -196,10 +196,11 @@ export default function Vision() {
             <h3 className="text-lg font-bold text-deep text-center mb-6">10% Commission Breakdown</h3>
             <div className="space-y-4">
               {[
-                { label: 'Platform Operations', pct: 40, color: 'bg-ocean', desc: 'Tech, servers, support, payment processing' },
-                { label: 'Shareholder Dividends', pct: 30, color: 'bg-libre', desc: 'Distributed to all founding partners' },
-                { label: 'Growth & Marketing', pct: 20, color: 'bg-sunset', desc: 'Traveler acquisition, SEO, partnerships' },
-                { label: 'Reserve Fund', pct: 10, color: 'bg-golden', desc: 'Emergency fund & future development' },
+                { label: '🤝 Ambassador Reward', pct: 20, color: 'bg-electric', desc: '2% lifetime passive income for the person who brought the hotel to Staylo' },
+                { label: '⚙️ Platform Operations', pct: 40, color: 'bg-ocean', desc: 'Tech, servers, support, payment processing' },
+                { label: '💰 Shareholder Dividends', pct: 20, color: 'bg-libre', desc: 'Distributed to all founding partners proportionally' },
+                { label: '📈 Growth & Marketing', pct: 15, color: 'bg-sunset', desc: 'Traveler acquisition, SEO, partnerships' },
+                { label: '🛡️ Reserve Fund', pct: 5, color: 'bg-golden', desc: 'Emergency fund & future development' },
               ].map(item => (
                 <div key={item.label}>
                   <div className="flex justify-between items-center mb-1">
@@ -212,6 +213,102 @@ export default function Vision() {
                   <p className="text-xs text-gray-400">{item.desc}</p>
                 </div>
               ))}
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      {/* Ambassador Program */}
+      <section className="py-16 bg-gradient-to-br from-electric/5 via-white to-sunset/5">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <Badge variant="golden" className="mb-4">New</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">Become a Staylo Ambassador</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">You stay at a hotel on Staylo. You love the experience. Now you can earn from it — forever.</p>
+          </div>
+
+          {/* How it works — 3 steps */}
+          <div className="grid sm:grid-cols-3 gap-6 mb-12">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-electric to-ocean rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <span className="text-3xl font-black text-white">1</span>
+              </div>
+              <h3 className="font-bold text-deep mb-2">Stay & Discover</h3>
+              <p className="text-sm text-gray-500">You visit a hotel on Staylo and discover a platform that truly respects its partners.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-sunset to-sunrise rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <span className="text-3xl font-black text-white">2</span>
+              </div>
+              <h3 className="font-bold text-deep mb-2">Spread the Word</h3>
+              <p className="text-sm text-gray-500">You tell other hotel owners about Staylo. If they join, you become their Ambassador.</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-libre to-libre/70 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <span className="text-3xl font-black text-white">3</span>
+              </div>
+              <h3 className="font-bold text-deep mb-2">Earn for Life</h3>
+              <p className="text-sm text-gray-500">You receive 2% of all online sales from every hotel you brought to Staylo. Forever.</p>
+            </div>
+          </div>
+
+          {/* The deal — big card */}
+          <Card className="p-8 sm:p-10 max-w-3xl mx-auto border-2 border-electric/20 bg-gradient-to-br from-white to-electric/5">
+            <div className="text-center mb-6">
+              <p className="text-6xl sm:text-7xl font-black text-gradient mb-2">2%</p>
+              <p className="text-xl font-bold text-deep">Lifetime Passive Income</p>
+              <p className="text-gray-500 text-sm mt-1">On every booking, every service, every sale from the hotels you brought to Staylo.</p>
+            </div>
+
+            {/* Contract triangle */}
+            <div className="bg-deep/5 rounded-2xl p-6 mb-6">
+              <h4 className="font-bold text-deep text-center mb-4">The Tripartite Contract</h4>
+              <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Globe size={24} className="text-ocean" />
+                  </div>
+                  <p className="text-xs font-semibold text-deep">STAYLO</p>
+                  <p className="text-[10px] text-gray-400">Platform</p>
+                </div>
+                <div className="text-gray-300 text-2xl">⟷</div>
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-libre/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Hotel size={24} className="text-libre" />
+                  </div>
+                  <p className="text-xs font-semibold text-deep">HOTEL</p>
+                  <p className="text-[10px] text-gray-400">Partner</p>
+                </div>
+                <div className="text-gray-300 text-2xl">⟷</div>
+                <div className="text-center">
+                  <div className="w-14 h-14 bg-sunset/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <Users size={24} className="text-sunset" />
+                  </div>
+                  <p className="text-xs font-semibold text-deep">AMBASSADOR</p>
+                  <p className="text-[10px] text-gray-400">Business Bringer</p>
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 text-center mt-4">A binding agreement between all three parties. The Ambassador's 2% is guaranteed as long as the hotel stays on Staylo.</p>
+            </div>
+
+            {/* Example calculation */}
+            <div className="bg-libre/5 border border-libre/20 rounded-2xl p-5">
+              <h4 className="font-semibold text-deep text-sm mb-3 text-center">Example: You bring a 20-room hotel</h4>
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <p className="text-xs text-gray-400">Hotel annual revenue</p>
+                  <p className="text-lg font-bold text-deep">$438,000</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Your 2% share</p>
+                  <p className="text-lg font-bold text-libre">$8,760</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-400">Per year, for life</p>
+                  <p className="text-lg font-bold text-golden">♾️ Passive</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-gray-400 text-center mt-3">Based on 20 rooms × $60/night × 365 days × 100% online booking rate. Actual results vary.</p>
             </div>
           </Card>
         </div>
