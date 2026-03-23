@@ -40,37 +40,51 @@ export function AuthProvider({ children }) {
     })
     if (authError) throw authError
 
+    // Profile creation is handled by a database trigger on auth.users
+    // We store metadata in the signUp call so the trigger can use it
+    // After signup, we wait briefly for the trigger then fetch the profile
     if (authData.user) {
-      const { generateReferralCode } = await import('../lib/referral')
-      const myCode = generateReferralCode()
+      // Try to fetch/create profile — trigger may have already created it
+      // If email confirmation is disabled, session is immediate
+      const session = authData.session
+      if (session) {
+        const { generateReferralCode } = await import('../lib/referral')
+        const myCode = generateReferralCode()
 
-      let referrerId = null
-      if (referralCode) {
-        const { data: referrer } = await supabase
-          .from('users')
-          .select('id')
-          .eq('referral_code', referralCode)
-          .single()
-        referrerId = referrer?.id
-      }
+        let referrerId = null
+        if (referralCode) {
+          const { data: referrer } = await supabase
+            .from('users')
+            .select('id')
+            .eq('referral_code', referralCode)
+            .single()
+          referrerId = referrer?.id
+        }
 
-      const { error: profileError } = await supabase.from('users').insert({
-        id: authData.user.id,
-        email,
-        full_name: fullName,
-        referral_code: myCode,
-        referred_by: referrerId,
-      })
-      if (profileError) throw profileError
-
-      if (referrerId) {
-        await supabase.from('referrals').insert({
-          referrer_id: referrerId,
-          referred_id: authData.user.id,
+        const { error: profileError } = await supabase.from('users').insert({
+          id: authData.user.id,
+          email,
+          full_name: fullName,
+          referral_code: myCode,
+          referred_by: referrerId,
         })
-      }
+        // Ignore duplicate key error (trigger may have created it)
+        if (profileError && !profileError.message.includes('duplicate')) throw profileError
 
-      await fetchProfile(authData.user.id)
+        // Update profile with name if trigger created it without name
+        if (profileError?.message.includes('duplicate')) {
+          await supabase.from('users').update({ full_name: fullName }).eq('id', authData.user.id)
+        }
+
+        if (referrerId) {
+          await supabase.from('referrals').insert({
+            referrer_id: referrerId,
+            referred_id: authData.user.id,
+          })
+        }
+
+        await fetchProfile(authData.user.id)
+      }
     }
 
     return authData

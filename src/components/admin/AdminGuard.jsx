@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').filter(Boolean)
 
 // Hardcoded fallback for alpha
-const DEFAULT_ADMINS = ['admin@staylo.app', 'david@staylo.app']
+const DEFAULT_ADMINS = ['admin@staylo.app', 'david@staylo.app', 'david.dancingelephant@gmail.com']
 
 const allowedEmails = [...new Set([...DEFAULT_ADMINS, ...ADMIN_EMAILS])]
 
