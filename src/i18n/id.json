@@ -100,8 +100,20 @@
       "other": "Lainnya"
     },
     "q2": "Berapa persen komisi yang Anda bayar saat ini?",
-    "q3": "Apa keluhan terbesar Anda terhadap platform saat ini?",
-    "q3_placeholder": "mis. Komisi tinggi, tidak bisa kontrol harga, dukungan buruk...",
+    "q3": "Apa yang paling membuat Anda frustrasi dengan platform saat ini?",
+    "q3_subtitle": "Pilih semua yang sesuai — jujur saja, kami membangun ini untuk Anda.",
+    "q3_options": {
+      "high_commissions": "Komisi tinggi (15-25% per pemesanan)",
+      "price_parity": "Aturan paritas harga — tidak bisa menawarkan harga lebih rendah di situs sendiri",
+      "no_guest_data": "Tidak ada akses ke data tamu — OTA memiliki pelanggan Anda",
+      "unfair_ranking": "Algoritma ranking tidak adil — bayar lebih untuk terlihat",
+      "forced_discounts": "Diskon dan promosi yang dipaksakan (Genius, penawaran mobile...)",
+      "late_payouts": "Pembayaran terlambat atau tidak dapat diandalkan",
+      "no_brand": "Tidak ada visibilitas merek — tamu mengira mereka memesan di Booking, bukan di tempat Anda",
+      "poor_support": "Dukungan mitra yang buruk — mustahil menghubungi manusia",
+      "overbooking": "Overbooking dan masalah sinkronisasi antar platform",
+      "total_dependency": "Ketergantungan total — tidak bisa bertahan tanpa mereka"
+    },
     "q4": "Seberapa tertarik Anda dengan Staylo? (1 = tidak sama sekali, 10 = sangat)",
     "q5": "Apakah Anda akan bergabung jika komisi 10% atau kurang?",
     "q5_yes": "Ya, tentu saja",

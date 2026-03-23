@@ -100,8 +100,20 @@
       "other": "Otra"
     },
     "q2": "¿Qué porcentaje de comisión pagas actualmente?",
-    "q3": "¿Cuál es tu mayor frustración con las plataformas actuales?",
-    "q3_placeholder": "Ej.: Comisiones altas, sin control sobre precios, soporte deficiente...",
+    "q3": "¿Qué es lo que más te frustra de las plataformas actuales?",
+    "q3_subtitle": "Selecciona todo lo que aplique — sé honesto, estamos construyendo esto para ti.",
+    "q3_options": {
+      "high_commissions": "Comisiones altas (15-25% por reserva)",
+      "price_parity": "Reglas de paridad de precios — no puedes ofrecer precios más bajos en tu propio sitio",
+      "no_guest_data": "Sin acceso a datos de huéspedes — la OTA es dueña de tus clientes",
+      "unfair_ranking": "Algoritmo de ranking injusto — paga más para ser visible",
+      "forced_discounts": "Descuentos y promociones forzados (Genius, ofertas móviles...)",
+      "late_payouts": "Pagos tardíos o poco confiables",
+      "no_brand": "Sin visibilidad de marca — los huéspedes creen que reservaron con Booking, no contigo",
+      "poor_support": "Soporte al socio deficiente — imposible contactar a un humano",
+      "overbooking": "Sobreventas y problemas de sincronización entre plataformas",
+      "total_dependency": "Dependencia total — no puedes sobrevivir sin ellos"
+    },
     "q4": "¿Qué tan interesado estás en Staylo? (1 = nada, 10 = mucho)",
     "q5": "¿Te unirías si las comisiones fueran del 10% o menos?",
     "q5_yes": "Sí, definitivamente",
