@@ -35,11 +35,14 @@ export default function Vision() {
   const pctSold = ((sharesSold / totalAlphaShares) * 100).toFixed(1)
 
   useEffect(() => {
-    // Try to get actual count from survey answers
     async function fetchShares() {
       try {
-        const { count } = await supabase.from('users').select('*', { count: 'exact', head: true })
-        if (count && count > 0) setSharesSold(count)
+        // Get total shares from the shares table (sum of quantity)
+        const { data } = await supabase.from('shares').select('quantity')
+        if (data && data.length > 0) {
+          const total = data.reduce((sum, s) => sum + (s.quantity || 0), 0)
+          if (total > 0) setSharesSold(total)
+        }
       } catch (e) { /* use default */ }
     }
     fetchShares()
