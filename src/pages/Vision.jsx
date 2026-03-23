@@ -225,9 +225,9 @@ export default function Vision() {
       <section className="py-16 bg-gradient-to-br from-electric/5 via-white to-sunset/5">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <Badge variant="golden" className="mb-4">{t('vision.ambassador_badge', 'New')}</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.ambassador_title', 'Become a Staylo Ambassador')}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.ambassador_subtitle', 'You stay at a hotel on Staylo. You love the experience. Now you can earn from it — forever.')}</p>
+            <Badge variant="golden" className="mb-4">{t('vision.marketing_badge', 'Our Marketing Team')}</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.marketing_title', 'You Are Our Marketing')}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.marketing_subtitle', 'No ads. No agency. Staylo grows through people who believe in it. Every traveler, every hotelier can become part of the team — and earn for life.')}</p>
           </div>
 
           {/* How it works — 3 steps */}
