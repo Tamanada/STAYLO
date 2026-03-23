@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Copy, Check, Plus, Lock, Building2, Users, TrendingUp, Zap, Star, MessageSquare, FileText, Shield, Coins } from 'lucide-react'
+import { Copy, Check, Plus, Lock, Building2, Users, TrendingUp, Zap, Star, MessageSquare, FileText, Shield, Coins, Share2, Trophy, Send } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
@@ -181,27 +181,156 @@ export default function Dashboard() {
         </div>
       </Card>
 
-      <div className="grid sm:grid-cols-2 gap-6 mb-8">
-        {/* Referral card */}
-        <Card className="p-6">
-          <h3 className="font-semibold text-deep mb-3">{t('dashboard.referral_title')}</h3>
-          <div className="flex items-center gap-2 bg-cream rounded-lg p-3 mb-3">
+      {/* Referral card — full-width, animated */}
+      <style>{`
+        @keyframes borderRotate {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes pulseGlow {
+          0%, 100% { box-shadow: 0 0 15px rgba(27, 111, 232, 0.3), 0 0 30px rgba(29, 158, 117, 0.15); }
+          50% { box-shadow: 0 0 25px rgba(27, 111, 232, 0.5), 0 0 50px rgba(29, 158, 117, 0.25); }
+        }
+        @keyframes bounceShare {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-4px) rotate(-8deg); }
+          50% { transform: translateY(0) rotate(0deg); }
+          75% { transform: translateY(-2px) rotate(5deg); }
+        }
+        @keyframes copyPop {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.3); }
+          100% { transform: scale(1); }
+        }
+        .referral-border {
+          background: linear-gradient(270deg, #1B6FE8, #1D9E75, #FF6B35, #1B6FE8, #1D9E75);
+          background-size: 400% 400%;
+          animation: borderRotate 4s ease infinite, pulseGlow 2.5s ease-in-out infinite;
+        }
+        .share-icon-bounce {
+          animation: bounceShare 2s ease-in-out infinite;
+        }
+        .copy-pop {
+          animation: copyPop 0.3s ease-out;
+        }
+      `}</style>
+      <div className="referral-border rounded-2xl p-[3px] mb-8">
+        <div className="bg-white rounded-[13px] p-6 sm:p-8">
+          <div className="flex items-start gap-4 mb-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-ocean/10 to-libre/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <Share2 size={28} className="text-ocean share-icon-bounce" />
+            </div>
+            <div>
+              <h3 className="text-xl sm:text-2xl font-bold text-deep leading-tight">
+                🌴 Share with your hotelier friends on Koh Phangan!
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Every friend who joins earns you a higher rank as Founding Partner. Help us build the community!
+              </p>
+            </div>
+          </div>
+
+          {/* Referral counter */}
+          <div className="flex items-center gap-2 mb-5">
+            {referralCount > 0 ? (
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-full px-4 py-1.5">
+                <Trophy size={16} className="text-amber-500" />
+                <span className="text-sm font-semibold text-amber-700">
+                  You've referred {referralCount} hotelier{referralCount !== 1 ? 's' : ''}
+                </span>
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-1.5">
+                <Users size={16} className="text-gray-400" />
+                <span className="text-sm text-gray-500">
+                  You've referred 0 hoteliers — be the first to share!
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Referral link */}
+          <div className="flex items-center gap-2 bg-gradient-to-r from-ocean/5 to-libre/5 border border-ocean/20 rounded-xl p-3 mb-5">
             <code className="text-sm text-ocean flex-1 truncate font-mono">
               {referralLink || 'Loading...'}
             </code>
             <button
               onClick={copyReferralLink}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className={`p-2 rounded-lg hover:bg-white/80 transition-all ${copied ? 'copy-pop' : ''}`}
             >
-              {copied ? <Check size={16} className="text-libre" /> : <Copy size={16} className="text-gray-400" />}
+              {copied ? <Check size={18} className="text-libre" /> : <Copy size={18} className="text-gray-400" />}
             </button>
           </div>
-          <p className="text-sm text-gray-500">
-            {t('dashboard.referral_count', { count: referralCount })}
-          </p>
-        </Card>
 
-        {/* Savings estimate */}
+          {/* Social sharing buttons */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* WhatsApp */}
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(
+                `Hey! I just joined Staylo — a new booking platform where hoteliers pay only 10% commission instead of 22% on Booking.com. We actually OWN the platform! 🌴 Check it out: ${referralLink || ''}`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1da851] text-white font-semibold rounded-xl py-3 px-4 transition-all hover:scale-[1.03] active:scale-95 text-sm"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 flex-shrink-0">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                <path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.506 3.932 1.395 5.607L0 24l6.598-1.361A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-1.875 0-3.656-.506-5.216-1.44l-.375-.222-3.878.8.832-3.832-.243-.387A9.723 9.723 0 012.25 12c0-5.376 4.374-9.75 9.75-9.75S21.75 6.624 21.75 12 17.376 21.75 12 21.75z"/>
+              </svg>
+              WhatsApp
+            </a>
+            {/* Line */}
+            <a
+              href={`https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(referralLink || '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#06C755] hover:bg-[#05a847] text-white font-semibold rounded-xl py-3 px-4 transition-all hover:scale-[1.03] active:scale-95 text-sm"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 flex-shrink-0">
+                <path d="M12 2C6.48 2 2 5.82 2 10.5c0 3.69 3.08 6.79 7.24 7.85.28.06.66.19.76.43.09.22.06.56.03.78l-.12.73c-.04.22-.17.86.75.47.93-.39 4.99-2.94 6.81-5.04C19.41 13.47 22 12.13 22 10.5 22 5.82 17.52 2 12 2zm-3.35 11.15H6.73a.46.46 0 01-.46-.46V8.73c0-.25.21-.46.46-.46s.46.21.46.46v3.5h1.42c.25 0 .46.21.46.46s-.2.46-.46.46zm1.98-.46a.46.46 0 01-.92 0V8.73a.46.46 0 01.92 0v3.96zm4.56 0c0 .19-.12.36-.29.43a.46.46 0 01-.51-.1l-2.01-2.73v2.4a.46.46 0 01-.92 0V8.73c0-.19.12-.36.29-.43a.46.46 0 01.51.1l2.01 2.73v-2.4a.46.46 0 01.92 0v3.96zm3.06-2.54a.46.46 0 010 .92h-1.42v.7h1.42a.46.46 0 010 .92h-1.88a.46.46 0 01-.46-.46V8.73c0-.25.21-.46.46-.46h1.88a.46.46 0 010 .92h-1.42v.7h1.42a.46.46 0 010 .26z"/>
+              </svg>
+              Line
+            </a>
+            {/* Facebook */}
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink || '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#1877F2] hover:bg-[#0d65d9] text-white font-semibold rounded-xl py-3 px-4 transition-all hover:scale-[1.03] active:scale-95 text-sm"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 flex-shrink-0">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              Facebook
+            </a>
+            {/* Copy Link */}
+            <button
+              onClick={copyReferralLink}
+              className={`flex items-center justify-center gap-2 border-2 font-semibold rounded-xl py-3 px-4 transition-all hover:scale-[1.03] active:scale-95 text-sm ${
+                copied
+                  ? 'bg-libre/10 border-libre text-libre'
+                  : 'bg-white border-gray-200 text-gray-600 hover:border-ocean hover:text-ocean'
+              }`}
+            >
+              {copied ? (
+                <>
+                  <Check size={18} className="copy-pop" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy size={18} />
+                  Copy Link
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Savings estimate */}
+      <div className="mb-8">
         <Card className="p-6">
           <h3 className="font-semibold text-deep mb-3">{t('dashboard.savings_title')}</h3>
           <p className="text-3xl font-bold text-libre mb-1">

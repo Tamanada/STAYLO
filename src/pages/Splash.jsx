@@ -9,6 +9,65 @@ import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { supabase } from '../lib/supabase'
 
+/* ── Inline SVG components for tropical decorations ── */
+
+/** Palm tree silhouette — CSS-only via SVG path */
+function PalmTree({ className = '', style = {} }) {
+  return (
+    <svg viewBox="0 0 120 200" fill="currentColor" className={className} style={style} xmlns="http://www.w3.org/2000/svg">
+      {/* trunk */}
+      <path d="M56 200 C58 140 54 100 60 80 C66 100 62 140 64 200Z" opacity="0.9" />
+      {/* left fronds */}
+      <path d="M60 80 C40 60 10 55 2 40 C20 50 45 48 60 70Z" opacity="0.7" />
+      <path d="M58 75 C30 45 5 50 0 30 C18 40 40 35 58 65Z" opacity="0.5" />
+      <path d="M56 70 C35 30 15 25 8 10 C25 22 42 25 56 58Z" opacity="0.6" />
+      {/* right fronds */}
+      <path d="M60 80 C80 60 110 55 118 40 C100 50 75 48 60 70Z" opacity="0.7" />
+      <path d="M62 75 C90 45 115 50 120 30 C102 40 80 35 62 65Z" opacity="0.5" />
+      <path d="M64 70 C85 30 105 25 112 10 C95 22 78 25 64 58Z" opacity="0.6" />
+      {/* coconuts */}
+      <circle cx="55" cy="78" r="4" opacity="0.8" />
+      <circle cx="65" cy="76" r="4" opacity="0.8" />
+      <circle cx="60" cy="82" r="3.5" opacity="0.7" />
+    </svg>
+  )
+}
+
+/** Reusable wave divider SVG */
+function WaveDivider({ fill = 'var(--color-cream, #FFFCF5)', flip = false, className = '' }) {
+  return (
+    <div className={`w-full overflow-hidden leading-[0] ${flip ? 'rotate-180' : ''} ${className}`}>
+      <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full block" preserveAspectRatio="none" style={{ height: '60px' }}>
+        <path
+          d="M0 50C120 80 240 90 360 75C480 60 600 30 720 25C840 20 960 40 1080 55C1200 70 1320 80 1440 60V100H0V50Z"
+          fill={fill}
+        />
+        <path
+          d="M0 65C160 85 320 95 480 80C640 65 800 40 960 35C1120 30 1280 50 1440 70V100H0V65Z"
+          fill={fill}
+          opacity="0.5"
+        />
+      </svg>
+    </div>
+  )
+}
+
+/** Subtle palm-leaf background pattern as inline SVG data URI */
+const palmLeafPattern = `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 40 C30 25 10 15 5 5 C18 15 30 20 40 35Z' fill='%23000' opacity='0.02'/%3E%3Cpath d='M40 40 C50 25 70 15 75 5 C62 15 50 20 40 35Z' fill='%23000' opacity='0.02'/%3E%3Cpath d='M40 40 C25 50 15 70 5 75 C15 62 20 50 35 40Z' fill='%23000' opacity='0.015'/%3E%3Cpath d='M40 40 C55 50 65 70 75 75 C65 62 60 50 45 40Z' fill='%23000' opacity='0.015'/%3E%3C/svg%3E")`
+
+/** Floating tropical emoji accent */
+function FloatingEmoji({ emoji, className = '', style = {} }) {
+  return (
+    <span
+      className={`absolute select-none pointer-events-none ${className}`}
+      style={{ fontSize: '1.5rem', ...style }}
+      aria-hidden="true"
+    >
+      {emoji}
+    </span>
+  )
+}
+
 export default function Splash() {
   const [partnerCount, setPartnerCount] = useState(12)
 
@@ -30,18 +89,38 @@ export default function Splash() {
     <div>
       {/* ==================== SECTION 1: HERO ==================== */}
       <section className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Animated background */}
+        {/* Animated background with warm tropical tones */}
         <div className="absolute inset-0 bg-gradient-to-br from-deep via-[#0d1f3c] to-[#0F3460]">
           <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-golden/20 rounded-full blur-3xl animate-float" />
           <div className="absolute top-[40%] right-[10%] w-80 h-80 bg-ocean/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
           <div className="absolute bottom-[15%] left-[30%] w-72 h-72 bg-electric/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
           <div className="absolute bottom-[5%] right-[5%] w-96 h-96 bg-sunset/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '0.5s' }} />
+          {/* Warm sunset glow at the horizon */}
+          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#FF6B35]/8 via-[#FFBE0B]/5 to-transparent" />
           {/* Grid pattern */}
           <div className="absolute inset-0 opacity-[0.03]" style={{
             backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
             backgroundSize: '60px 60px'
           }} />
         </div>
+
+        {/* Palm tree silhouettes on sides */}
+        <PalmTree
+          className="absolute bottom-12 left-2 sm:left-6 w-20 sm:w-28 text-white/[0.04] animate-float"
+          style={{ animationDelay: '0.5s' }}
+        />
+        <PalmTree
+          className="absolute bottom-16 right-4 sm:right-10 w-16 sm:w-24 text-white/[0.05] animate-float"
+          style={{ animationDelay: '1.5s', transform: 'scaleX(-1)' }}
+        />
+        <PalmTree
+          className="absolute bottom-20 left-[15%] w-12 sm:w-16 text-white/[0.03] animate-float hidden sm:block"
+          style={{ animationDelay: '2.5s' }}
+        />
+
+        {/* Floating tropical accents in hero */}
+        <FloatingEmoji emoji="🥥" className="animate-float hidden sm:block" style={{ top: '18%', left: '8%', fontSize: '1.2rem', opacity: 0.3, animationDelay: '3s' }} />
+        <FloatingEmoji emoji="🌺" className="animate-float hidden sm:block" style={{ top: '25%', right: '12%', fontSize: '1rem', opacity: 0.25, animationDelay: '4s' }} />
 
         <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center text-white">
           {/* Badge */}
@@ -50,10 +129,12 @@ export default function Splash() {
             <span className="text-golden">Round 1 — Founding Partners</span>
           </div>
 
-          {/* Big dramatic title */}
+          {/* Big dramatic title with palm emoji accents */}
           <h1 className="text-5xl sm:text-6xl lg:text-8xl font-extrabold leading-[1.05] mb-6 tracking-tight">
+            <span className="inline-block" aria-hidden="true" style={{ fontSize: '0.5em', verticalAlign: 'middle', marginRight: '0.2em', opacity: 0.7 }}>🌴</span>
             Koh Phangan{' '}
             <span className="text-gradient">First.</span>
+            <span className="inline-block" aria-hidden="true" style={{ fontSize: '0.5em', verticalAlign: 'middle', marginLeft: '0.2em', opacity: 0.7 }}>🌴</span>
           </h1>
 
           {/* Subtitle */}
@@ -82,20 +163,24 @@ export default function Splash() {
           </Link>
         </div>
 
-        {/* Bottom wave */}
+        {/* Bottom wave — layered for depth */}
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-            <path d="M0 40C240 70 480 80 720 60C960 40 1200 10 1440 30V80H0V40Z" fill="var(--color-cream, #F5F3EF)" />
+          <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full" preserveAspectRatio="none" style={{ height: '80px' }}>
+            <path d="M0 60C180 85 360 90 540 75C720 60 900 35 1080 30C1260 25 1380 45 1440 55V100H0V60Z" fill="var(--color-cream, #FFFCF5)" opacity="0.4" />
+            <path d="M0 40C240 70 480 80 720 60C960 40 1200 10 1440 30V100H0V40Z" fill="var(--color-cream, #FFFCF5)" />
           </svg>
         </div>
       </section>
 
       {/* ==================== SECTION 2: WHY KOH PHANGAN FIRST ==================== */}
-      <section className="py-16 sm:py-24">
+      <section className="relative py-16 sm:py-24" style={{ backgroundImage: palmLeafPattern, backgroundSize: '80px 80px' }}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 relative">
             <Badge variant="golden" className="mb-4">Why this island?</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">Why Koh Phangan First</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">
+              <span aria-hidden="true" style={{ marginRight: '0.3em', opacity: 0.7 }}>🏝️</span>
+              Why Koh Phangan First
+            </h2>
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">
               The perfect launchpad for a hospitality revolution.
             </p>
@@ -135,18 +220,31 @@ export default function Splash() {
         </div>
       </section>
 
+      {/* ── Wave divider: light → dark ── */}
+      <WaveDivider fill="var(--color-deep-navy, #1A1A2E)" />
+
       {/* ==================== SECTION 3: THE DEAL ==================== */}
-      <section className="py-16 sm:py-24 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      <section className="relative py-16 sm:py-24 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white overflow-hidden">
+        {/* Subtle tropical grid texture */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: 'linear-gradient(rgba(255,190,11,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,190,11,.3) 1px, transparent 1px)',
+          backgroundSize: '50px 50px'
+        }} />
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center mb-10">
             <Badge variant="golden" className="mb-4">The Deal</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">What Round 1 Partners Get</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3">
+              <span aria-hidden="true" style={{ marginRight: '0.3em', opacity: 0.7 }}>☀️</span>
+              What Round 1 Partners Get
+            </h2>
             <p className="text-white/50 max-w-xl mx-auto">Exclusive terms. Never offered again at this price.</p>
           </div>
 
           <div className="bg-white/5 backdrop-blur-sm border border-golden/20 rounded-3xl p-8 sm:p-10 relative overflow-hidden">
-            {/* Glow effect */}
+            {/* Glow effect — warm sunset tint */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-golden/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-sunrise/8 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
 
             {/* Share price — big */}
             <div className="relative text-center mb-8">
@@ -229,8 +327,11 @@ export default function Splash() {
         </div>
       </section>
 
+      {/* ── Wave divider: dark → light ── */}
+      <WaveDivider fill="var(--color-cream, #FFFCF5)" flip />
+
       {/* ==================== SECTION 4: WHO CAN APPLY ==================== */}
-      <section className="py-16 sm:py-24">
+      <section className="relative py-16 sm:py-24" style={{ backgroundImage: palmLeafPattern, backgroundSize: '80px 80px' }}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">Who Can Apply</h2>
@@ -274,12 +375,24 @@ export default function Splash() {
         </div>
       </section>
 
+      {/* ── Wave divider: light → dark ── */}
+      <WaveDivider fill="var(--color-deep-navy, #1A1A2E)" />
+
       {/* ==================== SECTION 5: COUNTDOWN / URGENCY ==================== */}
-      <section className="py-16 sm:py-24 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      <section className="relative py-16 sm:py-24 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white overflow-hidden">
+        {/* Subtle golden grid texture */}
+        <div className="absolute inset-0 opacity-[0.02]" style={{
+          backgroundImage: 'linear-gradient(rgba(255,190,11,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,190,11,.3) 1px, transparent 1px)',
+          backgroundSize: '50px 50px'
+        }} />
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center mb-10">
             <Badge variant="sunset" className="mb-4">Limited Availability</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">The Clock Is Ticking</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3">
+              <span aria-hidden="true" style={{ marginRight: '0.3em', opacity: 0.7 }}>🌊</span>
+              The Clock Is Ticking
+            </h2>
             <p className="text-white/50 max-w-xl mx-auto">
               Round 1 closes when 100 properties have joined — or July 2026, whichever comes first.
             </p>
@@ -319,14 +432,26 @@ export default function Splash() {
         </div>
       </section>
 
+      {/* ── Wave divider: dark → light for CTA ── */}
+      <WaveDivider fill="var(--color-cream, #FFFCF5)" flip />
+
       {/* ==================== SECTION 6: BOTTOM CTA ==================== */}
       <section className="py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="relative bg-gradient-to-br from-electric via-sunset to-sunrise rounded-3xl p-10 sm:p-14 text-center text-white overflow-hidden animate-gradient">
-            {/* Decorative elements */}
+          <div className="relative bg-gradient-to-br from-[#FF6B35] via-sunset to-sunrise rounded-3xl p-10 sm:p-14 text-center text-white overflow-hidden animate-gradient">
+            {/* Decorative elements — tropical mix */}
             <Sparkles size={24} className="absolute top-6 left-8 text-golden/50 animate-float" />
             <Sparkles size={18} className="absolute bottom-8 right-10 text-white/30 animate-float" style={{ animationDelay: '1s' }} />
             <Sparkles size={14} className="absolute top-12 right-20 text-golden/30 animate-float" style={{ animationDelay: '1.5s' }} />
+
+            {/* Palm tree silhouettes in CTA card */}
+            <PalmTree
+              className="absolute -bottom-4 -left-2 w-20 text-white/[0.07] hidden sm:block"
+            />
+            <PalmTree
+              className="absolute -bottom-4 -right-2 w-16 text-white/[0.06] hidden sm:block"
+              style={{ transform: 'scaleX(-1)' }}
+            />
 
             <h2 className="relative text-3xl sm:text-4xl font-extrabold mb-4">
               Are you a Koh Phangan hotelier?
