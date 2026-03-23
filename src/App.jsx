@@ -20,7 +20,7 @@ import AdminSettings from './pages/admin/AdminSettings'
 
 export default function App() {
   return (
-    <BrowserRouter basename="/STAYLO">
+    <BrowserRouter>
       <AuthProvider>
         <Routes>
           {/* Admin routes — separate layout, no public Navbar/Footer */}
