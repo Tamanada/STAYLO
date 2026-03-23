@@ -199,12 +199,32 @@ export default function Survey() {
             <div className="w-14 h-14 bg-libre/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <Wallet size={28} className="text-libre" />
             </div>
-            <h3 className="text-xl font-bold text-deep mb-2">
+            <h3 className="text-xl font-bold text-deep mb-4">
               How much would you invest to own the platform?
             </h3>
-            <p className="text-gray-400 text-sm mb-8">
-              $1,000 per share. 1 property = 1 vote regardless of shares.
-            </p>
+
+            {/* Governance rule — VERY prominent */}
+            <div className="bg-gradient-to-r from-ocean/10 via-electric/10 to-ocean/10 border-2 border-ocean/30 rounded-2xl p-6 mb-8">
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-ocean rounded-xl flex items-center justify-center">
+                  <span className="text-white text-2xl font-black">1</span>
+                </div>
+                <span className="text-3xl font-black text-deep">=</span>
+                <div className="w-12 h-12 bg-ocean rounded-xl flex items-center justify-center">
+                  <span className="text-white text-2xl font-black">1</span>
+                </div>
+              </div>
+              <p className="text-xl font-bold text-deep mb-1">1 Hotel = 1 Governance Vote</p>
+              <p className="text-sm text-gray-500">
+                Regardless of how many shares you hold. Every property gets equal voice.
+              </p>
+              <div className="mt-3 flex items-center justify-center gap-6 text-sm">
+                <span className="text-ocean font-semibold">$1,000 / share</span>
+                <span className="text-gray-300">|</span>
+                <span className="text-ocean font-semibold">1–10 shares per property</span>
+              </div>
+            </div>
+
             <div className="space-y-3">
               {investmentOptions.map(opt => (
                 <button

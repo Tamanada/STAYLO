@@ -99,7 +99,7 @@ export function Hero() {
                 </div>
               </div>
 
-              <h3 className="text-white text-xl font-bold text-center mb-6">Break free from OTAs</h3>
+              <h3 className="text-white text-xl font-bold text-center mb-6">{t('hero.card_title')}</h3>
 
               {/* Before / After comparison */}
               <div className="space-y-3">
@@ -127,7 +127,7 @@ export function Hero() {
 
               {/* Savings callout */}
               <div className="mt-5 bg-gradient-to-r from-golden/20 to-sunrise/20 border border-golden/30 rounded-xl px-4 py-3 text-center">
-                <p className="text-golden text-xs font-medium mb-1">Average annual savings</p>
+                <p className="text-golden text-xs font-medium mb-1">{t('hero.card_savings_label')}</p>
                 <p className="text-white text-2xl font-extrabold flex items-center justify-center gap-1">
                   <TrendingUp size={20} className="text-libre" />
                   $30,368

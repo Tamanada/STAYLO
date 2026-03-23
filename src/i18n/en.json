@@ -19,7 +19,9 @@
     "cta": "Break Free — Join Now",
     "secondary_cta": "See the Vision",
     "early_adopters": "{{count}} hoteliers already joined",
-    "trust_line": "Free to join. No contracts. Cancel anytime."
+    "trust_line": "Free to join. No contracts. Cancel anytime.",
+    "card_title": "Break free from OTAs",
+    "card_savings_label": "Average annual savings"
   },
   "commission": {
     "title": "See how much you'd save",
