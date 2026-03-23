@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Copy, Check, Plus, Lock, Building2, Users, TrendingUp, Zap, Star, MessageSquare } from 'lucide-react'
+import { Copy, Check, Plus, Lock, Building2, Users, TrendingUp, Zap, Star, MessageSquare, FileText, Shield, Coins } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
@@ -14,6 +14,13 @@ const statusColors = {
   reviewing: 'orange',
   validated: 'blue',
   live: 'green',
+}
+
+const loiStatusConfig = {
+  not_signed: { label: 'Not signed', color: 'gray', icon: FileText },
+  signed: { label: 'LOI Signed', color: 'blue', icon: Check },
+  contract_pending: { label: 'Contract pending', color: 'orange', icon: Shield },
+  confirmed: { label: 'Partner confirmed', color: 'green', icon: Star },
 }
 
 const futureFeatures = [
@@ -29,6 +36,7 @@ export default function Dashboard() {
   const { referralCount, referralLink, referralCode } = useReferral()
   const navigate = useNavigate()
   const [properties, setProperties] = useState([])
+  const [shares, setShares] = useState([])
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -37,12 +45,20 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!user) return
+    // Fetch properties
     supabase
       .from('properties')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => setProperties(data || []))
+    // Fetch shares
+    supabase
+      .from('shares')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .then(({ data }) => setShares(data || []))
   }, [user])
 
   function copyReferralLink() {
@@ -60,10 +76,22 @@ export default function Dashboard() {
   const avgRate = properties.length
     ? properties.reduce((sum, p) => sum + Number(p.avg_nightly_rate || 0), 0) / properties.length
     : 0
-  const estimatedSavings = totalRooms * avgRate * 365 * 0.65 * 0.10 // 10% savings estimate
+  const estimatedSavings = totalRooms * avgRate * 365 * 0.65 * 0.07 // saving = 17% - 10% = 7%
+  const totalShares = shares.reduce((sum, s) => sum + (s.quantity || 0), 0)
+  const hasSignedLOI = shares.some(s => s.loi_signed)
+  const loiStatus = shares.some(s => s.payment_confirmed)
+    ? 'confirmed'
+    : shares.some(s => s.contract_signed)
+      ? 'contract_pending'
+      : hasSignedLOI
+        ? 'signed'
+        : 'not_signed'
+
+  const StatusConfig = loiStatusConfig[loiStatus]
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
+      {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-deep">
           {t('dashboard.welcome', { name: profile?.full_name || 'Member' })}
@@ -75,6 +103,60 @@ export default function Dashboard() {
           {t('dashboard.founding_position', { position: 42 })}
         </Badge>
       </div>
+
+      {/* LOI / Shares Status — NEW */}
+      <Card className="p-6 mb-6 border-2 border-ocean/20 bg-gradient-to-r from-ocean/5 to-transparent">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-ocean/10 rounded-2xl flex items-center justify-center">
+              <Coins size={24} className="text-ocean" />
+            </div>
+            <div>
+              <h3 className="font-bold text-deep text-lg">Founding Partner Status</h3>
+              <div className="flex items-center gap-2 mt-1">
+                <Badge variant={StatusConfig.color}>{StatusConfig.label}</Badge>
+                {totalShares > 0 && (
+                  <span className="text-sm text-gray-500">
+                    {totalShares} share{totalShares > 1 ? 's' : ''} (${(totalShares * 1000).toLocaleString()})
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          {loiStatus === 'not_signed' && (
+            <Link to="/loi">
+              <Button size="sm">
+                <FileText size={16} />
+                Sign LOI
+              </Button>
+            </Link>
+          )}
+        </div>
+        {/* Progress steps */}
+        <div className="mt-5 pt-5 border-t border-ocean/10">
+          <div className="flex items-center justify-between">
+            {['LOI Signed', 'Contract Signed', 'Payment', 'Partner'].map((label, i) => {
+              const stepDone = i === 0 ? hasSignedLOI
+                : i === 1 ? shares.some(s => s.contract_signed)
+                  : i === 2 ? shares.some(s => s.payment_confirmed)
+                    : shares.some(s => s.payment_confirmed)
+              return (
+                <div key={label} className="flex items-center gap-2 flex-1">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+                    stepDone ? 'bg-libre text-white' : 'bg-gray-100 text-gray-400'
+                  }`}>
+                    {stepDone ? '✓' : i + 1}
+                  </div>
+                  <span className={`text-xs hidden sm:block ${stepDone ? 'text-libre font-medium' : 'text-gray-400'}`}>
+                    {label}
+                  </span>
+                  {i < 3 && <div className={`flex-1 h-0.5 mx-2 ${stepDone ? 'bg-libre' : 'bg-gray-200'}`} />}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </Card>
 
       <div className="grid sm:grid-cols-2 gap-6 mb-8">
         {/* Referral card */}

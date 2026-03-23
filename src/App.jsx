@@ -10,6 +10,7 @@ import Vision from './pages/Vision'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import LOI from './pages/LOI'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminProperties from './pages/admin/AdminProperties'
@@ -42,6 +43,8 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/join" element={<Register />} />
+            <Route path="/loi" element={<LOI />} />
+            <Route path="/loi/:ref" element={<LOI />} />
           </Route>
         </Routes>
       </AuthProvider>

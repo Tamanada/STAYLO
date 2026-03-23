@@ -40,7 +40,7 @@ create policy "Anyone can look up referral codes"
 -- ═══════════════════════════════════════
 -- PROPERTIES TABLE
 -- ═══════════════════════════════════════
-create type property_type as enum ('hotel', 'guesthouse', 'resort', 'villa', 'hostel');
+create type property_type as enum ('hotel', 'guesthouse', 'resort', 'villa', 'hostel', 'restaurant', 'activity');
 create type property_status as enum ('pending', 'reviewing', 'validated', 'live');
 
 create table public.properties (
@@ -54,6 +54,7 @@ create table public.properties (
   airbnb_link text,
   room_count integer not null default 1,
   avg_nightly_rate decimal(10,2) not null default 0,
+  monthly_commission decimal(10,2),
   contact_email text not null,
   contact_phone text,
   status property_status not null default 'pending',
@@ -81,11 +82,16 @@ create table public.survey_answers (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references public.users(id),
   platforms_used text[] not null default '{}',
+  monthly_commission decimal(10,2),
   commission_pct decimal(5,2),
+  ota_dependency text check (ota_dependency in ('<30%','30-50%','50-70%','>70%')),
   biggest_frustration text,
   interest_score integer check (interest_score between 1 and 10),
   would_join boolean,
+  intended_investment decimal(10,2),
   room_count integer,
+  property_name text,
+  contact_email text,
   created_at timestamptz default now()
 );
 
@@ -136,9 +142,49 @@ create policy "Anyone can join waitlist"
   with check (true);
 
 -- ═══════════════════════════════════════
+-- SHARES TABLE
+-- ═══════════════════════════════════════
+create table public.shares (
+  id uuid primary key default uuid_generate_v4(),
+  user_id uuid references public.users(id) on delete cascade not null,
+  property_id uuid references public.properties(id) on delete cascade not null,
+  quantity integer not null default 1 check (quantity between 1 and 10),
+  price_per_share decimal(10,2) not null default 1000,
+  total_amount decimal(10,2) generated always as (quantity * price_per_share) stored,
+  loi_signed boolean not null default false,
+  loi_signed_at timestamptz,
+  contract_signed boolean not null default false,
+  payment_confirmed boolean not null default false,
+  reference_code text unique,
+  created_at timestamptz default now()
+);
+
+alter table public.shares enable row level security;
+
+create policy "Users can read own shares"
+  on public.shares for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own shares"
+  on public.shares for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own shares"
+  on public.shares for update
+  using (auth.uid() = user_id);
+
+-- Admin can read all shares
+create policy "Admin can read all shares"
+  on public.shares for select
+  using (true);
+
+-- ═══════════════════════════════════════
 -- INDEXES
 -- ═══════════════════════════════════════
 create index idx_users_referral_code on public.users(referral_code);
 create index idx_properties_user_id on public.properties(user_id);
 create index idx_referrals_referrer_id on public.referrals(referrer_id);
 create index idx_survey_user_id on public.survey_answers(user_id);
+create index idx_shares_user_id on public.shares(user_id);
+create index idx_shares_property_id on public.shares(property_id);
+create index idx_shares_reference_code on public.shares(reference_code);
