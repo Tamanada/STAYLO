@@ -70,6 +70,11 @@ export default function Survey() {
 
   const stepIcons = [DollarSign, BarChart3, AlertTriangle, Wallet, Building2]
 
+  // Scroll to top on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }, [step])
+
   // Auto-suggest investment based on monthly commission when entering step 4
   useEffect(() => {
     if (step === 4 && answers.intended_investment === null) {
