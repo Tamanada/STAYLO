@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Copy, Hotel, DollarSign, Users, CheckCircle, ArrowRight } from 'lucide-react'
+import { Copy, Hotel, DollarSign, Users, CheckCircle, ArrowRight, Download } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
@@ -69,10 +70,10 @@ export default function AmbassadorDashboard() {
         </Link>
       </div>
 
-      {/* Referral Link */}
+      {/* Referral Link + QR Code */}
       <Card className="p-6 mb-6">
         <h3 className="font-semibold text-deep mb-3">Your Referral Link</h3>
-        <div className="flex items-center gap-2 bg-cream rounded-lg p-3">
+        <div className="flex items-center gap-2 bg-cream rounded-lg p-3 mb-4">
           <code className="text-sm text-ocean flex-1 truncate font-mono">
             {ambassadorLink || 'Loading...'}
           </code>
@@ -84,6 +85,55 @@ export default function AmbassadorDashboard() {
           </button>
         </div>
         {copied && <p className="text-xs text-libre mt-2">Link copied to clipboard!</p>}
+
+        {/* QR Code */}
+        {ambassadorLink && (
+          <div className="flex flex-col items-center mt-4 pt-4 border-t border-gray-100">
+            <p className="text-sm font-medium text-deep mb-3">Scan to share</p>
+            <div className="qr-download bg-white p-4 rounded-2xl shadow-md border border-gray-100">
+              <QRCodeSVG
+                value={ambassadorLink}
+                size={180}
+                bgColor="#FFFFFF"
+                fgColor="#0A1628"
+                level="M"
+                includeMargin={false}
+                imageSettings={{
+                  src: '',
+                  height: 0,
+                  width: 0,
+                  excavate: false,
+                }}
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-2">Show this to hotel owners — instant registration</p>
+            <button
+              onClick={() => {
+                const svg = document.querySelector('.qr-download svg')
+                if (!svg) return
+                const canvas = document.createElement('canvas')
+                canvas.width = 400
+                canvas.height = 400
+                const ctx = canvas.getContext('2d')
+                ctx.fillStyle = '#FFFFFF'
+                ctx.fillRect(0, 0, 400, 400)
+                const img = new Image()
+                const svgData = new XMLSerializer().serializeToString(svg)
+                img.onload = () => {
+                  ctx.drawImage(img, 10, 10, 380, 380)
+                  const a = document.createElement('a')
+                  a.download = `staylo-ambassador-qr.png`
+                  a.href = canvas.toDataURL('image/png')
+                  a.click()
+                }
+                img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
+              }}
+              className="mt-3 flex items-center gap-2 text-sm text-ocean hover:text-electric transition-colors"
+            >
+              <Download size={14} /> Download QR Code
+            </button>
+          </div>
+        )}
       </Card>
 
       {/* Stats Cards */}
