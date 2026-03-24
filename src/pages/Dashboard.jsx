@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Copy, Check, Plus, Lock, Building2, Users, TrendingUp, Zap, Star, MessageSquare, FileText, Shield, Coins, Share2, Trophy, Send } from 'lucide-react'
+import { Copy, Check, Plus, Lock, Building2, Users, TrendingUp, Zap, Star, MessageSquare, FileText, Shield, Coins, Share2, Trophy, Send, Download } from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
@@ -328,6 +329,54 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* QR Code for sharing */}
+      {referralLink && (
+        <div className="mb-8">
+          <Card className="p-6">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="qr-hotelier bg-white p-3 rounded-2xl shadow-md border border-gray-100 shrink-0">
+                <QRCodeSVG
+                  value={referralLink}
+                  size={150}
+                  bgColor="#FFFFFF"
+                  fgColor="#0A1628"
+                  level="M"
+                />
+              </div>
+              <div className="text-center sm:text-left">
+                <h3 className="font-bold text-deep mb-2">🏨 {t('dashboard.qr_title', 'Your personal QR code')}</h3>
+                <p className="text-sm text-gray-500 mb-3">{t('dashboard.qr_desc', 'Print it, show it, share it — any hotelier who scans it is linked to you forever.')}</p>
+                <button
+                  onClick={() => {
+                    const svg = document.querySelector('.qr-hotelier svg')
+                    if (!svg) return
+                    const canvas = document.createElement('canvas')
+                    canvas.width = 400
+                    canvas.height = 400
+                    const ctx = canvas.getContext('2d')
+                    ctx.fillStyle = '#FFFFFF'
+                    ctx.fillRect(0, 0, 400, 400)
+                    const img = new Image()
+                    const svgData = new XMLSerializer().serializeToString(svg)
+                    img.onload = () => {
+                      ctx.drawImage(img, 10, 10, 380, 380)
+                      const a = document.createElement('a')
+                      a.download = 'staylo-referral-qr.png'
+                      a.href = canvas.toDataURL('image/png')
+                      a.click()
+                    }
+                    img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
+                  }}
+                  className="inline-flex items-center gap-2 text-sm text-ocean hover:text-electric transition-colors font-medium"
+                >
+                  <Download size={14} /> {t('dashboard.qr_download', 'Download QR Code')}
+                </button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Savings estimate */}
       <div className="mb-8">
