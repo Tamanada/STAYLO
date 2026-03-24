@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins } from 'lucide-react'
+import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
@@ -313,9 +313,16 @@ export default function Vision() {
       <section className="py-16 bg-gradient-to-br from-electric/5 via-white to-sunset/5">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
-            <Badge variant="golden" className="mb-4">{t('vision.marketing_badge', 'Our Marketing Team')}</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.marketing_title', 'You Are Our Marketing')}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.marketing_subtitle', 'No ads. No agency. Staylo grows through people who believe in it. Every traveler, every hotelier can become part of the team — and earn for life.')}</p>
+            <Badge variant="golden" className="mb-4">{t('vision.marketing_badge', 'Passive Income Program')}</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.marketing_title', 'Become an Ambassador')}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.marketing_subtitle', "Build the world's largest accommodation network — and earn 2% passive income for life on every hotel you bring to Staylo. No limits. No expiry. Forever.")}</p>
+            <div className="mt-6">
+              <Link to="/ambassador">
+                <Button size="lg" className="bg-gradient-to-r from-sunset to-sunrise text-white font-bold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all">
+                  {t('vision.ambassador_cta', 'Become an Ambassador')} <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* How it works — 3 steps */}
@@ -485,6 +492,43 @@ export default function Vision() {
         </div>
       </section>
 
+      {/* Required Documents for Whitelisted Businesses */}
+      <section className="py-16 bg-gradient-to-br from-deep to-[#0F2847] text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <Badge variant="golden" className="mb-4">{t('vision.docs_badge', 'Registration Process')}</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t('vision.docs_title', 'What You Need to Join')}</h2>
+            <p className="text-gray-400 max-w-2xl mx-auto">{t('vision.docs_subtitle', 'To become an official Staylo Founding Partner, your business must be legally registered. Here\'s what we require:')}</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-5">
+            {[
+              { icon: FileText, title: t('vision.doc_license', 'Business License'), desc: t('vision.doc_license_desc', 'TAT license (Thailand) or equivalent local business registration'), required: true },
+              { icon: Building2, title: t('vision.doc_registration', 'Company Registration'), desc: t('vision.doc_registration_desc', 'DBD registration certificate or equivalent (e.g. Ltd., Co., sole proprietor)'), required: true },
+              { icon: MapPin, title: t('vision.doc_property', 'Property Proof'), desc: t('vision.doc_property_desc', 'Ownership deed, lease agreement, or management contract for the property'), required: true },
+              { icon: CreditCard, title: t('vision.doc_tax', 'Tax ID'), desc: t('vision.doc_tax_desc', 'Valid tax identification number for the business entity'), required: true },
+              { icon: FileCheck, title: t('vision.doc_loi', 'Letter of Intent'), desc: t('vision.doc_loi_desc', 'Signed LOI (provided by Staylo) — bilingual TH/EN, non-binding'), required: true },
+              { icon: Scale, title: t('vision.doc_contract', 'Founding Partner Contract'), desc: t('vision.doc_contract_desc', 'Official partnership agreement — signed upon share purchase'), required: false },
+            ].map((doc, i) => (
+              <div key={i} className="bg-white/5 backdrop-blur rounded-2xl p-5 border border-white/10 flex gap-4">
+                <div className="w-12 h-12 bg-golden/10 rounded-xl flex items-center justify-center shrink-0">
+                  <doc.icon size={22} className="text-golden" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-semibold text-white text-sm">{doc.title}</h4>
+                    {doc.required && <span className="text-[10px] bg-sunset/20 text-sunset px-2 py-0.5 rounded-full">{t('vision.doc_required', 'Required')}</span>}
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1">{doc.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center text-xs text-gray-500 mt-8">{t('vision.docs_note', 'Documents are verified by the Staylo team. Processing typically takes 3-5 business days after submission.')}</p>
+        </div>
+      </section>
+
       {/* FAQ — Accordion */}
       <section className="py-16 sm:py-24">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
@@ -532,6 +576,12 @@ export default function Vision() {
           </div>
         </div>
       </section>
+
+      {/* Company footer */}
+      <div className="py-6 text-center border-t border-gray-200 bg-white">
+        <p className="text-xs text-gray-400">Staylo is a project by <span className="font-semibold text-gray-500">Barokat Halal Food Co., Ltd.</span></p>
+        <p className="text-[10px] text-gray-300 mt-1">Koh Phangan, Surat Thani, Thailand</p>
+      </div>
     </div>
   )
 }
