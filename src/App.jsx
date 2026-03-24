@@ -16,6 +16,7 @@ import AmbassadorRegister from './pages/AmbassadorRegister'
 import AmbassadorDashboard from './pages/AmbassadorDashboard'
 import AmbassadorGuide from './pages/AmbassadorGuide'
 import Splash from './pages/Splash'
+import ResetPassword from './pages/ResetPassword'
 import Welcome from './pages/Welcome'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
@@ -54,6 +55,7 @@ export default function App() {
             <Route path="/welcome" element={<Welcome />} />
             <Route path="/loi" element={<LOI />} />
             <Route path="/loi/:ref" element={<LOI />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/splash" element={<Splash />} />
             <Route path="/ambassador" element={<AmbassadorLanding />} />
             <Route path="/ambassador/register" element={<AmbassadorRegister />} />

@@ -5,6 +5,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
 
 export default function Login() {
   const { t } = useTranslation()
@@ -64,6 +65,21 @@ export default function Login() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? t('common.loading') : t('auth.login_button')}
           </Button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              if (!email) { alert('Enter your email first'); return }
+              const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin + '/reset-password',
+              })
+              if (!error) alert('Check your email for the reset link!')
+              else alert(error.message)
+            }}
+            className="w-full text-sm text-gray-400 hover:text-electric mt-2 cursor-pointer"
+          >
+            {t('auth.forgot_password', 'Forgot your password?')}
+          </button>
         </form>
 
         <p className="text-sm text-center text-gray-500 mt-6">

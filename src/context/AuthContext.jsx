@@ -15,10 +15,14 @@ export function AuthProvider({ children }) {
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) fetchProfile(session.user.id)
       else setProfile(null)
+      // Redirect to reset password page on PASSWORD_RECOVERY event
+      if (event === 'PASSWORD_RECOVERY') {
+        window.location.href = '/reset-password'
+      }
     })
 
     return () => subscription.unsubscribe()
