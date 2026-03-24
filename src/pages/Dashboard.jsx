@@ -90,6 +90,19 @@ export default function Dashboard() {
     if (!authLoading && !user) navigate('/login')
   }, [user, authLoading, navigate])
 
+  // Check if user is an ambassador — redirect to ambassador dashboard
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('ambassadors')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) navigate('/ambassador/dashboard')
+      })
+  }, [user, navigate])
+
   useEffect(() => {
     if (!user) return
     // Fetch properties
