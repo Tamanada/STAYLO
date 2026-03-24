@@ -63,6 +63,7 @@ export default function Survey() {
     contact_email: '',
   })
 
+  const [showSavingPopup, setShowSavingPopup] = useState(false)
   const totalSteps = 5
   const annualCommission = answers.monthly_commission * 12
   const annualWithStaylo = answers.monthly_commission * (10 / 17) * 12
@@ -373,12 +374,53 @@ export default function Survey() {
                   <ArrowRight size={24} className="text-libre" />
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-wider">{t('survey.est_saving', 'Yearly saving')}</p>
-                    <p className="text-2xl font-black text-libre">${annualSaving.toLocaleString()}</p>
+                    <button onClick={() => setShowSavingPopup(true)} className="cursor-pointer hover:scale-105 transition-transform">
+                      <p className="text-2xl font-black text-libre underline decoration-dotted underline-offset-4">${annualSaving.toLocaleString()}</p>
+                    </button>
                   </div>
                 </div>
                 <div className="bg-libre/10 rounded-xl py-2 px-4 inline-block">
                   <span className="text-libre font-black text-lg">ROI: {(annualSaving / answers.intended_investment).toFixed(1)}x</span>
                   <span className="text-gray-500 text-sm ml-2">{t('survey.in_year1', 'in year 1')}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Saving explanation popup */}
+            {showSavingPopup && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={() => setShowSavingPopup(false)}>
+                <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 relative" onClick={(e) => e.stopPropagation()}>
+                  <button onClick={() => setShowSavingPopup(false)} className="absolute top-4 right-4 text-gray-400 hover:text-deep text-xl cursor-pointer">✕</button>
+                  <h3 className="text-xl font-bold text-deep mb-6 text-center">💰 {t('survey.popup_title', 'How we calculate your savings')}</h3>
+
+                  <div className="space-y-4">
+                    <div className="bg-sunset/5 border border-sunset/20 rounded-xl p-4">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('survey.popup_current', 'What you currently pay (OTA)')}</p>
+                      <p className="text-sm text-gray-600">${answers.monthly_commission.toLocaleString()}/month × 12 months</p>
+                      <p className="text-xl font-bold text-sunset mt-1">${annualCommission.toLocaleString()}/year</p>
+                    </div>
+
+                    <div className="bg-libre/5 border border-libre/20 rounded-xl p-4">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('survey.popup_staylo', 'With Staylo (10% commission)')}</p>
+                      <p className="text-sm text-gray-600">{t('survey.popup_staylo_calc', 'Same bookings, but only 10% instead of ~17%')}</p>
+                      <p className="text-xl font-bold text-libre mt-1">${Math.round(annualWithStaylo).toLocaleString()}/year</p>
+                    </div>
+
+                    <div className="h-px bg-gray-200" />
+
+                    <div className="bg-gradient-to-r from-libre/10 to-ocean/10 border-2 border-libre/30 rounded-xl p-4 text-center">
+                      <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('survey.popup_saving', 'Your annual saving')}</p>
+                      <p className="text-3xl font-black text-libre">${annualSaving.toLocaleString()}</p>
+                      <p className="text-xs text-gray-400 mt-2">{t('survey.popup_note', 'This is what stays in YOUR pocket instead of going to OTA shareholders.')}</p>
+                    </div>
+
+                    {answers.intended_investment && (
+                      <div className="text-center pt-2">
+                        <p className="text-sm text-gray-500">{t('survey.popup_roi', 'Your investment of')} <span className="font-bold text-deep">${answers.intended_investment.toLocaleString()}</span> {t('survey.popup_roi2', 'pays for itself in')}</p>
+                        <p className="text-2xl font-black text-golden">{Math.ceil(answers.intended_investment / (annualSaving / 12))} {t('survey.popup_months', 'months')}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
