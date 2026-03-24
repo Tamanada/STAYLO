@@ -9,14 +9,35 @@ import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
 import { trackEvent, EVENTS } from '../lib/analytics'
 
-const investmentOptions = [
-  { value: 100, label: '$100', desc: '0.1 share' },
-  { value: 500, label: '$500', desc: '0.5 share' },
-  { value: 1000, label: '$1,000', desc: '1 share' },
-  { value: 2000, label: '$2,000', desc: '2 shares' },
-  { value: 5000, label: '$5,000', desc: '5 shares' },
-  { value: 10000, label: '$10,000', desc: '10 shares' },
-]
+// Currency config by language
+const currencyByLang = {
+  en: { symbol: '$', code: 'USD', rate: 1 },
+  fr: { symbol: '€', code: 'EUR', rate: 0.92 },
+  th: { symbol: '฿', code: 'THB', rate: 34.5 },
+  ja: { symbol: '¥', code: 'JPY', rate: 150 },
+  es: { symbol: '€', code: 'EUR', rate: 0.92 },
+  ar: { symbol: '$', code: 'USD', rate: 1 },
+  ru: { symbol: '₽', code: 'RUB', rate: 92 },
+  zh: { symbol: '¥', code: 'CNY', rate: 7.2 },
+  hi: { symbol: '₹', code: 'INR', rate: 83 },
+  pt: { symbol: 'R$', code: 'BRL', rate: 5 },
+  de: { symbol: '€', code: 'EUR', rate: 0.92 },
+  id: { symbol: 'Rp', code: 'IDR', rate: 15700 },
+  my: { symbol: 'K', code: 'MMK', rate: 2100 },
+  it: { symbol: '€', code: 'EUR', rate: 0.92 },
+}
+
+function getCurrency(lang) {
+  return currencyByLang[lang] || currencyByLang.en
+}
+
+function formatCurrency(usdAmount, currency) {
+  const local = Math.round(usdAmount * currency.rate)
+  return `${currency.symbol}${local.toLocaleString()}`
+}
+
+const investmentOptionsUSD = [100, 500, 1000, 2000, 5000, 10000]
+const shareDescs = ['0.1 share', '0.5 share', '1 share', '2 shares', '5 shares', '10 shares']
 
 const otaDependencyOptions = ['<30%', '30-50%', '50-70%', '>70%']
 
@@ -47,9 +68,11 @@ const frustrationEmojis = {
 }
 
 export default function Survey() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user } = useAuth()
   const navigate = useNavigate()
+  const currency = getCurrency(i18n.language)
+  const fmt = (usd) => formatCurrency(usd, currency)
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -79,10 +102,10 @@ export default function Survey() {
   // Auto-suggest investment based on monthly commission when entering step 4
   useEffect(() => {
     if (step === 4 && answers.intended_investment === null) {
-      const closest = investmentOptions.reduce((prev, curr) =>
-        Math.abs(curr.value - answers.monthly_commission) < Math.abs(prev.value - answers.monthly_commission) ? curr : prev
+      const closest = investmentOptionsUSD.reduce((prev, curr) =>
+        Math.abs(curr - answers.monthly_commission) < Math.abs(prev - answers.monthly_commission) ? curr : prev
       )
-      setAnswers(prev => ({ ...prev, intended_investment: closest.value }))
+      setAnswers(prev => ({ ...prev, intended_investment: closest }))
     }
   }, [step])
 
@@ -130,7 +153,7 @@ export default function Survey() {
         <p className="text-gray-500 mb-4">{t('survey.success_message')}</p>
         <div className="bg-libre/5 border border-libre/20 rounded-2xl p-6 mb-8">
           <p className="text-sm text-gray-500 mb-1">{t('survey.savings_label', 'Your estimated annual savings')}</p>
-          <p className="text-4xl font-bold text-libre">${annualSaving.toLocaleString()}</p>
+          <p className="text-4xl font-bold text-libre">{fmt(annualSaving)}</p>
           <p className="text-sm text-gray-400 mt-1">{t('survey.savings_detail', 'by switching to Staylo (10% vs 17%)')}</p>
         </div>
         <Button onClick={() => navigate('/submit')} size="lg">
@@ -185,7 +208,7 @@ export default function Survey() {
               {t('survey.step1_subtitle', 'Estimate your total monthly payment to Agoda, Booking.com, etc.')}
             </p>
             <div className="mb-4">
-              <span className="text-6xl font-bold text-deep">${answers.monthly_commission.toLocaleString()}</span>
+              <span className="text-6xl font-bold text-deep">{fmt(answers.monthly_commission)}</span>
               <span className="text-gray-400 text-lg">/{t('survey.per_month', 'month')}</span>
             </div>
             <input
@@ -198,14 +221,14 @@ export default function Survey() {
               className="w-full accent-sunset mb-4"
             />
             <div className="flex justify-between text-xs text-gray-400">
-              <span>$100</span>
-              <span>$5,000</span>
-              <span>$10,000</span>
-              <span>$20,000</span>
+              <span>{fmt(100)}</span>
+              <span>{fmt(5000)}</span>
+              <span>{fmt(10000)}</span>
+              <span>{fmt(20000)}</span>
             </div>
             <div className="mt-8 bg-sunset/5 border border-sunset/20 rounded-2xl p-5">
               <p className="text-sm text-gray-500">
-                {t('survey.annual_leaving', "That's")} <span className="font-bold text-sunset text-lg">${annualCommission.toLocaleString()}</span> {t('survey.annual_leaving_suffix', 'per year leaving your business.')}
+                {t('survey.annual_leaving', "That's")} <span className="font-bold text-sunset text-lg">{fmt(annualCommission)}</span> {t('survey.annual_leaving_suffix', 'per year leaving your business.')}
               </p>
             </div>
           </div>
@@ -316,7 +339,7 @@ export default function Survey() {
             {/* Commission reminder — big and bold */}
             <div className="bg-gradient-to-r from-sunset/10 to-electric/10 border-2 border-sunset/30 rounded-2xl p-6 mb-6 text-center">
               <p className="text-sm text-gray-500 mb-1">{t('survey.step4_hint', 'You currently pay')}</p>
-              <p className="text-4xl font-black text-sunset mb-1">${answers.monthly_commission.toLocaleString()}<span className="text-lg font-medium text-gray-400">/{t('survey.per_month', 'month')}</span></p>
+              <p className="text-4xl font-black text-sunset mb-1">{fmt(answers.monthly_commission)}<span className="text-lg font-medium text-gray-400">/{t('survey.per_month', 'month')}</span></p>
               <p className="text-sm text-gray-500">{t('survey.step4_hint2', 'in commissions — invest the equivalent of just 1 month.')}</p>
             </div>
 
@@ -327,15 +350,15 @@ export default function Survey() {
 
             {/* Investment grid — big cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
-              {investmentOptions.map(opt => {
-                const isSelected = answers.intended_investment === opt.value
-                const isClosest = !answers.intended_investment && opt.value === investmentOptions.reduce((prev, curr) =>
-                  Math.abs(curr.value - answers.monthly_commission) < Math.abs(prev.value - answers.monthly_commission) ? curr : prev
-                ).value
+              {investmentOptionsUSD.map((usdVal, idx) => {
+                const isSelected = answers.intended_investment === usdVal
+                const isClosest = !answers.intended_investment && usdVal === investmentOptionsUSD.reduce((prev, curr) =>
+                  Math.abs(curr - answers.monthly_commission) < Math.abs(prev - answers.monthly_commission) ? curr : prev
+                )
                 return (
                   <button
-                    key={opt.value}
-                    onClick={() => setAnswers(prev => ({ ...prev, intended_investment: opt.value }))}
+                    key={usdVal}
+                    onClick={() => setAnswers(prev => ({ ...prev, intended_investment: usdVal }))}
                     className={`relative py-6 px-4 rounded-2xl border-2 text-center transition-all ${
                       isSelected
                         ? 'border-libre bg-libre/10 shadow-xl shadow-libre/20 scale-105'
@@ -350,10 +373,10 @@ export default function Survey() {
                       </span>
                     )}
                     <span className={`text-3xl font-black block ${isSelected ? 'text-libre' : 'text-deep'}`}>
-                      {opt.label}
+                      {fmt(usdVal)}
                     </span>
                     <span className={`text-sm mt-1 block ${isSelected ? 'text-libre/70' : 'text-gray-400'}`}>
-                      {opt.desc}
+                      {shareDescs[idx]}
                     </span>
                     {isSelected && (
                       <CheckCircle size={20} className="text-libre mt-3 mx-auto" />
@@ -369,13 +392,13 @@ export default function Survey() {
                 <div className="flex items-center justify-center gap-8 mb-3">
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-wider">{t('survey.your_investment', 'Your investment')}</p>
-                    <p className="text-2xl font-black text-deep">${answers.intended_investment.toLocaleString()}</p>
+                    <p className="text-2xl font-black text-deep">{fmt(answers.intended_investment)}</p>
                   </div>
                   <ArrowRight size={24} className="text-libre" />
                   <div>
                     <p className="text-xs text-gray-400 uppercase tracking-wider">{t('survey.est_saving', 'Yearly saving')}</p>
                     <button onClick={() => setShowSavingPopup(true)} className="cursor-pointer hover:scale-105 transition-transform">
-                      <p className="text-2xl font-black text-libre underline decoration-dotted underline-offset-4">${annualSaving.toLocaleString()}</p>
+                      <p className="text-2xl font-black text-libre underline decoration-dotted underline-offset-4">{fmt(annualSaving)}</p>
                     </button>
                   </div>
                 </div>
@@ -396,27 +419,27 @@ export default function Survey() {
                   <div className="space-y-4">
                     <div className="bg-sunset/5 border border-sunset/20 rounded-xl p-4">
                       <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('survey.popup_current', 'What you currently pay (OTA)')}</p>
-                      <p className="text-sm text-gray-600">${answers.monthly_commission.toLocaleString()}/month × 12 months</p>
-                      <p className="text-xl font-bold text-sunset mt-1">${annualCommission.toLocaleString()}/year</p>
+                      <p className="text-sm text-gray-600">{fmt(answers.monthly_commission)}/month × 12 months</p>
+                      <p className="text-xl font-bold text-sunset mt-1">{fmt(annualCommission)}/year</p>
                     </div>
 
                     <div className="bg-libre/5 border border-libre/20 rounded-xl p-4">
                       <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('survey.popup_staylo', 'With Staylo (10% commission)')}</p>
                       <p className="text-sm text-gray-600">{t('survey.popup_staylo_calc', 'Same bookings, but only 10% instead of ~17%')}</p>
-                      <p className="text-xl font-bold text-libre mt-1">${Math.round(annualWithStaylo).toLocaleString()}/year</p>
+                      <p className="text-xl font-bold text-libre mt-1">{fmt(Math.round(annualWithStaylo))}/{t('survey.year', 'year')}</p>
                     </div>
 
                     <div className="h-px bg-gray-200" />
 
                     <div className="bg-gradient-to-r from-libre/10 to-ocean/10 border-2 border-libre/30 rounded-xl p-4 text-center">
                       <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('survey.popup_saving', 'Your annual saving')}</p>
-                      <p className="text-3xl font-black text-libre">${annualSaving.toLocaleString()}</p>
+                      <p className="text-3xl font-black text-libre">{fmt(annualSaving)}</p>
                       <p className="text-xs text-gray-400 mt-2">{t('survey.popup_note', 'This is what stays in YOUR pocket instead of going to OTA shareholders.')}</p>
                     </div>
 
                     {answers.intended_investment && (
                       <div className="text-center pt-2">
-                        <p className="text-sm text-gray-500">{t('survey.popup_roi', 'Your investment of')} <span className="font-bold text-deep">${answers.intended_investment.toLocaleString()}</span> {t('survey.popup_roi2', 'pays for itself in')}</p>
+                        <p className="text-sm text-gray-500">{t('survey.popup_roi', 'Your investment of')} <span className="font-bold text-deep">{fmt(answers.intended_investment)}</span> {t('survey.popup_roi2', 'pays for itself in')}</p>
                         <p className="text-2xl font-black text-golden">{Math.ceil(answers.intended_investment / (annualSaving / 12))} {t('survey.popup_months', 'months')}</p>
                       </div>
                     )}
