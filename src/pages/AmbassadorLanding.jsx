@@ -4,7 +4,6 @@ import { ArrowRight, Hotel, Users, Globe, DollarSign, Handshake, TrendingUp, Spa
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
-import { SketchDecorations } from '../components/ui/SketchDecorations'
 
 const steps = [
   {
@@ -44,7 +43,6 @@ export default function AmbassadorLanding() {
 
   return (
     <div className="relative">
-      <SketchDecorations lightMode />
       {/* ── Hero ── */}
       <section className="bg-gradient-to-br from-deep via-electric/80 to-ocean text-white py-20 sm:py-28 relative overflow-hidden animate-gradient">
         <div className="absolute inset-0">
