@@ -73,6 +73,9 @@ export default function AmbassadorDashboard() {
       {/* Referral Link + QR Code */}
       <Card className="p-6 mb-6">
         <h3 className="font-semibold text-deep mb-3">Your Referral Link</h3>
+        <p className="text-xs text-gray-400 mb-3 flex items-center gap-1">
+          <Hotel size={12} /> Your link is for hotel owners only.
+        </p>
         <div className="flex items-center gap-2 bg-cream rounded-lg p-3 mb-4">
           <code className="text-sm text-ocean flex-1 truncate font-mono">
             {ambassadorLink || 'Loading...'}

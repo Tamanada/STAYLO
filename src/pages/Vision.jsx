@@ -20,7 +20,7 @@ const benefitIcons = {
   lowest_commission: Shield,
   revenue_share: Sparkles,
   governance: Vote,
-  early_access: Rocket,
+  guest_relationships: Users,
   badge: BadgeCheck,
 }
 

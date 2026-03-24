@@ -35,6 +35,7 @@ export function Footer() {
 
         <div className="border-t border-gray-700/50 mt-8 pt-6">
           <p className="text-xs text-gray-500">{t('footer.copyright', { year })}</p>
+          <p className="text-xs text-gray-600 mt-2">Operated by Barokat Halal Food Co., Ltd.</p>
         </div>
       </div>
     </footer>

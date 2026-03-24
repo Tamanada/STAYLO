@@ -140,14 +140,14 @@ export default function AmbassadorLanding() {
               </div>
               <input
                 type="range"
-                min={1}
+                min={5}
                 max={100}
                 value={roomCount}
                 onChange={(e) => setRoomCount(Number(e.target.value))}
                 className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-electric"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
-                <span>1 room</span>
+                <span>5 rooms</span>
                 <span>100 rooms</span>
               </div>
             </div>
