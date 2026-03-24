@@ -194,28 +194,61 @@ export default function Vision() {
             </div>
           </div>
 
-          {/* Revenue breakdown */}
-          <Card className="p-8 max-w-2xl mx-auto">
-            <h3 className="text-lg font-bold text-deep text-center mb-6">{t('vision.breakdown_title', '10% Commission Breakdown')}</h3>
-            <div className="space-y-4">
-              {[
-                { label: `🤝 ${t('vision.breakdown_ambassador', 'Ambassador Reward')}`, pct: 20, color: 'bg-electric', desc: t('vision.breakdown_ambassador_desc', '2% lifetime passive income for the person who brought the hotel to Staylo') },
-                { label: `⚙️ ${t('vision.breakdown_operations', 'Platform Operations')}`, pct: 40, color: 'bg-ocean', desc: t('vision.breakdown_operations_desc', 'Tech, servers, support, payment processing') },
-                { label: `💰 ${t('vision.breakdown_dividends', 'Shareholder Dividends')}`, pct: 20, color: 'bg-libre', desc: t('vision.breakdown_dividends_desc', 'Distributed to all founding partners proportionally') },
-                { label: `📈 ${t('vision.breakdown_growth', 'Growth & Marketing')}`, pct: 15, color: 'bg-sunset', desc: t('vision.breakdown_growth_desc', 'Traveler acquisition, SEO, partnerships') },
-                { label: `🛡️ ${t('vision.breakdown_reserve', 'Reserve Fund')}`, pct: 5, color: 'bg-golden', desc: t('vision.breakdown_reserve_desc', 'Emergency fund & future development') },
-              ].map(item => (
-                <div key={item.label}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium text-deep">{item.label}</span>
-                    <span className="text-sm font-bold text-deep">{item.pct}%</span>
+          {/* Revenue breakdown — Pie Chart */}
+          <Card className="p-8 max-w-3xl mx-auto">
+            <h3 className="text-xl font-bold text-deep text-center mb-8">{t('vision.breakdown_title', '10% Commission Breakdown')}</h3>
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              {/* Pie chart SVG */}
+              <div className="relative w-64 h-64 flex-shrink-0">
+                <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-lg">
+                  {/* Operations 40% — starts at 0° */}
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="#3B82F6" strokeWidth="40"
+                    strokeDasharray={`${40 * 5.026} ${(100 - 40) * 5.026}`}
+                    strokeDashoffset="0" transform="rotate(-90 100 100)" />
+                  {/* Ambassador 20% — starts at 144° */}
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="#8B5CF6" strokeWidth="40"
+                    strokeDasharray={`${20 * 5.026} ${(100 - 20) * 5.026}`}
+                    strokeDashoffset={`${-(40) * 5.026}`} transform="rotate(-90 100 100)" />
+                  {/* Dividends 20% — starts at 216° */}
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="#10B981" strokeWidth="40"
+                    strokeDasharray={`${20 * 5.026} ${(100 - 20) * 5.026}`}
+                    strokeDashoffset={`${-(60) * 5.026}`} transform="rotate(-90 100 100)" />
+                  {/* Growth 15% — starts at 288° */}
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="#F97316" strokeWidth="40"
+                    strokeDasharray={`${15 * 5.026} ${(100 - 15) * 5.026}`}
+                    strokeDashoffset={`${-(80) * 5.026}`} transform="rotate(-90 100 100)" />
+                  {/* Reserve 5% — starts at 342° */}
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="#FBBF24" strokeWidth="40"
+                    strokeDasharray={`${5 * 5.026} ${(100 - 5) * 5.026}`}
+                    strokeDashoffset={`${-(95) * 5.026}`} transform="rotate(-90 100 100)" />
+                  {/* Center circle */}
+                  <circle cx="100" cy="100" r="58" fill="white" />
+                  <text x="100" y="92" textAnchor="middle" className="fill-deep text-2xl font-bold" style={{ fontSize: '28px', fontWeight: 700 }}>10%</text>
+                  <text x="100" y="115" textAnchor="middle" className="fill-gray-400" style={{ fontSize: '11px' }}>commission</text>
+                </svg>
+              </div>
+
+              {/* Legend */}
+              <div className="space-y-4 flex-1">
+                {[
+                  { emoji: '⚙️', label: t('vision.breakdown_operations', 'Platform Operations'), pct: 40, color: '#3B82F6', desc: t('vision.breakdown_operations_desc', 'Tech, servers, support, payment processing') },
+                  { emoji: '🤝', label: t('vision.breakdown_ambassador', 'Ambassador Reward'), pct: 20, color: '#8B5CF6', desc: t('vision.breakdown_ambassador_desc', '2% lifetime passive income for the person who brought the hotel to Staylo') },
+                  { emoji: '💰', label: t('vision.breakdown_dividends', 'Shareholder Dividends'), pct: 20, color: '#10B981', desc: t('vision.breakdown_dividends_desc', 'Distributed to all founding partners proportionally') },
+                  { emoji: '📈', label: t('vision.breakdown_growth', 'Growth & Marketing'), pct: 15, color: '#F97316', desc: t('vision.breakdown_growth_desc', 'Traveler acquisition, SEO, partnerships') },
+                  { emoji: '🛡️', label: t('vision.breakdown_reserve', 'Reserve Fund'), pct: 5, color: '#FBBF24', desc: t('vision.breakdown_reserve_desc', 'Emergency fund & future development') },
+                ].map(item => (
+                  <div key={item.label} className="flex items-start gap-3">
+                    <div className="w-4 h-4 rounded-full mt-0.5 flex-shrink-0" style={{ backgroundColor: item.color }} />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-deep">{item.emoji} {item.label}</span>
+                        <span className="text-sm font-bold" style={{ color: item.color }}>{item.pct}%</span>
+                      </div>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-100 rounded-full h-3 mb-1">
-                    <div className={`h-full ${item.color} rounded-full transition-all duration-1000`} style={{ width: `${item.pct}%` }} />
-                  </div>
-                  <p className="text-xs text-gray-400">{item.desc}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </Card>
         </div>
