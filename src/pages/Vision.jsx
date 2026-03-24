@@ -180,19 +180,74 @@ export default function Vision() {
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.revenue_distribution_subtitle', 'Full transparency. Every dollar accounted for.')}</p>
           </div>
 
-          {/* Commission comparison */}
-          <div className="grid sm:grid-cols-2 gap-6 mb-12 max-w-2xl mx-auto">
-            <div className="bg-gradient-to-br from-sunset/10 to-sunset/20 rounded-2xl p-6 text-center">
-              <p className="text-sm text-gray-500 mb-1">{t('vision.traditional_otas', 'Traditional OTAs')}</p>
-              <p className="text-5xl font-extrabold text-sunset">15–25%</p>
-              <p className="text-xs text-gray-400 mt-2">{t('vision.goes_to_sv', 'Goes to shareholders in Silicon Valley')}</p>
+          {/* Money flow — For every $100 booked */}
+          <Card className="p-6 sm:p-10 mb-12 max-w-4xl mx-auto bg-gradient-to-br from-deep to-[#0F2847] text-white overflow-hidden">
+            <p className="text-center text-sm text-gray-400 mb-2 uppercase tracking-wider">{t('vision.flow_label', 'For every')}</p>
+            <p className="text-center text-5xl sm:text-6xl font-black mb-8">$100 <span className="text-2xl font-normal text-gray-400">{t('vision.flow_booked', 'booked')}</span></p>
+
+            <div className="grid sm:grid-cols-2 gap-6">
+              {/* OTA side */}
+              <div className="bg-white/5 backdrop-blur rounded-2xl p-6 border border-white/10">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-3 h-3 rounded-full bg-sunset" />
+                  <p className="font-bold text-gray-300">{t('vision.flow_ota_title', 'With Booking.com / Agoda')}</p>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 text-sm">{t('vision.flow_ota_commission', 'Commission')}</span>
+                    <span className="text-2xl font-bold text-sunset">−$22</span>
+                  </div>
+                  <div className="h-px bg-white/10" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 text-sm">{t('vision.flow_ota_where', 'Where does it go?')}</span>
+                    <span className="text-sm text-gray-500">→ Silicon Valley</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 text-sm">{t('vision.flow_ota_back', 'What comes back to you?')}</span>
+                    <span className="text-lg font-bold text-sunset">$0</span>
+                  </div>
+                  <div className="h-px bg-white/10" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300 font-medium">{t('vision.flow_you_keep', 'You keep')}</span>
+                    <span className="text-2xl font-bold text-white">$78</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Staylo side */}
+              <div className="bg-libre/10 backdrop-blur rounded-2xl p-6 border-2 border-libre/30 relative">
+                <div className="absolute -top-3 right-4 bg-libre text-white text-xs font-bold px-3 py-1 rounded-full">
+                  {t('vision.flow_recommended', 'BETTER DEAL')}
+                </div>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-3 h-3 rounded-full bg-libre" />
+                  <p className="font-bold text-libre">{t('vision.flow_staylo_title', 'With Staylo')}</p>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 text-sm">{t('vision.flow_staylo_commission', 'Commission')}</span>
+                    <span className="text-2xl font-bold text-libre">−$10</span>
+                  </div>
+                  <div className="h-px bg-white/10" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 text-sm">{t('vision.flow_staylo_where', 'Where does it go?')}</span>
+                    <span className="text-sm text-libre">→ {t('vision.flow_staylo_community', 'Your community')}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400 text-sm">{t('vision.flow_staylo_back', 'What comes back to you?')}</span>
+                    <span className="text-lg font-bold text-libre">$2 <span className="text-xs font-normal text-gray-400">{t('vision.flow_dividends', 'dividends')}</span></span>
+                  </div>
+                  <div className="h-px bg-white/10" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-300 font-medium">{t('vision.flow_you_keep', 'You keep')}</span>
+                    <span className="text-2xl font-bold text-libre">$92</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="bg-gradient-to-br from-libre/10 to-libre/20 rounded-2xl p-6 text-center border-2 border-libre/30">
-              <p className="text-sm text-gray-500 mb-1">{t('vision.staylo_label', 'Staylo')}</p>
-              <p className="text-5xl font-extrabold text-libre">10%</p>
-              <p className="text-xs text-gray-400 mt-2">{t('vision.stays_in_community', 'Stays in the community')}</p>
-            </div>
-          </div>
+
+            <p className="text-center text-xs text-gray-500 mt-6">{t('vision.flow_disclaimer', 'Based on average 22% OTA commission. Actual savings depend on your current platform and rates.')}</p>
+          </Card>
 
           {/* Revenue breakdown — Pie Chart */}
           <Card className="p-8 max-w-3xl mx-auto">
