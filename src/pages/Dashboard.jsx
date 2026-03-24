@@ -10,6 +10,33 @@ import { useAuth } from '../hooks/useAuth'
 import { useReferral } from '../hooks/useReferral'
 import { supabase } from '../lib/supabase'
 
+// Currency config by language (same as Survey.jsx)
+const currencyByLang = {
+  en: { symbol: '$', code: 'USD', rate: 1 },
+  fr: { symbol: '€', code: 'EUR', rate: 0.92 },
+  th: { symbol: '฿', code: 'THB', rate: 34.5 },
+  ja: { symbol: '¥', code: 'JPY', rate: 150 },
+  es: { symbol: '€', code: 'EUR', rate: 0.92 },
+  ar: { symbol: '$', code: 'USD', rate: 1 },
+  ru: { symbol: '₽', code: 'RUB', rate: 92 },
+  zh: { symbol: '¥', code: 'CNY', rate: 7.2 },
+  hi: { symbol: '₹', code: 'INR', rate: 83 },
+  pt: { symbol: 'R$', code: 'BRL', rate: 5 },
+  de: { symbol: '€', code: 'EUR', rate: 0.92 },
+  id: { symbol: 'Rp', code: 'IDR', rate: 15700 },
+  my: { symbol: 'K', code: 'MMK', rate: 2100 },
+  it: { symbol: '€', code: 'EUR', rate: 0.92 },
+}
+
+function getCurrency(lang) {
+  return currencyByLang[lang] || currencyByLang.en
+}
+
+function formatCurrency(usdAmount, currency) {
+  const local = Math.round(usdAmount * currency.rate)
+  return `${currency.symbol}${local.toLocaleString()}`
+}
+
 const statusColors = {
   pending: 'gray',
   reviewing: 'orange',
@@ -17,11 +44,11 @@ const statusColors = {
   live: 'green',
 }
 
-const loiStatusConfig = {
-  not_signed: { label: 'Not signed', color: 'gray', icon: FileText },
-  signed: { label: 'LOI Signed', color: 'blue', icon: Check },
-  contract_pending: { label: 'Contract pending', color: 'orange', icon: Shield },
-  confirmed: { label: 'Partner confirmed', color: 'green', icon: Star },
+const loiStatusKeys = {
+  not_signed: { key: 'dashboard.loi_status.not_signed', color: 'gray', icon: FileText },
+  signed: { key: 'dashboard.loi_status.signed', color: 'blue', icon: Check },
+  contract_pending: { key: 'dashboard.loi_status.contract_pending', color: 'orange', icon: Shield },
+  confirmed: { key: 'dashboard.loi_status.confirmed', color: 'green', icon: Star },
 }
 
 const futureFeatures = [
@@ -31,18 +58,24 @@ const futureFeatures = [
   { key: 'guest_reviews', icon: MessageSquare },
 ]
 
+const foundingTiers = [
+  { max: 10, emoji: '🏆', key: 'dashboard.tier.pioneer', color: 'golden' },
+  { max: 50, emoji: '💎', key: 'dashboard.tier.early_founder', color: 'electric' },
+  { max: 100, emoji: '🥇', key: 'dashboard.tier.founding_100', color: 'ocean' },
+  { max: 500, emoji: '⭐', key: 'dashboard.tier.founding_500', color: 'libre' },
+  { max: 1000, emoji: '🌟', key: 'dashboard.tier.founding_1000', color: 'sunrise' },
+  { max: 2000, emoji: '🔥', key: 'dashboard.tier.builder', color: 'sunset' },
+  { max: Infinity, emoji: '✅', key: 'dashboard.tier.member', color: 'gray' },
+]
+
 function getFoundingTier(position) {
-  if (position <= 10) return { emoji: '🏆', label: 'Pioneer — Top 10', color: 'golden' }
-  if (position <= 50) return { emoji: '💎', label: 'Early Founder — Top 50', color: 'electric' }
-  if (position <= 100) return { emoji: '🥇', label: 'Founding 100', color: 'ocean' }
-  if (position <= 500) return { emoji: '⭐', label: 'Founding 500', color: 'libre' }
-  if (position <= 1000) return { emoji: '🌟', label: 'Founding 1,000', color: 'sunrise' }
-  if (position <= 2000) return { emoji: '🔥', label: 'Builder — Top 2,000', color: 'sunset' }
-  return { emoji: '✅', label: 'Member', color: 'gray' }
+  return foundingTiers.find(t => position <= t.max) || foundingTiers[foundingTiers.length - 1]
 }
 
 export default function Dashboard() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const currency = getCurrency(i18n.language)
+  const fmt = (usd) => formatCurrency(usd, currency)
   const { user, profile, loading: authLoading } = useAuth()
   const { referralCount, referralLink, referralCode } = useReferral()
   const navigate = useNavigate()
@@ -112,7 +145,7 @@ export default function Dashboard() {
         ? 'signed'
         : 'not_signed'
 
-  const StatusConfig = loiStatusConfig[loiStatus]
+  const StatusConfig = loiStatusKeys[loiStatus]
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -129,7 +162,7 @@ export default function Dashboard() {
           return (
             <div className="mt-3 inline-flex items-center gap-2 bg-gradient-to-r from-deep/5 to-ocean/10 border border-ocean/20 rounded-full px-4 py-2">
               <span className="text-xl">{tier.emoji}</span>
-              <span className="font-bold text-deep text-sm">{tier.label}</span>
+              <span className="font-bold text-deep text-sm">{t(tier.key)}</span>
             </div>
           )
         })()}
@@ -143,12 +176,12 @@ export default function Dashboard() {
               <Coins size={24} className="text-ocean" />
             </div>
             <div>
-              <h3 className="font-bold text-deep text-lg">Founding Partner Status</h3>
+              <h3 className="font-bold text-deep text-lg">{t('dashboard.founding_partner_status', 'Founding Partner Status')}</h3>
               <div className="flex items-center gap-2 mt-1">
-                <Badge variant={StatusConfig.color}>{StatusConfig.label}</Badge>
+                <Badge variant={StatusConfig.color}>{t(StatusConfig.key)}</Badge>
                 {totalShares > 0 && (
                   <span className="text-sm text-gray-500">
-                    {totalShares} share{totalShares > 1 ? 's' : ''} (${(totalShares * 1000).toLocaleString()})
+                    {t('dashboard.shares_count', { count: totalShares, amount: fmt(totalShares * 1000) })}
                   </span>
                 )}
               </div>
@@ -158,7 +191,7 @@ export default function Dashboard() {
             <Link to="/loi">
               <Button size="sm">
                 <FileText size={16} />
-                Sign LOI
+                {t('dashboard.sign_loi', 'Sign LOI')}
               </Button>
             </Link>
           )}
@@ -166,7 +199,7 @@ export default function Dashboard() {
         {/* Progress steps */}
         <div className="mt-5 pt-5 border-t border-ocean/10">
           <div className="flex items-center justify-between">
-            {['LOI Signed', 'Contract Signed', 'Payment', 'Partner'].map((label, i) => {
+            {[t('dashboard.step_loi', 'LOI Signed'), t('dashboard.step_contract', 'Contract Signed'), t('dashboard.step_payment', 'Payment'), t('dashboard.step_partner', 'Partner')].map((label, i) => {
               const stepDone = i === 0 ? hasSignedLOI
                 : i === 1 ? shares.some(s => s.contract_signed)
                   : i === 2 ? shares.some(s => s.payment_confirmed)
@@ -231,10 +264,10 @@ export default function Dashboard() {
             </div>
             <div>
               <h3 className="text-xl sm:text-2xl font-bold text-deep leading-tight">
-                🌴 Share with your hotelier friends on Koh Phangan!
+                {t('dashboard.share_title', 'Share with your hotelier friends on Koh Phangan!')}
               </h3>
               <p className="text-sm text-gray-500 mt-1">
-                Every friend who joins earns you a higher rank as Founding Partner. Help us build the community!
+                {t('dashboard.share_subtitle', 'Every friend who joins earns you a higher rank as Founding Partner. Help us build the community!')}
               </p>
             </div>
           </div>
@@ -245,14 +278,14 @@ export default function Dashboard() {
               <div className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-full px-4 py-1.5">
                 <Trophy size={16} className="text-amber-500" />
                 <span className="text-sm font-semibold text-amber-700">
-                  You've referred {referralCount} hotelier{referralCount !== 1 ? 's' : ''}
+                  {t('dashboard.referred_count', { count: referralCount })}
                 </span>
               </div>
             ) : (
               <div className="inline-flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-full px-4 py-1.5">
                 <Users size={16} className="text-gray-400" />
                 <span className="text-sm text-gray-500">
-                  You've referred 0 hoteliers — be the first to share!
+                  {t('dashboard.referred_zero', "You've referred 0 hoteliers — be the first to share!")}
                 </span>
               </div>
             )}
@@ -268,7 +301,7 @@ export default function Dashboard() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Share with hoteliers
+              {t('dashboard.tab_hotelier', 'Share with hoteliers')}
             </button>
             <button
               onClick={() => { setLinkTab('ambassador'); setCopied(false) }}
@@ -278,14 +311,14 @@ export default function Dashboard() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              Invite as Ambassador
+              {t('dashboard.tab_ambassador', 'Invite as Ambassador')}
             </button>
           </div>
 
           {/* Referral link */}
           <div className="flex items-center gap-2 bg-gradient-to-r from-ocean/5 to-libre/5 border border-ocean/20 rounded-xl p-3 mb-5">
             <code className="text-sm text-ocean flex-1 truncate font-mono">
-              {activeLink || 'Loading...'}
+              {activeLink || t('common.loading')}
             </code>
             <button
               onClick={copyReferralLink}
@@ -301,8 +334,8 @@ export default function Dashboard() {
             <a
               href={`https://wa.me/?text=${encodeURIComponent(
                 linkTab === 'hotelier'
-                  ? `Hey! I just joined Staylo — a new booking platform where hoteliers pay only 10% commission instead of 22% on Booking.com. We actually OWN the platform! 🌴 Check it out: ${activeLink || ''}`
-                  : `Hey! I'm on Staylo and looking for ambassadors. Earn 2% lifetime passive income on every hotel you bring to the platform. Join here: ${activeLink || ''}`
+                  ? t('dashboard.wa_hotelier_msg', { link: activeLink || '' })
+                  : t('dashboard.wa_ambassador_msg', { link: activeLink || '' })
               )}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -312,7 +345,7 @@ export default function Dashboard() {
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
                 <path d="M12 0C5.373 0 0 5.373 0 12c0 2.025.506 3.932 1.395 5.607L0 24l6.598-1.361A11.945 11.945 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-1.875 0-3.656-.506-5.216-1.44l-.375-.222-3.878.8.832-3.832-.243-.387A9.723 9.723 0 012.25 12c0-5.376 4.374-9.75 9.75-9.75S21.75 6.624 21.75 12 17.376 21.75 12 21.75z"/>
               </svg>
-              WhatsApp
+              {t('dashboard.whatsapp', 'WhatsApp')}
             </a>
             {/* Line */}
             <a
@@ -324,7 +357,7 @@ export default function Dashboard() {
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 flex-shrink-0">
                 <path d="M12 2C6.48 2 2 5.82 2 10.5c0 3.69 3.08 6.79 7.24 7.85.28.06.66.19.76.43.09.22.06.56.03.78l-.12.73c-.04.22-.17.86.75.47.93-.39 4.99-2.94 6.81-5.04C19.41 13.47 22 12.13 22 10.5 22 5.82 17.52 2 12 2zm-3.35 11.15H6.73a.46.46 0 01-.46-.46V8.73c0-.25.21-.46.46-.46s.46.21.46.46v3.5h1.42c.25 0 .46.21.46.46s-.2.46-.46.46zm1.98-.46a.46.46 0 01-.92 0V8.73a.46.46 0 01.92 0v3.96zm4.56 0c0 .19-.12.36-.29.43a.46.46 0 01-.51-.1l-2.01-2.73v2.4a.46.46 0 01-.92 0V8.73c0-.19.12-.36.29-.43a.46.46 0 01.51.1l2.01 2.73v-2.4a.46.46 0 01.92 0v3.96zm3.06-2.54a.46.46 0 010 .92h-1.42v.7h1.42a.46.46 0 010 .92h-1.88a.46.46 0 01-.46-.46V8.73c0-.25.21-.46.46-.46h1.88a.46.46 0 010 .92h-1.42v.7h1.42a.46.46 0 010 .26z"/>
               </svg>
-              Line
+              {t('dashboard.line', 'Line')}
             </a>
             {/* Facebook */}
             <a
@@ -336,7 +369,7 @@ export default function Dashboard() {
               <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 flex-shrink-0">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
               </svg>
-              Facebook
+              {t('dashboard.facebook', 'Facebook')}
             </a>
             {/* Copy Link */}
             <button
@@ -350,12 +383,12 @@ export default function Dashboard() {
               {copied ? (
                 <>
                   <Check size={18} className="copy-pop" />
-                  Copied!
+                  {t('dashboard.copied', 'Copied!')}
                 </>
               ) : (
                 <>
                   <Copy size={18} />
-                  Copy Link
+                  {t('dashboard.copy_link', 'Copy Link')}
                 </>
               )}
             </button>
@@ -370,7 +403,7 @@ export default function Dashboard() {
             onClick={() => setShowQR(!showQR)}
             className="inline-flex items-center gap-2 text-sm font-medium text-ocean hover:text-electric transition-colors mb-3"
           >
-            {showQR ? '▾ Hide QR Code' : '▸ Show QR Code'}
+            {showQR ? `▾ ${t('dashboard.hide_qr', 'Hide QR Code')}` : `▸ ${t('dashboard.show_qr', 'Show QR Code')}`}
           </button>
           {showQR && (
             <Card className="p-6">
@@ -385,7 +418,7 @@ export default function Dashboard() {
                   />
                 </div>
                 <div className="text-center sm:text-left">
-                  <h3 className="font-bold text-deep mb-2">Scan to join Staylo</h3>
+                  <h3 className="font-bold text-deep mb-2">{t('dashboard.qr_title', 'Scan to join Staylo')}</h3>
                   <p className="text-sm text-gray-500 mb-3">{t('dashboard.qr_desc', 'Print it, show it, share it — any hotelier who scans it is linked to you forever.')}</p>
                   <button
                     onClick={() => {
@@ -424,8 +457,8 @@ export default function Dashboard() {
         <Card className="p-6">
           <h3 className="font-semibold text-deep mb-3">{t('dashboard.savings_title')}</h3>
           <p className="text-3xl font-bold text-libre mb-1">
-            ${Math.round(estimatedSavings).toLocaleString()}
-            <span className="text-sm font-normal text-gray-400">/year</span>
+            {fmt(Math.round(estimatedSavings))}
+            <span className="text-sm font-normal text-gray-400">/{t('dashboard.per_year', 'year')}</span>
           </p>
           <p className="text-sm text-gray-500">{t('dashboard.savings_description')}</p>
         </Card>
@@ -458,7 +491,7 @@ export default function Dashboard() {
                 <div>
                   <h4 className="font-medium text-deep">{prop.name}</h4>
                   <p className="text-sm text-gray-500">
-                    {prop.city}, {prop.country} — {prop.room_count} rooms
+                    {prop.city}, {prop.country} — {t('dashboard.rooms_count', { count: prop.room_count })}
                   </p>
                 </div>
                 <Badge variant={statusColors[prop.status]}>
