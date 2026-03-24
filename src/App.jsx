@@ -16,6 +16,7 @@ import AmbassadorRegister from './pages/AmbassadorRegister'
 import AmbassadorDashboard from './pages/AmbassadorDashboard'
 import AmbassadorGuide from './pages/AmbassadorGuide'
 import Splash from './pages/Splash'
+import Welcome from './pages/Welcome'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminProperties from './pages/admin/AdminProperties'
@@ -50,6 +51,7 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/join" element={<Register />} />
+            <Route path="/welcome" element={<Welcome />} />
             <Route path="/loi" element={<LOI />} />
             <Route path="/loi/:ref" element={<LOI />} />
             <Route path="/splash" element={<Splash />} />

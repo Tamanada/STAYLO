@@ -337,7 +337,7 @@ export default function Dashboard() {
             <div className="flex flex-col sm:flex-row items-center gap-6">
               <div className="qr-hotelier bg-white p-3 rounded-2xl shadow-md border border-gray-100 shrink-0">
                 <QRCodeSVG
-                  value={referralLink}
+                  value={`https://staylo.app/welcome?ref=${referralCode}`}
                   size={150}
                   bgColor="#FFFFFF"
                   fgColor="#0A1628"

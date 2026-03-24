@@ -59,7 +59,14 @@ export default function Vision() {
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <Badge variant="golden" className="mb-6">{t('vision.title')}</Badge>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6">{t('vision.hero_title')}</h1>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto">{t('vision.hero_subtitle')}</p>
+          <p className="text-lg text-white/70 max-w-2xl mx-auto mb-10">{t('vision.hero_subtitle')}</p>
+          <Link to="/register">
+            <button className="px-10 py-4 bg-gradient-to-r from-golden to-sunrise text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-3 cursor-pointer">
+              <Sparkles size={22} />
+              {t('vision.invest_cta', 'Become a Founding Member')}
+              <ArrowRight size={20} />
+            </button>
+          </Link>
         </div>
       </section>
 

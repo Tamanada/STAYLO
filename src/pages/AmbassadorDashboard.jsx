@@ -92,7 +92,7 @@ export default function AmbassadorDashboard() {
             <p className="text-sm font-medium text-deep mb-3">Scan to share</p>
             <div className="qr-download bg-white p-4 rounded-2xl shadow-md border border-gray-100">
               <QRCodeSVG
-                value={ambassadorLink}
+                value={`https://staylo.app/welcome?amb=${ambassador.referral_code}`}
                 size={180}
                 bgColor="#FFFFFF"
                 fgColor="#0A1628"
