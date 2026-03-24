@@ -14,6 +14,8 @@ export default function Register() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const refCode = searchParams.get('ref')
+  const ambCode = searchParams.get('amb')
+  const referralCode = refCode || ambCode
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
@@ -26,8 +28,8 @@ export default function Register() {
     setError('')
     setLoading(true)
     try {
-      await signUp(email, password, fullName, refCode)
-      trackEvent(EVENTS.SIGNUP, { referred: !!refCode })
+      await signUp(email, password, fullName, referralCode)
+      trackEvent(EVENTS.SIGNUP, { referred: !!referralCode, ambassador: !!ambCode })
       navigate('/survey')
     } catch (err) {
       setError(err.message)
@@ -43,9 +45,10 @@ export default function Register() {
       </div>
 
       <Card className="p-8">
-        {refCode && (
-          <div className="mb-5">
-            <Badge variant="green">{t('auth.referred_by', { code: refCode })}</Badge>
+        {referralCode && (
+          <div className="mb-5 p-3 bg-libre/5 border border-libre/20 rounded-xl">
+            <p className="text-xs text-gray-500 mb-1">{ambCode ? 'Referred by Ambassador' : 'Referred by'}</p>
+            <p className="font-mono font-bold text-libre text-sm">{referralCode}</p>
           </div>
         )}
 
