@@ -200,7 +200,7 @@ export default function Vision() {
                   <div className="h-px bg-white/10" />
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 text-sm">{t('vision.flow_ota_where', 'Where does it go?')}</span>
-                    <span className="text-sm text-gray-500">→ Silicon Valley</span>
+                    <span className="text-sm text-gray-500">→ {t('vision.flow_ota_destination', 'Hedge funds & tax havens')}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 text-sm">{t('vision.flow_ota_back', 'What comes back to you?')}</span>
