@@ -233,14 +233,14 @@ export default function Vision() {
                     <span className="text-gray-400 text-sm">{t('vision.flow_staylo_where', 'Where does it go?')}</span>
                     <span className="text-sm text-libre">→ {t('vision.flow_staylo_community', 'Your community')}</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">{t('vision.flow_staylo_back', 'What comes back to you?')}</span>
-                    <span className="text-lg font-bold text-libre">$2 <span className="text-xs font-normal text-gray-400">{t('vision.flow_dividends', 'dividends')}</span></span>
-                  </div>
                   <div className="h-px bg-white/10" />
                   <div className="flex items-center justify-between">
                     <span className="text-gray-300 font-medium">{t('vision.flow_you_keep', 'You keep')}</span>
-                    <span className="text-2xl font-bold text-libre">$92</span>
+                    <span className="text-2xl font-bold text-libre">$90</span>
+                  </div>
+                  <div className="text-center mt-3 bg-libre/20 rounded-lg py-2">
+                    <span className="text-libre font-bold text-lg">+15.4% </span>
+                    <span className="text-gray-400 text-sm">{t('vision.flow_more_revenue', 'more revenue vs OTAs')}</span>
                   </div>
                 </div>
               </div>
