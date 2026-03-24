@@ -38,10 +38,11 @@ const PER_HOTEL = Math.round(AVG_ANNUAL * AMBASSADOR_PCT)
 
 export default function AmbassadorLanding() {
   const [hotelCount, setHotelCount] = useState(5)
+  const [roomCount, setRoomCount] = useState(AVG_ROOMS)
   const [nightlyRate, setNightlyRate] = useState(AVG_RATE)
   const [occupancy, setOccupancy] = useState(Math.round(OCCUPANCY * 100))
 
-  const annualPerHotel = AVG_ROOMS * nightlyRate * 365 * (occupancy / 100)
+  const annualPerHotel = roomCount * nightlyRate * 365 * (occupancy / 100)
   const perHotelIncome = Math.round(annualPerHotel * AMBASSADOR_PCT)
   const totalIncome = perHotelIncome * hotelCount
 
@@ -131,6 +132,26 @@ export default function AmbassadorLanding() {
               </div>
             </div>
 
+            {/* Rooms slider */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-semibold text-deep">Rooms per hotel</label>
+                <span className="text-2xl font-bold text-electric">{roomCount}</span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={100}
+                value={roomCount}
+                onChange={(e) => setRoomCount(Number(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-electric"
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <span>1 room</span>
+                <span>100 rooms</span>
+              </div>
+            </div>
+
             {/* Rate slider */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
@@ -178,7 +199,7 @@ export default function AmbassadorLanding() {
               <h4 className="text-sm font-semibold text-deep mb-4">Per hotel calculation</h4>
               <div className="space-y-2 text-sm text-gray-500">
                 <div className="flex justify-between">
-                  <span>{AVG_ROOMS} rooms × ${nightlyRate}/night × {occupancy}% occupancy</span>
+                  <span>{roomCount} rooms × ${nightlyRate}/night × {occupancy}% occupancy</span>
                   <span className="font-semibold text-deep">~${Math.round(annualPerHotel / 1000)}K/year</span>
                 </div>
                 <div className="flex justify-between">
