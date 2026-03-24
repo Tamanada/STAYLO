@@ -44,7 +44,7 @@ export function HowItWorks() {
                   </p>
 
                   <span className="inline-flex items-center gap-1 text-sm font-semibold text-ocean opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    Start <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    {t('how.start', 'Start')} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </span>
                 </div>
               </div>
@@ -61,7 +61,7 @@ export function HowItWorks() {
             <div className="w-24 h-0.5 bg-gradient-to-r from-libre to-sunrise" />
             <div className="w-3 h-3 rounded-full bg-sunrise" />
             <div className="w-16 h-0.5 bg-gradient-to-r from-sunrise to-golden" />
-            <span className="text-xs font-bold text-golden">FREEDOM</span>
+            <span className="text-xs font-bold text-golden">{t('how.freedom', 'FREEDOM')}</span>
           </div>
         </div>
       </div>

@@ -56,7 +56,7 @@ export function FoundingMembers() {
         <div className="text-center mb-14">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-golden/10 border border-golden/20 rounded-full text-sm text-golden font-semibold mb-4">
             <Crown size={14} />
-            Founding Members
+            {t('founding_members.badge', 'Founding Members')}
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-3">
             {t('social_proof.title', { count: 120 })}
@@ -91,15 +91,15 @@ export function FoundingMembers() {
             <p className="text-3xl sm:text-4xl font-extrabold">
               <AnimatedCounter target={42} />
             </p>
-            <p className="text-sm text-white/50">Cities worldwide</p>
+            <p className="text-sm text-white/50">{t('founding_members.cities', 'Cities worldwide')}</p>
           </div>
         </div>
 
         {/* Founding members list preview */}
         <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 max-w-2xl mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-semibold text-white/70">Latest founding members</span>
-            <span className="text-xs text-golden font-mono">LIVE</span>
+            <span className="text-sm font-semibold text-white/70">{t('founding_members.latest', 'Latest founding members')}</span>
+            <span className="text-xs text-golden font-mono">{t('founding_members.live', 'LIVE')}</span>
           </div>
           <div className="space-y-2">
             {founders.map((f, i) => (
@@ -117,7 +117,7 @@ export function FoundingMembers() {
                 </div>
                 <div className="text-right">
                   <p className="text-xs text-white/60">{f.type}</p>
-                  <p className="text-xs text-libre font-mono">{f.rooms} rooms</p>
+                  <p className="text-xs text-libre font-mono">{t('founding_members.rooms_count', '{{count}} rooms', { count: f.rooms })}</p>
                 </div>
               </div>
             ))}

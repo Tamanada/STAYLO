@@ -147,7 +147,7 @@ export function Navbar() {
             </Link>
 
             <div className="border-t border-gray-100 pt-3">
-              <p className="text-xs text-gray-400 mb-2">Language</p>
+              <p className="text-xs text-gray-400 mb-2">{t('nav.language', 'Language')}</p>
               <div className="grid grid-cols-3 gap-2">
                 {languages.map(lang => (
                   <button

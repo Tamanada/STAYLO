@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
@@ -7,6 +8,7 @@ import { supabase } from '../lib/supabase'
 import { generateAmbassadorCode } from '../lib/referral'
 
 export default function AmbassadorRegister() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
 
   const [fullName, setFullName] = useState('')
@@ -59,8 +61,8 @@ export default function AmbassadorRegister() {
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-deep mb-2">Become a Staylo Ambassador</h1>
-        <p className="text-gray-500">Join our ambassador program and earn rewards for every referral.</p>
+        <h1 className="text-3xl font-bold text-deep mb-2">{t('ambassador_register.title', 'Become a Staylo Ambassador')}</h1>
+        <p className="text-gray-500">{t('ambassador_register.subtitle', 'Join the movement and earn rewards for every hotel you bring into the family.')}</p>
       </div>
 
       <Card className="p-8">
@@ -72,42 +74,42 @@ export default function AmbassadorRegister() {
           )}
 
           <Input
-            label="Full Name"
-            placeholder="Enter your full name"
+            label={t('ambassador_register.label_full_name', 'Full Name')}
+            placeholder={t('ambassador_register.placeholder_full_name', 'Enter your full name')}
             value={fullName}
             onChange={e => setFullName(e.target.value)}
             required
           />
 
           <Input
-            label="Email"
+            label={t('ambassador_register.label_email', 'Email')}
             type="email"
-            placeholder="you@example.com"
+            placeholder={t('ambassador_register.placeholder_email', 'you@example.com')}
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
           />
 
           <Input
-            label="Phone (optional)"
+            label={t('ambassador_register.label_phone', 'Phone (optional)')}
             type="tel"
-            placeholder="+66 812 345 678"
+            placeholder={t('ambassador_register.placeholder_phone', '+66 812 345 678')}
             value={phone}
             onChange={e => setPhone(e.target.value)}
           />
 
           <Input
-            label="Country"
-            placeholder="e.g. Thailand"
+            label={t('ambassador_register.label_country', 'Country')}
+            placeholder={t('ambassador_register.placeholder_country', 'e.g. Thailand')}
             value={country}
             onChange={e => setCountry(e.target.value)}
             required
           />
 
           <Input
-            label="Password"
+            label={t('ambassador_register.label_password', 'Password')}
             type="password"
-            placeholder="Min. 8 characters"
+            placeholder={t('ambassador_register.placeholder_password', 'Min. 8 characters')}
             value={password}
             onChange={e => setPassword(e.target.value)}
             minLength={8}
@@ -115,14 +117,14 @@ export default function AmbassadorRegister() {
           />
 
           <Button type="submit" variant="green" className="w-full" disabled={loading}>
-            {loading ? 'Creating account...' : 'Register as Ambassador'}
+            {loading ? t('ambassador_register.creating', 'Creating account...') : t('ambassador_register.submit', 'Register as Ambassador')}
           </Button>
         </form>
 
         <p className="text-sm text-center text-gray-500 mt-6">
-          Already registered?{' '}
+          {t('ambassador_register.already_registered', 'Already registered?')}{' '}
           <Link to="/login" className="text-ocean font-medium hover:underline">
-            Log in
+            {t('ambassador_register.login', 'Log in')}
           </Link>
         </p>
       </Card>

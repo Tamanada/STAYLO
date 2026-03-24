@@ -1,8 +1,10 @@
 import { useSearchParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Hotel, Users, Megaphone, ArrowRight, Sparkles } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 
 export default function Welcome() {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const ref = searchParams.get('ref') || ''
   const amb = searchParams.get('amb') || ''
@@ -19,7 +21,7 @@ export default function Welcome() {
           </Link>
           {code && (
             <p className="text-sm text-gray-400 mt-2">
-              Referred by: <span className="font-mono text-golden">{code}</span>
+              {t('welcome.referred_by', 'Referred by:')} <span className="font-mono text-golden">{code}</span>
             </p>
           )}
         </div>
@@ -27,10 +29,10 @@ export default function Welcome() {
         {/* Title */}
         <div className="text-center mb-10">
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">
-            Welcome to Staylo
+            {t('welcome.title', 'Welcome to Staylo')}
           </h1>
           <p className="text-gray-400">
-            What brings you here today?
+            {t('welcome.subtitle', 'What brings you here today?')}
           </p>
         </div>
 
@@ -44,8 +46,8 @@ export default function Welcome() {
                   <Sparkles size={26} className="text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-white text-lg group-hover:text-golden transition-colors">Become a Founding Partner</h3>
-                  <p className="text-sm text-gray-400">Invest in Staylo and own a piece of the platform</p>
+                  <h3 className="font-bold text-white text-lg group-hover:text-golden transition-colors">{t('welcome.partner_title', 'Become a Founding Partner')}</h3>
+                  <p className="text-sm text-gray-400">{t('welcome.partner_desc', 'Invest in Staylo and own a piece of the platform')}</p>
                 </div>
                 <ArrowRight size={20} className="text-gray-500 group-hover:text-golden transition-colors shrink-0" />
               </div>
@@ -60,8 +62,8 @@ export default function Welcome() {
                   <Hotel size={26} className="text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-white text-lg group-hover:text-libre transition-colors">Register my property</h3>
-                  <p className="text-sm text-gray-400">Add your hotel, guesthouse, or resort to Staylo</p>
+                  <h3 className="font-bold text-white text-lg group-hover:text-libre transition-colors">{t('welcome.property_title', 'Register my property')}</h3>
+                  <p className="text-sm text-gray-400">{t('welcome.property_desc', 'Add your hotel, guesthouse, or resort to Staylo')}</p>
                 </div>
                 <ArrowRight size={20} className="text-gray-500 group-hover:text-libre transition-colors shrink-0" />
               </div>
@@ -76,8 +78,8 @@ export default function Welcome() {
                   <Megaphone size={26} className="text-white" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-white text-lg group-hover:text-sunset transition-colors">Become an Ambassador</h3>
-                  <p className="text-sm text-gray-400">Earn 2% passive income for life on every hotel you bring</p>
+                  <h3 className="font-bold text-white text-lg group-hover:text-sunset transition-colors">{t('welcome.ambassador_title', 'Become an Ambassador')}</h3>
+                  <p className="text-sm text-gray-400">{t('welcome.ambassador_desc', 'Earn 2% passive income for life on every hotel you bring')}</p>
                 </div>
                 <ArrowRight size={20} className="text-gray-500 group-hover:text-sunset transition-colors shrink-0" />
               </div>
@@ -87,7 +89,7 @@ export default function Welcome() {
 
         {/* Footer */}
         <p className="text-center text-xs text-gray-600 mt-10">
-          Already have an account? <Link to="/login" className="text-ocean hover:text-electric underline">Log in</Link>
+          {t('welcome.already_account', 'Already have an account?')} <Link to="/login" className="text-ocean hover:text-electric underline">{t('welcome.login', 'Log in')}</Link>
         </p>
       </div>
     </div>

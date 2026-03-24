@@ -8,15 +8,6 @@ import { Input } from '../components/ui/Input'
 import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
 
-const shareDetails = [
-  { label: 'Price per share', value: '$1,000 USD (~35,000 THB)' },
-  { label: 'Minimum', value: '1 share per property' },
-  { label: 'Maximum', value: '10 shares per property' },
-  { label: 'Voting', value: '1 property = 1 vote' },
-  { label: 'Dividends', value: 'Proportional to shares held' },
-  { label: 'Transferable', value: 'Yes — freely transferable' },
-]
-
 export default function LOI() {
   const { ref } = useParams()
   const { t } = useTranslation()
@@ -31,6 +22,15 @@ export default function LOI() {
     email: '',
     phone: '',
   })
+
+  const shareDetails = [
+    { label: t('loi.share_price_label', 'Price per share'), value: t('loi.share_price_value', '$1,000 USD (~35,000 THB)') },
+    { label: t('loi.share_minimum_label', 'Minimum'), value: t('loi.share_minimum_value', '1 share per property') },
+    { label: t('loi.share_maximum_label', 'Maximum'), value: t('loi.share_maximum_value', '10 shares per property') },
+    { label: t('loi.share_voting_label', 'Voting'), value: t('loi.share_voting_value', '1 property = 1 vote') },
+    { label: t('loi.share_dividends_label', 'Dividends'), value: t('loi.share_dividends_value', 'Proportional to shares held') },
+    { label: t('loi.share_transferable_label', 'Transferable'), value: t('loi.share_transferable_value', 'Yes — freely transferable') },
+  ]
 
   useEffect(() => {
     if (profile) {
@@ -87,24 +87,24 @@ export default function LOI() {
         <div className="w-24 h-24 bg-libre/10 rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle size={48} className="text-libre" />
         </div>
-        <h2 className="text-3xl font-bold text-deep mb-3">Letter of Intent Signed</h2>
+        <h2 className="text-3xl font-bold text-deep mb-3">{t('loi.done_title', 'Letter of Intent Signed')}</h2>
         <p className="text-gray-500 mb-8">
-          Welcome to the founding partners of Staylo. You've reserved{' '}
-          <span className="font-bold text-libre">{shares} share{shares > 1 ? 's' : ''}</span>{' '}
+          {t('loi.done_welcome', 'Welcome to the founding partners of Staylo. You\'ve reserved')}{' '}
+          <span className="font-bold text-libre">{shares} {t('loi.share_unit', { count: shares, defaultValue: 'share' })}{shares > 1 ? 's' : ''}</span>{' '}
           (${(shares * 1000).toLocaleString()}).
-          We'll contact you within 48 hours with the full partnership agreement.
+          {' '}{t('loi.done_contact', 'We\'ll reach out within 48 hours with your full partnership agreement.')}
         </p>
         <div className="bg-deep/5 rounded-2xl p-6 mb-8 text-left">
-          <h4 className="font-semibold text-deep mb-3">What happens next:</h4>
+          <h4 className="font-semibold text-deep mb-3">{t('loi.done_next_title', 'What happens next:')}</h4>
           <ol className="space-y-2 text-sm text-gray-600">
-            <li className="flex gap-3"><span className="font-bold text-ocean">1.</span> We review your LOI (24-48h)</li>
-            <li className="flex gap-3"><span className="font-bold text-ocean">2.</span> Full partnership contract sent for signature</li>
-            <li className="flex gap-3"><span className="font-bold text-ocean">3.</span> Share payment processed</li>
-            <li className="flex gap-3"><span className="font-bold text-ocean">4.</span> You're officially a Staylo founding partner</li>
+            <li className="flex gap-3"><span className="font-bold text-ocean">1.</span> {t('loi.done_step1', 'We review your LOI (24-48h)')}</li>
+            <li className="flex gap-3"><span className="font-bold text-ocean">2.</span> {t('loi.done_step2', 'Full partnership contract sent for signature')}</li>
+            <li className="flex gap-3"><span className="font-bold text-ocean">3.</span> {t('loi.done_step3', 'Share payment processed')}</li>
+            <li className="flex gap-3"><span className="font-bold text-ocean">4.</span> {t('loi.done_step4', 'You\'re officially a Staylo founding partner')}</li>
           </ol>
         </div>
         <Button onClick={() => navigate('/dashboard')} size="lg">
-          Go to Dashboard
+          {t('loi.done_dashboard', 'Go to Dashboard')}
           <ArrowRight size={18} />
         </Button>
       </div>
@@ -117,14 +117,13 @@ export default function LOI() {
       <div className="text-center mb-10">
         <div className="inline-flex items-center gap-2 bg-ocean/10 text-ocean px-4 py-2 rounded-full text-sm font-medium mb-4">
           <FileText size={16} />
-          Non-binding Letter of Intent
+          {t('loi.badge', 'Non-binding Letter of Intent')}
         </div>
         <h1 className="text-4xl font-bold text-deep mb-3">
-          Become a Founding Partner
+          {t('loi.title', 'Become a Founding Partner')}
         </h1>
         <p className="text-gray-500 max-w-xl mx-auto">
-          Sign this non-binding letter of intent to reserve your shares in Staylo.
-          No payment required now — just your commitment to the movement.
+          {t('loi.subtitle', 'Sign this letter of intent to claim your place in the movement. No payment required now — just your commitment to building something that\'s truly ours.')}
         </p>
       </div>
 
@@ -134,7 +133,7 @@ export default function LOI() {
           <Card className="p-8 mb-8">
             <h3 className="text-xl font-bold text-deep mb-6 flex items-center gap-2">
               <Shield size={22} className="text-ocean" />
-              Share Structure — Alpha Phase
+              {t('loi.structure_title', 'Share Structure — Alpha Phase')}
             </h3>
             <div className="grid sm:grid-cols-2 gap-4 mb-8">
               {shareDetails.map(item => (
@@ -149,24 +148,24 @@ export default function LOI() {
               <div className="bg-ocean/5 rounded-2xl p-5 text-center">
                 <Users size={24} className="text-ocean mx-auto mb-2" />
                 <p className="text-2xl font-bold text-deep">3,000</p>
-                <p className="text-xs text-gray-500">Alpha shares available</p>
+                <p className="text-xs text-gray-500">{t('loi.alpha_shares', 'Alpha shares available')}</p>
               </div>
               <div className="bg-libre/5 rounded-2xl p-5 text-center">
                 <TrendingUp size={24} className="text-libre mx-auto mb-2" />
                 <p className="text-2xl font-bold text-deep">~5.9x</p>
-                <p className="text-xs text-gray-500">Average ROI year 1</p>
+                <p className="text-xs text-gray-500">{t('loi.avg_roi', 'Average ROI year 1')}</p>
               </div>
               <div className="bg-sunset/5 rounded-2xl p-5 text-center">
                 <Shield size={24} className="text-sunset mx-auto mb-2" />
                 <p className="text-2xl font-bold text-deep">10%</p>
-                <p className="text-xs text-gray-500">Commission (vs 17-22%)</p>
+                <p className="text-xs text-gray-500">{t('loi.commission_compare', 'Commission (vs 17-22%)')}</p>
               </div>
             </div>
           </Card>
 
           <div className="text-center">
             <Button onClick={() => setStep('form')} size="lg">
-              I'm interested — Let me sign the LOI
+              {t('loi.cta_sign', 'I\'m in — Let me sign the LOI')}
               <ArrowRight size={18} />
             </Button>
           </div>
@@ -176,39 +175,39 @@ export default function LOI() {
       {/* Form + signing */}
       {step === 'form' && (
         <Card className="p-8">
-          <h3 className="text-xl font-bold text-deep mb-6">Your Information</h3>
+          <h3 className="text-xl font-bold text-deep mb-6">{t('loi.form_title', 'Your Information')}</h3>
 
           <div className="space-y-5 mb-8">
             <div>
-              <label className="block text-sm font-medium text-deep mb-2">Full name</label>
+              <label className="block text-sm font-medium text-deep mb-2">{t('loi.label_full_name', 'Full name')}</label>
               <Input
-                placeholder="Your full name"
+                placeholder={t('loi.placeholder_full_name', 'Your full name')}
                 value={formData.full_name}
                 onChange={e => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-deep mb-2">Property name</label>
+              <label className="block text-sm font-medium text-deep mb-2">{t('loi.label_property_name', 'Property name')}</label>
               <Input
-                placeholder="e.g. Sunset Beach Resort"
+                placeholder={t('loi.placeholder_property_name', 'e.g. Sunset Beach Resort')}
                 value={formData.property_name}
                 onChange={e => setFormData(prev => ({ ...prev, property_name: e.target.value }))}
               />
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-deep mb-2">Email</label>
+                <label className="block text-sm font-medium text-deep mb-2">{t('loi.label_email', 'Email')}</label>
                 <Input
                   type="email"
-                  placeholder="you@hotel.com"
+                  placeholder={t('loi.placeholder_email', 'you@hotel.com')}
                   value={formData.email}
                   onChange={e => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-deep mb-2">Phone (optional)</label>
+                <label className="block text-sm font-medium text-deep mb-2">{t('loi.label_phone', 'Phone (optional)')}</label>
                 <Input
-                  placeholder="+66..."
+                  placeholder={t('loi.placeholder_phone', '+66...')}
                   value={formData.phone}
                   onChange={e => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                 />
@@ -218,7 +217,7 @@ export default function LOI() {
             {/* Share quantity selector */}
             <div>
               <label className="block text-sm font-medium text-deep mb-3">
-                Number of shares to reserve
+                {t('loi.label_shares', 'Number of shares to reserve')}
               </label>
               <div className="flex gap-2 flex-wrap">
                 {[1, 2, 3, 5, 10].map(n => (
@@ -231,12 +230,12 @@ export default function LOI() {
                         : 'border-gray-200 text-gray-500 hover:border-gray-300'
                     }`}
                   >
-                    {n} share{n > 1 ? 's' : ''}
+                    {n} {n > 1 ? t('loi.shares_plural', 'shares') : t('loi.shares_singular', 'share')}
                   </button>
                 ))}
               </div>
               <p className="text-sm text-gray-400 mt-2">
-                Total: <span className="font-bold text-deep">${(shares * 1000).toLocaleString()}</span>
+                {t('loi.total_label', 'Total:')} <span className="font-bold text-deep">${(shares * 1000).toLocaleString()}</span>
               </p>
             </div>
           </div>
@@ -244,16 +243,13 @@ export default function LOI() {
           {/* Agreement checkbox area */}
           <div className="bg-cream rounded-2xl p-6 mb-6">
             <p className="text-sm text-gray-600 leading-relaxed">
-              By signing this Letter of Intent, I express my non-binding interest in becoming
-              a founding partner of Staylo. I understand that this LOI is not a contract and
-              does not commit me financially. The full partnership agreement will be sent
-              separately for review and signature.
+              {t('loi.agreement_text', 'By signing this Letter of Intent, I express my non-binding interest in becoming a founding partner of Staylo. I understand that this LOI is not a contract and does not commit me financially. The full partnership agreement will be sent separately for review and signature.')}
             </p>
           </div>
 
           <div className="flex gap-3">
             <Button variant="secondary" onClick={() => setStep('info')}>
-              Back
+              {t('loi.back', 'Back')}
             </Button>
             <Button
               variant="green"
@@ -264,11 +260,11 @@ export default function LOI() {
               {loading ? (
                 <>
                   <Loader2 size={18} className="animate-spin" />
-                  Signing...
+                  {t('loi.signing', 'Signing...')}
                 </>
               ) : (
                 <>
-                  Sign Letter of Intent
+                  {t('loi.sign_button', 'Sign Letter of Intent')}
                   <FileText size={18} />
                 </>
               )}

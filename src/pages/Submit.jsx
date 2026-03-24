@@ -116,7 +116,7 @@ export default function Submit() {
           <div className="bg-ocean/5 rounded-xl p-5 space-y-4">
             <div className="flex items-center gap-2 text-sm font-medium text-ocean">
               <LinkIcon size={16} />
-              <span>Paste your existing listing URL to auto-fill</span>
+              <span>{t('property.paste_url', 'Paste your existing listing URL to auto-fill')}</span>
             </div>
             <Input
               label={t('property.booking_link')}
@@ -214,7 +214,7 @@ export default function Submit() {
 
           {!user && (
             <p className="text-sm text-center text-gray-400">
-              You'll need to create an account to submit your property.
+              {t('property.account_required', "You'll need to create an account to submit your property.")}
             </p>
           )}
         </form>
