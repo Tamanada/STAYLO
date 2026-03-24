@@ -38,8 +38,12 @@ const PER_HOTEL = Math.round(AVG_ANNUAL * AMBASSADOR_PCT)
 
 export default function AmbassadorLanding() {
   const [hotelCount, setHotelCount] = useState(5)
+  const [nightlyRate, setNightlyRate] = useState(AVG_RATE)
+  const [occupancy, setOccupancy] = useState(Math.round(OCCUPANCY * 100))
 
-  const totalIncome = PER_HOTEL * hotelCount
+  const annualPerHotel = AVG_ROOMS * nightlyRate * 365 * (occupancy / 100)
+  const perHotelIncome = Math.round(annualPerHotel * AMBASSADOR_PCT)
+  const totalIncome = perHotelIncome * hotelCount
 
   return (
     <div className="relative">
@@ -107,8 +111,8 @@ export default function AmbassadorLanding() {
           </div>
 
           <Card className="p-8 sm:p-10 border-2 border-electric/20">
-            {/* Slider */}
-            <div className="mb-8">
+            {/* Hotels slider */}
+            <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-semibold text-deep">Hotels you recruit</label>
                 <span className="text-3xl font-black text-electric">{hotelCount}</span>
@@ -116,28 +120,70 @@ export default function AmbassadorLanding() {
               <input
                 type="range"
                 min={1}
-                max={20}
+                max={50}
                 value={hotelCount}
                 onChange={(e) => setHotelCount(Number(e.target.value))}
                 className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-electric"
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>1 hotel</span>
-                <span>20 hotels</span>
+                <span>50 hotels</span>
+              </div>
+            </div>
+
+            {/* Rate slider */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-semibold text-deep">Avg. nightly rate</label>
+                <span className="text-2xl font-bold text-sunset">${nightlyRate}</span>
+              </div>
+              <input
+                type="range"
+                min={20}
+                max={300}
+                step={5}
+                value={nightlyRate}
+                onChange={(e) => setNightlyRate(Number(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-sunset"
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <span>$20/night</span>
+                <span>$300/night</span>
+              </div>
+            </div>
+
+            {/* Occupancy slider */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-semibold text-deep">Avg. occupancy</label>
+                <span className="text-2xl font-bold text-ocean">{occupancy}%</span>
+              </div>
+              <input
+                type="range"
+                min={20}
+                max={95}
+                step={5}
+                value={occupancy}
+                onChange={(e) => setOccupancy(Number(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-ocean"
+              />
+              <div className="flex justify-between text-xs text-gray-400 mt-1">
+                <span>20%</span>
+                <span>95%</span>
               </div>
             </div>
 
             {/* Breakdown */}
             <div className="bg-deep/5 rounded-2xl p-6 mb-6">
-              <h4 className="text-sm font-semibold text-deep mb-4">Average hotel calculation</h4>
+              <h4 className="text-sm font-semibold text-deep mb-4">Per hotel calculation</h4>
               <div className="space-y-2 text-sm text-gray-500">
                 <div className="flex justify-between">
-                  <span>{AVG_ROOMS} rooms x ${AVG_RATE}/night x {Math.round(OCCUPANCY * 100)}% occupancy</span>
-                  <span className="font-semibold text-deep">~${Math.round(AVG_ANNUAL / 1000)}K/year</span>
+                  <span>{AVG_ROOMS} rooms × ${nightlyRate}/night × {occupancy}% occupancy</span>
+                  <span className="font-semibold text-deep">~${Math.round(annualPerHotel / 1000)}K/year</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Your 2% ambassador share</span>
-                  <span className="font-semibold text-libre">~${PER_HOTEL.toLocaleString()}/year</span>
+                  <span className="font-semibold text-libre">~${perHotelIncome.toLocaleString()}/year</span>
                 </div>
               </div>
             </div>
