@@ -525,7 +525,7 @@ export default function Vision() {
             ))}
           </div>
 
-          <p className="text-center text-xs text-gray-500 mt-8">{t('vision.docs_note', 'Documents are verified by the Staylo team. Processing typically takes 3-5 business days after submission.')}</p>
+          <p className="text-center text-xs text-gray-500 mt-8">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
         </div>
       </section>
 
