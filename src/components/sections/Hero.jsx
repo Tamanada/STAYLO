@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Users, Zap, Link2Off, ShieldCheck, TrendingUp, Shield } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth'
 
 export function Hero() {
   const { t } = useTranslation()
+  const { user } = useAuth()
 
   return (
     <section className="relative overflow-hidden min-h-[92vh] flex items-center">
@@ -57,9 +59,9 @@ export function Hero() {
 
             {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4">
-              <Link to="/register">
+              <Link to={user ? '/dashboard' : '/register'}>
                 <button className="group relative px-8 py-4 bg-gradient-to-r from-golden via-sunrise to-sunset text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] flex items-center justify-center gap-3 cursor-pointer animate-pulse-glow">
-                  <span>{t('hero.cta')}</span>
+                  <span>{user ? t('nav.dashboard', 'Dashboard') : t('hero.cta')}</span>
                   <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </button>
               </Link>

@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
 
 const phases = [
   { key: 'phase1', icon: Hotel, gradient: 'from-ocean to-electric', status: 'Alpha', timeline: 'Now' },
@@ -27,6 +28,7 @@ const faqKeys = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']
 
 export default function Vision() {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const [sharesSold, setSharesSold] = useState(127)
   const [openFaq, setOpenFaq] = useState(null)
   const totalAlphaShares = 3000
@@ -60,10 +62,10 @@ export default function Vision() {
           <Badge variant="golden" className="mb-6">{t('vision.title')}</Badge>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6">{t('vision.hero_title')}</h1>
           <p className="text-lg text-white/70 max-w-2xl mx-auto mb-10">{t('vision.hero_subtitle')}</p>
-          <Link to="/register">
+          <Link to={user ? '/dashboard' : '/register'}>
             <button className="px-10 py-4 bg-gradient-to-r from-golden to-sunrise text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-3 cursor-pointer">
               <Sparkles size={22} />
-              {t('vision.invest_cta', 'Become a Founding Member')}
+              {user ? t('nav.dashboard', 'Go to Dashboard') : t('vision.invest_cta', 'Become a Founding Member')}
               <ArrowRight size={20} />
             </button>
           </Link>
@@ -574,9 +576,9 @@ export default function Vision() {
             <Sparkles size={18} className="absolute bottom-8 right-10 text-white/30 animate-float" style={{ animationDelay: '1s' }} />
             <h2 className="relative text-3xl sm:text-4xl font-extrabold mb-4">{t('vision.cta_title')}</h2>
             <p className="relative text-white/70 mb-8 max-w-lg mx-auto">{t('vision.cta_subtitle', 'Join {{count}}+ hoteliers who are taking back control of their business.', { count: sharesSold })}</p>
-            <Link to="/register">
+            <Link to={user ? '/dashboard' : '/register'}>
               <button className="relative px-10 py-4 bg-white text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer">
-                <span className="text-gradient">{t('vision.cta_button')}</span>
+                <span className="text-gradient">{user ? t('nav.dashboard', 'Go to Dashboard') : t('vision.cta_button')}</span>
                 <ArrowRight size={20} className="text-sunset" />
               </button>
             </Link>

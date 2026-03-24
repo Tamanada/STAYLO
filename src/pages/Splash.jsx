@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import {
   Shield, MapPin, Building2, Users, CheckCircle, XCircle,
   Clock, TrendingUp, Award, Star, Vote, ArrowRight, Zap
@@ -9,6 +10,7 @@ import { Badge } from '../components/ui/Badge'
 import { supabase } from '../lib/supabase'
 
 export default function Splash() {
+  const { user } = useAuth()
   const [partnerCount, setPartnerCount] = useState(12)
 
   useEffect(() => {
@@ -75,7 +77,7 @@ export default function Splash() {
           </p>
 
           {/* CTA */}
-          <Link to="/register">
+          <Link to={user ? '/dashboard' : '/register'}>
             <button className="group relative px-10 py-4 bg-gradient-to-r from-golden via-sunrise to-sunset text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[280px] inline-flex items-center justify-center gap-3 cursor-pointer animate-pulse-glow">
               <span>Apply for Round 1</span>
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -219,16 +221,6 @@ export default function Splash() {
               </div>
 
               <div className="flex items-start gap-3 bg-white/5 rounded-2xl p-4">
-                <div className="w-10 h-10 bg-electric/10 rounded-xl flex items-center justify-center shrink-0">
-                  <MapPin size={20} className="text-electric" />
-                </div>
-                <div>
-                  <p className="font-semibold text-white">Priority Listing</p>
-                  <p className="text-xs text-white/40">When booking engine goes live</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 bg-white/5 rounded-2xl p-4">
                 <div className="w-10 h-10 bg-sunset/10 rounded-xl flex items-center justify-center shrink-0">
                   <Shield size={20} className="text-sunset" />
                 </div>
@@ -360,7 +352,7 @@ export default function Splash() {
             </p>
 
             <div className="relative flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to="/register">
+              <Link to={user ? '/dashboard' : '/register'}>
                 <button className="group px-10 py-4 bg-white text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer">
                   <span className="text-gradient">Apply for Round 1</span>
                   <ArrowRight size={20} className="text-sunset group-hover:translate-x-1 transition-transform" />

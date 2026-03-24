@@ -1,9 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Sparkles } from 'lucide-react'
+import { useAuth } from '../../hooks/useAuth'
 
 export function CTASection() {
   const { t } = useTranslation()
+  const { user } = useAuth()
 
   return (
     <section className="py-16 sm:py-24">
@@ -22,9 +24,9 @@ export function CTASection() {
 
           <h2 className="relative text-3xl sm:text-4xl font-extrabold mb-4">{t('cta_section.title')}</h2>
           <p className="relative text-lg text-white/80 mb-8 max-w-lg mx-auto">{t('cta_section.subtitle')}</p>
-          <Link to="/register">
+          <Link to={user ? '/dashboard' : '/register'}>
             <button className="relative px-10 py-4 bg-white text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer">
-              <span className="text-gradient">{t('cta_section.button')}</span>
+              <span className="text-gradient">{user ? t('nav.dashboard', 'Go to Dashboard') : t('cta_section.button')}</span>
               <ArrowRight size={20} className="text-sunset" />
             </button>
           </Link>
