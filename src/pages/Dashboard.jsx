@@ -196,8 +196,8 @@ export default function Dashboard() {
         </Card>
         <Card className="p-4 text-center">
           <TrendingUp size={20} className="text-golden mx-auto mb-2" />
-          <p className="text-2xl font-black text-libre">{fmt(estimatedSavings)}</p>
-          <p className="text-xs text-gray-400">{t('dashboard.stat_monthly_revenue', 'Est. Monthly Savings')}</p>
+          <p className="text-2xl font-black text-libre">{fmt(0)}</p>
+          <p className="text-xs text-gray-400">{t('dashboard.stat_monthly_revenue', 'Revenue this month')}</p>
         </Card>
       </div>
 
