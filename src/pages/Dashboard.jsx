@@ -83,7 +83,6 @@ export default function Dashboard() {
   const [shares, setShares] = useState([])
   const [copied, setCopied] = useState(false)
   const [memberPosition, setMemberPosition] = useState(1)
-  const [linkTab, setLinkTab] = useState('hotelier') // 'hotelier' | 'ambassador'
   const [showQR, setShowQR] = useState(false)
 
   useEffect(() => {
@@ -127,10 +126,7 @@ export default function Dashboard() {
       .then(({ data }) => setShares(data || []))
   }, [user])
 
-  const ambassadorInviteLink = referralCode
-    ? `https://staylo.app/ambassador/register?ref=${referralCode}`
-    : ''
-  const activeLink = linkTab === 'hotelier' ? referralLink : ambassadorInviteLink
+  const activeLink = referralLink
 
   function copyReferralLink() {
     if (activeLink) {
@@ -304,30 +300,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Link type toggle */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 mb-4 w-fit">
-            <button
-              onClick={() => { setLinkTab('hotelier'); setCopied(false) }}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                linkTab === 'hotelier'
-                  ? 'bg-white text-ocean shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {t('dashboard.tab_hotelier', 'Share with hoteliers')}
-            </button>
-            <button
-              onClick={() => { setLinkTab('ambassador'); setCopied(false) }}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                linkTab === 'ambassador'
-                  ? 'bg-white text-sunset shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {t('dashboard.tab_ambassador', 'Invite as Ambassador')}
-            </button>
-          </div>
-
           {/* Referral link */}
           <div className="flex items-center gap-2 bg-gradient-to-r from-ocean/5 to-libre/5 border border-ocean/20 rounded-xl p-3 mb-5">
             <code className="text-sm text-ocean flex-1 truncate font-mono">
@@ -346,9 +318,7 @@ export default function Dashboard() {
             {/* WhatsApp */}
             <a
               href={`https://wa.me/?text=${encodeURIComponent(
-                linkTab === 'hotelier'
-                  ? t('dashboard.wa_hotelier_msg', { link: activeLink || '' })
-                  : t('dashboard.wa_ambassador_msg', { link: activeLink || '' })
+                t('dashboard.wa_hotelier_msg', { link: activeLink || '' })
               )}`}
               target="_blank"
               rel="noopener noreferrer"
