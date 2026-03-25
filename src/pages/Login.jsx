@@ -69,11 +69,11 @@ export default function Login() {
           <button
             type="button"
             onClick={async () => {
-              if (!email) { alert('Enter your email first'); return }
+              if (!email) { alert(t('auth.enter_email_first', 'Enter your email first')); return }
               const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: window.location.origin + '/reset-password',
               })
-              if (!error) alert('Check your email for the reset link!')
+              if (!error) alert(t('auth.reset_link_sent', 'Check your email for the reset link!'))
               else alert(error.message)
             }}
             className="w-full text-sm text-gray-400 hover:text-electric mt-2 cursor-pointer"

@@ -48,7 +48,7 @@ export default function Register() {
       <Card className="p-8">
         {referralCode && (
           <div className="mb-5 p-3 bg-libre/5 border border-libre/20 rounded-xl">
-            <p className="text-xs text-gray-500 mb-1">{ambCode ? 'Referred by Ambassador' : 'Referred by'}</p>
+            <p className="text-xs text-gray-500 mb-1">{ambCode ? t('auth.referred_by_ambassador', 'Referred by Ambassador') : t('auth.referred_by', 'Referred by')}</p>
             <p className="font-mono font-bold text-libre text-sm">{referralCode}</p>
           </div>
         )}

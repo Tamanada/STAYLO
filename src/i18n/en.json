@@ -267,7 +267,11 @@
     "register_link": "Sign up",
     "login_link": "Log in",
     "or": "or",
-    "referred_by": "Referred by: {{code}}"
+    "referred_by": "Referred by",
+    "referred_by_ambassador": "Referred by Ambassador",
+    "enter_email_first": "Enter your email first",
+    "reset_link_sent": "Check your email for the reset link!",
+    "forgot_password": "Forgot your password?"
   },
   "dashboard": {
     "title": "Your Dashboard",
@@ -478,7 +482,8 @@
       "survey": "Survey",
       "contact": "Contact"
     },
-    "copyright": "© {{year}} Staylo. All rights reserved."
+    "copyright": "© {{year}} Staylo. All rights reserved.",
+    "operated_by": "Operated by Barokat Halal Food Co., Ltd."
   },
   "loi": {
     "badge": "Non-binding Letter of Intent",
