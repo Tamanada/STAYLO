@@ -181,6 +181,34 @@ export default function Vision() {
         </div>
       </section>
 
+      {/* Fund Allocation — Where investment goes */}
+      <section className="py-16 bg-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.fund_title', 'Where Your Investment Goes')}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency.')}</p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { icon: Target, label: t('vision.fund_tech', 'Technology'), pct: '45%', desc: t('vision.fund_tech_desc', 'Booking engine, mobile app, channel manager, PMS integration'), color: 'ocean' },
+              { icon: TrendingUp, label: t('vision.fund_marketing', 'Marketing'), pct: '25%', desc: t('vision.fund_marketing_desc', 'Traveler acquisition, SEO, content, launch campaigns'), color: 'sunset' },
+              { icon: Users, label: t('vision.fund_team', 'Team'), pct: '20%', desc: t('vision.fund_team_desc', 'Engineering, support, business development, operations'), color: 'libre' },
+              { icon: Shield, label: t('vision.fund_legal', 'Legal & Compliance'), pct: '10%', desc: t('vision.fund_legal_desc', 'Company registration, contracts, licenses, insurance'), color: 'golden' },
+            ].map(item => (
+              <Card key={item.label} className="p-6 text-center hover:shadow-lg transition-all">
+                <div className={`w-12 h-12 bg-${item.color}/10 rounded-xl flex items-center justify-center mx-auto mb-3`}>
+                  <item.icon size={24} className={`text-${item.color}`} />
+                </div>
+                <p className={`text-3xl font-black text-${item.color} mb-1`}>{item.pct}</p>
+                <p className="font-semibold text-deep text-sm mb-1">{item.label}</p>
+                <p className="text-xs text-gray-400">{item.desc}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Revenue Distribution */}
       <section className="py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
@@ -421,39 +449,11 @@ export default function Vision() {
         </div>
       </section>
 
-      {/* Fund Allocation — Where investment goes */}
-      <section className="py-16 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.fund_title', 'Where Your Investment Goes')}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency.')}</p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {[
-              { icon: Target, label: t('vision.fund_tech', 'Technology'), pct: '45%', desc: t('vision.fund_tech_desc', 'Booking engine, mobile app, channel manager, PMS integration'), color: 'ocean' },
-              { icon: TrendingUp, label: t('vision.fund_marketing', 'Marketing'), pct: '25%', desc: t('vision.fund_marketing_desc', 'Traveler acquisition, SEO, content, launch campaigns'), color: 'sunset' },
-              { icon: Users, label: t('vision.fund_team', 'Team'), pct: '20%', desc: t('vision.fund_team_desc', 'Engineering, support, business development, operations'), color: 'libre' },
-              { icon: Shield, label: t('vision.fund_legal', 'Legal & Compliance'), pct: '10%', desc: t('vision.fund_legal_desc', 'Company registration, contracts, licenses, insurance'), color: 'golden' },
-            ].map(item => (
-              <Card key={item.label} className="p-6 text-center hover:shadow-lg transition-all">
-                <div className={`w-12 h-12 bg-${item.color}/10 rounded-xl flex items-center justify-center mx-auto mb-3`}>
-                  <item.icon size={24} className={`text-${item.color}`} />
-                </div>
-                <p className={`text-3xl font-black text-${item.color} mb-1`}>{item.pct}</p>
-                <p className="font-semibold text-deep text-sm mb-1">{item.label}</p>
-                <p className="text-xs text-gray-400">{item.desc}</p>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Roadmap */}
       <section className="py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl sm:text-4xl font-bold text-deep text-center mb-12">
-            {t('vision.roadmap_title')}
+            {t('vision.roadmap_title', 'Roadmap')}
           </h2>
           <div className="relative">
             {/* Timeline line */}
