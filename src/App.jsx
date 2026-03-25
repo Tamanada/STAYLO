@@ -19,6 +19,8 @@ import AmbassadorGuide from './pages/AmbassadorGuide'
 import DashboardProperties from './pages/dashboard/DashboardProperties'
 import DashboardReferrals from './pages/dashboard/DashboardReferrals'
 import DashboardShares from './pages/dashboard/DashboardShares'
+import DemoBookingEngine from './pages/dashboard/DemoBookingEngine'
+import DemoPropertyDetail from './pages/dashboard/DemoPropertyDetail'
 import Splash from './pages/Splash'
 import ResetPassword from './pages/ResetPassword'
 import Welcome from './pages/Welcome'
@@ -53,6 +55,8 @@ export default function App() {
             <Route path="referrals" element={<DashboardReferrals />} />
             <Route path="shares" element={<DashboardShares />} />
             <Route path="ambassador" element={<AmbassadorDashboard />} />
+            <Route path="preview" element={<DemoBookingEngine />} />
+            <Route path="preview/:id" element={<DemoPropertyDetail />} />
           </Route>
 
           {/* Public routes — with Navbar + Footer */}
