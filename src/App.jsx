@@ -16,6 +16,9 @@ import AmbassadorLanding from './pages/AmbassadorLanding'
 import AmbassadorRegister from './pages/AmbassadorRegister'
 import AmbassadorDashboard from './pages/AmbassadorDashboard'
 import AmbassadorGuide from './pages/AmbassadorGuide'
+import DashboardProperties from './pages/dashboard/DashboardProperties'
+import DashboardReferrals from './pages/dashboard/DashboardReferrals'
+import DashboardShares from './pages/dashboard/DashboardShares'
 import Splash from './pages/Splash'
 import ResetPassword from './pages/ResetPassword'
 import Welcome from './pages/Welcome'
@@ -46,6 +49,9 @@ export default function App() {
           {/* Dashboard routes — separate clean layout, no Navbar/Footer */}
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
+            <Route path="properties" element={<DashboardProperties />} />
+            <Route path="referrals" element={<DashboardReferrals />} />
+            <Route path="shares" element={<DashboardShares />} />
             <Route path="ambassador" element={<AmbassadorDashboard />} />
           </Route>
 
