@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Copy, Check, Plus, Lock, Building2, Users, TrendingUp, Zap, Star, MessageSquare, FileText, Shield, Coins, Share2, Trophy, Send, Download } from 'lucide-react'
+import { Copy, Check, Plus, Lock, Building2, Users, TrendingUp, Zap, Star, MessageSquare, FileText, Shield, Coins, Share2, Trophy, Send, Download, Hotel, Handshake } from 'lucide-react'
 import { QRCodeSVG } from 'qrcode.react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -175,6 +175,30 @@ export default function Dashboard() {
             </div>
           )
         })()}
+      </div>
+
+      {/* Key Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <Card className="p-4 text-center">
+          <Building2 size={20} className="text-ocean mx-auto mb-2" />
+          <p className="text-2xl font-black text-deep">{properties.length}</p>
+          <p className="text-xs text-gray-400">{t('dashboard.stat_properties', 'My Properties')}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <Hotel size={20} className="text-electric mx-auto mb-2" />
+          <p className="text-2xl font-black text-deep">{referralCount}</p>
+          <p className="text-xs text-gray-400">{t('dashboard.stat_hotels_referred', 'Hotels Referred')}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <Handshake size={20} className="text-libre mx-auto mb-2" />
+          <p className="text-2xl font-black text-deep">0</p>
+          <p className="text-xs text-gray-400">{t('dashboard.stat_ambassadors', 'Ambassadors')}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <TrendingUp size={20} className="text-golden mx-auto mb-2" />
+          <p className="text-2xl font-black text-libre">{fmt(estimatedSavings)}</p>
+          <p className="text-xs text-gray-400">{t('dashboard.stat_monthly_revenue', 'Est. Monthly Savings')}</p>
+        </Card>
       </div>
 
       {/* LOI / Shares Status — NEW */}
