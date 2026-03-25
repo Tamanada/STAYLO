@@ -1,19 +1,13 @@
 export function generateReferralCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let code = ''
-  for (let i = 0; i < 5; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return `STAYLO-${code}`
+  const random = crypto.getRandomValues(new Uint8Array(8))
+  return `STAYLO-${Array.from(random).map(b => chars[b % chars.length]).join('')}`
 }
 
 export function generateAmbassadorCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let code = ''
-  for (let i = 0; i < 5; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return `AMB-${code}`
+  const random = crypto.getRandomValues(new Uint8Array(8))
+  return `AMB-${Array.from(random).map(b => chars[b % chars.length]).join('')}`
 }
 
 export function getReferralFromUrl() {

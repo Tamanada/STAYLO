@@ -98,7 +98,7 @@ export default function Dashboard() {
       .eq('user_id', user.id)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) navigate('/ambassador/dashboard')
+        if (data) navigate('/dashboard/ambassador')
       })
   }, [user, navigate])
 

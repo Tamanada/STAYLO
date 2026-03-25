@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { Layout } from './components/layout/Layout'
+import { DashboardLayout } from './components/dashboard/DashboardLayout'
 import { AdminGuard } from './components/admin/AdminGuard'
 import { AdminLayout } from './components/admin/AdminLayout'
 import Home from './pages/Home'
@@ -42,13 +43,18 @@ export default function App() {
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
+          {/* Dashboard routes — separate clean layout, no Navbar/Footer */}
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="ambassador" element={<AmbassadorDashboard />} />
+          </Route>
+
           {/* Public routes — with Navbar + Footer */}
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
             <Route path="/survey" element={<Survey />} />
             <Route path="/submit" element={<Submit />} />
             <Route path="/vision" element={<Vision />} />
-            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/join" element={<Register />} />
@@ -59,7 +65,6 @@ export default function App() {
             <Route path="/splash" element={<Splash />} />
             <Route path="/ambassador" element={<AmbassadorLanding />} />
             <Route path="/ambassador/register" element={<AmbassadorRegister />} />
-            <Route path="/ambassador/dashboard" element={<AmbassadorDashboard />} />
             <Route path="/ambassador/guide" element={<AmbassadorGuide />} />
           </Route>
         </Routes>
