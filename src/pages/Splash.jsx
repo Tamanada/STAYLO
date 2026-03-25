@@ -396,10 +396,11 @@ export default function Splash() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center mb-10">
             <Badge variant="sunset" className="mb-4">{t('splash.clock_badge')}</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">
-              {t('splash.clock_title')}
+            <h2 className="text-3xl sm:text-4xl font-bold mb-1 italic">
+              "{t('splash.clock_title')}"
             </h2>
-            <p className="text-white/50 max-w-xl mx-auto">
+            <p className="text-golden text-lg font-medium mb-6">{t('splash.clock_author', '— Gandhi')}</p>
+            <p className="text-white/60 max-w-2xl mx-auto text-lg leading-relaxed">
               {t('splash.clock_subtitle')}
             </p>
           </div>
