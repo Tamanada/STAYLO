@@ -459,17 +459,54 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Savings estimate */}
-      <div className="mb-8">
-        <Card className="p-6">
-          <h3 className="font-semibold text-deep mb-3">{t('dashboard.savings_title')}</h3>
-          <p className="text-3xl font-bold text-libre mb-1">
-            {fmt(Math.round(estimatedSavings))}
-            <span className="text-sm font-normal text-gray-400">/{t('dashboard.per_year', 'year')}</span>
-          </p>
-          <p className="text-sm text-gray-500">{t('dashboard.savings_description')}</p>
-        </Card>
-      </div>
+      {/* Savings estimate — with calculation breakdown */}
+      {totalRooms > 0 && (
+        <div className="mb-8">
+          <Card className="p-6">
+            <h3 className="font-semibold text-deep mb-4">{t('dashboard.savings_title', 'Estimated Annual Savings')}</h3>
+
+            {/* Calculation breakdown */}
+            <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 text-sm">
+              <div className="flex justify-between text-gray-500">
+                <span>{t('dashboard.calc_rooms', 'Total rooms')}</span>
+                <span className="font-medium text-deep">{totalRooms}</span>
+              </div>
+              <div className="flex justify-between text-gray-500">
+                <span>{t('dashboard.calc_rate', 'Avg. nightly rate')}</span>
+                <span className="font-medium text-deep">{fmt(Math.round(avgRate))}</span>
+              </div>
+              <div className="flex justify-between text-gray-500">
+                <span>{t('dashboard.calc_occupancy', 'Avg. occupancy')}</span>
+                <span className="font-medium text-deep">65%</span>
+              </div>
+              <div className="h-px bg-gray-200 my-1" />
+              <div className="flex justify-between text-gray-500">
+                <span>{t('dashboard.calc_annual_revenue', 'Est. annual booking revenue')}</span>
+                <span className="font-medium text-deep">{fmt(Math.round(totalRooms * avgRate * 365 * 0.65))}</span>
+              </div>
+              <div className="h-px bg-gray-200 my-1" />
+              <div className="flex justify-between text-gray-500">
+                <span>{t('dashboard.calc_ota_commission', 'OTA commission (~17%)')}</span>
+                <span className="font-medium text-sunset">-{fmt(Math.round(totalRooms * avgRate * 365 * 0.65 * 0.17))}</span>
+              </div>
+              <div className="flex justify-between text-gray-500">
+                <span>{t('dashboard.calc_staylo_commission', 'Staylo commission (10%)')}</span>
+                <span className="font-medium text-libre">-{fmt(Math.round(totalRooms * avgRate * 365 * 0.65 * 0.10))}</span>
+              </div>
+            </div>
+
+            {/* Result */}
+            <div className="bg-libre/5 border-2 border-libre/20 rounded-xl p-4 text-center">
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('dashboard.calc_you_save', 'You save')}</p>
+              <p className="text-3xl font-black text-libre">
+                {fmt(Math.round(estimatedSavings))}
+                <span className="text-sm font-normal text-gray-400">/{t('dashboard.per_year', 'year')}</span>
+              </p>
+              <p className="text-xs text-gray-400 mt-1">{t('dashboard.calc_explanation', 'Difference between 17% OTA and 10% Staylo commission on your estimated bookings')}</p>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Properties */}
       <div className="mb-8">
