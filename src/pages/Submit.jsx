@@ -5,9 +5,11 @@ import { CheckCircle, Loader2, LinkIcon } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input, Select } from '../components/ui/Input'
+import { AutocompleteInput } from '../components/ui/AutocompleteInput'
 import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
 import { trackEvent, EVENTS } from '../lib/analytics'
+import { countries, thailandCities } from '../lib/countries'
 
 const propertyTypes = ['hotel', 'guesthouse', 'resort', 'villa', 'hostel']
 
@@ -157,19 +159,19 @@ export default function Submit() {
           </Select>
 
           <div className="grid grid-cols-2 gap-4">
-            <Input
+            <AutocompleteInput
               label={t('property.country')}
               placeholder={t('property.country_placeholder')}
+              options={countries}
               value={form.country}
-              onChange={e => updateField('country', e.target.value)}
-              required
+              onChange={v => updateField('country', v)}
             />
-            <Input
+            <AutocompleteInput
               label={t('property.city')}
               placeholder={t('property.city_placeholder')}
+              options={form.country === 'Thailand' ? thailandCities : []}
               value={form.city}
-              onChange={e => updateField('city', e.target.value)}
-              required
+              onChange={v => updateField('city', v)}
             />
           </div>
 
@@ -196,6 +198,7 @@ export default function Submit() {
           <Input
             label={t('property.email')}
             type="email"
+            autoComplete="email"
             value={form.contact_email}
             onChange={e => updateField('contact_email', e.target.value)}
             required
@@ -204,6 +207,7 @@ export default function Submit() {
           <Input
             label={t('property.phone')}
             type="tel"
+            autoComplete="tel"
             value={form.contact_phone}
             onChange={e => updateField('contact_phone', e.target.value)}
           />
