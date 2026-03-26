@@ -5,6 +5,7 @@ import { ArrowRight, Hotel, Users, Globe, DollarSign, Handshake, TrendingUp, Spa
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
+import { useAuth } from '../hooks/useAuth'
 
 const AVG_ROOMS = 15
 const AVG_RATE = 60
@@ -15,6 +16,7 @@ const PER_HOTEL = Math.round(AVG_ANNUAL * AMBASSADOR_PCT)
 
 export default function AmbassadorLanding() {
   const { t } = useTranslation()
+  const { user } = useAuth()
   const [hotelCount, setHotelCount] = useState(5)
   const [roomCount, setRoomCount] = useState(AVG_ROOMS)
   const [nightlyRate, setNightlyRate] = useState(AVG_RATE)
@@ -68,7 +70,9 @@ export default function AmbassadorLanding() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/ambassador/register">
               <Button variant="golden" size="lg" className="min-w-[260px]">
-                {t('ambassador_landing.cta_become', 'Become an Ambassador')}
+                {user
+                  ? t('ambassador_landing.cta_activate', 'Activate My Ambassador Account')
+                  : t('ambassador_landing.cta_become', 'Become an Ambassador')}
                 <ArrowRight size={20} />
               </Button>
             </Link>
@@ -301,7 +305,9 @@ export default function AmbassadorLanding() {
             </p>
             <Link to="/ambassador/register">
               <button className="relative px-10 py-4 bg-white text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer">
-                <span className="text-gradient">{t('ambassador_landing.cta_become', 'Become an Ambassador')}</span>
+                <span className="text-gradient">{user
+                  ? t('ambassador_landing.cta_activate', 'Activate My Ambassador Account')
+                  : t('ambassador_landing.cta_become', 'Become an Ambassador')}</span>
                 <ArrowRight size={20} className="text-sunset" />
               </button>
             </Link>
