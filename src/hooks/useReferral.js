@@ -1,12 +1,31 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
+import { generateReferralCode } from '../lib/referral'
 
 export function useReferral() {
-  const { profile } = useAuth()
+  const { profile, fetchProfile } = useAuth()
   const [referralCount, setReferralCount] = useState(0)
   const [referralRank, setReferralRank] = useState(null)
   const [referredUsers, setReferredUsers] = useState([])
+
+  // Auto-generate referral code if user doesn't have one
+  useEffect(() => {
+    if (!profile?.id || profile.referral_code) return
+
+    async function ensureReferralCode() {
+      const code = generateReferralCode()
+      const { error } = await supabase
+        .from('users')
+        .update({ referral_code: code })
+        .eq('id', profile.id)
+      if (!error) {
+        fetchProfile(profile.id)
+      }
+    }
+
+    ensureReferralCode()
+  }, [profile?.id, profile?.referral_code])
 
   useEffect(() => {
     if (!profile?.id) return
