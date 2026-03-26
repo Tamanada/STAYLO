@@ -161,10 +161,10 @@ export default function Dashboard() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-deep">
-          {t('dashboard.welcome', { name: profile?.full_name || 'Member' })}
+          {t('dashboard.welcome', { name: profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Member' })}
         </h1>
         <p className="text-gray-500 mt-1">
-          {t('dashboard.member_since', { date: new Date(profile?.created_at).toLocaleDateString() })}
+          {t('dashboard.member_since', { date: profile?.created_at ? new Date(profile.created_at).toLocaleDateString() : '—' })}
         </p>
         {(() => {
           const tier = getFoundingTier(memberPosition)
