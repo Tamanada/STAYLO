@@ -1,30 +1,35 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Hotel, Users, Megaphone, ArrowRight, Sparkles, Globe } from 'lucide-react'
+import { Hotel, Megaphone, ArrowRight, Sparkles, Globe } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 
 const languages = [
-  { code: 'en', flag: '\u{1F1EC}\u{1F1E7}', label: 'English' },
-  { code: 'fr', flag: '\u{1F1EB}\u{1F1F7}', label: 'Fran\u00E7ais' },
-  { code: 'th', flag: '\u{1F1F9}\u{1F1ED}', label: '\u0E44\u0E17\u0E22' },
-  { code: 'ja', flag: '\u{1F1EF}\u{1F1F5}', label: '\u65E5\u672C\u8A9E' },
-  { code: 'es', flag: '\u{1F1EA}\u{1F1F8}', label: 'Espa\u00F1ol' },
-  { code: 'ar', flag: '\u{1F1F8}\u{1F1E6}', label: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629' },
-  { code: 'ru', flag: '\u{1F1F7}\u{1F1FA}', label: '\u0420\u0443\u0441\u0441\u043A\u0438\u0439' },
-  { code: 'zh', flag: '\u{1F1E8}\u{1F1F3}', label: '\u4E2D\u6587' },
-  { code: 'hi', flag: '\u{1F1EE}\u{1F1F3}', label: '\u0939\u093F\u0928\u094D\u0926\u0940' },
-  { code: 'pt', flag: '\u{1F1E7}\u{1F1F7}', label: 'Portugu\u00EAs' },
-  { code: 'de', flag: '\u{1F1E9}\u{1F1EA}', label: 'Deutsch' },
-  { code: 'id', flag: '\u{1F1EE}\u{1F1E9}', label: 'Bahasa' },
-  { code: 'my', flag: '\u{1F1F2}\u{1F1F2}', label: '\u1019\u103C\u1014\u103A\u1019\u102C' },
-  { code: 'it', flag: '\u{1F1EE}\u{1F1F9}', label: 'Italiano' },
+  { code: 'en', flag: '🇬🇧', label: 'English' },
+  { code: 'fr', flag: '🇫🇷', label: 'Français' },
+  { code: 'th', flag: '🇹🇭', label: 'ไทย' },
+  { code: 'ja', flag: '🇯🇵', label: '日本語' },
+  { code: 'es', flag: '🇪🇸', label: 'Español' },
+  { code: 'ar', flag: '🇸🇦', label: 'العربية' },
+  { code: 'ru', flag: '🇷🇺', label: 'Русский' },
+  { code: 'zh', flag: '🇨🇳', label: '中文' },
+  { code: 'hi', flag: '🇮🇳', label: 'हिन्दी' },
+  { code: 'pt', flag: '🇧🇷', label: 'Português' },
+  { code: 'de', flag: '🇩🇪', label: 'Deutsch' },
+  { code: 'id', flag: '🇮🇩', label: 'Bahasa' },
+  { code: 'my', flag: '🇲🇲', label: 'မြန်မာ' },
+  { code: 'it', flag: '🇮🇹', label: 'Italiano' },
 ]
 
 export default function Welcome() {
   const { t, i18n } = useTranslation()
   const [langOpen, setLangOpen] = useState(false)
   const langRef = useRef(null)
+  const [searchParams] = useSearchParams()
+  const ref = searchParams.get('ref') || ''
+  const amb = searchParams.get('amb') || ''
+  const code = ref || amb
+  const refParam = ref ? `?ref=${ref}` : amb ? `?amb=${amb}` : ''
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -35,11 +40,8 @@ export default function Welcome() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
-  const [searchParams] = useSearchParams()
-  const ref = searchParams.get('ref') || ''
-  const amb = searchParams.get('amb') || ''
-  const code = ref || amb
-  const refParam = ref ? `?ref=${ref}` : amb ? `?amb=${amb}` : ''
+
+  const currentLang = languages.find(l => l.code === i18n.language) || languages[0]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-deep via-[#0F2847] to-deep flex items-center justify-center px-4 py-12">
@@ -123,19 +125,19 @@ export default function Welcome() {
         </p>
       </div>
 
-      {/* Floating Language Selector */}
+      {/* Floating Language Selector — bottom right */}
       <div ref={langRef} className="fixed bottom-6 right-6 z-50">
         {langOpen && (
-          <div className="absolute bottom-16 right-0 w-48 max-h-72 overflow-y-auto rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl mb-2">
+          <div className="absolute bottom-16 right-0 w-52 max-h-80 overflow-y-auto rounded-2xl bg-deep/95 backdrop-blur-xl border border-white/20 shadow-2xl mb-2">
             {languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => { i18n.changeLanguage(lang.code); setLangOpen(false) }}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/10 ${
-                  i18n.language === lang.code ? 'text-golden bg-white/5' : 'text-gray-200'
+                className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-white/10 ${
+                  i18n.language === lang.code ? 'text-golden bg-golden/10 font-bold' : 'text-white/80'
                 } first:rounded-t-2xl last:rounded-b-2xl`}
               >
-                <span className="text-lg">{lang.flag}</span>
+                <span className="text-xl">{lang.flag}</span>
                 <span>{lang.label}</span>
               </button>
             ))}
@@ -143,11 +145,11 @@ export default function Welcome() {
         )}
         <button
           onClick={() => setLangOpen((o) => !o)}
-          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex items-center justify-center gap-1 text-gray-200 hover:bg-white/20 hover:text-white transition-all"
+          className="w-14 h-14 rounded-full bg-gradient-to-br from-ocean to-electric shadow-xl shadow-ocean/30 flex items-center justify-center gap-1 text-white hover:scale-110 transition-all border-2 border-white/20"
           aria-label="Change language"
         >
-          <Globe size={18} />
-          <span className="text-[10px] font-bold uppercase">{i18n.language?.substring(0, 2)}</span>
+          <Globe size={20} />
+          <span className="text-[10px] font-bold uppercase">{currentLang.flag}</span>
         </button>
       </div>
     </div>
