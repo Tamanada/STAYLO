@@ -11,15 +11,20 @@ export function useReferral() {
 
   // Auto-generate referral code if user doesn't have one
   useEffect(() => {
-    if (!profile?.id || profile.referral_code) return
+    if (!profile?.id) return
+    // Skip if user already has a valid referral code
+    if (profile.referral_code && profile.referral_code.trim() !== '') return
 
     async function ensureReferralCode() {
       const code = generateReferralCode()
+      console.log('[useReferral] Generating referral code:', code, 'for user:', profile.id)
       const { error } = await supabase
         .from('users')
         .update({ referral_code: code })
         .eq('id', profile.id)
-      if (!error) {
+      if (error) {
+        console.error('[useReferral] Failed to save referral code:', error)
+      } else {
         fetchProfile(profile.id)
       }
     }
