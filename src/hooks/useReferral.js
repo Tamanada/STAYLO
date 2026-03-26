@@ -18,13 +18,16 @@ export function useReferral() {
     async function ensureReferralCode() {
       const code = generateReferralCode()
       console.log('[useReferral] Generating referral code:', code, 'for user:', profile.id)
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('users')
         .update({ referral_code: code })
         .eq('id', profile.id)
+        .select('referral_code')
+        .single()
       if (error) {
         console.error('[useReferral] Failed to save referral code:', error)
       } else {
+        console.log('[useReferral] Saved referral code:', data)
         fetchProfile(profile.id)
       }
     }

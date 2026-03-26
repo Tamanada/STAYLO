@@ -1,15 +1,51 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
+import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
 import { generateAmbassadorCode } from '../lib/referral'
 
 export default function AmbassadorRegister() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { user, profile } = useAuth()
+
+  // If user is already logged in, register them as ambassador directly
+  useEffect(() => {
+    if (!user) return
+
+    async function registerExistingUser() {
+      // Check if already an ambassador
+      const { data: existing } = await supabase
+        .from('ambassadors')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      if (existing) {
+        navigate('/dashboard/ambassador')
+        return
+      }
+
+      // Auto-register as ambassador
+      const referralCode = generateAmbassadorCode()
+      const { error } = await supabase.from('ambassadors').insert({
+        user_id: user.id,
+        full_name: profile?.full_name || user.email?.split('@')[0],
+        email: user.email,
+        referral_code: referralCode,
+      })
+
+      if (!error) {
+        navigate('/dashboard/ambassador')
+      }
+    }
+
+    registerExistingUser()
+  }, [user])
 
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')

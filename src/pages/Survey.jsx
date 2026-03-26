@@ -83,7 +83,7 @@ export default function Survey() {
     frustrations: [],
     intended_investment: null,
     property_name: '',
-    contact_email: '',
+    contact_email: user?.email || '',
   })
 
   const [showSavingPopup, setShowSavingPopup] = useState(false)
