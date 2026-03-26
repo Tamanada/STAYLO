@@ -29,7 +29,7 @@ const faqKeys = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']
 export default function Vision() {
   const { t } = useTranslation()
   const { user } = useAuth()
-  const [sharesSold, setSharesSold] = useState(127)
+  const [sharesSold, setSharesSold] = useState(0)
   const [openFaq, setOpenFaq] = useState(null)
   const totalAlphaShares = 3000
   const totalShares = 10000
@@ -39,13 +39,10 @@ export default function Vision() {
   useEffect(() => {
     async function fetchShares() {
       try {
-        // Get total shares from the shares table (sum of quantity)
-        const { data } = await supabase.from('shares').select('quantity')
-        if (data && data.length > 0) {
-          const total = data.reduce((sum, s) => sum + (s.quantity || 0), 0)
-          if (total > 0) setSharesSold(total)
-        }
-      } catch (e) { /* use default */ }
+        // Use database function to bypass RLS and get accurate total
+        const { data } = await supabase.rpc('get_total_shares')
+        if (typeof data === 'number' && data >= 0) setSharesSold(data)
+      } catch (e) { /* use default 0 */ }
     }
     fetchShares()
   }, [])
