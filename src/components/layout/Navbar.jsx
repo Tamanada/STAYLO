@@ -115,13 +115,41 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Mobile hamburger */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-gray-50"
-            onClick={() => setMobileOpen(!mobileOpen)}
-          >
-            {mobileOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* Mobile: language pill + hamburger */}
+          <div className="md:hidden flex items-center gap-2">
+            <div className="relative">
+              <button
+                onClick={() => setLangOpen(!langOpen)}
+                className="flex items-center gap-1.5 bg-gray-100 rounded-full px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 transition-colors"
+              >
+                <span>{currentLang.flag}</span>
+                <span className="text-xs font-bold uppercase">{currentLang.code}</span>
+              </button>
+              {langOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setLangOpen(false)} />
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 max-h-80 overflow-y-auto z-50">
+                    {languages.map(lang => (
+                      <button
+                        key={lang.code}
+                        onClick={() => { handleLangChange(lang.code); setLangOpen(false) }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${i18n.language === lang.code ? 'text-staylo-blue font-medium' : 'text-gray-600'}`}
+                      >
+                        <span>{lang.flag}</span>
+                        <span>{lang.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            <button
+              className="p-2 rounded-lg hover:bg-gray-50"
+              onClick={() => setMobileOpen(!mobileOpen)}
+            >
+              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
