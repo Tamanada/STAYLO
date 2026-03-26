@@ -1,11 +1,22 @@
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Users, Zap, Link2Off, ShieldCheck, TrendingUp, Shield } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import { supabase } from '../../lib/supabase'
 
 export function Hero() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const [userCount, setUserCount] = useState(0)
+
+  useEffect(() => {
+    async function fetchCount() {
+      const { count } = await supabase.from('users').select('*', { count: 'exact', head: true })
+      if (count) setUserCount(count)
+    }
+    fetchCount()
+  }, [])
 
   return (
     <section className="relative overflow-hidden min-h-[92vh] flex items-center">
@@ -82,7 +93,7 @@ export function Hero() {
 
             <div className="mt-4 flex items-center justify-center lg:justify-start gap-2 text-sm text-white/30">
               <Users size={16} />
-              <span>{t('hero.early_adopters', { count: 127 })}</span>
+              <span>{t('hero.early_adopters', { count: userCount })}</span>
             </div>
           </div>
 

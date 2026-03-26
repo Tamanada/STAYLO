@@ -87,7 +87,7 @@ export default function Survey() {
   })
 
   const [showSavingPopup, setShowSavingPopup] = useState(false)
-  const totalSteps = 5
+  const totalSteps = user ? 4 : 5
   const annualCommission = answers.monthly_commission * 12
   const annualWithStaylo = answers.monthly_commission * (10 / 17) * 12
   const annualSaving = annualCommission - annualWithStaylo
@@ -119,7 +119,7 @@ export default function Survey() {
   }
 
   async function handleSubmit() {
-    if (!answers.property_name || !answers.contact_email) return
+    if (!user && (!answers.property_name || !answers.contact_email)) return
     setLoading(true)
     try {
       await supabase.from('survey_answers').insert({
@@ -132,11 +132,16 @@ export default function Survey() {
         interest_score: 8,
         would_join: true,
         intended_investment: answers.intended_investment,
-        property_name: answers.property_name,
-        contact_email: answers.contact_email,
+        property_name: answers.property_name || '',
+        contact_email: answers.contact_email || user?.email || '',
       })
       trackEvent(EVENTS.SURVEY_COMPLETE, { investment: answers.intended_investment })
-      setSubmitted(true)
+      if (user) {
+        // Logged-in users go directly to property registration
+        navigate('/submit')
+      } else {
+        setSubmitted(true)
+      }
     } catch (err) {
       console.error(err)
     }
@@ -514,9 +519,9 @@ export default function Survey() {
             <Button
               variant="green"
               onClick={handleSubmit}
-              disabled={loading || !answers.property_name || !answers.contact_email}
+              disabled={loading || (!user && (!answers.property_name || !answers.contact_email))}
             >
-              {loading ? t('common.loading', 'Submitting...') : t('survey.become_partner', 'Become a Founding Partner')}
+              {loading ? t('common.loading', 'Submitting...') : (user ? t('survey.register_property', 'Register My Property') : t('survey.become_partner', 'Become a Founding Partner'))}
               {!loading && <ArrowRight size={16} />}
             </Button>
           )}

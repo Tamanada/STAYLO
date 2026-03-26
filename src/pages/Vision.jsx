@@ -50,15 +50,15 @@ export default function Vision() {
   return (
     <div className="relative">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-deep via-[#0d1f3c] to-ocean/90 text-white py-20 sm:py-28 relative overflow-hidden animate-gradient">
+      <section className="bg-gradient-to-br from-deep via-[#0d1f3c] to-ocean/90 text-white py-10 sm:py-14 relative overflow-hidden animate-gradient">
         <div className="absolute inset-0">
           <div className="absolute top-10 left-[20%] w-60 h-60 bg-golden/15 rounded-full blur-3xl animate-float" />
           <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-sunset/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
         </div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <Badge variant="golden" className="mb-6">{t('vision.title')}</Badge>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6">{t('vision.hero_title')}</h1>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto mb-10">{t('vision.hero_subtitle')}</p>
+          <Badge variant="golden" className="mb-3">{t('vision.title')}</Badge>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-3">{t('vision.hero_title')}</h1>
+          <p className="text-lg text-white/70 max-w-2xl mx-auto mb-5">{t('vision.hero_subtitle')}</p>
           <Link to={user ? '/dashboard' : '/register'}>
             <button className="px-10 py-4 bg-gradient-to-r from-golden to-sunrise text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-3 cursor-pointer">
               <Sparkles size={22} />
@@ -70,9 +70,9 @@ export default function Vision() {
       </section>
 
       {/* Company Structure */}
-      <section className="py-16 sm:py-24">
+      <section className="py-8 sm:py-12">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-3">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.structure_title', 'The Staylo Structure')}</h2>
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.structure_subtitle', 'A platform built, owned, and governed by the people who use it.')}</p>
           </div>
@@ -106,20 +106,20 @@ export default function Vision() {
       </section>
 
       {/* Live Share Counter */}
-      <section className="py-16 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white">
+      <section className="py-8 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
+          <div className="text-center mb-5">
             <h2 className="text-3xl sm:text-4xl font-bold mb-3">{t('vision.share_sale_title', 'Alpha Share Whitelisting')}</h2>
             <p className="text-white/60">{t('vision.share_sale_subtitle', 'Phase Alpha — Founding Partners only. Limited to 3,000 shares.')}</p>
           </div>
 
           {/* Big counter */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 sm:p-10 mb-8">
-            <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 sm:p-10 mb-4">
+            <div className="flex items-center justify-center gap-2 mb-3">
               <span className="text-6xl sm:text-7xl font-black text-golden">{sharesSold}</span>
               <span className="text-2xl text-white/40 font-medium">/ {totalAlphaShares.toLocaleString()}</span>
             </div>
-            <p className="text-center text-white/50 text-sm mb-6">{t('vision.shares_claimed', 'alpha shares claimed')}</p>
+            <p className="text-center text-white/50 text-sm mb-3">{t('vision.shares_claimed', 'alpha shares claimed')}</p>
 
             {/* Progress bar */}
             <div className="w-full bg-white/10 rounded-full h-4 mb-4 overflow-hidden">
@@ -137,7 +137,7 @@ export default function Vision() {
             </div>
 
             {/* Share pricing tiers */}
-            <div className="grid sm:grid-cols-3 gap-4 mt-8">
+            <div className="grid sm:grid-cols-3 gap-4 mt-4">
               <div className="bg-golden/10 border border-golden/30 rounded-2xl p-5 text-center">
                 <p className="text-xs text-golden uppercase tracking-wider font-semibold mb-2">{t('vision.tier_alpha', 'Alpha (Now)')}</p>
                 <p className="text-3xl font-black text-golden">$1,000</p>
@@ -179,9 +179,9 @@ export default function Vision() {
       </section>
 
       {/* Fund Allocation — Where investment goes */}
-      <section className="py-16 bg-white">
+      <section className="py-8 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-3">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.fund_title', 'Where Your Investment Goes')}</h2>
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency.')}</p>
           </div>
@@ -207,17 +207,17 @@ export default function Vision() {
       </section>
 
       {/* Revenue Distribution */}
-      <section className="py-16 sm:py-24">
+      <section className="py-8 sm:py-12">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-3">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.revenue_distribution_title', 'Where The Money Goes')}</h2>
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.revenue_distribution_subtitle', 'Full transparency. Every dollar accounted for.')}</p>
           </div>
 
           {/* Money flow — For every $100 booked */}
-          <Card className="p-6 sm:p-10 mb-12 max-w-4xl mx-auto bg-gradient-to-br from-deep to-[#0F2847] text-white overflow-hidden">
+          <Card className="p-6 sm:p-10 mb-3 max-w-4xl mx-auto bg-gradient-to-br from-deep to-[#0F2847] text-white overflow-hidden">
             <p className="text-center text-sm text-gray-400 mb-2 uppercase tracking-wider">{t('vision.flow_label', 'For every')}</p>
-            <p className="text-center text-5xl sm:text-6xl font-black mb-8">$100 <span className="text-2xl font-normal text-gray-400">{t('vision.flow_booked', 'booked')}</span></p>
+            <p className="text-center text-5xl sm:text-6xl font-black mb-4">$100 <span className="text-2xl font-normal text-gray-400">{t('vision.flow_booked', 'booked')}</span></p>
 
             <div className="grid sm:grid-cols-2 gap-6">
               {/* OTA side */}
@@ -280,13 +280,13 @@ export default function Vision() {
               </div>
             </div>
 
-            <p className="text-center text-xs text-gray-500 mt-6">{t('vision.flow_disclaimer', 'Based on average 22% OTA commission. Actual savings depend on your current platform and rates.')}</p>
+            <p className="text-center text-xs text-gray-500 mt-3">{t('vision.flow_disclaimer', 'Based on average 22% OTA commission. Actual savings depend on your current platform and rates.')}</p>
           </Card>
 
           {/* Revenue breakdown — Pie Chart */}
           <Card className="p-8 max-w-3xl mx-auto">
-            <h3 className="text-xl font-bold text-deep text-center mb-8">{t('vision.breakdown_title', '10% Commission Breakdown')}</h3>
-            <div className="flex flex-col md:flex-row items-center gap-8">
+            <h3 className="text-xl font-bold text-deep text-center mb-4">{t('vision.breakdown_title', '10% Commission Breakdown')}</h3>
+            <div className="flex flex-col md:flex-row items-center gap-4">
               {/* Pie chart SVG */}
               <div className="relative w-64 h-64 flex-shrink-0">
                 <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-lg">
@@ -344,13 +344,13 @@ export default function Vision() {
       </section>
 
       {/* Ambassador Program */}
-      <section className="py-16 bg-gradient-to-br from-electric/5 via-white to-sunset/5">
+      <section className="py-8 bg-gradient-to-br from-electric/5 via-white to-sunset/5">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-3">
             <Badge variant="golden" className="mb-4">{t('vision.marketing_badge', 'Passive Income Program')}</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.marketing_title', 'Become an Ambassador')}</h2>
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.marketing_subtitle', "Build the world's largest accommodation network — and earn 2% passive income for life on every hotel you bring to Staylo. No limits. No expiry. Forever.")}</p>
-            <div className="mt-6">
+            <div className="mt-3">
               <Link to="/ambassador/register">
                 <Button size="lg" className="bg-gradient-to-r from-sunset to-sunrise text-white font-bold px-8 py-4 text-lg rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all">
                   {t('vision.ambassador_cta', 'Become an Ambassador')} <ArrowRight className="ml-2 w-5 h-5" />
@@ -360,7 +360,7 @@ export default function Vision() {
           </div>
 
           {/* How it works — 3 steps */}
-          <div className="grid sm:grid-cols-3 gap-6 mb-12">
+          <div className="grid sm:grid-cols-3 gap-6 mb-3">
             <div className="text-center">
               <div className="w-20 h-20 bg-gradient-to-br from-electric to-ocean rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Search className="w-9 h-9 text-white" />
@@ -386,16 +386,16 @@ export default function Vision() {
 
           {/* The deal — big card */}
           <Card className="p-8 sm:p-10 max-w-3xl mx-auto border-2 border-electric/20 bg-gradient-to-br from-white to-electric/5">
-            <div className="text-center mb-6">
+            <div className="text-center mb-3">
               <p className="text-6xl sm:text-7xl font-black text-gradient mb-2">2%</p>
               <p className="text-xl font-bold text-deep">{t('vision.ambassador_lifetime', 'Lifetime Passive Income')}</p>
               <p className="text-gray-500 text-sm mt-1">{t('vision.ambassador_lifetime_desc', 'On every booking, every service, every sale from the hotels you brought to Staylo.')}</p>
             </div>
 
             {/* Contract triangle */}
-            <div className="bg-deep/5 rounded-2xl p-6 mb-6">
+            <div className="bg-deep/5 rounded-2xl p-6 mb-3">
               <h4 className="font-bold text-deep text-center mb-4">{t('vision.tripartite_title', 'The Tripartite Contract')}</h4>
-              <div className="flex items-center justify-center gap-4 sm:gap-8 flex-wrap">
+              <div className="flex items-center justify-center gap-4 sm:gap-4 flex-wrap">
                 <div className="text-center">
                   <div className="w-14 h-14 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-2">
                     <Globe size={24} className="text-ocean" />
@@ -447,9 +447,9 @@ export default function Vision() {
       </section>
 
       {/* Roadmap */}
-      <section className="py-16 sm:py-24">
+      <section className="py-8 sm:py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl sm:text-4xl font-bold text-deep text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold text-deep text-center mb-3">
             {t('vision.roadmap_title', 'Roadmap')}
           </h2>
           <div className="relative">
@@ -480,9 +480,9 @@ export default function Vision() {
       </section>
 
       {/* Founding benefits */}
-      <section className="py-16 bg-white">
+      <section className="py-8 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-deep text-center mb-10">
+          <h2 className="text-3xl font-bold text-deep text-center mb-5">
             {t('vision.founding_title')}
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
@@ -499,9 +499,9 @@ export default function Vision() {
       </section>
 
       {/* Required Documents for Whitelisted Businesses */}
-      <section className="py-16 bg-gradient-to-br from-deep to-[#0F2847] text-white">
+      <section className="py-8 bg-gradient-to-br from-deep to-[#0F2847] text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12">
+          <div className="text-center mb-3">
             <Badge variant="golden" className="mb-4">{t('vision.docs_badge', 'Registration Process')}</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t('vision.docs_title', 'What You Need to Join')}</h2>
             <p className="text-gray-400 max-w-2xl mx-auto">{t('vision.docs_subtitle', 'To become an official Staylo Founding Partner, your business must be legally registered. Here\'s what we require:')}</p>
@@ -531,14 +531,14 @@ export default function Vision() {
             ))}
           </div>
 
-          <p className="text-center text-xs text-gray-500 mt-8">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
+          <p className="text-center text-xs text-gray-500 mt-4">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
         </div>
       </section>
 
       {/* FAQ — Accordion */}
-      <section className="py-16 sm:py-24">
+      <section className="py-8 sm:py-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-deep text-center mb-10">
+          <h2 className="text-3xl font-bold text-deep text-center mb-5">
             {t('vision.faq_title')}
           </h2>
           <div className="space-y-3">
@@ -566,13 +566,13 @@ export default function Vision() {
       </section>
 
       {/* Bottom CTA */}
-      <section className="py-16 sm:py-24">
+      <section className="py-8 sm:py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="relative bg-gradient-to-br from-electric via-sunset to-sunrise rounded-3xl p-10 sm:p-14 text-center text-white overflow-hidden animate-gradient">
             <Sparkles size={24} className="absolute top-6 left-8 text-golden/50 animate-float" />
             <Sparkles size={18} className="absolute bottom-8 right-10 text-white/30 animate-float" style={{ animationDelay: '1s' }} />
             <h2 className="relative text-3xl sm:text-4xl font-extrabold mb-4">{t('vision.cta_title')}</h2>
-            <p className="relative text-white/70 mb-8 max-w-lg mx-auto">{t('vision.cta_subtitle', 'Join {{count}}+ hoteliers who are taking back control of their business.', { count: sharesSold })}</p>
+            <p className="relative text-white/70 mb-4 max-w-lg mx-auto">{t('vision.cta_subtitle', 'Join {{count}}+ hoteliers who are taking back control of their business.', { count: sharesSold })}</p>
             <Link to={user ? '/dashboard' : '/register'}>
               <button className="relative px-10 py-4 bg-white text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer">
                 <span className="text-gradient">{user ? t('nav.dashboard', 'Go to Dashboard') : t('vision.cta_button')}</span>
