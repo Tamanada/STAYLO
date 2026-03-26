@@ -3,6 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Hotel, Megaphone, ArrowRight, Sparkles, Globe } from 'lucide-react'
 import { Card } from '../components/ui/Card'
+import { changeLanguage } from '../i18n'
 
 const languages = [
   { code: 'en', flag: '🇬🇧', label: 'English' },
@@ -141,7 +142,7 @@ export default function Welcome() {
             {languages.map((lang) => (
               <button
                 key={lang.code}
-                onClick={() => { i18n.changeLanguage(lang.code); setLangOpen(false) }}
+                onClick={() => { changeLanguage(lang.code); setLangOpen(false) }}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-white/10 ${
                   i18n.language === lang.code ? 'text-golden bg-golden/10 font-bold' : 'text-white/80'
                 } first:rounded-t-2xl last:rounded-b-2xl`}
