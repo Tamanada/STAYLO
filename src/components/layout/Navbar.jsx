@@ -43,10 +43,13 @@ export function Navbar() {
     <nav className="sticky top-0 z-40 bg-cream/80 backdrop-blur-md border-b border-gray-100/50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-1 no-underline">
-            <span className="text-2xl font-extrabold text-deep">stay</span>
-            <span className="text-2xl font-extrabold text-gradient">lo</span>
+          {/* Logo + tagline */}
+          <Link to="/" className="flex items-center gap-2 no-underline">
+            <div className="flex items-center gap-1">
+              <span className="text-2xl font-extrabold text-deep">stay</span>
+              <span className="text-2xl font-extrabold text-gradient">lo</span>
+            </div>
+            <span className="hidden sm:block text-[10px] text-gray-400 font-medium border-l border-gray-200 pl-2 leading-tight">Owned by Hoteliers,<br />built for hospitality</span>
           </Link>
 
           {/* Desktop nav */}

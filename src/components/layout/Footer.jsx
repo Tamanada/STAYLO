@@ -17,6 +17,7 @@ export function Footer() {
               <span className="text-2xl font-extrabold text-white">stay</span>
               <span className="text-2xl font-extrabold text-gradient">lo</span>
             </div>
+            <p className="text-golden/70 text-xs font-medium italic mb-1">Owned by Hoteliers, built for hospitality</p>
             <p className="text-gray-400 text-sm max-w-xs">{t('footer.tagline')}</p>
             <p className="text-gray-500 text-xs mt-2">{t('footer.made_with')}</p>
           </div>

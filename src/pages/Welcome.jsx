@@ -63,6 +63,7 @@ export default function Welcome() {
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">
             {t('welcome.title', 'Welcome to Staylo')}
           </h1>
+          <p className="text-sm text-golden/80 font-medium italic mb-2">Owned by Hoteliers, built for hospitality</p>
           <p className="text-gray-400">
             {t('welcome.subtitle', 'What brings you here today?')}
           </p>
