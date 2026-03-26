@@ -111,7 +111,7 @@
     "early_adopters": "{{count}} hoteliers already joined",
     "trust_line": "Free to join. No contracts. Cancel anytime.",
     "card_title": "Break free from OTAs",
-    "card_savings_label": "Average annual savings"
+    "card_savings_label": "Your revenue increases by"
   },
   "commission": {
     "title": "See how much you'd save",
@@ -119,7 +119,7 @@
     "current_label": "You currently pay",
     "staylo_label": "With Staylo you'd pay",
     "staylo_rate": "10%",
-    "savings_label": "Your annual savings",
+    "savings_label": "Your revenue increases by",
     "per_year": "/year",
     "rooms_label": "Number of rooms",
     "rate_label": "Average nightly rate (USD)",

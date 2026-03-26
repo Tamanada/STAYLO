@@ -111,7 +111,7 @@
     "secondary_cta": "Découvrir la vision",
     "early_adopters": "{{count}} hôteliers déjà inscrits",
     "card_title": "Libérez-vous des OTA",
-    "card_savings_label": "Économies annuelles moyennes"
+    "card_savings_label": "Vos revenus augmentent de"
   },
   "breakfree": {
     "title": "Ils vous prennent 25 %. Nous, 10 %.",
@@ -128,7 +128,7 @@
     "current_label": "Vous payez actuellement",
     "staylo_label": "Avec Staylo vous paieriez",
     "staylo_rate": "10%",
-    "savings_label": "Vos économies annuelles",
+    "savings_label": "Vos revenus augmentent de",
     "per_year": "/an",
     "rooms_label": "Nombre de chambres",
     "rate_label": "Tarif moyen par nuit (USD)",

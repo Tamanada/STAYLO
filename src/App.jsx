@@ -1,4 +1,13 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
 import { AuthProvider } from './context/AuthContext'
 import { Layout } from './components/layout/Layout'
 import { DashboardLayout } from './components/dashboard/DashboardLayout'
@@ -35,6 +44,7 @@ import AdminSettings from './pages/admin/AdminSettings'
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <Routes>
           {/* Admin routes — separate layout, no public Navbar/Footer */}
