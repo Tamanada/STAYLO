@@ -21,7 +21,7 @@ export function useAmbassador() {
         .from('ambassadors')
         .select('*')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       if (amb) {
         setAmbassador(amb)

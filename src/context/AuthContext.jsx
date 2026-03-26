@@ -33,8 +33,30 @@ export function AuthProvider({ children }) {
       .from('users')
       .select('*')
       .eq('id', userId)
-      .single()
-    setProfile(data)
+      .maybeSingle()
+
+    if (data) {
+      setProfile(data)
+    } else {
+      // Profile doesn't exist yet — create it from auth user metadata
+      const { data: { user: authUser } } = await supabase.auth.getUser()
+      if (authUser) {
+        const { generateReferralCode } = await import('../lib/referral')
+        const { data: newProfile, error } = await supabase
+          .from('users')
+          .insert({
+            id: authUser.id,
+            email: authUser.email,
+            full_name: authUser.user_metadata?.full_name || null,
+            referral_code: generateReferralCode(),
+          })
+          .select('*')
+          .single()
+        if (!error && newProfile) {
+          setProfile(newProfile)
+        }
+      }
+    }
   }
 
   async function signUp(email, password, fullName, referralCode) {
