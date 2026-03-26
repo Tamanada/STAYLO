@@ -477,6 +477,19 @@
     },
     "copyright": "© {{year}} Staylo. Hak cipta dilindungi."
   },
+  "welcome": {
+    "referred_by": "Direferensikan oleh:",
+    "title": "Selamat datang di Staylo",
+    "subtitle": "Apa yang membawa Anda ke sini hari ini?",
+    "partner_title": "Jadi Mitra Pendiri",
+    "partner_desc": "Investasi di Staylo dan miliki bagian dari platform",
+    "property_title": "Daftarkan properti saya",
+    "property_desc": "Tambahkan hotel, guesthouse, atau resort Anda ke Staylo",
+    "ambassador_title": "Jadi Ambassador",
+    "ambassador_desc": "Dapatkan 2% penghasilan pasif seumur hidup untuk setiap hotel yang Anda bawa",
+    "already_account": "Sudah punya akun?",
+    "login": "Masuk"
+  },
   "common": {
     "loading": "Memuat...",
     "error": "Terjadi kesalahan. Silakan coba lagi.",

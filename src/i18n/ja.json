@@ -471,6 +471,19 @@
     },
     "copyright": "© {{year}} Staylo. All rights reserved."
   },
+  "welcome": {
+    "referred_by": "紹介者:",
+    "title": "Stayloへようこそ",
+    "subtitle": "本日はどのようなご用件ですか？",
+    "partner_title": "創業パートナーになる",
+    "partner_desc": "Stayloに投資してプラットフォームの一部を所有しましょう",
+    "property_title": "物件を登録する",
+    "property_desc": "ホテル、ゲストハウス、リゾートをStayloに追加",
+    "ambassador_title": "アンバサダーになる",
+    "ambassador_desc": "紹介したホテルごとに生涯2%のパッシブ収入を獲得",
+    "already_account": "すでにアカウントをお持ちですか？",
+    "login": "ログイン"
+  },
   "common": {
     "loading": "読み込み中...",
     "error": "エラーが発生しました。もう一度お試しください。",

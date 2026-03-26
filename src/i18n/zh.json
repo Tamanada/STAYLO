@@ -471,6 +471,19 @@
     },
     "copyright": "© {{year}} Staylo. 保留所有权利。"
   },
+  "welcome": {
+    "referred_by": "推荐人：",
+    "title": "欢迎来到 Staylo",
+    "subtitle": "今天是什么带您来到这里？",
+    "partner_title": "成为创始合伙人",
+    "partner_desc": "投资 Staylo，拥有平台的一部分",
+    "property_title": "注册我的房产",
+    "property_desc": "将您的酒店、宾馆或度假村添加到 Staylo",
+    "ambassador_title": "成为大使",
+    "ambassador_desc": "每推荐一家酒店，终身赚取 2% 的被动收入",
+    "already_account": "已有账户？",
+    "login": "登录"
+  },
   "common": {
     "loading": "加载中...",
     "error": "出了点问题，请重试。",

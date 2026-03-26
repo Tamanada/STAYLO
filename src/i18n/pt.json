@@ -478,6 +478,19 @@
     },
     "copyright": "© {{year}} Staylo. Todos os direitos reservados."
   },
+  "welcome": {
+    "referred_by": "Indicado por:",
+    "title": "Bem-vindo ao Staylo",
+    "subtitle": "O que traz você aqui hoje?",
+    "partner_title": "Tornar-se Parceiro Fundador",
+    "partner_desc": "Invista no Staylo e seja dono de uma parte da plataforma",
+    "property_title": "Cadastrar minha propriedade",
+    "property_desc": "Adicione seu hotel, pousada ou resort ao Staylo",
+    "ambassador_title": "Tornar-se Embaixador",
+    "ambassador_desc": "Ganhe 2% de renda passiva vitalícia por cada hotel que você trouxer",
+    "already_account": "Já tem uma conta?",
+    "login": "Entrar"
+  },
   "common": {
     "loading": "Carregando...",
     "error": "Algo deu errado. Por favor, tente novamente.",

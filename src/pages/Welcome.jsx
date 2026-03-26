@@ -1,10 +1,40 @@
+import { useState, useRef, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Hotel, Users, Megaphone, ArrowRight, Sparkles } from 'lucide-react'
+import { Hotel, Users, Megaphone, ArrowRight, Sparkles, Globe } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 
+const languages = [
+  { code: 'en', flag: '\u{1F1EC}\u{1F1E7}', label: 'English' },
+  { code: 'fr', flag: '\u{1F1EB}\u{1F1F7}', label: 'Fran\u00E7ais' },
+  { code: 'th', flag: '\u{1F1F9}\u{1F1ED}', label: '\u0E44\u0E17\u0E22' },
+  { code: 'ja', flag: '\u{1F1EF}\u{1F1F5}', label: '\u65E5\u672C\u8A9E' },
+  { code: 'es', flag: '\u{1F1EA}\u{1F1F8}', label: 'Espa\u00F1ol' },
+  { code: 'ar', flag: '\u{1F1F8}\u{1F1E6}', label: '\u0627\u0644\u0639\u0631\u0628\u064A\u0629' },
+  { code: 'ru', flag: '\u{1F1F7}\u{1F1FA}', label: '\u0420\u0443\u0441\u0441\u043A\u0438\u0439' },
+  { code: 'zh', flag: '\u{1F1E8}\u{1F1F3}', label: '\u4E2D\u6587' },
+  { code: 'hi', flag: '\u{1F1EE}\u{1F1F3}', label: '\u0939\u093F\u0928\u094D\u0926\u0940' },
+  { code: 'pt', flag: '\u{1F1E7}\u{1F1F7}', label: 'Portugu\u00EAs' },
+  { code: 'de', flag: '\u{1F1E9}\u{1F1EA}', label: 'Deutsch' },
+  { code: 'id', flag: '\u{1F1EE}\u{1F1E9}', label: 'Bahasa' },
+  { code: 'my', flag: '\u{1F1F2}\u{1F1F2}', label: '\u1019\u103C\u1014\u103A\u1019\u102C' },
+  { code: 'it', flag: '\u{1F1EE}\u{1F1F9}', label: 'Italiano' },
+]
+
 export default function Welcome() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const [langOpen, setLangOpen] = useState(false)
+  const langRef = useRef(null)
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (langRef.current && !langRef.current.contains(e.target)) {
+        setLangOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
   const [searchParams] = useSearchParams()
   const ref = searchParams.get('ref') || ''
   const amb = searchParams.get('amb') || ''
@@ -91,6 +121,34 @@ export default function Welcome() {
         <p className="text-center text-xs text-gray-600 mt-10">
           {t('welcome.already_account', 'Already have an account?')} <Link to="/login" className="text-ocean hover:text-electric underline">{t('welcome.login', 'Log in')}</Link>
         </p>
+      </div>
+
+      {/* Floating Language Selector */}
+      <div ref={langRef} className="fixed bottom-6 right-6 z-50">
+        {langOpen && (
+          <div className="absolute bottom-16 right-0 w-48 max-h-72 overflow-y-auto rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl mb-2">
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => { i18n.changeLanguage(lang.code); setLangOpen(false) }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-white/10 ${
+                  i18n.language === lang.code ? 'text-golden bg-white/5' : 'text-gray-200'
+                } first:rounded-t-2xl last:rounded-b-2xl`}
+              >
+                <span className="text-lg">{lang.flag}</span>
+                <span>{lang.label}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        <button
+          onClick={() => setLangOpen((o) => !o)}
+          className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-xl border border-white/20 shadow-lg flex items-center justify-center gap-1 text-gray-200 hover:bg-white/20 hover:text-white transition-all"
+          aria-label="Change language"
+        >
+          <Globe size={18} />
+          <span className="text-[10px] font-bold uppercase">{i18n.language?.substring(0, 2)}</span>
+        </button>
       </div>
     </div>
   )

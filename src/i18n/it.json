@@ -470,6 +470,19 @@
     },
     "copyright": "© {{year}} Staylo. Tutti i diritti riservati."
   },
+  "welcome": {
+    "referred_by": "Segnalato da:",
+    "title": "Benvenuto su Staylo",
+    "subtitle": "Cosa ti porta qui oggi?",
+    "partner_title": "Diventa Partner Fondatore",
+    "partner_desc": "Investi in Staylo e possiedi una parte della piattaforma",
+    "property_title": "Registra la mia struttura",
+    "property_desc": "Aggiungi il tuo hotel, pensione o resort su Staylo",
+    "ambassador_title": "Diventa Ambasciatore",
+    "ambassador_desc": "Guadagna il 2% di reddito passivo a vita per ogni hotel che porti",
+    "already_account": "Hai già un account?",
+    "login": "Accedi"
+  },
   "common": {
     "loading": "Caricamento...",
     "error": "Qualcosa è andato storto. Riprova.",
