@@ -69,6 +69,9 @@ export default function App() {
             <Route path="preview/:id" element={<DemoPropertyDetail />} />
           </Route>
 
+          {/* Welcome — standalone, no Navbar/Footer */}
+          <Route path="/welcome" element={<Welcome />} />
+
           {/* Public routes — with Navbar + Footer */}
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
@@ -78,7 +81,6 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/join" element={<Register />} />
-            <Route path="/welcome" element={<Welcome />} />
             <Route path="/loi" element={<LOI />} />
             <Route path="/loi/:ref" element={<LOI />} />
             <Route path="/reset-password" element={<ResetPassword />} />
