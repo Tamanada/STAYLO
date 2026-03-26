@@ -52,7 +52,7 @@ export function useReferral() {
   }, [profile?.id])
 
   const referralLink = profile?.referral_code
-    ? `https://staylo.app/join?ref=${profile.referral_code}`
+    ? `https://staylo.app/welcome?ref=${profile.referral_code}`
     : null
 
   return { referralCount, referralRank, referredUsers, referralLink, referralCode: profile?.referral_code }
