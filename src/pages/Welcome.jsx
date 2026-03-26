@@ -125,10 +125,18 @@ export default function Welcome() {
         </p>
       </div>
 
-      {/* Floating Language Selector — bottom right */}
-      <div ref={langRef} className="fixed bottom-6 right-6 z-50">
+      {/* Language pill — top right like nava_peace */}
+      <div ref={langRef} className="fixed top-5 right-5 z-50">
+        <button
+          onClick={() => setLangOpen((o) => !o)}
+          className="flex items-center gap-1.5 bg-white/20 backdrop-blur-md border border-white/30 rounded-full px-3 py-1.5 text-white hover:bg-white/30 transition-all shadow-lg"
+          aria-label="Change language"
+        >
+          <span className="text-base">{currentLang.flag}</span>
+          <span className="text-xs font-bold uppercase">{i18n.language?.substring(0, 2)}</span>
+        </button>
         {langOpen && (
-          <div className="absolute bottom-16 right-0 w-52 max-h-80 overflow-y-auto rounded-2xl bg-deep/95 backdrop-blur-xl border border-white/20 shadow-2xl mb-2">
+          <div className="absolute top-12 right-0 w-52 max-h-80 overflow-y-auto rounded-2xl bg-deep/95 backdrop-blur-xl border border-white/20 shadow-2xl mt-1">
             {languages.map((lang) => (
               <button
                 key={lang.code}
@@ -143,14 +151,6 @@ export default function Welcome() {
             ))}
           </div>
         )}
-        <button
-          onClick={() => setLangOpen((o) => !o)}
-          className="w-14 h-14 rounded-full bg-gradient-to-br from-ocean to-electric shadow-xl shadow-ocean/30 flex items-center justify-center gap-1 text-white hover:scale-110 transition-all border-2 border-white/20"
-          aria-label="Change language"
-        >
-          <Globe size={20} />
-          <span className="text-[10px] font-bold uppercase">{currentLang.flag}</span>
-        </button>
       </div>
     </div>
   )
