@@ -39,10 +39,11 @@ export function Hero() {
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           {/* Left: Text content */}
           <div className="text-white text-center lg:text-left">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-sm font-semibold mb-4 animate-pulse-glow">
-              <Zap size={16} className="text-golden" />
-              <span>{t('hero.badge')}</span>
+            {/* Slogan */}
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-sm font-bold mb-4">
+              <span className="text-golden">✦</span>
+              <span className="text-golden">Owned by Hoteliers, built for hospitality</span>
+              <span className="text-golden">✦</span>
             </div>
 
             {/* Eyebrow — The powerful question */}
