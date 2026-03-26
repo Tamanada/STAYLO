@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowRight, Hotel, Users, Globe, DollarSign, Handshake, TrendingUp, Sparkles } from 'lucide-react'
@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
 
 const AVG_ROOMS = 15
 const AVG_RATE = 60
@@ -17,7 +18,14 @@ const PER_HOTEL = Math.round(AVG_ANNUAL * AMBASSADOR_PCT)
 export default function AmbassadorLanding() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  const [isAmbassador, setIsAmbassador] = useState(false)
   const [hotelCount, setHotelCount] = useState(5)
+
+  useEffect(() => {
+    if (!user) return
+    supabase.from('ambassadors').select('id').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => { if (data) setIsAmbassador(true) })
+  }, [user])
   const [roomCount, setRoomCount] = useState(AVG_ROOMS)
   const [nightlyRate, setNightlyRate] = useState(AVG_RATE)
   const [occupancy, setOccupancy] = useState(Math.round(OCCUPANCY * 100))
@@ -68,11 +76,13 @@ export default function AmbassadorLanding() {
             {t('ambassador_landing.hero_subtitle', 'Bring hotels to Staylo and earn lifetime passive income on every booking they receive. No cap, no expiry — forever.')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link to="/ambassador/register">
+            <Link to={isAmbassador ? '/dashboard/ambassador' : '/ambassador/register'}>
               <Button variant="golden" size="lg" className="min-w-[260px]">
-                {user
-                  ? t('ambassador_landing.cta_activate', 'Activate My Ambassador Account')
-                  : t('ambassador_landing.cta_become', 'Become an Ambassador')}
+                {isAmbassador
+                  ? t('ambassador_landing.cta_dashboard', 'Go to My Ambassador Dashboard')
+                  : user
+                    ? t('ambassador_landing.cta_activate', 'Activate My Ambassador Account')
+                    : t('ambassador_landing.cta_become', 'Become an Ambassador')}
                 <ArrowRight size={20} />
               </Button>
             </Link>
@@ -303,11 +313,13 @@ export default function AmbassadorLanding() {
             <p className="relative text-white/70 mb-8 max-w-lg mx-auto">
               {t('ambassador_landing.bottom_cta_subtitle', 'Join the Staylo Ambassador Program and build passive income by connecting hotels to a fairer platform.')}
             </p>
-            <Link to="/ambassador/register">
+            <Link to={isAmbassador ? '/dashboard/ambassador' : '/ambassador/register'}>
               <button className="relative px-10 py-4 bg-white text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer">
-                <span className="text-gradient">{user
-                  ? t('ambassador_landing.cta_activate', 'Activate My Ambassador Account')
-                  : t('ambassador_landing.cta_become', 'Become an Ambassador')}</span>
+                <span className="text-gradient">{isAmbassador
+                  ? t('ambassador_landing.cta_dashboard', 'Go to My Ambassador Dashboard')
+                  : user
+                    ? t('ambassador_landing.cta_activate', 'Activate My Ambassador Account')
+                    : t('ambassador_landing.cta_become', 'Become an Ambassador')}</span>
                 <ArrowRight size={20} className="text-sunset" />
               </button>
             </Link>
