@@ -17,9 +17,9 @@ export function CommissionCalculator() {
   const savings = currentFees - stayloFees
 
   return (
-    <section className="py-16 sm:py-24 bg-cream">
+    <section className="py-8 sm:py-12 bg-cream">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-12">
+        <div className="text-center mb-6">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-deep mb-3">
             <span className="text-gradient">{t('commission.title')}</span>
           </h2>
@@ -27,7 +27,7 @@ export function CommissionCalculator() {
         </div>
 
         <Card className="p-8 border-2 border-transparent hover:border-sunrise/20 transition-all duration-500">
-          <div className="grid sm:grid-cols-3 gap-6 mb-8">
+          <div className="grid sm:grid-cols-3 gap-6 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">
                 {t('commission.rooms_label')}
@@ -70,7 +70,7 @@ export function CommissionCalculator() {
             </div>
           </div>
 
-          <div className="mb-8">
+          <div className="mb-4">
             <label className="block text-sm font-medium text-gray-600 mb-3">
               {t('commission.current_label')}: <span className="text-deep font-bold text-xl">{commission}%</span>
             </label>

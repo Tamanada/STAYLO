@@ -11,10 +11,10 @@ export function SocialProof() {
   ]
 
   return (
-    <section className="py-16 relative overflow-hidden">
+    <section className="py-8 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-electric/5 via-sunrise/5 to-libre/5" />
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-deep text-center mb-10">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-deep text-center mb-5">
           {t('social_proof.title', { count: 120 })}
         </h2>
         <div className="grid grid-cols-3 gap-6">

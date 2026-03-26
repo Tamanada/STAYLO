@@ -24,12 +24,12 @@ export function Hero() {
         }} />
       </div>
 
-      <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+      <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
           {/* Left: Text content */}
           <div className="text-white text-center lg:text-left">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-sm font-semibold mb-8 animate-pulse-glow">
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-sm font-semibold mb-4 animate-pulse-glow">
               <Zap size={16} className="text-golden" />
               <span>{t('hero.badge')}</span>
             </div>
@@ -52,7 +52,7 @@ export function Hero() {
             </p>
 
             {/* Highlight bar */}
-            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-sunrise/20 to-sunset/20 border border-sunrise/30 mb-10">
+            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-sunrise/20 to-sunset/20 border border-sunrise/30 mb-5">
               <Zap size={20} className="text-golden" />
               <span className="text-white font-bold text-lg">{t('hero.highlight')}</span>
             </div>
@@ -73,7 +73,7 @@ export function Hero() {
             </div>
 
             {/* Trust line */}
-            <div className="mt-8 flex items-center justify-center lg:justify-start gap-4 text-white/40 text-sm">
+            <div className="mt-4 flex items-center justify-center lg:justify-start gap-4 text-white/40 text-sm">
               <div className="flex items-center gap-1.5">
                 <Shield size={14} />
                 <span>{t('hero.trust_line')}</span>

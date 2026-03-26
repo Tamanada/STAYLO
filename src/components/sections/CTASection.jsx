@@ -8,7 +8,7 @@ export function CTASection() {
   const { user } = useAuth()
 
   return (
-    <section className="py-16 sm:py-24">
+    <section className="py-8 sm:py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <div className="relative bg-gradient-to-br from-electric via-sunset to-sunrise rounded-3xl p-10 sm:p-14 text-center text-white overflow-hidden animate-gradient">
           {/* Floating sparkles */}
@@ -23,7 +23,7 @@ export function CTASection() {
           </div>
 
           <h2 className="relative text-3xl sm:text-4xl font-extrabold mb-4">{t('cta_section.title')}</h2>
-          <p className="relative text-lg text-white/80 mb-8 max-w-lg mx-auto">{t('cta_section.subtitle')}</p>
+          <p className="relative text-lg text-white/80 mb-4 max-w-lg mx-auto">{t('cta_section.subtitle')}</p>
           <Link to={user ? '/dashboard' : '/register'}>
             <button className="relative px-10 py-4 bg-white text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer">
               <span className="text-gradient">{user ? t('nav.dashboard', 'Go to Dashboard') : t('cta_section.button')}</span>

@@ -46,14 +46,14 @@ export function FoundingMembers() {
   const { t } = useTranslation()
 
   return (
-    <section className="py-16 sm:py-24 relative overflow-hidden">
+    <section className="py-8 sm:py-12 relative overflow-hidden">
       {/* Gradient background */}
       <div className="absolute inset-0 bg-gradient-to-br from-deep via-deep to-electric/40" />
       <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-sunset/5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-libre/5 rounded-full blur-3xl" />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 text-white">
-        <div className="text-center mb-14">
+        <div className="text-center mb-7">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-golden/10 border border-golden/20 rounded-full text-sm text-golden font-semibold mb-4">
             <Crown size={14} />
             {t('founding_members.badge', 'Founding Members')}
@@ -64,7 +64,7 @@ export function FoundingMembers() {
         </div>
 
         {/* Animated stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-14">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-7">
           <div className="text-center">
             <Globe size={22} className="mx-auto text-ocean mb-2" />
             <p className="text-3xl sm:text-4xl font-extrabold">

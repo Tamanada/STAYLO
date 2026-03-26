@@ -12,9 +12,9 @@ export function HowItWorks() {
   const { t } = useTranslation()
 
   return (
-    <section className="py-16 sm:py-24 bg-cream relative">
+    <section className="py-8 sm:py-12 bg-cream relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-14">
+        <div className="text-center mb-7">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-deep mb-3">
             {t('how_it_works.title')}
           </h2>
@@ -53,7 +53,7 @@ export function HowItWorks() {
         </div>
 
         {/* Timeline connector (desktop only) */}
-        <div className="hidden sm:flex justify-center mt-8">
+        <div className="hidden sm:flex justify-center mt-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-ocean" />
             <div className="w-24 h-0.5 bg-gradient-to-r from-ocean to-libre" />

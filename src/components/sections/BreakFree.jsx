@@ -13,9 +13,9 @@ export function BreakFree() {
   const pains = t('giants.old_pains', { returnObjects: true })
 
   return (
-    <section className="py-16 sm:py-24 bg-white relative overflow-hidden">
+    <section className="py-8 sm:py-12 bg-white relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-14">
+        <div className="text-center mb-7">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-deep mb-3">
             {t('giants.title_before')} <span className="text-gradient">{t('giants.title_highlight')}</span>
           </h2>
@@ -24,7 +24,7 @@ export function BreakFree() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8 items-stretch">
+        <div className="grid lg:grid-cols-2 gap-4 items-stretch">
           {/* Old way */}
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 border border-gray-200 relative">
             <div className="flex items-center gap-3 mb-6">
