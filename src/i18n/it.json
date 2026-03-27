@@ -77,6 +77,7 @@
 
     "clock_badge": "Disponibilità limitata",
     "clock_title": "Il tempo stringe",
+    "clock_author": "— Gandhi",
     "clock_subtitle": "Il Round 1 si chiude quando 100 strutture hanno aderito — o a luglio 2026, qualunque cosa arrivi prima.",
     "clock_label": "Partner Fondatori",
     "clock_pct": "{{pct}}% completato",
@@ -212,7 +213,16 @@
     "submit": "Invia sondaggio",
     "success_title": "Grazie!",
     "success_message": "Il tuo feedback è preziosissimo. Ora registra la tua struttura per assicurarti il posto da membro fondatore.",
-    "success_cta": "Registra la mia struttura"
+    "success_cta": "Registra la mia struttura",
+    "already_done_title": "Hai già completato questo sondaggio!",
+    "already_done_message": "Le tue risposte sono state registrate. Grazie per il tuo tempo!",
+    "results_title": "I risultati del tuo sondaggio",
+    "results_subtitle": "Ecco un riepilogo delle tue risposte.",
+    "edit_answers": "Modifica le mie risposte",
+    "invite_title": "Invita altri albergatori!",
+    "invite_message": "Condividi il tuo link di invito con altri albergatori. Aiutali a scoprire Staylo e guadagnate insieme.",
+    "invite_cta": "Vai al pannello e condividi",
+    "per_year": "anno"
   },
   "property": {
     "title": "Registra la tua struttura",
@@ -244,7 +254,9 @@
     "parse_success": "Abbiamo trovato la tua struttura! Verifica i dettagli qui sotto.",
     "success_title": "Struttura inviata!",
     "success_message": "La tua struttura è in fase di revisione. Ti avviseremo quando sarà approvata.",
-    "success_cta": "Vai al pannello di controllo"
+    "success_cta": "Vai al pannello di controllo",
+    "paste_url": "Incolla l'URL del tuo annuncio esistente per compilare automaticamente",
+    "account_required": "Dovrai creare un account per inviare la tua struttura."
   },
   "auth": {
     "login_title": "Bentornato",
@@ -264,7 +276,13 @@
     "register_link": "Registrati",
     "login_link": "Accedi",
     "or": "oppure",
-    "referred_by": "Invitato da: {{code}}"
+    "referred_by": "Invitato da: {{code}}",
+    "referred_by_ambassador": "Invitato da Ambasciatore",
+    "enter_email_first": "Inserisci prima la tua email",
+    "reset_link_sent": "Controlla la tua email per il link di reimpostazione!",
+    "forgot_password": "Hai dimenticato la password?",
+    "or_continue": "oppure continua con",
+    "or_email": "oppure registrati con email"
   },
   "dashboard": {
     "title": "Il tuo pannello di controllo",
@@ -375,7 +393,13 @@
       "q4": "C'è un costo per iscriversi?",
       "a4": "Iscriversi come membro fondatore è completamente gratuito durante la fase alpha. Paghi le commissioni solo quando ricevi prenotazioni.",
       "q5": "Quali regioni supportate?",
-      "a5": "Partiamo dal Sud-Est asiatico (Koh Phangan, Thailandia) e ci espandiamo a livello globale in base alla domanda."
+      "a5": "Partiamo dal Sud-Est asiatico (Koh Phangan, Thailandia) e ci espandiamo a livello globale in base alla domanda.",
+      "q6": "Come sono prezzate le quote e quante posso acquistare?",
+      "a6": "Le quote Alpha costano $1.000 ciascuna. Ogni struttura può detenere da 1 a 10 quote. Il prezzo Alpha è il più basso — la Fase V1 sarà $1.500, la Fase V2+ a prezzo di mercato.",
+      "q7": "Cosa succede al mio investimento se Staylo non funziona?",
+      "a7": "Tutti i fondi sono custoditi in un conto aziendale dedicato con piena trasparenza. Se il progetto non raggiunge la massa critica, i fondi rimanenti vengono redistribuiti proporzionalmente agli azionisti.",
+      "q8": "Come vengono distribuiti i dividendi?",
+      "a8": "Il 30% dei ricavi netti della piattaforma viene distribuito come dividendi, in proporzione alle quote possedute. I dividendi iniziano quando la piattaforma raggiunge la redditività operativa."
     },
     "cta_title": "Fai parte del futuro",
     "cta_button": "Diventa membro fondatore",
@@ -459,7 +483,15 @@
     "fund_team": "Team",
     "fund_team_desc": "Ingegneria, supporto, sviluppo commerciale, operazioni",
     "fund_legal": "Legale e conformita",
-    "fund_legal_desc": "Registrazione aziendale, contratti, licenze, assicurazioni"
+    "fund_legal_desc": "Registrazione aziendale, contratti, licenze, assicurazioni",
+
+    "founder_badge": "Il Fondatore",
+    "founder_role": "Fondatore di STAYLO",
+    "founder_bio1": "Imprenditore francese nel settore dell'ospitalità con sede a Koh Phangan, Thailandia, con quasi 40 anni di esperienza tra ristoranti, bar, servizi di lusso, turismo e sviluppo commerciale nel settore alberghiero.",
+    "founder_bio2": "Dopo aver lavorato a livello internazionale in Francia, Monaco, Abu Dhabi, Mosca e Thailandia — e aver fondato diverse attività nel settore dell'ospitalità — David conosce in prima persona le sfide degli operatori indipendenti.",
+    "founder_bio3": "Dopo anni passati a vedere gli hotel perdere il controllo, i margini e l'influenza a favore di piattaforme di prenotazione ad alte commissioni, ha creato STAYLO con una missione chiara:",
+    "founder_quote": "Ridare il controllo a chi ospita.",
+    "founder_belief": "STAYLO è costruito sulla convinzione che gli hotel indipendenti meritano una piattaforma più equa, più rispettosa e progettata attorno ai loro interessi — non contro di loro."
   },
   "footer": {
     "tagline": "Prenota tutto. Vivi l'esperienza.",
@@ -469,7 +501,8 @@
       "survey": "Sondaggio",
       "contact": "Contatti"
     },
-    "copyright": "© {{year}} Staylo. Tutti i diritti riservati."
+    "copyright": "© {{year}} Staylo. Tutti i diritti riservati.",
+    "operated_by": "Gestito da Barokat Halal Food Co., Ltd."
   },
   "welcome": {
     "referred_by": "Segnalato da:",
@@ -490,5 +523,51 @@
     "required": "Questo campo è obbligatorio",
     "save": "Salva",
     "cancel": "Annulla"
+  },
+  "survey_chooser": {
+    "title": "Parlaci di te",
+    "subtitle": "Abbiamo due brevi sondaggi — scegli quello che fa per te.",
+    "hotelier_title": "Sono un albergatore",
+    "hotelier_desc": "Possiedo o gestisco un hotel, una pensione, un resort o un'altra struttura ricettiva.",
+    "traveler_title": "Sono un viaggiatore",
+    "traveler_desc": "Prenoto hotel e alloggi per i miei viaggi.",
+    "start": "Inizia il sondaggio"
+  },
+  "survey_traveler": {
+    "title": "Sondaggio viaggiatore",
+    "subtitle": "Aiutaci a creare un'esperienza di prenotazione migliore per te.",
+    "step1_title": "Come prenoti di solito gli hotel?",
+    "step1_subtitle": "Seleziona tutto ciò che si applica.",
+    "step2_title": "Cosa ti frustra di più delle piattaforme di prenotazione?",
+    "step2_subtitle": "Seleziona tutto ciò che si applica.",
+    "step3_title": "Preferiresti prenotare direttamente con l'hotel se il prezzo fosse uguale o inferiore?",
+    "step4_title": "Quanti hotel prenoti all'anno?",
+    "hotels_label": "hotel all'anno",
+    "hook_title": "Grazie per le tue risposte!",
+    "hook_subtitle": "Prenoti hotel. Ne conosci di buoni. Li consigli agli amici.",
+    "hook_question": "E se potessi guadagnare un reddito passivo a vita per ogni hotel che porti su Staylo?",
+    "hook_detail": "Guadagna il 2% di tutte le prenotazioni, per sempre. Nessun investimento necessario. Basta spargere la voce.",
+    "cta_ambassador": "Diventa Ambasciatore",
+    "cta_skip": "Forse più tardi",
+    "proof_hotels": "Hotel già registrati",
+    "proof_earn": "2% di guadagni a vita",
+    "platform_booking": "Booking.com",
+    "platform_airbnb": "Airbnb",
+    "platform_expedia": "Expedia",
+    "platform_google": "Google Hotels",
+    "platform_agoda": "Agoda",
+    "platform_direct": "Direttamente con l'hotel",
+    "platform_other": "Altro",
+    "frustration_high_prices": "Prezzi alti",
+    "frustration_hidden_fees": "Commissioni nascoste",
+    "frustration_fake_reviews": "Recensioni false",
+    "frustration_no_contact": "Nessun contatto diretto con l'hotel",
+    "frustration_generic_experience": "Esperienza standardizzata",
+    "frustration_poor_support": "Assistenza clienti scadente",
+    "frustration_cancellation_policy": "Politiche di cancellazione rigide",
+    "frustration_no_loyalty": "Nessun programma fedeltà",
+    "direct_yes_absolutely": "Sì, assolutamente!",
+    "direct_maybe": "Forse, dipende dall'esperienza",
+    "direct_dont_care": "Non mi interessa particolarmente"
   }
 }

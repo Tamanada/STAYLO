@@ -77,6 +77,7 @@
 
     "clock_badge": "Begrenzte Verfügbarkeit",
     "clock_title": "Die Uhr tickt",
+    "clock_author": "— Gandhi",
     "clock_subtitle": "Runde 1 endet bei 100 registrierten Unterkünften — oder im Juli 2026, je nachdem, was zuerst eintritt.",
     "clock_label": "Gründungspartner",
     "clock_pct": "{{pct}}% belegt",
@@ -213,7 +214,16 @@
     "submit": "Umfrage absenden",
     "success_title": "Vielen Dank!",
     "success_message": "Dein Feedback ist sehr wertvoll. Trage jetzt deine Unterkunft ein, um dir deinen Platz als Gründungsmitglied zu sichern.",
-    "success_cta": "Meine Unterkunft eintragen"
+    "success_cta": "Meine Unterkunft eintragen",
+    "already_done_title": "Du hast diese Umfrage bereits ausgefüllt!",
+    "already_done_message": "Deine Antworten wurden gespeichert. Vielen Dank für deine Zeit!",
+    "results_title": "Deine Umfrageergebnisse",
+    "results_subtitle": "Hier ist eine Zusammenfassung deiner Antworten.",
+    "edit_answers": "Meine Antworten bearbeiten",
+    "invite_title": "Lade andere Hoteliers ein!",
+    "invite_message": "Teile deinen Empfehlungslink mit anderen Hoteliers. Hilf ihnen, Staylo zu entdecken, und verdient gemeinsam Belohnungen.",
+    "invite_cta": "Zum Dashboard & Teilen",
+    "per_year": "pro Jahr"
   },
   "property": {
     "title": "Unterkunft eintragen",
@@ -245,7 +255,9 @@
     "parse_success": "Wir haben deine Unterkunft gefunden! Bitte überprüfe die Angaben unten.",
     "success_title": "Unterkunft eingereicht!",
     "success_message": "Deine Unterkunft wird geprüft. Wir benachrichtigen dich, sobald sie genehmigt ist.",
-    "success_cta": "Zum Dashboard"
+    "success_cta": "Zum Dashboard",
+    "paste_url": "Füge die URL deines bestehenden Eintrags ein, um automatisch auszufüllen",
+    "account_required": "Du musst ein Konto erstellen, um deine Unterkunft einzureichen."
   },
   "auth": {
     "login_title": "Willkommen zurück",
@@ -265,7 +277,13 @@
     "register_link": "Registrieren",
     "login_link": "Anmelden",
     "or": "oder",
-    "referred_by": "Empfohlen von: {{code}}"
+    "referred_by": "Empfohlen von: {{code}}",
+    "referred_by_ambassador": "Empfohlen von Botschafter",
+    "enter_email_first": "Gib zuerst deine E-Mail-Adresse ein",
+    "reset_link_sent": "Prüfe dein E-Mail-Postfach für den Zurücksetzungslink!",
+    "forgot_password": "Passwort vergessen?",
+    "or_continue": "oder weiter mit",
+    "or_email": "oder mit E-Mail registrieren"
   },
   "dashboard": {
     "title": "Dein Dashboard",
@@ -466,7 +484,15 @@
     "fund_team": "Team",
     "fund_team_desc": "Entwicklung, Support, Geschäftsentwicklung, Betrieb",
     "fund_legal": "Recht & Compliance",
-    "fund_legal_desc": "Firmengründung, Verträge, Lizenzen, Versicherungen"
+    "fund_legal_desc": "Firmengründung, Verträge, Lizenzen, Versicherungen",
+
+    "founder_badge": "Der Gründer",
+    "founder_role": "Gründer von STAYLO",
+    "founder_bio1": "Französischer Gastgewerbe-Unternehmer mit Sitz auf Koh Phangan, Thailand, mit fast 40 Jahren Erfahrung in den Bereichen Restaurants, Bars, Luxusservice, Tourismus und Geschäftsentwicklung im Gastgewerbe.",
+    "founder_bio2": "Nach internationaler Tätigkeit in Frankreich, Monaco, Abu Dhabi, Moskau und Thailand — und der Gründung mehrerer Gastgewerbeunternehmen — kennt David die Herausforderungen unabhängiger Betreiber aus erster Hand.",
+    "founder_bio3": "Nach Jahren, in denen er miterlebt hat, wie Hotels die Kontrolle, Marge und Einfluss an provisionsstarke Buchungsplattformen verlieren, hat er STAYLO mit einer klaren Mission gegründet:",
+    "founder_quote": "Die Kontrolle denen zurückgeben, die Gäste empfangen.",
+    "founder_belief": "STAYLO basiert auf der Überzeugung, dass unabhängige Hotels eine Plattform verdienen, die fairer und respektvoller ist und ihre Interessen vertritt — nicht gegen sie arbeitet."
   },
   "footer": {
     "tagline": "Alles buchen. Das Erlebnis besitzen.",
@@ -476,7 +502,8 @@
       "survey": "Umfrage",
       "contact": "Kontakt"
     },
-    "copyright": "© {{year}} Staylo. Alle Rechte vorbehalten."
+    "copyright": "© {{year}} Staylo. Alle Rechte vorbehalten.",
+    "operated_by": "Betrieben von Barokat Halal Food Co., Ltd."
   },
   "welcome": {
     "referred_by": "Empfohlen von:",
@@ -497,5 +524,51 @@
     "required": "Dieses Feld ist erforderlich",
     "save": "Speichern",
     "cancel": "Abbrechen"
+  },
+  "survey_chooser": {
+    "title": "Erzähle uns von dir",
+    "subtitle": "Wir haben zwei kurze Umfragen — wähle die passende aus.",
+    "hotelier_title": "Ich bin Hotelier",
+    "hotelier_desc": "Ich besitze oder betreibe ein Hotel, eine Pension, ein Resort oder eine andere Unterkunft.",
+    "traveler_title": "Ich bin Reisender",
+    "traveler_desc": "Ich buche Hotels und Unterkünfte für meine Reisen.",
+    "start": "Umfrage starten"
+  },
+  "survey_traveler": {
+    "title": "Reisenden-Umfrage",
+    "subtitle": "Hilf uns, ein besseres Buchungserlebnis für dich zu schaffen.",
+    "step1_title": "Wie buchst du normalerweise Hotels?",
+    "step1_subtitle": "Wähle alle zutreffenden aus.",
+    "step2_title": "Was frustriert dich am meisten an Buchungsplattformen?",
+    "step2_subtitle": "Wähle alle zutreffenden aus.",
+    "step3_title": "Würdest du lieber direkt beim Hotel buchen, wenn der Preis gleich oder niedriger wäre?",
+    "step4_title": "Wie viele Hotels buchst du pro Jahr?",
+    "hotels_label": "Hotels pro Jahr",
+    "hook_title": "Danke für deine Antworten!",
+    "hook_subtitle": "Du buchst Hotels. Du kennst gute. Du empfiehlst sie Freunden.",
+    "hook_question": "Was wäre, wenn du lebenslang passives Einkommen für jedes Hotel verdienen könntest, das du zu Staylo bringst?",
+    "hook_detail": "Verdiene 2% aller Buchungen, für immer. Keine Investition nötig. Einfach weitersagen.",
+    "cta_ambassador": "Botschafter werden",
+    "cta_skip": "Vielleicht später",
+    "proof_hotels": "Hotels bereits eingetragen",
+    "proof_earn": "2% lebenslange Einnahmen",
+    "platform_booking": "Booking.com",
+    "platform_airbnb": "Airbnb",
+    "platform_expedia": "Expedia",
+    "platform_google": "Google Hotels",
+    "platform_agoda": "Agoda",
+    "platform_direct": "Direkt beim Hotel",
+    "platform_other": "Andere",
+    "frustration_high_prices": "Hohe Preise",
+    "frustration_hidden_fees": "Versteckte Gebühren",
+    "frustration_fake_reviews": "Gefälschte Bewertungen",
+    "frustration_no_contact": "Kein direkter Kontakt zum Hotel",
+    "frustration_generic_experience": "Standardisiertes Erlebnis",
+    "frustration_poor_support": "Schlechter Kundenservice",
+    "frustration_cancellation_policy": "Starre Stornierungsbedingungen",
+    "frustration_no_loyalty": "Keine Treueprämien",
+    "direct_yes_absolutely": "Ja, auf jeden Fall!",
+    "direct_maybe": "Vielleicht, hängt vom Erlebnis ab",
+    "direct_dont_care": "Ist mir eigentlich egal"
   }
 }

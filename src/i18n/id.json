@@ -77,6 +77,7 @@
 
     "clock_badge": "Ketersediaan Terbatas",
     "clock_title": "Waktu Terus Berjalan",
+    "clock_author": "— Gandhi",
     "clock_subtitle": "Putaran 1 ditutup saat 100 properti bergabung — atau Juli 2026, mana yang lebih dulu.",
     "clock_label": "Mitra Pendiri",
     "clock_pct": "{{pct}}% terisi",
@@ -213,7 +214,16 @@
     "submit": "Kirim Survei",
     "success_title": "Terima kasih!",
     "success_message": "Masukan Anda sangat berharga. Sekarang daftarkan properti Anda untuk mengamankan posisi anggota pendiri.",
-    "success_cta": "Daftarkan Properti Saya"
+    "success_cta": "Daftarkan Properti Saya",
+    "already_done_title": "Anda sudah menyelesaikan survei ini!",
+    "already_done_message": "Jawaban Anda telah tercatat. Terima kasih atas waktu Anda!",
+    "results_title": "Hasil Survei Anda",
+    "results_subtitle": "Berikut ringkasan jawaban Anda.",
+    "edit_answers": "Edit jawaban saya",
+    "invite_title": "Undang pelaku perhotelan lainnya!",
+    "invite_message": "Bagikan tautan referral Anda dengan sesama pelaku perhotelan. Bantu mereka menemukan Staylo dan raih hadiah bersama.",
+    "invite_cta": "Ke Dasbor & Bagikan",
+    "per_year": "per tahun"
   },
   "property": {
     "title": "Daftarkan Properti Anda",
@@ -245,7 +255,9 @@
     "parse_success": "Kami menemukan properti Anda! Silakan verifikasi detail di bawah ini.",
     "success_title": "Properti Terkirim!",
     "success_message": "Properti Anda sedang ditinjau. Kami akan memberi tahu Anda saat disetujui.",
-    "success_cta": "Ke Dasbor"
+    "success_cta": "Ke Dasbor",
+    "paste_url": "Tempel URL listing Anda yang sudah ada untuk mengisi otomatis",
+    "account_required": "Anda perlu membuat akun untuk mengirimkan properti Anda."
   },
   "auth": {
     "login_title": "Selamat Datang Kembali",
@@ -265,7 +277,13 @@
     "register_link": "Daftar",
     "login_link": "Masuk",
     "or": "atau",
-    "referred_by": "Direferensikan oleh: {{code}}"
+    "referred_by": "Direferensikan oleh: {{code}}",
+    "referred_by_ambassador": "Direferensikan oleh Ambassador",
+    "enter_email_first": "Masukkan email Anda terlebih dahulu",
+    "reset_link_sent": "Periksa email Anda untuk tautan reset!",
+    "forgot_password": "Lupa kata sandi?",
+    "or_continue": "atau lanjutkan dengan",
+    "or_email": "atau daftar dengan email"
   },
   "dashboard": {
     "title": "Dasbor Anda",
@@ -466,7 +484,15 @@
     "fund_team": "Tim",
     "fund_team_desc": "Teknik, dukungan, pengembangan bisnis, operasional",
     "fund_legal": "Hukum & Kepatuhan",
-    "fund_legal_desc": "Pendaftaran perusahaan, kontrak, lisensi, asuransi"
+    "fund_legal_desc": "Pendaftaran perusahaan, kontrak, lisensi, asuransi",
+
+    "founder_badge": "Sang Pendiri",
+    "founder_role": "Pendiri STAYLO",
+    "founder_bio1": "Pengusaha perhotelan Prancis yang berbasis di Koh Phangan, Thailand, dengan pengalaman hampir 40 tahun di bidang restoran, bar, layanan mewah, pariwisata, dan pengembangan bisnis perhotelan.",
+    "founder_bio2": "Setelah bekerja secara internasional di Prancis, Monaco, Abu Dhabi, Moskow, dan Thailand — serta mendirikan beberapa bisnis perhotelan — David memahami secara langsung tantangan yang dihadapi operator independen.",
+    "founder_bio3": "Setelah bertahun-tahun menyaksikan hotel kehilangan kendali, margin, dan pengaruh terhadap platform pemesanan berkomisi tinggi, ia menciptakan STAYLO dengan satu misi yang jelas:",
+    "founder_quote": "Mengembalikan kendali kepada mereka yang menjadi tuan rumah.",
+    "founder_belief": "STAYLO dibangun atas keyakinan bahwa hotel independen layak mendapatkan platform yang lebih adil, lebih menghargai, dan dirancang untuk kepentingan mereka — bukan melawan mereka."
   },
   "footer": {
     "tagline": "Pesan segalanya. Miliki pengalamannya.",
@@ -476,7 +502,8 @@
       "survey": "Survei",
       "contact": "Kontak"
     },
-    "copyright": "© {{year}} Staylo. Hak cipta dilindungi."
+    "copyright": "© {{year}} Staylo. Hak cipta dilindungi.",
+    "operated_by": "Dioperasikan oleh Barokat Halal Food Co., Ltd."
   },
   "welcome": {
     "referred_by": "Direferensikan oleh:",
@@ -497,5 +524,51 @@
     "required": "Kolom ini wajib diisi",
     "save": "Simpan",
     "cancel": "Batal"
+  },
+  "survey_chooser": {
+    "title": "Ceritakan tentang diri Anda",
+    "subtitle": "Kami memiliki dua survei singkat — pilih yang sesuai untuk Anda.",
+    "hotelier_title": "Saya Pelaku Perhotelan",
+    "hotelier_desc": "Saya memiliki atau mengelola hotel, wisma tamu, resort, atau akomodasi lainnya.",
+    "traveler_title": "Saya Wisatawan",
+    "traveler_desc": "Saya memesan hotel dan akomodasi untuk perjalanan saya.",
+    "start": "Mulai survei"
+  },
+  "survey_traveler": {
+    "title": "Survei Wisatawan",
+    "subtitle": "Bantu kami membangun pengalaman pemesanan yang lebih baik untuk Anda.",
+    "step1_title": "Bagaimana Anda biasanya memesan hotel?",
+    "step1_subtitle": "Pilih semua yang sesuai.",
+    "step2_title": "Apa yang paling membuat Anda frustrasi dengan platform pemesanan?",
+    "step2_subtitle": "Pilih semua yang sesuai.",
+    "step3_title": "Apakah Anda lebih suka memesan langsung dengan hotel jika harganya sama atau lebih murah?",
+    "step4_title": "Berapa banyak hotel yang Anda pesan per tahun?",
+    "hotels_label": "hotel per tahun",
+    "hook_title": "Terima kasih atas jawaban Anda!",
+    "hook_subtitle": "Anda memesan hotel. Anda tahu yang bagus. Anda merekomendasikannya ke teman.",
+    "hook_question": "Bagaimana jika Anda bisa mendapatkan penghasilan pasif seumur hidup dari setiap hotel yang Anda bawa ke Staylo?",
+    "hook_detail": "Dapatkan 2% dari semua pemesanan, selamanya. Tanpa investasi. Cukup sebarkan kabar.",
+    "cta_ambassador": "Jadi Ambassador",
+    "cta_skip": "Mungkin nanti",
+    "proof_hotels": "Hotel sudah terdaftar",
+    "proof_earn": "2% penghasilan seumur hidup",
+    "platform_booking": "Booking.com",
+    "platform_airbnb": "Airbnb",
+    "platform_expedia": "Expedia",
+    "platform_google": "Google Hotels",
+    "platform_agoda": "Agoda",
+    "platform_direct": "Langsung dengan hotel",
+    "platform_other": "Lainnya",
+    "frustration_high_prices": "Harga tinggi",
+    "frustration_hidden_fees": "Biaya tersembunyi",
+    "frustration_fake_reviews": "Ulasan palsu",
+    "frustration_no_contact": "Tidak ada kontak langsung dengan hotel",
+    "frustration_generic_experience": "Pengalaman yang seragam",
+    "frustration_poor_support": "Dukungan pelanggan yang buruk",
+    "frustration_cancellation_policy": "Kebijakan pembatalan yang kaku",
+    "frustration_no_loyalty": "Tidak ada hadiah loyalitas",
+    "direct_yes_absolutely": "Ya, tentu saja!",
+    "direct_maybe": "Mungkin, tergantung pengalamannya",
+    "direct_dont_care": "Saya tidak terlalu peduli"
   }
 }
