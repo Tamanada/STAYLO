@@ -21,8 +21,8 @@ export default function ResetPassword() {
     e.preventDefault()
     setError('')
 
-    if (password.length < 6) {
-      setError(t('reset.error_min', 'Password must be at least 6 characters'))
+    if (password.length < 8) {
+      setError(t('reset.error_min', 'Password must be at least 8 characters'))
       return
     }
 
@@ -90,7 +90,7 @@ export default function ResetPassword() {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder={t('reset.password_placeholder', 'Min. 6 characters')}
+                placeholder={t('reset.password_placeholder', 'Min. 8 characters')}
                 required
               />
               <button

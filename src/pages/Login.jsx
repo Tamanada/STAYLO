@@ -24,7 +24,7 @@ export default function Login() {
       await signIn(email, password)
       navigate('/dashboard')
     } catch (err) {
-      setError(err.message)
+      setError(t('auth.invalid_credentials', 'Invalid email or password'))
     }
     setLoading(false)
   }

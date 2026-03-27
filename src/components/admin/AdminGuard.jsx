@@ -1,17 +1,27 @@
+import { useState, useEffect } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-
-const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '').split(',').filter(Boolean)
-
-// Hardcoded fallback for alpha
-const DEFAULT_ADMINS = ['admin@staylo.app', 'david@staylo.app', 'david.dancingelephant@gmail.com']
-
-const allowedEmails = [...new Set([...DEFAULT_ADMINS, ...ADMIN_EMAILS])]
+import { supabase } from '../../lib/supabase'
 
 export function AdminGuard({ children }) {
   const { user, loading } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(null)
 
-  if (loading) {
+  useEffect(() => {
+    async function checkAdmin() {
+      if (!user) { setIsAdmin(false); return }
+      const { data } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      setIsAdmin(data?.role === 'admin')
+    }
+    if (user) checkAdmin()
+    else setIsAdmin(false)
+  }, [user])
+
+  if (loading || isAdmin === null) {
     return (
       <div className="min-h-screen bg-deep flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-ocean/30 border-t-ocean rounded-full animate-spin" />
@@ -19,7 +29,7 @@ export function AdminGuard({ children }) {
     )
   }
 
-  if (!user || !allowedEmails.includes(user.email)) {
+  if (!user || !isAdmin) {
     return <Navigate to="/" replace />
   }
 

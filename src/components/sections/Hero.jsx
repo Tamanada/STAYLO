@@ -40,7 +40,7 @@ export function Hero() {
           {/* Left: Text content */}
           <div className="text-white text-center lg:text-left">
             {/* Slogan */}
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-sm font-bold mb-4">
+            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-base sm:text-lg font-bold mb-4">
               <span className="text-golden">✦</span>
               <span className="text-golden">Owned by Hoteliers, built for hospitality</span>
               <span className="text-golden">✦</span>
