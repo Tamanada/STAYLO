@@ -95,7 +95,8 @@
     "dashboard": "Dasbor",
     "login": "Masuk",
     "register": "Gabung Sekarang",
-    "logout": "Keluar"
+    "logout": "Keluar",
+    "language": "Bahasa"
   },
   "hero": {
     "badge": "Alpha — Khusus Anggota Pendiri",

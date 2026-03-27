@@ -95,7 +95,8 @@
     "dashboard": "Dashboard",
     "login": "Anmelden",
     "register": "Jetzt beitreten",
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "language": "Sprache"
   },
   "hero": {
     "badge": "Alpha — Nur für Gründungsmitglieder",

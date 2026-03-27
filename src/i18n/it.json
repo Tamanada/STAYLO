@@ -95,7 +95,8 @@
     "dashboard": "Pannello di controllo",
     "login": "Accedi",
     "register": "Iscriviti ora",
-    "logout": "Esci"
+    "logout": "Esci",
+    "language": "Lingua"
   },
   "hero": {
     "badge": "Alpha — Solo membri fondatori",
