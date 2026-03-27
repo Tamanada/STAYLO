@@ -576,7 +576,7 @@ export default function Vision() {
             {/* Photo placeholder */}
             <div className="flex-shrink-0">
               <div className="w-40 h-40 md:w-48 md:h-48 rounded-2xl border-2 border-golden/20 overflow-hidden shadow-2xl">
-                <img src="/founder.png" alt="David Deveaux — Founder of STAYLO" className="w-full h-full object-cover" />
+                <img src="/founder.png" alt="David Deveaux — Founder of STAYLO" className="w-full h-full object-cover object-[center_30%]" />
               </div>
             </div>
 

@@ -76,6 +76,8 @@ export default function Survey() {
   const [step, setStep] = useState(1)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [alreadyDone, setAlreadyDone] = useState(false)
+  const [previousAnswers, setPreviousAnswers] = useState(null)
 
   const [answers, setAnswers] = useState({
     monthly_commission: 2000,
@@ -93,6 +95,24 @@ export default function Survey() {
   const annualSaving = annualCommission - annualWithStaylo
 
   const stepIcons = [DollarSign, BarChart3, AlertTriangle, Wallet, Building2]
+
+  // Check if user already completed the survey
+  useEffect(() => {
+    if (!user) return
+    async function checkExisting() {
+      const { data } = await supabase
+        .from('survey_answers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+      if (data && data.length > 0) {
+        setAlreadyDone(true)
+        setPreviousAnswers(data[0])
+      }
+    }
+    checkExisting()
+  }, [user])
 
   // Scroll to top on step change
   useEffect(() => {
@@ -146,6 +166,83 @@ export default function Survey() {
       console.error(err)
     }
     setLoading(false)
+  }
+
+  if (alreadyDone && previousAnswers) {
+    const prevSaving = (previousAnswers.monthly_commission || 0) * 12 * (7 / 17)
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-12">
+        <div className="text-center mb-8">
+          <div className="w-20 h-20 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle size={40} className="text-ocean" />
+          </div>
+          <h2 className="text-3xl font-bold text-deep mb-2">
+            {t('survey.results_title', 'Your Survey Results')}
+          </h2>
+          <p className="text-gray-500">
+            {t('survey.results_subtitle', 'Here is a summary of your answers.')}
+          </p>
+        </div>
+
+        {/* Results summary */}
+        <Card className="p-6 mb-6">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-xs text-gray-400 mb-1">{t('survey.step1_title', 'Monthly OTA Commission')}</p>
+              <p className="text-2xl font-bold text-deep">{fmt(previousAnswers.monthly_commission || 0)}</p>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-xs text-gray-400 mb-1">{t('survey.step2_title', 'OTA Dependency')}</p>
+              <p className="text-2xl font-bold text-deep">{previousAnswers.ota_dependency || '—'}</p>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-4">
+              <p className="text-xs text-gray-400 mb-1">{t('survey.step4_title', 'Investment Interest')}</p>
+              <p className="text-2xl font-bold text-deep">{fmt(previousAnswers.intended_investment || 0)}</p>
+            </div>
+            <div className="bg-libre/5 border border-libre/20 rounded-xl p-4">
+              <p className="text-xs text-gray-400 mb-1">{t('survey.savings_label', 'Your revenue increases by')}</p>
+              <p className="text-2xl font-bold text-libre">{fmt(prevSaving)}<span className="text-sm text-gray-400">/{t('survey.per_year', 'year')}</span></p>
+            </div>
+          </div>
+
+          {previousAnswers.biggest_frustration && (
+            <div className="mt-4 bg-gray-50 rounded-xl p-4">
+              <p className="text-xs text-gray-400 mb-2">{t('survey.q3', 'Top Frustrations')}</p>
+              <div className="flex flex-wrap gap-2">
+                {previousAnswers.biggest_frustration.split(', ').map(f => (
+                  <span key={f} className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs text-deep">
+                    {frustrationEmojis[f] || '•'} {t(`survey.q3_${f}`, f.replace(/_/g, ' '))}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+
+        {/* Edit button */}
+        <div className="text-center mb-6">
+          <Button variant="secondary" onClick={() => { setAlreadyDone(false); setStep(1) }}>
+            {t('survey.edit_answers', 'Edit my answers')} ✏️
+          </Button>
+        </div>
+
+        {/* Referral reminder */}
+        <Card className="p-6 border-2 border-electric/20 bg-gradient-to-br from-white to-electric/5">
+          <div className="text-center">
+            <p className="text-3xl mb-3">🤝</p>
+            <h3 className="text-xl font-bold text-deep mb-2">
+              {t('survey.invite_title', 'Invite other hoteliers!')}
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              {t('survey.invite_message', 'Share your referral link with fellow hoteliers. Help them discover Staylo and earn rewards together.')}
+            </p>
+            <Button onClick={() => navigate('/dashboard')}>
+              {t('survey.invite_cta', 'Go to Dashboard & Share')} <ArrowRight size={18} className="ml-2" />
+            </Button>
+          </div>
+        </Card>
+      </div>
+    )
   }
 
   if (submitted) {

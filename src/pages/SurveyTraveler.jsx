@@ -39,12 +39,28 @@ export default function SurveyTraveler() {
   const [loading, setLoading] = useState(false)
   const totalSteps = 5
 
+  const [alreadyDone, setAlreadyDone] = useState(false)
+
   const [answers, setAnswers] = useState({
     platforms: [],
     frustrations: [],
     direct_booking: '',
     hotels_per_year: 3,
   })
+
+  // Check if user already completed a survey
+  useEffect(() => {
+    if (!user) return
+    async function checkExisting() {
+      const { data } = await supabase
+        .from('survey_answers')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+      if (data && data.length > 0) setAlreadyDone(true)
+    }
+    checkExisting()
+  }, [user])
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -86,6 +102,28 @@ export default function SurveyTraveler() {
 
   const stepIcons = [Globe, ThumbsDown, Heart, MapPin, Sparkles]
   const StepIcon = stepIcons[step - 1] || Sparkles
+
+  if (alreadyDone) {
+    return (
+      <div className="max-w-lg mx-auto px-4 py-20 text-center">
+        <div className="w-20 h-20 bg-sunset/10 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Sparkles size={40} className="text-sunset" />
+        </div>
+        <h2 className="text-3xl font-bold text-deep mb-3">
+          {t('survey.already_done_title', "You've already completed this survey!")}
+        </h2>
+        <p className="text-gray-500 mb-6">
+          {t('survey.already_done_message', 'Your answers have been recorded. Thank you for your time!')}
+        </p>
+        <button
+          onClick={() => navigate('/ambassador/register')}
+          className="px-8 py-4 bg-gradient-to-r from-sunset to-sunrise text-white font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all cursor-pointer inline-flex items-center gap-2"
+        >
+          {t('survey_traveler.cta_ambassador', 'Become an Ambassador')} <ArrowRight size={20} />
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-12">
