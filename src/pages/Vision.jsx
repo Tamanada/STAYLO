@@ -575,8 +575,8 @@ export default function Vision() {
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
             {/* Photo placeholder */}
             <div className="flex-shrink-0">
-              <div className="w-40 h-40 md:w-48 md:h-48 rounded-2xl bg-gradient-to-br from-golden/30 to-sunrise/30 border-2 border-golden/20 flex items-center justify-center overflow-hidden shadow-2xl">
-                <span className="text-7xl">👤</span>
+              <div className="w-40 h-40 md:w-48 md:h-48 rounded-2xl border-2 border-golden/20 overflow-hidden shadow-2xl">
+                <img src="/founder.png" alt="David Deveaux — Founder of STAYLO" className="w-full h-full object-cover" />
               </div>
             </div>
 

@@ -14,7 +14,9 @@ import { DashboardLayout } from './components/dashboard/DashboardLayout'
 import { AdminGuard } from './components/admin/AdminGuard'
 import { AdminLayout } from './components/admin/AdminLayout'
 import Home from './pages/Home'
-import Survey from './pages/Survey'
+import SurveyChooser from './pages/SurveyChooser'
+import SurveyHotelier from './pages/SurveyHotelier'
+import SurveyTraveler from './pages/SurveyTraveler'
 import Submit from './pages/Submit'
 import Vision from './pages/Vision'
 import Dashboard from './pages/Dashboard'
@@ -75,7 +77,9 @@ export default function App() {
           {/* Public routes — with Navbar + Footer */}
           <Route element={<Layout />}>
             <Route path="/" element={<Home />} />
-            <Route path="/survey" element={<Survey />} />
+            <Route path="/survey" element={<SurveyChooser />} />
+            <Route path="/survey/hotelier" element={<SurveyHotelier />} />
+            <Route path="/survey/traveler" element={<SurveyTraveler />} />
             <Route path="/submit" element={<Submit />} />
             <Route path="/vision" element={<Vision />} />
             <Route path="/login" element={<Login />} />
