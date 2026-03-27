@@ -390,7 +390,7 @@ export default function SurveyTraveler() {
           <div className="mt-8 flex items-center justify-center gap-6 text-sm text-gray-400">
             <div className="flex items-center gap-2">
               <span className="text-xl">🏨</span>
-              <span>{t('survey_traveler.proof_hotels', '127+ hotels already listed')}</span>
+              <span>{t('survey_traveler.proof_hotels', 'Hotels already listed')}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xl">💰</span>

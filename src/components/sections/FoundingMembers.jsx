@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Globe, Building2, DollarSign, MapPin, Crown } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 
 function AnimatedCounter({ target, prefix = '', suffix = '', duration = 2000 }) {
   const [count, setCount] = useState(0)
@@ -44,6 +45,20 @@ const founders = [
 
 export function FoundingMembers() {
   const { t } = useTranslation()
+  const [userCount, setUserCount] = useState(0)
+  const [propertyCount, setPropertyCount] = useState(0)
+
+  useEffect(() => {
+    async function fetchCounts() {
+      const [users, properties] = await Promise.all([
+        supabase.from('users').select('id', { count: 'exact', head: true }),
+        supabase.from('properties').select('id', { count: 'exact', head: true }),
+      ])
+      if (users.count != null) setUserCount(users.count)
+      if (properties.count != null) setPropertyCount(properties.count)
+    }
+    fetchCounts()
+  }, [])
 
   return (
     <section className="py-8 sm:py-12 relative overflow-hidden">
@@ -75,7 +90,7 @@ export function FoundingMembers() {
           <div className="text-center">
             <Building2 size={22} className="mx-auto text-sunrise mb-2" />
             <p className="text-3xl sm:text-4xl font-extrabold">
-              <AnimatedCounter target={127} />
+              <AnimatedCounter target={propertyCount || userCount} />
             </p>
             <p className="text-sm text-white/50">{t('social_proof.properties')}</p>
           </div>
