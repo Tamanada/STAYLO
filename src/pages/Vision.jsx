@@ -565,6 +565,50 @@ export default function Vision() {
         </div>
       </section>
 
+      {/* Founder Section */}
+      <section className="py-8 sm:py-12 bg-gradient-to-br from-deep via-deep to-ocean/90">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-6">
+            <Badge variant="golden" className="mb-4">{t('vision.founder_badge', 'The Founder')}</Badge>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+            {/* Photo placeholder */}
+            <div className="flex-shrink-0">
+              <div className="w-40 h-40 md:w-48 md:h-48 rounded-2xl bg-gradient-to-br from-golden/30 to-sunrise/30 border-2 border-golden/20 flex items-center justify-center overflow-hidden shadow-2xl">
+                <span className="text-7xl">👤</span>
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div className="flex-1 text-center md:text-left">
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-1">David Deveaux</h2>
+              <p className="text-golden font-semibold text-lg mb-4">{t('vision.founder_role', 'Founder of STAYLO')}</p>
+
+              <p className="text-white/70 mb-4 leading-relaxed">
+                {t('vision.founder_bio1', 'French hospitality entrepreneur based in Koh Phangan, Thailand, with nearly 40 years of experience across restaurants, bars, luxury service, tourism, and hospitality business development.')}
+              </p>
+
+              <p className="text-white/70 mb-4 leading-relaxed">
+                {t('vision.founder_bio2', 'Having worked internationally in France, Monaco, Abu Dhabi, Moscow, and Thailand — and having founded several hospitality businesses — David understands firsthand the challenges faced by independent operators.')}
+              </p>
+
+              <p className="text-white/70 mb-4 leading-relaxed">
+                {t('vision.founder_bio3', 'After years of seeing hotels lose control, margin, and influence to high-commission booking platforms, he created STAYLO with one clear mission:')}
+              </p>
+
+              <blockquote className="text-2xl sm:text-3xl font-extrabold text-golden italic my-6">
+                "{t('vision.founder_quote', 'Give control back to those who host.')}"
+              </blockquote>
+
+              <p className="text-white/60 text-sm leading-relaxed">
+                {t('vision.founder_belief', 'STAYLO is built on the belief that independent hotels deserve a platform that is fairer, more respectful, and designed around their interests — not against them.')}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Bottom CTA */}
       <section className="py-8 sm:py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
