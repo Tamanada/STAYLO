@@ -76,8 +76,9 @@
     "who_ineligible2_note": "Round 2で受付開始",
 
     "clock_badge": "数量限定",
-    "clock_title": "時間は待ってくれません",
-    "clock_subtitle": "Round 1は100物件の参加、または2026年7月のいずれか早い方で締め切りとなります。",
+    "clock_title": "あなたの人生で見たい変化に、あなた自身がなりなさい。",
+    "clock_author": "— ガンジー",
+    "clock_subtitle": "ホテルの客室の販売方法を変革する特別な機会。高額なマーケティング代理店はもう不要です。あなたはホテル経営者です — ここで何が起きているか注目すべきです。ようこそ。",
     "clock_label": "創業パートナー",
     "clock_pct": "{{pct}}%達成",
     "clock_warning": "Round 1終了後、株価は$1,500に上昇します",
@@ -95,7 +96,8 @@
     "dashboard": "ダッシュボード",
     "login": "ログイン",
     "register": "今すぐ参加",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "language": "言語"
   },
   "hero": {
     "badge": "アルファ版 — 創設メンバー限定",
@@ -244,7 +246,9 @@
     "parse_success": "施設が見つかりました！以下の詳細をご確認ください。",
     "success_title": "物件が送信されました！",
     "success_message": "施設は審査中です。承認されましたらお知らせいたします。",
-    "success_cta": "ダッシュボードへ"
+    "success_cta": "ダッシュボードへ",
+    "paste_url": "既存の掲載URLを貼り付けて自動入力",
+    "account_required": "施設を送信するにはアカウントの作成が必要です。"
   },
   "auth": {
     "login_title": "おかえりなさい",

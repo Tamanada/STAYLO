@@ -213,7 +213,16 @@
     "submit": "Submit Survey",
     "success_title": "Thank you!",
     "success_message": "Your feedback is invaluable. Now list your property to secure your founding member spot.",
-    "success_cta": "List My Property"
+    "success_cta": "List My Property",
+    "already_done_title": "You've already completed this survey!",
+    "already_done_message": "Your answers have been recorded. Thank you for your time!",
+    "results_title": "Your Survey Results",
+    "results_subtitle": "Here is a summary of your answers.",
+    "edit_answers": "Edit my answers",
+    "invite_title": "Invite other hoteliers!",
+    "invite_message": "Share your referral link with fellow hoteliers. Help them discover Staylo and earn rewards together.",
+    "invite_cta": "Go to Dashboard & Share",
+    "per_year": "year"
   },
   "property": {
     "title": "List Your Property",
@@ -271,7 +280,9 @@
     "referred_by_ambassador": "Referred by Ambassador",
     "enter_email_first": "Enter your email first",
     "reset_link_sent": "Check your email for the reset link!",
-    "forgot_password": "Forgot your password?"
+    "forgot_password": "Forgot your password?",
+    "or_continue": "or continue with",
+    "or_email": "or register with email"
   },
   "dashboard": {
     "title": "Your Dashboard",
@@ -472,7 +483,15 @@
     "fund_team": "Team",
     "fund_team_desc": "Engineering, support, business development, operations",
     "fund_legal": "Legal & Compliance",
-    "fund_legal_desc": "Company registration, contracts, licenses, insurance"
+    "fund_legal_desc": "Company registration, contracts, licenses, insurance",
+
+    "founder_badge": "The Founder",
+    "founder_role": "Founder of STAYLO",
+    "founder_bio1": "French hospitality entrepreneur based in Koh Phangan, Thailand, with nearly 40 years of experience across restaurants, bars, luxury service, tourism, and hospitality business development.",
+    "founder_bio2": "Having worked internationally in France, Monaco, Abu Dhabi, Moscow, and Thailand — and having founded several hospitality businesses — David understands firsthand the challenges faced by independent operators.",
+    "founder_bio3": "After years of seeing hotels lose control, margin, and influence to high-commission booking platforms, he created STAYLO with one clear mission:",
+    "founder_quote": "Give control back to those who host.",
+    "founder_belief": "STAYLO is built on the belief that independent hotels deserve a platform that is fairer, more respectful, and designed around their interests — not against them."
   },
   "footer": {
     "tagline": "Book everything. Own the experience.",
@@ -754,5 +773,51 @@
     "bottom_cta_subtitle": "Join the Staylo Ambassador Program and turn every hotel conversation into lifetime passive income.",
     "cta_become": "Become an Ambassador",
     "cta_dashboard": "Go to Dashboard"
+  },
+  "survey_chooser": {
+    "title": "Tell us about yourself",
+    "subtitle": "We have two short surveys — pick the one that fits you.",
+    "hotelier_title": "I'm a Hotelier",
+    "hotelier_desc": "I own or manage a hotel, guesthouse, resort, or other accommodation.",
+    "traveler_title": "I'm a Traveler",
+    "traveler_desc": "I book hotels and accommodations for my trips and travels.",
+    "start": "Start survey"
+  },
+  "survey_traveler": {
+    "title": "Traveler Survey",
+    "subtitle": "Help us build a better booking experience for you.",
+    "step1_title": "How do you usually book hotels?",
+    "step1_subtitle": "Select all that apply.",
+    "step2_title": "What frustrates you most about booking platforms?",
+    "step2_subtitle": "Select all that apply.",
+    "step3_title": "Would you prefer booking directly with the hotel if the price was the same or lower?",
+    "step4_title": "How many hotels do you book per year?",
+    "hotels_label": "hotels per year",
+    "hook_title": "Thank you for your answers!",
+    "hook_subtitle": "You book hotels. You know good ones. You recommend them to friends.",
+    "hook_question": "What if you could earn lifetime passive income on every hotel you bring to Staylo?",
+    "hook_detail": "Earn 2% of all bookings, forever. No investment needed. Just spread the word.",
+    "cta_ambassador": "Become an Ambassador",
+    "cta_skip": "Maybe later",
+    "proof_hotels": "Hotels already listed",
+    "proof_earn": "2% lifetime earnings",
+    "platform_booking": "Booking.com",
+    "platform_airbnb": "Airbnb",
+    "platform_expedia": "Expedia",
+    "platform_google": "Google Hotels",
+    "platform_agoda": "Agoda",
+    "platform_direct": "Direct with hotel",
+    "platform_other": "Other",
+    "frustration_high_prices": "High prices",
+    "frustration_hidden_fees": "Hidden fees",
+    "frustration_fake_reviews": "Fake reviews",
+    "frustration_no_contact": "No direct contact with hotel",
+    "frustration_generic_experience": "Cookie-cutter experience",
+    "frustration_poor_support": "Poor customer support",
+    "frustration_cancellation_policy": "Rigid cancellation policies",
+    "frustration_no_loyalty": "No loyalty rewards",
+    "direct_yes_absolutely": "Yes, absolutely!",
+    "direct_maybe": "Maybe, depends on the experience",
+    "direct_dont_care": "I don't really care"
   }
 }

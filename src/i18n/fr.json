@@ -96,7 +96,8 @@
     "dashboard": "Tableau de bord",
     "login": "Se connecter",
     "register": "Rejoindre",
-    "logout": "Se déconnecter"
+    "logout": "Se déconnecter",
+    "language": "Langue"
   },
   "hero": {
     "badge": "Alpha — Membres fondateurs uniquement",
@@ -213,7 +214,16 @@
     "submit": "Envoyer le sondage",
     "success_title": "Merci !",
     "success_message": "Vos retours sont précieux. Inscrivez maintenant votre bien pour réserver votre place de membre fondateur.",
-    "success_cta": "Inscrire mon bien"
+    "success_cta": "Inscrire mon bien",
+    "already_done_title": "Vous avez déjà complété ce sondage !",
+    "already_done_message": "Vos réponses ont été enregistrées. Merci pour votre temps !",
+    "results_title": "Vos résultats de sondage",
+    "results_subtitle": "Voici un résumé de vos réponses.",
+    "edit_answers": "Modifier mes réponses",
+    "invite_title": "Invitez d'autres hôteliers !",
+    "invite_message": "Partagez votre lien de parrainage avec d'autres hôteliers. Aidez-les à découvrir Staylo et gagnez des récompenses ensemble.",
+    "invite_cta": "Aller au tableau de bord et partager",
+    "per_year": "an"
   },
   "property": {
     "title": "Inscrire votre bien",
@@ -245,7 +255,9 @@
     "parse_success": "Nous avons trouvé votre établissement ! Veuillez vérifier les détails ci-dessous.",
     "success_title": "Bien soumis !",
     "success_message": "Votre propriété est en cours d'examen. Nous vous informerons dès son approbation.",
-    "success_cta": "Aller au tableau de bord"
+    "success_cta": "Aller au tableau de bord",
+    "paste_url": "Collez l'URL de votre annonce existante pour un remplissage automatique",
+    "account_required": "Vous devez créer un compte pour soumettre votre établissement."
   },
   "auth": {
     "login_title": "Bon retour",
@@ -265,7 +277,13 @@
     "register_link": "S'inscrire",
     "login_link": "Se connecter",
     "or": "ou",
-    "referred_by": "Parrainé par : {{code}}"
+    "referred_by": "Parrainé par",
+    "referred_by_ambassador": "Parrainé par un ambassadeur",
+    "enter_email_first": "Entrez d'abord votre e-mail",
+    "reset_link_sent": "Vérifiez votre e-mail pour le lien de réinitialisation !",
+    "forgot_password": "Mot de passe oublié ?",
+    "or_continue": "ou continuer avec",
+    "or_email": "ou s'inscrire par e-mail"
   },
   "dashboard": {
     "title": "Votre tableau de bord",
@@ -376,7 +394,13 @@
       "q4": "L'inscription est-elle payante ?",
       "a4": "Devenir membre fondateur est entièrement gratuit pendant la phase alpha. Vous ne payez des commissions que lorsque vous recevez des réservations.",
       "q5": "Quelles régions sont couvertes ?",
-      "a5": "Nous commençons en Asie du Sud-Est (Koh Phangan, Thaïlande) et nous nous développons mondialement selon la demande."
+      "a5": "Nous commençons en Asie du Sud-Est (Koh Phangan, Thaïlande) et nous nous développons mondialement selon la demande.",
+      "q6": "Comment sont fixés les prix des parts et combien puis-je en acheter ?",
+      "a6": "Les parts Alpha sont à 1 000 $ chacune. Chaque établissement peut détenir de 1 à 10 parts. Le prix Alpha est le plus bas — la Phase V1 sera à 1 500 $, la Phase V2+ au prix du marché.",
+      "q7": "Que se passe-t-il si Staylo ne fonctionne pas ?",
+      "a7": "Tous les fonds sont détenus sur un compte dédié avec une transparence totale. Si le projet n'atteint pas la masse critique, les fonds restants sont redistribués aux actionnaires proportionnellement.",
+      "q8": "Comment sont distribués les dividendes ?",
+      "a8": "30 % des revenus nets de la plateforme sont distribués sous forme de dividendes, proportionnellement aux parts détenues. Les dividendes commencent une fois que la plateforme atteint la rentabilité opérationnelle."
     },
     "cta_title": "Faites partie de l'avenir",
     "cta_button": "Devenir membre fondateur",
@@ -426,9 +450,9 @@
     "ambassador_badge": "Nouveau",
     "ambassador_title": "Devenez ambassadeur Staylo",
     "ambassador_subtitle": "Vous séjournez dans un hôtel sur Staylo. Vous adorez l'expérience. Maintenant vous pouvez en gagner — pour toujours.",
-    "marketing_badge": "Notre équipe marketing",
-    "marketing_title": "Vous êtes notre marketing",
-    "marketing_subtitle": "Pas de publicité. Pas d'agence. Staylo grandit grâce aux gens qui y croient. Chaque voyageur, chaque hôtelier peut faire partie de l'équipe — et gagner à vie.",
+    "marketing_badge": "Programme de revenus passifs",
+    "marketing_title": "Devenez Ambassadeur",
+    "marketing_subtitle": "Construisez le plus grand réseau d'hébergements au monde — et gagnez 2 % de revenus passifs à vie sur chaque hôtel que vous amenez sur Staylo. Sans limite. Sans expiration. Pour toujours.",
     "ambassador_step1_title": "Séjournez et découvrez",
     "ambassador_step1_desc": "Vous visitez un hôtel sur Staylo et découvrez une plateforme qui respecte vraiment ses partenaires.",
     "ambassador_step2_title": "Parlez-en autour de vous",
@@ -460,7 +484,15 @@
     "fund_team": "Équipe",
     "fund_team_desc": "Ingénierie, support, développement commercial, opérations",
     "fund_legal": "Juridique et conformité",
-    "fund_legal_desc": "Enregistrement de la société, contrats, licences, assurances"
+    "fund_legal_desc": "Enregistrement de la société, contrats, licences, assurances",
+
+    "founder_badge": "Le Fondateur",
+    "founder_role": "Fondateur de STAYLO",
+    "founder_bio1": "Entrepreneur français de l'hôtellerie basé à Koh Phangan, Thaïlande, avec près de 40 ans d'expérience dans la restauration, les bars, le service de luxe, le tourisme et le développement d'entreprises hôtelières.",
+    "founder_bio2": "Ayant travaillé à l'international en France, Monaco, Abu Dhabi, Moscou et Thaïlande — et ayant fondé plusieurs entreprises hôtelières — David comprend parfaitement les défis auxquels font face les opérateurs indépendants.",
+    "founder_bio3": "Après des années à voir les hôtels perdre le contrôle, la marge et l'influence au profit de plateformes de réservation à fortes commissions, il a créé STAYLO avec une mission claire :",
+    "founder_quote": "Rendre le contrôle à ceux qui accueillent.",
+    "founder_belief": "STAYLO est construit sur la conviction que les hôtels indépendants méritent une plateforme plus juste, plus respectueuse, et conçue autour de leurs intérêts — pas contre eux."
   },
   "footer": {
     "tagline": "Réservez tout. Vivez l'expérience.",
@@ -470,7 +502,8 @@
       "survey": "Sondage",
       "contact": "Contact"
     },
-    "copyright": "© {{year}} Staylo. Tous droits réservés."
+    "copyright": "© {{year}} Staylo. Tous droits réservés.",
+    "operated_by": "Exploité par Barokat Halal Food Co., Ltd."
   },
   "common": {
     "loading": "Chargement...",
@@ -741,5 +774,51 @@
     "bottom_cta_subtitle": "Rejoignez le Programme Ambassadeur Staylo et transformez chaque conversation avec un hôtelier en revenu passif à vie.",
     "cta_become": "Devenir Ambassadeur",
     "cta_dashboard": "Aller au tableau de bord"
+  },
+  "survey_chooser": {
+    "title": "Parlez-nous de vous",
+    "subtitle": "Nous avons deux courts sondages — choisissez celui qui vous correspond.",
+    "hotelier_title": "Je suis hôtelier",
+    "hotelier_desc": "Je possède ou gère un hôtel, une maison d'hôtes, un resort ou un autre hébergement.",
+    "traveler_title": "Je suis voyageur",
+    "traveler_desc": "Je réserve des hôtels et hébergements pour mes voyages et déplacements.",
+    "start": "Commencer le sondage"
+  },
+  "survey_traveler": {
+    "title": "Sondage voyageur",
+    "subtitle": "Aidez-nous à créer une meilleure expérience de réservation pour vous.",
+    "step1_title": "Comment réservez-vous habituellement vos hôtels ?",
+    "step1_subtitle": "Sélectionnez tout ce qui s'applique.",
+    "step2_title": "Qu'est-ce qui vous frustre le plus dans les plateformes de réservation ?",
+    "step2_subtitle": "Sélectionnez tout ce qui s'applique.",
+    "step3_title": "Préféreriez-vous réserver directement avec l'hôtel si le prix était le même ou inférieur ?",
+    "step4_title": "Combien d'hôtels réservez-vous par an ?",
+    "hotels_label": "hôtels par an",
+    "hook_title": "Merci pour vos réponses !",
+    "hook_subtitle": "Vous réservez des hôtels. Vous connaissez les bons. Vous les recommandez à vos amis.",
+    "hook_question": "Et si vous pouviez gagner un revenu passif à vie sur chaque hôtel que vous amenez sur Staylo ?",
+    "hook_detail": "Gagnez 2 % de toutes les réservations, pour toujours. Aucun investissement nécessaire. Juste parlez-en autour de vous.",
+    "cta_ambassador": "Devenir Ambassadeur",
+    "cta_skip": "Peut-être plus tard",
+    "proof_hotels": "Hôtels déjà référencés",
+    "proof_earn": "2 % de revenus à vie",
+    "platform_booking": "Booking.com",
+    "platform_airbnb": "Airbnb",
+    "platform_expedia": "Expedia",
+    "platform_google": "Google Hotels",
+    "platform_agoda": "Agoda",
+    "platform_direct": "Directement avec l'hôtel",
+    "platform_other": "Autre",
+    "frustration_high_prices": "Prix élevés",
+    "frustration_hidden_fees": "Frais cachés",
+    "frustration_fake_reviews": "Faux avis",
+    "frustration_no_contact": "Pas de contact direct avec l'hôtel",
+    "frustration_generic_experience": "Expérience standardisée",
+    "frustration_poor_support": "Mauvais service client",
+    "frustration_cancellation_policy": "Politiques d'annulation rigides",
+    "frustration_no_loyalty": "Pas de programme de fidélité",
+    "direct_yes_absolutely": "Oui, absolument !",
+    "direct_maybe": "Peut-être, ça dépend de l'expérience",
+    "direct_dont_care": "Ça m'est égal"
   }
 }

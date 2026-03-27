@@ -31,6 +31,10 @@ export default function Vision() {
   const { user } = useAuth()
   const [sharesSold, setSharesSold] = useState(0)
   const [openFaq, setOpenFaq] = useState(null)
+  const [showProjection, setShowProjection] = useState(false)
+  const [showShareStructure, setShowShareStructure] = useState(false)
+  const [showTokenomics, setShowTokenomics] = useState(false)
+  const [showGovernance, setShowGovernance] = useState(false)
   const totalAlphaShares = 3000
   const totalShares = 10000
   const sharePrice = 1000
@@ -340,6 +344,165 @@ export default function Vision() {
               </div>
             </div>
           </Card>
+        </div>
+      </section>
+
+      {/* Detailed Projections — Toggable Sections */}
+      <section className="py-8 sm:py-12 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8">
+            <Badge variant="golden" className="mb-4">{t('vision.projections_badge', 'Financial Projections')}</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3">{t('vision.projections_title', 'The Roadmap to $1B')}</h2>
+            <p className="text-white/60 max-w-2xl mx-auto">{t('vision.projections_subtitle', 'Transparent data. Real numbers. Built for trust.')}</p>
+          </div>
+
+          {/* 36-Month Projections */}
+          <div className="mb-4">
+            <button onClick={() => setShowProjection(!showProjection)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="text-golden" size={24} />
+                <span className="font-bold text-lg">{t('vision.proj_36m_title', '36-Month Financial Projections')}</span>
+              </div>
+              {showProjection ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+            {showProjection && (
+              <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-golden border-b border-white/10">
+                      <th className="text-left py-2 pr-4 font-semibold">Metric</th>
+                      <th className="text-right py-2 px-2">M06</th>
+                      <th className="text-right py-2 px-2">M12</th>
+                      <th className="text-right py-2 px-2">M18</th>
+                      <th className="text-right py-2 px-2">M24</th>
+                      <th className="text-right py-2 px-2">M30</th>
+                      <th className="text-right py-2 px-2">M36</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-white/80">
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Partner Hotels</td><td className="text-right px-2">100</td><td className="text-right px-2">380</td><td className="text-right px-2">1,200</td><td className="text-right px-2">4,800</td><td className="text-right px-2">9,200</td><td className="text-right px-2 text-golden font-bold">16,649</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">GMV / Month</td><td className="text-right px-2">$0.3M</td><td className="text-right px-2">$2.1M</td><td className="text-right px-2">$8.4M</td><td className="text-right px-2">$33.6M</td><td className="text-right px-2">$64.4M</td><td className="text-right px-2 text-golden font-bold">$88M</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Revenue / Month</td><td className="text-right px-2">$0.03M</td><td className="text-right px-2">$0.21M</td><td className="text-right px-2">$0.84M</td><td className="text-right px-2">$3.36M</td><td className="text-right px-2">$6.44M</td><td className="text-right px-2 text-golden font-bold">$8.8M</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">GMV Annual</td><td className="text-right px-2">$0.9M</td><td className="text-right px-2">$13.8M</td><td className="text-right px-2">$60.6M</td><td className="text-right px-2">$268.8M</td><td className="text-right px-2">$619.2M</td><td className="text-right px-2 text-golden font-bold">$1,055M</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Revenue Annual</td><td className="text-right px-2">$0.09M</td><td className="text-right px-2">$1.4M</td><td className="text-right px-2">$6.1M</td><td className="text-right px-2">$26.9M</td><td className="text-right px-2">$61.9M</td><td className="text-right px-2 text-golden font-bold">$105.5M</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Valuation (10x Rev)</td><td className="text-right px-2">—</td><td className="text-right px-2">$13.8M</td><td className="text-right px-2">$60.6M</td><td className="text-right px-2">$268.8M</td><td className="text-right px-2">$619.2M</td><td className="text-right px-2 text-golden font-bold">$1,055M</td></tr>
+                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Alpha Share Value</td><td className="text-right px-2 font-bold">$1,000</td><td className="text-right px-2 font-bold">~$4,600</td><td className="text-right px-2 font-bold">~$20K</td><td className="text-right px-2 font-bold">~$89.6K</td><td className="text-right px-2 font-bold">~$206K</td><td className="text-right px-2 font-bold text-golden">~$351K</td></tr>
+                    <tr className="bg-libre/10"><td className="py-2 pr-4 font-bold text-libre">Alpha ROI</td><td className="text-right px-2 font-bold">1x</td><td className="text-right px-2 font-bold">~5x</td><td className="text-right px-2 font-bold">~20x</td><td className="text-right px-2 font-bold">~90x</td><td className="text-right px-2 font-bold">~206x</td><td className="text-right px-2 font-bold text-libre">~351x</td></tr>
+                  </tbody>
+                </table>
+                <p className="text-xs text-white/30 mt-4 text-center italic">Base case projections. Not guaranteed. Revenue = GMV x 10% commission.</p>
+              </div>
+            )}
+          </div>
+
+          {/* Share Structure — 7 Rounds */}
+          <div className="mb-4">
+            <button onClick={() => setShowShareStructure(!showShareStructure)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+              <div className="flex items-center gap-3">
+                <PieChart className="text-ocean" size={24} />
+                <span className="font-bold text-lg">{t('vision.share_structure_title', 'Share Structure — 500,000 Shares · 7 Rounds')}</span>
+              </div>
+              {showShareStructure ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+            {showShareStructure && (
+              <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-golden border-b border-white/10">
+                      <th className="text-left py-2 pr-4 font-semibold">Round</th>
+                      <th className="text-left py-2 px-2">Market</th>
+                      <th className="text-right py-2 px-2">Shares</th>
+                      <th className="text-right py-2 px-2">Price</th>
+                      <th className="text-right py-2 px-2">Capital</th>
+                      <th className="text-right py-2 px-2">%</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-white/80">
+                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Alpha</td><td className="px-2">Koh Phangan</td><td className="text-right px-2">3,000</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="text-right px-2">$3.0M</td><td className="text-right px-2">0.6%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 2</td><td className="px-2">SEA</td><td className="text-right px-2">36,000</td><td className="text-right px-2">$1,200</td><td className="text-right px-2">$43.2M</td><td className="text-right px-2">7.2%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 3</td><td className="px-2">Asia-Pacific</td><td className="text-right px-2">126,000</td><td className="text-right px-2">$1,500</td><td className="text-right px-2">$189.0M</td><td className="text-right px-2">25.2%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 4</td><td className="px-2">Europe</td><td className="text-right px-2">126,000</td><td className="text-right px-2">$2,000</td><td className="text-right px-2">$252.0M</td><td className="text-right px-2">25.2%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 5</td><td className="px-2">Americas</td><td className="text-right px-2">99,000</td><td className="text-right px-2">$2,500</td><td className="text-right px-2">$247.5M</td><td className="text-right px-2">19.8%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 6</td><td className="px-2">ME & Africa</td><td className="text-right px-2">60,000</td><td className="text-right px-2">$2,000</td><td className="text-right px-2">$120.0M</td><td className="text-right px-2">12.0%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 7</td><td className="px-2">Investors</td><td className="text-right px-2">50,000</td><td className="text-right px-2">$5,000</td><td className="text-right px-2">$250.0M</td><td className="text-right px-2">10.0%</td></tr>
+                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="px-2">Worldwide</td><td className="text-right px-2">500,000</td><td className="text-right px-2">~$2,208</td><td className="text-right px-2 text-golden">$1,108.7M</td><td className="text-right px-2">100%</td></tr>
+                  </tbody>
+                </table>
+                <p className="text-xs text-white/30 mt-4 text-center italic">Prices INCREASE each round — Alpha is the best deal ever. Distribution proportional to hotels per zone (UNWTO 2025).</p>
+              </div>
+            )}
+          </div>
+
+          {/* $STAY Tokenomics */}
+          <div className="mb-4">
+            <button onClick={() => setShowTokenomics(!showTokenomics)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+              <div className="flex items-center gap-3">
+                <DollarSign className="text-libre" size={24} />
+                <span className="font-bold text-lg">{t('vision.tokenomics_title', '$STAY Token — 100M Supply · Solana')}</span>
+              </div>
+              {showTokenomics ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+            {showTokenomics && (
+              <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-golden border-b border-white/10">
+                      <th className="text-left py-2 pr-4 font-semibold">Allocation</th>
+                      <th className="text-right py-2 px-2">Tokens</th>
+                      <th className="text-right py-2 px-2">%</th>
+                      <th className="text-left py-2 px-2">Vesting</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-white/80">
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Founding Partners</td><td className="text-right px-2">30M</td><td className="text-right px-2 font-bold text-golden">30%</td><td className="px-2 text-xs">6m cliff + 18m linear</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Earn Rewards</td><td className="text-right px-2">20M</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">Emitted over 5 years</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Platform Reserve</td><td className="text-right px-2">20M</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">Council vote</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Ambassadors</td><td className="text-right px-2">15M</td><td className="text-right px-2">15%</td><td className="px-2 text-xs">Milestones-based</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Team & Founders</td><td className="text-right px-2">10M</td><td className="text-right px-2">10%</td><td className="px-2 text-xs">12m cliff + 36m linear</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">DEX Liquidity</td><td className="text-right px-2">5M</td><td className="text-right px-2">5%</td><td className="px-2 text-xs">Unlocked at TGE</td></tr>
+                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="text-right px-2">100M</td><td className="text-right px-2 text-golden">100%</td><td className="px-2 text-xs italic">Fixed supply FOREVER. No minting.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Governance */}
+          <div className="mb-4">
+            <button onClick={() => setShowGovernance(!showGovernance)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+              <div className="flex items-center gap-3">
+                <Scale className="text-electric" size={24} />
+                <span className="font-bold text-lg">{t('vision.governance_detail_title', 'Governance — On-Chain DAO · 1 Hotel = 1 Vote')}</span>
+              </div>
+              {showGovernance ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+            {showGovernance && (
+              <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-golden border-b border-white/10">
+                      <th className="text-left py-2 pr-4 font-semibold">Rule</th>
+                      <th className="text-left py-2 px-2">Value</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-white/80">
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Voting unit</td><td className="px-2">1 property = 1 vote (NEVER 1 share = 1 vote)</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Eligibility</td><td className="px-2">≥1,000 $STAY + active property</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Quorum (routine)</td><td className="px-2">10–15% of eligible voters</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Quorum (strategic)</td><td className="px-2">30% of eligible voters</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Simple majority</td><td className="px-2">50%+1</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Supermajority</td><td className="px-2">67%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Unanimity</td><td className="px-2">90% (dissolution only)</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Vote reward</td><td className="px-2">100 $STAY per vote</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Infrastructure</td><td className="px-2">Solana On-Chain DAO</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Alpha commission lock</td><td className="px-2 text-golden font-bold">10% · 90% supermajority to change</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Anti-dilution right</td><td className="px-2">30 days to exercise pro-rata</td></tr>
+                    <tr><td className="py-2 pr-4 font-medium">Investor shares (R7)</td><td className="px-2">No vote · dividends only</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
