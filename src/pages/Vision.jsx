@@ -140,6 +140,19 @@ export default function Vision() {
               <span>{totalAlphaShares.toLocaleString()}</span>
             </div>
 
+            {/* Urgency message */}
+            <div className="bg-sunset/10 border border-sunset/30 rounded-2xl p-4 mt-4 mb-4 text-center">
+              <p className="text-white font-bold text-lg mb-1">
+                {t('vision.urgency_title', '420 hotels. 3,000 shares. Do the math.')}
+              </p>
+              <p className="text-white/70 text-sm">
+                {t('vision.urgency_detail', "That's ~7 shares per hotel. Max 10 per property. Not everyone will get theirs.")}
+              </p>
+              <p className="text-sunset font-black text-xs uppercase tracking-wider mt-2">
+                {t('vision.urgency_cta', 'First come, first served. No exceptions.')}
+              </p>
+            </div>
+
             {/* Share pricing tiers */}
             <div className="grid sm:grid-cols-3 gap-4 mt-4">
               <div className="bg-golden/10 border border-golden/30 rounded-2xl p-5 text-center">
@@ -695,6 +708,104 @@ export default function Vision() {
           </div>
 
           <p className="text-center text-xs text-gray-500 mt-4">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
+        </div>
+      </section>
+
+      {/* Projections 36 Months */}
+      <section className="py-8 sm:py-12 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-6">
+            <Badge variant="golden" className="mb-3">{t('vision.projections_badge', 'Growth Projections')}</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-2">{t('vision.projections_title', '36-Month Roadmap')}</h2>
+            <p className="text-white/60">{t('vision.projections_subtitle', 'Base case adoption curve. Conservative estimates.')}</p>
+          </div>
+
+          {/* Projection table */}
+          <div className="overflow-x-auto mb-8">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-3 px-3 text-white/50 font-medium">{t('vision.proj_metric', 'Metric')}</th>
+                  <th className="text-center py-3 px-2 text-white/50 font-medium">M6</th>
+                  <th className="text-center py-3 px-2 text-white/50 font-medium">M12</th>
+                  <th className="text-center py-3 px-2 text-white/50 font-medium">M18</th>
+                  <th className="text-center py-3 px-2 text-white/50 font-medium">M24</th>
+                  <th className="text-center py-3 px-2 text-white/50 font-medium">M36</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-white/5">
+                  <td className="py-3 px-3 text-white/70">{t('vision.proj_hotels', 'Partner Hotels')}</td>
+                  <td className="text-center py-3 px-2 text-white font-semibold">100</td>
+                  <td className="text-center py-3 px-2 text-white font-semibold">380</td>
+                  <td className="text-center py-3 px-2 text-white font-semibold">1,200</td>
+                  <td className="text-center py-3 px-2 text-white font-semibold">4,800</td>
+                  <td className="text-center py-3 px-2 text-golden font-bold">16,649</td>
+                </tr>
+                <tr className="border-b border-white/5">
+                  <td className="py-3 px-3 text-white/70">{t('vision.proj_gmv', 'GMV / Month')}</td>
+                  <td className="text-center py-3 px-2 text-white">$0.3M</td>
+                  <td className="text-center py-3 px-2 text-white">$2.1M</td>
+                  <td className="text-center py-3 px-2 text-white">$8.4M</td>
+                  <td className="text-center py-3 px-2 text-white">$33.6M</td>
+                  <td className="text-center py-3 px-2 text-golden font-bold">$88M</td>
+                </tr>
+                <tr className="border-b border-white/5">
+                  <td className="py-3 px-3 text-white/70">{t('vision.proj_revenue', 'Annual Revenue')}</td>
+                  <td className="text-center py-3 px-2 text-white">$0.09M</td>
+                  <td className="text-center py-3 px-2 text-white">$1.4M</td>
+                  <td className="text-center py-3 px-2 text-white">$6.1M</td>
+                  <td className="text-center py-3 px-2 text-white">$26.9M</td>
+                  <td className="text-center py-3 px-2 text-golden font-bold">$105.5M</td>
+                </tr>
+                <tr className="border-b border-white/5 bg-white/5">
+                  <td className="py-3 px-3 text-golden font-semibold">{t('vision.proj_alpha_value', 'Alpha Share Value')}</td>
+                  <td className="text-center py-3 px-2 text-white">$1,000</td>
+                  <td className="text-center py-3 px-2 text-white">~$4,600</td>
+                  <td className="text-center py-3 px-2 text-white">~$20K</td>
+                  <td className="text-center py-3 px-2 text-white">~$90K</td>
+                  <td className="text-center py-3 px-2 text-golden font-black text-lg">~$351K</td>
+                </tr>
+                <tr className="bg-white/5">
+                  <td className="py-3 px-3 text-golden font-semibold">{t('vision.proj_roi', 'Alpha ROI')}</td>
+                  <td className="text-center py-3 px-2 text-white">1×</td>
+                  <td className="text-center py-3 px-2 text-libre font-bold">~5×</td>
+                  <td className="text-center py-3 px-2 text-libre font-bold">~20×</td>
+                  <td className="text-center py-3 px-2 text-libre font-bold">~90×</td>
+                  <td className="text-center py-3 px-2 text-libre font-black text-lg">~351×</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Share Structure — 7 Rounds */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-center mb-4">{t('vision.rounds_title', 'Share Structure — 7 Rounds')}</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+              {[
+                { round: 'Alpha', market: '🇹🇭 KP', shares: '3K', price: '$1,000', color: 'from-golden to-sunrise' },
+                { round: 'R2', market: '🌏 SEA', shares: '36K', price: '$1,200', color: 'from-ocean to-electric' },
+                { round: 'R3', market: '🌏 APAC', shares: '126K', price: '$1,500', color: 'from-electric to-libre' },
+                { round: 'R4', market: '🌍 EU', shares: '126K', price: '$2,000', color: 'from-libre to-ocean' },
+                { round: 'R5', market: '🌎 US', shares: '99K', price: '$2,500', color: 'from-sunrise to-sunset' },
+                { round: 'R6', market: '🌍 MEA', shares: '60K', price: '$2,000', color: 'from-sunset to-electric' },
+                { round: 'R7', market: '💼 Inv', shares: '50K', price: '$5,000', color: 'from-golden to-golden/70' },
+              ].map(r => (
+                <div key={r.round} className={`bg-gradient-to-br ${r.color} rounded-2xl p-3 text-center ${r.round === 'Alpha' ? 'ring-2 ring-golden shadow-lg shadow-golden/20' : ''}`}>
+                  <p className="text-xs font-bold text-white/80 uppercase">{r.round}</p>
+                  <p className="text-lg mb-0.5">{r.market}</p>
+                  <p className="text-white font-black text-sm">{r.price}</p>
+                  <p className="text-white/60 text-xs">{r.shares} shares</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-center text-white/40 text-xs mt-3">{t('vision.rounds_total', 'Total: 500,000 shares · ~$1.1B capital · Average $2,208/share')}</p>
+          </div>
+
+          {/* Disclaimer */}
+          <p className="text-center text-white/30 text-xs italic">
+            {t('vision.proj_disclaimer', 'Projections are estimates based on base-case adoption. Actual results may vary. Past performance does not guarantee future returns. Not financial advice.')}
+          </p>
         </div>
       </section>
 
