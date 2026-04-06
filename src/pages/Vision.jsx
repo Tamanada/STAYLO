@@ -801,7 +801,7 @@ export default function Vision() {
               <div className="bg-gradient-to-br from-electric to-libre rounded-2xl p-5 text-center">
                 <p className="text-xs font-bold text-white/80 uppercase tracking-wider mb-1">{t('vision.phase_founder', 'Founder')}</p>
                 <p className="text-2xl mb-1">👑</p>
-                <p className="text-sm text-white/70 mb-1">David Deveaux</p>
+                <p className="text-sm text-white/70 mb-1">{t('vision.phase_founder_desc', 'Non-dilutable')}</p>
                 <p className="text-white font-black text-lg">{t('vision.phase_founder_locked', 'Locked')}</p>
                 <p className="text-white/60 text-xs">50,000 shares</p>
                 <p className="text-white/40 text-[10px] mt-1">10%</p>
