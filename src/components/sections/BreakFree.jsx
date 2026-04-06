@@ -24,7 +24,14 @@ export function BreakFree() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-4 items-stretch">
+        <div className="grid lg:grid-cols-[auto_1fr_1fr] gap-4 items-stretch">
+          {/* Big 10% on the left */}
+          <div className="hidden lg:flex bg-gradient-to-br from-deep via-[#0d1f3c] to-deep rounded-3xl p-6 flex-col items-center justify-center min-w-[140px]">
+            <p className="text-8xl font-black text-golden leading-none">10</p>
+            <p className="text-4xl font-black text-golden">%</p>
+            <p className="text-xs text-white/50 mt-3 text-center">{t('giants.why_10_short', 'is all we need')}</p>
+          </div>
+
           {/* Old way */}
           <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 border border-gray-200 relative">
             <div className="flex items-center gap-3 mb-6">
