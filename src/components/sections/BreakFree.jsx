@@ -110,6 +110,16 @@ export function BreakFree() {
             </div>
           </div>
         </div>
+
+        {/* Why 10% is enough */}
+        <div className="mt-6 text-center max-w-2xl mx-auto">
+          <p className="text-lg font-bold text-deep italic">
+            {t('giants.why_10_pct', "\"10%, that's all a platform needs when it doesn't have 22,000 employees and shareholders on Wall Street to pay.\"")}
+          </p>
+          <p className="text-sm text-gray-400 mt-2">
+            {t('giants.why_10_detail', 'No offices to rent. No massive teams. No external shareholders. Your community IS the infrastructure.')}
+          </p>
+        </div>
       </div>
     </section>
   )
