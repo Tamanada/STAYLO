@@ -201,10 +201,10 @@ export default function Vision() {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
-              { icon: Target, label: t('vision.fund_tech', 'Technology'), pct: '45%', desc: t('vision.fund_tech_desc', 'Booking engine, mobile app, channel manager, PMS integration'), color: 'ocean' },
-              { icon: TrendingUp, label: t('vision.fund_marketing', 'Marketing'), pct: '25%', desc: t('vision.fund_marketing_desc', 'Traveler acquisition, SEO, content, launch campaigns'), color: 'sunset' },
-              { icon: Users, label: t('vision.fund_team', 'Team'), pct: '20%', desc: t('vision.fund_team_desc', 'Engineering, support, business development, operations'), color: 'libre' },
-              { icon: Shield, label: t('vision.fund_legal', 'Legal & Compliance'), pct: '10%', desc: t('vision.fund_legal_desc', 'Company registration, contracts, licenses, insurance'), color: 'golden' },
+              { icon: Building2, label: t('vision.fund_acquisitions', 'Acquisitions'), pct: '50%', desc: t('vision.fund_acquisitions_desc', 'Flagship hotels in Koh Phangan — proof the model works'), color: 'golden' },
+              { icon: Users, label: t('vision.fund_team', 'Team & Tech'), pct: '25%', desc: t('vision.fund_team_desc', 'CTO + dev team — they build & maintain the platform'), color: 'libre' },
+              { icon: Shield, label: t('vision.fund_legal', 'Legal & Structure'), pct: '20%', desc: t('vision.fund_legal_desc', 'Singapore incorporation, MAS, contracts, licenses'), color: 'ocean' },
+              { icon: TrendingUp, label: t('vision.fund_marketing', 'Marketing'), pct: '5%', desc: t('vision.fund_marketing_desc', 'Welcome kits, local events — the network does the rest'), color: 'sunset' },
             ].map(item => (
               <Card key={item.label} className="p-6 text-center hover:shadow-lg transition-all">
                 <div className={`w-12 h-12 bg-${item.color}/10 rounded-xl flex items-center justify-center mx-auto mb-3`}>
