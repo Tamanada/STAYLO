@@ -101,12 +101,12 @@
   },
   "hero": {
     "badge": "Alpha — Founding Members Only",
-    "eyebrow": "Property owner?",
-    "title_line1": "What if we became",
-    "title_line2": "partners?",
-    "subtitle": "You built your business. Platforms took the profits. It's time to break free. Staylo is the booking platform owned by hoteliers, not traditional shareholders.",
-    "highlight": "10% commission. Real ownership. Your rules.",
-    "cta": "Break Free — Join Now",
+    "eyebrow": "",
+    "title_line1": "You've spent 10 years building your reputation.",
+    "title_line2": "They take 25% in 2 seconds.",
+    "subtitle": "Join the hoteliers who are taking back control. Become a Genesis Founder of STAYLO.app",
+    "highlight": "Commissions? Stay Lo'.",
+    "cta": "Join the movement",
     "secondary_cta": "See the Vision",
     "early_adopters": "{{count}} hoteliers already joined",
     "trust_line": "Free to join. No contracts. Cancel anytime.",
@@ -170,9 +170,9 @@
     "saved": "Potential savings calculated"
   },
   "cta_section": {
-    "title": "Ready to own your bookings?",
-    "subtitle": "Founding members get the lowest commissions forever. Limited spots.",
-    "button": "Become a Founding Member"
+    "title": "You didn't risk everything to enrich an algorithm.",
+    "subtitle": "Join the hoteliers who are taking back control.",
+    "button": "Become a Genesis Founder"
   },
   "survey": {
     "title": "Quick Survey",

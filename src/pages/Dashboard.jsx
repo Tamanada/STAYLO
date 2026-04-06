@@ -9,6 +9,7 @@ import { Badge } from '../components/ui/Badge'
 import { useAuth } from '../hooks/useAuth'
 import { useReferral } from '../hooks/useReferral'
 import { supabase } from '../lib/supabase'
+import WelcomeCall from './dashboard/WelcomeCall'
 
 // Currency config by language (same as Survey.jsx)
 const currencyByLang = {
@@ -176,6 +177,11 @@ export default function Dashboard() {
           )
         })()}
       </div>
+
+      {/* Welcome Call — show if not verified */}
+      {profile && profile.verification_status !== 'verified' && profile.verification_status !== 'active' && profile.verification_status !== 'partner' && (
+        <WelcomeCall />
+      )}
 
       {/* Key Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">

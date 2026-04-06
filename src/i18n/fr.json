@@ -101,12 +101,12 @@
   },
   "hero": {
     "badge": "Alpha — Membres fondateurs uniquement",
-    "eyebrow": "Propriétaire d'hébergement ?",
+    "eyebrow": "",
     "title": "La plateforme de réservation détenue par les hôteliers",
-    "title_line1": "Et si nous devenions",
-    "title_line2": "partenaires ?",
-    "highlight": "10 % de commission. Une vraie propriété. Vos règles.",
-    "subtitle": "Arrêtez de payer 15–25 % de commissions. Staylo est conçu pour les propriétaires, par les propriétaires. Des frais justes. Un contrôle total. Une vraie propriété.",
+    "title_line1": "Vous avez mis 10 ans à construire votre réputation.",
+    "title_line2": "Ils mettent 2 secondes à prendre 25 %.",
+    "highlight": "Commissions? Stay Lo'.",
+    "subtitle": "Rejoignez les hôteliers qui reprennent le contrôle. Devenez Fondateur Genesis de STAYLO.app",
     "trust_line": "Inscription gratuite. Sans engagement. Annulez à tout moment.",
     "cta": "Rejoindre le mouvement",
     "secondary_cta": "Découvrir la vision",
@@ -173,9 +173,9 @@
     "saved": "Économies potentielles calculées"
   },
   "cta_section": {
-    "title": "Prêt à maîtriser vos réservations ?",
-    "subtitle": "Les membres fondateurs obtiennent les commissions les plus basses pour toujours. Places limitées.",
-    "button": "Devenir membre fondateur"
+    "title": "Vous n'avez pas tout risqué pour enrichir un algorithme.",
+    "subtitle": "Rejoignez les hôteliers qui reprennent le contrôle.",
+    "button": "Devenir Fondateur Genesis"
   },
   "survey": {
     "title": "Sondage rapide",
