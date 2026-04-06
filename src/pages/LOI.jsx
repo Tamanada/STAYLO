@@ -163,6 +163,65 @@ export default function LOI() {
             </div>
           </Card>
 
+          {/* Ambassador Recruitment Clause */}
+          <Card className="p-8 mb-8 border-2 border-golden/20 bg-gradient-to-br from-white to-golden/5">
+            <h3 className="text-xl font-bold text-deep mb-4 flex items-center gap-2">
+              <Users size={22} className="text-golden" />
+              {t('loi.ambassador_clause_title', 'Ambassador Recruitment Program')}
+            </h3>
+            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+              {t('loi.ambassador_clause_intro', 'As a Founding Partner, you agree to participate in the Staylo Ambassador recruitment program. This is a core part of our growth strategy and your partnership.')}
+            </p>
+
+            <div className="space-y-4 mb-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-golden/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-golden font-bold text-sm">1</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-deep text-sm">{t('loi.ambassador_clause_step1_title', 'Personalized Welcome Kit')}</p>
+                  <p className="text-xs text-gray-500">{t('loi.ambassador_clause_step1_desc', 'You receive a free branded kit with your unique QR code: reception stand, room cards, WiFi cards, window sticker, and founding partner certificate.')}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-golden/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-golden font-bold text-sm">2</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-deep text-sm">{t('loi.ambassador_clause_step2_title', 'QR Code on All Guest Touchpoints')}</p>
+                  <p className="text-xs text-gray-500">{t('loi.ambassador_clause_step2_desc', 'Your personalized QR code is displayed at check-out, in rooms, on invoices, and on WiFi cards. Guests scan it to discover Staylo.')}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-golden/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-golden font-bold text-sm">3</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-deep text-sm">{t('loi.ambassador_clause_step3_title', 'Guest Becomes Ambassador')}</p>
+                  <p className="text-xs text-gray-500">{t('loi.ambassador_clause_step3_desc', 'When a guest scans your QR, they get 1 free night on their first Staylo booking. If they recommend a hotel that joins, they earn 2% for life — and you helped grow the network.')}</p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-golden/10 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                  <span className="text-golden font-bold text-sm">4</span>
+                </div>
+                <div>
+                  <p className="font-semibold text-deep text-sm">{t('loi.ambassador_clause_step4_title', 'Kit Refills at Cost')}</p>
+                  <p className="text-xs text-gray-500">{t('loi.ambassador_clause_step4_desc', 'Replacement kits are available at cost via your dashboard. Print-on-demand, shipped locally — no stock needed.')}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-golden/10 rounded-xl p-4">
+              <p className="text-xs text-gray-600 italic leading-relaxed">
+                {t('loi.ambassador_clause_legal', 'By signing this LOI, you acknowledge that displaying the Staylo QR code at guest touchpoints is part of the founding partner agreement. This helps grow the platform organically and increases the value of your shares. The first personalized kit is provided free of charge.')}
+              </p>
+            </div>
+          </Card>
+
           <div className="text-center">
             <Button onClick={() => setStep('form')} size="lg">
               {t('loi.cta_sign', 'I\'m in — Let me sign the LOI')}
