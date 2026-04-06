@@ -180,8 +180,8 @@ export default function Vision() {
               <p className="text-xs text-white/40">{t('vision.per_share_alpha', 'Per share (alpha)')}</p>
             </div>
             <div className="bg-white/5 rounded-2xl p-5 text-center">
-              <p className="text-2xl font-black text-white">1–10</p>
-              <p className="text-xs text-white/40">{t('vision.shares_per_property', 'Shares per property')}</p>
+              <p className="text-2xl font-black text-white">1+</p>
+              <p className="text-xs text-white/40">{t('vision.shares_per_property', 'No limit per property')}</p>
             </div>
             <div className="bg-white/5 rounded-2xl p-5 text-center">
               <p className="text-2xl font-black text-libre">10%</p>
@@ -199,11 +199,12 @@ export default function Vision() {
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency.')}</p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {[
               { icon: Building2, label: t('vision.fund_acquisitions', 'Acquisitions'), pct: '50%', desc: t('vision.fund_acquisitions_desc', 'Flagship hotels in Koh Phangan — proof the model works'), color: 'golden' },
               { icon: Users, label: t('vision.fund_team', 'Team & Tech'), pct: '25%', desc: t('vision.fund_team_desc', 'CTO + dev team — they build & maintain the platform'), color: 'libre' },
-              { icon: Shield, label: t('vision.fund_legal', 'Legal & Structure'), pct: '20%', desc: t('vision.fund_legal_desc', 'Singapore incorporation, MAS, contracts, licenses'), color: 'ocean' },
+              { icon: Lock, label: t('vision.fund_reserve', 'Reserve'), pct: '10%', desc: t('vision.fund_reserve_desc', 'Emergency fund & future development'), color: 'electric' },
+              { icon: Shield, label: t('vision.fund_legal', 'Legal & Structure'), pct: '10%', desc: t('vision.fund_legal_desc', 'Singapore incorporation, MAS, contracts, licenses'), color: 'ocean' },
               { icon: TrendingUp, label: t('vision.fund_marketing', 'Marketing'), pct: '5%', desc: t('vision.fund_marketing_desc', 'Welcome kits, local events — the network does the rest'), color: 'sunset' },
             ].map(item => (
               <Card key={item.label} className="p-6 text-center hover:shadow-lg transition-all">
