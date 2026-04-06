@@ -778,28 +778,44 @@ export default function Vision() {
             </table>
           </div>
 
-          {/* Share Structure — 7 Rounds */}
+          {/* Share Structure — 4 Blocs */}
           <div className="mb-8">
-            <h3 className="text-xl font-bold text-center mb-4">{t('vision.rounds_title', 'Share Structure — 7 Rounds')}</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-              {[
-                { round: 'Alpha', market: '🇹🇭 KP', shares: '3K', price: '$1,000', color: 'from-golden to-sunrise' },
-                { round: 'R2', market: '🌏 SEA', shares: '36K', price: '$1,200', color: 'from-ocean to-electric' },
-                { round: 'R3', market: '🌏 APAC', shares: '126K', price: '$1,500', color: 'from-electric to-libre' },
-                { round: 'R4', market: '🌍 EU', shares: '126K', price: '$2,000', color: 'from-libre to-ocean' },
-                { round: 'R5', market: '🌎 US', shares: '99K', price: '$2,500', color: 'from-sunrise to-sunset' },
-                { round: 'R6', market: '🌍 MEA', shares: '60K', price: '$2,000', color: 'from-sunset to-electric' },
-                { round: 'R7', market: '💼 Inv', shares: '50K', price: '$5,000', color: 'from-golden to-golden/70' },
-              ].map(r => (
-                <div key={r.round} className={`bg-gradient-to-br ${r.color} rounded-2xl p-3 text-center ${r.round === 'Alpha' ? 'ring-2 ring-golden shadow-lg shadow-golden/20' : ''}`}>
-                  <p className="text-xs font-bold text-white/80 uppercase">{r.round}</p>
-                  <p className="text-lg mb-0.5">{r.market}</p>
-                  <p className="text-white font-black text-sm">{r.price}</p>
-                  <p className="text-white/60 text-xs">{r.shares} shares</p>
-                </div>
-              ))}
+            <h3 className="text-xl font-bold text-center mb-4">{t('vision.rounds_title', 'Share Structure — 500,000 Shares')}</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-golden to-sunrise rounded-2xl p-5 text-center ring-2 ring-golden shadow-lg shadow-golden/20">
+                <p className="text-xs font-bold text-white/80 uppercase tracking-wider mb-1">{t('vision.phase_genesis', 'Genesis')}</p>
+                <p className="text-2xl mb-1">🇹🇭</p>
+                <p className="text-sm text-white/70 mb-1">Koh Phangan</p>
+                <p className="text-white font-black text-lg">$1,000</p>
+                <p className="text-white/60 text-xs">3,000 shares</p>
+                <p className="text-white/40 text-[10px] mt-1">0.6%</p>
+              </div>
+              <div className="bg-gradient-to-br from-ocean to-electric rounded-2xl p-5 text-center">
+                <p className="text-xs font-bold text-white/80 uppercase tracking-wider mb-1">{t('vision.phase_global', 'Global')}</p>
+                <p className="text-2xl mb-1">🌍</p>
+                <p className="text-sm text-white/70 mb-1">{t('vision.phase_global_market', 'Worldwide')}</p>
+                <p className="text-white font-black text-lg">$1,500+</p>
+                <p className="text-white/60 text-xs">347,000 shares</p>
+                <p className="text-white/40 text-[10px] mt-1">69.4%</p>
+              </div>
+              <div className="bg-gradient-to-br from-electric to-libre rounded-2xl p-5 text-center">
+                <p className="text-xs font-bold text-white/80 uppercase tracking-wider mb-1">{t('vision.phase_founder', 'Founder')}</p>
+                <p className="text-2xl mb-1">👑</p>
+                <p className="text-sm text-white/70 mb-1">David Deveaux</p>
+                <p className="text-white font-black text-lg">{t('vision.phase_founder_locked', 'Locked')}</p>
+                <p className="text-white/60 text-xs">50,000 shares</p>
+                <p className="text-white/40 text-[10px] mt-1">10%</p>
+              </div>
+              <div className="bg-gradient-to-br from-golden/80 to-golden/50 rounded-2xl p-5 text-center">
+                <p className="text-xs font-bold text-white/80 uppercase tracking-wider mb-1">{t('vision.phase_investors', 'Investors')}</p>
+                <p className="text-2xl mb-1">💼</p>
+                <p className="text-sm text-white/70 mb-1">{t('vision.phase_investors_type', 'Funds & Private')}</p>
+                <p className="text-white font-black text-lg">$5,000+</p>
+                <p className="text-white/60 text-xs">100,000 shares</p>
+                <p className="text-white/40 text-[10px] mt-1">20%</p>
+              </div>
             </div>
-            <p className="text-center text-white/40 text-xs mt-3">{t('vision.rounds_total', 'Total: 500,000 shares · ~$1.1B capital · Average $2,208/share')}</p>
+            <p className="text-center text-white/40 text-xs mt-3">{t('vision.rounds_total', 'Total: 500,000 shares · Genesis get the best price — forever.')}</p>
           </div>
 
           {/* Disclaimer */}
