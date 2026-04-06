@@ -36,7 +36,7 @@ export default function Vision() {
   const [showTokenomics, setShowTokenomics] = useState(false)
   const [showGovernance, setShowGovernance] = useState(false)
   const totalAlphaShares = 3000
-  const totalShares = 10000
+  const totalShares = 500000
   const sharePrice = 1000
   const pctSold = ((sharesSold / totalAlphaShares) * 100).toFixed(1)
 
@@ -153,22 +153,18 @@ export default function Vision() {
               </p>
             </div>
 
-            {/* Share pricing tiers */}
-            <div className="grid sm:grid-cols-3 gap-4 mt-4">
+            {/* Share pricing — Genesis vs Next */}
+            <div className="grid sm:grid-cols-2 gap-4 mt-4">
               <div className="bg-golden/10 border border-golden/30 rounded-2xl p-5 text-center">
-                <p className="text-xs text-golden uppercase tracking-wider font-semibold mb-2">{t('vision.tier_alpha', 'Alpha (Now)')}</p>
-                <p className="text-3xl font-black text-golden">$1,000</p>
+                <p className="text-xs text-golden uppercase tracking-wider font-semibold mb-2">{t('vision.tier_genesis', 'Genesis (Now)')}</p>
+                <p className="text-4xl font-black text-golden">$1,000</p>
                 <p className="text-xs text-white/40 mt-1">{t('vision.per_share', 'per share')}</p>
+                <p className="text-xs text-golden/60 mt-2">{t('vision.tier_genesis_note', 'Best price. Forever.')}</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center opacity-60">
-                <p className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-2">{t('vision.tier_v1', 'Phase V1 (M6)')}</p>
-                <p className="text-3xl font-black text-white/60">$1,500</p>
-                <p className="text-xs text-white/40 mt-1">{t('vision.per_share', 'per share')}</p>
-              </div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center opacity-40">
-                <p className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-2">{t('vision.tier_v2', 'Phase V2+ (M12)')}</p>
-                <p className="text-3xl font-black text-white/60">$2,000+</p>
-                <p className="text-xs text-white/40 mt-1">{t('vision.market_price', 'market price')}</p>
+                <p className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-2">{t('vision.tier_global', 'Global (Next)')}</p>
+                <p className="text-4xl font-black text-white/60">$1,500+</p>
+                <p className="text-xs text-white/40 mt-1">{t('vision.tier_global_note', 'Price increases with each phase')}</p>
               </div>
             </div>
           </div>
@@ -431,17 +427,14 @@ export default function Vision() {
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Alpha</td><td className="px-2">Koh Phangan</td><td className="text-right px-2">3,000</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="text-right px-2">$3.0M</td><td className="text-right px-2">0.6%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 2</td><td className="px-2">SEA</td><td className="text-right px-2">36,000</td><td className="text-right px-2">$1,200</td><td className="text-right px-2">$43.2M</td><td className="text-right px-2">7.2%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 3</td><td className="px-2">Asia-Pacific</td><td className="text-right px-2">126,000</td><td className="text-right px-2">$1,500</td><td className="text-right px-2">$189.0M</td><td className="text-right px-2">25.2%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 4</td><td className="px-2">Europe</td><td className="text-right px-2">126,000</td><td className="text-right px-2">$2,000</td><td className="text-right px-2">$252.0M</td><td className="text-right px-2">25.2%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 5</td><td className="px-2">Americas</td><td className="text-right px-2">99,000</td><td className="text-right px-2">$2,500</td><td className="text-right px-2">$247.5M</td><td className="text-right px-2">19.8%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 6</td><td className="px-2">ME & Africa</td><td className="text-right px-2">60,000</td><td className="text-right px-2">$2,000</td><td className="text-right px-2">$120.0M</td><td className="text-right px-2">12.0%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Round 7</td><td className="px-2">Investors</td><td className="text-right px-2">50,000</td><td className="text-right px-2">$5,000</td><td className="text-right px-2">$250.0M</td><td className="text-right px-2">10.0%</td></tr>
-                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="px-2">Worldwide</td><td className="text-right px-2">500,000</td><td className="text-right px-2">~$2,208</td><td className="text-right px-2 text-golden">$1,108.7M</td><td className="text-right px-2">100%</td></tr>
+                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Genesis</td><td className="px-2">Koh Phangan</td><td className="text-right px-2">3,000</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="text-right px-2">$3.0M</td><td className="text-right px-2">0.6%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Global</td><td className="px-2">Worldwide</td><td className="text-right px-2">347,000</td><td className="text-right px-2">$1,500+</td><td className="text-right px-2">TBD</td><td className="text-right px-2">69.4%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Founder</td><td className="px-2">Non-dilutable</td><td className="text-right px-2">50,000</td><td className="text-right px-2">Locked</td><td className="text-right px-2">—</td><td className="text-right px-2">10%</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Investors</td><td className="px-2">Funds & Private</td><td className="text-right px-2">100,000</td><td className="text-right px-2">$5,000+</td><td className="text-right px-2">$500M+</td><td className="text-right px-2">20%</td></tr>
+                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="px-2">—</td><td className="text-right px-2">500,000</td><td className="text-right px-2">—</td><td className="text-right px-2 text-golden">—</td><td className="text-right px-2">100%</td></tr>
                   </tbody>
                 </table>
-                <p className="text-xs text-white/30 mt-4 text-center italic">Prices INCREASE each round — Alpha is the best deal ever. Distribution proportional to hotels per zone (UNWTO 2025).</p>
+                <p className="text-xs text-white/30 mt-4 text-center italic">Genesis get the best price — forever. Global price decided by the Council. Investors: no vote, dividends only.</p>
               </div>
             )}
           </div>
