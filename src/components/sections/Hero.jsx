@@ -35,36 +35,38 @@ export function Hero() {
         }} />
       </div>
 
-      <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-16 items-center">
+      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left: Text content */}
-          <div className="text-white text-center lg:text-left">
+          <div className="text-white text-center lg:text-left space-y-5">
             {/* Slogan */}
-            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-base sm:text-lg font-bold mb-4">
+            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-base sm:text-lg font-bold">
               <span className="text-golden">✦</span>
               <span className="text-golden">Owned by Hoteliers, built for hospitality</span>
               <span className="text-golden">✦</span>
             </div>
 
             {/* Eyebrow — The powerful question */}
-            <p className="text-xl sm:text-2xl text-golden font-semibold mb-4 tracking-wide">
+            <p className="text-xl sm:text-2xl text-golden font-semibold tracking-wide">
               {t('hero.eyebrow')}
             </p>
 
             {/* Main title */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.08] mb-2 tracking-tight">
-              {t('hero.title_line1')}
-            </h1>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.08] mb-6 tracking-tight">
-              <span className="text-gradient">{t('hero.title_line2')}</span>
-            </h1>
+            <div>
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-extrabold leading-[1.12] tracking-tight">
+                {t('hero.title_line1')}
+              </h1>
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-extrabold leading-[1.12] mt-2 tracking-tight">
+                <span className="text-gradient">{t('hero.title_line2')}</span>
+              </h1>
+            </div>
 
-            <p className="text-lg sm:text-xl text-white/60 mb-6 max-w-xl leading-relaxed">
+            <p className="text-lg sm:text-xl text-white/60 max-w-xl leading-relaxed">
               {t('hero.subtitle')}
             </p>
 
             {/* Highlight bar */}
-            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-sunrise/20 to-sunset/20 border border-sunrise/30 mb-5">
+            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-sunrise/20 to-sunset/20 border border-sunrise/30">
               <Zap size={20} className="text-golden" />
               <span className="text-white font-bold text-lg">{t('hero.highlight')}</span>
             </div>
@@ -85,14 +87,14 @@ export function Hero() {
             </div>
 
             {/* Trust line */}
-            <div className="mt-4 flex items-center justify-center lg:justify-start gap-4 text-white/40 text-sm">
+            <div className="flex items-center justify-center lg:justify-start gap-4 text-white/40 text-sm">
               <div className="flex items-center gap-1.5">
                 <Shield size={14} />
                 <span>{t('hero.trust_line')}</span>
               </div>
             </div>
 
-            <div className="mt-4 flex items-center justify-center lg:justify-start gap-2 text-sm text-white/30">
+            <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-white/30">
               <Users size={16} />
               <span>{t('hero.early_adopters', { count: userCount })}</span>
             </div>
