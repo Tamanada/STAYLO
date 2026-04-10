@@ -143,7 +143,7 @@ export default function Vision() {
             {/* Urgency message */}
             <div className="bg-sunset/10 border border-sunset/30 rounded-2xl p-4 mt-4 mb-4 text-center">
               <p className="text-white font-bold text-lg mb-1">
-                {t('vision.urgency_title', '420 hotels. 3,000 shares. Do the math.')}
+                {t('vision.urgency_title', '600 hotels. 3,000 shares. Do the math.')}
               </p>
               <p className="text-white/70 text-sm">
                 {t('vision.urgency_detail', "That's ~7 shares per hotel. Max 10 per property. Not everyone will get theirs.")}
