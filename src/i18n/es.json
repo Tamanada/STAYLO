@@ -38,7 +38,7 @@
     "why_stat1_number": "600+",
     "why_stat1_title": "Alojamientos",
     "why_stat1_desc": "Uno de los ecosistemas hoteleros más vibrantes de Tailandia, concentrado en una sola isla.",
-    "why_stat2_number": "$6,3M",
+    "why_stat2_number": "5,8M€",
     "why_stat2_title": "Perdidos al año",
     "why_stat2_desc": "En comisiones que salen de la isla hacia OTAs extranjeros cada año. Dinero que nunca vuelve.",
     "why_stat3_number": "Unidos",
@@ -112,7 +112,8 @@
     "secondary_cta": "Ver la visión",
     "early_adopters": "{{count}} hoteleros ya se unieron",
     "card_title": "Libérate de las OTA",
-    "card_savings_label": "Ahorro anual promedio"
+    "card_savings_label": "Ahorro anual promedio",
+    "card_savings_amount": "28.000€"
   },
   "breakfree": {
     "title": "Ellos te cobran el 25%. Nosotros, el 10%.",
@@ -161,7 +162,7 @@
     "feat3_title": "Propiedad real",
     "feat3_desc": "Vota en las decisiones. Define el futuro.",
     "savings_context": "Para un hotel de 20 habitaciones a $80/noche",
-    "savings_amount": "Ahorra $30,368",
+    "savings_amount": "Ahorra 28.000€",
     "savings_compare": "al año comparado con Booking.com"
   },
   "social_proof": {

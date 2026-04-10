@@ -38,7 +38,7 @@
     "why_stat1_number": "600+",
     "why_stat1_title": "Acomodações",
     "why_stat1_desc": "Um dos ecossistemas hoteleiros mais vibrantes da Tailândia, concentrado em uma só ilha.",
-    "why_stat2_number": "US$ 6,3M",
+    "why_stat2_number": "R$32M",
     "why_stat2_title": "Perdidos por Ano",
     "why_stat2_desc": "Em comissões que deixam a ilha para OTAs estrangeiras todos os anos. Dinheiro que nunca volta.",
     "why_stat3_number": "Unidos",
@@ -109,6 +109,7 @@
     "trust_line": "Gratuito para participar. Sem contratos. Cancele quando quiser.",
     "card_title": "Liberte-se das OTAs",
     "card_savings_label": "Economia anual média",
+    "card_savings_amount": "R$155.000",
     "subtitle": "Pare de pagar 15–25% de comissão. Staylo foi feita para proprietários, por proprietários. Taxas justas. Controle total. Propriedade real.",
     "cta": "Faça Parte do Movimento",
     "secondary_cta": "Conheça a Visão",
@@ -161,7 +162,7 @@
     "feat3_title": "Propriedade real",
     "feat3_desc": "Vote nas decisões. Molde o futuro.",
     "savings_context": "Para um hotel de 20 quartos a $80/noite",
-    "savings_amount": "Economize $30,368",
+    "savings_amount": "Economize R$155.000",
     "savings_compare": "por ano comparado ao Booking.com"
   },
   "social_proof": {

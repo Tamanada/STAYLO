@@ -38,7 +38,7 @@
     "why_stat1_number": "600+",
     "why_stat1_title": "住宿设施",
     "why_stat1_desc": "泰国最活跃的酒店生态系统之一，全部集中在一座岛上。",
-    "why_stat2_number": "$630万",
+    "why_stat2_number": "¥4,500万",
     "why_stat2_title": "每年流失",
     "why_stat2_desc": "每年以佣金形式流向海外 OTA 的资金。这些钱再也回不来。",
     "why_stat3_number": "团结",
@@ -109,6 +109,7 @@
     "trust_line": "免费加入。无合同。随时取消。",
     "card_title": "摆脱OTA束缚",
     "card_savings_label": "平均年度节省",
+    "card_savings_amount": "¥220,000",
     "subtitle": "不再支付 15–25% 的佣金。Staylo 由房源业主打造，为房源业主服务。公平费率，完全掌控，真正拥有。",
     "cta": "加入我们",
     "secondary_cta": "了解愿景",
@@ -161,7 +162,7 @@
     "feat3_title": "真正的所有权",
     "feat3_desc": "参与投票决策，塑造未来。",
     "savings_context": "以20间客房、$80/晚的酒店为例",
-    "savings_amount": "节省 $30,368",
+    "savings_amount": "节省 ¥220,000",
     "savings_compare": "与Booking.com相比每年"
   },
   "social_proof": {

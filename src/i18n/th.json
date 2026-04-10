@@ -38,7 +38,7 @@
     "why_stat1_number": "600+",
     "why_stat1_title": "ที่พัก",
     "why_stat1_desc": "หนึ่งในระบบนิเวศโรงแรมที่มีชีวิตชีวาที่สุดในไทย อยู่รวมกันบนเกาะเดียว",
-    "why_stat2_number": "$6.3M",
+    "why_stat2_number": "฿220M",
     "why_stat2_title": "สูญเสียต่อปี",
     "why_stat2_desc": "ค่าคอมมิชชันที่ไหลออกจากเกาะไปยัง OTA ต่างชาติทุกปี เงินที่ไม่เคยกลับมา",
     "why_stat3_number": "สามัคคี",
@@ -112,7 +112,8 @@
     "secondary_cta": "ดูวิสัยทัศน์",
     "early_adopters": "ผู้ประกอบการโรงแรม {{count}} รายเข้าร่วมแล้ว",
     "card_title": "ปลดปล่อยตัวคุณจาก OTA",
-    "card_savings_label": "ประหยัดเฉลี่ยต่อปี"
+    "card_savings_label": "ประหยัดเฉลี่ยต่อปี",
+    "card_savings_amount": "฿1,050,000"
   },
   "breakfree": {
     "title": "พวกเขาคิด 25% เราคิดแค่ 10%",
@@ -161,7 +162,7 @@
     "feat3_title": "ความเป็นเจ้าของที่แท้จริง",
     "feat3_desc": "โหวตในการตัดสินใจ กำหนดอนาคต",
     "savings_context": "สำหรับโรงแรม 20 ห้องในราคา $80/คืน",
-    "savings_amount": "ประหยัด $30,368",
+    "savings_amount": "ประหยัด ฿1,050,000",
     "savings_compare": "ต่อปีเมื่อเทียบกับ Booking.com"
   },
   "social_proof": {

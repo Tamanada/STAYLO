@@ -38,7 +38,7 @@
     "why_stat1_number": "600+",
     "why_stat1_title": "Akomodasi",
     "why_stat1_desc": "Salah satu ekosistem perhotelan paling dinamis di Thailand, berkumpul di satu pulau.",
-    "why_stat2_number": "$6,3 Juta",
+    "why_stat2_number": "Rp100M",
     "why_stat2_title": "Hilang Setiap Tahun",
     "why_stat2_desc": "Komisi yang mengalir keluar pulau ke OTA asing setiap tahun. Uang yang tidak pernah kembali.",
     "why_stat3_number": "Bersatu",
@@ -109,6 +109,7 @@
     "trust_line": "Gratis bergabung. Tanpa kontrak. Batalkan kapan saja.",
     "card_title": "Bebaskan diri dari OTA",
     "card_savings_label": "Penghematan tahunan rata-rata",
+    "card_savings_amount": "Rp480.000.000",
     "subtitle": "Berhenti bayar komisi 15–25%. Staylo dibangun untuk pemilik properti, oleh pemilik properti. Biaya adil. Kontrol penuh. Kepemilikan nyata.",
     "cta": "Bergabung dengan Gerakan",
     "secondary_cta": "Lihat Visi Kami",
@@ -161,7 +162,7 @@
     "feat3_title": "Kepemilikan sejati",
     "feat3_desc": "Ikut memilih keputusan. Bentuk masa depan.",
     "savings_context": "Untuk hotel 20 kamar seharga $80/malam",
-    "savings_amount": "Hemat $30,368",
+    "savings_amount": "Hemat Rp480.000.000",
     "savings_compare": "per tahun dibandingkan Booking.com"
   },
   "social_proof": {

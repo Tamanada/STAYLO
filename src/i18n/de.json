@@ -38,7 +38,7 @@
     "why_stat1_number": "600+",
     "why_stat1_title": "Unterkünfte",
     "why_stat1_desc": "Eines der dynamischsten Gastgewerbe-Ökosysteme Thailands — auf einer einzigen Insel.",
-    "why_stat2_number": "6,3 Mio. $",
+    "why_stat2_number": "5,8M€",
     "why_stat2_title": "Gehen jährlich verloren",
     "why_stat2_desc": "An Provisionen, die jedes Jahr von der Insel an ausländische OTAs abfließen. Geld, das nie zurückkommt.",
     "why_stat3_number": "Vereint",
@@ -109,6 +109,7 @@
     "trust_line": "Kostenlos beitreten. Keine Verträge. Jederzeit kündbar.",
     "card_title": "Befreie dich von OTAs",
     "card_savings_label": "Durchschnittliche jährliche Ersparnis",
+    "card_savings_amount": "28.000€",
     "subtitle": "Schluss mit 15–25 % Provision. Staylo wurde von Eigentümern für Eigentümer entwickelt. Faire Gebühren. Volle Kontrolle. Echtes Eigentum.",
     "cta": "Werde Teil der Bewegung",
     "secondary_cta": "Unsere Vision",
@@ -161,7 +162,7 @@
     "feat3_title": "Echtes Eigentum",
     "feat3_desc": "Stimme über Entscheidungen ab. Gestalte die Zukunft.",
     "savings_context": "Für ein 20-Zimmer-Hotel bei $80/Nacht",
-    "savings_amount": "Spare $30,368",
+    "savings_amount": "Spare 28.000€",
     "savings_compare": "pro Jahr im Vergleich zu Booking.com"
   },
   "social_proof": {

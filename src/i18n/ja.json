@@ -38,7 +38,7 @@
     "why_stat1_number": "600+",
     "why_stat1_title": "宿泊施設",
     "why_stat1_desc": "タイで最も活気あるホスピタリティ・エコシステムのひとつが、ひとつの島に集中。",
-    "why_stat2_number": "$6.3M",
+    "why_stat2_number": "¥9.5億",
     "why_stat2_title": "年間損失額",
     "why_stat2_desc": "毎年、海外OTAに流出するコミッション。二度と戻ってこないお金。",
     "why_stat3_number": "結束",
@@ -112,7 +112,8 @@
     "secondary_cta": "ビジョンを見る",
     "early_adopters": "{{count}}名のホテル経営者が参加済み",
     "card_title": "OTAから解放されよう",
-    "card_savings_label": "年間平均節約額"
+    "card_savings_label": "年間平均節約額",
+    "card_savings_amount": "¥4,600,000"
   },
   "breakfree": {
     "title": "彼らは25%取ります。私たちは10%です。",
@@ -161,7 +162,7 @@
     "feat3_title": "真のオーナーシップ",
     "feat3_desc": "意思決定に投票。未来を形作る。",
     "savings_context": "20室・$80/泊のホテルの場合",
-    "savings_amount": "$30,368の節約",
+    "savings_amount": "¥4,600,000の節約",
     "savings_compare": "Booking.comと比較して年間"
   },
   "social_proof": {

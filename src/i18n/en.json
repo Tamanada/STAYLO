@@ -111,7 +111,8 @@
     "early_adopters": "{{count}} hoteliers already joined",
     "trust_line": "Free to join. No contracts. Cancel anytime.",
     "card_title": "Break free from OTAs",
-    "card_savings_label": "Your revenue increases by"
+    "card_savings_label": "Your revenue increases by",
+    "card_savings_amount": "$30,368"
   },
   "commission": {
     "title": "See how much you'd save",

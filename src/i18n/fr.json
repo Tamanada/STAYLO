@@ -38,7 +38,7 @@
     "why_stat1_number": "600+",
     "why_stat1_title": "Hébergements",
     "why_stat1_desc": "L'un des écosystèmes hôteliers les plus dynamiques de Thaïlande, concentré sur une seule île.",
-    "why_stat2_number": "6,3 M$",
+    "why_stat2_number": "5,8M€",
     "why_stat2_title": "Perdus chaque année",
     "why_stat2_desc": "En commissions qui quittent l'île vers des OTA étrangers chaque année. De l'argent qui ne revient jamais.",
     "why_stat3_number": "Unis",
@@ -112,7 +112,8 @@
     "secondary_cta": "Découvrir la vision",
     "early_adopters": "{{count}} hôteliers déjà inscrits",
     "card_title": "Libérez-vous des OTA",
-    "card_savings_label": "Vos revenus augmentent de"
+    "card_savings_label": "Vos revenus augmentent de",
+    "card_savings_amount": "28 000€"
   },
   "breakfree": {
     "title": "Ils vous prennent 25 %. Nous, 10 %.",
@@ -161,7 +162,7 @@
     "feat3_title": "Propriété réelle",
     "feat3_desc": "Votez sur les décisions. Façonnez l'avenir.",
     "savings_context": "Pour un hôtel de 20 chambres à $80/nuit",
-    "savings_amount": "Économisez $30,368",
+    "savings_amount": "Économisez 28 000€",
     "savings_compare": "par an comparé à Booking.com",
     "why_10_pct": "\"10 %, c'est tout ce dont une plateforme a besoin quand elle n'a pas 22 000 salariés et des actionnaires à Wall Street à rémunérer.\"",
     "why_10_detail": "Pas de loyer. Pas d'équipe pléthorique. Pas d'actionnaires externes. Votre communauté EST l'infrastructure."

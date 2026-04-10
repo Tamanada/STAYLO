@@ -38,7 +38,7 @@
     "why_stat1_number": "600+",
     "why_stat1_title": "Strutture ricettive",
     "why_stat1_desc": "Uno degli ecosistemi alberghieri più vivaci della Thailandia, concentrato su un'unica isola.",
-    "why_stat2_number": "$6,3M",
+    "why_stat2_number": "5,8M€",
     "why_stat2_title": "Persi ogni anno",
     "why_stat2_desc": "In commissioni che lasciano l'isola verso OTA stranieri ogni anno. Soldi che non tornano mai.",
     "why_stat3_number": "Uniti",
@@ -111,7 +111,8 @@
     "early_adopters": "{{count}} albergatori già iscritti",
     "trust_line": "Iscrizione gratuita. Nessun contratto. Cancella quando vuoi.",
     "card_title": "Liberati dalle OTA",
-    "card_savings_label": "Risparmio annuo medio"
+    "card_savings_label": "Risparmio annuo medio",
+    "card_savings_amount": "28.000€"
   },
   "commission": {
     "title": "Scopri quanto risparmieresti",
@@ -160,7 +161,7 @@
     "feat3_title": "Vera proprietà",
     "feat3_desc": "Vota sulle decisioni. Plasma il futuro.",
     "savings_context": "Per un hotel da 20 camere a $80/notte",
-    "savings_amount": "Risparmia $30,368",
+    "savings_amount": "Risparmia 28.000€",
     "savings_compare": "all'anno rispetto a Booking.com"
   },
   "social_proof": {

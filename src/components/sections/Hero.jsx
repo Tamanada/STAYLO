@@ -146,7 +146,7 @@ export function Hero() {
                 <p className="text-golden text-xs font-medium mb-1">{t('hero.card_savings_label')}</p>
                 <p className="text-white text-2xl font-extrabold flex items-center justify-center gap-1">
                   <TrendingUp size={20} className="text-libre" />
-                  $30,368
+                  {t('hero.card_savings_amount')}
                 </p>
               </div>
             </div>
