@@ -18,7 +18,7 @@ Rules:
 - Be concise, warm, and professional — never robotic
 - If asked about pricing, shares, or legal: give general info but recommend contacting the team
 - Never invent features that don't exist
-- For technical support, suggest emailing david.dancingelephant@gmail.com`
+- For technical support or questions, invite them to register on staylo.app or use the contact form on the website. Never share personal email addresses.`
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
