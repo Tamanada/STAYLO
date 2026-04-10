@@ -38,7 +38,7 @@ export function Hero() {
       <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left: Text content */}
-          <div className="text-white text-center lg:text-left space-y-6">
+          <div className="text-white text-center space-y-6">
             {/* Slogan */}
             <div className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-xl sm:text-2xl lg:text-3xl font-bold">
               <span className="text-golden">✦</span>
@@ -61,7 +61,7 @@ export function Hero() {
               </h1>
             </div>
 
-            <p className="text-lg sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+            <p className="text-lg sm:text-xl text-white/60 max-w-xl mx-auto leading-relaxed">
               {t('hero.subtitle')}
             </p>
 
@@ -72,7 +72,7 @@ export function Hero() {
             </div>
 
             {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to={user ? '/dashboard' : '/register'}>
                 <button className="group relative px-8 py-4 bg-gradient-to-r from-golden via-sunrise to-sunset text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] flex items-center justify-center gap-3 cursor-pointer animate-pulse-glow">
                   <span>{user ? t('nav.dashboard', 'Dashboard') : t('hero.cta')}</span>
@@ -87,14 +87,14 @@ export function Hero() {
             </div>
 
             {/* Trust line */}
-            <div className="flex items-center justify-center lg:justify-start gap-4 text-white/40 text-sm">
+            <div className="flex items-center justify-center gap-4 text-white/40 text-sm">
               <div className="flex items-center gap-1.5">
                 <Shield size={14} />
                 <span>{t('hero.trust_line')}</span>
               </div>
             </div>
 
-            <div className="flex items-center justify-center lg:justify-start gap-2 text-sm text-white/30">
+            <div className="flex items-center justify-center gap-2 text-sm text-white/30">
               <Users size={16} />
               <span>{t('hero.early_adopters', { count: userCount })}</span>
             </div>
