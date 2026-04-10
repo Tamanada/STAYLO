@@ -38,7 +38,7 @@ export function Hero() {
       <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Left: Text content */}
-          <div className="text-white text-center lg:text-left space-y-5">
+          <div className="text-white text-center lg:text-left space-y-6">
             {/* Slogan */}
             <div className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-xl sm:text-2xl lg:text-3xl font-bold">
               <span className="text-golden">✦</span>
@@ -53,15 +53,15 @@ export function Hero() {
 
             {/* Main title */}
             <div>
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-extrabold leading-[1.12] tracking-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-extrabold leading-[1.15] tracking-tight">
                 {t('hero.title_line1')}
               </h1>
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-extrabold leading-[1.12] mt-2 tracking-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-extrabold leading-[1.15] mt-3 tracking-tight">
                 <span className="text-gradient">{t('hero.title_line2')}</span>
               </h1>
             </div>
 
-            <p className="text-lg sm:text-xl text-white/60 max-w-xl leading-relaxed">
+            <p className="text-lg sm:text-xl text-white/60 max-w-xl mx-auto lg:mx-0 leading-relaxed">
               {t('hero.subtitle')}
             </p>
 
