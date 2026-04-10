@@ -40,9 +40,9 @@ export function Hero() {
           {/* Left: Text content */}
           <div className="text-white text-center lg:text-left space-y-5">
             {/* Slogan */}
-            <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-base sm:text-lg font-bold">
+            <div className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-xl sm:text-2xl lg:text-3xl font-bold">
               <span className="text-golden">✦</span>
-              <span className="text-golden">Owned by Hoteliers, built for hospitality</span>
+              <span className="text-golden text-center leading-tight">Owned by Hoteliers,<br />Built for hospitality.</span>
               <span className="text-golden">✦</span>
             </div>
 
