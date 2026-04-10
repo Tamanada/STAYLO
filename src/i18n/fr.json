@@ -415,8 +415,8 @@
     "structure_coop_desc": "Staylo est une plateforme détenue collectivement. Les hôteliers ne sont pas des clients, ils sont actionnaires et décisionnaires.",
     "structure_vote_title": "1 Hôtel = 1 Vote",
     "structure_vote_desc": "La gouvernance est démocratique. Que vous déteniez 1 ou 10 parts, votre établissement dispose d'un vote égal sur toutes les décisions de la plateforme.",
-    "structure_transfer_title": "Parts transférables",
-    "structure_transfer_desc": "Les parts sont librement transférables. Les droits de vote restent liés à l'enregistrement actif de l'établissement, pas aux parts elles-mêmes.",
+    "structure_transfer_title": "Pas de part, pas de vote",
+    "structure_transfer_desc": "Le droit de vote appartient à l'hôtel, pas à la personne physique. Pour voter et conserver le statut de fondateur, l'hôtel doit détenir au moins une part.",
 
     "share_sale_title": "Whitelisting des parts Alpha",
     "share_sale_subtitle": "Phase Alpha — Partenaires fondateurs uniquement. Limité à 3 000 parts.",

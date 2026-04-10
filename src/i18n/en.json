@@ -412,8 +412,8 @@
     "structure_coop_desc": "Staylo is a collectively-owned platform. Hoteliers are not customers, they are shareholders and decision-makers.",
     "structure_vote_title": "1 Hotel = 1 Vote",
     "structure_vote_desc": "Governance is democratic. Whether you hold 1 share or 10, your property gets one equal vote on all platform decisions.",
-    "structure_transfer_title": "Transferable Shares",
-    "structure_transfer_desc": "Shares are freely transferable. Voting rights stay with the active property registration, not the shares themselves.",
+    "structure_transfer_title": "No Share, No Vote",
+    "structure_transfer_desc": "Voting rights belong to the hotel, not the individual. To vote and hold founding status, the hotel must hold at least one share.",
 
     "share_sale_title": "Alpha Share Whitelisting",
     "share_sale_subtitle": "Phase Alpha — Founding Partners only. Limited to 3,000 shares.",
