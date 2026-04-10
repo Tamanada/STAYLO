@@ -9,6 +9,7 @@ const defaultFlags = {
   splash: true,
   survey: true,
   referrals: true,
+  socialProof: false,
 }
 
 function useFeatureFlags() {
@@ -205,6 +206,23 @@ export default function AdminSettings() {
             <button onClick={() => toggle('survey')} className="cursor-pointer">
               {flags.survey
                 ? <ToggleRight size={36} className="text-libre" />
+                : <ToggleLeft size={36} className="text-gray-300" />
+              }
+            </button>
+          </div>
+
+          {/* Social Proof Toggle */}
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div className="flex items-center gap-3">
+              <Globe size={20} className={flags.socialProof ? 'text-electric' : 'text-gray-300'} />
+              <div>
+                <p className="font-medium text-deep text-sm">Social Proof (Founding Members)</p>
+                <p className="text-xs text-gray-400">Show the founding members list on homepage</p>
+              </div>
+            </div>
+            <button onClick={() => toggle('socialProof')} className="cursor-pointer">
+              {flags.socialProof
+                ? <ToggleRight size={36} className="text-electric" />
                 : <ToggleLeft size={36} className="text-gray-300" />
               }
             </button>

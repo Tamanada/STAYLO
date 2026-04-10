@@ -5,8 +5,11 @@ import { HowItWorks } from '../components/sections/HowItWorks'
 import { FoundingMembers } from '../components/sections/FoundingMembers'
 import { CTASection } from '../components/sections/CTASection'
 import { SloganTicker } from '../components/sections/SloganTicker'
+import { getFeatureFlags } from './admin/AdminSettings'
 
 export default function Home() {
+  const flags = getFeatureFlags()
+
   return (
     <>
       <Hero />
@@ -14,7 +17,7 @@ export default function Home() {
       <BreakFree />
       <CommissionCalculator />
       <HowItWorks />
-      <FoundingMembers />
+      {flags.socialProof && <FoundingMembers />}
       <CTASection />
     </>
   )
