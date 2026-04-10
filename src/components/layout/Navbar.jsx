@@ -54,9 +54,6 @@ export function Navbar() {
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
-            <Link to="/welcome" className="text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
-              {t('nav.welcome', 'Welcome')}
-            </Link>
             <Link to="/vision" className="text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
               {t('nav.vision')}
             </Link>
@@ -166,9 +163,6 @@ export function Navbar() {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-100 bg-white">
           <div className="px-4 py-4 space-y-3">
-            <Link to="/welcome" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
-              {t('nav.welcome', 'Welcome')}
-            </Link>
             <Link to="/vision" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
               {t('nav.vision')}
             </Link>
