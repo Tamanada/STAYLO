@@ -304,24 +304,24 @@ export default function Vision() {
               {/* Pie chart SVG */}
               <div className="relative w-64 h-64 flex-shrink-0">
                 <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-lg">
-                  {/* Acquisitions 50% */}
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="#FBBF24" strokeWidth="40"
-                    strokeDasharray={`${50 * 5.026} ${(100 - 50) * 5.026}`}
-                    strokeDashoffset="0" transform="rotate(-90 100 100)" />
-                  {/* Team & Tech 25% */}
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="#10B981" strokeWidth="40"
-                    strokeDasharray={`${25 * 5.026} ${(100 - 25) * 5.026}`}
-                    strokeDashoffset={`${-(50) * 5.026}`} transform="rotate(-90 100 100)" />
-                  {/* Reserve 10% */}
+                  {/* Operations 40% — starts at 0° */}
                   <circle cx="100" cy="100" r="80" fill="none" stroke="#3B82F6" strokeWidth="40"
-                    strokeDasharray={`${10 * 5.026} ${(100 - 10) * 5.026}`}
-                    strokeDashoffset={`${-(75) * 5.026}`} transform="rotate(-90 100 100)" />
-                  {/* Legal & Structure 10% */}
+                    strokeDasharray={`${40 * 5.026} ${(100 - 40) * 5.026}`}
+                    strokeDashoffset="0" transform="rotate(-90 100 100)" />
+                  {/* Ambassador 20% — starts at 144° */}
                   <circle cx="100" cy="100" r="80" fill="none" stroke="#8B5CF6" strokeWidth="40"
-                    strokeDasharray={`${10 * 5.026} ${(100 - 10) * 5.026}`}
-                    strokeDashoffset={`${-(85) * 5.026}`} transform="rotate(-90 100 100)" />
-                  {/* Marketing 5% */}
+                    strokeDasharray={`${20 * 5.026} ${(100 - 20) * 5.026}`}
+                    strokeDashoffset={`${-(40) * 5.026}`} transform="rotate(-90 100 100)" />
+                  {/* Dividends 20% — starts at 216° */}
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="#10B981" strokeWidth="40"
+                    strokeDasharray={`${20 * 5.026} ${(100 - 20) * 5.026}`}
+                    strokeDashoffset={`${-(60) * 5.026}`} transform="rotate(-90 100 100)" />
+                  {/* Growth 15% — starts at 288° */}
                   <circle cx="100" cy="100" r="80" fill="none" stroke="#F97316" strokeWidth="40"
+                    strokeDasharray={`${15 * 5.026} ${(100 - 15) * 5.026}`}
+                    strokeDashoffset={`${-(80) * 5.026}`} transform="rotate(-90 100 100)" />
+                  {/* Reserve 5% — starts at 342° */}
+                  <circle cx="100" cy="100" r="80" fill="none" stroke="#FBBF24" strokeWidth="40"
                     strokeDasharray={`${5 * 5.026} ${(100 - 5) * 5.026}`}
                     strokeDashoffset={`${-(95) * 5.026}`} transform="rotate(-90 100 100)" />
                   {/* Center circle */}
@@ -334,11 +334,11 @@ export default function Vision() {
               {/* Legend */}
               <div className="space-y-4 flex-1">
                 {[
-                  { emoji: '🏨', label: t('vision.fund_acquisitions', 'Acquisitions'), pct: 50, color: '#FBBF24', desc: t('vision.fund_acquisitions_desc', 'Flagship hotels — proof the model works') },
-                  { emoji: '👥', label: t('vision.fund_team', 'Team & Tech'), pct: 25, color: '#10B981', desc: t('vision.fund_team_desc', 'CTO + dev team — they build & maintain the platform') },
-                  { emoji: '🛡️', label: t('vision.fund_reserve', 'Reserve'), pct: 10, color: '#3B82F6', desc: t('vision.fund_reserve_desc', 'Emergency fund & future development') },
-                  { emoji: '⚖️', label: t('vision.fund_legal', 'Legal & Structure'), pct: 10, color: '#8B5CF6', desc: t('vision.fund_legal_desc', 'Incorporation, licenses, contracts') },
-                  { emoji: '📈', label: t('vision.fund_marketing', 'Marketing'), pct: 5, color: '#F97316', desc: t('vision.fund_marketing_desc', 'Welcome kits, local events — the network does the rest') },
+                  { emoji: '⚙️', label: t('vision.breakdown_operations', 'Platform Operations'), pct: 40, color: '#3B82F6', desc: t('vision.breakdown_operations_desc', 'Tech, servers, support, payment processing') },
+                  { emoji: '🤝', label: t('vision.breakdown_ambassador', 'Ambassador Reward'), pct: 20, color: '#8B5CF6', desc: t('vision.breakdown_ambassador_desc', '2% lifetime passive income for the person who brought the hotel to Staylo') },
+                  { emoji: '💰', label: t('vision.breakdown_dividends', 'Shareholder Dividends'), pct: 20, color: '#10B981', desc: t('vision.breakdown_dividends_desc', 'Distributed to all founding partners proportionally') },
+                  { emoji: '📈', label: t('vision.breakdown_growth', 'Growth & Marketing'), pct: 15, color: '#F97316', desc: t('vision.breakdown_growth_desc', 'Traveler acquisition, SEO, partnerships') },
+                  { emoji: '🛡️', label: t('vision.breakdown_reserve', 'Reserve Fund'), pct: 5, color: '#FBBF24', desc: t('vision.breakdown_reserve_desc', 'Emergency fund & future development') },
                 ].map(item => (
                   <div key={item.label} className="flex items-start gap-3">
                     <div className="w-4 h-4 rounded-full mt-0.5 flex-shrink-0" style={{ backgroundColor: item.color }} />
