@@ -390,8 +390,10 @@ export default function DemoBookingEngine() {
           <div className="mt-8 max-w-3xl mx-auto text-center">
             <p className="text-white/90 text-sm sm:text-base font-medium leading-relaxed">
               <span className="text-[#ffb700] font-bold">{t('booking.tagline_highlight', 'You are not just a partner — you are the platform.')}</span>
-              <br className="hidden sm:block" />{' '}
-              {t('booking.tagline_body', 'STAYLO is the only booking platform owned and run by hoteliers. Book, share, earn — build ethical passive income while growing a community that puts hospitality first.')}
+              <br />
+              {t('booking.tagline_body', 'STAYLO is the only booking platform owned and run by hoteliers.')}
+              <br />
+              <span className="text-[#ffb700]">{t('booking.tagline_cta', 'Book, share, earn — build ethical passive income while growing a community that puts hospitality first.')}</span>
             </p>
           </div>
         </div>
