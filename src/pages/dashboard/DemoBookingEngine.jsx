@@ -163,6 +163,7 @@ const DEMO_PROPERTIES = [
 
 const DESTINATIONS = [
   { name: 'Bangkok', count: 284, img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80' },
+  { name: 'Koh Phangan', count: 87, img: 'https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=600&q=80', badge: 'STAYLO HQ' },
   { name: 'Phuket', count: 196, img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=600&q=80' },
   { name: 'Chiang Mai', count: 152, img: 'https://images.unsplash.com/photo-1598935898639-81586f7d2129?w=600&q=80' },
   { name: 'Koh Samui', count: 134, img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&q=80' },
@@ -306,10 +307,19 @@ export default function DemoBookingEngine() {
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-20 sm:pb-24">
           <div className="text-center mb-8 sm:mb-10">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-3 tracking-tight">
+            {/* Logo */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span className="text-4xl sm:text-5xl font-extrabold text-white">stay</span>
+              <span className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-[#ffb700] to-[#ff8c00] bg-clip-text text-transparent">lo</span>
+            </div>
+            {/* Slogan */}
+            <p className="text-sm sm:text-base font-semibold text-[#ffb700] tracking-wider uppercase mb-4">
+              {t('booking.slogan', 'Owned by Hoteliers, Built for Hospitality')}
+            </p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3 tracking-tight">
               {t('booking.hero_title', 'Find deals on hotels, resorts & more')}
             </h1>
-            <p className="text-blue-200/70 text-base sm:text-lg max-w-2xl mx-auto">
+            <p className="text-blue-200/70 text-sm sm:text-base max-w-2xl mx-auto">
               {t('booking.hero_subtitle', 'Book directly with hoteliers — save up to 20% vs. other platforms')}
             </p>
           </div>
@@ -376,11 +386,35 @@ export default function DemoBookingEngine() {
             </div>
           </div>
 
-          {/* Quick stats */}
-          <div className="flex flex-wrap items-center justify-center gap-6 mt-6 text-blue-200/60 text-xs font-medium">
-            <span className="flex items-center gap-1.5"><Shield size={14} /> {t('booking.stat_commission', 'Only 10% commission')}</span>
-            <span className="flex items-center gap-1.5"><BadgeCheck size={14} /> {t('booking.stat_verified', 'Verified properties')}</span>
-            <span className="flex items-center gap-1.5"><TrendingDown size={14} /> {t('booking.stat_savings', 'Save vs. OTAs')}</span>
+          {/* Values */}
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mt-8 max-w-3xl mx-auto">
+            <div className="flex items-center gap-2.5 bg-white/8 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3">
+              <div className="w-9 h-9 bg-[#ffb700]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <TrendingDown size={18} className="text-[#ffb700]" />
+              </div>
+              <div>
+                <p className="text-white text-xs font-bold">{t('booking.value1_title', 'Lowest Commission')}</p>
+                <p className="text-blue-200/50 text-[10px]">{t('booking.value1_desc', 'Only 10% — half of Booking.com')}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 bg-white/8 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3">
+              <div className="w-9 h-9 bg-[#ffb700]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Shield size={18} className="text-[#ffb700]" />
+              </div>
+              <div>
+                <p className="text-white text-xs font-bold">{t('booking.value2_title', 'Hotelier-Owned')}</p>
+                <p className="text-blue-200/50 text-[10px]">{t('booking.value2_desc', 'Run by hoteliers, for hoteliers')}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5 bg-white/8 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3">
+              <div className="w-9 h-9 bg-[#ffb700]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                <BadgeCheck size={18} className="text-[#ffb700]" />
+              </div>
+              <div>
+                <p className="text-white text-xs font-bold">{t('booking.value3_title', 'Direct Booking')}</p>
+                <p className="text-blue-200/50 text-[10px]">{t('booking.value3_desc', 'No middleman, better rates')}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -396,12 +430,17 @@ export default function DemoBookingEngine() {
             <p className="text-sm text-gray-500 mb-6">
               {t('booking.explore_desc', 'Explore our most booked cities by fellow travelers')}
             </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               {DESTINATIONS.map(dest => (
                 <button key={dest.name} onClick={() => handleDestinationClick(dest.name)}
                   className="group relative h-48 rounded-2xl overflow-hidden text-left">
                   <img src={dest.img} alt={dest.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  {dest.badge && (
+                    <div className="absolute top-3 left-3 bg-[#ffb700] text-[#003580] text-[9px] font-extrabold uppercase tracking-wider px-2 py-1 rounded-md shadow-lg">
+                      {dest.badge}
+                    </div>
+                  )}
                   <div className="absolute bottom-3 left-3 right-3 text-white">
                     <p className="font-bold text-base">{dest.name}</p>
                     <p className="text-xs text-white/70">{dest.count} {t('booking.properties', 'properties')}</p>
