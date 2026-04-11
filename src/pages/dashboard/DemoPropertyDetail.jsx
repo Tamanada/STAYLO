@@ -12,6 +12,28 @@ import { supabase } from '../../lib/supabase'
 
 // ── Demo data (shared with BookingEngine) ─────────────
 const DEMO_PROPERTIES = {
+  'demo-staylo': {
+    name: 'STAYLO Resort & Nomad Hub', type: 'resort', city: 'Koh Phangan', country: 'Thailand', stars: 5, featured: true,
+    photos: [
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&q=80',
+      'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=1200&q=80',
+      'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=1200&q=80',
+      'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1200&q=80',
+      'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200&q=80',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200&q=80',
+      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80',
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=1200&q=80',
+    ],
+    rating: 9.8, reviews: 47,
+    amenities: ['wifi', 'pool', 'spa', 'beach', 'restaurant', 'gym', 'parking', 'minibar'],
+    desc: 'Where it all began. STAYLO Resort is the birthplace of the hospitality revolution — a stunning beachfront property on Koh Phangan where hoteliers, digital nomads, and travelers come together. Featuring a world-class coworking space, organic farm-to-table restaurant, infinity pool overlooking the Gulf of Thailand, and legendary sunset views. This is more than a resort — it\'s the headquarters of a movement.',
+    rooms: [
+      { id: 'rs1', name: 'Nomad Pod — Smart Dorm', price: 29, otaPrice: 0, beds: 'Single Pod', guests: 1, sqm: 6, amenities: ['wifi', 'ac'], desc: 'High-tech sleeping pod with personal screen, USB charging, reading light, and locker. Access to the Nomad Lounge coworking space included.' },
+      { id: 'rs2', name: 'Sunset Beach Room', price: 89, otaPrice: 0, beds: 'King Bed', guests: 2, sqm: 35, amenities: ['wifi', 'ac', 'minibar'], desc: 'Beachfront room with private terrace facing west — the best sunset view on the island. Rain shower and handcrafted Thai furnishings.' },
+      { id: 'rs3', name: 'Ocean View Suite', price: 165, otaPrice: 0, beds: 'King Bed', guests: 3, sqm: 55, amenities: ['wifi', 'ac', 'minibar', 'pool'], desc: 'Spacious suite with separate living area, outdoor bathtub, and uninterrupted ocean panorama. Perfect for extended stays.' },
+      { id: 'rs4', name: 'Founder\'s Villa — Private Pool', price: 320, otaPrice: 0, beds: 'King + Daybed', guests: 4, sqm: 110, amenities: ['wifi', 'ac', 'minibar', 'pool', 'spa'], desc: 'The ultimate STAYLO experience. Private infinity pool, lush tropical garden, outdoor kitchen, and dedicated concierge. Where the founding team stays.' },
+    ],
+  },
   'demo-1': {
     name: 'Anantara Riverside Bangkok Resort', type: 'resort', city: 'Bangkok', country: 'Thailand', stars: 5,
     photos: [

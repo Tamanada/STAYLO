@@ -13,6 +13,30 @@ import { useAuth } from '../../hooks/useAuth'
 // ── Demo data ─────────────────────────────────────────────
 const DEMO_PROPERTIES = [
   {
+    id: 'demo-staylo', name: 'STAYLO Resort & Nomad Hub', type: 'resort',
+    city: 'Koh Phangan', country: 'Thailand', stars: 5, featured: true,
+    photo: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+      'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=800&q=80',
+      'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800&q=80',
+      'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&q=80',
+      'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80',
+      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80',
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',
+    ],
+    price: 89, otaPrice: 0, rating: 9.8, reviews: 47,
+    amenities: ['wifi', 'pool', 'spa', 'beach', 'restaurant', 'gym', 'parking', 'minibar'],
+    desc: 'Where it all began. STAYLO Resort is the birthplace of the hospitality revolution — a stunning beachfront property on Koh Phangan where hoteliers, digital nomads, and travelers come together. Featuring a world-class coworking space, organic farm-to-table restaurant, infinity pool overlooking the Gulf of Thailand, and legendary sunset views. This is more than a resort — it\'s the headquarters of a movement.',
+    roomTypes: [
+      { name: 'Nomad Pod — Smart Dorm', price: 29, otaPrice: 0, beds: 'Single Pod', guests: 1, sqm: 6 },
+      { name: 'Sunset Beach Room', price: 89, otaPrice: 0, beds: 'King Bed', guests: 2, sqm: 35 },
+      { name: 'Ocean View Suite', price: 165, otaPrice: 0, beds: 'King Bed', guests: 3, sqm: 55 },
+      { name: 'Founder\'s Villa — Private Pool', price: 320, otaPrice: 0, beds: 'King + Daybed', guests: 4, sqm: 110 },
+    ],
+  },
+  {
     id: 'demo-1', name: 'Anantara Riverside Bangkok Resort', type: 'resort',
     city: 'Bangkok', country: 'Thailand', stars: 5,
     photo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
@@ -510,11 +534,125 @@ export default function DemoBookingEngine() {
               <div className="space-y-4">
                 {filtered.map((prop, idx) => {
                   const isFav = favorites.includes(prop.id)
-                  const savings = prop.otaPrice - prop.price
-                  const savingsPercent = Math.round((savings / prop.otaPrice) * 100)
+                  const hasOtaPrice = prop.otaPrice > 0
+                  const savings = hasOtaPrice ? prop.otaPrice - prop.price : 0
+                  const savingsPercent = hasOtaPrice ? Math.round((savings / prop.otaPrice) * 100) : 0
                   const totalStaylo = prop.price * nights
                   const totalOTA = prop.otaPrice * nights
+                  const isFeatured = prop.featured
 
+                  // ── FEATURED CARD (STAYLO Resort) ──
+                  if (isFeatured) {
+                    return (
+                      <Link key={prop.id}
+                        to={`/dashboard/book/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}&demo=1`}
+                        className="no-underline">
+                        <div className="rounded-2xl overflow-hidden border-2 border-[#ffb700]/50 shadow-xl shadow-[#ffb700]/10 hover:shadow-2xl hover:shadow-[#ffb700]/20 transition-all duration-300 group">
+                          {/* Featured banner */}
+                          <div className="bg-gradient-to-r from-[#003580] via-[#00224f] to-[#003580] px-5 py-2.5 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center gap-1">
+                                <span className="text-lg font-extrabold text-white">stay</span>
+                                <span className="text-lg font-extrabold text-[#ffb700]">lo</span>
+                              </div>
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-[#ffb700]">
+                                {t('booking.flagship', 'Flagship Property — Where It All Began')}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-white">{ratingLabel(prop.rating)}</span>
+                              <div className="bg-[#ffb700] text-[#003580] text-sm font-extrabold w-9 h-9 rounded-lg flex items-center justify-center">
+                                {prop.rating}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="bg-white flex flex-col lg:flex-row">
+                            {/* Photo grid */}
+                            <div className="lg:w-[420px] flex-shrink-0 relative">
+                              <div className="grid grid-cols-2 grid-rows-2 h-64 lg:h-full gap-0.5">
+                                <div className="col-span-2 row-span-1 relative overflow-hidden">
+                                  <img src={prop.photos[0]} alt="Beach sunset" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+                                </div>
+                                <div className="relative overflow-hidden">
+                                  <img src={prop.photos[4]} alt="Room" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                </div>
+                                <div className="relative overflow-hidden">
+                                  <img src={prop.photos[6]} alt="Restaurant" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                </div>
+                              </div>
+                              {/* Photo count */}
+                              <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium px-2.5 py-1 rounded-full">
+                                {prop.photos.length} photos
+                              </div>
+                              {/* Favorite */}
+                              <button onClick={e => toggleFavorite(e, prop.id)}
+                                className="absolute top-2 right-2 p-2 bg-white/90 rounded-full hover:bg-white transition-all shadow-sm z-10">
+                                <Heart size={16} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
+                              </button>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 p-5 lg:p-6 flex flex-col">
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <StarRating stars={5} />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#ffb700] bg-[#ffb700]/10 px-2 py-0.5 rounded">
+                                  {t('booking.staylo_hq', 'STAYLO HQ')}
+                                </span>
+                              </div>
+                              <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 mb-1 group-hover:text-[#003580] transition-colors">
+                                {prop.name}
+                              </h3>
+                              <p className="text-sm text-[#0071c2] flex items-center gap-1 font-medium mb-3">
+                                <MapPin size={13} /> Koh Phangan, Thailand — <span className="text-gray-400">{t('booking.beachfront', 'Beachfront')}</span>
+                              </p>
+
+                              <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">{prop.desc}</p>
+
+                              {/* Room highlights */}
+                              <div className="grid grid-cols-2 gap-2 mb-4">
+                                {prop.roomTypes.map(r => (
+                                  <div key={r.name} className="bg-gray-50 rounded-lg p-2.5">
+                                    <p className="text-xs font-bold text-gray-900 line-clamp-1">{r.name}</p>
+                                    <p className="text-lg font-extrabold text-[#003580]">${r.price}<span className="text-[10px] text-gray-400 font-normal"> /{t('booking.night', 'night')}</span></p>
+                                  </div>
+                                ))}
+                              </div>
+
+                              {/* Amenities */}
+                              <div className="flex flex-wrap gap-1.5 mb-4">
+                                {prop.amenities.map(a => {
+                                  const Icon = amenityIcons[a]
+                                  return Icon ? (
+                                    <span key={a} className="flex items-center gap-1 text-[11px] text-gray-600 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full">
+                                      <Icon size={12} className="text-[#003580]" /> {a}
+                                    </span>
+                                  ) : null
+                                })}
+                              </div>
+
+                              {/* CTA */}
+                              <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between">
+                                <div>
+                                  <span className="inline-flex items-center gap-1.5 text-xs font-bold text-[#003580]">
+                                    <Sparkles size={14} className="text-[#ffb700]" />
+                                    {t('booking.exclusive', 'STAYLO Exclusive — No OTA markup')}
+                                  </span>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs text-gray-500">{t('booking.from', 'From')}</p>
+                                  <p className="text-2xl font-extrabold text-gray-900">${prop.roomTypes[0].price}<span className="text-xs text-gray-400 font-normal"> / {t('booking.night', 'night')}</span></p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  }
+
+                  // ── REGULAR CARD ──
                   return (
                     <Link key={prop.id}
                       to={prop.isReal
@@ -608,13 +746,19 @@ export default function DemoBookingEngine() {
                               <p className="text-xs text-gray-500">
                                 {nights} {nights === 1 ? t('booking.night', 'night') : t('booking.nights', 'nights')}, {guests} {Number(guests) === 1 ? t('booking.adult', 'adult') : t('booking.adults', 'adults')}
                               </p>
-                              <div className="flex items-center gap-2 justify-end">
-                                <span className="text-sm text-gray-400 line-through">${totalOTA}</span>
+                              {hasOtaPrice ? (
+                                <>
+                                  <div className="flex items-center gap-2 justify-end">
+                                    <span className="text-sm text-gray-400 line-through">${totalOTA}</span>
+                                    <span className="text-xl font-extrabold text-gray-900">${totalStaylo}</span>
+                                  </div>
+                                  <p className="text-[10px] text-[#008009] font-medium">
+                                    {t('booking.you_save', 'You save')} ${savings * nights} ({savingsPercent}%)
+                                  </p>
+                                </>
+                              ) : (
                                 <span className="text-xl font-extrabold text-gray-900">${totalStaylo}</span>
-                              </div>
-                              <p className="text-[10px] text-[#008009] font-medium">
-                                {t('booking.you_save', 'You save')} ${savings * nights} ({savingsPercent}%)
-                              </p>
+                              )}
                             </div>
                           </div>
                         </div>
