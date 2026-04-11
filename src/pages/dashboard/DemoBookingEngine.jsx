@@ -386,35 +386,13 @@ export default function DemoBookingEngine() {
             </div>
           </div>
 
-          {/* Values */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 mt-8 max-w-3xl mx-auto">
-            <div className="flex items-center gap-2.5 bg-white/8 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3">
-              <div className="w-9 h-9 bg-[#ffb700]/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <TrendingDown size={18} className="text-[#ffb700]" />
-              </div>
-              <div>
-                <p className="text-white text-xs font-bold">{t('booking.value1_title', 'Lowest Commission')}</p>
-                <p className="text-blue-200/50 text-[10px]">{t('booking.value1_desc', 'Only 10% — half of Booking.com')}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5 bg-white/8 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3">
-              <div className="w-9 h-9 bg-[#ffb700]/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <Shield size={18} className="text-[#ffb700]" />
-              </div>
-              <div>
-                <p className="text-white text-xs font-bold">{t('booking.value2_title', 'Hotelier-Owned')}</p>
-                <p className="text-blue-200/50 text-[10px]">{t('booking.value2_desc', 'Run by hoteliers, for hoteliers')}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2.5 bg-white/8 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-3">
-              <div className="w-9 h-9 bg-[#ffb700]/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                <BadgeCheck size={18} className="text-[#ffb700]" />
-              </div>
-              <div>
-                <p className="text-white text-xs font-bold">{t('booking.value3_title', 'Direct Booking')}</p>
-                <p className="text-blue-200/50 text-[10px]">{t('booking.value3_desc', 'No middleman, better rates')}</p>
-              </div>
-            </div>
+          {/* Tagline */}
+          <div className="mt-8 max-w-3xl mx-auto text-center">
+            <p className="text-white/90 text-sm sm:text-base font-medium leading-relaxed">
+              <span className="text-[#ffb700] font-bold">{t('booking.tagline_highlight', 'You are not just a partner — you are the platform.')}</span>
+              <br className="hidden sm:block" />{' '}
+              {t('booking.tagline_body', 'STAYLO is the only booking platform owned and run by hoteliers. Book, share, earn — build ethical passive income while growing a community that puts hospitality first.')}
+            </p>
           </div>
         </div>
       </div>
