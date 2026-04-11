@@ -308,10 +308,10 @@
     "savings_description": "Based on your property data vs. traditional platform fees",
     "coming_soon": "Coming Soon",
     "features": {
-      "booking_engine": "Direct Booking Engine",
       "channel_manager": "Channel Manager",
       "revenue_share": "Revenue Share Dashboard",
-      "guest_reviews": "Guest Reviews"
+      "guest_reviews": "Guest Reviews",
+      "mobile_app": "Mobile App"
     },
     "founding_position": "Founding Member #{{position}}",
     "founding_partner_status": "Founding Partner Status",

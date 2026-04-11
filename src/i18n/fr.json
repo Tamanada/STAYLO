@@ -311,10 +311,10 @@
     "savings_description": "Basées sur les données de votre propriété par rapport aux frais des plateformes traditionnelles",
     "coming_soon": "Bientôt disponible",
     "features": {
-      "booking_engine": "Moteur de réservation directe",
       "channel_manager": "Gestionnaire de canaux",
       "revenue_share": "Tableau de partage des revenus",
-      "guest_reviews": "Avis des clients"
+      "guest_reviews": "Avis des clients",
+      "mobile_app": "Application Mobile"
     },
     "founding_position": "Membre fondateur #{{position}}",
     "founding_partner_status": "Statut de Partenaire Fondateur",
