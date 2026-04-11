@@ -145,8 +145,10 @@ export default function Vision() {
               <p className="text-white font-bold text-lg mb-1">
                 {t('vision.urgency_title', '600 hotels. 3,000 shares. Do the math.')}
               </p>
-              <p className="text-white/70 text-sm">
-                {t('vision.urgency_detail', "That's ~7 shares per hotel. Max 10 per property. Not everyone will get theirs.")}
+              <p className="text-white/70 text-sm leading-relaxed">
+                That's ~5 shares per hotel.<br />
+                Max 10 per property.<br />
+                Not everyone will get theirs.
               </p>
               <p className="text-sunset font-black text-xs uppercase tracking-wider mt-2">
                 {t('vision.urgency_cta', 'First come, first served. No exceptions.')}
