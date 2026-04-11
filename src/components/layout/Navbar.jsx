@@ -76,19 +76,19 @@ export function Navbar() {
                 style={{ color: '#636E72' }}
                 onMouseEnter={e => e.target.style.color = '#FF6B00'}
                 onMouseLeave={e => e.target.style.color = '#636E72'}>
-                Stay
+                {t('nav.home', 'Stay')}
               </Link>
               <Link to="/vision" className="text-sm font-medium no-underline transition-colors"
                 style={{ color: '#636E72' }}
                 onMouseEnter={e => e.target.style.color = '#FF6B00'}
                 onMouseLeave={e => e.target.style.color = '#636E72'}>
-                About
+                {t('nav.vision', 'About')}
               </Link>
               <Link to="/submit" className="text-sm font-medium no-underline transition-colors"
                 style={{ color: '#636E72' }}
                 onMouseEnter={e => e.target.style.color = '#FF6B00'}
                 onMouseLeave={e => e.target.style.color = '#636E72'}>
-                For Hoteliers
+                {t('nav.submit', 'For Hoteliers')}
               </Link>
 
               {/* Language */}
@@ -125,7 +125,7 @@ export function Navbar() {
                   <Link to="/dashboard">
                     <button className="px-5 py-2 rounded-full text-sm font-semibold transition-all"
                       style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>
-                      Dashboard
+                      {t('nav.dashboard', 'Dashboard')}
                     </button>
                   </Link>
                   <button onClick={signOut} className="text-sm" style={{ color: '#B2BEC3' }}>
@@ -137,12 +137,12 @@ export function Navbar() {
                   <Link to="/login">
                     <button className="px-5 py-2 rounded-full text-sm font-semibold transition-all"
                       style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>
-                      Sign in
+                      {t('nav.login', 'Sign in')}
                     </button>
                   </Link>
                   <Link to="/submit">
                     <button className="btn-primary !py-2.5 !px-5 !text-sm">
-                      List your hotel
+                      {t('nav.register', 'List your hotel')}
                     </button>
                   </Link>
                 </>
@@ -187,17 +187,17 @@ export function Navbar() {
         {mobileOpen && (
           <div className="md:hidden bg-white" style={{ borderTop: '1.5px solid #E8E0D8' }}>
             <div className="px-4 py-4 space-y-3">
-              <Link to="/splash" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>Stay</Link>
-              <Link to="/vision" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>About</Link>
-              <Link to="/submit" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>For Hoteliers</Link>
-              <a href="mailto:contact@staylo.app" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>Contact</a>
+              <Link to="/splash" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.home', 'Stay')}</Link>
+              <Link to="/vision" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.vision', 'About')}</Link>
+              <Link to="/submit" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.submit', 'For Hoteliers')}</Link>
+              <a href="mailto:contact@staylo.app" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.contact', 'Contact')}</a>
 
               <div className="pt-3 space-y-2" style={{ borderTop: '1.5px solid #E8E0D8' }}>
                 {user ? (
                   <>
                     <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
                       <button className="w-full px-5 py-2.5 rounded-full text-sm font-semibold"
-                        style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>Dashboard</button>
+                        style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>{t('nav.dashboard', 'Dashboard')}</button>
                     </Link>
                     <button onClick={() => { signOut(); setMobileOpen(false) }} className="w-full text-sm py-2" style={{ color: '#B2BEC3' }}>
                       {t('nav.logout', 'Log out')}
@@ -207,10 +207,10 @@ export function Navbar() {
                   <>
                     <Link to="/login" onClick={() => setMobileOpen(false)}>
                       <button className="w-full px-5 py-2.5 rounded-full text-sm font-semibold"
-                        style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>Sign in</button>
+                        style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>{t('nav.login', 'Sign in')}</button>
                     </Link>
                     <Link to="/submit" onClick={() => setMobileOpen(false)}>
-                      <button className="btn-primary w-full">List your hotel</button>
+                      <button className="btn-primary w-full">{t('nav.register', 'List your hotel')}</button>
                     </Link>
                   </>
                 )}
