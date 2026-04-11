@@ -35,6 +35,9 @@ import DemoPropertyDetail from './pages/dashboard/DemoPropertyDetail'
 import BookingCheckout from './pages/dashboard/BookingCheckout'
 import PropertyManage from './pages/dashboard/PropertyManage'
 import DashboardKit from './pages/dashboard/DashboardKit'
+import PMSFrontDesk from './pages/dashboard/PMSFrontDesk'
+import PMSHousekeeping from './pages/dashboard/PMSHousekeeping'
+import PMSReports from './pages/dashboard/PMSReports'
 import Splash from './pages/Splash'
 import ResetPassword from './pages/ResetPassword'
 import Welcome from './pages/Welcome'
@@ -72,6 +75,9 @@ export default function App() {
             <Route path="ambassador" element={<AmbassadorDashboard />} />
             <Route path="kit" element={<DashboardKit />} />
             <Route path="property/:id" element={<PropertyManage />} />
+            <Route path="front-desk" element={<PMSFrontDesk />} />
+            <Route path="housekeeping" element={<PMSHousekeeping />} />
+            <Route path="reports" element={<PMSReports />} />
             <Route path="book" element={<DemoBookingEngine />} />
             <Route path="book/:id" element={<DemoPropertyDetail />} />
             <Route path="book/:id/checkout" element={<BookingCheckout />} />

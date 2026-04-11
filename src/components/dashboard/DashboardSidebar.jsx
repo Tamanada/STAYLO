@@ -13,13 +13,21 @@ import {
   LogOut,
   Menu,
   X,
-  User
+  User,
+  ConciergeBell,
+  Sparkles,
+  BarChart3
 } from 'lucide-react'
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, labelKey: 'dashboard.nav_overview', label: 'Overview', end: true },
   { to: '/dashboard/properties', icon: Building2, labelKey: 'dashboard.nav_properties', label: 'My Properties' },
   { to: '/dashboard/book', icon: Search, labelKey: 'dashboard.nav_book', label: 'Book Now', end: true },
+  { separator: true, label: 'PMS' },
+  { to: '/dashboard/front-desk', icon: ConciergeBell, labelKey: 'dashboard.nav_front_desk', label: 'Front Desk' },
+  { to: '/dashboard/housekeeping', icon: Sparkles, labelKey: 'dashboard.nav_housekeeping', label: 'Housekeeping' },
+  { to: '/dashboard/reports', icon: BarChart3, labelKey: 'dashboard.nav_reports', label: 'Reports' },
+  { separator: true, label: 'Account' },
   { to: '/dashboard/referrals', icon: Share2, labelKey: 'dashboard.nav_referrals', label: 'Referrals' },
   { to: '/dashboard/shares', icon: Gem, labelKey: 'dashboard.nav_shares', label: 'My Shares' },
   { to: '/dashboard/kit', icon: Package, labelKey: 'dashboard.sidebar_kit', label: 'My Kit' },
@@ -56,25 +64,34 @@ export function DashboardSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
-        {navItems.map(item => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            onClick={() => setMobileOpen(false)}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 no-underline ${
-                isActive
-                  ? 'bg-electric/15 text-electric border-l-4 border-electric -ml-1 pl-5'
-                  : 'text-white/60 hover:text-white hover:bg-white/5'
-              }`
-            }
-          >
-            <item.icon size={18} />
-            <span>{t(item.labelKey, item.label)}</span>
-          </NavLink>
-        ))}
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {navItems.map((item, idx) => {
+          if (item.separator) {
+            return (
+              <div key={`sep-${idx}`} className="pt-4 pb-1 px-4">
+                <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/25">{item.label}</p>
+              </div>
+            )
+          }
+          return (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              onClick={() => setMobileOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 no-underline ${
+                  isActive
+                    ? 'bg-electric/15 text-electric border-l-4 border-electric -ml-1 pl-5'
+                    : 'text-white/60 hover:text-white hover:bg-white/5'
+                }`
+              }
+            >
+              <item.icon size={18} />
+              <span>{t(item.labelKey, item.label)}</span>
+            </NavLink>
+          )
+        })}
       </nav>
 
       {/* Bottom section */}
