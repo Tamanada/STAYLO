@@ -11,6 +11,7 @@ import {
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
+import { useAmbassador } from '../hooks/useAmbassador'
 
 const AVG_ROOMS = 15
 const AVG_RATE = 60
@@ -21,14 +22,17 @@ const PER_HOTEL = Math.round(AVG_ANNUAL * AMBASSADOR_PCT)
 
 export default function AmbassadorGuide() {
   const { t } = useTranslation()
+  const { ambassador } = useAmbassador()
   const [openObjection, setOpenObjection] = useState(null)
   const [hotelCount, setHotelCount] = useState(5)
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
 
+  const ambCode = ambassador?.referral_code || 'AMB-XXXXX'
+  const ambLink = `staylo.app/join?amb=${ambCode}`
   const totalIncome = PER_HOTEL * hotelCount
 
-  const whatsAppTemplate = t('ambassador_guide.whatsapp_template', 'Hi! I wanted to share something interesting with you. There\'s a new booking platform called Staylo — it works like Booking.com but only charges 10% commission instead of 15-25%. The hotels actually own the platform as shareholders. They\'re onboarding founding members right now at a special price. Check it out: staylo.app/join?amb=AMB-XXXXX')
+  const whatsAppTemplate = t('ambassador_guide.whatsapp_template', `Hi! I wanted to share something interesting with you. There's a new booking platform called Staylo — it works like Booking.com but only charges 10% commission instead of 15-25%. The hotels actually own the platform as shareholders. They're onboarding founding members right now at a special price. Check it out: ${ambLink}`).replace(/amb=AMB-XXXXX/g, `amb=${ambCode}`)
 
   const handleCopy = (text, setter) => {
     navigator.clipboard.writeText(text)
@@ -41,7 +45,7 @@ export default function AmbassadorGuide() {
       num: 1,
       icon: UserPlus,
       title: t('ambassador_guide.step1_title', 'Create your account'),
-      desc: t('ambassador_guide.step1_desc', 'Register at /ambassador/register and get your unique AMB-XXXXX code. It takes 2 minutes and is completely free.'),
+      desc: t('ambassador_guide.step1_desc', `Register at /ambassador/register and get your unique code. It takes 2 minutes and is completely free.${ambassador ? ` Your code: ${ambCode}` : ''}`),
       gradient: 'from-ocean to-electric',
     },
     {
@@ -62,7 +66,7 @@ export default function AmbassadorGuide() {
       num: 4,
       icon: Link2,
       title: t('ambassador_guide.step4_title', 'Share your link'),
-      desc: t('ambassador_guide.step4_desc', 'Give them your personal link: staylo.app/join?amb=AMB-XXXXX. When they register through it, they are linked to you forever.'),
+      desc: t('ambassador_guide.step4_desc', `Give them your personal link: ${ambLink}. When they register through it, they are linked to you forever.`).replace(/amb=AMB-XXXXX/g, `amb=${ambCode}`),
       gradient: 'from-sunset to-sunrise',
     },
     {
@@ -122,7 +126,7 @@ export default function AmbassadorGuide() {
     },
     {
       q: t('ambassador_guide.objection4_q', "I need to think about it"),
-      a: t('ambassador_guide.objection4_a', "Of course! Here's my link — staylo.app/join?amb=YOUR-CODE. Take your time. Just know that alpha shares are limited to 3,000 and the price goes up after this phase. Registration is free either way."),
+      a: t('ambassador_guide.objection4_a', `Of course! Here's my link — ${ambLink}. Take your time. Just know that alpha shares are limited to 3,000 and the price goes up after this phase. Registration is free either way.`).replace(/amb=YOUR-CODE/g, `amb=${ambCode}`),
     },
     {
       q: t('ambassador_guide.objection5_q', "Can I try it first?"),
@@ -354,9 +358,9 @@ export default function AmbassadorGuide() {
                 <h3 className="font-bold text-deep">{t('ambassador_guide.toolkit_link_title', 'Your Unique Link')}</h3>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between gap-2">
-                <code className="text-sm text-ocean font-mono truncate">staylo.app/join?amb=AMB-XXXXX</code>
+                <code className="text-sm text-ocean font-mono truncate">{ambLink}</code>
                 <button
-                  onClick={() => handleCopy('staylo.app/join?amb=AMB-XXXXX', setCopiedLink)}
+                  onClick={() => handleCopy(ambLink, setCopiedLink)}
                   className="shrink-0 p-2 hover:bg-gray-200 rounded-lg transition-colors"
                 >
                   {copiedLink ? <Check size={16} className="text-libre" /> : <Copy size={16} className="text-gray-400" />}
