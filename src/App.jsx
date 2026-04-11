@@ -38,6 +38,7 @@ import DashboardKit from './pages/dashboard/DashboardKit'
 import PMSFrontDesk from './pages/dashboard/PMSFrontDesk'
 import PMSHousekeeping from './pages/dashboard/PMSHousekeeping'
 import PMSReports from './pages/dashboard/PMSReports'
+import MyBookings from './pages/dashboard/MyBookings'
 import Splash from './pages/Splash'
 import ResetPassword from './pages/ResetPassword'
 import Welcome from './pages/Welcome'
@@ -78,6 +79,7 @@ export default function App() {
             <Route path="front-desk" element={<PMSFrontDesk />} />
             <Route path="housekeeping" element={<PMSHousekeeping />} />
             <Route path="reports" element={<PMSReports />} />
+            <Route path="bookings" element={<MyBookings />} />
             <Route path="book" element={<DemoBookingEngine />} />
             <Route path="book/:id" element={<DemoPropertyDetail />} />
             <Route path="book/:id/checkout" element={<BookingCheckout />} />

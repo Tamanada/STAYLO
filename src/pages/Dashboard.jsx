@@ -53,10 +53,10 @@ const loiStatusKeys = {
 }
 
 const futureFeatures = [
-  { key: 'booking_engine', icon: Zap },
   { key: 'channel_manager', icon: TrendingUp },
   { key: 'revenue_share', icon: Star },
   { key: 'guest_reviews', icon: MessageSquare },
+  { key: 'mobile_app', icon: Zap },
 ]
 
 const foundingTiers = [
