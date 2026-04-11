@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Package, QrCode, CreditCard, Wifi, Award, Sticker, ToggleLeft, ToggleRight, ShoppingCart, Truck } from 'lucide-react'
+import { Package, QrCode, CreditCard, Wifi, Award, Sticker, ShoppingCart, Truck } from 'lucide-react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
@@ -20,7 +20,6 @@ export default function DashboardKit() {
   const { t } = useTranslation()
   const { profile } = useAuth()
   const { referralCode } = useReferral()
-  const [kitEnabled, setKitEnabled] = useState(true)
   const [cart, setCart] = useState({})
   const [orderSent, setOrderSent] = useState(false)
 
@@ -59,19 +58,6 @@ export default function DashboardKit() {
           </p>
         </div>
 
-        {/* Toggle */}
-        <button
-          onClick={() => setKitEnabled(!kitEnabled)}
-          className="flex items-center gap-2 text-sm"
-        >
-          <span className={kitEnabled ? 'text-libre font-medium' : 'text-gray-400'}>
-            {kitEnabled ? t('dashboard.kit_active', 'Program Active') : t('dashboard.kit_inactive', 'Program Paused')}
-          </span>
-          {kitEnabled
-            ? <ToggleRight size={28} className="text-libre" />
-            : <ToggleLeft size={28} className="text-gray-300" />
-          }
-        </button>
       </div>
 
       {/* QR Preview */}
