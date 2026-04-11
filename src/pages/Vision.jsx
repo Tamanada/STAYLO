@@ -147,7 +147,7 @@ export default function Vision() {
               </p>
               <p className="text-white/70 text-sm leading-relaxed">
                 That's ~5 shares per hotel.<br />
-                Max 10 per property.<br />
+                Max 10 per property at Genesis price.<br />
                 Not everyone will get theirs.
               </p>
               <p className="text-sunset font-black text-xs uppercase tracking-wider mt-2">
