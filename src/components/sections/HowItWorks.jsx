@@ -1,68 +1,78 @@
-import { useTranslation } from 'react-i18next'
-import { ClipboardList, Building2, Rocket, ArrowRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
-
-const steps = [
-  { icon: ClipboardList, gradient: 'from-ocean to-electric', num: '01', link: '/survey' },
-  { icon: Building2, gradient: 'from-libre to-libre/70', num: '02', link: '/submit' },
-  { icon: Rocket, gradient: 'from-sunrise to-sunset', num: '03', link: '/register' },
+const STEPS = [
+  {
+    num: 1,
+    emoji: '🔍',
+    title: 'Book your stay',
+    desc: 'Search, compare, and book hotels at the fairest commission on the market. Same great hotels, better deal.',
+    color: '#FF6B00',
+    bg: 'rgba(255,107,0,0.1)',
+  },
+  {
+    num: 2,
+    emoji: '🪙',
+    title: 'Earn $STAY tokens',
+    desc: 'Every night booked earns $STAY tokens. Use them for discounts, vote on platform decisions, or trade.',
+    color: '#00B894',
+    bg: 'rgba(0,184,148,0.1)',
+  },
+  {
+    num: 3,
+    emoji: '🤝',
+    title: 'Support hoteliers',
+    desc: 'Your booking directly supports independent hoteliers. 90% stays with the hotel. No middleman taking 25%.',
+    color: '#6C5CE7',
+    bg: 'rgba(108,92,231,0.1)',
+  },
+  {
+    num: 4,
+    emoji: '💎',
+    title: 'Own a piece',
+    desc: 'Become a founding partner. Earn dividends, vote on decisions, and co-own the future of hospitality.',
+    color: '#FF3CB4',
+    bg: 'rgba(255,60,180,0.1)',
+  },
 ]
 
 export function HowItWorks() {
-  const { t } = useTranslation()
-
   return (
-    <section className="py-8 sm:py-12 bg-cream relative">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-7">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-deep mb-3">
-            {t('how_it_works.title')}
+    <section style={{
+      background: 'linear-gradient(135deg, #FFF8F0 0%, #FFF0F8 50%, #F0F4FF 100%)',
+      padding: '80px 5%',
+    }}>
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-14">
+          <p className="section-label mb-3">How it works</p>
+          <h2 style={{
+            fontSize: 'clamp(28px, 3.5vw, 46px)',
+            fontWeight: 900,
+            letterSpacing: '-1.5px',
+            color: '#2D3436',
+            lineHeight: 1.15,
+          }}>
+            From booking to <span className="text-gradient">ownership</span>
           </h2>
-          <p className="text-gray-500 max-w-xl mx-auto">{t('how_it_works.subtitle')}</p>
         </div>
 
-        <div className="grid sm:grid-cols-3 gap-6">
-          {steps.map((step, i) => (
-            <Link to={step.link} key={i} className="no-underline">
-              <div className="group bg-white rounded-3xl p-8 border border-gray-100 hover:border-transparent hover:shadow-xl transition-all duration-500 relative overflow-hidden h-full">
-                {/* Hover gradient overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${step.gradient} opacity-0 group-hover:opacity-[0.03] transition-opacity duration-500`} />
-
-                {/* Step number watermark */}
-                <span className="absolute top-4 right-6 text-6xl font-extrabold text-gray-100 group-hover:text-gray-200 transition-colors">{step.num}</span>
-
-                <div className="relative">
-                  <div className={`w-14 h-14 bg-gradient-to-br ${step.gradient} rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-[-4deg] transition-all duration-300 shadow-lg`}>
-                    <step.icon size={26} className="text-white" />
-                  </div>
-
-                  <h3 className="text-lg font-bold text-deep mb-2">
-                    {t(`how_it_works.step${i + 1}_title`)}
-                  </h3>
-                  <p className="text-sm text-gray-500 leading-relaxed mb-4">
-                    {t(`how_it_works.step${i + 1}_desc`)}
-                  </p>
-
-                  <span className="inline-flex items-center gap-1 text-sm font-semibold text-ocean opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {t('how.start', 'Start')} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </div>
+        {/* Steps */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {STEPS.map(step => (
+            <div key={step.num} className="card-hover rounded-3xl p-7 text-center"
+              style={{
+                background: 'white',
+                border: '1.5px solid #E8E0D8',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+              }}>
+              {/* Number circle */}
+              <div className="w-14 h-14 rounded-full mx-auto mb-5 flex items-center justify-center"
+                style={{ background: step.bg }}>
+                <span className="text-xl font-black" style={{ color: step.color }}>{step.num}</span>
               </div>
-            </Link>
+              <span className="text-3xl block mb-4">{step.emoji}</span>
+              <h3 className="font-black text-lg mb-2" style={{ color: '#2D3436' }}>{step.title}</h3>
+              <p className="text-sm leading-relaxed" style={{ color: '#636E72' }}>{step.desc}</p>
+            </div>
           ))}
-        </div>
-
-        {/* Timeline connector (desktop only) */}
-        <div className="hidden sm:flex justify-center mt-4">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-ocean" />
-            <div className="w-24 h-0.5 bg-gradient-to-r from-ocean to-libre" />
-            <div className="w-3 h-3 rounded-full bg-libre" />
-            <div className="w-24 h-0.5 bg-gradient-to-r from-libre to-sunrise" />
-            <div className="w-3 h-3 rounded-full bg-sunrise" />
-            <div className="w-16 h-0.5 bg-gradient-to-r from-sunrise to-golden" />
-            <span className="text-xs font-bold text-golden">{t('how.freedom', 'FREEDOM')}</span>
-          </div>
         </div>
       </div>
     </section>

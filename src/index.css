@@ -1,33 +1,51 @@
 @import "tailwindcss";
 
 @theme {
-  /* LIBERATION PALETTE — vibrant, joyful, dopamine */
-  --color-sunrise: #FF6B35;
-  --color-sunset: #FF2D87;
-  --color-golden: #FFBE0B;
-  --color-electric: #8338EC;
-  --color-ocean: #3A86FF;
-  --color-libre: #06D6A0;
-  --color-deep: #1A1A2E;
-  --color-cream: #FFFCF5;
-  --color-gray-600: #6B7280;
+  /* TROPICAL LIGHT PALETTE */
+  --color-orange:  #FF6B00;
+  --color-orange2: #FF8C42;
+  --color-pink:    #FF3CB4;
+  --color-teal:    #00B894;
+  --color-teal2:   #00CEC9;
+  --color-coral:   #FF7675;
+  --color-gold:    #FDCB6E;
+  --color-purple:  #6C5CE7;
+  --color-blue:    #0984E3;
 
-  /* Legacy aliases for components that still reference old names */
-  --color-staylo-blue: #3A86FF;
-  --color-deep-navy: #1A1A2E;
-  --color-fair-green: #06D6A0;
-  --color-warm-white: #FFFCF5;
-  --color-activity-orange: #FF6B35;
+  /* Neutrals */
+  --color-navy:    #2D3436;
+  --color-gray:    #636E72;
+  --color-lgray:   #B2BEC3;
+  --color-cream:   #FFFDF8;
+  --color-light:   #F8F6F0;
+  --color-border-s:#E8E0D8;
 
-  --font-sans: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+  /* Legacy aliases — keep for dashboard/admin pages that still use old names */
+  --color-sunrise: #FF6B00;
+  --color-sunset:  #FF3CB4;
+  --color-golden:  #FDCB6E;
+  --color-electric:#6C5CE7;
+  --color-ocean:   #0984E3;
+  --color-libre:   #00B894;
+  --color-deep:    #2D3436;
+  --color-staylo-blue: #0984E3;
+  --color-deep-navy: #2D3436;
+  --color-fair-green: #00B894;
+  --color-warm-white: #FFFDF8;
+  --color-activity-orange: #FF6B00;
+  --color-gray-600: #636E72;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 body {
   margin: 0;
   background-color: var(--color-cream);
-  color: var(--color-gray-600);
+  color: var(--color-gray);
   font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -37,15 +55,69 @@ body {
   text-align: right;
 }
 
-/* LIBERATION ANIMATIONS */
+/* ──────────────── TROPICAL LIGHT UTILITIES ──────────────── */
+
+/* Gradient text: orange → pink → purple */
+.text-gradient {
+  background: linear-gradient(135deg, #FF6B00, #FF3CB4, #6C5CE7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #FDCB6E, #FF6B00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Primary gradient button */
+.btn-primary {
+  background: linear-gradient(135deg, #FF6B00, #FF3CB4);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 36px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(255, 107, 0, 0.3);
+  transition: all 0.3s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(255, 107, 0, 0.4);
+}
+
+/* Card hover lift */
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
+}
+
+/* Section label (orange uppercase) */
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #FF6B00;
+}
+
+/* ──────────────── ANIMATIONS ──────────────── */
+
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 53, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(255, 45, 135, 0.5); }
+  0%, 100% { box-shadow: 0 4px 16px rgba(255, 107, 0, 0.3); }
+  50% { box-shadow: 0 8px 32px rgba(255, 60, 180, 0.4); }
 }
 
 @keyframes shimmer {
@@ -53,16 +125,15 @@ body {
   100% { background-position: 200% center; }
 }
 
-@keyframes break-free {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
-}
-
 @keyframes gradient-shift {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 .animate-float {
@@ -83,31 +154,10 @@ body {
   animation: gradient-shift 4s ease infinite;
 }
 
-/* Gradient text utility */
-.text-gradient {
-  background: linear-gradient(135deg, #FF6B35, #FF2D87, #8338EC);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Infinite ticker scroll */
-@keyframes ticker {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-}
-
 .animate-ticker {
   animation: ticker 30s linear infinite;
 }
 
 .animate-ticker:hover {
   animation-play-state: paused;
-}
-
-.text-gradient-gold {
-  background: linear-gradient(135deg, #FFBE0B, #FF6B35);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }

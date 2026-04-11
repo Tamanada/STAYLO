@@ -1,168 +1,149 @@
-import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Users, Zap, Link2Off, ShieldCheck, TrendingUp, Shield } from 'lucide-react'
+import { Search, ArrowRight } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
-import { supabase } from '../../lib/supabase'
+
+const FILTERS = [
+  { label: 'All', emoji: '' },
+  { label: 'Beach', emoji: '🏖' },
+  { label: 'Jungle', emoji: '🌿' },
+  { label: 'Wellness', emoji: '🧘' },
+  { label: 'City', emoji: '🌆' },
+  { label: 'Luxury', emoji: '💎' },
+  { label: 'Co-owned', emoji: '🤝' },
+  { label: 'Best value', emoji: '💰' },
+]
+
+const STATS = [
+  { value: '420+', label: 'Hotels', color: '#FF6B00' },
+  { value: '10%', label: 'Commission', color: '#00B894' },
+  { value: '$STAY', label: 'Earn', color: '#6C5CE7' },
+  { value: '1 vote', label: 'per property', color: '#FF3CB4' },
+]
 
 export function Hero() {
-  const { t } = useTranslation()
   const { user } = useAuth()
-  const [userCount, setUserCount] = useState(0)
-
-  useEffect(() => {
-    async function fetchCount() {
-      const { count } = await supabase.from('users').select('*', { count: 'exact', head: true })
-      if (count) setUserCount(count)
-    }
-    fetchCount()
-  }, [])
+  const [activeFilter, setActiveFilter] = useState('All')
+  const [searchQuery, setSearchQuery] = useState('')
 
   return (
-    <section className="relative overflow-hidden min-h-[92vh] flex items-center">
-      {/* Animated background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-deep via-[#16213E] to-[#0F3460]">
-        {/* Floating orbs */}
-        <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-sunset/20 rounded-full blur-3xl animate-float" />
-        <div className="absolute top-[30%] right-[10%] w-80 h-80 bg-ocean/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-[15%] left-[25%] w-72 h-72 bg-electric/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute bottom-[5%] right-[5%] w-96 h-96 bg-libre/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '0.5s' }} />
+    <section className="relative overflow-hidden" style={{
+      background: 'linear-gradient(160deg, #FFFDF8 0%, #FFF5E6 40%, #FFF0F8 70%, #F0F8FF 100%)',
+      padding: '80px 5% 60px',
+    }}>
+      {/* Floating blobs */}
+      <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] rounded-full opacity-35 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #FF6B00 0%, transparent 70%)', filter: 'blur(60px)' }} />
+      <div className="absolute bottom-[-50px] left-[-100px] w-[400px] h-[400px] rounded-full opacity-35 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #FF3CB4 0%, transparent 70%)', filter: 'blur(60px)' }} />
+      <div className="absolute top-[30%] right-[20%] w-[350px] h-[350px] rounded-full opacity-25 pointer-events-none"
+        style={{ background: 'radial-gradient(circle, #00B894 0%, transparent 70%)', filter: 'blur(60px)' }} />
 
-        {/* Grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
-          backgroundSize: '60px 60px'
-        }} />
-      </div>
+      <div className="relative max-w-4xl mx-auto text-center">
+        {/* Tag pill */}
+        <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-8"
+          style={{ background: 'rgba(255,107,0,0.08)', border: '1.5px solid rgba(255,107,0,0.2)' }}>
+          <span style={{ color: '#FF6B00', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            ✦ Built with hoteliers, for hoteliers
+          </span>
+        </div>
 
-      <div className="relative w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          {/* Left: Text content */}
-          <div className="text-white text-center space-y-6">
-            {/* Slogan */}
-            <div className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-xl sm:text-2xl lg:text-3xl font-bold">
-              <span className="text-golden">✦</span>
-              <span className="text-golden text-center leading-tight">Owned by Hoteliers,<br />Built for hospitality.</span>
-              <span className="text-golden">✦</span>
+        {/* Headline */}
+        <h1 style={{
+          fontSize: 'clamp(44px, 6vw, 84px)',
+          fontWeight: 900,
+          letterSpacing: '-3px',
+          lineHeight: 1.05,
+          color: '#2D3436',
+          margin: '0 0 24px',
+        }}>
+          Book with{' '}
+          <span style={{
+            background: 'linear-gradient(135deg, #FF6B00, #FF3CB4, #6C5CE7)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}>purpose.</span>
+          <br />
+          Travel with soul.
+        </h1>
+
+        {/* Subtitle */}
+        <p style={{
+          fontSize: '18px',
+          lineHeight: 1.65,
+          color: '#636E72',
+          maxWidth: '620px',
+          margin: '0 auto 40px',
+        }}>
+          Every booking on Staylo goes back to the hoteliers who built it.
+          Co-owned. 10% commission. Yours forever.
+        </p>
+
+        {/* Search box */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <div className="flex items-center rounded-full overflow-hidden"
+            style={{
+              background: 'white',
+              border: '1.5px solid #E8E0D8',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+              padding: '6px',
+            }}>
+            <div className="flex items-center flex-1 pl-5 gap-3">
+              <Search size={20} style={{ color: '#B2BEC3' }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Where do you want to stay?"
+                className="flex-1 py-3 text-base outline-none bg-transparent"
+                style={{ color: '#2D3436', fontSize: '15px' }}
+              />
             </div>
-
-            {/* Eyebrow — The powerful question */}
-            <p className="text-xl sm:text-2xl text-golden font-semibold tracking-wide">
-              {t('hero.eyebrow')}
-            </p>
-
-            {/* Main title */}
-            <div>
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-extrabold leading-[1.15] tracking-tight">
-                {t('hero.title_line1')}
-              </h1>
-              <h1 className="text-4xl sm:text-5xl lg:text-[3.25rem] xl:text-6xl font-extrabold leading-[1.15] mt-3 tracking-tight">
-                <span className="text-gradient">{t('hero.title_line2')}</span>
-              </h1>
-            </div>
-
-            <p className="text-lg sm:text-xl text-white/60 max-w-xl mx-auto leading-relaxed">
-              {t('hero.subtitle')}
-            </p>
-
-            {/* Highlight bar */}
-            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-sunrise/20 to-sunset/20 border border-sunrise/30">
-              <Zap size={20} className="text-golden" />
-              <span className="text-white font-bold text-lg">{t('hero.highlight')}</span>
-            </div>
-
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link to={user ? '/dashboard' : '/register'}>
-                <button className="group relative px-8 py-4 bg-gradient-to-r from-golden via-sunrise to-sunset text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] flex items-center justify-center gap-3 cursor-pointer animate-pulse-glow">
-                  <span>{user ? t('nav.dashboard', 'Dashboard') : t('hero.cta')}</span>
-                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-              </Link>
-              <Link to="/vision">
-                <button className="px-8 py-4 bg-white/10 backdrop-blur-sm border border-white/30 text-white font-semibold rounded-2xl hover:bg-white/20 transition-all duration-300 cursor-pointer">
-                  {t('hero.secondary_cta')}
-                </button>
-              </Link>
-            </div>
-
-            {/* Trust line */}
-            <div className="flex items-center justify-center gap-4 text-white/40 text-sm">
-              <div className="flex items-center gap-1.5">
-                <Shield size={14} />
-                <span>{t('hero.trust_line')}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-2 text-sm text-white/30">
-              <Users size={16} />
-              <span>{t('hero.early_adopters', { count: userCount })}</span>
-            </div>
-          </div>
-
-          {/* Right: Visual card stack */}
-          <div className="hidden lg:block relative">
-            <div className="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 shadow-2xl">
-              {/* Chain breaking icon */}
-              <div className="flex items-center justify-center mb-6">
-                <div className="relative">
-                  <div className="w-20 h-20 bg-gradient-to-br from-golden to-sunrise rounded-2xl flex items-center justify-center shadow-lg">
-                    <Link2Off size={36} className="text-white" />
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-6 h-6 bg-libre rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">✓</span>
-                  </div>
-                </div>
-              </div>
-
-              <h3 className="text-white text-xl font-bold text-center mb-6">{t('hero.card_title')}</h3>
-
-              {/* Before / After comparison */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3">
-                  <span className="text-white/60 text-sm">Booking.com</span>
-                  <span className="text-sunset font-bold">-22%</span>
-                </div>
-                <div className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3">
-                  <span className="text-white/60 text-sm">Expedia</span>
-                  <span className="text-sunset font-bold">-18%</span>
-                </div>
-                <div className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-3">
-                  <span className="text-white/60 text-sm">Airbnb</span>
-                  <span className="text-sunset font-bold">-15%</span>
-                </div>
-                <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent my-2" />
-                <div className="flex items-center justify-between bg-libre/20 border border-libre/30 rounded-xl px-4 py-3">
-                  <span className="text-white font-semibold text-sm flex items-center gap-2">
-                    <ShieldCheck size={16} className="text-libre" />
-                    Staylo
-                  </span>
-                  <span className="text-libre font-bold">-10%</span>
-                </div>
-              </div>
-
-              {/* Savings callout */}
-              <div className="mt-5 bg-gradient-to-r from-golden/20 to-sunrise/20 border border-golden/30 rounded-xl px-4 py-3 text-center">
-                <p className="text-golden text-xs font-medium mb-1">{t('hero.card_savings_label')}</p>
-                <p className="text-white text-2xl font-extrabold flex items-center justify-center gap-1">
-                  <TrendingUp size={20} className="text-libre" />
-                  {t('hero.card_savings_amount')}
-                </p>
-              </div>
-            </div>
-
-            {/* Background decoration */}
-            <div className="absolute -top-4 -right-4 w-full h-full bg-white/5 rounded-3xl border border-white/10 -z-10 rotate-2" />
-            <div className="absolute -top-8 -right-8 w-full h-full bg-white/[0.02] rounded-3xl border border-white/5 -z-20 rotate-4" />
+            <Link to={user ? '/dashboard/book' : '/register'}>
+              <button className="btn-primary !rounded-full !py-3 !px-8 flex items-center gap-2">
+                <span>Search</span>
+                <ArrowRight size={16} />
+              </button>
+            </Link>
           </div>
         </div>
-      </div>
 
-      {/* Bottom wave */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-          <path d="M0 40C240 70 480 80 720 60C960 40 1200 10 1440 30V80H0V40Z" fill="var(--color-cream)" />
-        </svg>
+        {/* Filter pills */}
+        <div className="flex flex-wrap justify-center gap-2 mb-12">
+          {FILTERS.map(f => (
+            <button key={f.label} onClick={() => setActiveFilter(f.label)}
+              className="px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
+              style={activeFilter === f.label ? {
+                background: 'linear-gradient(135deg, #FF6B00, #FF3CB4)',
+                color: 'white',
+                border: 'none',
+                boxShadow: '0 2px 8px rgba(255,107,0,0.25)',
+              } : {
+                background: 'white',
+                color: '#636E72',
+                border: '1.5px solid #E8E0D8',
+              }}>
+              {f.emoji && <span className="mr-1">{f.emoji}</span>}
+              {f.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Stats row */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
+          {STATS.map(stat => (
+            <div key={stat.label} className="card-hover rounded-3xl p-5 text-center"
+              style={{
+                background: 'white',
+                border: '1.5px solid #E8E0D8',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
+              }}>
+              <p className="text-3xl font-black mb-1" style={{ color: stat.color }}>{stat.value}</p>
+              <p className="text-xs font-semibold" style={{ color: '#B2BEC3' }}>{stat.label}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   )

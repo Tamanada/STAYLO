@@ -6,37 +6,45 @@ export function Footer() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="bg-deep text-white mt-auto relative overflow-hidden">
-      {/* Subtle gradient accent */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sunrise via-sunset to-electric" />
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-        <div className="flex flex-col md:flex-row items-start justify-between gap-8">
+    <footer style={{ background: '#2D3436' }} className="text-white relative overflow-hidden">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-10">
           <div>
             <div className="flex items-center gap-1 mb-3">
-              <span className="text-2xl font-extrabold text-white">stay</span>
-              <span className="text-2xl font-extrabold text-gradient">lo</span>
+              <span className="text-3xl font-black text-white">Stay</span>
+              <span className="text-3xl font-black" style={{ color: '#FF6B00' }}>lo</span>
             </div>
-            <p className="text-golden/70 text-xs font-medium italic mb-1">Owned by Hoteliers, built for hospitality</p>
-            <p className="text-gray-400 text-sm max-w-xs">{t('footer.tagline')}</p>
-            <p className="text-gray-500 text-xs mt-2">{t('footer.made_with')}</p>
+            <p className="text-sm mt-2" style={{ color: '#B2BEC3' }}>
+              Built with hoteliers, for hoteliers.
+            </p>
+            <p className="text-xs mt-1" style={{ color: '#636E72' }}>
+              Who owns the platform, makes the rules.
+            </p>
           </div>
 
-          <div className="flex gap-8">
-            <div className="space-y-2">
-              <Link to="/vision" className="block text-sm text-gray-400 hover:text-sunrise transition-colors no-underline">
-                {t('footer.links.vision')}
-              </Link>
-              <Link to="/survey" className="block text-sm text-gray-400 hover:text-sunrise transition-colors no-underline">
-                {t('footer.links.survey')}
-              </Link>
+          <div className="flex gap-12">
+            <div className="space-y-2.5">
+              <p className="section-label !text-[10px] !tracking-[0.15em]" style={{ color: '#FF6B00' }}>Platform</p>
+              <Link to="/vision" className="block text-sm no-underline transition-colors" style={{ color: '#B2BEC3' }}>About</Link>
+              <Link to="/submit" className="block text-sm no-underline transition-colors" style={{ color: '#B2BEC3' }}>For Hoteliers</Link>
+              <Link to="/loi" className="block text-sm no-underline transition-colors" style={{ color: '#B2BEC3' }}>Investors</Link>
+            </div>
+            <div className="space-y-2.5">
+              <p className="section-label !text-[10px] !tracking-[0.15em]" style={{ color: '#FF6B00' }}>Resources</p>
+              <Link to="/splash" className="block text-sm no-underline transition-colors" style={{ color: '#B2BEC3' }}>Koh Phangan</Link>
+              <Link to="/ambassador" className="block text-sm no-underline transition-colors" style={{ color: '#B2BEC3' }}>Ambassador</Link>
+              <a href="mailto:contact@staylo.app" className="block text-sm no-underline transition-colors" style={{ color: '#B2BEC3' }}>Contact</a>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-gray-700/50 mt-8 pt-6">
-          <p className="text-xs text-gray-500">{t('footer.copyright', { year })}</p>
-          <p className="text-xs text-gray-600 mt-2">{t('footer.operated_by', 'Operated by Barokat Halal Food Co., Ltd.')}</p>
+        <div className="mt-12 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+          <p className="text-xs" style={{ color: '#636E72' }}>
+            &copy; {year} Staylo Holdings Pte. Ltd. · Singapore · All rights reserved.
+          </p>
+          <p className="text-xs mt-1" style={{ color: '#636E72' }}>
+            contact@staylo.app · staylo.app
+          </p>
         </div>
       </div>
     </footer>

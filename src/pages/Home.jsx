@@ -1,24 +1,21 @@
 import { Hero } from '../components/sections/Hero'
-import { BreakFree } from '../components/sections/BreakFree'
-import { CommissionCalculator } from '../components/sections/CommissionCalculator'
+import { ValueProps } from '../components/sections/ValueProps'
+import { HotelGrid } from '../components/sections/HotelGrid'
 import { HowItWorks } from '../components/sections/HowItWorks'
-import { FoundingMembers } from '../components/sections/FoundingMembers'
+import { CompareTable } from '../components/sections/CompareTable'
 import { CTASection } from '../components/sections/CTASection'
-import { SloganTicker } from '../components/sections/SloganTicker'
-import { getFeatureFlags } from './admin/AdminSettings'
+import { Testimonials } from '../components/sections/Testimonials'
 
 export default function Home() {
-  const flags = getFeatureFlags()
-
   return (
     <>
       <Hero />
-      <SloganTicker />
-      <BreakFree />
-      <CommissionCalculator />
+      <ValueProps />
+      <HotelGrid />
       <HowItWorks />
-      {flags.socialProof && <FoundingMembers />}
+      <CompareTable />
       <CTASection />
+      <Testimonials />
     </>
   )
 }
