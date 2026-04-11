@@ -445,9 +445,9 @@ export default function DemoPropertyDetail() {
               {/* Contact card */}
               <div className="bg-white rounded-xl border border-gray-100 p-4">
                 <h4 className="text-sm font-bold text-deep mb-3">{t('booking.need_help', 'Need help?')}</h4>
-                <a href="mailto:info@staylo.app"
+                <a href="mailto:contact@staylo.app"
                   className="flex items-center gap-2 text-sm text-ocean hover:text-electric transition-colors no-underline">
-                  <Mail size={14} /> info@staylo.app
+                  <Mail size={14} /> contact@staylo.app
                 </a>
               </div>
             </div>

@@ -71,7 +71,7 @@ export function Navbar() {
               </Link>
             )}
 
-            <a href="mailto:info@staylo.app" className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
+            <a href="mailto:contact@staylo.app" className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
               <Mail size={15} />
               {t('nav.contact', 'Contact')}
             </a>
@@ -187,7 +187,7 @@ export function Navbar() {
             <Link to="/submit" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
               {t('nav.submit')}
             </Link>
-            <a href="mailto:info@staylo.app" className="flex items-center gap-2 py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
+            <a href="mailto:contact@staylo.app" className="flex items-center gap-2 py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
               <Mail size={16} />
               {t('nav.contact', 'Contact')}
             </a>
