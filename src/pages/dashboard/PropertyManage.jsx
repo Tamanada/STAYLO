@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Plus, BedDouble, Calendar, ClipboardList, Pencil, Trash2,
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
@@ -35,6 +35,7 @@ export default function PropertyManage() {
   const { t } = useTranslation()
   const { id: propertyId } = useParams()
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('rooms')
   const [property, setProperty] = useState(null)
   const [rooms, setRooms] = useState([])
@@ -56,6 +57,19 @@ export default function PropertyManage() {
 
   useEffect(() => { fetchData() }, [fetchData])
 
+  async function handleDeleteProperty() {
+    if (!confirm(t('manage.confirm_delete_property', `Delete "${property?.name}"? All rooms, availability, and bookings for this property will be permanently deleted.`))) return
+    await supabase.from('rooms').delete().eq('property_id', propertyId)
+    await supabase.from('properties').delete().eq('id', propertyId)
+    navigate('/dashboard/properties')
+  }
+
+  async function handleToggleLive() {
+    const newStatus = property.status === 'live' ? 'validated' : 'live'
+    await supabase.from('properties').update({ status: newStatus }).eq('id', propertyId)
+    setProperty(prev => ({ ...prev, status: newStatus }))
+  }
+
   if (loading) {
     return <div className="py-20 text-center text-gray-400"><Loader2 className="animate-spin mx-auto" size={32} /></div>
   }
@@ -72,13 +86,38 @@ export default function PropertyManage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/dashboard/properties" className="text-gray-400 hover:text-ocean transition-colors">
-          <ArrowLeft size={20} />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-deep">{property.name}</h1>
-          <p className="text-sm text-gray-500">{property.city}{property.country ? `, ${property.country}` : ''}</p>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard/properties" className="text-gray-400 hover:text-ocean transition-colors">
+            <ArrowLeft size={20} />
+          </Link>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold text-deep">{property.name}</h1>
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                property.status === 'live'
+                  ? 'bg-libre/10 text-libre'
+                  : 'bg-gray-100 text-gray-500'
+              }`}>
+                {property.status === 'live' ? 'Live' : 'Offline'}
+              </span>
+            </div>
+            <p className="text-sm text-gray-500">{property.city}{property.country ? `, ${property.country}` : ''}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={handleToggleLive}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+              property.status === 'live'
+                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-libre text-white hover:bg-libre/90'
+            }`}>
+            {property.status === 'live' ? <><Ban size={14} /> {t('manage.stop', 'Stop')}</> : <><Check size={14} /> {t('manage.go_live', 'Go Live')}</>}
+          </button>
+          <button onClick={handleDeleteProperty}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-all">
+            <Trash2 size={14} /> {t('manage.delete', 'Delete')}
+          </button>
         </div>
       </div>
 
