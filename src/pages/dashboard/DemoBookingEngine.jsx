@@ -2,128 +2,261 @@ import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
-  MapPin, Star, BedDouble, Search, Calendar, Users,
-  SlidersHorizontal, ArrowUpDown, Heart, Wifi, Wind, Waves,
-  Car, Coffee, Umbrella, X, ChevronDown, Grid3X3, List,
-  TrendingDown
+  MapPin, Star, Search, Calendar, Users, Heart, X,
+  ChevronDown, TrendingDown, Wifi, Car, Waves, Coffee,
+  Wind, Utensils, Dumbbell, Sparkles, Shield, Clock,
+  ArrowRight, BadgeCheck, Flame
 } from 'lucide-react'
-import { Button } from '../../components/ui/Button'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 
-const typeIcons = {
-  hotel: '🏨', guesthouse: '🏠', resort: '🏝️', villa: '🏡',
-  hostel: '🛏️', restaurant: '🍽️', activity: '🎯',
+// ── Demo data ─────────────────────────────────────────────
+const DEMO_PROPERTIES = [
+  {
+    id: 'demo-1', name: 'Anantara Riverside Bangkok Resort', type: 'resort',
+    city: 'Bangkok', country: 'Thailand', stars: 5,
+    photo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
+      'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80',
+      'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80',
+    ],
+    price: 142, otaPrice: 178, rating: 9.2, reviews: 2847,
+    amenities: ['wifi', 'pool', 'spa', 'restaurant', 'gym', 'parking'],
+    desc: 'Luxurious riverside resort with stunning views of the Chao Phraya River. Features world-class dining and an award-winning spa.',
+    roomTypes: [
+      { name: 'Deluxe River View', price: 142, otaPrice: 178, beds: 'King', guests: 2, sqm: 38 },
+      { name: 'Premier Suite', price: 245, otaPrice: 310, beds: 'King', guests: 3, sqm: 62 },
+      { name: 'Royal Penthouse', price: 520, otaPrice: 650, beds: 'King + Twin', guests: 4, sqm: 120 },
+    ],
+  },
+  {
+    id: 'demo-2', name: 'The Siam Heritage Boutique', type: 'hotel',
+    city: 'Bangkok', country: 'Thailand', stars: 4,
+    photo: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80',
+      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80',
+    ],
+    price: 89, otaPrice: 112, rating: 8.8, reviews: 1563,
+    amenities: ['wifi', 'pool', 'restaurant', 'ac'],
+    desc: 'Charming boutique hotel in the heart of old Bangkok, blending traditional Thai architecture with modern comfort.',
+    roomTypes: [
+      { name: 'Heritage Deluxe', price: 89, otaPrice: 112, beds: 'Queen', guests: 2, sqm: 28 },
+      { name: 'Grand Heritage Suite', price: 165, otaPrice: 205, beds: 'King', guests: 2, sqm: 45 },
+    ],
+  },
+  {
+    id: 'demo-3', name: 'Samui Seaside Villa & Spa', type: 'villa',
+    city: 'Koh Samui', country: 'Thailand', stars: 5,
+    photo: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&q=80',
+      'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80',
+      'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&q=80',
+    ],
+    price: 310, otaPrice: 395, rating: 9.5, reviews: 892,
+    amenities: ['wifi', 'pool', 'spa', 'beach', 'restaurant', 'minibar'],
+    desc: 'Exclusive beachfront villas with private infinity pools overlooking the Gulf of Thailand.',
+    roomTypes: [
+      { name: 'Garden Pool Villa', price: 310, otaPrice: 395, beds: 'King', guests: 2, sqm: 85 },
+      { name: 'Beachfront Pool Villa', price: 485, otaPrice: 610, beds: 'King', guests: 3, sqm: 120 },
+    ],
+  },
+  {
+    id: 'demo-4', name: 'Phangan Sunset Hostel', type: 'hostel',
+    city: 'Koh Phangan', country: 'Thailand', stars: 3,
+    photo: 'https://images.unsplash.com/photo-1596436889106-be35e843f974?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1596436889106-be35e843f974?w=800&q=80',
+      'https://images.unsplash.com/photo-1528255671579-01b9e182ed1d?w=800&q=80',
+    ],
+    price: 18, otaPrice: 24, rating: 8.4, reviews: 634,
+    amenities: ['wifi', 'restaurant', 'beach'],
+    desc: 'Laid-back beachfront hostel with breathtaking sunset views and a vibrant social atmosphere.',
+    roomTypes: [
+      { name: 'Dorm Bed (6-bed)', price: 18, otaPrice: 24, beds: 'Single', guests: 1, sqm: 4 },
+      { name: 'Private Double', price: 45, otaPrice: 58, beds: 'Double', guests: 2, sqm: 16 },
+    ],
+  },
+  {
+    id: 'demo-5', name: 'Chiang Mai Garden Resort', type: 'resort',
+    city: 'Chiang Mai', country: 'Thailand', stars: 4,
+    photo: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80',
+      'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=80',
+    ],
+    price: 95, otaPrice: 120, rating: 9.0, reviews: 1290,
+    amenities: ['wifi', 'pool', 'spa', 'restaurant', 'parking', 'gym'],
+    desc: 'Tranquil resort surrounded by lush tropical gardens, just minutes from the Night Bazaar and old city temples.',
+    roomTypes: [
+      { name: 'Garden View Room', price: 95, otaPrice: 120, beds: 'King', guests: 2, sqm: 32 },
+      { name: 'Pool Access Room', price: 135, otaPrice: 170, beds: 'King', guests: 2, sqm: 36 },
+      { name: 'Family Suite', price: 195, otaPrice: 245, beds: 'King + 2 Singles', guests: 4, sqm: 55 },
+    ],
+  },
+  {
+    id: 'demo-6', name: 'Phuket Pearl Beach Hotel', type: 'hotel',
+    city: 'Phuket', country: 'Thailand', stars: 4,
+    photo: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&q=80',
+      'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80',
+    ],
+    price: 78, otaPrice: 98, rating: 8.6, reviews: 2105,
+    amenities: ['wifi', 'pool', 'beach', 'restaurant', 'parking'],
+    desc: 'Modern beachfront hotel on Kata Beach with direct beach access and panoramic Andaman Sea views.',
+    roomTypes: [
+      { name: 'Superior Sea View', price: 78, otaPrice: 98, beds: 'Queen', guests: 2, sqm: 30 },
+      { name: 'Deluxe Beachfront', price: 125, otaPrice: 155, beds: 'King', guests: 2, sqm: 40 },
+    ],
+  },
+  {
+    id: 'demo-7', name: 'Krabi Cliff Resort', type: 'resort',
+    city: 'Krabi', country: 'Thailand', stars: 5,
+    photo: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80',
+      'https://images.unsplash.com/photo-1551918120-9739cb430c6d?w=800&q=80',
+    ],
+    price: 210, otaPrice: 265, rating: 9.3, reviews: 756,
+    amenities: ['wifi', 'pool', 'spa', 'beach', 'restaurant', 'gym', 'minibar'],
+    desc: 'Perched on dramatic limestone cliffs with private beach access and world-class snorkeling right at your doorstep.',
+    roomTypes: [
+      { name: 'Cliff View Deluxe', price: 210, otaPrice: 265, beds: 'King', guests: 2, sqm: 42 },
+      { name: 'Ocean Pool Suite', price: 380, otaPrice: 475, beds: 'King', guests: 3, sqm: 75 },
+    ],
+  },
+  {
+    id: 'demo-8', name: 'Pai Mountain Lodge', type: 'guesthouse',
+    city: 'Pai', country: 'Thailand', stars: 3,
+    photo: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
+    ],
+    price: 35, otaPrice: 45, rating: 8.9, reviews: 423,
+    amenities: ['wifi', 'restaurant', 'parking'],
+    desc: 'Cozy mountain retreat with stunning valley views, organic farm-to-table restaurant, and authentic Northern Thai hospitality.',
+    roomTypes: [
+      { name: 'Mountain View Bungalow', price: 35, otaPrice: 45, beds: 'Double', guests: 2, sqm: 20 },
+      { name: 'Deluxe Cottage', price: 55, otaPrice: 70, beds: 'King', guests: 2, sqm: 28 },
+    ],
+  },
+  {
+    id: 'demo-9', name: 'Hua Hin Grand Hyatt Residences', type: 'hotel',
+    city: 'Hua Hin', country: 'Thailand', stars: 5,
+    photo: 'https://images.unsplash.com/photo-1455587734955-081b22074882?w=800&q=80',
+    photos: [
+      'https://images.unsplash.com/photo-1455587734955-081b22074882?w=800&q=80',
+      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80',
+    ],
+    price: 175, otaPrice: 220, rating: 9.1, reviews: 1834,
+    amenities: ['wifi', 'pool', 'spa', 'restaurant', 'gym', 'parking', 'minibar'],
+    desc: 'Elegant beachfront residences with championship golf course, multiple dining venues, and a serene wellness center.',
+    roomTypes: [
+      { name: 'Deluxe Garden', price: 175, otaPrice: 220, beds: 'King', guests: 2, sqm: 40 },
+      { name: 'Ocean Suite', price: 295, otaPrice: 370, beds: 'King', guests: 3, sqm: 65 },
+    ],
+  },
+]
+
+const DESTINATIONS = [
+  { name: 'Bangkok', count: 284, img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80' },
+  { name: 'Phuket', count: 196, img: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=600&q=80' },
+  { name: 'Chiang Mai', count: 152, img: 'https://images.unsplash.com/photo-1598935898639-81586f7d2129?w=600&q=80' },
+  { name: 'Koh Samui', count: 134, img: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=600&q=80' },
+  { name: 'Krabi', count: 98, img: 'https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=600&q=80' },
+]
+
+const amenityIcons = {
+  wifi: Wifi, pool: Waves, spa: Sparkles, beach: Waves, restaurant: Utensils,
+  parking: Car, gym: Dumbbell, ac: Wind, minibar: Coffee,
 }
 
-const typeLabels = {
-  hotel: 'Hotel', guesthouse: 'Guesthouse', resort: 'Resort',
-  villa: 'Villa', hostel: 'Hostel',
-}
+function getDefaultCheckIn() { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] }
+function getDefaultCheckOut() { const d = new Date(); d.setDate(d.getDate() + 10); return d.toISOString().split('T')[0] }
 
-const typeGradients = {
-  hotel: 'from-blue-500/70 to-indigo-600/50',
-  guesthouse: 'from-emerald-500/70 to-teal-600/50',
-  resort: 'from-amber-400/70 to-orange-500/50',
-  villa: 'from-purple-500/70 to-indigo-500/50',
-  hostel: 'from-rose-400/70 to-pink-500/50',
-}
-
-function getRating(id) {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) { hash = ((hash << 5) - hash) + id.charCodeAt(i); hash |= 0 }
-  return (4.0 + (Math.abs(hash) % 10) / 10).toFixed(1)
-}
-
-function getReviewCount(id) {
-  let hash = 0
-  for (let i = 0; i < id.length; i++) { hash = ((hash << 3) - hash) + id.charCodeAt(i); hash |= 0 }
-  return 12 + (Math.abs(hash) % 188)
-}
-
-function getRatingLabel(rating) {
-  if (rating >= 4.8) return 'Exceptional'
-  if (rating >= 4.5) return 'Excellent'
-  if (rating >= 4.2) return 'Very Good'
+function ratingLabel(r) {
+  if (r >= 9.0) return 'Exceptional'
+  if (r >= 8.5) return 'Excellent'
+  if (r >= 8.0) return 'Very Good'
   return 'Good'
 }
 
-function getDefaultCheckIn() {
-  const d = new Date(); d.setDate(d.getDate() + 1)
-  return d.toISOString().split('T')[0]
-}
-function getDefaultCheckOut() {
-  const d = new Date(); d.setDate(d.getDate() + 3)
-  return d.toISOString().split('T')[0]
+function StarRating({ stars }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: stars }).map((_, i) => (
+        <Star key={i} size={10} className="text-amber-400 fill-amber-400" />
+      ))}
+    </div>
+  )
 }
 
+// ── Component ─────────────────────────────────────────────
 export default function DemoBookingEngine() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
-  const [properties, setProperties] = useState([])
-  const [rooms, setRooms] = useState([])
-  const [loading, setLoading] = useState(true)
+
+  // Also load real properties
+  const [realProperties, setRealProperties] = useState([])
+  const [realRooms, setRealRooms] = useState([])
+
   const [searchCity, setSearchCity] = useState(searchParams.get('q') || '')
   const [checkIn, setCheckIn] = useState(searchParams.get('in') || getDefaultCheckIn())
   const [checkOut, setCheckOut] = useState(searchParams.get('out') || getDefaultCheckOut())
   const [guests, setGuests] = useState(searchParams.get('guests') || '2')
-  const [sortBy, setSortBy] = useState('price')
+  const [sortBy, setSortBy] = useState('recommended')
   const [typeFilter, setTypeFilter] = useState('')
-  const [priceMax, setPriceMax] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
-  const [viewMode, setViewMode] = useState('grid')
+  const [priceRange, setPriceRange] = useState([0, 700])
   const [favorites, setFavorites] = useState([])
+  const [searched, setSearched] = useState(!!searchParams.get('q'))
+  const [showGuestPicker, setShowGuestPicker] = useState(false)
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true)
+    async function fetchReal() {
       const [propRes, roomsRes] = await Promise.all([
-        supabase.from('properties').select('*').in('status', ['live', 'validated']).order('created_at', { ascending: false }),
-        supabase.from('rooms').select('*, room_availability(*)').eq('is_active', true),
+        supabase.from('properties').select('*').in('status', ['live', 'validated']),
+        supabase.from('rooms').select('*').eq('is_active', true),
       ])
-      setProperties(propRes.data || [])
-      setRooms(roomsRes.data || [])
-      setLoading(false)
+      setRealProperties(propRes.data || [])
+      setRealRooms(roomsRes.data || [])
     }
-    fetchData()
+    fetchReal()
   }, [])
-
-  const propertyPrices = useMemo(() => {
-    const prices = {}
-    const guestCount = Number(guests)
-    for (const room of rooms) {
-      if (room.max_guests < guestCount) continue
-      let isAvailable = true
-      if (room.room_availability) {
-        for (const avail of room.room_availability) {
-          if (avail.date >= checkIn && avail.date < checkOut) {
-            if (avail.is_blocked || avail.available_count <= 0) { isAvailable = false; break }
-          }
-        }
-      }
-      if (!isAvailable) continue
-      const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)))
-      let totalPrice = 0
-      const d = new Date(checkIn)
-      for (let i = 0; i < nights; i++) {
-        const dateStr = d.toISOString().split('T')[0]
-        const override = room.room_availability?.find(a => a.date === dateStr)
-        totalPrice += Number(override?.price_override || room.base_price)
-        d.setDate(d.getDate() + 1)
-      }
-      const pricePerNight = totalPrice / nights
-      if (!prices[room.property_id] || pricePerNight < prices[room.property_id]) {
-        prices[room.property_id] = pricePerNight
-      }
-    }
-    return prices
-  }, [rooms, checkIn, checkOut, guests])
 
   const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)))
 
+  // Merge demo + real properties
+  const allProperties = useMemo(() => {
+    const real = realProperties.map(p => {
+      const pRooms = realRooms.filter(r => r.property_id === p.id)
+      const lowestPrice = pRooms.length > 0 ? Math.min(...pRooms.map(r => Number(r.base_price))) : Number(p.avg_nightly_rate || 0)
+      return {
+        id: p.id,
+        name: p.name,
+        type: p.type || 'hotel',
+        city: p.city,
+        country: p.country,
+        stars: p.star_rating || 3,
+        photo: p.photo_urls?.[0] || null,
+        photos: p.photo_urls || [],
+        price: lowestPrice,
+        otaPrice: Math.round(lowestPrice * 1.25),
+        rating: 8.5,
+        reviews: 0,
+        amenities: ['wifi'],
+        desc: p.description || '',
+        isReal: true,
+      }
+    })
+    return [...real, ...DEMO_PROPERTIES]
+  }, [realProperties, realRooms])
+
   const filtered = useMemo(() => {
-    let result = properties
+    let result = allProperties
     if (searchCity.trim()) {
       const q = searchCity.toLowerCase().trim()
       result = result.filter(p =>
@@ -133,415 +266,357 @@ export default function DemoBookingEngine() {
       )
     }
     if (typeFilter) result = result.filter(p => p.type === typeFilter)
-    if (priceMax) {
-      const max = Number(priceMax)
-      result = result.filter(p => {
-        const price = propertyPrices[p.id] || Number(p.avg_nightly_rate) || 0
-        return price <= max
-      })
-    }
-    if (sortBy === 'price') {
-      result = [...result].sort((a, b) => {
-        const pa = propertyPrices[a.id] || Number(a.avg_nightly_rate) || 9999
-        const pb = propertyPrices[b.id] || Number(b.avg_nightly_rate) || 9999
-        return pa - pb
-      })
-    } else if (sortBy === 'rating') {
-      result = [...result].sort((a, b) => Number(getRating(b.id)) - Number(getRating(a.id)))
-    }
-    return result
-  }, [properties, searchCity, typeFilter, priceMax, sortBy, propertyPrices])
+    result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
 
-  function toggleFavorite(id) {
+    if (sortBy === 'price_low') result = [...result].sort((a, b) => a.price - b.price)
+    else if (sortBy === 'price_high') result = [...result].sort((a, b) => b.price - a.price)
+    else if (sortBy === 'rating') result = [...result].sort((a, b) => b.rating - a.rating)
+    else if (sortBy === 'savings') result = [...result].sort((a, b) => (b.otaPrice - b.price) - (a.otaPrice - a.price))
+    // recommended = default order
+
+    return result
+  }, [allProperties, searchCity, typeFilter, sortBy, priceRange])
+
+  function toggleFavorite(e, id) {
+    e.preventDefault()
+    e.stopPropagation()
     setFavorites(prev => prev.includes(id) ? prev.filter(f => f !== id) : [...prev, id])
   }
 
+  function handleSearch() {
+    setSearched(true)
+  }
+
+  function handleDestinationClick(destName) {
+    setSearchCity(destName)
+    setSearched(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Hero search section */}
-      <div className="relative bg-gradient-to-br from-deep via-deep to-electric/90 overflow-hidden">
-        {/* Background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10 w-72 h-72 bg-ocean rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-10 w-96 h-96 bg-electric rounded-full blur-3xl" />
+    <div className="min-h-screen bg-[#f5f6fa]">
+
+      {/* ─── Hero Search ─────────────────────────────── */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#003580] via-[#00224f] to-[#003580]" />
+        <div className="absolute inset-0">
+          <div className="absolute -top-20 -right-20 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 -left-20 w-[400px] h-[400px] bg-indigo-400/10 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-8 pb-16">
-          {/* Title */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white mb-2">
-              {t('booking.title', 'Find Your Perfect Stay')}
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-20 sm:pb-24">
+          <div className="text-center mb-8 sm:mb-10">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-3 tracking-tight">
+              {t('booking.hero_title', 'Find deals on hotels, resorts & more')}
             </h1>
-            <p className="text-white/60 text-sm sm:text-base max-w-xl mx-auto">
-              {t('booking.subtitle', 'Book directly with hoteliers — 10% commission only, no hidden fees.')}
+            <p className="text-blue-200/70 text-base sm:text-lg max-w-2xl mx-auto">
+              {t('booking.hero_subtitle', 'Book directly with hoteliers — save up to 20% vs. other platforms')}
             </p>
           </div>
 
-          {/* Search card */}
-          <div className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 max-w-5xl mx-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 sm:gap-3">
+          {/* Search bar */}
+          <div className="bg-[#ffb700] p-1 rounded-xl max-w-5xl mx-auto shadow-2xl shadow-black/20">
+            <div className="flex flex-col lg:flex-row gap-1">
               {/* Destination */}
-              <div className="lg:col-span-4 relative">
-                <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 pl-1">
-                  {t('booking.destination', 'Destination')}
-                </label>
-                <div className="relative">
-                  <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder={t('booking.search_placeholder', 'Where are you going?')}
-                    value={searchCity}
-                    onChange={e => setSearchCity(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border-2 border-gray-100 bg-gray-50/50 text-deep placeholder:text-gray-400 focus:outline-none focus:border-ocean focus:bg-white transition-all text-sm font-medium"
-                  />
-                </div>
+              <div className="flex-[2] relative">
+                <MapPin size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" />
+                <input
+                  type="text"
+                  placeholder={t('booking.where', 'Where are you going?')}
+                  value={searchCity}
+                  onChange={e => setSearchCity(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleSearch()}
+                  className="w-full pl-11 pr-4 py-4 rounded-lg bg-white text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
+                />
               </div>
 
               {/* Check-in */}
-              <div className="lg:col-span-2">
-                <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 pl-1">
-                  {t('booking.check_in', 'Check-in')}
-                </label>
-                <div className="relative">
-                  <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  <input type="date" value={checkIn} min={new Date().toISOString().split('T')[0]}
-                    onChange={e => {
-                      setCheckIn(e.target.value)
-                      if (e.target.value >= checkOut) {
-                        const next = new Date(e.target.value); next.setDate(next.getDate() + 1)
-                        setCheckOut(next.toISOString().split('T')[0])
-                      }
-                    }}
-                    className="w-full pl-10 pr-3 py-3 rounded-xl border-2 border-gray-100 bg-gray-50/50 text-deep focus:outline-none focus:border-ocean focus:bg-white transition-all text-sm font-medium"
-                  />
-                </div>
+              <div className="flex-1 relative">
+                <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
+                <input type="date" value={checkIn}
+                  min={new Date().toISOString().split('T')[0]}
+                  onChange={e => {
+                    setCheckIn(e.target.value)
+                    if (e.target.value >= checkOut) {
+                      const next = new Date(e.target.value); next.setDate(next.getDate() + 1)
+                      setCheckOut(next.toISOString().split('T')[0])
+                    }
+                  }}
+                  className="w-full pl-11 pr-4 py-4 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
+                />
               </div>
 
               {/* Check-out */}
-              <div className="lg:col-span-2">
-                <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 pl-1">
-                  {t('booking.check_out', 'Check-out')}
-                </label>
-                <div className="relative">
-                  <Calendar size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  <input type="date" value={checkOut} min={checkIn}
-                    onChange={e => setCheckOut(e.target.value)}
-                    className="w-full pl-10 pr-3 py-3 rounded-xl border-2 border-gray-100 bg-gray-50/50 text-deep focus:outline-none focus:border-ocean focus:bg-white transition-all text-sm font-medium"
-                  />
-                </div>
+              <div className="flex-1 relative">
+                <Calendar size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
+                <input type="date" value={checkOut} min={checkIn}
+                  onChange={e => setCheckOut(e.target.value)}
+                  className="w-full pl-11 pr-4 py-4 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
+                />
               </div>
 
               {/* Guests */}
-              <div className="lg:col-span-2">
-                <label className="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 pl-1">
-                  {t('booking.guests', 'Guests')}
-                </label>
-                <div className="relative">
-                  <Users size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  <select value={guests} onChange={e => setGuests(e.target.value)}
-                    className="w-full pl-10 pr-3 py-3 rounded-xl border-2 border-gray-100 bg-gray-50/50 text-deep focus:outline-none focus:border-ocean focus:bg-white transition-all text-sm font-medium appearance-none">
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map(n => (
-                      <option key={n} value={n}>{n} {n === 1 ? t('booking.guest', 'Guest') : t('booking.guests', 'Guests')}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                </div>
+              <div className="flex-1 relative">
+                <Users size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
+                <select value={guests} onChange={e => setGuests(e.target.value)}
+                  className="w-full pl-11 pr-8 py-4 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium appearance-none">
+                  {[1, 2, 3, 4, 5, 6].map(n => (
+                    <option key={n} value={n}>{n} {n === 1 ? t('booking.adult', 'Adult') : t('booking.adults', 'Adults')}</option>
+                  ))}
+                </select>
+                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
               </div>
 
               {/* Search button */}
-              <div className="lg:col-span-2 flex items-end">
-                <button className="w-full py-3 bg-gradient-to-r from-ocean to-electric text-white rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-ocean/30 transition-all flex items-center justify-center gap-2">
-                  <Search size={18} />
-                  <span className="hidden sm:inline">{t('booking.search', 'Search')}</span>
-                </button>
-              </div>
+              <button onClick={handleSearch}
+                className="px-8 py-4 bg-[#0071c2] hover:bg-[#005fa8] text-white rounded-lg font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-lg">
+                <Search size={18} />
+                <span>{t('booking.search', 'Search')}</span>
+              </button>
             </div>
+          </div>
+
+          {/* Quick stats */}
+          <div className="flex flex-wrap items-center justify-center gap-6 mt-6 text-blue-200/60 text-xs font-medium">
+            <span className="flex items-center gap-1.5"><Shield size={14} /> {t('booking.stat_commission', 'Only 10% commission')}</span>
+            <span className="flex items-center gap-1.5"><BadgeCheck size={14} /> {t('booking.stat_verified', 'Verified properties')}</span>
+            <span className="flex items-center gap-1.5"><TrendingDown size={14} /> {t('booking.stat_savings', 'Save vs. OTAs')}</span>
           </div>
         </div>
       </div>
 
-      {/* Results section */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        {/* Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-deep">
-              {searchCity.trim()
-                ? t('booking.results_in', 'Stays in "{{location}}"', { location: searchCity })
-                : t('booking.all_stays', 'All Stays')}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+
+        {/* ─── Popular Destinations (before search) ─── */}
+        {!searched && (
+          <div className="py-10">
+            <h2 className="text-xl font-bold text-gray-900 mb-1">
+              {t('booking.popular_destinations', 'Popular Destinations in Thailand')}
             </h2>
-            <span className="text-sm text-gray-400 font-medium">
-              ({filtered.length} {t('booking.found', 'found')})
-            </span>
+            <p className="text-sm text-gray-500 mb-6">
+              {t('booking.explore_desc', 'Explore our most booked cities by fellow travelers')}
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              {DESTINATIONS.map(dest => (
+                <button key={dest.name} onClick={() => handleDestinationClick(dest.name)}
+                  className="group relative h-48 rounded-2xl overflow-hidden text-left">
+                  <img src={dest.img} alt={dest.name} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <p className="font-bold text-base">{dest.name}</p>
+                    <p className="text-xs text-white/70">{dest.count} {t('booking.properties', 'properties')}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
+        )}
 
-          <div className="flex items-center gap-2">
-            {/* Filters toggle */}
-            <button onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-all ${
-                showFilters ? 'bg-ocean/10 border-ocean/30 text-ocean' : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
-              }`}>
-              <SlidersHorizontal size={14} />
-              {t('booking.filters', 'Filters')}
-              {(typeFilter || priceMax) && (
-                <span className="w-5 h-5 rounded-full bg-ocean text-white text-[10px] font-bold flex items-center justify-center">
-                  {(typeFilter ? 1 : 0) + (priceMax ? 1 : 0)}
-                </span>
-              )}
-            </button>
-
-            {/* Sort */}
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-              className="px-3 py-2 rounded-lg text-sm font-medium border border-gray-200 bg-white text-gray-600 hover:border-gray-300">
-              <option value="price">{t('booking.sort_price', 'Price: Low to High')}</option>
-              <option value="rating">{t('booking.sort_rating', 'Top Rated')}</option>
-            </select>
-
-            {/* View toggle */}
-            <div className="hidden sm:flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden">
-              <button onClick={() => setViewMode('grid')}
-                className={`p-2 ${viewMode === 'grid' ? 'bg-ocean/10 text-ocean' : 'text-gray-400 hover:text-gray-600'}`}>
-                <Grid3X3 size={16} />
-              </button>
-              <button onClick={() => setViewMode('list')}
-                className={`p-2 ${viewMode === 'list' ? 'bg-ocean/10 text-ocean' : 'text-gray-400 hover:text-gray-600'}`}>
-                <List size={16} />
+        {/* ─── Deals Banner (before search) ──────── */}
+        {!searched && (
+          <div className="pb-10">
+            <div className="bg-gradient-to-r from-[#003580] to-[#0071c2] rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6">
+              <div className="flex-1 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <Flame size={20} className="text-amber-400" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-400">{t('booking.limited', 'Limited Time')}</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-extrabold mb-2">{t('booking.deal_title', 'Save up to 20% on every booking')}</h3>
+                <p className="text-blue-200/80 text-sm">{t('booking.deal_desc', 'STAYLO charges only 10% commission — hoteliers pass the savings to you. No tricks, no hidden fees.')}</p>
+              </div>
+              <button onClick={() => { setSearchCity(''); setSearched(true) }}
+                className="px-6 py-3 bg-white text-[#003580] rounded-lg font-bold text-sm hover:bg-blue-50 transition-colors flex items-center gap-2 whitespace-nowrap">
+                {t('booking.browse_all', 'Browse All Properties')} <ArrowRight size={16} />
               </button>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Filter panel */}
-        {showFilters && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-5 flex flex-wrap gap-4 items-end">
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">{t('booking.property_type', 'Property Type')}</label>
-              <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white min-w-[140px]">
-                <option value="">{t('booking.all_types', 'All Types')}</option>
-                {Object.entries(typeLabels).map(([k, v]) => <option key={k} value={k}>{typeIcons[k]} {v}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">{t('booking.max_price', 'Max Price / Night')}</label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">$</span>
-                <input type="number" value={priceMax} onChange={e => setPriceMax(e.target.value)}
-                  placeholder="No limit" min={0}
-                  className="pl-7 pr-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-700 bg-white w-32" />
+        {/* ─── Search Results ────────────────────── */}
+        {searched && (
+          <div className="py-8">
+            {/* Toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">
+                  {searchCity.trim()
+                    ? `${searchCity}: ${filtered.length} ${t('booking.properties_found', 'properties found')}`
+                    : `${filtered.length} ${t('booking.properties_found', 'properties found')}`}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {nights} {nights === 1 ? t('booking.night', 'night') : t('booking.nights', 'nights')} · {guests} {Number(guests) === 1 ? t('booking.adult', 'adult') : t('booking.adults', 'adults')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {/* Type filter pills */}
+                <div className="hidden sm:flex items-center gap-1.5">
+                  {['', 'hotel', 'resort', 'villa', 'hostel', 'guesthouse'].map(type => (
+                    <button key={type} onClick={() => setTypeFilter(type)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                        typeFilter === type
+                          ? 'bg-[#003580] text-white'
+                          : 'bg-white text-gray-600 border border-gray-200 hover:border-[#003580] hover:text-[#003580]'
+                      }`}>
+                      {type === '' ? t('booking.all', 'All') : type.charAt(0).toUpperCase() + type.slice(1)}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sort */}
+                <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+                  className="px-3 py-2 rounded-lg text-xs font-medium border border-gray-200 bg-white text-gray-700">
+                  <option value="recommended">{t('booking.sort_recommended', 'Recommended')}</option>
+                  <option value="price_low">{t('booking.sort_price_low', 'Price: Low → High')}</option>
+                  <option value="price_high">{t('booking.sort_price_high', 'Price: High → Low')}</option>
+                  <option value="rating">{t('booking.sort_rating', 'Top Rated')}</option>
+                  <option value="savings">{t('booking.sort_savings', 'Biggest Savings')}</option>
+                </select>
               </div>
             </div>
-            {(typeFilter || priceMax) && (
-              <button onClick={() => { setTypeFilter(''); setPriceMax('') }}
-                className="flex items-center gap-1 px-3 py-2 text-sm text-gray-500 hover:text-sunset transition-colors">
-                <X size={14} /> {t('booking.clear_filters', 'Clear')}
-              </button>
-            )}
-          </div>
-        )}
 
-        {/* Loading */}
-        {loading && (
-          <div className="py-24 text-center">
-            <div className="w-12 h-12 border-4 border-ocean/20 border-t-ocean rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-gray-400 font-medium">{t('booking.searching', 'Searching available properties...')}</p>
-          </div>
-        )}
+            {/* Properties list */}
+            {filtered.length === 0 ? (
+              <div className="py-20 text-center">
+                <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search size={32} className="text-gray-300" />
+                </div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{t('booking.no_results', 'No properties found')}</h3>
+                <p className="text-sm text-gray-500 mb-4">{t('booking.try_different', 'Try a different destination or adjust your filters')}</p>
+                <button onClick={() => { setSearchCity(''); setTypeFilter('') }}
+                  className="px-5 py-2 bg-[#0071c2] text-white rounded-lg font-medium text-sm hover:bg-[#005fa8]">
+                  {t('booking.clear_search', 'Clear All Filters')}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filtered.map((prop, idx) => {
+                  const isFav = favorites.includes(prop.id)
+                  const savings = prop.otaPrice - prop.price
+                  const savingsPercent = Math.round((savings / prop.otaPrice) * 100)
+                  const totalStaylo = prop.price * nights
+                  const totalOTA = prop.otaPrice * nights
 
-        {/* Empty state */}
-        {!loading && filtered.length === 0 && (
-          <div className="py-20 text-center">
-            <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search size={40} className="text-gray-300" />
-            </div>
-            <h3 className="text-xl font-bold text-deep mb-2">
-              {searchCity.trim() ? t('booking.no_results', 'No properties found') : t('booking.empty_title', 'No properties listed yet')}
-            </h3>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              {searchCity.trim()
-                ? t('booking.try_different', 'Try adjusting your filters or search for a different destination.')
-                : t('booking.empty_subtitle', 'Be the first to register your property!')}
-            </p>
-            {searchCity.trim() && (
-              <button onClick={() => { setSearchCity(''); setTypeFilter(''); setPriceMax('') }}
-                className="px-5 py-2.5 bg-ocean text-white rounded-xl font-medium text-sm hover:bg-ocean/90 transition-colors">
-                {t('booking.clear_search', 'Clear All Filters')}
-              </button>
-            )}
-          </div>
-        )}
+                  return (
+                    <Link key={prop.id}
+                      to={prop.isReal
+                        ? `/dashboard/book/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}`
+                        : `/dashboard/book/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}&demo=1`
+                      }
+                      className="no-underline">
+                      <div className="bg-white rounded-xl border border-gray-200 hover:border-[#0071c2]/40 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col sm:flex-row group">
 
-        {/* Property grid / list */}
-        {!loading && filtered.length > 0 && (
-          <div className={viewMode === 'grid'
-            ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5'
-            : 'space-y-4'
-          }>
-            {filtered.map(prop => {
-              const rating = getRating(prop.id)
-              const reviewCount = getReviewCount(prop.id)
-              const typeIcon = typeIcons[prop.type] || '🏨'
-              const gradient = typeGradients[prop.type] || 'from-blue-500/70 to-indigo-600/50'
-              const lowestPrice = propertyPrices[prop.id] || Number(prop.avg_nightly_rate || 0)
-              const hasRooms = propertyPrices[prop.id] !== undefined
-              const firstPhoto = prop.photo_urls && prop.photo_urls.length > 0 ? prop.photo_urls[0] : null
-              const isFav = favorites.includes(prop.id)
-              const ratingLabel = getRatingLabel(Number(rating))
-              const totalStay = lowestPrice * nights
+                        {/* Image */}
+                        <div className="sm:w-64 md:w-72 h-52 sm:h-auto relative flex-shrink-0 overflow-hidden">
+                          <img src={prop.photo || `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80`}
+                            alt={prop.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
 
-              if (viewMode === 'list') {
-                return (
-                  <Link key={prop.id} to={`/dashboard/book/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}`}
-                    className="no-underline">
-                    <div className="bg-white rounded-xl border border-gray-100 hover:border-ocean/30 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col sm:flex-row">
-                      {/* Image */}
-                      <div className={`sm:w-72 h-48 sm:h-auto relative flex-shrink-0 ${!firstPhoto ? `bg-gradient-to-br ${gradient}` : ''}`}>
-                        {firstPhoto ? (
-                          <img src={firstPhoto} alt={prop.name} className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-6xl opacity-60">{typeIcon}</span>
-                          </div>
-                        )}
-                        <button onClick={e => { e.preventDefault(); toggleFavorite(prop.id) }}
-                          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-all shadow-sm">
-                          <Heart size={16} className={isFav ? 'fill-sunset text-sunset' : 'text-gray-400'} />
-                        </button>
-                      </div>
+                          {/* Favorite */}
+                          <button onClick={e => toggleFavorite(e, prop.id)}
+                            className="absolute top-3 right-3 p-2 bg-white/90 rounded-full hover:bg-white transition-all shadow-sm z-10">
+                            <Heart size={16} className={isFav ? 'fill-red-500 text-red-500' : 'text-gray-500'} />
+                          </button>
 
-                      {/* Content */}
-                      <div className="flex-1 p-5 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-ocean">{typeLabels[prop.type] || 'Hotel'}</span>
-                              <h3 className="text-lg font-bold text-deep">{prop.name}</h3>
-                              <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                                <MapPin size={13} /> {prop.city}{prop.country ? `, ${prop.country}` : ''}
+                          {/* Savings badge */}
+                          {savingsPercent >= 15 && (
+                            <div className="absolute top-3 left-3 bg-[#008009] text-white text-[11px] font-bold px-2.5 py-1 rounded-md shadow-md">
+                              Save {savingsPercent}%
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 p-4 sm:p-5 flex flex-col">
+                          <div className="flex items-start justify-between gap-3 mb-1">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <StarRating stars={prop.stars} />
+                                <span className="text-[10px] font-bold uppercase tracking-wider text-[#003580]">
+                                  {prop.type}
+                                </span>
+                              </div>
+                              <h3 className="text-base sm:text-lg font-bold text-[#003580] group-hover:underline line-clamp-1">
+                                {prop.name}
+                              </h3>
+                              <p className="text-xs text-[#0071c2] flex items-center gap-1 mt-0.5 font-medium">
+                                <MapPin size={12} /> {prop.city}, {prop.country}
                               </p>
                             </div>
-                            <div className="text-right flex-shrink-0 ml-4">
-                              <div className="flex items-center gap-1.5">
-                                <div className="text-right">
-                                  <p className="text-xs text-gray-400">{ratingLabel}</p>
-                                  <p className="text-xs text-gray-400">{reviewCount} reviews</p>
-                                </div>
-                                <span className="bg-ocean text-white text-sm font-bold px-2 py-1.5 rounded-lg rounded-tl-none">
-                                  {rating}
-                                </span>
+
+                            {/* Rating */}
+                            <div className="flex items-start gap-1.5 flex-shrink-0">
+                              <div className="text-right">
+                                <p className="text-xs font-semibold text-gray-900">{ratingLabel(prop.rating)}</p>
+                                <p className="text-[10px] text-gray-500">{prop.reviews.toLocaleString()} reviews</p>
+                              </div>
+                              <div className="bg-[#003580] text-white text-sm font-extrabold w-9 h-9 rounded-lg rounded-bl-none flex items-center justify-center">
+                                {prop.rating}
                               </div>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 mt-2">
-                            <span className="text-xs bg-libre/10 text-libre px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
-                              <TrendingDown size={10} /> 10% {t('booking.commission_only', 'commission only')}
-                            </span>
+
+                          {/* Description */}
+                          <p className="text-xs text-gray-600 line-clamp-2 mt-1 mb-2 leading-relaxed">{prop.desc}</p>
+
+                          {/* Amenities */}
+                          <div className="flex flex-wrap gap-1 mb-3">
+                            {prop.amenities.slice(0, 5).map(a => {
+                              const Icon = amenityIcons[a]
+                              return Icon ? (
+                                <span key={a} className="flex items-center gap-1 text-[10px] text-gray-500 bg-gray-50 px-2 py-0.5 rounded">
+                                  <Icon size={10} /> {a}
+                                </span>
+                              ) : null
+                            })}
+                          </div>
+
+                          {/* Bottom — price section */}
+                          <div className="mt-auto pt-3 border-t border-gray-100 flex items-end justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#008009] bg-[#008009]/8 px-2 py-1 rounded">
+                                <TrendingDown size={10} />
+                                {t('booking.save_with_staylo', 'STAYLO Price')}
+                              </span>
+                              {prop.reviews > 1000 && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-700 bg-amber-50 px-2 py-1 rounded">
+                                  <Flame size={10} />
+                                  {t('booking.popular', 'Popular')}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="text-right">
+                              <p className="text-xs text-gray-500">
+                                {nights} {nights === 1 ? t('booking.night', 'night') : t('booking.nights', 'nights')}, {guests} {Number(guests) === 1 ? t('booking.adult', 'adult') : t('booking.adults', 'adults')}
+                              </p>
+                              <div className="flex items-center gap-2 justify-end">
+                                <span className="text-sm text-gray-400 line-through">${totalOTA}</span>
+                                <span className="text-xl font-extrabold text-gray-900">${totalStaylo}</span>
+                              </div>
+                              <p className="text-[10px] text-[#008009] font-medium">
+                                {t('booking.you_save', 'You save')} ${savings * nights} ({savingsPercent}%)
+                              </p>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-end justify-between mt-4 pt-3 border-t border-gray-100">
-                          <div className="text-sm text-gray-500">
-                            {nights} {nights === 1 ? t('booking.night', 'night') : t('booking.nights', 'nights')}, {guests} {t('booking.guests', 'guests')}
-                          </div>
-                          <div className="text-right">
-                            <p className="text-2xl font-black text-deep">${totalStay.toFixed(0)}</p>
-                            <p className="text-xs text-gray-400">${lowestPrice.toFixed(0)} / {t('booking.night', 'night')}</p>
-                          </div>
-                        </div>
                       </div>
-                    </div>
-                  </Link>
-                )
-              }
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
 
-              // Grid card
-              return (
-                <Link key={prop.id} to={`/dashboard/book/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}`}
-                  className="no-underline group">
-                  <div className="bg-white rounded-2xl border border-gray-100 hover:border-ocean/20 hover:shadow-xl transition-all duration-300 overflow-hidden h-full flex flex-col">
-                    {/* Image */}
-                    <div className={`h-52 relative overflow-hidden ${!firstPhoto ? `bg-gradient-to-br ${gradient}` : ''}`}>
-                      {firstPhoto ? (
-                        <img src={firstPhoto} alt={prop.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center group-hover:scale-105 transition-transform duration-500">
-                          <span className="text-7xl opacity-50">{typeIcon}</span>
-                        </div>
-                      )}
-
-                      {/* Overlays */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-
-                      {/* Favorite */}
-                      <button onClick={e => { e.preventDefault(); toggleFavorite(prop.id) }}
-                        className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-all shadow-sm z-10">
-                        <Heart size={16} className={isFav ? 'fill-sunset text-sunset' : 'text-gray-500'} />
-                      </button>
-
-                      {/* Type badge */}
-                      <div className="absolute top-3 left-3">
-                        <span className="bg-white/90 backdrop-blur-sm text-deep text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full shadow-sm">
-                          {typeLabels[prop.type] || 'Hotel'}
-                        </span>
-                      </div>
-
-                      {/* Rating */}
-                      <div className="absolute bottom-3 right-3">
-                        <span className="bg-ocean text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-lg">
-                          {rating}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Card content */}
-                    <div className="p-4 flex-1 flex flex-col">
-                      <div className="flex-1">
-                        <h3 className="font-bold text-deep text-base mb-1 group-hover:text-ocean transition-colors line-clamp-1">
-                          {prop.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 flex items-center gap-1 mb-2">
-                          <MapPin size={13} className="text-gray-400 flex-shrink-0" />
-                          <span className="truncate">{prop.city}{prop.country ? `, ${prop.country}` : ''}</span>
-                        </p>
-
-                        {/* Quick info */}
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="text-xs text-gray-400 flex items-center gap-1">
-                            <Star size={12} className="text-golden fill-golden" /> {ratingLabel}
-                          </span>
-                          <span className="text-gray-300">·</span>
-                          <span className="text-xs text-gray-400">{reviewCount} {t('booking.reviews', 'reviews')}</span>
-                        </div>
-
-                        {/* STAYLO advantage */}
-                        <div className="inline-flex items-center gap-1 text-[10px] font-semibold text-libre bg-libre/8 px-2 py-1 rounded-full">
-                          <TrendingDown size={10} /> {t('booking.save_vs_ota', 'Save vs. OTAs')}
-                        </div>
-                      </div>
-
-                      {/* Price */}
-                      <div className="mt-3 pt-3 border-t border-gray-100 flex items-end justify-between">
-                        <div className="text-xs text-gray-400">
-                          {nights} {nights === 1 ? t('booking.night', 'night') : t('booking.nights', 'nights')}
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xl font-black text-deep leading-tight">${totalStay.toFixed(0)}</p>
-                          <p className="text-[11px] text-gray-400">${lowestPrice.toFixed(0)} / {t('booking.night', 'night')}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
-
-        {/* Bottom banner */}
-        {!loading && filtered.length > 0 && (
-          <div className="mt-10 bg-gradient-to-r from-ocean/5 to-electric/5 border border-ocean/10 rounded-2xl p-6 text-center">
-            <p className="text-sm text-gray-600 font-medium">
-              {t('booking.staylo_promise', "With STAYLO, you book directly with the hotel — only 10% commission vs. 15-25% on other platforms. That's savings for everyone.")}
-            </p>
+            {/* Bottom info */}
+            {filtered.length > 0 && (
+              <div className="mt-8 p-5 bg-white rounded-xl border border-gray-200 text-center">
+                <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-gray-500">
+                  <span className="flex items-center gap-1.5"><Shield size={14} className="text-[#003580]" /> {t('booking.secure', 'Secure booking')}</span>
+                  <span className="flex items-center gap-1.5"><BadgeCheck size={14} className="text-[#003580]" /> {t('booking.verified', 'Verified properties')}</span>
+                  <span className="flex items-center gap-1.5"><Clock size={14} className="text-[#003580]" /> {t('booking.support', '24/7 support')}</span>
+                  <span className="flex items-center gap-1.5"><TrendingDown size={14} className="text-[#008009]" /> {t('booking.commission_note', '10% commission only — the lowest in the industry')}</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
