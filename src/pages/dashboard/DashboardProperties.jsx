@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar } from 'lucide-react'
+import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -97,7 +97,7 @@ export default function DashboardProperties() {
             return (
               <Card key={prop.id} className="p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-4 flex-1">
                     <div className="w-12 h-12 bg-ocean/10 rounded-2xl flex items-center justify-center flex-shrink-0">
                       <Icon size={22} className="text-ocean" />
                     </div>
@@ -139,6 +139,12 @@ export default function DashboardProperties() {
                       </div>
                     </div>
                   </div>
+                  <Link to={`/dashboard/property/${prop.id}`}>
+                    <Button size="sm" variant="secondary">
+                      <Settings size={14} />
+                      {t('dashboard.manage', 'Manage')}
+                    </Button>
+                  </Link>
                 </div>
               </Card>
             )

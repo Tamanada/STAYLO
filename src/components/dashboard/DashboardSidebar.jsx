@@ -8,7 +8,7 @@ import {
   Share2,
   Gem,
   Package,
-  Globe,
+  Search,
   ArrowLeft,
   LogOut,
   Menu,
@@ -19,10 +19,10 @@ import {
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, labelKey: 'dashboard.nav_overview', label: 'Overview', end: true },
   { to: '/dashboard/properties', icon: Building2, labelKey: 'dashboard.nav_properties', label: 'My Properties' },
+  { to: '/dashboard/book', icon: Search, labelKey: 'dashboard.nav_book', label: 'Book Now', end: true },
   { to: '/dashboard/referrals', icon: Share2, labelKey: 'dashboard.nav_referrals', label: 'Referrals' },
   { to: '/dashboard/shares', icon: Gem, labelKey: 'dashboard.nav_shares', label: 'My Shares' },
   { to: '/dashboard/kit', icon: Package, labelKey: 'dashboard.sidebar_kit', label: 'My Kit' },
-  { to: '/dashboard/preview', icon: Globe, labelKey: 'dashboard.nav_preview', label: 'Booking Preview', end: true },
 ]
 
 export function DashboardSidebar() {

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Menu, X, Globe, ChevronDown } from 'lucide-react'
+import { Menu, X, Globe, ChevronDown, Mail } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { changeLanguage } from '../../i18n'
 import { Button } from '../ui/Button'
@@ -70,6 +70,11 @@ export function Navbar() {
                 {t('nav.ambassador', 'Ambassador')}
               </Link>
             )}
+
+            <a href="mailto:info@staylo.app" className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-deep-navy transition-colors no-underline">
+              <Mail size={15} />
+              {t('nav.contact', 'Contact')}
+            </a>
 
             {/* Language selector */}
             <div className="relative">
@@ -182,6 +187,10 @@ export function Navbar() {
             <Link to="/submit" className="block py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
               {t('nav.submit')}
             </Link>
+            <a href="mailto:info@staylo.app" className="flex items-center gap-2 py-2 text-gray-600 no-underline" onClick={() => setMobileOpen(false)}>
+              <Mail size={16} />
+              {t('nav.contact', 'Contact')}
+            </a>
 
             <div className="border-t border-gray-100 pt-3">
               <p className="text-xs text-gray-400 mb-2">{t('nav.language', 'Language')}</p>

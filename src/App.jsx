@@ -32,6 +32,8 @@ import DashboardReferrals from './pages/dashboard/DashboardReferrals'
 import DashboardShares from './pages/dashboard/DashboardShares'
 import DemoBookingEngine from './pages/dashboard/DemoBookingEngine'
 import DemoPropertyDetail from './pages/dashboard/DemoPropertyDetail'
+import BookingCheckout from './pages/dashboard/BookingCheckout'
+import PropertyManage from './pages/dashboard/PropertyManage'
 import DashboardKit from './pages/dashboard/DashboardKit'
 import Splash from './pages/Splash'
 import ResetPassword from './pages/ResetPassword'
@@ -69,6 +71,10 @@ export default function App() {
             <Route path="shares" element={<DashboardShares />} />
             <Route path="ambassador" element={<AmbassadorDashboard />} />
             <Route path="kit" element={<DashboardKit />} />
+            <Route path="property/:id" element={<PropertyManage />} />
+            <Route path="book" element={<DemoBookingEngine />} />
+            <Route path="book/:id" element={<DemoPropertyDetail />} />
+            <Route path="book/:id/checkout" element={<BookingCheckout />} />
             <Route path="preview" element={<DemoBookingEngine />} />
             <Route path="preview/:id" element={<DemoPropertyDetail />} />
           </Route>
