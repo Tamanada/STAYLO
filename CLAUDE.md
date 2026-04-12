@@ -59,15 +59,54 @@ That money leaves Thailand forever. Staylo proposes:
 | Price per share | $1,000 USD (~35,000 THB) |
 | Minimum per property | 1 share |
 | Maximum per property | 10 shares |
-| Total alpha shares | 3,000 (Phase 1 of 10,000 total) |
+| Total alpha shares | 3,000 |
+| Total shares (all rounds) | 500,000 |
 | Voting rule | 1 property = 1 vote (NOT 1 share = 1 vote) |
 | Share transfer | Freely transferable (voting rights stay with property) |
 | Dividend | Proportional to shares held, after profitability |
 
-**Phase pricing:**
-- Phase Alpha (now): $1,000/share — Koh Phangan founding partners
-- Phase V1 (M6–M12): $1,500–$2,000/share — Southeast Asia
-- Phase V2+: Market price
+**2 Rounds:**
+- Alpha (now): $1,000/share — 3,000 shares — Koh Phangan founding partners — $3M
+- World (next): $1,500/share — 497,000 shares — Worldwide — $745.5M
+- Total capital: $748.5M · BTC reserve (20%): $149.7M
+
+### Bitcoin Strategy
+
+**BTC as Payment Rail:** Travelers pay card/PayPal/bank OR Bitcoin. Lightning Network at M03. Hotelier receives THB, USD, EUR, or BTC — their choice.
+
+**BTC as Treasury Reserve:** 20% of ALL capital raised → permanent Bitcoin reserve. Written into company statutes. 90% shareholder vote to change. At full scale: $149.7M in BTC. Never sold.
+
+**BTC as Investment Currency:** Founding Partners buy shares WITH Bitcoin. $1,000 in BTC = 1 Alpha share. Annual dividends claimable in BTC.
+
+### Capital Allocation — Alpha Round ($3M)
+
+| Line item | Amount | % |
+|-----------|--------|---|
+| Bitcoin Reserve | $600K | 20% |
+| Acquisitions — Flagship Hotels KP | $750K | 25% |
+| Product & Tech | $660K | 22% |
+| Operations runway | $690K | 23% |
+| Marketing & Legal | $300K | 10% |
+
+### Built-in Wallet
+
+Native in-app wallet for travelers and hoteliers:
+- Load in BTC, USDT, or card
+- Pay bookings, receive payments, collect dividends, earn referrals
+- Withdraw in THB, USD, EUR, or keep in BTC
+
+### Referral Program
+
+- 2% referral reward in BTC for life on every new hotelier brought in
+- Both hoteliers AND travelers can refer
+- Paid automatically via the wallet
+
+### Founding Partners — Correct Terminology
+
+- Alpha Round = 3,000 shares at $1,000 each
+- Founding Partners = the hoteliers who buy those shares
+- Starting target = 400 Founding Partners in Koh Phangan
+- NOT "3,000 Founding Partners" — shares ≠ people
 
 ---
 
@@ -277,6 +316,7 @@ Use `react-i18next`. All strings in `/src/i18n/[lang].json`.
 | Phase | Timeline | Category | Description |
 |-------|----------|----------|-------------|
 | Alpha | Now | **Stay** | Hotel onboarding, LOI signing, survey, referral |
+| Wallet | M03 | **BTC** | Built-in wallet, Lightning Network, BTC payments |
 | V1 | M6 | **Stay** | Live booking engine, 10% commission |
 | V2 | M12 | **Eat** | Restaurants, beach clubs, food experiences |
 | V3 | M18 | **Do** | Activities, tours, diving, yoga, spa |
@@ -396,5 +436,5 @@ Build in this exact order:
 
 ---
 
-*Last updated: March 2025 — Generated from strategic session in Claude.ai*
+*Last updated: April 2025 — Bitcoin strategy update + capital allocation revision*
 *For questions: contact the founder directly via staylo.app*

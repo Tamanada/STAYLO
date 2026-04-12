@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale } from 'lucide-react'
+import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale, Wallet } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth'
 
 const phases = [
   { key: 'phase1', icon: Hotel, gradient: 'from-ocean to-electric', status: 'Alpha', timeline: 'Now' },
+  { key: 'phase_wallet', icon: Wallet, gradient: 'from-[#F7931A] to-[#E8840F]', status: 'M03', timeline: 'M03' },
   { key: 'phase2', icon: UtensilsCrossed, gradient: 'from-libre to-libre/70', status: 'V2', timeline: 'M6–M12' },
   { key: 'phase3', icon: Compass, gradient: 'from-sunrise to-sunset', status: 'V3', timeline: 'M12–M18' },
   { key: 'phase4', icon: Plane, gradient: 'from-electric to-sunset', status: 'V4', timeline: 'M18–M24' },
@@ -109,6 +110,59 @@ export default function Vision() {
         </div>
       </section>
 
+      {/* Bitcoin Strategy */}
+      <section className="py-8 sm:py-12 bg-gradient-to-br from-[#F7931A]/5 via-white to-[#F7931A]/10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8">
+            <Badge variant="golden" className="mb-3">{t('vision.btc_badge', 'Bitcoin-Native')}</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-3">{t('vision.btc_title', 'Bitcoin at the Core')}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.btc_subtitle', 'Staylo is a Bitcoin-native cooperative platform. BTC as payment rail, treasury reserve, and investment currency.')}</p>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-6">
+            <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
+              <div className="w-14 h-14 bg-[#F7931A]/10 rounded-2xl flex items-center justify-center mb-4">
+                <CreditCard size={28} className="text-[#F7931A]" />
+              </div>
+              <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_payment_title', 'BTC as Payment Rail')}</h3>
+              <p className="text-sm text-gray-500">{t('vision.btc_payment_desc', 'Travelers pay by card, PayPal, bank transfer — or in Bitcoin via Lightning Network. Hoteliers receive THB, USD, EUR, or BTC. Their choice.')}</p>
+            </Card>
+
+            <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
+              <div className="w-14 h-14 bg-[#F7931A]/10 rounded-2xl flex items-center justify-center mb-4">
+                <Lock size={28} className="text-[#F7931A]" />
+              </div>
+              <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_treasury_title', 'BTC as Treasury Reserve')}</h3>
+              <p className="text-sm text-gray-500">{t('vision.btc_treasury_desc', '20% of ALL capital raised goes to a permanent Bitcoin reserve. Written into company statutes. 90% shareholder vote to change. At full scale: $149.7M in BTC. Never sold.')}</p>
+            </Card>
+
+            <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
+              <div className="w-14 h-14 bg-[#F7931A]/10 rounded-2xl flex items-center justify-center mb-4">
+                <Coins size={28} className="text-[#F7931A]" />
+              </div>
+              <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_investment_title', 'BTC as Investment Currency')}</h3>
+              <p className="text-sm text-gray-500">{t('vision.btc_investment_desc', 'Founding Partners buy shares WITH Bitcoin. $1,000 in BTC = 1 Alpha share. Annual dividends claimable in BTC.')}</p>
+            </Card>
+          </div>
+
+          {/* Market stats */}
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { stat: '<1% → 15%', label: t('vision.btc_stat1', 'Hotel bookings paid in crypto by 2027') },
+              { stat: '+30%', label: t('vision.btc_stat2', 'Higher booking value vs fiat') },
+              { stat: '3x', label: t('vision.btc_stat3', 'Higher customer LTV') },
+              { stat: '14%', label: t('vision.btc_stat4', 'Of all crypto transactions = travel') },
+            ].map((item, i) => (
+              <div key={i} className="text-center p-4 bg-white rounded-2xl border border-[#F7931A]/10 shadow-sm">
+                <p className="text-2xl font-black text-[#F7931A]">{item.stat}</p>
+                <p className="text-xs text-gray-500 mt-1">{item.label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-400 text-center mt-3 italic">{t('vision.btc_sources', 'Sources: CoinsPaid, Triple-A, Travala, PhocusWire')}</p>
+        </div>
+      </section>
+
       {/* Live Share Counter */}
       <section className="py-8 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
@@ -201,24 +255,44 @@ export default function Vision() {
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency.')}</p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {[
-              { icon: Building2, label: t('vision.fund_acquisitions', 'Acquisitions'), pct: '50%', desc: t('vision.fund_acquisitions_desc', 'Flagship hotels in Koh Phangan — proof the model works'), color: 'golden' },
-              { icon: Users, label: t('vision.fund_team', 'Team & Tech'), pct: '25%', desc: t('vision.fund_team_desc', 'CTO + dev team — they build & maintain the platform'), color: 'libre' },
-              { icon: Lock, label: t('vision.fund_reserve', 'Reserve'), pct: '10%', desc: t('vision.fund_reserve_desc', 'Emergency fund & future development'), color: 'electric' },
-              { icon: Shield, label: t('vision.fund_legal', 'Legal & Structure'), pct: '10%', desc: t('vision.fund_legal_desc', 'Singapore incorporation, MAS, contracts, licenses'), color: 'ocean' },
-              { icon: TrendingUp, label: t('vision.fund_marketing', 'Marketing'), pct: '5%', desc: t('vision.fund_marketing_desc', 'Welcome kits, local events — the network does the rest'), color: 'sunset' },
-            ].map(item => (
-              <Card key={item.label} className="p-6 text-center hover:shadow-lg transition-all">
-                <div className={`w-12 h-12 bg-${item.color}/10 rounded-xl flex items-center justify-center mx-auto mb-3`}>
-                  <item.icon size={24} className={`text-${item.color}`} />
-                </div>
-                <p className={`text-3xl font-black text-${item.color} mb-1`}>{item.pct}</p>
-                <p className="font-semibold text-deep text-sm mb-1">{item.label}</p>
-                <p className="text-xs text-gray-400">{item.desc}</p>
-              </Card>
-            ))}
-          </div>
+          <Card className="p-6 max-w-3xl mx-auto">
+            <h3 className="text-xl font-bold text-deep text-center mb-5">{t('vision.capital_table_title', 'Use of Alpha Capital — $3M')}</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="text-left py-2 pr-4 font-semibold text-deep">Line Item</th>
+                    <th className="text-right py-2 px-2 font-semibold text-deep">Amount</th>
+                    <th className="text-right py-2 px-2 font-semibold text-deep">%</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600">
+                  {[
+                    { label: t('vision.capital_btc', '₿ Bitcoin Reserve'), amount: '$600K', pct: '20%', color: '#F7931A' },
+                    { label: t('vision.capital_acquisitions', 'Acquisitions — Flagship Hotels KP'), amount: '$750K', pct: '25%', color: '#FF6B00' },
+                    { label: t('vision.capital_tech', 'Product & Tech'), amount: '$660K', pct: '22%', color: '#6C5CE7' },
+                    { label: t('vision.capital_operations', 'Operations Runway'), amount: '$690K', pct: '23%', color: '#00B894' },
+                    { label: t('vision.capital_marketing', 'Marketing & Legal'), amount: '$300K', pct: '10%', color: '#636E72' },
+                  ].map((row, i) => (
+                    <tr key={i} className="border-b border-gray-100">
+                      <td className="py-3 pr-4 font-medium flex items-center gap-2">
+                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: row.color }} />
+                        {row.label}
+                      </td>
+                      <td className="text-right py-3 px-2 font-bold">{row.amount}</td>
+                      <td className="text-right py-3 px-2 font-bold" style={{ color: row.color }}>{row.pct}</td>
+                    </tr>
+                  ))}
+                  <tr className="border-t-2 border-gray-300 font-black text-deep">
+                    <td className="py-3 pr-4">TOTAL</td>
+                    <td className="text-right py-3 px-2">$3,000K</td>
+                    <td className="text-right py-3 px-2">100%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-400 text-center mt-3 italic">{t('vision.capital_note', 'Acquisitions = signing 100 flagship hoteliers KP before M06. Commission = 10% revenue per booking (separate).')}</p>
+          </Card>
         </div>
       </section>
 
@@ -299,63 +373,6 @@ export default function Vision() {
             <p className="text-center text-xs text-gray-500 mt-3">{t('vision.flow_disclaimer', 'Based on average 22% OTA commission. Actual savings depend on your current platform and rates.')}</p>
           </Card>
 
-          {/* Revenue breakdown — Pie Chart */}
-          <Card className="p-8 max-w-3xl mx-auto">
-            <h3 className="text-xl font-bold text-deep text-center mb-4">{t('vision.breakdown_title', '10% Commission Breakdown')}</h3>
-            <div className="flex flex-col md:flex-row items-center gap-4">
-              {/* Pie chart SVG */}
-              <div className="relative w-64 h-64 flex-shrink-0">
-                <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-lg">
-                  {/* Operations 40% — starts at 0° */}
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="#3B82F6" strokeWidth="40"
-                    strokeDasharray={`${40 * 5.026} ${(100 - 40) * 5.026}`}
-                    strokeDashoffset="0" transform="rotate(-90 100 100)" />
-                  {/* Ambassador 20% — starts at 144° */}
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="#8B5CF6" strokeWidth="40"
-                    strokeDasharray={`${20 * 5.026} ${(100 - 20) * 5.026}`}
-                    strokeDashoffset={`${-(40) * 5.026}`} transform="rotate(-90 100 100)" />
-                  {/* Dividends 20% — starts at 216° */}
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="#10B981" strokeWidth="40"
-                    strokeDasharray={`${20 * 5.026} ${(100 - 20) * 5.026}`}
-                    strokeDashoffset={`${-(60) * 5.026}`} transform="rotate(-90 100 100)" />
-                  {/* Growth 15% — starts at 288° */}
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="#F97316" strokeWidth="40"
-                    strokeDasharray={`${15 * 5.026} ${(100 - 15) * 5.026}`}
-                    strokeDashoffset={`${-(80) * 5.026}`} transform="rotate(-90 100 100)" />
-                  {/* Reserve 5% — starts at 342° */}
-                  <circle cx="100" cy="100" r="80" fill="none" stroke="#FBBF24" strokeWidth="40"
-                    strokeDasharray={`${5 * 5.026} ${(100 - 5) * 5.026}`}
-                    strokeDashoffset={`${-(95) * 5.026}`} transform="rotate(-90 100 100)" />
-                  {/* Center circle */}
-                  <circle cx="100" cy="100" r="58" fill="white" />
-                  <text x="100" y="92" textAnchor="middle" className="fill-deep text-2xl font-bold" style={{ fontSize: '28px', fontWeight: 700 }}>10%</text>
-                  <text x="100" y="115" textAnchor="middle" className="fill-gray-400" style={{ fontSize: '11px' }}>commission</text>
-                </svg>
-              </div>
-
-              {/* Legend */}
-              <div className="space-y-4 flex-1">
-                {[
-                  { emoji: '⚙️', label: t('vision.breakdown_operations', 'Platform Operations'), pct: 40, color: '#3B82F6', desc: t('vision.breakdown_operations_desc', 'Tech, servers, support, payment processing') },
-                  { emoji: '🤝', label: t('vision.breakdown_ambassador', 'Ambassador Reward'), pct: 20, color: '#8B5CF6', desc: t('vision.breakdown_ambassador_desc', '2% lifetime passive income for the person who brought the hotel to Staylo') },
-                  { emoji: '💰', label: t('vision.breakdown_dividends', 'Shareholder Dividends'), pct: 20, color: '#10B981', desc: t('vision.breakdown_dividends_desc', 'Distributed to all founding partners proportionally') },
-                  { emoji: '📈', label: t('vision.breakdown_growth', 'Growth & Marketing'), pct: 15, color: '#F97316', desc: t('vision.breakdown_growth_desc', 'Traveler acquisition, SEO, partnerships') },
-                  { emoji: '🛡️', label: t('vision.breakdown_reserve', 'Reserve Fund'), pct: 5, color: '#FBBF24', desc: t('vision.breakdown_reserve_desc', 'Emergency fund & future development') },
-                ].map(item => (
-                  <div key={item.label} className="flex items-start gap-3">
-                    <div className="w-4 h-4 rounded-full mt-0.5 flex-shrink-0" style={{ backgroundColor: item.color }} />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-deep">{item.emoji} {item.label}</span>
-                        <span className="text-sm font-bold" style={{ color: item.color }}>{item.pct}%</span>
-                      </div>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
         </div>
       </section>
 
@@ -407,12 +424,12 @@ export default function Vision() {
             )}
           </div>
 
-          {/* Share Structure — 7 Rounds */}
+          {/* Share Structure — 2 Rounds */}
           <div className="mb-4">
             <button onClick={() => setShowShareStructure(!showShareStructure)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
               <div className="flex items-center gap-3">
                 <PieChart className="text-ocean" size={24} />
-                <span className="font-bold text-lg">{t('vision.share_structure_title', 'Share Structure — 500,000 Shares · 7 Rounds')}</span>
+                <span className="font-bold text-lg">{t('vision.share_structure_title', 'Share Structure — 500,000 Shares · 2 Rounds')}</span>
               </div>
               {showShareStructure ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
@@ -426,18 +443,16 @@ export default function Vision() {
                       <th className="text-right py-2 px-2">Shares</th>
                       <th className="text-right py-2 px-2">Price</th>
                       <th className="text-right py-2 px-2">Capital</th>
-                      <th className="text-right py-2 px-2">%</th>
+                      <th className="text-right py-2 px-2">BTC Reserve (20%)</th>
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Genesis</td><td className="px-2">Koh Phangan</td><td className="text-right px-2">3,000</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="text-right px-2">$3.0M</td><td className="text-right px-2">0.6%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Global</td><td className="px-2">Worldwide</td><td className="text-right px-2">347,000</td><td className="text-right px-2">$1,500+</td><td className="text-right px-2">TBD</td><td className="text-right px-2">69.4%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Founder</td><td className="px-2">Non-dilutable</td><td className="text-right px-2">50,000</td><td className="text-right px-2">Locked</td><td className="text-right px-2">—</td><td className="text-right px-2">10%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Investors</td><td className="px-2">Funds & Private</td><td className="text-right px-2">100,000</td><td className="text-right px-2">$5,000+</td><td className="text-right px-2">$500M+</td><td className="text-right px-2">20%</td></tr>
-                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="px-2">—</td><td className="text-right px-2">500,000</td><td className="text-right px-2">—</td><td className="text-right px-2 text-golden">—</td><td className="text-right px-2">100%</td></tr>
+                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Alpha</td><td className="px-2">Koh Phangan</td><td className="text-right px-2">3,000</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="text-right px-2">$3M</td><td className="text-right px-2">$600K</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">World</td><td className="px-2">Worldwide</td><td className="text-right px-2">497,000</td><td className="text-right px-2">$1,500</td><td className="text-right px-2">$745.5M</td><td className="text-right px-2">$149.1M</td></tr>
+                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="px-2">—</td><td className="text-right px-2">500,000</td><td className="text-right px-2">—</td><td className="text-right px-2 text-golden">$748.5M</td><td className="text-right px-2 text-[#F7931A]">$149.7M</td></tr>
                   </tbody>
                 </table>
-                <p className="text-xs text-white/30 mt-4 text-center italic">Genesis get the best price — forever. Global price decided by the Council. Investors: no vote, dividends only.</p>
+                <p className="text-xs text-white/30 mt-4 text-center italic">Alpha partners get the best price — forever. 20% of all capital raised goes to permanent Bitcoin reserve (90% shareholder vote to change).</p>
               </div>
             )}
           </div>
