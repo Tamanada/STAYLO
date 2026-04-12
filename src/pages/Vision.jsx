@@ -200,27 +200,27 @@ export default function Vision() {
                 {t('vision.urgency_title', '600 hotels. 3,000 shares. Do the math.')}
               </p>
               <p className="text-white/70 text-sm leading-relaxed">
-                That's ~5 shares per hotel.<br />
-                Max 10 per property at Genesis price.<br />
-                Not everyone will get theirs.
+                {t('vision.urgency_line1', "That's ~5 shares per hotel.")}<br />
+                {t('vision.urgency_line2', 'Max 10 per property at Alpha price.')}<br />
+                {t('vision.urgency_line3', 'Not everyone will get theirs.')}
               </p>
               <p className="text-sunset font-black text-xs uppercase tracking-wider mt-2">
                 {t('vision.urgency_cta', 'First come, first served. No exceptions.')}
               </p>
             </div>
 
-            {/* Share pricing — Genesis vs Next */}
+            {/* Share pricing — Alpha vs World */}
             <div className="grid sm:grid-cols-2 gap-4 mt-4">
               <div className="bg-golden/10 border border-golden/30 rounded-2xl p-5 text-center">
-                <p className="text-xs text-golden uppercase tracking-wider font-semibold mb-2">{t('vision.tier_genesis', 'Genesis (Now)')}</p>
+                <p className="text-xs text-golden uppercase tracking-wider font-semibold mb-2">{t('vision.tier_alpha', 'Alpha (Now)')}</p>
                 <p className="text-4xl font-black text-golden">$1,000</p>
                 <p className="text-xs text-white/40 mt-1">{t('vision.per_share', 'per share')}</p>
-                <p className="text-xs text-golden/60 mt-2">{t('vision.tier_genesis_note', 'Best price. Forever.')}</p>
+                <p className="text-xs text-golden/60 mt-2">{t('vision.tier_alpha_note', 'For KP. Best price. Forever.')}</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center opacity-60">
-                <p className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-2">{t('vision.tier_global', 'Global (Next)')}</p>
-                <p className="text-4xl font-black text-white/60">$1,500+</p>
-                <p className="text-xs text-white/40 mt-1">{t('vision.tier_global_note', 'Price increases with each phase')}</p>
+                <p className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-2">{t('vision.tier_world', 'World (Next)')}</p>
+                <p className="text-4xl font-black text-white/60">$1,500</p>
+                <p className="text-xs text-white/40 mt-1">{t('vision.tier_world_note', 'Opens after Alpha round closes')}</p>
               </div>
             </div>
           </div>
