@@ -42,7 +42,7 @@ export function HowItWorks() {
             color: '#2D3436',
             lineHeight: 1.15,
           }}>
-            From booking to <span className="text-gradient">ownership</span>
+            Book. Earn. <span className="text-gradient">Impact.</span>
           </h2>
         </div>
 
