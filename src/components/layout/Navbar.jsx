@@ -41,15 +41,15 @@ export function Navbar() {
   return (
     <>
       {/* ── Investor Bar ── */}
-      <div className="w-full py-2.5 px-4 text-center border-b"
+      <div className="w-full py-4 px-4 text-center border-b"
         style={{
           background: 'linear-gradient(90deg, rgba(255,107,0,0.08), rgba(255,60,180,0.06))',
           borderColor: 'rgba(255,107,0,0.15)'
         }}>
-        <p className="text-xs font-bold tracking-wide" style={{ color: '#FF6B00' }}>
+        <p className="text-xl font-bold tracking-wide" style={{ color: '#FF6B00' }}>
           ✦ ALPHA ROUND OPEN · KOH PHANGAN
         </p>
-        <p className="text-[11px] mt-0.5" style={{ color: '#636E72' }}>
+        <p className="text-base mt-1" style={{ color: '#636E72' }}>
           3,000 shares · $1,000/share · World Round opens at $1,500
         </p>
       </div>

@@ -59,9 +59,31 @@ export default function PropertyManage() {
 
   async function handleDeleteProperty() {
     if (!confirm(t('manage.confirm_delete_property', `Delete "${property?.name}"? All rooms, availability, and bookings for this property will be permanently deleted.`))) return
-    await supabase.from('rooms').delete().eq('property_id', propertyId)
-    await supabase.from('properties').delete().eq('id', propertyId)
-    navigate('/dashboard/properties')
+    try {
+      // Delete bookings first (no ON DELETE CASCADE on this FK)
+      const { error: bookingsErr } = await supabase.from('bookings').delete().eq('property_id', propertyId)
+      if (bookingsErr) throw bookingsErr
+
+      // Delete room_availability for all rooms of this property
+      const roomIds = rooms.map(r => r.id)
+      if (roomIds.length > 0) {
+        const { error: availErr } = await supabase.from('room_availability').delete().in('room_id', roomIds)
+        if (availErr) throw availErr
+      }
+
+      // Delete rooms
+      const { error: roomsErr } = await supabase.from('rooms').delete().eq('property_id', propertyId)
+      if (roomsErr) throw roomsErr
+
+      // Delete property
+      const { error: propErr } = await supabase.from('properties').delete().eq('id', propertyId)
+      if (propErr) throw propErr
+
+      navigate('/dashboard/properties')
+    } catch (err) {
+      console.error('Delete failed:', err)
+      alert(t('manage.delete_error', 'Failed to delete property. Please try again or contact support.'))
+    }
   }
 
   async function handleToggleLive() {

@@ -120,7 +120,7 @@ export function DashboardSidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-60 min-h-screen bg-deep border-r border-white/5 fixed left-0 top-0 z-30">
+      <aside className="hidden lg:flex flex-col w-60 h-screen bg-deep border-r border-white/5 fixed left-0 top-0 z-30">
         {sidebarContent}
       </aside>
 

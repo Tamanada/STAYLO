@@ -1,29 +1,23 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, ArrowRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 
-const FILTERS = [
-  { label: 'All', emoji: '' },
-  { label: 'Beach', emoji: '🏖' },
-  { label: 'Jungle', emoji: '🌿' },
-  { label: 'Wellness', emoji: '🧘' },
-  { label: 'City', emoji: '🌆' },
-  { label: 'Luxury', emoji: '💎' },
-  { label: 'Co-owned', emoji: '🤝' },
-  { label: 'Best value', emoji: '💰' },
-]
+const FILTER_KEYS = ['filter_all', 'filter_beach', 'filter_jungle', 'filter_wellness', 'filter_city', 'filter_luxury', 'filter_coowned', 'filter_bestvalue']
+const FILTER_EMOJIS = ['', '🏖', '🌿', '🧘', '🌆', '💎', '🤝', '💰']
 
 const STATS = [
-  { value: '420+', label: 'Hotels', color: '#FF6B00' },
-  { value: '10%', label: 'Commission', color: '#00B894' },
-  { value: '$STAY', label: 'Earn', color: '#6C5CE7' },
-  { value: '1 vote', label: 'per property', color: '#FF3CB4' },
+  { value: '420+', labelKey: 'stat_hotels', color: '#FF6B00' },
+  { value: '10%', labelKey: 'stat_commission', color: '#00B894' },
+  { value: '$STAY', labelKey: 'stat_earn', color: '#6C5CE7' },
+  { value: '1 vote', labelKey: 'stat_vote', color: '#FF3CB4' },
 ]
 
 export function Hero() {
+  const { t } = useTranslation()
   const { user } = useAuth()
-  const [activeFilter, setActiveFilter] = useState('All')
+  const [activeFilter, setActiveFilter] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
 
   return (
@@ -44,7 +38,7 @@ export function Hero() {
         <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-8"
           style={{ background: 'rgba(255,107,0,0.08)', border: '1.5px solid rgba(255,107,0,0.2)' }}>
           <span style={{ color: '#FF6B00', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-            ✦ Built with hoteliers, for hoteliers
+            {t('home_hero.badge', '✦ Built with hoteliers, for hoteliers')}
           </span>
         </div>
 
@@ -57,15 +51,15 @@ export function Hero() {
           color: '#2D3436',
           margin: '0 0 24px',
         }}>
-          Book with{' '}
+          {t('home_hero.title_1', 'Book with ')}
           <span style={{
             background: 'linear-gradient(135deg, #FF6B00, #FF3CB4, #6C5CE7)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
-          }}>purpose.</span>
+          }}>{t('home_hero.title_highlight', 'purpose.')}</span>
           <br />
-          Travel with soul.
+          {t('home_hero.title_2', 'Travel with soul.')}
         </h1>
 
         {/* Subtitle */}
@@ -76,8 +70,7 @@ export function Hero() {
           maxWidth: '620px',
           margin: '0 auto 40px',
         }}>
-          Every booking on Staylo goes back to the hoteliers who built it.
-          Co-owned. 10% commission. Yours forever.
+          {t('home_hero.subtitle', 'Every booking on Staylo goes back to the hoteliers who built it. Co-owned. 10% commission. Yours forever.')}
         </p>
 
         {/* Search box */}
@@ -95,14 +88,14 @@ export function Hero() {
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Where do you want to stay?"
+                placeholder={t('home_hero.search_placeholder', 'Where do you want to stay?')}
                 className="flex-1 py-3 text-base outline-none bg-transparent"
                 style={{ color: '#2D3436', fontSize: '15px' }}
               />
             </div>
             <Link to={user ? '/dashboard/book' : '/register'}>
               <button className="btn-primary !rounded-full !py-3 !px-8 flex items-center gap-2">
-                <span>Search</span>
+                <span>{t('home_hero.search_button', 'Search')}</span>
                 <ArrowRight size={16} />
               </button>
             </Link>
@@ -111,10 +104,10 @@ export function Hero() {
 
         {/* Filter pills */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
-          {FILTERS.map(f => (
-            <button key={f.label} onClick={() => setActiveFilter(f.label)}
+          {FILTER_KEYS.map((key, i) => (
+            <button key={key} onClick={() => setActiveFilter(i)}
               className="px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
-              style={activeFilter === f.label ? {
+              style={activeFilter === i ? {
                 background: 'linear-gradient(135deg, #FF6B00, #FF3CB4)',
                 color: 'white',
                 border: 'none',
@@ -124,8 +117,8 @@ export function Hero() {
                 color: '#636E72',
                 border: '1.5px solid #E8E0D8',
               }}>
-              {f.emoji && <span className="mr-1">{f.emoji}</span>}
-              {f.label}
+              {FILTER_EMOJIS[i] && <span className="mr-1">{FILTER_EMOJIS[i]}</span>}
+              {t(`home_hero.${key}`, key)}
             </button>
           ))}
         </div>
@@ -133,14 +126,14 @@ export function Hero() {
         {/* Stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
           {STATS.map(stat => (
-            <div key={stat.label} className="card-hover rounded-3xl p-5 text-center"
+            <div key={stat.labelKey} className="card-hover rounded-3xl p-5 text-center"
               style={{
                 background: 'white',
                 border: '1.5px solid #E8E0D8',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
               }}>
               <p className="text-3xl font-black mb-1" style={{ color: stat.color }}>{stat.value}</p>
-              <p className="text-xs font-semibold" style={{ color: '#B2BEC3' }}>{stat.label}</p>
+              <p className="text-xs font-semibold" style={{ color: '#B2BEC3' }}>{t(`home_hero.${stat.labelKey}`)}</p>
             </div>
           ))}
         </div>

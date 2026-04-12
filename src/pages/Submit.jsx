@@ -197,6 +197,7 @@ export default function Submit() {
   const [step, setStep] = useState(0)
   const [submitted, setSubmitted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [parsing, setParsing] = useState(false)
   const [photos, setPhotos] = useState([])
   const [photoError, setPhotoError] = useState('')
@@ -288,9 +289,10 @@ export default function Submit() {
   async function handleSubmit(e) {
     e.preventDefault()
     if (!user) { navigate('/register'); return }
+    setError('')
     setLoading(true)
     try {
-      const { data, error } = await supabase.from('properties').insert({
+      const { data, error: insertErr } = await supabase.from('properties').insert({
         user_id: user.id,
         name: form.name, type: form.type, country: form.country, city: form.city,
         booking_link: form.booking_link || null, airbnb_link: form.airbnb_link || null,
@@ -300,7 +302,7 @@ export default function Submit() {
         contact_email: form.contact_email, contact_phone: form.contact_phone || null,
         description: form.description || null,
       }).select('id').single()
-      if (error) throw error
+      if (insertErr) throw insertErr
 
       if (photos.length > 0 && data?.id) {
         const photoUrls = await uploadPhotos(data.id)
@@ -310,7 +312,10 @@ export default function Submit() {
       }
       trackEvent(EVENTS.PROPERTY_SUBMIT)
       setSubmitted(true)
-    } catch (err) { console.error(err) }
+    } catch (err) {
+      console.error('Submit failed:', err)
+      setError(err?.message || t('property.error', 'Registration failed. Please check all required fields and try again.'))
+    }
     setLoading(false)
   }
 
@@ -644,6 +649,13 @@ export default function Submit() {
                   <span>Attractions: <strong>{form.attractions.length} nearby</strong></span>
                 </div>
               </div>
+            </div>
+          )}
+
+          {/* ── Error ─────────────────────── */}
+          {error && (
+            <div className="mt-6 p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 font-medium">
+              {error}
             </div>
           )}
 

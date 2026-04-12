@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Star, ArrowRight } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const HOTELS = [
   {
@@ -45,13 +46,15 @@ const HOTELS = [
 ]
 
 export function HotelGrid() {
+  const { t } = useTranslation()
+
   return (
     <section style={{ background: '#F8F6F0', padding: '80px 5%' }}>
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-10">
           <div>
-            <p className="section-label mb-3">Featured hotels</p>
+            <p className="section-label mb-3">{t('home_grid.section_label', 'Featured hotels')}</p>
             <h2 style={{
               fontSize: 'clamp(28px, 3.5vw, 46px)',
               fontWeight: 900,
@@ -59,12 +62,12 @@ export function HotelGrid() {
               color: '#2D3436',
               lineHeight: 1.15,
             }}>
-              Koh Phangan · Alpha Market
+              {t('home_grid.title', 'Koh Phangan · Alpha Market')}
             </h2>
           </div>
           <Link to="/dashboard/book" className="flex items-center gap-1 text-sm font-bold no-underline transition-colors"
             style={{ color: '#FF6B00' }}>
-            View all 420 hotels <ArrowRight size={16} />
+            {t('home_grid.view_all', 'View all 420 hotels')} <ArrowRight size={16} />
           </Link>
         </div>
 
@@ -80,12 +83,10 @@ export function HotelGrid() {
               {/* Image area */}
               <div className="relative h-44 flex items-center justify-center" style={{ background: hotel.gradient }}>
                 <span className="text-6xl">{hotel.emoji}</span>
-                {/* Co-owned badge */}
                 <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white"
                   style={{ background: 'linear-gradient(135deg, #00B894, #00CEC9)' }}>
-                  Co-owned
+                  {t('home_grid.coowned', 'Co-owned')}
                 </span>
-                {/* 10% badge */}
                 <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white"
                   style={{ background: 'linear-gradient(135deg, #FF6B00, #FF8C42)' }}>
                   10%
@@ -94,7 +95,6 @@ export function HotelGrid() {
 
               {/* Content */}
               <div className="p-4">
-                {/* Stars */}
                 <div className="flex items-center gap-1 mb-2">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <Star key={i} size={12} fill={i < Math.round(hotel.stars) ? '#FDCB6E' : 'none'}
@@ -110,7 +110,7 @@ export function HotelGrid() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-xl font-black" style={{ color: '#2D3436' }}>${hotel.price}</span>
-                    <span className="text-xs ml-1" style={{ color: '#B2BEC3' }}>/night</span>
+                    <span className="text-xs ml-1" style={{ color: '#B2BEC3' }}>{t('home_grid.night', '/night')}</span>
                   </div>
                   <span className="px-2.5 py-1 rounded-full text-[10px] font-bold"
                     style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>

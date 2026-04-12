@@ -23,14 +23,6 @@ const STEPS = [
     color: '#6C5CE7',
     bg: 'rgba(108,92,231,0.1)',
   },
-  {
-    num: 4,
-    emoji: '💎',
-    title: 'Own a piece',
-    desc: 'Become a founding partner. Earn dividends, vote on decisions, and co-own the future of hospitality.',
-    color: '#FF3CB4',
-    bg: 'rgba(255,60,180,0.1)',
-  },
 ]
 
 export function HowItWorks() {
@@ -55,7 +47,7 @@ export function HowItWorks() {
         </div>
 
         {/* Steps */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid sm:grid-cols-3 gap-5">
           {STEPS.map(step => (
             <div key={step.num} className="card-hover rounded-3xl p-7 text-center"
               style={{
