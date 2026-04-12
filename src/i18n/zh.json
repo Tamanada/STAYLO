@@ -997,6 +997,18 @@
     "button": "成为创始合伙人",
     "note": "需KYC · 最低1股 · 新加坡法律 · Staylo Holdings Pte. Ltd."
   },
+  "home_how": {
+    "label": "运作方式",
+    "title_1": "预订。",
+    "title_2": "赚取。",
+    "title_3": "影响。",
+    "step1_title": "预订住宿",
+    "step1_desc": "以市场上最公平的佣金搜索、比较和预订酒店。同样优质的酒店，更好的价格。",
+    "step2_title": "赚取$STAY代币",
+    "step2_desc": "每预订一晚即可赚取$STAY代币。用于折扣、参与平台决策投票或交易。",
+    "step3_title": "支持酒店业者",
+    "step3_desc": "您的预订直接支持独立酒店业者。90%留在酒店。没有中间商拿走25%。"
+  },
   "home_testimonials": {
     "section_label": "用户评价",
     "title_1": "酒店经营者",

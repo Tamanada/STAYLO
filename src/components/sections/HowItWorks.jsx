@@ -1,31 +1,14 @@
+import { useTranslation } from 'react-i18next'
+
 const STEPS = [
-  {
-    num: 1,
-    emoji: '🔍',
-    title: 'Book your stay',
-    desc: 'Search, compare, and book hotels at the fairest commission on the market. Same great hotels, better deal.',
-    color: '#FF6B00',
-    bg: 'rgba(255,107,0,0.1)',
-  },
-  {
-    num: 2,
-    emoji: '🪙',
-    title: 'Earn $STAY tokens',
-    desc: 'Every night booked earns $STAY tokens. Use them for discounts, vote on platform decisions, or trade.',
-    color: '#00B894',
-    bg: 'rgba(0,184,148,0.1)',
-  },
-  {
-    num: 3,
-    emoji: '🤝',
-    title: 'Support hoteliers',
-    desc: 'Your booking directly supports independent hoteliers. 90% stays with the hotel. No middleman taking 25%.',
-    color: '#6C5CE7',
-    bg: 'rgba(108,92,231,0.1)',
-  },
+  { num: 1, emoji: '🔍', titleKey: 'step1_title', descKey: 'step1_desc', color: '#FF6B00', bg: 'rgba(255,107,0,0.1)' },
+  { num: 2, emoji: '🪙', titleKey: 'step2_title', descKey: 'step2_desc', color: '#00B894', bg: 'rgba(0,184,148,0.1)' },
+  { num: 3, emoji: '🤝', titleKey: 'step3_title', descKey: 'step3_desc', color: '#6C5CE7', bg: 'rgba(108,92,231,0.1)' },
 ]
 
 export function HowItWorks() {
+  const { t } = useTranslation()
+
   return (
     <section style={{
       background: 'linear-gradient(135deg, #FFF8F0 0%, #FFF0F8 50%, #F0F4FF 100%)',
@@ -34,7 +17,7 @@ export function HowItWorks() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-14">
-          <p className="section-label mb-3">How it works</p>
+          <p className="section-label mb-3">{t('home_how.label', 'How it works')}</p>
           <h2 style={{
             fontSize: 'clamp(28px, 3.5vw, 46px)',
             fontWeight: 900,
@@ -42,7 +25,7 @@ export function HowItWorks() {
             color: '#2D3436',
             lineHeight: 1.15,
           }}>
-            Book. Earn. <span className="text-gradient">Impact.</span>
+            {t('home_how.title_1', 'Book.')} {t('home_how.title_2', 'Earn.')} <span className="text-gradient">{t('home_how.title_3', 'Impact.')}</span>
           </h2>
         </div>
 
@@ -61,8 +44,8 @@ export function HowItWorks() {
                 <span className="text-xl font-black" style={{ color: step.color }}>{step.num}</span>
               </div>
               <span className="text-3xl block mb-4">{step.emoji}</span>
-              <h3 className="font-black text-lg mb-2" style={{ color: '#2D3436' }}>{step.title}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: '#636E72' }}>{step.desc}</p>
+              <h3 className="font-black text-lg mb-2" style={{ color: '#2D3436' }}>{t(`home_how.${step.titleKey}`, step.titleKey)}</h3>
+              <p className="text-sm leading-relaxed" style={{ color: '#636E72' }}>{t(`home_how.${step.descKey}`, step.descKey)}</p>
             </div>
           ))}
         </div>

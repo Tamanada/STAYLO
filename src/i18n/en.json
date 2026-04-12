@@ -1023,6 +1023,18 @@
     "button": "Become a Founding Partner",
     "note": "KYC required · Min. 1 share · Singapore law · Staylo Holdings Pte. Ltd."
   },
+  "home_how": {
+    "label": "How it works",
+    "title_1": "Book.",
+    "title_2": "Earn.",
+    "title_3": "Impact.",
+    "step1_title": "Book your stay",
+    "step1_desc": "Search, compare, and book hotels at the fairest commission on the market. Same great hotels, better deal.",
+    "step2_title": "Earn $STAY tokens",
+    "step2_desc": "Every night booked earns $STAY tokens. Use them for discounts, vote on platform decisions, or trade.",
+    "step3_title": "Support hoteliers",
+    "step3_desc": "Your booking directly supports independent hoteliers. 90% stays with the hotel. No middleman taking 25%."
+  },
   "home_testimonials": {
     "section_label": "Testimonials",
     "title_1": "Hoteliers ",

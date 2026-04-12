@@ -998,6 +998,18 @@
     "button": "Tornar-se Parceiro Fundador",
     "note": "KYC obrigatório · Mín. 1 ação · Lei de Singapura · Staylo Holdings Pte. Ltd."
   },
+  "home_how": {
+    "label": "Como funciona",
+    "title_1": "Reserve.",
+    "title_2": "Ganhe.",
+    "title_3": "Impacto.",
+    "step1_title": "Reserve sua estadia",
+    "step1_desc": "Pesquise, compare e reserve hotéis com a comissão mais justa do mercado. Os mesmos ótimos hotéis, melhor preço.",
+    "step2_title": "Ganhe tokens $STAY",
+    "step2_desc": "Cada noite reservada rende tokens $STAY. Use para descontos, vote em decisões da plataforma ou negocie.",
+    "step3_title": "Apoie os hoteleiros",
+    "step3_desc": "Sua reserva apoia diretamente hoteleiros independentes. 90% fica com o hotel. Sem intermediário levando 25%."
+  },
   "home_testimonials": {
     "section_label": "Depoimentos",
     "title_1": "Hoteleiros ",

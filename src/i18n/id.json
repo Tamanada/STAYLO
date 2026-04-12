@@ -992,6 +992,18 @@
     "button": "Jadilah Mitra Pendiri",
     "note": "KYC diperlukan · Min. 1 saham · Hukum Singapura · Staylo Holdings Pte. Ltd."
   },
+  "home_how": {
+    "label": "Cara kerjanya",
+    "title_1": "Pesan.",
+    "title_2": "Hasilkan.",
+    "title_3": "Dampak.",
+    "step1_title": "Pesan penginapan Anda",
+    "step1_desc": "Cari, bandingkan, dan pesan hotel dengan komisi paling adil di pasar. Hotel hebat yang sama, harga lebih baik.",
+    "step2_title": "Dapatkan token $STAY",
+    "step2_desc": "Setiap malam yang dipesan menghasilkan token $STAY. Gunakan untuk diskon, voting keputusan platform, atau perdagangan.",
+    "step3_title": "Dukung pemilik hotel",
+    "step3_desc": "Pemesanan Anda langsung mendukung pemilik hotel independen. 90% tetap di hotel. Tanpa perantara mengambil 25%."
+  },
   "home_testimonials": {
     "section_label": "Testimoni",
     "title_1": "Pelaku perhotelan ",

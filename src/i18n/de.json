@@ -992,6 +992,18 @@
     "button": "Gründungspartner werden",
     "note": "KYC erforderlich · Min. 1 Anteil · Singapurisches Recht · Staylo Holdings Pte. Ltd."
   },
+  "home_how": {
+    "label": "So funktioniert's",
+    "title_1": "Buchen.",
+    "title_2": "Verdienen.",
+    "title_3": "Wirkung.",
+    "step1_title": "Aufenthalt buchen",
+    "step1_desc": "Suchen, vergleichen und buchen Sie Hotels zur fairsten Provision auf dem Markt. Dieselben großartigen Hotels, besserer Deal.",
+    "step2_title": "$STAY-Token verdienen",
+    "step2_desc": "Jede gebuchte Nacht bringt $STAY-Token. Nutzen Sie sie für Rabatte, stimmen Sie über Plattformentscheidungen ab oder handeln Sie.",
+    "step3_title": "Hoteliers unterstützen",
+    "step3_desc": "Ihre Buchung unterstützt unabhängige Hoteliers direkt. 90% bleiben beim Hotel. Kein Mittelsmann, der 25% nimmt."
+  },
   "home_testimonials": {
     "section_label": "Erfahrungsberichte",
     "title_1": "Hoteliers ",

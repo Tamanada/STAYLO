@@ -991,6 +991,18 @@
     "button": "Diventa Partner Fondatore",
     "note": "KYC richiesto · Min. 1 azione · Legge di Singapore · Staylo Holdings Pte. Ltd."
   },
+  "home_how": {
+    "label": "Come funziona",
+    "title_1": "Prenota.",
+    "title_2": "Guadagna.",
+    "title_3": "Impatto.",
+    "step1_title": "Prenota il tuo soggiorno",
+    "step1_desc": "Cerca, confronta e prenota hotel con la commissione più equa sul mercato. Gli stessi ottimi hotel, prezzo migliore.",
+    "step2_title": "Guadagna token $STAY",
+    "step2_desc": "Ogni notte prenotata ti fa guadagnare token $STAY. Usali per sconti, vota sulle decisioni della piattaforma o scambiali.",
+    "step3_title": "Sostieni gli albergatori",
+    "step3_desc": "La tua prenotazione sostiene direttamente gli albergatori indipendenti. Il 90% resta all'hotel. Nessun intermediario che prende il 25%."
+  },
   "home_testimonials": {
     "section_label": "Testimonianze",
     "title_1": "Gli albergatori ",
