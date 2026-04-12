@@ -236,8 +236,8 @@ export default function Vision() {
               <p className="text-xs text-white/40">{t('vision.per_share_alpha', 'Per share (alpha)')}</p>
             </div>
             <div className="bg-white/5 rounded-2xl p-5 text-center">
-              <p className="text-2xl font-black text-white">1+</p>
-              <p className="text-xs text-white/40">{t('vision.shares_per_property', 'No limit per property')}</p>
+              <p className="text-2xl font-black text-white">1–10</p>
+              <p className="text-xs text-white/40">{t('vision.shares_per_property', '1 to 10 shares per property')}</p>
             </div>
             <div className="bg-white/5 rounded-2xl p-5 text-center">
               <p className="text-2xl font-black text-libre">10%</p>
