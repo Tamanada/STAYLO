@@ -294,13 +294,33 @@ export default function Submit() {
     try {
       const { data, error: insertErr } = await supabase.from('properties').insert({
         user_id: user.id,
+        // Basic
         name: form.name, type: form.type, country: form.country, city: form.city,
         booking_link: form.booking_link || null, airbnb_link: form.airbnb_link || null,
         room_count: Number(form.room_count) || 1,
         avg_nightly_rate: Number(form.avg_nightly_rate) || 0,
         star_rating: Number(form.star_rating) || 3,
-        contact_email: form.contact_email, contact_phone: form.contact_phone || null,
         description: form.description || null,
+        website: form.website || null,
+        // Contact
+        contact_email: form.contact_email, contact_phone: form.contact_phone || null,
+        // Location
+        address: form.address || null,
+        lat: form.lat ? Number(form.lat) : null,
+        lng: form.lng ? Number(form.lng) : null,
+        // Operations
+        check_in_time: form.check_in_time || '14:00',
+        check_out_time: form.check_out_time || '12:00',
+        // Services & features
+        amenities: form.amenities || [],
+        accessibility: form.accessibility || [],
+        bed_types: form.bed_types || [],
+        attractions: form.attractions || [],
+        languages_spoken: form.languages_spoken?.length ? form.languages_spoken : ['en'],
+        // Policies
+        special_requests: form.special_requests || null,
+        cancellation_policy: form.cancellation_policy || 'flexible',
+        smoking_policy: form.smoking_policy || 'no_smoking',
       }).select('id').single()
       if (insertErr) throw insertErr
 
