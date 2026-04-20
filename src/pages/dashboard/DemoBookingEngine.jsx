@@ -235,7 +235,8 @@ export default function DemoBookingEngine() {
   const [guests, setGuests] = useState(searchParams.get('guests') || '2')
   const [sortBy, setSortBy] = useState('recommended')
   const [typeFilter, setTypeFilter] = useState('')
-  const [priceRange, setPriceRange] = useState([0, 700])
+  // Upper bound high enough to include luxury rooms; UI can still filter down.
+  const [priceRange, setPriceRange] = useState([0, 10000])
   const [favorites, setFavorites] = useState([])
   const [searched, setSearched] = useState(!!searchParams.get('q'))
   const [showGuestPicker, setShowGuestPicker] = useState(false)
