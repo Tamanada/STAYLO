@@ -465,8 +465,8 @@ export default function DemoBookingEngine() {
                   <Flame size={20} className="text-amber-400" />
                   <span className="text-xs font-bold uppercase tracking-wider text-amber-400">{t('booking.limited', 'Limited Time')}</span>
                 </div>
-                <h3 className="text-xl sm:text-2xl font-extrabold mb-2">{t('booking.deal_title', 'Save up to 20% on every booking')}</h3>
-                <p className="text-blue-200/80 text-sm">{t('booking.deal_desc', 'STAYLO charges only 10% commission — hoteliers pass the savings to you. No tricks, no hidden fees.')}</p>
+                <h3 className="text-xl sm:text-2xl font-extrabold mb-2">{t('booking.deal_title', 'Hoteliers set the prices. STAYLO takes 10%. That\'s it.')}</h3>
+                <p className="text-blue-200/80 text-sm">{t('booking.deal_desc', 'On OTAs, 15–25% commission goes to middlemen. On STAYLO, the difference goes back to the hotel — where it belongs.')}</p>
               </div>
               <button onClick={() => { setSearchCity(''); setSearched(true) }}
                 className="px-6 py-3 bg-white text-[#003580] rounded-lg font-bold text-sm hover:bg-blue-50 transition-colors flex items-center gap-2 whitespace-nowrap">

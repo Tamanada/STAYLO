@@ -883,7 +883,12 @@
     "your_stay": "Your Stay",
     "rooms_available": "Rooms available",
     "guarantee_title": "STAYLO Guarantee",
-    "guarantee_desc": "Only 10% commission — no hidden fees. You book directly with the hotel."
+    "guarantee_desc": "Only 10% commission — no hidden fees. You book directly with the hotel.",
+    "deal_title": "Hoteliers set the prices. STAYLO takes 10%. That's it.",
+    "deal_desc": "On OTAs, 15–25% commission goes to middlemen. On STAYLO, the difference goes back to the hotel — where it belongs.",
+    "staylo_advantage": "Fair Trade Hospitality — 10% commission only",
+    "advantage_desc": "Hoteliers are the sole price-setters. STAYLO keeps only 10% commission — the margin (vs. 15–25% on OTAs) goes back to the hotel, not to middlemen.",
+    "limited": "Fair Pricing"
   },
   "checkout": {
     "title": "Complete Your Booking",

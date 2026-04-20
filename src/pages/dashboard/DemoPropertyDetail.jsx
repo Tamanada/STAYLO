@@ -427,8 +427,8 @@ export default function DemoPropertyDetail() {
                 <TrendingDown size={24} className="text-[#008009]" />
               </div>
               <div>
-                <p className="font-bold text-gray-900 text-sm">{t('booking.staylo_advantage', 'STAYLO Advantage — Save up to 20%')}</p>
-                <p className="text-xs text-gray-600">{t('booking.advantage_desc', 'STAYLO charges only 10% commission vs. 15–25% on Booking.com. The hotel passes the savings directly to you.')}</p>
+                <p className="font-bold text-gray-900 text-sm">{t('booking.staylo_advantage', 'Fair Trade Hospitality — 10% commission only')}</p>
+                <p className="text-xs text-gray-600">{t('booking.advantage_desc', 'Hoteliers are the sole price-setters. STAYLO keeps only 10% commission — the margin (vs. 15–25% on OTAs) goes back to the hotel, not to middlemen.')}</p>
               </div>
             </div>
 

@@ -886,7 +886,12 @@
     "your_stay": "Votre séjour",
     "rooms_available": "Chambres disponibles",
     "guarantee_title": "Garantie STAYLO",
-    "guarantee_desc": "Seulement 10% de commission — aucun frais caché. Vous réservez directement avec l'hôtel."
+    "guarantee_desc": "Seulement 10% de commission — aucun frais caché. Vous réservez directement avec l'hôtel.",
+    "deal_title": "Les hôteliers fixent les prix. STAYLO prend 10%. Point.",
+    "deal_desc": "Sur les OTA, 15 à 25% de commission partent aux intermédiaires. Sur STAYLO, la différence revient à l'hôtelier — là où elle a sa place.",
+    "staylo_advantage": "Équité hôtelière — 10% de commission, point",
+    "advantage_desc": "Les hôteliers sont les seuls garants des prix. STAYLO ne garde que 10% de commission — la différence (vs 15–25% sur les OTA) revient enfin à l'hôtelier, pas aux intermédiaires.",
+    "limited": "Prix équitables"
   },
   "checkout": {
     "title": "Finalisez votre réservation",
