@@ -30,9 +30,9 @@ import AmbassadorGuide from './pages/AmbassadorGuide'
 import DashboardProperties from './pages/dashboard/DashboardProperties'
 import DashboardReferrals from './pages/dashboard/DashboardReferrals'
 import DashboardShares from './pages/dashboard/DashboardShares'
-import DemoBookingEngine from './pages/dashboard/DemoBookingEngine'
-import DemoPropertyDetail from './pages/dashboard/DemoPropertyDetail'
-import BookingCheckout from './pages/dashboard/BookingCheckout'
+import OTASearch from './pages/ota/Search'
+import OTAPropertyDetail from './pages/ota/PropertyDetail'
+import OTACheckout from './pages/ota/Checkout'
 import PropertyManage from './pages/dashboard/PropertyManage'
 import DashboardKit from './pages/dashboard/DashboardKit'
 import PMSFrontDesk from './pages/dashboard/PMSFrontDesk'
@@ -80,11 +80,6 @@ export default function App() {
             <Route path="housekeeping" element={<PMSHousekeeping />} />
             <Route path="reports" element={<PMSReports />} />
             <Route path="bookings" element={<MyBookings />} />
-            <Route path="book" element={<DemoBookingEngine />} />
-            <Route path="book/:id" element={<DemoPropertyDetail />} />
-            <Route path="book/:id/checkout" element={<BookingCheckout />} />
-            <Route path="preview" element={<DemoBookingEngine />} />
-            <Route path="preview/:id" element={<DemoPropertyDetail />} />
           </Route>
 
           {/* Welcome — standalone, no Navbar/Footer */}
@@ -108,6 +103,11 @@ export default function App() {
             <Route path="/ambassador" element={<AmbassadorLanding />} />
             <Route path="/ambassador/register" element={<AmbassadorRegister />} />
             <Route path="/ambassador/guide" element={<AmbassadorGuide />} />
+
+            {/* OTA — public booking site (was /dashboard/book/* until 2026-04-22) */}
+            <Route path="/ota" element={<OTASearch />} />
+            <Route path="/ota/:id" element={<OTAPropertyDetail />} />
+            <Route path="/ota/:id/checkout" element={<OTACheckout />} />
           </Route>
         </Routes>
       </AuthProvider>

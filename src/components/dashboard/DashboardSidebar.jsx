@@ -23,7 +23,6 @@ import {
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, labelKey: 'dashboard.nav_overview', label: 'Overview', end: true },
   { to: '/dashboard/properties', icon: Building2, labelKey: 'dashboard.nav_properties', label: 'My Properties' },
-  { to: '/dashboard/book', icon: Search, labelKey: 'dashboard.nav_book', label: 'Book Now (Demo)', end: true },
   { to: '/dashboard/bookings', icon: Luggage, labelKey: 'dashboard.nav_my_bookings', label: 'My Bookings' },
   { separator: true, label: 'PMS' },
   { to: '/dashboard/front-desk', icon: ConciergeBell, labelKey: 'dashboard.nav_front_desk', label: 'Front Desk' },

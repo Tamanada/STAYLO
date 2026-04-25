@@ -10,180 +10,6 @@ import {
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 
-// ── Demo data ─────────────────────────────────────────────
-const DEMO_PROPERTIES = [
-  {
-    id: 'demo-staylo', name: 'STAYLO Resort & Nomad Hub', type: 'resort',
-    city: 'Koh Phangan', country: 'Thailand', stars: 5, featured: true,
-    photo: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
-      'https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=800&q=80',
-      'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=800&q=80',
-      'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&q=80',
-      'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80',
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80',
-      'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&q=80',
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',
-    ],
-    price: 89, otaPrice: 0, rating: 9.8, reviews: 47,
-    amenities: ['wifi', 'pool', 'spa', 'beach', 'restaurant', 'gym', 'parking', 'minibar'],
-    desc: 'Where it all began. STAYLO Resort is the birthplace of the hospitality revolution — a stunning beachfront property on Koh Phangan where hoteliers, digital nomads, and travelers come together. Featuring a world-class coworking space, organic farm-to-table restaurant, infinity pool overlooking the Gulf of Thailand, and legendary sunset views. This is more than a resort — it\'s the headquarters of a movement.',
-    roomTypes: [
-      { name: 'Nomad Pod — Smart Dorm', price: 29, otaPrice: 0, beds: 'Single Pod', guests: 1, sqm: 6 },
-      { name: 'Sunset Beach Room', price: 89, otaPrice: 0, beds: 'King Bed', guests: 2, sqm: 35 },
-      { name: 'Ocean View Suite', price: 165, otaPrice: 0, beds: 'King Bed', guests: 3, sqm: 55 },
-      { name: 'Founder\'s Villa — Private Pool', price: 320, otaPrice: 0, beds: 'King + Daybed', guests: 4, sqm: 110 },
-    ],
-  },
-  {
-    id: 'demo-1', name: 'Anantara Riverside Bangkok Resort', type: 'resort',
-    city: 'Bangkok', country: 'Thailand', stars: 5,
-    photo: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&q=80',
-      'https://images.unsplash.com/photo-1582719508461-905c673771fd?w=800&q=80',
-      'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80',
-    ],
-    price: 142, otaPrice: 178, rating: 9.2, reviews: 2847,
-    amenities: ['wifi', 'pool', 'spa', 'restaurant', 'gym', 'parking'],
-    desc: 'Luxurious riverside resort with stunning views of the Chao Phraya River. Features world-class dining and an award-winning spa.',
-    roomTypes: [
-      { name: 'Deluxe River View', price: 142, otaPrice: 178, beds: 'King', guests: 2, sqm: 38 },
-      { name: 'Premier Suite', price: 245, otaPrice: 310, beds: 'King', guests: 3, sqm: 62 },
-      { name: 'Royal Penthouse', price: 520, otaPrice: 650, beds: 'King + Twin', guests: 4, sqm: 120 },
-    ],
-  },
-  {
-    id: 'demo-2', name: 'The Siam Heritage Boutique', type: 'hotel',
-    city: 'Bangkok', country: 'Thailand', stars: 4,
-    photo: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=800&q=80',
-      'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80',
-    ],
-    price: 89, otaPrice: 112, rating: 8.8, reviews: 1563,
-    amenities: ['wifi', 'pool', 'restaurant', 'ac'],
-    desc: 'Charming boutique hotel in the heart of old Bangkok, blending traditional Thai architecture with modern comfort.',
-    roomTypes: [
-      { name: 'Heritage Deluxe', price: 89, otaPrice: 112, beds: 'Queen', guests: 2, sqm: 28 },
-      { name: 'Grand Heritage Suite', price: 165, otaPrice: 205, beds: 'King', guests: 2, sqm: 45 },
-    ],
-  },
-  {
-    id: 'demo-3', name: 'Samui Seaside Villa & Spa', type: 'villa',
-    city: 'Koh Samui', country: 'Thailand', stars: 5,
-    photo: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1540541338287-41700207dee6?w=800&q=80',
-      'https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=800&q=80',
-      'https://images.unsplash.com/photo-1584132967334-10e028bd69f7?w=800&q=80',
-    ],
-    price: 310, otaPrice: 395, rating: 9.5, reviews: 892,
-    amenities: ['wifi', 'pool', 'spa', 'beach', 'restaurant', 'minibar'],
-    desc: 'Exclusive beachfront villas with private infinity pools overlooking the Gulf of Thailand.',
-    roomTypes: [
-      { name: 'Garden Pool Villa', price: 310, otaPrice: 395, beds: 'King', guests: 2, sqm: 85 },
-      { name: 'Beachfront Pool Villa', price: 485, otaPrice: 610, beds: 'King', guests: 3, sqm: 120 },
-    ],
-  },
-  {
-    id: 'demo-4', name: 'Phangan Sunset Hostel', type: 'hostel',
-    city: 'Koh Phangan', country: 'Thailand', stars: 3,
-    photo: 'https://images.unsplash.com/photo-1596436889106-be35e843f974?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1596436889106-be35e843f974?w=800&q=80',
-      'https://images.unsplash.com/photo-1528255671579-01b9e182ed1d?w=800&q=80',
-    ],
-    price: 18, otaPrice: 24, rating: 8.4, reviews: 634,
-    amenities: ['wifi', 'restaurant', 'beach'],
-    desc: 'Laid-back beachfront hostel with breathtaking sunset views and a vibrant social atmosphere.',
-    roomTypes: [
-      { name: 'Dorm Bed (6-bed)', price: 18, otaPrice: 24, beds: 'Single', guests: 1, sqm: 4 },
-      { name: 'Private Double', price: 45, otaPrice: 58, beds: 'Double', guests: 2, sqm: 16 },
-    ],
-  },
-  {
-    id: 'demo-5', name: 'Chiang Mai Garden Resort', type: 'resort',
-    city: 'Chiang Mai', country: 'Thailand', stars: 4,
-    photo: 'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=800&q=80',
-      'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800&q=80',
-    ],
-    price: 95, otaPrice: 120, rating: 9.0, reviews: 1290,
-    amenities: ['wifi', 'pool', 'spa', 'restaurant', 'parking', 'gym'],
-    desc: 'Tranquil resort surrounded by lush tropical gardens, just minutes from the Night Bazaar and old city temples.',
-    roomTypes: [
-      { name: 'Garden View Room', price: 95, otaPrice: 120, beds: 'King', guests: 2, sqm: 32 },
-      { name: 'Pool Access Room', price: 135, otaPrice: 170, beds: 'King', guests: 2, sqm: 36 },
-      { name: 'Family Suite', price: 195, otaPrice: 245, beds: 'King + 2 Singles', guests: 4, sqm: 55 },
-    ],
-  },
-  {
-    id: 'demo-6', name: 'Phuket Pearl Beach Hotel', type: 'hotel',
-    city: 'Phuket', country: 'Thailand', stars: 4,
-    photo: 'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?w=800&q=80',
-      'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=800&q=80',
-    ],
-    price: 78, otaPrice: 98, rating: 8.6, reviews: 2105,
-    amenities: ['wifi', 'pool', 'beach', 'restaurant', 'parking'],
-    desc: 'Modern beachfront hotel on Kata Beach with direct beach access and panoramic Andaman Sea views.',
-    roomTypes: [
-      { name: 'Superior Sea View', price: 78, otaPrice: 98, beds: 'Queen', guests: 2, sqm: 30 },
-      { name: 'Deluxe Beachfront', price: 125, otaPrice: 155, beds: 'King', guests: 2, sqm: 40 },
-    ],
-  },
-  {
-    id: 'demo-7', name: 'Krabi Cliff Resort', type: 'resort',
-    city: 'Krabi', country: 'Thailand', stars: 5,
-    photo: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800&q=80',
-      'https://images.unsplash.com/photo-1551918120-9739cb430c6d?w=800&q=80',
-    ],
-    price: 210, otaPrice: 265, rating: 9.3, reviews: 756,
-    amenities: ['wifi', 'pool', 'spa', 'beach', 'restaurant', 'gym', 'minibar'],
-    desc: 'Perched on dramatic limestone cliffs with private beach access and world-class snorkeling right at your doorstep.',
-    roomTypes: [
-      { name: 'Cliff View Deluxe', price: 210, otaPrice: 265, beds: 'King', guests: 2, sqm: 42 },
-      { name: 'Ocean Pool Suite', price: 380, otaPrice: 475, beds: 'King', guests: 3, sqm: 75 },
-    ],
-  },
-  {
-    id: 'demo-8', name: 'Pai Mountain Lodge', type: 'guesthouse',
-    city: 'Pai', country: 'Thailand', stars: 3,
-    photo: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&q=80',
-    ],
-    price: 35, otaPrice: 45, rating: 8.9, reviews: 423,
-    amenities: ['wifi', 'restaurant', 'parking'],
-    desc: 'Cozy mountain retreat with stunning valley views, organic farm-to-table restaurant, and authentic Northern Thai hospitality.',
-    roomTypes: [
-      { name: 'Mountain View Bungalow', price: 35, otaPrice: 45, beds: 'Double', guests: 2, sqm: 20 },
-      { name: 'Deluxe Cottage', price: 55, otaPrice: 70, beds: 'King', guests: 2, sqm: 28 },
-    ],
-  },
-  {
-    id: 'demo-9', name: 'Hua Hin Grand Hyatt Residences', type: 'hotel',
-    city: 'Hua Hin', country: 'Thailand', stars: 5,
-    photo: 'https://images.unsplash.com/photo-1455587734955-081b22074882?w=800&q=80',
-    photos: [
-      'https://images.unsplash.com/photo-1455587734955-081b22074882?w=800&q=80',
-      'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80',
-    ],
-    price: 175, otaPrice: 220, rating: 9.1, reviews: 1834,
-    amenities: ['wifi', 'pool', 'spa', 'restaurant', 'gym', 'parking', 'minibar'],
-    desc: 'Elegant beachfront residences with championship golf course, multiple dining venues, and a serene wellness center.',
-    roomTypes: [
-      { name: 'Deluxe Garden', price: 175, otaPrice: 220, beds: 'King', guests: 2, sqm: 40 },
-      { name: 'Ocean Suite', price: 295, otaPrice: 370, beds: 'King', guests: 3, sqm: 65 },
-    ],
-  },
-]
 
 const DESTINATIONS = [
   { name: 'Bangkok', count: 284, img: 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?w=600&q=80' },
@@ -220,7 +46,7 @@ function StarRating({ stars }) {
 }
 
 // ── Component ─────────────────────────────────────────────
-export default function DemoBookingEngine() {
+export default function OTASearch() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
@@ -278,7 +104,7 @@ export default function DemoBookingEngine() {
         isReal: true,
       }
     })
-    return [...real, ...DEMO_PROPERTIES]
+    return real
   }, [realProperties, realRooms])
 
   const filtered = useMemo(() => {
@@ -542,11 +368,11 @@ export default function DemoBookingEngine() {
                   const totalOTA = prop.otaPrice * nights
                   const isFeatured = prop.featured
 
-                  // ── FEATURED CARD (STAYLO Resort) ──
+                  // ── FEATURED CARD (flagship hotels with prop.featured = true) ──
                   if (isFeatured) {
                     return (
                       <Link key={prop.id}
-                        to={`/dashboard/book/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}&demo=1`}
+                        to={`/ota/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}`}
                         className="no-underline">
                         <div className="rounded-2xl overflow-hidden border-2 border-[#ffb700]/50 shadow-xl shadow-[#ffb700]/10 hover:shadow-2xl hover:shadow-[#ffb700]/20 transition-all duration-300 group">
                           {/* Featured banner */}
@@ -656,10 +482,7 @@ export default function DemoBookingEngine() {
                   // ── REGULAR CARD ──
                   return (
                     <Link key={prop.id}
-                      to={prop.isReal
-                        ? `/dashboard/book/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}`
-                        : `/dashboard/book/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}&demo=1`
-                      }
+                      to={`/ota/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}`}
                       className="no-underline">
                       <div className="bg-white rounded-xl border border-gray-200 hover:border-[#0071c2]/40 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col sm:flex-row group">
 

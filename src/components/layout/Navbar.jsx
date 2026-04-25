@@ -78,6 +78,12 @@ export function Navbar() {
                 onMouseLeave={e => e.target.style.color = '#636E72'}>
                 {t('nav.home', 'Stay')}
               </Link>
+              <Link to="/ota" className="text-sm font-medium no-underline transition-colors"
+                style={{ color: '#636E72' }}
+                onMouseEnter={e => e.target.style.color = '#FF6B00'}
+                onMouseLeave={e => e.target.style.color = '#636E72'}>
+                {t('nav.book', 'Book')}
+              </Link>
               <Link to="/vision" className="text-sm font-medium no-underline transition-colors"
                 style={{ color: '#636E72' }}
                 onMouseEnter={e => e.target.style.color = '#FF6B00'}
@@ -188,6 +194,7 @@ export function Navbar() {
           <div className="md:hidden bg-white" style={{ borderTop: '1.5px solid #E8E0D8' }}>
             <div className="px-4 py-4 space-y-3">
               <Link to="/splash" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.home', 'Stay')}</Link>
+              <Link to="/ota" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.book', 'Book')}</Link>
               <Link to="/vision" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.vision', 'About')}</Link>
               <Link to="/submit" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.submit', 'For Hoteliers')}</Link>
               <a href="mailto:contact@staylo.app" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.contact', 'Contact')}</a>

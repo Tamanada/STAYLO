@@ -93,7 +93,7 @@ export function Hero() {
                 style={{ color: '#2D3436', fontSize: '15px' }}
               />
             </div>
-            <Link to={user ? '/dashboard/book' : '/register'}>
+            <Link to="/ota">
               <button className="btn-primary !rounded-full !py-3 !px-8 flex items-center gap-2">
                 <span>{t('home_hero.search_button', 'Search')}</span>
                 <ArrowRight size={16} />

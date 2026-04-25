@@ -90,6 +90,7 @@
   },
   "nav": {
     "home": "Home",
+    "book": "Book",
     "vision": "Vision",
     "survey": "Take Survey",
     "submit": "List Property",

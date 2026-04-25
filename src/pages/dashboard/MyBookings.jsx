@@ -105,7 +105,7 @@ export default function MyBookings() {
           <Search size={48} className="text-gray-300 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 mb-2">{t('bookings.no_bookings', 'No bookings yet')}</h2>
           <p className="text-gray-500 mb-6">{t('bookings.no_bookings_desc', 'Start exploring hotels and make your first reservation.')}</p>
-          <Link to="/dashboard/book"
+          <Link to="/ota"
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-ocean text-white rounded-lg font-medium text-sm hover:bg-ocean/90 no-underline transition-all">
             <Search size={16} />
             {t('bookings.browse_hotels', 'Browse Hotels')}

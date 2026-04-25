@@ -13,7 +13,7 @@ import { useAuth } from '../../hooks/useAuth'
 
 const COMMISSION_RATE = 0.10 // 10% STAYLO commission
 
-export default function BookingCheckout() {
+export default function Checkout() {
   const { t } = useTranslation()
   const { id: propertyId } = useParams()
   const [searchParams] = useSearchParams()
@@ -66,7 +66,7 @@ export default function BookingCheckout() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
         <h2 className="text-2xl font-bold text-deep mb-4">{t('checkout.invalid', 'Invalid booking details')}</h2>
-        <Link to="/dashboard/book"><Button variant="secondary"><ArrowLeft size={16} /> {t('booking.back_to_search', 'Back to search')}</Button></Link>
+        <Link to="/ota"><Button variant="secondary"><ArrowLeft size={16} /> {t('booking.back_to_search', 'Back to search')}</Button></Link>
       </div>
     )
   }
@@ -138,9 +138,11 @@ export default function BookingCheckout() {
           return
         }
       } catch (stripeErr) {
-        // Stripe not configured yet — mark booking as confirmed directly
-        console.log('Stripe not available, confirming booking directly:', stripeErr)
-        await supabase.from('bookings').update({ status: 'confirmed' }).eq('id', booking.id)
+        // SECURITY FIX: do NOT auto-confirm without payment.
+        // Leave booking in 'pending' status so it can be reconciled or cancelled.
+        // TODO: when Stripe Connect is wired (TOP 5 chantier #1), remove this fallback entirely.
+        console.error('Stripe checkout failed, booking left as pending:', stripeErr)
+        throw new Error(t('checkout.payment_unavailable', 'Payment is temporarily unavailable. Your booking is on hold — please retry shortly.'))
       }
 
       setSuccess(true)
@@ -171,7 +173,7 @@ export default function BookingCheckout() {
         </Card>
         <div className="mt-6 flex gap-3 justify-center">
           <Link to="/dashboard"><Button>{t('checkout.go_dashboard', 'Go to Dashboard')}</Button></Link>
-          <Link to="/dashboard/book"><Button variant="secondary">{t('checkout.book_another', 'Book Another')}</Button></Link>
+          <Link to="/ota"><Button variant="secondary">{t('checkout.book_another', 'Book Another')}</Button></Link>
         </div>
       </div>
     )
@@ -181,7 +183,7 @@ export default function BookingCheckout() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Back */}
       <Link
-        to={`/dashboard/book/${propertyId}?in=${checkIn}&out=${checkOut}&guests=${guests}`}
+        to={`/ota/${propertyId}?in=${checkIn}&out=${checkOut}&guests=${guests}`}
         className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-ocean transition-colors mb-6 no-underline"
       >
         <ArrowLeft size={16} />

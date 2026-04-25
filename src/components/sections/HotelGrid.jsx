@@ -65,7 +65,7 @@ export function HotelGrid() {
               {t('home_grid.title', 'Koh Phangan · Alpha Market')}
             </h2>
           </div>
-          <Link to="/dashboard/book" className="flex items-center gap-1 text-sm font-bold no-underline transition-colors"
+          <Link to="/ota" className="flex items-center gap-1 text-sm font-bold no-underline transition-colors"
             style={{ color: '#FF6B00' }}>
             {t('home_grid.view_all', 'View all 420 hotels')} <ArrowRight size={16} />
           </Link>
