@@ -124,12 +124,44 @@ Native in-app wallet for travelers and hoteliers:
 
 ```
 Frontend:   React (Vite) + Tailwind CSS
-Backend:    Supabase (Auth + PostgreSQL + Storage)
+Backend:    Supabase (Auth + PostgreSQL + Storage + Edge Functions)
+Payments:   Stripe Connect Express (SCT — separate charges and transfers)
 i18n:       react-i18next
 Routing:    react-router-dom
 Icons:      Lucide React
 Fonts:      Inter or Plus Jakarta Sans
 ```
+
+### Payment pipeline (chantier #1, April 2026)
+
+End-to-end flow: guest → STAYLO platform balance (escrow) → hotelier's
+Stripe Connect Express account (90%) + STAYLO commission (10%).
+
+**Key files**:
+- DB migration: `supabase/migrations/20260422000000_stripe_connect_escrow.sql`
+- Edge functions: `supabase/functions/{connect-onboarding, connect-status, checkout, release-escrow, stripe-webhook}/index.ts`
+- Shared helpers: `supabase/functions/_shared/{cors, stripe, supabase}.ts`
+- Hotelier UI: `src/pages/dashboard/Banking.jsx` (route `/dashboard/banking`)
+- Currency catalog: `src/lib/currencies.js` (30 ISO 4217 codes)
+- Setup guide: `STAYLO/STRIPE_SETUP.md`
+
+**Required env vars (Supabase Edge Function secrets)**:
+- `STRIPE_SECRET_KEY` (from Stripe Dashboard → API keys)
+- `STRIPE_WEBHOOK_SECRET` (from Stripe Dashboard → Webhooks → endpoint)
+- `CRON_SECRET` (random hex string for the auto-release cron)
+
+**Strategy = Separate Charges and Transfers (SCT)**, NOT destination
+charges. The whole payment lands on STAYLO's balance first; we manually
+trigger `transfer.create()` later when the escrow window elapses or the
+post-checkout questionnaire (chantier #2) fires. This is the only way to
+hold money across a check-in window with refund flexibility.
+
+**Default escrow hold**: 24 h after `checkout.session.completed`. Will be
+overridden by chantier #2's post-checkout questionnaire trigger.
+
+**Multi-currency from day 1**: every property declares its listing
+currency at `/submit`. Bookings inherit that currency. Stripe handles FX
+on the guest side automatically.
 
 ### Supabase Database Schema
 
