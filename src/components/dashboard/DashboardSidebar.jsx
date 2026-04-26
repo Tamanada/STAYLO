@@ -18,7 +18,8 @@ import {
   Sparkles,
   BarChart3,
   Luggage,
-  Banknote
+  Banknote,
+  Shield
 } from 'lucide-react'
 
 const navItems = [
@@ -95,6 +96,24 @@ export function DashboardSidebar() {
             </NavLink>
           )
         })}
+
+        {/* Admin shortcut — only visible to users with role='admin' (RLS-enforced server-side too) */}
+        {profile?.role === 'admin' && (
+          <>
+            <div className="pt-4 pb-1 px-4">
+              <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-sunset/60">Admin</p>
+            </div>
+            <Link
+              to="/admin"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold no-underline transition-all duration-200 text-sunset/80 hover:text-sunset hover:bg-sunset/10 border border-sunset/20"
+            >
+              <Shield size={18} />
+              <span>STAYLO Admin</span>
+              <span className="ml-auto text-[10px] uppercase font-bold opacity-60">Open ↗</span>
+            </Link>
+          </>
+        )}
       </nav>
 
       {/* Bottom section */}
