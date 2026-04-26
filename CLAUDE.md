@@ -350,10 +350,39 @@ Use `react-i18next`. All strings in `/src/i18n/[lang].json`.
 | Alpha | Now | **Stay** | Hotel onboarding, LOI signing, survey, referral |
 | Wallet | M03 | **BTC** | Built-in wallet, Lightning Network, BTC payments |
 | V1 | M6 | **Stay** | Live booking engine, 10% commission |
+| **Channel Manager** | **M9** | **Stay** | **Free 2-way sync with Booking, Airbnb, Agoda, Expedia, Hostelworld, Trip.com (+ iCal) — included gratis for every hotelier** |
 | V2 | M12 | **Eat** | Restaurants, beach clubs, food experiences |
 | V3 | M18 | **Do** | Activities, tours, diving, yoga, spa |
 | V4 | M24 | **Fly** | Flights, transfers |
 | V5 | M30+ | **Super App** | Full platform, token governance, global |
+
+### 🔌 Channel Manager (M9 milestone)
+
+**The promise**: a free, fully-integrated channel manager that syncs
+availability, rates and reservations between STAYLO and every major OTA
+in the world. Comparable products (Cloudbeds, Hostex, Hostfully, RoomRaccoon)
+charge **$50–300/month per property**. STAYLO ships it for **$0**.
+
+**Why STAYLO can do this for free**:
+- Our economic model is the 10% commission on direct bookings — we don't
+  need to monetize the PMS layer
+- Channel manager = retention moat. Once a hotelier syncs their OTAs
+  through us, they stay
+- The more we know about their OTA bookings (via webhooks back from
+  the channels), the better we can position STAYLO bookings
+
+**Technical scope (V1)**:
+- iCal in/out sync for all OTAs that expose calendar feeds (Booking,
+  Airbnb, Vrbo, basic level — read availability)
+- Booking.com Connectivity APIs (Content + ARI + Reservations) — XML
+- Airbnb API (requires Partner status — apply M6)
+- Agoda Channel API
+- Expedia EQC (Expedia QuickConnect)
+- Internal queue + retry + conflict resolver
+- Hotelier UI: connect OTA accounts, view sync status, manual override
+
+This is NOT in chantier #1-#5. It's a separate **chantier #6** scheduled
+post-Alpha launch.
 
 ---
 
