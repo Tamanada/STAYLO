@@ -12,13 +12,13 @@
 //   - payment_intent.payment_failed   → mark booking 'failed'
 //   - charge.refunded                 → mark booking 'refunded'
 //   - charge.dispute.created          → mark booking 'disputed'
-//   - transfer.failed                 → mark booking 'failed' for retry
+//   - transfer.reversed               → mark booking 'failed' (Stripe rolled back the payout)
 //
 // Setup (Stripe Dashboard → Webhooks):
 //   - Endpoint URL: https://<your-project>.supabase.co/functions/v1/stripe-webhook
 //   - Events: account.updated, checkout.session.completed,
 //             payment_intent.succeeded, payment_intent.payment_failed,
-//             charge.refunded, charge.dispute.created, transfer.failed
+//             charge.refunded, charge.dispute.created, transfer.reversed
 //   - Copy the signing secret → set STRIPE_WEBHOOK_SECRET in Supabase env
 // ============================================
 
@@ -177,14 +177,18 @@ serve(async (req) => {
         break
       }
 
-      case 'transfer.failed': {
+      case 'transfer.reversed': {
+        // Stripe reversed our transfer (typically because the payout to the
+        // hotelier's bank failed). The funds are back on our platform balance.
+        // Note: in newer Stripe API versions, transfer.failed was replaced by
+        // transfer.reversed for this scenario.
         const tr = event.data.object as Record<string, unknown>
         const meta = (tr.metadata ?? {}) as Record<string, string>
         const bookingId = meta.booking_id
         if (!bookingId) break
         await supa.from('bookings').update({
           escrow_status:  'failed',
-          release_reason: 'transfer_failed_by_stripe',
+          release_reason: 'transfer_reversed_by_stripe',
         }).eq('id', bookingId)
         break
       }

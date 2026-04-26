@@ -55,14 +55,14 @@ This is how Stripe tells STAYLO about payment events (paid, failed, refunded, ho
    https://YOUR-PROJECT-REF.supabase.co/functions/v1/stripe-webhook
    ```
    Find your project ref in Supabase → **Project Settings** → **General** → **Reference ID**.
-3. **Events to listen for** — click "Select events" and add ALL of these:
-   - `account.updated`
+3. **Events to listen for** — click "Select events" and add these:
+   - `account.updated` *(only if you can select "Connected accounts" too — Stripe newer UI may force you to pick one source)*
    - `checkout.session.completed`
    - `payment_intent.succeeded`
    - `payment_intent.payment_failed`
    - `charge.refunded`
    - `charge.dispute.created`
-   - `transfer.failed`
+   - `transfer.reversed` *(was `transfer.failed` in older API versions — Stripe replaced it)*
 4. Click **Add endpoint**
 5. On the endpoint detail page, click **Reveal** next to **Signing secret** and copy the value (starts with `whsec_...`)
 
