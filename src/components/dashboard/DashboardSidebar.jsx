@@ -17,7 +17,8 @@ import {
   ConciergeBell,
   Sparkles,
   BarChart3,
-  Luggage
+  Luggage,
+  Banknote
 } from 'lucide-react'
 
 const navItems = [
@@ -29,6 +30,7 @@ const navItems = [
   { to: '/dashboard/housekeeping', icon: Sparkles, labelKey: 'dashboard.nav_housekeeping', label: 'Housekeeping' },
   { to: '/dashboard/reports', icon: BarChart3, labelKey: 'dashboard.nav_reports', label: 'Reports' },
   { separator: true, label: 'Account' },
+  { to: '/dashboard/banking', icon: Banknote, labelKey: 'dashboard.nav_banking', label: 'Banking' },
   { to: '/dashboard/referrals', icon: Share2, labelKey: 'dashboard.nav_referrals', label: 'Referrals' },
   { to: '/dashboard/shares', icon: Gem, labelKey: 'dashboard.nav_shares', label: 'My Shares' },
   { to: '/dashboard/kit', icon: Package, labelKey: 'dashboard.sidebar_kit', label: 'My Kit' },

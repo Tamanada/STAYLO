@@ -16,6 +16,7 @@ import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
 import { trackEvent, EVENTS } from '../lib/analytics'
 import { countries, thailandCities } from '../lib/countries'
+import { currencies, getCurrency } from '../lib/currencies'
 
 const propertyTypes = ['hotel', 'guesthouse', 'resort', 'villa', 'hostel', 'apartment', 'bungalow', 'homestay']
 
@@ -204,7 +205,7 @@ export default function Submit() {
   const fileInputRef = useRef(null)
 
   const [form, setForm] = useState({
-    name: '', type: 'hotel', country: '', city: '',
+    name: '', type: 'hotel', country: '', city: '', currency: 'USD',
     booking_link: '', airbnb_link: '',
     room_count: '', avg_nightly_rate: '', star_rating: '3',
     contact_email: user?.email || '', contact_phone: '', website: '',
@@ -296,6 +297,7 @@ export default function Submit() {
         user_id: user.id,
         // Basic
         name: form.name, type: form.type, country: form.country, city: form.city,
+        currency: (form.currency || 'USD').toUpperCase(),
         booking_link: form.booking_link || null, airbnb_link: form.airbnb_link || null,
         room_count: Number(form.room_count) || 1,
         avg_nightly_rate: Number(form.avg_nightly_rate) || 0,
@@ -434,10 +436,13 @@ export default function Submit() {
               <Input label="Street Address" placeholder="123 Beach Road, Soi 4..."
                 value={form.address} onChange={e => updateField('address', e.target.value)} />
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <Input label="Total Rooms *" type="number" min={1} required
                   value={form.room_count} onChange={e => updateField('room_count', e.target.value)} />
-                <Input label="Avg. Nightly Rate ($) *" type="number" min={0} step="0.01" required
+                <Select label="Currency *" value={form.currency} onChange={e => updateField('currency', e.target.value)}>
+                  {currencies.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.code} — {c.name}</option>)}
+                </Select>
+                <Input label={`Avg. Nightly Rate (${getCurrency(form.currency).symbol}) *`} type="number" min={0} step="0.01" required
                   value={form.avg_nightly_rate} onChange={e => updateField('avg_nightly_rate', e.target.value)} />
                 <Input label="Website" placeholder="https://..." type="url"
                   value={form.website} onChange={e => updateField('website', e.target.value)} />
