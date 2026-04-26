@@ -62,7 +62,7 @@ function StatusBadge({ status }) {
 
 export default function Banking() {
   const { t } = useTranslation()
-  const { user, session } = useAuth()
+  const { user } = useAuth()
   const [searchParams, setSearchParams] = useSearchParams()
   const [account, setAccount] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -116,18 +116,22 @@ export default function Banking() {
   }
 
   async function callFunction(name, body) {
-    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${name}`
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token ?? ''}`,
-      },
-      body: JSON.stringify(body),
-    })
-    const json = await res.json()
-    if (!res.ok) throw new Error(json.error || `Function ${name} failed (${res.status})`)
-    return json
+    // supabase.functions.invoke automatically attaches the current session's
+    // access_token in the Authorization header — no manual session juggling.
+    const { data, error } = await supabase.functions.invoke(name, { body })
+    if (error) {
+      // FunctionsHttpError carries the response body (with our error message)
+      let detail = error.message
+      try {
+        const ctx = error.context
+        if (ctx && typeof ctx.json === 'function') {
+          const body = await ctx.json()
+          if (body?.error) detail = body.error
+        }
+      } catch { /* ignore */ }
+      throw new Error(detail || `Function ${name} failed`)
+    }
+    return data
   }
 
   if (loading) {
