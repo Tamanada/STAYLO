@@ -116,17 +116,26 @@ export default function Banking() {
   }
 
   async function callFunction(name, body) {
-    // supabase.functions.invoke automatically attaches the current session's
-    // access_token in the Authorization header — no manual session juggling.
-    const { data, error } = await supabase.functions.invoke(name, { body })
+    // Explicitly grab the current session — supabase.functions.invoke()
+    // sometimes ships requests without the Authorization header when the
+    // session was loaded asynchronously after the client init. Belt + braces.
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) {
+      throw new Error('You must be logged in. Please refresh the page or sign in again.')
+    }
+    const { data, error } = await supabase.functions.invoke(name, {
+      body,
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
     if (error) {
       // FunctionsHttpError carries the response body (with our error message)
       let detail = error.message
       try {
         const ctx = error.context
         if (ctx && typeof ctx.json === 'function') {
-          const body = await ctx.json()
-          if (body?.error) detail = body.error
+          const errBody = await ctx.json()
+          if (errBody?.error)   detail = errBody.error
+          if (errBody?.message) detail = errBody.message
         }
       } catch { /* ignore */ }
       throw new Error(detail || `Function ${name} failed`)
