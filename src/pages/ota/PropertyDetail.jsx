@@ -116,7 +116,11 @@ export default function PropertyDetail() {
 
   const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)))
   const photos = property.photos || []
-  const rooms = property.rooms || realRooms.map(r => ({
+  // Real DB-backed rooms (post-demo cleanup, this is the only source).
+  // Note: do NOT use `property.rooms || realRooms.map(...)` — `property.rooms`
+  // is initialized to `[]`, which is TRUTHY in JS, so the OR would always
+  // resolve to the empty array and the page would always show "No rooms".
+  const rooms = realRooms.map(r => ({
     id: r.id,
     name: r.name,
     price: Number(r.base_price),
