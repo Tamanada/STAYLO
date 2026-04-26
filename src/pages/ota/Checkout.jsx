@@ -45,15 +45,26 @@ export default function Checkout() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!propertyId || !roomId) return
+      if (!propertyId || !roomId) {
+        setLoading(false)
+        return
+      }
       setLoading(true)
-      const [propRes, roomRes] = await Promise.all([
-        supabase.from('properties').select('*').eq('id', propertyId).single(),
-        supabase.from('rooms').select('*, room_availability(*)').eq('id', roomId).single(),
-      ])
-      setProperty(propRes.data)
-      setRoom(roomRes.data)
-      setLoading(false)
+      try {
+        const [propRes, roomRes] = await Promise.all([
+          supabase.from('properties').select('*').eq('id', propertyId).single(),
+          supabase.from('rooms').select('*, room_availability(*)').eq('id', roomId).single(),
+        ])
+        if (propRes.error) console.error('Checkout: property fetch failed', propRes.error)
+        if (roomRes.error) console.error('Checkout: room fetch failed', roomRes.error)
+        setProperty(propRes.data)
+        setRoom(roomRes.data)
+      } catch (err) {
+        console.error('Checkout fetch error', err)
+        setError(err.message || 'Failed to load booking details')
+      } finally {
+        setLoading(false)
+      }
     }
     fetchData()
   }, [propertyId, roomId])
@@ -66,7 +77,28 @@ export default function Checkout() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
         <h2 className="text-2xl font-bold text-deep mb-4">{t('checkout.invalid', 'Invalid booking details')}</h2>
-        <Link to="/ota"><Button variant="secondary"><ArrowLeft size={16} /> {t('booking.back_to_search', 'Back to search')}</Button></Link>
+        <p className="text-sm text-gray-500 mb-6">
+          {!property && 'Property not found. '}
+          {!room && 'Room not found. '}
+          {!checkIn && 'Missing check-in date. '}
+          {!checkOut && 'Missing check-out date. '}
+        </p>
+        <Link to={propertyId ? `/ota/${propertyId}` : '/ota'}>
+          <Button variant="secondary"><ArrowLeft size={16} /> {t('booking.back_to_search', 'Back to property')}</Button>
+        </Link>
+      </div>
+    )
+  }
+
+  // Auth gate — booking requires a logged-in guest (we attach guest_id)
+  if (!user) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-20 text-center">
+        <h2 className="text-2xl font-bold text-deep mb-4">{t('checkout.signin_required', 'Sign in to book')}</h2>
+        <p className="text-sm text-gray-500 mb-6">{t('checkout.signin_desc', 'You need an account to complete your reservation.')}</p>
+        <Link to={`/login?next=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
+          <Button>{t('nav.login', 'Sign in')}</Button>
+        </Link>
       </div>
     )
   }
@@ -76,10 +108,12 @@ export default function Checkout() {
   // Calculate total with potential price overrides
   let roomTotal = 0
   const d = new Date(checkIn)
+  const availabilityList = Array.isArray(room.room_availability) ? room.room_availability : []
   for (let i = 0; i < nights; i++) {
     const dateStr = d.toISOString().split('T')[0]
-    const override = room.room_availability?.find(a => a.date === dateStr)
-    roomTotal += Number(override?.price_override || room.base_price)
+    const override = availabilityList.find(a => a.date === dateStr)
+    const nightlyPrice = Number(override?.price_override ?? room.base_price ?? 0)
+    roomTotal += isFinite(nightlyPrice) ? nightlyPrice : 0
     d.setDate(d.getDate() + 1)
   }
 
