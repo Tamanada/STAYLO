@@ -173,7 +173,7 @@ everything.
 | Category | Shares | % | Price | Conditions |
 |----------|--------|---|-------|------------|
 | Founders (seed cohort) | 50,000 | 10% | Sweat equity | 12m cliff + 36m vesting |
-| Private Investors (non-hotelier) | 100,000 | 20% | ~$750 | Vote · Dividends · BTC treasury benefit |
+| Private Investors (non-hotelier) | 100,000 | 20% | $1,500 | Vote · Dividends · BTC treasury benefit |
 | Alpha Round — Koh Phangan | 3,000 | 0.6% | $1,000 | KP hoteliers only — limited |
 | World Round — Global Hotels | 347,000 | 69.4% | $1,500 | Hotel owners worldwide — open |
 | **TOTAL** | **500,000** | **100%** | — | — |
