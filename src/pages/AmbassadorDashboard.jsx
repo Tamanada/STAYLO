@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { useAmbassador } from '../hooks/useAmbassador'
+import AmbassadorCommissionsWidget from '../components/dashboard/AmbassadorCommissionsWidget'
 
 const statusColors = {
   active: 'green',
@@ -71,6 +72,9 @@ export default function AmbassadorDashboard() {
           {t('ambassador_dashboard.read_guide')}
         </Link>
       </div>
+
+      {/* BTC Commissions widget — chantier #10 */}
+      <AmbassadorCommissionsWidget />
 
       {/* Referral Link + QR Code */}
       <Card className="p-6 mb-6">
