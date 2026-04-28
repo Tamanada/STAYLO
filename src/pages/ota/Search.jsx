@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
+import { matchRegion, propertyMatchesRegion } from '../../lib/regions'
 
 
 const DESTINATIONS = [
@@ -92,6 +93,7 @@ export default function OTASearch() {
         type: p.type || 'hotel',
         city: p.city,
         country: p.country,
+        address: p.address,                 // included so the search filter can match
         stars: p.star_rating || 3,
         photo: p.photo_urls?.[0] || null,
         photos: p.photo_urls || [],
@@ -111,11 +113,28 @@ export default function OTASearch() {
     let result = allProperties
     if (searchCity.trim()) {
       const q = searchCity.toLowerCase().trim()
-      result = result.filter(p =>
-        (p.city || '').toLowerCase().includes(q) ||
+      // Step 1: try exact / substring match across name, city, country, address
+      const direct = result.filter(p =>
+        (p.city    || '').toLowerCase().includes(q) ||
         (p.country || '').toLowerCase().includes(q) ||
-        (p.name || '').toLowerCase().includes(q)
+        (p.name    || '').toLowerCase().includes(q) ||
+        (p.address || '').toLowerCase().includes(q)
       )
+      // Step 2: if the query is a known region (e.g. 'Koh Phangan'), also
+      // match properties whose city/address belongs to that region's
+      // village list ('Baan Tai', 'Thong Sala', etc.)
+      const region = matchRegion(q)
+      if (region) {
+        const regionMatches = result.filter(p => propertyMatchesRegion(p, region))
+        // Merge + dedupe
+        const seen = new Set()
+        result = [...direct, ...regionMatches].filter(p => {
+          if (seen.has(p.id)) return false
+          seen.add(p.id); return true
+        })
+      } else {
+        result = direct
+      }
     }
     if (typeFilter) result = result.filter(p => p.type === typeFilter)
     result = result.filter(p => p.price >= priceRange[0] && p.price <= priceRange[1])
