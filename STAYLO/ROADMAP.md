@@ -1,178 +1,197 @@
 # 🗺️ STAYLO — Master Roadmap
 
-> **La ligne à suivre**, du jour 1 au lancement public à 500 hôtels.
-> Mis à jour : **2026-04-26**.
+> **La ligne à suivre**, du jour 1 au lancement public à 500 hôtels et au-delà.
+> Aligné sur le **STAYLO IP Protection Document** (STAYLO-IP-2025-001),
+> SHA-256 anchored to Bitcoin blockchain via originstamp.org on **2026-04-25**.
+> Dernière mise à jour : **2026-04-28**.
 
 ---
 
 ## 🎯 Vision en 1 phrase
 
-Une plateforme de réservation détenue par les hôteliers, qui plafonne la commission à **10%**, paie l'hôtelier dans **l'heure** suivant le check-out, et inclut gratuitement un **PMS + Channel Manager** universel.
+Plateforme de réservation **coopérative** détenue par les hôteliers,
+**Bitcoin-native** pour les paiements et la treasury, **gouvernée via DAO
+sur Solana**, qui plafonne la commission à **10%** et paie l'hôtelier
+dans **l'heure** suivant le check-out.
 
 ---
 
-## 📍 Où on en est aujourd'hui (snapshot)
+## 📍 Snapshot actuel (2026-04-28)
 
 ```
-████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░  ~50%
+████████████████████████████░░░░░░░░░░  ~78% MVP-launchable
                             ▲
                        (you are here)
 ```
 
-| Domaine | Avant audit | Aujourd'hui |
-|---|---|---|
-| Pages marketing publiques | 80% | 80% |
-| Auth + base utilisateur | 70% | 75% (i18n nav.book) |
-| Inscription hôtels (`/submit`) | 70% | 80% (multi-currency + 17 colonnes ajoutées) |
-| Booking engine public (`/ota`) | 30% | 60% (extraction du dashboard, mocks supprimés) |
-| Paiement entrant (Stripe) | 30% | **100%** ✅ (chantier #1) |
-| Payout aux hôtels (T+1h) | 0% | 50% (rails posés, trigger questionnaire à venir) |
-| Reviews / questionnaire | 0% | 0% |
-| KYC / docs upload | 5% | 5% |
-| Dashboards (hôtelier + admin) | 50% | 55% (page Banking ajoutée) |
-| **Channel Manager** | 0% | 0% (planifié M9) |
-
-**MVP launchable score** : **35% → 50%** depuis le début de la session.
+| Domaine | Statut |
+|---|---|
+| Pages marketing publiques | 80% |
+| Auth + base utilisateur | 75% (manque OAuth ?next + email verif) |
+| Inscription hôtels (`/submit`) | 80% (multi-currency + 17 colonnes) |
+| Booking engine public (`/ota`) | 75% (search avec region aliases) |
+| Paiement entrant Stripe | **100%** ✅ chantier #1 |
+| Guest pays processing fees | **100%** ✅ chantier #1.5 |
+| Booking refs STY-XXXXXX | **100%** ✅ |
+| Lightning crypto (MockProvider) | **100%** ✅ chantier #9 |
+| Ambassador 2% BTC commission | **100%** ✅ chantier #10 (DB-backed, on-chain prévu #12.4) |
+| Real data (mocks remplacés) | **100%** ✅ chantier #3 |
+| Region aliases search | **100%** ✅ |
+| Payout aux hôtels (T+1h via questionnaire) | 50% (rails posés, trigger questionnaire à venir) |
+| Reviews / questionnaire post-checkout | 0% (chantier #2) |
+| Email transactionnel | 0% (chantier #4) |
+| KYC / docs upload | 5% (chantier #5 partiel) |
+| **$STAY token sur Solana** | **0%** (chantier #12, gros morceau) |
+| **DAO governance Solana** | **0%** (chantier #13) |
+| **Member→Member referral** | **0%** (chantier #14) |
+| **NFT booking proof** | **0%** (chantier #15) |
 
 ---
 
-## 🛣️ Les 6 chantiers du plan
+## 🛣️ Liste complète des chantiers
+
+### ✅ Chantiers MVP (terminés ou en cours)
 
 | # | Chantier | Statut | Effort | Dépend de |
 |---|---|---|---|---|
-| **#1** | Pipeline paiement (Stripe Connect + escrow) | ✅ **DONE** | 3-4 sem (fait en quelques heures) | — |
+| **#1** | Pipeline paiement Stripe Connect + escrow | ✅ DONE | 3-4 sem | — |
+| **#1.5** | Guest pays processing fees model | ✅ DONE | 1 j | #1 |
+| Ref | Booking refs STY-XXXXXX | ✅ DONE | 1 j | — |
+| UX | MyBookings tabs guest/hôtelier | ✅ DONE | 1 j | — |
 | **#2** | Questionnaire post-checkout + release escrow trigger | ⏳ À faire | 2 sem | #1 |
-| **#3** | Remplacer les mocks (HotelGrid, Splash, Testimonials, PMS) | ⏳ À faire | 1 sem | — |
+| **#3** | Remplacer les mocks (HotelGrid, Splash, Testimonials) | ✅ DONE | 1 sem | — |
 | **#4** | Email transactionnel (Resend) | ⏳ À faire | 4-5 j | — |
 | **#5** | Audit sécurité + RLS strict + email verification | ⏳ À faire | 3 j | — |
-| **#6** | **Channel Manager universel gratuit** (Booking, Airbnb, Agoda, Expedia, iCal) | 🔮 Post-MVP | 6-8 sem | #1, #2 |
+| **#6** | Channel Manager universel gratuit | 🔮 Post-MVP | 6-8 sem | #1, #2 |
+| **#7** | Media Management (photos/videos upload, reorder) | ⏳ À faire | 1 sem | — |
+| **#8** | Social Media Auto-Share (Instagram, TikTok) | 🔮 Post-MVP | 2-3 sem + delays Meta | — |
+| **#9** | Crypto Lightning payments (MockProvider) | ✅ DONE | 5-7 j | — |
+| **#10** | Ambassador 2% BTC commissions (DB-backed) | ✅ DONE | 2 j | #9 |
+| Doc | CLAUDE.md + ROADMAP alignés sur IP doc | ✅ DONE | 30 min | — |
 
-### Détails du chantier #1 (référence) — fait en 4 sous-commits
+### 🆕 Chantiers Solana (post-IP doc, gros morceau)
 
-| Sous-commit | Hash | Contenu |
-|---|---|---|
-| 1.1 | `e480855` | DB schema (stripe_accounts, escrow columns, RPCs) |
-| 1.2 | `e4ae2a0` | 5 edge functions Stripe + 3 helpers |
-| 1.3 | `a2b27ed` | Page `/dashboard/banking` + currency picker |
-| 1.4 | `ea5d85f` | Setup guide + .env.example + CLAUDE.md |
-| Patches | `7b69d67`, `dddd0d6` | transfer.reversed + fix 401 |
+| # | Chantier | Statut | Effort | Dépend de |
+|---|---|---|---|---|
+| **#11** | Doc alignment (this commit) | ✅ DONE | 30 min | IP doc |
+| **#12** | $STAY SPL token (10B fixed, halving 4y, Raydium DEX) | 🔮 Post-MVP | 3 sem | Singapore Pte Ltd |
+| **#13** | DAO Governance on Solana (Realms, 1 prop = 1 vote) | 🔮 Post-MVP | 2 sem | #12 |
+| **#14** | Member→Member referral ($STAY reward) | ⏳ À faire | 3 j | #12 |
+| **#15** | NFT booking proof (Metaplex Solana) | 🔮 Post-MVP | 5 j | #12 |
 
----
+### 🛠️ Détails du chantier #12 — $STAY token
 
-## 📅 Séquençage recommandé (de demain à lancement)
+| Sous-commit | Effort |
+|---|---|
+| 12.1 — Solana program (Anchor) : SPL token mint avec 10B fixed supply | 5-7 j |
+| 12.2 — Earn pool logic (10 STAY/night avec halving every 4y) | 3 j |
+| 12.3 — Burn mechanism (10-15% commission revenue → buy & burn) | 2 j |
+| 12.4 — Migrate ambassador rewards on-chain (chantier #10 → SPL) | 2 j |
+| 12.5 — Frontend: $STAY balance widget partout | 3 j |
+| 12.6 — Raydium DEX listing (TGE M07) | 2 j setup |
+| **Total #12** | **~3 sem** |
 
-```
-SEMAINE 1                    SEMAINE 2-3              SEMAINE 4
-├─ #5 Sécurité (3 j)         ├─ #2 Questionnaire     ├─ #2 fin (1 sem)
-│  └─ Email verif obligatoire│   post-checkout (2 sem)│
-├─ #4 Email Resend (5 j)     │                        ├─ Test E2E complet
-└─ #3 Mocks (en parallèle)   │                        └─ Beta avec 5 hôtels KP
+### 🛠️ Détails du chantier #13 — DAO
 
-SEMAINE 5-6                  SEMAINE 7-8              SEMAINE 9+
-├─ Onboarding 20-50 hôtels   ├─ Outreach Koh Phangan ├─ Lancement public
-│  via outreach manuel       │   associations (top   │   100 hôtels viables
-├─ Itération sur feedback    │   down avec pitch PDF) ├─ Démarrage chantier #6
-└─ Réparation des bugs       └─ 100 hôtels objectif   │   Channel Manager
-```
-
-**Cible MVP lançable** : **fin de la semaine 4** (~4 semaines de travail solo focused).
-**Cible 500 hôtels Thailande** (= condition lancement public) : **M5-M6**.
-
----
-
-## 🎚️ Priorisation par décision
-
-```
-                 ┌─ Tu veux tester E2E    →  Maintenant (ton tour)
-                 │   le chantier #1
-                 │
-                 ├─ Tu veux UN gros effet  →  #3 Mocks
-                 │   visible immédiat        (1 sem)
-                 │
-TU ARRIVES À ────┼─ Tu veux débloquer la   →  #4 Emails
-ce point         │   communication           (4-5 j)
-                 │
-                 ├─ Tu veux fermer les     →  #5 Sécurité
-                 │   portes ouvertes          (3 j)
-                 │
-                 └─ Tu veux la killer      →  #2 Questionnaire
-                    feature pitch            (2 sem)
-```
-
-**Ma recommandation** : **#5 → #4 → #3 → #2 → #6**.
-Pourquoi : sécurité d'abord (3 j), puis on débloque la communication (4-5 j), puis on retire les mocks pour la crédibilité (1 sem), puis on construit la killer feature (2 sem), puis Channel Manager une fois en croisière.
+| Sous-commit | Effort |
+|---|---|
+| 13.1 — SPL Governance program (Realms framework) | 3-4 j |
+| 13.2 — 1 property = 1 vote logic (eligibility ≥1k $STAY) | 2 j |
+| 13.3 — Quorum 30% + supermajority 90% rules | 2 j |
+| 13.4 — Frontend voting UI | 5 j |
+| **Total #13** | **~2 sem** |
 
 ---
 
-## 🏁 Milestones / KPIs à viser
+## 📅 Séquençage recommandé (chronologique)
+
+```
+SEMAINE 1 (now)              SEMAINE 2-3              MOIS 2
+├─ Doc alignment ✅          ├─ #5 Sécurité (3 j)     ├─ #2 Questionnaire post-checkout (2 sem)
+├─ #5 Sécurité  (3 j)        ├─ #4 Email Resend (5 j) │  → débloque vrai T+1h payout
+└─ Test E2E sur prod         └─ #7 Media Management    │
+                                  (photos/videos, 1 sem)
+
+MOIS 3                       MOIS 4-5                 MOIS 6+
+├─ Outreach 100 hôtels KP    ├─ Singapore Pte Ltd     ├─ #12 $STAY token (3 sem)
+├─ Iteration feedback        │  incorporation         │  → TGE M07
+├─ Cron release-escrow setup ├─ BTCPay self-hosted    ├─ #13 DAO governance (2 sem)
+└─ Cron ambassador-payout    │  (remplace MockProvider)├─ Lancement public 500 hôtels
+                             └─ Migration vers prod    └─ #6 Channel Manager
+                                  Stripe Live          
+```
+
+**Cible MVP launchable** : **Sem 3-4** (~3 semaines de travail solo focused).
+**Cible 500 hôtels Thailand** (= condition lancement public) : **M5-M6**.
+**Cible $STAY TGE** (M07 post-Alpha funding) : **~M8 réel**.
+
+---
+
+## 🏁 Milestones / KPIs
 
 | Milestone | Critère de succès | Date cible |
 |---|---|---|
 | **M1 — Beta privée** | 5 hôtels onboardés + 1 vraie réservation E2E | Sem 4 |
 | **M2 — 100 hôtels Koh Phangan** | 100 fiches `live` + 50 ayant complété Stripe Connect | M3 |
-| **M3 — 500 hôtels Thailande** | 500 fiches `live` (= seuil de lancement public) | M5-M6 |
-| **M4 — 1000 réservations cumulées** | preuve de PMF + dataset reviews exploitables | M9 |
-| **M5 — Channel Manager v1** | 6 OTAs synchronisées : Booking, Airbnb, Agoda, Expedia, Hostelworld, Trip.com | M12 |
-| **M6 — Alpha share round closed** | $1M levés (1000 shares Alpha) | M9-M12 |
-| **M7 — Lancement V2 (Eat)** | Restaurants + beach clubs | M15-M18 |
+| **M3 — 400 Founding Partners KP** *(per IP doc)* | 400 FP signés sur Koh Phangan | M6 |
+| **M4 — 2,000 hôtels** | Expansion TH (Samui, Phuket, Krabi, Chiang Mai) | M12 |
+| **M5 — $STAY TGE** | Token live sur Raydium, DEX liquidity 500M $STAY | M07 post-Alpha funding |
+| **M6 — DAO live** | Premier vote on-chain | M10 |
+| **M7 — Channel Manager v1** | 6 OTAs synchronisées | M12 |
+| **M8 — 5,000 hôtels SEA** | Thailand + 6 SEA countries | M24 |
+| **M9 — World Round** | 16,649 hôtels mondialement, BTC treasury ~$149.7M | M36 |
 
 ---
 
-## 🚨 Risques structurels à NE PAS oublier
+## 🚨 Risques structurels
 
-À adresser avant ouverture publique des 500 hôtels :
+À adresser AVANT ouverture publique des 500 hôtels :
 
-1. **Crédibilité** — `HotelGrid.jsx`, `Splash.jsx`, `Testimonials.jsx` montrent encore du fake → chantier #3
-2. **Sécurité** — RLS `referrals` permissive (anon read), email verification non-obligatoire → chantier #5
-3. **Légal** — pas de CGU/CGV/Privacy Policy publiques → bloquant légal pour traiter du paiement
-4. **Operations** — pas d'email = pas de notification booking confirmée → chantier #4
-5. **Cron** — auto-release escrow pas encore configuré (T+24h ne tournera pas tout seul) → étape 8 du `STRIPE_SETUP.md`
-
----
-
-## 🧮 Tableau de bord pour suivre toi-même
-
-Crée un fichier perso `STAYLO/STATUS.md` (gitignoré) où tu coches au fur et à mesure :
-
-```markdown
-# Mon avancement personnel
-
-## Semaine du 28 avril
-- [ ] Test E2E Stripe (hôtelier + guest)
-- [ ] Configurer cron release-escrow
-- [ ] Démarrer chantier #5
-- [ ] Préparer outreach 5 premiers hôtels KP
-
-## Semaine du 5 mai
-- [ ] Finir chantier #5
-- [ ] Démarrer chantier #4
-- ...
-```
+1. **Crédibilité** — résolu par chantier #3 ✅
+2. **Sécurité** — RLS + email verif + OAuth → chantier #5 (3 j)
+3. **Légal** — pas de CGU/CGV/Privacy Policy publiques → bloquant légal
+4. **Operations** — pas d'email = pas de notifs → chantier #4
+5. **Cron** — auto-release escrow + ambassador payout pas encore configurés
+6. **Singapore Pte Ltd** — incorporation pendante (M01-M02 dans IP doc)
 
 ---
 
-## 🔗 Documents de référence
+## 🔗 Documents de référence (canonical sources of truth)
 
 | Document | Usage |
 |---|---|
-| [`CLAUDE.md`](../CLAUDE.md) | Vision produit + tech stack + design system |
-| [`STAYLO/STRIPE_SETUP.md`](STRIPE_SETUP.md) | Setup Stripe step-by-step |
+| **IP Protection Document** (originstamp.org, 2026-04-25) | Constitutional source — tokenomics, governance, share structure, brand identity |
+| [`CLAUDE.md`](../CLAUDE.md) | Tech-side reference — stack, patterns, schema |
+| [`STAYLO/STRIPE_SETUP.md`](STRIPE_SETUP.md) | Setup Stripe Connect step-by-step |
+| [`STAYLO/CRYPTO_SETUP.md`](CRYPTO_SETUP.md) | Setup Lightning provider (Mock → BTCPay) |
 | [`STAYLO/PITCH_HOTELIER_*.pdf`](.) | Pitch one-pager FR/EN/TH |
 | [`STAYLO/staylo_letter_of_intent.docx`](.) | LOI à signer |
 | [`STAYLO/staylo_founding_partner_contract.docx`](.) | Contrat Founding Partner |
-| `staylo_osm_collector.py` | Collecteur OSM (543 hôtels Koh Phangan) |
-| `staylo_hotels/koh_phangan_associations.csv` | 7 associations contacts |
 
 ---
 
 ## 🎬 Prochaine action immédiate
 
-**Cocher** quand fait :
+- [x] ✅ Chantier #1 Stripe Connect
+- [x] ✅ Chantier #1.5 Guest pays fees
+- [x] ✅ Chantier #3 Remplacer mocks
+- [x] ✅ Chantier #9 Lightning crypto
+- [x] ✅ Chantier #10 Ambassador BTC rewards
+- [x] ✅ Doc alignment sur IP doc (chantier #11)
+- [ ] 🟢 **Chantier #5 — Sécurité (3 jours)** ← **EN COURS**
+- [ ] Chantier #4 — Email Resend (4-5 jours)
+- [ ] Chantier #2 — Questionnaire post-checkout (2 sem)
+- [ ] *Singapore Pte Ltd incorporation*
+- [ ] Chantier #12 — $STAY token sur Solana (3 sem, post-incorporation)
+- [ ] Chantier #13 — DAO Governance (2 sem)
 
-- [x] ✅ Chantier #1 code complet (4 commits + 2 patches)
-- [x] ✅ Migration DB appliquée
-- [x] ✅ Edge functions déployées
-- [x] ✅ Secrets Stripe configurés
-- [ ] ⏳ **Tester E2E** : onboarding hôtelier + booking guest avec carte test `4242 4242 4242 4242`
-- [ ] ⏳ Configurer cron release-escrow (GitHub Actions / Vercel Cron / cron-job.org — voir étape 8 STRIPE_SETUP.md)
-- [ ] ⏳ Choisir prochain chantier (#5 recommandé)
+---
+
+## 📊 Progression session du 26-28 avril 2026
+
+**+18 commits** poussés. **MVP score : 35% → 78%**. Stack hybride
+**Bitcoin + Solana** documentée et alignée sur IP. STAYLO est passé
+de "vitrine marketing" à "vraie plateforme avec paiements live".
+
+Prochain palier : **sécurité production** → **emails** → **incorporation
+Singapore** → **$STAY TGE**.

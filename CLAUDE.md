@@ -105,6 +105,123 @@ Native in-app wallet for travelers and hoteliers:
 
 - Alpha Round = 3,000 shares at $1,000 each
 - Founding Partners = the hoteliers who buy those shares
+
+---
+
+## 3.bis — Solana Stack & $STAY Token
+
+> **Source of truth**: STAYLO IP Protection Document (STAYLO-IP-2025-001),
+> SHA-256 anchored to Bitcoin blockchain via originstamp.org on 2026-04-25.
+> The architecture below is constitutional; do not deviate without explicit
+> founder approval.
+
+### Why Solana (not Ethereum, not Cosmos, not Polkadot)
+
+Solana fills the roles Bitcoin cannot:
+- Sub-second finality + sub-cent fees → DAO votes feasible at scale
+- Mature SPL token + Metaplex NFT primitives
+- Native Phantom wallet (90M+ MAU SE Asia heavy)
+- Raydium for DEX listing of $STAY
+- Realms framework for SPL Governance (1 property = 1 vote)
+
+Bitcoin keeps payments + treasury + dividends. Solana powers governance,
+loyalty, and ambassador rewards. Best of both — never one chain doing
+everything.
+
+### Three Solana roles
+
+1. **DAO Governance** — Realms-based SPL Governance program. 1 property
+   = 1 vote (regardless of share count). Quorum 30%. Simple majority
+   51% for routine decisions; supermajority 90% required to change the
+   commission rate, BTC treasury mandate, or token supply.
+2. **$STAY token** — SPL token, fixed supply, used as loyalty + governance
+   gating (≥1,000 $STAY required to vote).
+3. **Ambassador & loyalty rewards** — programmable smart contract for
+   the 2% BTC commission stream (currently DB-backed via chantier #10,
+   migration to on-chain planned in chantier #12.4).
+
+### $STAY Tokenomics (canonical)
+
+| Parameter | Value |
+|-----------|-------|
+| Total supply | **10,000,000,000** (10 billion) — fixed forever |
+| Blockchain | **Solana** (Raydium DEX) |
+| TGE price | **$0.10 USD** |
+| FDV at TGE | **$1B** |
+| Halving | **Every 4 years** (Bitcoin-style) |
+| Y0–Y4 earn rate | 10 $STAY / night hosted |
+| Y4–Y8 earn rate | 5 $STAY / night |
+| Y8–Y12 earn rate | 2.5 $STAY / night |
+| Annual burn | 10–15% of commission revenue → buy & burn $STAY |
+| Emergency mint | 90% governance vote only · cap 1%/year of supply |
+| TGE target | Month 07 post-Alpha funding |
+
+#### $STAY Allocation (10B total)
+
+| Pool | Amount | % | Purpose |
+|------|--------|---|---------|
+| Founding Partner Earn Pool | 3.0B | 30% | Earn rewards for Alpha FP hotels (earliest participants) |
+| Platform Earn Pool | 2.0B | 20% | Per-night $STAY earnings — hotels and travelers |
+| Reserve | 2.0B | 20% | Strategic reserve, future programs |
+| Ambassador Program | 1.5B | 15% | Referral rewards + signing bonuses |
+| Team & Founders | 1.0B | 10% | 4-year vesting, 1-year cliff |
+| DEX Liquidity | 0.5B | 5% | Raydium launch liquidity pool |
+| **TOTAL** | **10.0B** | **100%** | — |
+
+### Full Share Structure (per IP doc)
+
+| Category | Shares | % | Price | Conditions |
+|----------|--------|---|-------|------------|
+| Founders (seed cohort) | 50,000 | 10% | Sweat equity | 12m cliff + 36m vesting |
+| Private Investors (non-hotelier) | 100,000 | 20% | ~$750 | Vote · Dividends · BTC treasury benefit |
+| Alpha Round — Koh Phangan | 3,000 | 0.6% | $1,000 | KP hoteliers only — limited |
+| World Round — Global Hotels | 347,000 | 69.4% | $1,500 | Hotel owners worldwide — open |
+| **TOTAL** | **500,000** | **100%** | — | — |
+
+### Dual-sided Referral Matrix (per IP doc, supersedes earlier "Referral Program" section)
+
+| Who refers | What | Reward |
+|------------|------|--------|
+| Property or FP | New hotel | 1,000 $STAY one-time + 2% BTC on bookings for life |
+| Property or FP | New traveler (Member) | 100 $STAY at their first booking |
+| Member (traveler) | A hotel | 2% BTC on that hotel's bookings for life → becomes Ambassador |
+| Member (traveler) | Another Member | $STAY reward (rate TBD) — builds platform demand |
+| Ambassador | More hotels | Additional 2% BTC stream per hotel |
+
+### Governance (DAO on Solana)
+
+| Param | Value |
+|-------|-------|
+| Voting unit | **1 Property = 1 vote** (regardless of share count) |
+| Eligibility | Hold ≥1,000 $STAY AND active listing on Staylo |
+| Quorum | 30% of eligible voters must participate |
+| Simple majority | 51% — features, partnerships, marketing |
+| Supermajority | 90% — commission rate, BTC mandate, token supply |
+| Dividends | 20% annual net profit, paid in USD/THB/BTC (holder's choice) |
+
+### Roles & Sides (canonical 4-role model)
+
+| Role | Side | Condition | Reward |
+|------|------|-----------|--------|
+| Property | Hotels | Free listing | 10% commission · $STAY tokens/night |
+| Founding Partner (FP) | Hotels | Signed $1,000 contract | Co-owner · 1 vote · 20% dividends · $STAY |
+| Member | Travelers | Free Staylo account | $STAY/booking · referral rewards |
+| Ambassador | Travelers | Member who referred ≥1 hotel | % of referred hotels' bookings in BTC for life |
+
+### Competitive matrix (vs Travala — direct crypto-OTA competitor)
+
+| Feature | Booking.com / Airbnb | Travala | **Staylo** |
+|---------|----------------------|---------|------------|
+| Commission | 14–22% | 0–5% | **10% LOCKED for life** |
+| Hotelier ownership | None | None | **Real shares** |
+| Governance vote | None | None | **1 property = 1 vote** |
+| Annual dividends | None | None | **20% net profit/year** |
+| Bitcoin Lightning | None | Crypto only | **Constitutional pillar** |
+| BTC Treasury reserve | None | None | **20% all capital — locked** |
+| Hotel referral | None | None | **1,000 $STAY + 2% BTC/life** |
+| Traveler referral | None | None | **2% BTC life or $STAY** |
+| Platform token | None | AVA | **$STAY — Bitcoin halving** |
+| Cooperative / DAO | None | None | **DAO on Solana** |
 - Starting target = 400 Founding Partners in Koh Phangan
 - NOT "3,000 Founding Partners" — shares ≠ people
 
@@ -123,14 +240,27 @@ Native in-app wallet for travelers and hoteliers:
 ## 5. Tech Stack
 
 ```
-Frontend:   React (Vite) + Tailwind CSS
+Frontend:   React (Vite) + Tailwind CSS — mobile-first PWA
 Backend:    Supabase (Auth + PostgreSQL + Storage + Edge Functions)
+Hosting:    Vercel (CDN, CI/CD)
 Payments:   Stripe Connect Express (SCT — separate charges and transfers)
-i18n:       react-i18next
-Routing:    react-router-dom
+            + Lightning Network via BTCPay Server (post-incorporation)
+            + USDT/USDC via Solana (planned, chantier #12)
+Crypto Gov: Solana — DAO governance + $STAY SPL token + Ambassador
+            smart contracts (Realms framework, Anchor for programs)
+Wallet UX:  Phantom (primary), Solflare, plus BTC Lightning wallets
+            (Phoenix, Wallet of Satoshi, Alby)
+AI:         Claude API (Anthropic) — booking assistant, content gen
+KYC/AML:    Third-party — Singapore MAS compliance
+i18n:       react-i18next (14 languages)
+Routing:    react-router-dom v7
 Icons:      Lucide React
-Fonts:      Inter or Plus Jakarta Sans
+Fonts:      System stack (-apple-system, BlinkMacSystemFont, "Segoe UI")
+Domain:     staylo.app (registered)
 ```
+
+> **Note**: the IP Protection Document mentions Netlify; we use Vercel
+> in practice. Functionally equivalent (CDN + serverless build).
 
 ### Payment pipeline (chantier #1, April 2026)
 
@@ -345,16 +475,30 @@ Use `react-i18next`. All strings in `/src/i18n/[lang].json`.
 
 ## 10. Product Roadmap
 
+### Geographic Expansion (per IP doc, section 11)
+
+| Phase | Geography | Target | Timeline | Key Metric |
+|-------|-----------|--------|----------|------------|
+| Alpha | Koh Phangan, Thailand | 400 Founding Partners | M01–M06 | 10 FP/week |
+| Expand TH | Samui, Phuket, Krabi, Chiang Mai | 2,000 hotels | M06–M12 | 380 hotels by M12 |
+| SEA | TH + 6 SEA countries | 5,000 hotels | M12–M24 | 4,800 hotels by M24 |
+| World Round | 190+ countries ($1,500/share opens) | 16,649 hotels | M12+ | 16,649 by M36 |
+
+### Product Phases
+
 | Phase | Timeline | Category | Description |
 |-------|----------|----------|-------------|
 | Alpha | Now | **Stay** | Hotel onboarding, LOI signing, survey, referral |
-| Wallet | M03 | **BTC** | Built-in wallet, Lightning Network, BTC payments |
+| **Stripe Connect + Lightning MockProvider** | **DONE** | **Pay** | **Card via Stripe Connect Express + Lightning via mock (chantier #1, #1.5, #9, #10)** |
+| Wallet | M03 | **BTC** | Built-in wallet, real Lightning (BTCPay), BTC payments |
 | V1 | M6 | **Stay** | Live booking engine, 10% commission |
+| **$STAY TGE** | **M07** | **Token** | **SPL token launch on Raydium DEX, fixed 10B supply, halving every 4y** |
 | **Channel Manager** | **M9** | **Stay** | **Free 2-way sync with Booking, Airbnb, Agoda, Expedia, Hostelworld, Trip.com (+ iCal) — included gratis for every hotelier** |
+| **DAO Governance live** | **M10** | **Solana** | **Realms-based SPL Governance, 1 property = 1 vote** |
 | V2 | M12 | **Eat** | Restaurants, beach clubs, food experiences |
 | V3 | M18 | **Do** | Activities, tours, diving, yoga, spa |
 | V4 | M24 | **Fly** | Flights, transfers |
-| V5 | M30+ | **Super App** | Full platform, token governance, global |
+| V5 | M30+ | **Super App** | Full platform, token governance mature, global |
 
 ### 🔌 Channel Manager (M9 milestone)
 
