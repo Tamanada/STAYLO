@@ -33,6 +33,8 @@ import DashboardShares from './pages/dashboard/DashboardShares'
 import OTASearch from './pages/ota/Search'
 import OTAPropertyDetail from './pages/ota/PropertyDetail'
 import OTACheckout from './pages/ota/Checkout'
+import LegalTerms from './pages/legal/Terms'
+import LegalPrivacy from './pages/legal/Privacy'
 import PropertyManage from './pages/dashboard/PropertyManage'
 import DashboardKit from './pages/dashboard/DashboardKit'
 import PMSFrontDesk from './pages/dashboard/PMSFrontDesk'
@@ -110,6 +112,10 @@ export default function App() {
             <Route path="/ota" element={<OTASearch />} />
             <Route path="/ota/:id" element={<OTAPropertyDetail />} />
             <Route path="/ota/:id/checkout" element={<OTACheckout />} />
+
+            {/* Legal pages — Alpha placeholders, to be replaced by counsel */}
+            <Route path="/legal/terms" element={<LegalTerms />} />
+            <Route path="/legal/privacy" element={<LegalPrivacy />} />
           </Route>
         </Routes>
       </AuthProvider>

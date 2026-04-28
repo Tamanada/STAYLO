@@ -440,12 +440,12 @@ export default function Vision() {
             )}
           </div>
 
-          {/* Share Structure — 2 Rounds */}
+          {/* Share Structure — 4 Categories per IP Protection Document */}
           <div className="mb-4">
             <button onClick={() => setShowShareStructure(!showShareStructure)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
               <div className="flex items-center gap-3">
                 <PieChart className="text-ocean" size={24} />
-                <span className="font-bold text-lg">{t('vision.share_structure_title', 'Share Structure — 500,000 Shares · 2 Rounds')}</span>
+                <span className="font-bold text-lg">{t('vision.share_structure_title', 'Share Structure — 500,000 Shares · 4 Categories')}</span>
               </div>
               {showShareStructure ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
@@ -454,55 +454,80 @@ export default function Vision() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-golden border-b border-white/10">
-                      <th className="text-left py-2 pr-4 font-semibold">Round</th>
-                      <th className="text-left py-2 px-2">Market</th>
+                      <th className="text-left py-2 pr-4 font-semibold">Category</th>
                       <th className="text-right py-2 px-2">Shares</th>
+                      <th className="text-right py-2 px-2">%</th>
                       <th className="text-right py-2 px-2">Price</th>
-                      <th className="text-right py-2 px-2">Capital</th>
-                      <th className="text-right py-2 px-2">BTC Reserve (20%)</th>
+                      <th className="text-left py-2 px-2">Conditions</th>
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Alpha</td><td className="px-2">Koh Phangan</td><td className="text-right px-2">3,000</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="text-right px-2">$3M</td><td className="text-right px-2">$600K</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">World</td><td className="px-2">Worldwide</td><td className="text-right px-2">497,000</td><td className="text-right px-2">$1,500</td><td className="text-right px-2">$745.5M</td><td className="text-right px-2">$149.1M</td></tr>
-                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="px-2">—</td><td className="text-right px-2">500,000</td><td className="text-right px-2">—</td><td className="text-right px-2 text-golden">$748.5M</td><td className="text-right px-2 text-[#F7931A]">$149.7M</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Founders (seed cohort)</td><td className="text-right px-2">50,000</td><td className="text-right px-2">10%</td><td className="text-right px-2 italic">Sweat equity</td><td className="px-2 text-xs">12m cliff + 36m vesting</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Private Investors (non-hotelier)</td><td className="text-right px-2">100,000</td><td className="text-right px-2">20%</td><td className="text-right px-2">~$750</td><td className="px-2 text-xs">Vote · Dividends · BTC treasury benefit</td></tr>
+                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Alpha — Koh Phangan</td><td className="text-right px-2">3,000</td><td className="text-right px-2">0.6%</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="px-2 text-xs">KP hoteliers only — limited</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">World Round — Global Hotels</td><td className="text-right px-2">347,000</td><td className="text-right px-2">69.4%</td><td className="text-right px-2">$1,500</td><td className="px-2 text-xs">Hotel owners worldwide — open</td></tr>
+                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="text-right px-2">500,000</td><td className="text-right px-2 text-golden">100%</td><td className="text-right px-2">—</td><td className="px-2 text-xs italic">~$748.5M raised at FDV · ~$149.7M to BTC treasury</td></tr>
                   </tbody>
                 </table>
-                <p className="text-xs text-white/30 mt-4 text-center italic">Alpha partners get the best price — forever. 20% of all capital raised goes to permanent Bitcoin reserve (90% shareholder vote to change).</p>
+                <p className="text-xs text-white/30 mt-4 text-center italic">Alpha partners get the best price — forever. 20% of ALL capital raised goes to permanent Bitcoin reserve (90% shareholder vote to change). Source: STAYLO IP Protection Document (originstamp.org, 2026-04-25).</p>
               </div>
             )}
           </div>
 
-          {/* $STAY Tokenomics */}
+          {/* $STAY Tokenomics — per IP Protection Document */}
           <div className="mb-4">
             <button onClick={() => setShowTokenomics(!showTokenomics)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
               <div className="flex items-center gap-3">
                 <DollarSign className="text-libre" size={24} />
-                <span className="font-bold text-lg">{t('vision.tokenomics_title', '$STAY Token — 100M Supply · Solana')}</span>
+                <span className="font-bold text-lg">{t('vision.tokenomics_title', '$STAY Token — 10B Supply · Solana · Bitcoin halving')}</span>
               </div>
               {showTokenomics ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </button>
             {showTokenomics && (
-              <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 overflow-x-auto">
+              <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 overflow-x-auto">
+                {/* Tokenomics core params */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">Total supply</p><p className="text-white font-bold mt-1">10,000,000,000</p><p className="text-white/40">Fixed forever</p></div>
+                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">TGE price</p><p className="text-white font-bold mt-1">$0.10</p><p className="text-white/40">$1B FDV</p></div>
+                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">Blockchain</p><p className="text-white font-bold mt-1">Solana</p><p className="text-white/40">Raydium DEX</p></div>
+                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">Halving</p><p className="text-white font-bold mt-1">Every 4 years</p><p className="text-white/40">Bitcoin-style</p></div>
+                </div>
+
+                {/* Earn rate over time */}
+                <div className="bg-white/5 rounded-lg p-3 text-xs">
+                  <p className="text-white/40 uppercase tracking-wider mb-2">Earn rate (per night hosted)</p>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span className="text-libre font-bold">Y0–Y4 : 10 $STAY/night</span>
+                    <span className="text-white/30">→</span>
+                    <span className="text-white/70">Y4–Y8 : 5 $STAY</span>
+                    <span className="text-white/30">→</span>
+                    <span className="text-white/50">Y8–Y12 : 2.5 $STAY</span>
+                    <span className="text-white/30 italic">…halving forever</span>
+                  </div>
+                </div>
+
+                {/* Allocation */}
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-golden border-b border-white/10">
                       <th className="text-left py-2 pr-4 font-semibold">Allocation</th>
                       <th className="text-right py-2 px-2">Tokens</th>
                       <th className="text-right py-2 px-2">%</th>
-                      <th className="text-left py-2 px-2">Vesting</th>
+                      <th className="text-left py-2 px-2">Purpose</th>
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Founding Partners</td><td className="text-right px-2">30M</td><td className="text-right px-2 font-bold text-golden">30%</td><td className="px-2 text-xs">6m cliff + 18m linear</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Earn Rewards</td><td className="text-right px-2">20M</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">Emitted over 5 years</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Platform Reserve</td><td className="text-right px-2">20M</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">Council vote</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Ambassadors</td><td className="text-right px-2">15M</td><td className="text-right px-2">15%</td><td className="px-2 text-xs">Milestones-based</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Team & Founders</td><td className="text-right px-2">10M</td><td className="text-right px-2">10%</td><td className="px-2 text-xs">12m cliff + 36m linear</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">DEX Liquidity</td><td className="text-right px-2">5M</td><td className="text-right px-2">5%</td><td className="px-2 text-xs">Unlocked at TGE</td></tr>
-                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="text-right px-2">100M</td><td className="text-right px-2 text-golden">100%</td><td className="px-2 text-xs italic">Fixed supply FOREVER. No minting.</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Founding Partner Earn Pool</td><td className="text-right px-2">3,000,000,000</td><td className="text-right px-2 font-bold text-golden">30%</td><td className="px-2 text-xs">Earn rewards for Alpha FP hotels</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Platform Earn Pool</td><td className="text-right px-2">2,000,000,000</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">Per-night $STAY (hotels + travelers)</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Reserve</td><td className="text-right px-2">2,000,000,000</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">Strategic reserve, future programs</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Ambassador Program</td><td className="text-right px-2">1,500,000,000</td><td className="text-right px-2">15%</td><td className="px-2 text-xs">Referral rewards + signing bonuses</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Team & Founders</td><td className="text-right px-2">1,000,000,000</td><td className="text-right px-2">10%</td><td className="px-2 text-xs">4-year vesting, 1-year cliff</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">DEX Liquidity</td><td className="text-right px-2">500,000,000</td><td className="text-right px-2">5%</td><td className="px-2 text-xs">Raydium launch liquidity pool</td></tr>
+                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="text-right px-2">10,000,000,000</td><td className="text-right px-2 text-golden">100%</td><td className="px-2 text-xs italic">Fixed FOREVER · 10–15% annual buy & burn from commission revenue</td></tr>
                   </tbody>
                 </table>
+
+                <p className="text-xs text-white/30 text-center italic">TGE target: Month 07 post-Alpha funding. Emergency mint requires 90% governance vote, capped at 1%/year.</p>
               </div>
             )}
           </div>
@@ -526,18 +551,16 @@ export default function Vision() {
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Voting unit</td><td className="px-2">1 property = 1 vote (NEVER 1 share = 1 vote)</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Eligibility</td><td className="px-2">≥1,000 $STAY + active property</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Quorum (routine)</td><td className="px-2">10–15% of eligible voters</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Quorum (strategic)</td><td className="px-2">30% of eligible voters</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Simple majority</td><td className="px-2">50%+1</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Supermajority</td><td className="px-2">67%</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Unanimity</td><td className="px-2">90% (dissolution only)</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Vote reward</td><td className="px-2">100 $STAY per vote</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Infrastructure</td><td className="px-2">Solana On-Chain DAO</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Alpha commission lock</td><td className="px-2 text-golden font-bold">10% · 90% supermajority to change</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Anti-dilution right</td><td className="px-2">30 days to exercise pro-rata</td></tr>
-                    <tr><td className="py-2 pr-4 font-medium">Investor shares (R7)</td><td className="px-2">No vote · dividends only</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Structure</td><td className="px-2">DAO on Solana (Realms framework)</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Voting unit</td><td className="px-2 font-bold">1 property = 1 vote</td><span className="text-white/40 text-xs">(regardless of number of shares held)</span></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Eligibility</td><td className="px-2">Hold ≥1,000 $STAY AND active listing on Staylo</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Quorum</td><td className="px-2">30% of eligible voters must participate</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Simple majority</td><td className="px-2">51% — features, partnerships, marketing</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Supermajority</td><td className="px-2 text-golden font-bold">90%</td><span className="px-2 text-xs">commission rate, BTC treasury mandate, token supply</span></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Commission lock</td><td className="px-2 text-golden font-bold">10% per FP contract · only 90% vote can change</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">BTC treasury lock</td><td className="px-2 text-[#F7931A] font-bold">20% mandate in statutes · only 90% vote can change</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Dividends</td><td className="px-2">20% net profit/year, distributed proportionally</td></tr>
+                    <tr><td className="py-2 pr-4 font-medium">Dividend currency</td><td className="px-2">USD, THB, or Bitcoin (shareholder's choice)</td></tr>
                   </tbody>
                 </table>
               </div>

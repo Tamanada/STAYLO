@@ -1,24 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
+import { supabase } from '../../lib/supabase'
 
 const FILTER_KEYS = ['filter_all', 'filter_beach', 'filter_jungle', 'filter_wellness', 'filter_city', 'filter_luxury', 'filter_coowned', 'filter_bestvalue']
 const FILTER_EMOJIS = ['', '🏖', '🌿', '🧘', '🌆', '💎', '🤝', '💰']
-
-const STATS = [
-  { value: '420+', labelKey: 'stat_hotels', color: '#FF6B00' },
-  { value: '10%', labelKey: 'stat_commission', color: '#00B894' },
-  { value: '$STAY', labelKey: 'stat_earn', color: '#6C5CE7' },
-  { value: '1 vote', labelKey: 'stat_vote', color: '#FF3CB4' },
-]
 
 export function Hero() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [activeFilter, setActiveFilter] = useState(0)
   const [searchQuery, setSearchQuery] = useState('')
+  // Real hotel count from platform_stats() RPC. Was '420+' hardcoded
+  // (lying about onboarded count). Honest = real count or 'soon' if 0.
+  const [hotelCount, setHotelCount] = useState(null)
+
+  useEffect(() => {
+    let cancelled = false
+    async function fetchCount() {
+      const { data } = await supabase.rpc('platform_stats')
+      if (cancelled) return
+      const live = Number(data?.[0]?.hotels_live ?? 0)
+      setHotelCount(live)
+    }
+    fetchCount()
+    return () => { cancelled = true }
+  }, [])
+
+  const STATS = [
+    { value: hotelCount === null ? '…' : (hotelCount > 0 ? `${hotelCount}+` : 'Soon'), labelKey: 'stat_hotels', color: '#FF6B00' },
+    { value: '10%', labelKey: 'stat_commission', color: '#00B894' },
+    { value: '$STAY', labelKey: 'stat_earn', color: '#6C5CE7' },
+    { value: '1 vote', labelKey: 'stat_vote', color: '#FF3CB4' },
+  ]
 
   return (
     <section className="relative overflow-hidden" style={{
