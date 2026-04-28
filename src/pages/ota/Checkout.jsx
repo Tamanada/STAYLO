@@ -165,30 +165,61 @@ export default function Checkout() {
 
       // Try Stripe checkout via Edge Function
       try {
+        const currency = (property.currency || 'USD').toUpperCase()
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('checkout', {
           body: {
-            booking_id: booking.id,
-            amount: Math.round(totalPrice * 100), // cents
+            booking_id:    booking.id,
+            amount:        Math.round(totalPrice * 100),  // smallest currency unit
+            currency,                                      // required by edge function
+            property_id:   propertyId,                     // required for hotelier lookup
             property_name: property.name,
-            room_name: room.name,
+            room_name:     room.name,
             nights,
-            guest_email: guestEmail.trim(),
+            guest_email:   guestEmail.trim(),
           }
         })
 
-        if (checkoutError) throw checkoutError
+        if (checkoutError) {
+          // FunctionsHttpError carries the response body — extract the real
+          // error message and code so the user sees the actual reason
+          // (e.g., "Hotelier Stripe account is not fully active yet.")
+          // instead of a generic fallback.
+          let detail = checkoutError.message
+          let code   = null
+          try {
+            const ctx = checkoutError.context
+            if (ctx && typeof ctx.json === 'function') {
+              const errBody = await ctx.json()
+              if (errBody?.error) detail = errBody.error
+              if (errBody?.code)  code   = errBody.code
+            }
+          } catch { /* ignore */ }
+
+          // Friendly mapping for the most common cases
+          if (code === 'hotelier_not_onboarded') {
+            detail = t('checkout.err_hotelier_not_onboarded',
+              'The hotelier has not yet linked a payout account. Please try again later or contact support.')
+          } else if (code === 'hotelier_account_inactive') {
+            detail = t('checkout.err_hotelier_inactive',
+              'The hotelier\'s payment account is not fully active yet. Your booking is on hold — please retry shortly.')
+          }
+
+          throw new Error(detail)
+        }
 
         if (checkoutData?.url) {
           // Redirect to Stripe Checkout
           window.location.href = checkoutData.url
           return
         }
+
+        // No URL returned but no error either — unexpected state
+        throw new Error(t('checkout.no_url', 'Payment session could not be created. Please retry.'))
       } catch (stripeErr) {
-        // SECURITY FIX: do NOT auto-confirm without payment.
-        // Leave booking in 'pending' status so it can be reconciled or cancelled.
-        // TODO: when Stripe Connect is wired (TOP 5 chantier #1), remove this fallback entirely.
+        // Safety net: any uncaught error from the Stripe step. The booking
+        // stays 'pending' (we never auto-flip to 'confirmed' without payment).
         console.error('Stripe checkout failed, booking left as pending:', stripeErr)
-        throw new Error(t('checkout.payment_unavailable', 'Payment is temporarily unavailable. Your booking is on hold — please retry shortly.'))
+        throw stripeErr  // propagate the real error message to the outer catch
       }
 
       setSuccess(true)
