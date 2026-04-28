@@ -8,6 +8,7 @@ import {
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
+import LightningPaymentModal from '../../components/ota/LightningPaymentModal'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 
@@ -41,18 +42,17 @@ const PAYMENT_METHODS = [
   {
     key:        'lightning',
     feeRate:    0.0,     // Lightning network fees are essentially zero
-    available:  false,   // ⚡ Coming chantier #9 (OpenNode integration)
-    comingSoon: true,
+    available:  true,    // ⚡ Live since chantier #9 (MockProvider in Alpha, BTCPay later)
     icon:       '⚡',
     labelKey:   'checkout.method_lightning',
     labelDef:   'Bitcoin Lightning',
     descKey:    'checkout.method_lightning_desc',
-    descDef:    'Sans frais. Instantané. Activation prochaine.',
+    descDef:    'Sans frais. Instantané.',
   },
   {
     key:        'btc_onchain',
     feeRate:    0.01,    // 1% covers blockchain network fee
-    available:  false,   // ⛓️ Coming chantier #9
+    available:  false,   // ⛓️ Coming later — Lightning covers 95% of cases
     comingSoon: true,
     icon:       '₿',
     labelKey:   'checkout.method_onchain',
@@ -81,6 +81,7 @@ export default function Checkout() {
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState(null)
   const [createdBooking, setCreatedBooking] = useState(null)  // holds {id, booking_ref, ...} after insert
+  const [lightningInvoice, setLightningInvoice] = useState(null) // { invoice_id, bolt11, ... } when Lightning is selected
 
   // Guest form
   const [guestName, setGuestName] = useState(profile?.full_name || '')
@@ -211,23 +212,49 @@ export default function Checkout() {
       // so the success screen can display it for the guest to keep.
       setCreatedBooking(booking)
 
-      // Try Stripe checkout via Edge Function
+      const currency = (property.currency || 'USD').toUpperCase()
+      const sharedBody = {
+        booking_id:     booking.id,
+        booking_ref:    booking.booking_ref,
+        room_amount:    Math.round(roomTotal * 100),
+        processing_fee: Math.round(processingFee * 100),
+        currency,
+        property_id:    propertyId,
+        property_name:  property.name,
+        room_name:      room.name,
+        nights,
+        guest_email:    guestEmail.trim(),
+        payment_method: paymentMethod,
+      }
+
+      // ── Lightning / on-chain BTC: route to crypto-checkout ──
+      if (paymentMethod === 'lightning' || paymentMethod === 'btc_onchain') {
+        const { data: invoice, error: cryptoErr } = await supabase.functions.invoke('crypto-checkout', {
+          body: sharedBody,
+        })
+        if (cryptoErr) {
+          let detail = cryptoErr.message
+          try {
+            const ctx = cryptoErr.context
+            if (ctx?.json) {
+              const errBody = await ctx.json()
+              if (errBody?.error) detail = errBody.error
+            }
+          } catch { /* ignore */ }
+          throw new Error(detail || t('checkout.crypto_failed', 'Could not create Lightning invoice'))
+        }
+        if (!invoice?.bolt11) throw new Error(t('checkout.crypto_no_invoice', 'Lightning invoice missing — please retry'))
+
+        // Open the QR modal — payment confirmation comes via polling + mock auto-trigger
+        setLightningInvoice(invoice)
+        setSubmitting(false)
+        return  // stay on the page; modal handles success → setSuccess(true)
+      }
+
+      // ── Card: existing Stripe flow ──
       try {
-        const currency = (property.currency || 'USD').toUpperCase()
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('checkout', {
-          body: {
-            booking_id:     booking.id,
-            booking_ref:    booking.booking_ref,                // forwarded for Stripe metadata + receipt
-            room_amount:    Math.round(roomTotal * 100),
-            processing_fee: Math.round(processingFee * 100),
-            currency,
-            property_id:    propertyId,
-            property_name:  property.name,
-            room_name:      room.name,
-            nights,
-            guest_email:    guestEmail.trim(),
-            payment_method: paymentMethod,
-          }
+          body: sharedBody,
         })
 
         if (checkoutError) {
@@ -512,6 +539,20 @@ export default function Checkout() {
           </div>
         </div>
       </div>
+
+      {/* Lightning payment modal — opens when guest selects Lightning + confirms */}
+      {lightningInvoice && (
+        <LightningPaymentModal
+          invoice={lightningInvoice}
+          onClose={() => setLightningInvoice(null)}
+          onSuccess={() => {
+            // Webhook already marked the booking confirmed in DB.
+            // Show the success screen.
+            setLightningInvoice(null)
+            setSuccess(true)
+          }}
+        />
+      )}
     </div>
   )
 }
