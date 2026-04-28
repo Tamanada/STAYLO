@@ -307,8 +307,19 @@ function BookingCard({ booking, property, room, isHotelier, isPast }) {
         {/* Content */}
         <div className="flex-1 p-4">
           <div className="flex items-start justify-between gap-3 mb-2">
-            <div>
-              <h3 className="font-bold text-gray-900 text-lg">{property?.name || 'Property'}</h3>
+            <div className="min-w-0">
+              {/* Booking reference — copyable, communication-friendly */}
+              {booking.booking_ref && (
+                <button
+                  type="button"
+                  onClick={() => navigator.clipboard?.writeText(booking.booking_ref)}
+                  title={t('bookings.copy_ref', 'Click to copy reference')}
+                  className="text-[10px] font-mono uppercase tracking-wider text-orange/80 hover:text-orange bg-orange/5 hover:bg-orange/10 px-2 py-0.5 rounded inline-flex items-center gap-1 mb-1.5 transition-colors cursor-pointer"
+                >
+                  #{booking.booking_ref}
+                </button>
+              )}
+              <h3 className="font-bold text-gray-900 text-lg truncate">{property?.name || 'Property'}</h3>
               {property && (
                 <p className="text-sm text-gray-500 flex items-center gap-1">
                   <MapPin size={12} />
@@ -316,7 +327,7 @@ function BookingCard({ booking, property, room, isHotelier, isPast }) {
                 </p>
               )}
             </div>
-            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${cfg.color}`}>
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap flex-shrink-0 ${cfg.color}`}>
               <StatusIcon size={12} />
               {cfg.label}
             </span>

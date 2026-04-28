@@ -56,6 +56,7 @@ serve(async (req) => {
     const body = await req.json()
     const {
       booking_id,
+      booking_ref,                          // human-friendly STY-XXXXXX
       room_amount,
       processing_fee = 0,
       currency,
@@ -158,14 +159,15 @@ serve(async (req) => {
               currency: cur.toLowerCase(),
               unit_amount: totalCharged,  // room + processing fee
               product_data: {
-                name:        `${property_name ?? property.name} — ${room_name ?? 'Room'}`,
-                description: `${nights ?? 1} night${(nights ?? 1) > 1 ? 's' : ''} stay (incl. ${procFee > 0 ? 'processing fee' : 'no processing fee'})`,
+                name:        `${property_name ?? property.name} — ${room_name ?? 'Room'}${booking_ref ? `  ·  ${booking_ref}` : ''}`,
+                description: `${nights ?? 1} night${(nights ?? 1) > 1 ? 's' : ''} stay${booking_ref ? `  ·  Ref ${booking_ref}` : ''}`,
               },
             },
           },
         ],
         metadata: {
           booking_id,
+          booking_ref:    booking_ref ?? '',
           property_id,
           hotelier_user_id:           property.user_id,
           hotelier_stripe_account_id: hotelierAccount.stripe_account_id,

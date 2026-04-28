@@ -80,6 +80,7 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState(null)
+  const [createdBooking, setCreatedBooking] = useState(null)  // holds {id, booking_ref, ...} after insert
 
   // Guest form
   const [guestName, setGuestName] = useState(profile?.full_name || '')
@@ -206,14 +207,19 @@ export default function Checkout() {
 
       if (bookingError) throw bookingError
 
+      // Persist the freshly inserted booking (incl. auto-generated booking_ref)
+      // so the success screen can display it for the guest to keep.
+      setCreatedBooking(booking)
+
       // Try Stripe checkout via Edge Function
       try {
         const currency = (property.currency || 'USD').toUpperCase()
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('checkout', {
           body: {
             booking_id:     booking.id,
-            room_amount:    Math.round(roomTotal * 100),       // hotelier-priced amount
-            processing_fee: Math.round(processingFee * 100),   // guest-paid fee
+            booking_ref:    booking.booking_ref,                // forwarded for Stripe metadata + receipt
+            room_amount:    Math.round(roomTotal * 100),
+            processing_fee: Math.round(processingFee * 100),
             currency,
             property_id:    propertyId,
             property_name:  property.name,
@@ -285,6 +291,27 @@ export default function Checkout() {
         </div>
         <h1 className="text-3xl font-bold text-deep mb-3">{t('checkout.success_title', 'Booking Confirmed!')}</h1>
         <p className="text-gray-500 mb-2">{t('checkout.success_desc', 'Your reservation has been confirmed. You will receive a confirmation email shortly.')}</p>
+
+        {/* Booking reference — prominently displayed for the guest to keep */}
+        {createdBooking?.booking_ref && (
+          <div className="mt-6 inline-flex flex-col items-center gap-1 bg-orange/5 border border-orange/20 rounded-2xl px-6 py-4">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-orange/60">
+              {t('checkout.your_reference', 'Your booking reference')}
+            </span>
+            <button
+              type="button"
+              onClick={() => navigator.clipboard?.writeText(createdBooking.booking_ref)}
+              title={t('checkout.click_to_copy', 'Click to copy')}
+              className="text-2xl font-mono font-bold text-orange tracking-wider hover:opacity-80 transition-opacity cursor-pointer"
+            >
+              {createdBooking.booking_ref}
+            </button>
+            <span className="text-[11px] text-gray-500">
+              {t('checkout.ref_note', 'Use this reference in any correspondence with the hotel or STAYLO.')}
+            </span>
+          </div>
+        )}
+
         <Card className="mt-6 text-left">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-gray-500">{t('checkout.property', 'Property')}</span><span className="font-medium text-deep">{property.name}</span></div>
