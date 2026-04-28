@@ -89,13 +89,23 @@ serve(async (req) => {
         { code: 'hotelier_not_onboarded' },
       )
     }
-    if (!hotelierAccount.charges_enabled || !hotelierAccount.payouts_enabled) {
-      return errorResponse(
-        'Hotelier Stripe account is not fully active yet.',
-        409,
-        { code: 'hotelier_account_inactive' },
-      )
-    }
+    // ⚠️ TEMPORARY (Alpha test): we only require that a stripe_account row
+    // exists, not that charges_enabled/payouts_enabled are TRUE. This lets
+    // us demo the platform-charge flow even if the hotelier hasn't fully
+    // completed Stripe Express onboarding (e.g., 'Restricted' state in TH).
+    // The platform charge will succeed (funds land on STAYLO balance);
+    // release-escrow's transfer step will fail later if the destination
+    // is still restricted, which is the right behavior — payment is held
+    // and refundable until the hotelier finishes.
+    // RE-ENABLE before production by uncommenting the block below.
+    //
+    // if (!hotelierAccount.charges_enabled || !hotelierAccount.payouts_enabled) {
+    //   return errorResponse(
+    //     'Hotelier Stripe account is not fully active yet.',
+    //     409,
+    //     { code: 'hotelier_account_inactive' },
+    //   )
+    // }
 
     // 4. Compute split
     const platformFee = Math.round(amt * COMMISSION_RATE)
