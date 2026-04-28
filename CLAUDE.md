@@ -265,6 +265,72 @@ Two seat categories, votes are **summed**:
 Natural sunset: Founders are influential when their judgment matters
 most (early days), then automatically dilute as the network scales.
 
+#### Private Investors Rights — "Engaged but not Controlling" (5 mechanisms)
+
+Private Investors put up cash without operating hotels. They deserve
+voice + protection on their financial stake, but cannot take control of
+day-to-day operations (which would defeat the cooperative purpose). The
+following five mechanisms achieve that balance — formalized in the
+Shareholders Agreement (Drew & Napier counsel, post-Singapore
+incorporation).
+
+**1. Information rights** (full transparency, zero power)
+- Quarterly written report: bookings, revenue, BTC treasury, $STAY
+  metrics, roadmap, risks
+- Mandatory Annual General Meeting (AGM) — physical or virtual
+- Quarterly investor call with the founder/CEO
+- Private Telegram/Discord "Investor Circle" channel — direct line
+  to the founder
+
+**2. Advisory Board** (consultative seat, no decision power)
+- Private Investors elect **2 members** of an Advisory Board (one seat
+  per ~50K shares as a guideline)
+- The Advisory Board *advises* the Executive Board (composed of
+  Founders + Founding Partners) but does not vote on operations
+- The Advisory Board may issue *public recommendations* on any topic
+- Standard practice in venture-backed cooperatives
+
+**3. Veto rights — minority defensive only** (51% of PI class required)
+The Private Investors as a class can BLOCK (but not initiate) any of:
+- Share dilution > 10% of existing capital
+- Sale of the company (M&A)
+- Any change to the 10% commission rate
+- Removal of the 20% BTC treasury mandate
+- Liquidation preference modification
+→ Standard VC blocking minority. They can say "no" to 5 critical things,
+  cannot force anything.
+
+**4. Pre-emptive rights** (anti-dilution protection)
+- On every new share issuance (e.g., World Round, future Series B),
+  Private Investors have **30 days** to exercise their pro-rata right
+- If they invest again → maintain their 20% stake
+- If they decline → accept the dilution
+- Standard private equity. Zero cost to STAYLO.
+
+**5. Voting on financial-only matters** (1 share = 1 vote, Layer 1)
+Private Investors vote at the **corporate (Singapore Pte Ltd) layer
+only**, never in the Solana DAO. Topics they vote on:
+- Annual dividend distribution (20% net profit)
+- New share emissions (Series B, etc.) + their pre-emptive right
+- M&A, acquisitions
+- Annual financial audit
+- CFO / auditor appointment
+
+Topics they DO NOT vote on (handled in DAO Layer 2 by hoteliers):
+- Product features, roadmap
+- Marketing campaigns, OTA partnerships
+- Channel Manager priorities
+- Day-to-day operational decisions
+
+#### Sumary table — who votes where
+
+| Class | Layer 1 (Singapore Corp) | Layer 2 (Solana DAO) |
+|-------|--------------------------|----------------------|
+| Founders | ✅ 1 share = 1 vote | ✅ 1 Founder Seat (max 10 total) |
+| Private Investors | ✅ 1 share = 1 vote on financial matters · 5 minority rights (info, advisory, veto, pre-emptive, financial vote) | ❌ Not eligible |
+| Founding Partners | ✅ 1 share = 1 vote | ✅ 1 Hotel Seat per active property |
+| Property (free listing) | ❌ No shares | ✅ 1 Hotel Seat per active property (if ≥1,000 $STAY held) |
+
 ### Roles & Sides (canonical 4-role model)
 
 | Role | Side | Condition | Reward |

@@ -36,6 +36,7 @@ export default function Vision() {
   const [showShareStructure, setShowShareStructure] = useState(false)
   const [showTokenomics, setShowTokenomics] = useState(false)
   const [showGovernance, setShowGovernance] = useState(false)
+  const [showInvestorRights, setShowInvestorRights] = useState(false)
   const totalAlphaShares = 3000
   const totalShares = 500000
   const sharePrice = 1000
@@ -569,6 +570,103 @@ export default function Vision() {
                     <tr><td className="py-2 pr-4 font-medium">Dividend currency</td><td className="px-2">USD, THB, or Bitcoin (shareholder's choice)</td></tr>
                   </tbody>
                 </table>
+              </div>
+            )}
+          </div>
+
+          {/* Private Investors Rights — 5 mechanisms */}
+          <div className="mb-4">
+            <button onClick={() => setShowInvestorRights(!showInvestorRights)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+              <div className="flex items-center gap-3">
+                <Shield className="text-libre" size={24} />
+                <span className="font-bold text-lg">{t('vision.investor_rights_title', 'Private Investors Rights — Engaged but not Controlling')}</span>
+              </div>
+              {showInvestorRights ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+            {showInvestorRights && (
+              <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+                <p className="text-sm text-white/70 italic mb-4">
+                  Private Investors put up cash without operating hotels. They get voice + protection on their financial stake, but cannot take control of day-to-day operations (which would defeat the cooperative purpose). The 5 mechanisms below are formalized in the Shareholders Agreement (Drew &amp; Napier counsel, post-Singapore incorporation).
+                </p>
+
+                <div className="space-y-3">
+                  {/* Mechanism 1 */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                    <p className="font-bold text-libre text-sm mb-1">1. Information rights — full transparency, zero power</p>
+                    <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
+                      <li>Quarterly written report (bookings, revenue, BTC treasury, $STAY metrics, roadmap, risks)</li>
+                      <li>Mandatory Annual General Meeting (AGM) — physical or virtual</li>
+                      <li>Quarterly investor call with the founder/CEO</li>
+                      <li>Private Telegram/Discord "Investor Circle" — direct line to David</li>
+                    </ul>
+                  </div>
+
+                  {/* Mechanism 2 */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                    <p className="font-bold text-libre text-sm mb-1">2. Advisory Board — consultative seats, no decision power</p>
+                    <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
+                      <li>Private Investors elect <strong>2 members</strong> of an Advisory Board</li>
+                      <li>The Advisory Board <em>advises</em> the Executive Board (Founders + Founding Partners) but does not vote on operations</li>
+                      <li>May issue public recommendations on any topic</li>
+                    </ul>
+                  </div>
+
+                  {/* Mechanism 3 */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-golden/20">
+                    <p className="font-bold text-golden text-sm mb-1">3. Veto rights — minority defensive only (51% of PI class)</p>
+                    <p className="text-xs text-white/70 mb-2">Can BLOCK (not initiate) any of:</p>
+                    <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
+                      <li>Share dilution &gt;10% of existing capital</li>
+                      <li>Sale of the company (M&amp;A)</li>
+                      <li>Any change to the 10% commission rate</li>
+                      <li>Removal of the 20% BTC treasury mandate</li>
+                      <li>Liquidation preference modification</li>
+                    </ul>
+                    <p className="text-[10px] text-white/40 italic mt-2">Standard VC blocking minority. They can say "no" to 5 critical things, cannot force anything.</p>
+                  </div>
+
+                  {/* Mechanism 4 */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                    <p className="font-bold text-libre text-sm mb-1">4. Pre-emptive rights — anti-dilution protection</p>
+                    <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
+                      <li>On every new share issuance: <strong>30 days</strong> to exercise pro-rata right</li>
+                      <li>If they invest again → maintain their 20% stake</li>
+                      <li>If they decline → accept the dilution</li>
+                    </ul>
+                  </div>
+
+                  {/* Mechanism 5 */}
+                  <div className="bg-white/5 rounded-xl p-4 border border-white/5">
+                    <p className="font-bold text-libre text-sm mb-1">5. Voting on financial-only matters (1 share = 1 vote, Layer 1)</p>
+                    <p className="text-xs text-white/70 mb-2">At the corporate (Singapore Pte Ltd) layer only — never in the Solana DAO.</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <p className="text-libre/80 font-semibold">✅ Vote sur :</p>
+                        <ul className="text-white/60 list-disc list-inside">
+                          <li>Annual dividend distribution</li>
+                          <li>New share emissions</li>
+                          <li>M&amp;A, acquisitions</li>
+                          <li>Annual financial audit</li>
+                          <li>CFO / auditor appointment</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="text-sunset/80 font-semibold">❌ NE vote PAS sur :</p>
+                        <ul className="text-white/60 list-disc list-inside">
+                          <li>Product features</li>
+                          <li>Marketing campaigns</li>
+                          <li>OTA partnerships</li>
+                          <li>Channel Manager priorities</li>
+                          <li>Day-to-day operations</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <p className="text-xs text-white/30 text-center italic mt-4">
+                  Standard structure for cooperative platforms with mixed shareholder classes. Drafted by Drew &amp; Napier (Singapore counsel) post-incorporation.
+                </p>
               </div>
             )}
           </div>
