@@ -42,14 +42,30 @@ export default function Vision() {
   const pctSold = ((sharesSold / totalAlphaShares) * 100).toFixed(1)
 
   useEffect(() => {
+    let cancelled = false
     async function fetchShares() {
-      try {
-        // Use database function to bypass RLS and get accurate total
-        const { data } = await supabase.rpc('get_total_shares')
-        if (typeof data === 'number' && data >= 0) setSharesSold(data)
-      } catch (e) { /* use default 0 */ }
+      // Real source: platform_stats() RPC returns shares_sold (sum of
+      // shares.quantity WHERE payment_confirmed=TRUE).
+      // Fallback: count shares directly in case the RPC is missing on
+      // the deployed DB.
+      const { data, error } = await supabase.rpc('platform_stats')
+      if (cancelled) return
+      if (!error && data?.[0]?.shares_sold != null) {
+        setSharesSold(Number(data[0].shares_sold))
+        return
+      }
+      const { data: rows } = await supabase
+        .from('shares')
+        .select('quantity')
+        .eq('payment_confirmed', true)
+      if (cancelled) return
+      if (Array.isArray(rows)) {
+        const sum = rows.reduce((acc, r) => acc + Number(r.quantity || 0), 0)
+        setSharesSold(sum)
+      }
     }
     fetchShares()
+    return () => { cancelled = true }
   }, [])
 
   return (

@@ -85,6 +85,9 @@ export default function Dashboard() {
   const [copied, setCopied] = useState(false)
   const [memberPosition, setMemberPosition] = useState(1)
   const [showQR, setShowQR] = useState(false)
+  // Real metrics: monthly revenue + ambassador count derived from DB
+  const [monthlyRevenueUsd, setMonthlyRevenueUsd] = useState(0)
+  const [ambassadorCount,   setAmbassadorCount]   = useState(0)
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/login')
@@ -125,6 +128,42 @@ export default function Dashboard() {
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .then(({ data }) => setShares(data || []))
+
+    // Real monthly revenue = sum of payout_amount_cents on bookings
+    // for this hotelier's properties whose escrow has been released
+    // this calendar month (USD-equivalent — multi-currency conversion
+    // can be added later, for now we treat values at face).
+    ;(async () => {
+      const { data: myProps } = await supabase
+        .from('properties').select('id').eq('user_id', user.id)
+      const myPropertyIds = (myProps ?? []).map(p => p.id)
+      if (myPropertyIds.length === 0) {
+        setMonthlyRevenueUsd(0); return
+      }
+      const monthStart = new Date()
+      monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0)
+      const { data: bks } = await supabase
+        .from('bookings')
+        .select('payout_amount_cents, total_price, currency, escrow_released_at, escrow_status, status')
+        .in('property_id', myPropertyIds)
+        .gte('escrow_released_at', monthStart.toISOString())
+      const sum = (bks ?? []).reduce((acc, b) => {
+        if (b.escrow_status === 'released') {
+          // Prefer the precise payout column; fall back to 90% of total_price
+          const cents = b.payout_amount_cents ?? Math.round(Number(b.total_price || 0) * 0.9 * 100)
+          return acc + (cents / 100)
+        }
+        return acc
+      }, 0)
+      setMonthlyRevenueUsd(sum)
+    })()
+
+    // Real ambassador count = users with referred_by = current user (i.e.
+    // people David sponsored who became hoteliers)
+    supabase
+      .from('users').select('id', { count: 'exact', head: true })
+      .eq('referred_by', user.id)
+      .then(({ count }) => setAmbassadorCount(count ?? 0))
   }, [user])
 
   const activeLink = referralLink
@@ -197,12 +236,12 @@ export default function Dashboard() {
         </Card>
         <Card className="p-4 text-center">
           <Handshake size={20} className="text-libre mx-auto mb-2" />
-          <p className="text-2xl font-black text-deep">0</p>
-          <p className="text-xs text-gray-400">{t('dashboard.stat_ambassadors', 'Ambassadors')}</p>
+          <p className="text-2xl font-black text-deep">{ambassadorCount}</p>
+          <p className="text-xs text-gray-400">{t('dashboard.stat_referred_hoteliers', 'Hoteliers I referred')}</p>
         </Card>
         <Card className="p-4 text-center">
           <TrendingUp size={20} className="text-golden mx-auto mb-2" />
-          <p className="text-2xl font-black text-libre">{fmt(0)}</p>
+          <p className="text-2xl font-black text-libre">{fmt(monthlyRevenueUsd)}</p>
           <p className="text-xs text-gray-400">{t('dashboard.stat_monthly_revenue', 'Revenue this month')}</p>
         </Card>
       </div>

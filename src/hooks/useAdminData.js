@@ -70,12 +70,15 @@ export function useAdminData() {
   const fetchAll = useCallback(async () => {
     setLoading(true)
 
+    // No more silent demo fallback. If Supabase isn't configured we
+    // surface empty arrays + log a warning rather than show the admin
+    // imaginary data that could mislead a real operator.
     if (!isSupabaseConfigured()) {
-      // Use demo data
-      setUsers(DEMO_USERS)
-      setProperties(DEMO_PROPERTIES)
-      setSurveys(DEMO_SURVEYS)
-      setReferrals(DEMO_REFERRALS)
+      console.warn('[useAdminData] Supabase not configured — admin sees empty state.')
+      setUsers([])
+      setProperties([])
+      setSurveys([])
+      setReferrals([])
       setLoading(false)
       return
     }
@@ -88,16 +91,16 @@ export function useAdminData() {
         supabase.from('referrals').select('*').order('created_at', { ascending: false }),
       ])
 
-      setUsers(usersRes.data || DEMO_USERS)
-      setProperties(propsRes.data || DEMO_PROPERTIES)
-      setSurveys(surveysRes.data || DEMO_SURVEYS)
-      setReferrals(referralsRes.data || DEMO_REFERRALS)
-    } catch {
-      // Fallback to demo data
-      setUsers(DEMO_USERS)
-      setProperties(DEMO_PROPERTIES)
-      setSurveys(DEMO_SURVEYS)
-      setReferrals(DEMO_REFERRALS)
+      setUsers(usersRes.data || [])
+      setProperties(propsRes.data || [])
+      setSurveys(surveysRes.data || [])
+      setReferrals(referralsRes.data || [])
+    } catch (err) {
+      console.error('[useAdminData] fetch error:', err)
+      setUsers([])
+      setProperties([])
+      setSurveys([])
+      setReferrals([])
     }
 
     setLoading(false)
@@ -144,10 +147,10 @@ export function useAdminData() {
       live: properties.filter(p => p.status === 'live').length,
     },
     avgInterestScore: surveys.length
-      ? (surveys.reduce((sum, s) => sum + s.interest_score, 0) / surveys.length).toFixed(1)
+      ? (surveys.reduce((sum, s) => sum + Number(s.interest_score || 0), 0) / surveys.length).toFixed(1)
       : 0,
     avgCommission: surveys.length
-      ? (surveys.reduce((sum, s) => sum + s.commission_pct, 0) / surveys.length).toFixed(1)
+      ? (surveys.reduce((sum, s) => sum + Number(s.commission_pct || 0), 0) / surveys.length).toFixed(1)
       : 0,
     wouldJoinRate: surveys.length
       ? Math.round((surveys.filter(s => s.would_join).length / surveys.length) * 100)

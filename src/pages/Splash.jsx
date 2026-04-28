@@ -15,18 +15,32 @@ import { supabase } from '../lib/supabase'
 export default function Splash() {
   const { t } = useTranslation()
   const { user } = useAuth()
-  const [partnerCount, setPartnerCount] = useState(12)
+  // Real partner count from platform_stats() RPC. We start at 0 (honest)
+  // instead of a hardcoded fallback that lied (was 12). Renders nothing
+  // misleading until the real number lands.
+  const [partnerCount, setPartnerCount] = useState(0)
+  const [statsLoaded, setStatsLoaded]   = useState(false)
 
   useEffect(() => {
-    async function fetchPartnerCount() {
-      try {
+    let cancelled = false
+    async function fetchStats() {
+      // Prefer platform_stats() RPC (returns hotels_live + others).
+      const { data, error } = await supabase.rpc('platform_stats')
+      if (cancelled) return
+      if (!error && data?.[0]?.hotels_live != null) {
+        setPartnerCount(Number(data[0].hotels_live))
+      } else {
+        // Fallback: count properties WHERE status='live'
         const { count } = await supabase
           .from('properties')
-          .select('*', { count: 'exact', head: true })
-        if (count && count > 0) setPartnerCount(count)
-      } catch (e) { /* use default */ }
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'live')
+        if (!cancelled && typeof count === 'number') setPartnerCount(count)
+      }
+      setStatsLoaded(true)
     }
-    fetchPartnerCount()
+    fetchStats()
+    return () => { cancelled = true }
   }, [])
 
   const pctProgress = Math.min((partnerCount / 100) * 100, 100).toFixed(0)
