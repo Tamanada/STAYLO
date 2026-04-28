@@ -551,15 +551,21 @@ export default function Vision() {
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Structure</td><td className="px-2">DAO on Solana (Realms framework)</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Voting unit</td><td className="px-2 font-bold">1 property = 1 vote</td><span className="text-white/40 text-xs">(regardless of number of shares held)</span></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Eligibility</td><td className="px-2">Hold ≥1,000 $STAY AND active listing on Staylo</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Quorum</td><td className="px-2">30% of eligible voters must participate</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Structure</td><td className="px-2">Two layers: Singapore Pte Ltd (off-chain) + Solana DAO (on-chain, Realms)</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium text-libre">— Layer 1 —</td><td className="px-2 text-libre/80 text-xs italic">Singapore Corporate Vote (off-chain)</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">Voters</td><td className="px-2">Founders + Private Investors + Founding Partners (1 share = 1 vote)</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">Decides</td><td className="px-2">Dividends · Share dilution · M&amp;A · Treasury allocation · Audit · Board appointments</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium text-electric">— Layer 2 —</td><td className="px-2 text-electric/80 text-xs italic">Solana DAO (on-chain) — TWO seat types</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">🏨 Hotel Seats</td><td className="px-2"><strong>1 active property = 1 vote</strong> · unbounded · ≥1,000 $STAY required</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">⭐ Founder Seats</td><td className="px-2"><strong>1 founder = 1 vote · cap 10 absolute</strong> · ≥1,000 $STAY + seed cohort + active attestation</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">Sunset clause</td><td className="px-2">At M36, if &gt;10K active Hotel Seats, Founder Seats can be abolished by 51% Hotel-Seat vote alone</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">Decides</td><td className="px-2">Features · Roadmap · OTA partnerships · Marketing · Channel Manager · $STAY emissions · Commission rate (within 10% lock)</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Quorum (DAO)</td><td className="px-2">30% of total eligible seats</td></tr>
                     <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Simple majority</td><td className="px-2">51% — features, partnerships, marketing</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Supermajority</td><td className="px-2 text-golden font-bold">90%</td><span className="px-2 text-xs">commission rate, BTC treasury mandate, token supply</span></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Commission lock</td><td className="px-2 text-golden font-bold">10% per FP contract · only 90% vote can change</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">BTC treasury lock</td><td className="px-2 text-[#F7931A] font-bold">20% mandate in statutes · only 90% vote can change</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Dividends</td><td className="px-2">20% net profit/year, distributed proportionally</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Supermajority</td><td className="px-2 text-golden font-bold">90% · required for commission rate, BTC mandate, token supply changes</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Commission lock</td><td className="px-2 text-golden font-bold">10% per FP contract · only 90% supermajority can change</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">BTC treasury lock</td><td className="px-2 text-[#F7931A] font-bold">20% mandate in statutes · only 90% supermajority can change</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Dividends</td><td className="px-2">20% net profit/year, distributed proportionally to all shareholders</td></tr>
                     <tr><td className="py-2 pr-4 font-medium">Dividend currency</td><td className="px-2">USD, THB, or Bitcoin (shareholder's choice)</td></tr>
                   </tbody>
                 </table>

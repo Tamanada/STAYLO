@@ -188,16 +188,82 @@ everything.
 | Member (traveler) | Another Member | $STAY reward (rate TBD) — builds platform demand |
 | Ambassador | More hotels | Additional 2% BTC stream per hotel |
 
-### Governance (DAO on Solana)
+### Governance — Two layers
+
+STAYLO uses a **dual-layer governance** model: corporate matters
+(Singapore Pte Ltd) are decided by all shareholders weighted by shares;
+operational/platform matters (Solana DAO) follow the cooperative
+"1 property = 1 vote" rule, with a small allocation of Founder Seats.
+
+#### Layer 1 — Singapore Corporate Vote (off-chain)
+
+Standard Singapore Companies Act voting, weighted **1 share = 1 vote**.
+All share-holders participate (Founders + Private Investors + Founding
+Partners). Decides:
+
+- Distribution of dividends (20% net profit/year)
+- Issuance of new shares (with 30-day pre-emptive rights for existing
+  shareholders to maintain pro-rata)
+- M&A, acquisitions, dissolution
+- BTC treasury allocation
+- Appointment of board / executive team / auditor / CFO
+- Annual budget
+- Any modification of the company statutes (90% supermajority)
+
+#### Layer 2 — Solana DAO (on-chain) — TWO seat types
+
+Two seat categories, votes are **summed**:
+
+**Hotel Seats** — unbounded, scales with the cooperative
+- Eligibility: hold ≥1,000 $STAY AND have an active listing on Staylo
+  (status `live` or `validated`)
+- Vote: 1 vote per active property (a hotelier with 3 properties votes 3×)
+- Lose seat: when listing becomes inactive or $STAY balance < 1,000
+
+**Founder Seats** — capped, sunsets as the coop grows
+- Eligibility: hold ≥1,000 $STAY AND was part of the seed cohort
+  (50K Founder share allocation), AND signed quarterly attestation of
+  active engagement
+- Vote: 1 vote per Founder
+- **Cap absolute: 10 seats** (5 currently filled + 5 reserved for future
+  senior hires / late co-founders)
+- **Sunset clause**: at M36, if the platform has >10,000 active
+  hotelier seats, Founder Seats can be abolished by 51% vote of Hotel
+  Seats alone (Founder Seats themselves do not vote on this question)
+- No cumul: a Founder who later becomes a hotelier counts as a Hotel
+  Seat (not both). The list of Founder Seat holders is publicly
+  on-chain and verifiable.
+
+**Decisions taken at the DAO layer**:
+- Product features and roadmap
+- OTA partnerships (Booking, Airbnb integrations)
+- Marketing campaigns
+- Channel Manager priorities
+- $STAY emission rate, halving timing
+- Commission rate (within the 10% lock — 90% supermajority required to change)
+
+**Decisions NOT in the DAO** (handled at corporate layer):
+- Dividends, M&A, dilution, executive appointments, audit, CFO
+
+#### DAO Voting parameters
 
 | Param | Value |
 |-------|-------|
-| Voting unit | **1 Property = 1 vote** (regardless of share count) |
-| Eligibility | Hold ≥1,000 $STAY AND active listing on Staylo |
-| Quorum | 30% of eligible voters must participate |
+| Quorum | 30% of total eligible seats (Hotel + Founder combined) |
 | Simple majority | 51% — features, partnerships, marketing |
 | Supermajority | 90% — commission rate, BTC mandate, token supply |
-| Dividends | 20% annual net profit, paid in USD/THB/BTC (holder's choice) |
+
+#### Founder Seat dilution over time (illustrative)
+
+| Period | Hotel Seats | Founder Seats | Founder weight |
+|--------|-------------|---------------|----------------|
+| M03 (10 hôtels actifs) | 10 | 5 | 33% — strong influence at start |
+| M12 (380 hôtels) | 380 | 5 | 1.3% |
+| M24 (4,800 hôtels) | 4,800 | 5 | 0.1% |
+| M36 (16,649 hôtels) | 16,649 | 5 | 0.03% — pure cooperative |
+
+Natural sunset: Founders are influential when their judgment matters
+most (early days), then automatically dilute as the network scales.
 
 ### Roles & Sides (canonical 4-role model)
 
