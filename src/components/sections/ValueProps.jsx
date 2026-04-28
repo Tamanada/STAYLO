@@ -55,15 +55,15 @@ export function ValueProps() {
         {/* Cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {PROPS.map(prop => (
-            <div key={prop.titleKey} className="card-hover rounded-3xl p-7"
+            <div key={prop.titleKey} className="card-hover rounded-3xl p-8 text-center flex flex-col items-center"
               style={{
                 background: prop.gradient,
                 border: `1.5px solid ${prop.borderColor}`,
                 boxShadow: '0 4px 16px rgba(0,0,0,0.06)',
               }}>
-              <span className="text-4xl block mb-5">{prop.emoji}</span>
-              <h3 className="font-black text-lg mb-2" style={{ color: '#2D3436' }}>{t(`home_value.${prop.titleKey}`)}</h3>
-              <p className="text-sm leading-relaxed" style={{ color: '#636E72' }}>{t(`home_value.${prop.descKey}`)}</p>
+              <span className="text-5xl block mb-5">{prop.emoji}</span>
+              <h3 className="font-black text-xl mb-3" style={{ color: '#2D3436' }}>{t(`home_value.${prop.titleKey}`)}</h3>
+              <p className="text-base leading-relaxed" style={{ color: '#636E72' }}>{t(`home_value.${prop.descKey}`)}</p>
             </div>
           ))}
         </div>

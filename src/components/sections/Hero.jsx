@@ -86,7 +86,7 @@ export function Hero() {
           maxWidth: '620px',
           margin: '0 auto 40px',
         }}>
-          {t('home_hero.subtitle', 'Every booking on Staylo goes back to the hoteliers who built it. Co-owned. 10% commission. Yours forever.')}
+          {t('home_hero.subtitle', 'Every booking on Staylo goes back to the hoteliers who built it. Co-owned by worldwide hoteliers. 10% commission forever… and much more.')}
         </p>
 
         {/* Search box */}
