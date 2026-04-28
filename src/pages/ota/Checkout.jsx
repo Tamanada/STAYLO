@@ -13,6 +13,18 @@ import { useAuth } from '../../hooks/useAuth'
 
 const COMMISSION_RATE = 0.10 // 10% STAYLO commission
 
+// Emoji icon for each property type (used in the booking summary card)
+const PROPERTY_TYPE_ICONS = {
+  hotel:      '🏨',
+  guesthouse: '🏠',
+  resort:     '🏖️',
+  villa:      '🏡',
+  hostel:     '🛏️',
+  apartment:  '🏢',
+  bungalow:   '🛖',
+  homestay:   '🏠',
+}
+
 export default function Checkout() {
   const { t } = useTranslation()
   const { id: propertyId } = useParams()
@@ -287,7 +299,7 @@ export default function Checkout() {
               {/* Property info */}
               <div className="flex items-start gap-3 mb-4 pb-4 border-b border-gray-100">
                 <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-ocean/40 to-electric/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-2xl">{(typeIcons || {})[property.type] || '🏨'}</span>
+                  <span className="text-2xl">{PROPERTY_TYPE_ICONS[property.type] || '🏨'}</span>
                 </div>
                 <div>
                   <h4 className="font-bold text-deep text-sm">{property.name}</h4>
