@@ -16,15 +16,23 @@
 // Body:
 //   {
 //     booking_id: uuid,
-//     amount: number,         // in smallest currency unit (cents, satang, ...)
-//     currency: string,       // ISO 4217 lowercase (usd, eur, thb, ...)
+//     room_amount: number,        // smallest currency unit; what hotelier prices
+//     processing_fee: number,     // smallest currency unit; what guest pays extra
+//                                 //   to cover Stripe (3% for card, 0 for Lightning)
+//                                 // Defaults to 0 if absent.
+//     currency: string,           // ISO 4217 lowercase
 //     property_id: uuid,
 //     property_name: string,
 //     room_name: string,
 //     nights: number,
 //     guest_email?: string,
+//     payment_method?: string,    // 'card' | 'lightning' | 'btc_onchain'
 //   }
-// Returns: { url, session_id }
+// Stripe charges the guest:  room_amount + processing_fee
+// Hotelier receives:          90% of room_amount  (NOT total)
+// STAYLO commission:          10% of room_amount
+// processing_fee covers Stripe's actual cost (~2.9% + $0.30) — guest absorbs.
+// Returns: { url, session_id, total_charged_cents, payout_amount_cents, platform_fee_cents }
 // ============================================
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
@@ -46,14 +54,32 @@ serve(async (req) => {
     if (!user) return errorResponse('Unauthorized', 401)
 
     const body = await req.json()
-    const { booking_id, amount, currency, property_id, property_name, room_name, nights, guest_email } = body
+    const {
+      booking_id,
+      room_amount,
+      processing_fee = 0,
+      currency,
+      property_id,
+      property_name,
+      room_name,
+      nights,
+      guest_email,
+      payment_method = 'card',
+      // Backward-compat: old clients still send `amount` (= total)
+      amount: legacyAmount,
+    } = body
 
-    if (!booking_id || !amount || !property_id) {
-      return errorResponse('Missing required fields: booking_id, amount, property_id')
+    if (!booking_id || !property_id) {
+      return errorResponse('Missing required fields: booking_id, property_id')
     }
-    const amt = Number(amount)
-    if (!Number.isInteger(amt) || amt < 50) {
-      return errorResponse('amount must be an integer >= 50 (smallest currency unit)')
+    // Resolve room_amount (preferred) or fall back to legacy `amount`
+    const roomAmt = Number(room_amount ?? legacyAmount ?? 0)
+    const procFee = Number(processing_fee ?? 0)
+    if (!Number.isInteger(roomAmt) || roomAmt < 50) {
+      return errorResponse('room_amount must be an integer >= 50 (smallest currency unit)')
+    }
+    if (!Number.isInteger(procFee) || procFee < 0) {
+      return errorResponse('processing_fee must be a non-negative integer')
     }
 
     const supa = getServiceClient()
@@ -107,11 +133,16 @@ serve(async (req) => {
     //   )
     // }
 
-    // 4. Compute split
-    const platformFee = Math.round(amt * COMMISSION_RATE)
-    const payoutAmount = amt - platformFee
+    // 4. Compute split (commission is on ROOM AMOUNT, NOT total)
+    //    Processing fee is consumed by Stripe / processor — not part of split.
+    const platformFee  = Math.round(roomAmt * COMMISSION_RATE)
+    const payoutAmount = roomAmt - platformFee
+    const totalCharged = roomAmt + procFee  // What the guest's card is charged
 
-    // 5. Create Checkout Session
+    // 5. Create Checkout Session — single line item with the TOTAL the guest pays.
+    //    We could break it into 2 line items (room + processing fee) for full
+    //    transparency on the Stripe page, but most guests prefer a clean single
+    //    line. The breakdown is shown on STAYLO's checkout page beforehand.
     const origin = req.headers.get('origin') ?? 'https://staylo.app'
     const session = await stripeFetch<StripeCheckoutSession>('/checkout/sessions', {
       body: {
@@ -125,10 +156,10 @@ serve(async (req) => {
             quantity: 1,
             price_data: {
               currency: cur.toLowerCase(),
-              unit_amount: amt,
+              unit_amount: totalCharged,  // room + processing fee
               product_data: {
                 name:        `${property_name ?? property.name} — ${room_name ?? 'Room'}`,
-                description: `${nights ?? 1} night${(nights ?? 1) > 1 ? 's' : ''} stay`,
+                description: `${nights ?? 1} night${(nights ?? 1) > 1 ? 's' : ''} stay (incl. ${procFee > 0 ? 'processing fee' : 'no processing fee'})`,
               },
             },
           },
@@ -136,11 +167,15 @@ serve(async (req) => {
         metadata: {
           booking_id,
           property_id,
-          hotelier_user_id:  property.user_id,
+          hotelier_user_id:           property.user_id,
           hotelier_stripe_account_id: hotelierAccount.stripe_account_id,
-          payout_amount:     String(payoutAmount),
-          platform_fee:      String(platformFee),
-          currency:          cur,
+          room_amount:    String(roomAmt),
+          processing_fee: String(procFee),
+          total_charged:  String(totalCharged),
+          payout_amount:  String(payoutAmount),
+          platform_fee:   String(platformFee),
+          currency:       cur,
+          payment_method,
         },
         payment_intent_data: {
           transfer_group: `booking_${booking_id}`,
@@ -155,15 +190,25 @@ serve(async (req) => {
       },
     })
 
-    // 6. Persist session id + commission preview
+    // 6. Persist session id + breakdown
     await supa.from('bookings').update({
       stripe_checkout_session_id: session.id,
-      currency:           cur,
-      payout_amount_cents: payoutAmount,
-      platform_fee_cents:  platformFee,
+      currency:             cur,
+      payment_method,
+      processing_fee_cents: procFee,
+      total_price:          totalCharged / 100,    // bookings.total_price is decimal
+      payout_amount_cents:  payoutAmount,
+      platform_fee_cents:   platformFee,
     }).eq('id', booking_id)
 
-    return jsonResponse({ url: session.url, session_id: session.id })
+    return jsonResponse({
+      url: session.url,
+      session_id: session.id,
+      total_charged_cents: totalCharged,
+      payout_amount_cents: payoutAmount,
+      platform_fee_cents:  platformFee,
+      processing_fee_cents: procFee,
+    })
   } catch (err) {
     console.error('checkout error:', err)
     return errorResponse(err instanceof Error ? err.message : 'Internal error', 500)

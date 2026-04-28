@@ -11,7 +11,7 @@ import { Badge } from '../../components/ui/Badge'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 
-const COMMISSION_RATE = 0.10 // 10% STAYLO commission
+const COMMISSION_RATE = 0.10 // 10% STAYLO commission (on room price, NOT total)
 
 // Emoji icon for each property type (used in the booking summary card)
 const PROPERTY_TYPE_ICONS = {
@@ -24,6 +24,43 @@ const PROPERTY_TYPE_ICONS = {
   bungalow:   '🛖',
   homestay:   '🏠',
 }
+
+// Processing fee added to the GUEST's total (covers Stripe / processor cost).
+// STAYLO does not absorb processor fees → guest sees a transparent line item.
+const PAYMENT_METHODS = [
+  {
+    key:        'card',
+    feeRate:    0.03,    // 3% — covers Stripe ~2.9% + 0.30€/transaction roughly
+    available:  true,
+    icon:       '💳',
+    labelKey:   'checkout.method_card',
+    labelDef:   'Carte bancaire',
+    descKey:    'checkout.method_card_desc',
+    descDef:    'Visa, Mastercard, Amex via Stripe',
+  },
+  {
+    key:        'lightning',
+    feeRate:    0.0,     // Lightning network fees are essentially zero
+    available:  false,   // ⚡ Coming chantier #9 (OpenNode integration)
+    comingSoon: true,
+    icon:       '⚡',
+    labelKey:   'checkout.method_lightning',
+    labelDef:   'Bitcoin Lightning',
+    descKey:    'checkout.method_lightning_desc',
+    descDef:    'Sans frais. Instantané. Activation prochaine.',
+  },
+  {
+    key:        'btc_onchain',
+    feeRate:    0.01,    // 1% covers blockchain network fee
+    available:  false,   // ⛓️ Coming chantier #9
+    comingSoon: true,
+    icon:       '₿',
+    labelKey:   'checkout.method_onchain',
+    labelDef:   'Bitcoin on-chain',
+    descKey:    'checkout.method_onchain_desc',
+    descDef:    'Pour les gros montants. Activation prochaine.',
+  },
+]
 
 export default function Checkout() {
   const { t } = useTranslation()
@@ -49,6 +86,7 @@ export default function Checkout() {
   const [guestEmail, setGuestEmail] = useState(user?.email || '')
   const [guestPhone, setGuestPhone] = useState('')
   const [specialRequests, setSpecialRequests] = useState('')
+  const [paymentMethod, setPaymentMethod] = useState('card')
 
   useEffect(() => {
     if (profile?.full_name && !guestName) setGuestName(profile.full_name)
@@ -129,8 +167,13 @@ export default function Checkout() {
     d.setDate(d.getDate() + 1)
   }
 
-  const commission = roomTotal * COMMISSION_RATE
-  const totalPrice = roomTotal + commission
+  // Pricing model: STAYLO commission comes OUT OF the room price (10%).
+  // The processing fee is added ON TOP and paid by the guest.
+  const commission       = roomTotal * COMMISSION_RATE                  // 10% goes to STAYLO
+  const hotelierNet      = roomTotal - commission                        // 90% to hotelier
+  const selectedMethod   = PAYMENT_METHODS.find(m => m.key === paymentMethod) || PAYMENT_METHODS[0]
+  const processingFee    = roomTotal * (selectedMethod.feeRate || 0)
+  const totalPrice       = roomTotal + processingFee                     // What the guest pays
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -168,14 +211,16 @@ export default function Checkout() {
         const currency = (property.currency || 'USD').toUpperCase()
         const { data: checkoutData, error: checkoutError } = await supabase.functions.invoke('checkout', {
           body: {
-            booking_id:    booking.id,
-            amount:        Math.round(totalPrice * 100),  // smallest currency unit
-            currency,                                      // required by edge function
-            property_id:   propertyId,                     // required for hotelier lookup
-            property_name: property.name,
-            room_name:     room.name,
+            booking_id:     booking.id,
+            room_amount:    Math.round(roomTotal * 100),       // hotelier-priced amount
+            processing_fee: Math.round(processingFee * 100),   // guest-paid fee
+            currency,
+            property_id:    propertyId,
+            property_name:  property.name,
+            room_name:      room.name,
             nights,
-            guest_email:   guestEmail.trim(),
+            guest_email:    guestEmail.trim(),
+            payment_method: paymentMethod,
           }
         })
 
@@ -357,20 +402,84 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Price breakdown */}
+              {/* Price breakdown — transparent: room, hotelier-net, processing fee, total */}
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">{room.name} x {nights} {nights === 1 ? 'night' : 'nights'}</span>
+                  <span className="text-gray-500">{room.name} × {nights} {nights === 1 ? 'night' : 'nights'}</span>
                   <span className="text-deep">${roomTotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">{t('checkout.service_fee', 'Service fee')} (10%)</span>
-                  <span className="text-deep">${commission.toFixed(2)}</span>
+                <div className="flex justify-between text-xs text-gray-400 pl-3">
+                  <span>↳ {t('checkout.staylo_commission', 'STAYLO commission (10%)')}</span>
+                  <span>−${commission.toFixed(2)}</span>
                 </div>
+                <div className="flex justify-between text-xs text-libre pl-3 italic">
+                  <span>↳ {t('checkout.hotelier_receives', 'Hotelier receives')}</span>
+                  <span>${hotelierNet.toFixed(2)}</span>
+                </div>
+
+                {/* Payment method selector */}
+                <div className="pt-3 mt-3 border-t border-gray-100">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">
+                    {t('checkout.payment_method', 'Payment method')}
+                  </p>
+                  <div className="space-y-1.5">
+                    {PAYMENT_METHODS.map(m => {
+                      const fee = roomTotal * (m.feeRate || 0)
+                      const isSelected = paymentMethod === m.key
+                      return (
+                        <label
+                          key={m.key}
+                          className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${
+                            !m.available
+                              ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                              : isSelected
+                                ? 'bg-ocean/5 border-ocean'
+                                : 'bg-white border-gray-200 hover:border-ocean/40'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="payment_method"
+                            value={m.key}
+                            checked={isSelected}
+                            onChange={() => m.available && setPaymentMethod(m.key)}
+                            disabled={!m.available}
+                            className="accent-ocean"
+                          />
+                          <span className="text-base">{m.icon}</span>
+                          <span className="flex-1 text-xs">
+                            <span className="font-medium text-deep">{t(m.labelKey, m.labelDef)}</span>
+                            {m.comingSoon && (
+                              <span className="ml-1.5 text-[9px] uppercase font-bold text-orange tracking-wider">{t('checkout.coming_soon', 'Soon')}</span>
+                            )}
+                          </span>
+                          <span className={`text-xs font-medium ${m.feeRate === 0 ? 'text-libre' : 'text-gray-500'}`}>
+                            {m.feeRate === 0 ? t('checkout.free', 'Free') : `+$${fee.toFixed(2)}`}
+                          </span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Processing fee line */}
+                {processingFee > 0 && (
+                  <div className="flex justify-between pt-2 text-gray-500">
+                    <span>{t('checkout.processing_fee', 'Processing fee')} ({(selectedMethod.feeRate * 100).toFixed(0)}%)</span>
+                    <span className="text-deep">+${processingFee.toFixed(2)}</span>
+                  </div>
+                )}
+
+                {/* Total guest pays */}
                 <div className="flex justify-between pt-2 border-t border-gray-100 font-bold">
-                  <span className="text-deep">{t('checkout.total', 'Total')}</span>
+                  <span className="text-deep">{t('checkout.total_you_pay', 'You pay')}</span>
                   <span className="text-deep text-lg">${totalPrice.toFixed(2)}</span>
                 </div>
+
+                {/* Trust note */}
+                <p className="text-[10px] text-gray-400 pt-2 leading-relaxed">
+                  {t('checkout.transparency_note', 'STAYLO never marks up the room price. The processing fee covers payment gateway costs only — pay with Lightning to skip it entirely.')}
+                </p>
               </div>
             </Card>
           </div>
