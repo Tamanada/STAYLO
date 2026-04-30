@@ -14,13 +14,15 @@ import {
   Menu,
   X,
   Shield,
-  Handshake
+  Handshake,
+  Receipt
 } from 'lucide-react'
 
 const allNavItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/admin/properties', icon: Building2, label: 'Properties' },
+  { to: '/admin/transactions', icon: Receipt, label: 'Transactions' },
   { to: '/admin/surveys', icon: ClipboardList, label: 'Surveys', flag: 'survey' },
   { to: '/admin/referrals', icon: Share2, label: 'Referrals', flag: 'referrals' },
   { to: '/admin/ambassadors', icon: Handshake, label: 'Ambassadors', flag: 'ambassadors' },

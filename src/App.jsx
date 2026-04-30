@@ -53,6 +53,7 @@ import AdminProperties from './pages/admin/AdminProperties'
 import AdminSurveys from './pages/admin/AdminSurveys'
 import AdminReferrals from './pages/admin/AdminReferrals'
 import AdminAmbassadors from './pages/admin/AdminAmbassadors'
+import AdminTransactions from './pages/admin/AdminTransactions'
 import AdminSettings from './pages/admin/AdminSettings'
 
 export default function App() {
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="surveys" element={<AdminSurveys />} />
             <Route path="referrals" element={<AdminReferrals />} />
             <Route path="ambassadors" element={<AdminAmbassadors />} />
+            <Route path="transactions" element={<AdminTransactions />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
