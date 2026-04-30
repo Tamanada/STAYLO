@@ -66,6 +66,9 @@ export default function PropertyDetail() {
   const [isFav, setIsFav] = useState(false)
   const [showAllPhotos, setShowAllPhotos] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState(null)
+  // Lightbox for room media — { photos: string[], videos: string[], idx: number, name: string } | null
+  // Combines videos (first) + photos so prev/next navigates through the whole gallery.
+  const [roomLightbox, setRoomLightbox] = useState(null)
 
   useEffect(() => {
     async function fetchData() {
@@ -387,27 +390,54 @@ export default function PropertyDetail() {
                           </div>
                         )}
 
-                        {/* Room media — photo strip + optional video */}
+                        {/* Room media — photo strip + optional video.
+                            Click on any thumbnail opens a fullscreen lightbox
+                            with prev/next navigation through that room's media. */}
                         {(room.photos.length > 0 || room.videos.length > 0) && (
                           <div className="bg-gray-100 p-2 flex gap-2 overflow-x-auto">
-                            {room.videos[0] && (
-                              <video
-                                src={room.videos[0]}
-                                controls
-                                playsInline
-                                preload="metadata"
-                                poster={room.photos[0]}
-                                className="h-32 sm:h-40 rounded flex-shrink-0 bg-black"
-                              />
-                            )}
+                            {room.videos.map((vurl, vi) => (
+                              <button
+                                key={vurl + vi}
+                                type="button"
+                                onClick={() => setRoomLightbox({
+                                  photos: room.photos, videos: room.videos,
+                                  idx: vi, name: room.name,
+                                })}
+                                className="h-32 sm:h-40 rounded flex-shrink-0 bg-black relative overflow-hidden cursor-pointer group"
+                              >
+                                <video
+                                  src={vurl}
+                                  playsInline
+                                  preload="metadata"
+                                  poster={room.photos[0]}
+                                  muted
+                                  className="h-full w-auto object-contain pointer-events-none"
+                                />
+                                {/* Play overlay */}
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
+                                  <div className="w-10 h-10 rounded-full bg-white/90 flex items-center justify-center">
+                                    <span className="ml-1 text-deep">▶</span>
+                                  </div>
+                                </div>
+                              </button>
+                            ))}
                             {room.photos.map((url, i) => (
-                              <img
+                              <button
                                 key={url + i}
-                                src={url}
-                                alt={`${room.name} ${i + 1}`}
-                                className="h-32 sm:h-40 rounded object-cover flex-shrink-0"
-                                loading="lazy"
-                              />
+                                type="button"
+                                onClick={() => setRoomLightbox({
+                                  photos: room.photos, videos: room.videos,
+                                  idx: room.videos.length + i, name: room.name,
+                                })}
+                                className="h-32 sm:h-40 rounded flex-shrink-0 overflow-hidden cursor-pointer group"
+                              >
+                                <img
+                                  src={url}
+                                  alt={`${room.name} ${i + 1}`}
+                                  className="h-full w-auto object-cover group-hover:scale-105 transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                              </button>
                             ))}
                           </div>
                         )}
@@ -692,6 +722,86 @@ export default function PropertyDetail() {
           </div>
         </div>
       </div>
+
+      {/* ─── Room media lightbox ───────────────────────────
+          Combines a room's videos (first) + photos into one virtual list.
+          Indexes 0..videos.length-1 are videos, the rest are photos. */}
+      {roomLightbox && (() => {
+        const { photos, videos, idx, name } = roomLightbox
+        const total = videos.length + photos.length
+        const isVideo = idx < videos.length
+        const currentUrl = isVideo ? videos[idx] : photos[idx - videos.length]
+        const goPrev = () => setRoomLightbox(s => ({ ...s, idx: (s.idx - 1 + total) % total }))
+        const goNext = () => setRoomLightbox(s => ({ ...s, idx: (s.idx + 1) % total }))
+        return (
+          <div
+            className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4"
+            onClick={() => setRoomLightbox(null)}
+          >
+            {/* Close */}
+            <button
+              type="button"
+              onClick={() => setRoomLightbox(null)}
+              className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer z-10"
+              aria-label="Close"
+            >
+              <X size={22} />
+            </button>
+
+            {/* Title */}
+            <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-white/10 text-white text-xs font-medium z-10">
+              {name}
+            </div>
+
+            {/* Media */}
+            {isVideo ? (
+              <video
+                key={currentUrl}
+                src={currentUrl}
+                controls
+                autoPlay
+                playsInline
+                preload="metadata"
+                className="max-w-[95vw] max-h-[90vh] bg-black"
+                onClick={e => e.stopPropagation()}
+              />
+            ) : (
+              <img
+                key={currentUrl}
+                src={currentUrl}
+                alt={`${name} — ${idx + 1} / ${total}`}
+                className="max-w-[95vw] max-h-[90vh] object-contain"
+                onClick={e => e.stopPropagation()}
+              />
+            )}
+
+            {/* Prev / Next */}
+            {total > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); goPrev() }}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl cursor-pointer z-10"
+                  aria-label="Previous"
+                >
+                  <ChevronLeft size={26} />
+                </button>
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); goNext() }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl cursor-pointer z-10"
+                  aria-label="Next"
+                >
+                  <ChevronRight size={26} />
+                </button>
+                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full bg-white/10 text-white text-xs font-medium z-10">
+                  {idx + 1} / {total}
+                </div>
+              </>
+            )}
+          </div>
+        )
+      })()}
     </div>
   )
 }
