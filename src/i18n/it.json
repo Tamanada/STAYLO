@@ -7,7 +7,6 @@
     "types": "Hotel · Pensioni · Ostelli · Resort · Bungalow",
     "license_note": "Con licenza commerciale thailandese valida (registrato TAT / DBD)",
     "cta": "Registra la mia struttura →",
-
     "right_now_badge": "Inizia subito",
     "right_now_title": "Ecco cosa puoi fare adesso",
     "step1_number": "Passo 1",
@@ -22,7 +21,6 @@
     "step4_number": "Passo 4",
     "step4_title": "Invita altri albergatori",
     "step4_desc": "Condividi il tuo link di referral. Guadagna il 2% di commissione a vita su ogni hotel che porti.",
-
     "next_badge": "Roadmap",
     "next_title": "Cosa succede dopo?",
     "timeline_now_label": "ORA",
@@ -31,7 +29,6 @@
     "timeline_build_desc": "Costruiamo il motore di prenotazione",
     "timeline_launch_label": "LANCIO",
     "timeline_launch_desc": "Il tuo hotel va online su Staylo con il 10% di commissione — per sempre",
-
     "why_badge": "Perché quest'isola?",
     "why_title": "Perché Koh Phangan per primo",
     "why_subtitle": "La rampa di lancio perfetta per una rivoluzione nell'ospitalità.",
@@ -44,7 +41,6 @@
     "why_stat3_number": "Uniti",
     "why_stat3_title": "Una comunità pronta",
     "why_stat3_desc": "Albergatori indipendenti che si conoscono, si fidano l'uno dell'altro e sono pronti a costruire il futuro insieme.",
-
     "deal_badge": "L'offerta",
     "deal_title": "Cosa ottengono i partner del Round 1",
     "deal_subtitle": "Condizioni esclusive. Mai più offerte a questo prezzo.",
@@ -63,7 +59,6 @@
     "deal_founding": "Partner Fondatore",
     "deal_founding_sub": "Status — per sempre",
     "deal_limited": "Solo 3.000 quote alpha disponibili",
-
     "who_title": "Chi può candidarsi",
     "who_subtitle": "Il Round 1 è esclusivo. Ecco i requisiti.",
     "who_eligible1": "Struttura ricettiva registrata a Koh Phangan",
@@ -74,7 +69,6 @@
     "who_ineligible1_note": "In arrivo nel Round 2",
     "who_ineligible2": "Strutture fuori da Koh Phangan",
     "who_ineligible2_note": "In arrivo nel Round 2",
-
     "clock_badge": "Disponibilità limitata",
     "clock_title": "Il tempo stringe",
     "clock_author": "— Gandhi",
@@ -82,7 +76,6 @@
     "clock_label": "Partner Fondatori",
     "clock_pct": "{{pct}}% completato",
     "clock_warning": "Alla chiusura del Round 1, il prezzo sale a $1.500",
-
     "bottom_title": "Sei un albergatore a Koh Phangan?",
     "bottom_subtitle": "Registrati ora. È gratuito, bastano 2 minuti e senza alcun impegno.",
     "bottom_cta": "Registra la mia struttura",
@@ -97,7 +90,9 @@
     "login": "Accedi",
     "register": "Iscriviti ora",
     "logout": "Esci",
-    "language": "Lingua"
+    "language": "Lingua",
+    "book": "Prenota",
+    "contact": "Contatti"
   },
   "hero": {
     "badge": "Alpha — Solo membri fondatori",
@@ -130,9 +125,19 @@
     "title": "Loro ti chiedono il 25%. Noi il 10%.",
     "subtitle": "Scopri dove vanno davvero i tuoi soldi.",
     "card1_title": "OTA tradizionali",
-    "card1_items": ["15–25% di commissione su ogni prenotazione", "Nessun controllo sui tuoi prezzi", "I tuoi ospiti, i loro dati", "Tu paghi di più, loro guadagnano di più"],
+    "card1_items": [
+      "15–25% di commissione su ogni prenotazione",
+      "Nessun controllo sui tuoi prezzi",
+      "I tuoi ospiti, i loro dati",
+      "Tu paghi di più, loro guadagnano di più"
+    ],
     "card2_title": "Con Staylo",
-    "card2_items": ["Commissione fissa al 10% — bloccata per sempre", "Pieno controllo su tariffe e condizioni", "I tuoi ospiti, i tuoi dati, il tuo brand", "I ricavi vengono redistribuiti alla comunità"],
+    "card2_items": [
+      "Commissione fissa al 10% — bloccata per sempre",
+      "Pieno controllo su tariffe e condizioni",
+      "I tuoi ospiti, i tuoi dati, il tuo brand",
+      "I ricavi vengono redistribuiti alla comunità"
+    ],
     "verdict": "Stessi ospiti. Stesse prenotazioni. Ma questa volta, il profitto resta a TE."
   },
   "how_it_works": {
@@ -151,7 +156,12 @@
     "subtitle": "Le OTA tradizionali prendono i tuoi soldi, i tuoi dati e la tua indipendenza. È ora di liberarsi.",
     "old_way": "Il vecchio modo",
     "old_way_sub": "Perdi soldi ad ogni prenotazione",
-    "old_pains": ["Regole di parità tariffaria", "Commissioni nascoste", "Nessun controllo del brand", "Pagamenti in ritardo"],
+    "old_pains": [
+      "Regole di parità tariffaria",
+      "Commissioni nascoste",
+      "Nessun controllo del brand",
+      "Pagamenti in ritardo"
+    ],
     "new_way": "Il modo Staylo",
     "new_way_sub": "Riprendi il controllo della tua attività",
     "feat1_title": "Commissione fissa del 10%",
@@ -310,7 +320,8 @@
       "booking_engine": "Motore di prenotazione diretta",
       "channel_manager": "Channel Manager",
       "revenue_share": "Pannello di distribuzione ricavi",
-      "guest_reviews": "Recensioni ospiti"
+      "guest_reviews": "Recensioni ospiti",
+      "mobile_app": "App Mobile"
     },
     "founding_position": "Membro fondatore #{{position}}",
     "founding_partner_status": "Stato di Partner Fondatore",
@@ -335,10 +346,10 @@
       "builder": "Costruttore — Top 2.000",
       "member": "Membro"
     },
-    "share_title": "\uD83C\uDF34 Condividi con i tuoi amici albergatori a Koh Phangan!",
-    "share_subtitle": "Ogni amico che si unisce migliora il tuo ranking di Partner Fondatore. Aiutaci a costruire la comunit\u00e0!",
+    "share_title": "🌴 Condividi con i tuoi amici albergatori a Koh Phangan!",
+    "share_subtitle": "Ogni amico che si unisce migliora il tuo ranking di Partner Fondatore. Aiutaci a costruire la comunità!",
     "referred_count": "Hai invitato {{count}} albergatore/i",
-    "referred_zero": "Hai invitato 0 albergatori \u2014 sii il primo a condividere!",
+    "referred_zero": "Hai invitato 0 albergatori — sii il primo a condividere!",
     "tab_hotelier": "Condividi con albergatori",
     "tab_ambassador": "Invita come ambasciatore",
     "whatsapp": "WhatsApp",
@@ -346,12 +357,12 @@
     "facebook": "Facebook",
     "copy_link": "Copia link",
     "copied": "Copiato!",
-    "wa_hotelier_msg": "Ciao! Mi sono appena iscritto a Staylo \u2014 una nuova piattaforma di prenotazione dove gli albergatori pagano solo il 10% di commissione invece del 22% su Booking.com. Siamo davvero PROPRIETARI della piattaforma! \uD83C\uDF34 Dai un'occhiata: {{link}}",
+    "wa_hotelier_msg": "Ciao! Mi sono appena iscritto a Staylo — una nuova piattaforma di prenotazione dove gli albergatori pagano solo il 10% di commissione invece del 22% su Booking.com. Siamo davvero PROPRIETARI della piattaforma! 🌴 Dai un'occhiata: {{link}}",
     "wa_ambassador_msg": "Ciao! Sono su Staylo e cerco ambasciatori. Guadagna il 2% di reddito passivo a vita su ogni hotel che porti sulla piattaforma. Unisciti qui: {{link}}",
     "show_qr": "Mostra QR Code",
     "hide_qr": "Nascondi QR Code",
     "qr_title": "Scansiona per unirti a Staylo",
-    "qr_desc": "Stampalo, mostralo, condividilo \u2014 ogni albergatore che lo scansiona sar\u00e0 collegato a te per sempre.",
+    "qr_desc": "Stampalo, mostralo, condividilo — ogni albergatore che lo scansiona sarà collegato a te per sempre.",
     "qr_download": "Scarica QR Code",
     "per_year": "anno",
     "rooms_count": "{{count}} camere"
@@ -405,7 +416,6 @@
     "cta_title": "Fai parte del futuro",
     "cta_button": "Diventa membro fondatore",
     "cta_subtitle": "Unisciti a {{count}}+ albergatori che stanno riprendendo il controllo della propria attivita.",
-
     "structure_title": "La struttura di Staylo",
     "structure_subtitle": "Una piattaforma costruita, posseduta e governata da chi la utilizza.",
     "structure_coop_title": "Modello cooperativo",
@@ -414,7 +424,6 @@
     "structure_vote_desc": "La governance e democratica. Che tu possieda 1 o 10 quote, la tua struttura ha un voto uguale su tutte le decisioni della piattaforma.",
     "structure_transfer_title": "Quote trasferibili",
     "structure_transfer_desc": "Le quote sono liberamente trasferibili. I diritti di voto restano legati alla registrazione attiva della struttura, non alle quote stesse.",
-
     "share_sale_title": "Alpha Share Whitelisting",
     "share_sale_subtitle": "Fase Alpha — Solo partner fondatori. Limitato a 3.000 quote.",
     "shares_claimed": "quote alpha prenotate",
@@ -428,7 +437,6 @@
     "per_share_alpha": "Per quota (alpha)",
     "shares_per_property": "Quote per struttura",
     "commission_forever": "Commissione — per sempre",
-
     "revenue_distribution_title": "Dove vanno i soldi",
     "revenue_distribution_subtitle": "Trasparenza totale. Ogni dollaro rendicontato.",
     "traditional_otas": "OTA tradizionali",
@@ -446,7 +454,6 @@
     "breakdown_growth_desc": "Acquisizione viaggiatori, SEO, partnership",
     "breakdown_reserve": "Fondo di riserva",
     "breakdown_reserve_desc": "Fondo di emergenza e sviluppo futuro",
-
     "ambassador_badge": "Novita",
     "ambassador_title": "Diventa ambasciatore Staylo",
     "ambassador_subtitle": "Soggiorni in un hotel su Staylo. Ami l'esperienza. Ora puoi guadagnarci — per sempre.",
@@ -474,7 +481,6 @@
     "example_lifetime": "All'anno, a vita",
     "example_passive": "Passivo",
     "example_disclaimer": "Basato su 20 camere x $60/notte x 365 giorni x 100% di prenotazioni online. I risultati effettivi possono variare.",
-
     "fund_title": "Dove va il tuo investimento",
     "fund_subtitle": "Ogni dollaro investito in Staylo finanzia la piattaforma che sostituisce la tua dipendenza dalle OTA.",
     "fund_tech": "Tecnologia",
@@ -485,14 +491,36 @@
     "fund_team_desc": "Ingegneria, supporto, sviluppo commerciale, operazioni",
     "fund_legal": "Legale e conformita",
     "fund_legal_desc": "Registrazione aziendale, contratti, licenze, assicurazioni",
-
     "founder_badge": "Il Fondatore",
     "founder_role": "Fondatore di STAYLO",
     "founder_bio1": "Imprenditore francese nel settore dell'ospitalità con sede a Koh Phangan, Thailandia, con quasi 40 anni di esperienza tra ristoranti, bar, servizi di lusso, turismo e sviluppo commerciale nel settore alberghiero.",
     "founder_bio2": "Dopo aver lavorato a livello internazionale in Francia, Monaco, Abu Dhabi, Mosca e Thailandia — e aver fondato diverse attività nel settore dell'ospitalità — David conosce in prima persona le sfide degli operatori indipendenti.",
     "founder_bio3": "Dopo anni passati a vedere gli hotel perdere il controllo, i margini e l'influenza a favore di piattaforme di prenotazione ad alte commissioni, ha creato STAYLO con una missione chiara:",
     "founder_quote": "Ridare il controllo a chi ospita.",
-    "founder_belief": "STAYLO è costruito sulla convinzione che gli hotel indipendenti meritano una piattaforma più equa, più rispettosa e progettata attorno ai loro interessi — non contro di loro."
+    "founder_belief": "STAYLO è costruito sulla convinzione che gli hotel indipendenti meritano una piattaforma più equa, più rispettosa e progettata attorno ai loro interessi — non contro di loro.",
+    "btc_badge": "Bitcoin-Native",
+    "btc_title": "Bitcoin al centro",
+    "btc_subtitle": "Staylo è una piattaforma cooperativa Bitcoin-native. BTC come binario di pagamento, riserva di tesoreria e valuta d'investimento.",
+    "btc_payment_title": "BTC come binario di pagamento",
+    "btc_payment_desc": "I viaggiatori pagano con carta, PayPal, bonifico — o in Bitcoin tramite Lightning Network. Gli albergatori ricevono THB, USD, EUR o BTC. Loro decidono.",
+    "btc_treasury_title": "BTC come riserva di tesoreria",
+    "btc_treasury_desc": "Il 20% di TUTTO il capitale raccolto va in una riserva Bitcoin permanente. Scritto nello statuto della società. Serve il voto del 90% degli azionisti per modificarlo. A regime: 149,7M$ in BTC. Mai venduto.",
+    "btc_investment_title": "BTC come valuta d'investimento",
+    "btc_investment_desc": "I Founding Partner acquistano azioni IN Bitcoin. 1.000$ in BTC = 1 quota Alpha. Dividendi annuali riscuotibili in BTC.",
+    "btc_stat1": "Prenotazioni alberghiere pagate in cripto entro il 2027",
+    "btc_stat2": "Valore di prenotazione superiore rispetto al fiat",
+    "btc_stat3": "LTV cliente più alto",
+    "btc_stat4": "Di tutte le transazioni cripto = viaggi",
+    "btc_sources": "Fonti: CoinsPaid, Triple-A, Travala, PhocusWire",
+    "capital_table_title": "Uso del capitale Alpha — 3M$",
+    "capital_btc": "₿ Riserva Bitcoin",
+    "capital_acquisitions": "Acquisizioni — Hotel di punta KP",
+    "capital_tech": "Prodotto e Tecnologia",
+    "capital_operations": "Riserva operativa",
+    "capital_marketing": "Marketing e Legale",
+    "capital_note": "Acquisizioni = firma di 100 albergatori di punta KP entro M06. Commissione = 10% di ricavi per prenotazione (separato).",
+    "phase_wallet": "Wallet BTC",
+    "phase_wallet_desc": "Wallet integrato con Lightning Network. Ricarica in BTC, USDT o carta. Paga prenotazioni, riscuoti dividendi, guadagna referral."
   },
   "footer": {
     "tagline": "Prenota tutto. Vivi l'esperienza.",
@@ -606,7 +634,12 @@
     "your_stay": "Il tuo soggiorno",
     "rooms_available": "Camere disponibili",
     "guarantee_title": "Garanzia STAYLO",
-    "guarantee_desc": "Solo 10% di commissione — nessun costo nascosto. Prenoti direttamente con l'hotel."
+    "guarantee_desc": "Solo 10% di commissione — nessun costo nascosto. Prenoti direttamente con l'hotel.",
+    "deal_title": "Gli albergatori fissano i prezzi. STAYLO prende il 10%. Punto.",
+    "deal_desc": "Sulle OTA, il 15–25% di commissione va agli intermediari. Su STAYLO, la differenza torna all'hotel — dove deve stare.",
+    "staylo_advantage": "Ospitalità equa — solo 10% di commissione",
+    "advantage_desc": "Solo gli albergatori fissano i prezzi. STAYLO trattiene solo il 10% di commissione — il margine (vs. 15–25% sulle OTA) torna all'hotel, non agli intermediari.",
+    "limited": "Prezzi equi"
   },
   "checkout": {
     "title": "Completa la tua prenotazione",
@@ -666,7 +699,12 @@
     "check_out": "Check-out",
     "guests": "ospite/i",
     "confirm": "Conferma",
-    "mark_completed": "Segna come completata"
+    "mark_completed": "Segna come completata",
+    "confirm_delete_property": "Eliminare \"{{name}}\"? Tutte le camere, le disponibilità e le prenotazioni di questa proprietà saranno eliminate definitivamente.",
+    "delete_error": "Eliminazione della proprietà non riuscita. Riprova o contatta l'assistenza.",
+    "stop": "Interrompi",
+    "go_live": "Pubblica",
+    "delete": "Elimina"
   },
   "ambassador_register": {
     "title": "Diventa Ambasciatore Staylo",
@@ -923,7 +961,7 @@
     "title_1": "Prenota con ",
     "title_highlight": "scopo.",
     "title_2": "Viaggia con anima.",
-    "subtitle": "Ogni prenotazione su Staylo torna agli albergatori che l'hanno costruita. Comproprietà. 10% di commissione. Tuo per sempre.",
+    "subtitle": "Ogni prenotazione su Staylo torna agli albergatori che l'hanno costruita. Co-posseduta dagli albergatori di tutto il mondo. 10% di commissione per sempre… e molto di più.",
     "search_placeholder": "Dove vuoi soggiornare?",
     "search_button": "Cerca",
     "filter_all": "Tutti",
@@ -993,15 +1031,49 @@
   },
   "home_how": {
     "label": "Come funziona",
-    "title_1": "Prenota.",
-    "title_2": "Guadagna.",
-    "title_3": "Impatto.",
-    "step1_title": "Prenota il tuo soggiorno",
-    "step1_desc": "Cerca, confronta e prenota hotel con la commissione più equa sul mercato. Gli stessi ottimi hotel, prezzo migliore.",
-    "step2_title": "Guadagna token $STAY",
-    "step2_desc": "Ogni notte prenotata ti fa guadagnare token $STAY. Usali per sconti, vota sulle decisioni della piattaforma o scambiali.",
-    "step3_title": "Sostieni gli albergatori",
-    "step3_desc": "La tua prenotazione sostiene direttamente gli albergatori indipendenti. Il 90% resta all'hotel. Nessun intermediario che prende il 25%."
+    "title": "Due lati, una piattaforma equa",
+    "subtitle": "STAYLO è costruita attorno a due pubblici — i viaggiatori che prenotano e gli albergatori che ospitano. Entrambi vincono, ed entrambi possono diventare co-proprietari.",
+    "footer": "Costruita con gli albergatori, per gli albergatori. Da soli è impossibile. Insieme siamo inarrestabili.",
+    "for_travelers": "Per i viaggiatori",
+    "for_hoteliers": "Per gli albergatori",
+    "cta_book": "Trova un alloggio",
+    "cta_list": "Pubblica il tuo hotel",
+    "tr_step1_title": "Trova il tuo alloggio",
+    "tr_step1_desc": "Cerca e prenota hotel con la commissione più equa del mercato.",
+    "tr_step1_hl": "Miglior prezzo",
+    "tr_step1_b1": "Stessi hotel di Booking e Agoda",
+    "tr_step1_b2": "Fino al 15% in meno",
+    "tr_step1_b3": "Nessun costo nascosto",
+    "tr_step2_title": "Guadagna token $STAY",
+    "tr_step2_desc": "Ogni notte che prenoti ti fa guadagnare token $STAY — da usare, votare o scambiare.",
+    "tr_step2_hl": "Token gratis",
+    "tr_step2_b1": "Sconti sui prossimi soggiorni",
+    "tr_step2_b2": "Voto sulle decisioni della piattaforma",
+    "tr_step2_b3": "Scambiabili su Solana",
+    "tr_step3_title": "Diventa Ambassador",
+    "tr_step3_desc": "Presenta un hotel a STAYLO e guadagna Bitcoin su ogni prenotazione che ricevono — a vita.",
+    "tr_step3_hl": "2% BTC · a vita",
+    "tr_step3_b1": "Presenta gli hotel che ami",
+    "tr_step3_b2": "Guadagna su ogni prenotazione, per sempre",
+    "tr_step3_b3": "Pagato in Bitcoin via Lightning",
+    "ho_step1_title": "Pubblica il tuo hotel — gratis",
+    "ho_step1_desc": "Iscriviti in 15 minuti. Inserzione gratuita. Nessuna esclusiva richiesta.",
+    "ho_step1_hl": "GRATIS · 15 min",
+    "ho_step1_b1": "Inserzione gratuita, per sempre",
+    "ho_step1_b2": "Nessun contratto di esclusiva",
+    "ho_step1_b3": "Mantieni Booking e Airbnb in parallelo",
+    "ho_step2_title": "Tieni il 90% di ogni prenotazione",
+    "ho_step2_desc": "10% di commissione, contrattuale, bloccata a vita. Pagato entro 1 ora dal check-out.",
+    "ho_step2_hl": "10% · bloccata a vita",
+    "ho_step2_b1": "Contrattuale — nessun aumento a sorpresa",
+    "ho_step2_b2": "Pagato in 1 ora, non 45 giorni",
+    "ho_step2_b3": "Nessun costo nascosto, nessun surge pricing",
+    "ho_step3_title": "Diventa co-proprietario",
+    "ho_step3_desc": "Acquista una quota Founding Partner e diventa un vero co-proprietario della piattaforma.",
+    "ho_step3_hl": "1.000$ · 1 quota",
+    "ho_step3_b1": "1 voto sulle decisioni della piattaforma",
+    "ho_step3_b2": "20% dell'utile netto come dividendi",
+    "ho_step3_b3": "Token $STAY guadagnati per ogni notte ospitata"
   },
   "home_testimonials": {
     "section_label": "Testimonianze",
