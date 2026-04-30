@@ -78,6 +78,7 @@ export default function PropertyDetail() {
         setProperty({
           ...propRes.data,
           photos: propRes.data.photo_urls || [],
+          videos: propRes.data.video_urls || [],
           rating: 8.5,
           reviews: 0,
           stars: propRes.data.star_rating || 3,
@@ -116,6 +117,8 @@ export default function PropertyDetail() {
 
   const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)))
   const photos = property.photos || []
+  const videos = property.videos || []
+  const heroVideo = videos[0] || null  // first entry = hero per VideosTab convention
   // Real DB-backed rooms (post-demo cleanup, this is the only source).
   // Note: do NOT use `property.rooms || realRooms.map(...)` — `property.rooms`
   // is initialized to `[]`, which is TRUTHY in JS, so the OR would always
@@ -254,6 +257,28 @@ export default function PropertyDetail() {
 
           {/* ── Left column ─────────────────── */}
           <div className="lg:col-span-2 space-y-5">
+
+            {/* Hero video — only rendered if the hotelier uploaded one.
+                Sits at the top of the left column so it's the first thing
+                a visitor sees after the photo gallery. preload="metadata"
+                avoids burning the visitor's data plan until they hit play. */}
+            {heroVideo && (
+              <div className="rounded-xl overflow-hidden bg-black border border-gray-200 shadow-sm">
+                <video
+                  src={heroVideo}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  poster={photos[0] || undefined}
+                  className="w-full aspect-video object-contain bg-black"
+                />
+                {videos.length > 1 && (
+                  <div className="bg-white px-4 py-2 text-[11px] text-gray-500 border-t border-gray-100">
+                    +{videos.length - 1} more {videos.length - 1 === 1 ? 'video' : 'videos'} from this property
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Header */}
             <div className="bg-white rounded-xl p-5 border border-gray-200">

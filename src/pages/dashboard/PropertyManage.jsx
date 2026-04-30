@@ -5,7 +5,7 @@ import {
   ArrowLeft, Plus, BedDouble, Calendar, ClipboardList, Pencil, Trash2,
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
   ChevronLeft, ChevronRight, X, Save, Loader2, Ban, Check,
-  Image as ImageIcon, Upload, AlertCircle, Camera
+  Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film
 } from 'lucide-react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -28,6 +28,7 @@ const AMENITY_OPTIONS = [
 
 const tabs = [
   { key: 'photos', icon: Camera, label: 'Photos' },
+  { key: 'videos', icon: Video, label: 'Videos' },
   { key: 'rooms', icon: BedDouble, label: 'Rooms' },
   { key: 'calendar', icon: Calendar, label: 'Availability' },
   { key: 'bookings', icon: ClipboardList, label: 'Bookings' },
@@ -165,10 +166,243 @@ export default function PropertyManage() {
 
       {/* Tab content */}
       {activeTab === 'photos' && <PhotosTab property={property} onRefresh={fetchData} />}
+      {activeTab === 'videos' && <VideosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
     </div>
+  )
+}
+
+// ============================================
+// VIDEOS TAB — manage property videos
+// ============================================
+// Same pattern as PhotosTab but for video assets:
+//   - Bucket property-videos (created by 20260430030000)
+//   - Column properties.video_urls text[]
+//   - Hard-cap 2 videos per property — videos are heavy and we want
+//     hoteliers to publish their best 60-sec teaser, not a vacation reel
+//   - Accept MP4 / MOV / WebM only — H.264 inside MP4 is the universal
+//     web standard, MOV is iPhone-friendly (also H.264 internally),
+//     WebM covers some Android cameras
+// ============================================
+function VideosTab({ property, onRefresh }) {
+  const { t } = useTranslation()
+  const [videos, setVideos] = useState(property.video_urls || [])
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
+  const [progress, setProgress] = useState({ done: 0, total: 0 })
+
+  const MAX_VIDEOS = 2
+  const MAX_FILE_SIZE = 50 * 1024 * 1024  // 50 MB
+  const ALLOWED_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
+
+  async function handleUpload(e) {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    setError('')
+
+    if (videos.length + files.length > MAX_VIDEOS) {
+      setError(`Maximum ${MAX_VIDEOS} videos per property. You have ${videos.length}, you tried to add ${files.length}.`)
+      return
+    }
+    const oversized = files.find(f => f.size > MAX_FILE_SIZE)
+    if (oversized) {
+      const sizeMB = (oversized.size / (1024 * 1024)).toFixed(1)
+      setError(`"${oversized.name}" is ${sizeMB} MB — max 50 MB per video. Compress it first (e.g. with HandBrake or CapCut).`)
+      return
+    }
+    const wrongType = files.find(f => !ALLOWED_TYPES.includes(f.type))
+    if (wrongType) {
+      setError(`"${wrongType.name}" is not a supported format. Use MP4, MOV, or WebM.`)
+      return
+    }
+
+    setUploading(true)
+    setProgress({ done: 0, total: files.length })
+    const newUrls = []
+    const failures = []
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const ext = file.name.split('.').pop()
+      const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const path = `properties/${property.id}/${filename}`
+      const { error: upErr } = await supabase.storage
+        .from('property-videos')
+        .upload(path, file, { contentType: file.type })
+      if (upErr) {
+        console.error(`Video upload failed for ${file.name}:`, upErr)
+        failures.push(`${file.name}: ${upErr.message}`)
+      } else {
+        const { data } = supabase.storage.from('property-videos').getPublicUrl(path)
+        newUrls.push(data.publicUrl)
+      }
+      setProgress({ done: i + 1, total: files.length })
+    }
+
+    if (newUrls.length > 0) {
+      const merged = [...videos, ...newUrls]
+      const { error: dbErr } = await supabase
+        .from('properties')
+        .update({ video_urls: merged })
+        .eq('id', property.id)
+      if (dbErr) {
+        setError(`Videos uploaded but couldn't save to property: ${dbErr.message}`)
+      } else {
+        setVideos(merged)
+        onRefresh?.()
+      }
+    }
+
+    if (failures.length) {
+      setError(`${failures.length} video${failures.length > 1 ? 's' : ''} failed to upload:\n${failures.join('\n')}`)
+    }
+
+    setUploading(false)
+    setProgress({ done: 0, total: 0 })
+    if (e.target) e.target.value = ''
+  }
+
+  async function handleDelete(idx) {
+    if (!confirm('Remove this video? This cannot be undone.')) return
+    const url = videos[idx]
+    const next = videos.filter((_, i) => i !== idx)
+
+    try {
+      const pathInBucket = url.split('/property-videos/')[1]
+      if (pathInBucket) {
+        await supabase.storage.from('property-videos').remove([pathInBucket])
+      }
+    } catch (e) { console.warn('Storage delete failed:', e) }
+
+    const { error: dbErr } = await supabase
+      .from('properties')
+      .update({ video_urls: next })
+      .eq('id', property.id)
+    if (dbErr) { setError(dbErr.message); return }
+    setVideos(next)
+    onRefresh?.()
+  }
+
+  async function handleSetCover(idx) {
+    if (idx === 0) return
+    const reordered = [videos[idx], ...videos.filter((_, i) => i !== idx)]
+    const { error: dbErr } = await supabase
+      .from('properties')
+      .update({ video_urls: reordered })
+      .eq('id', property.id)
+    if (dbErr) { setError(dbErr.message); return }
+    setVideos(reordered)
+    onRefresh?.()
+  }
+
+  const canAddMore = videos.length < MAX_VIDEOS
+
+  return (
+    <Card className="p-6">
+      {/* Header + Upload button */}
+      <div className="flex items-start justify-between mb-5 gap-3 flex-wrap">
+        <div>
+          <h2 className="text-lg font-bold text-deep flex items-center gap-2">
+            <Film size={20} className="text-ocean" />
+            {t('manage.videos_title', 'Videos')}
+          </h2>
+          <p className="text-xs text-gray-500 mt-1">
+            {t('manage.videos_subtitle', 'Up to 2 short videos. The first is shown as the hero on your property page. Keep them under 60 seconds for best engagement.')}
+          </p>
+        </div>
+        {canAddMore && (
+          <label className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm cursor-pointer transition-all ${
+            uploading
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-ocean text-white hover:bg-ocean/90'
+          }`}>
+            <Upload size={14} />
+            {uploading
+              ? `${t('manage.uploading', 'Uploading')} ${progress.done}/${progress.total}…`
+              : t('manage.upload_videos', 'Upload video')}
+            <input
+              type="file"
+              multiple
+              accept="video/mp4,video/quicktime,video/webm"
+              onChange={handleUpload}
+              disabled={uploading}
+              className="hidden"
+            />
+          </label>
+        )}
+      </div>
+
+      {/* Format reminder */}
+      <div className="mb-4 p-3 bg-ocean/5 border border-ocean/15 rounded-lg text-[11px] text-gray-600 leading-relaxed">
+        <strong className="text-deep">Recommended:</strong> MP4 (H.264) · max 60 sec · max 50 MB · 1080p.
+        Shoot vertical for mobile-first viewing. iPhone .MOV files work too.
+      </div>
+
+      {/* Error banner */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-sm text-red-700 whitespace-pre-line">
+          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {videos.length === 0 ? (
+        <div className="border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
+          <Video size={40} className="text-gray-300 mx-auto mb-3" />
+          <p className="text-sm font-bold text-deep mb-1">
+            {t('manage.no_videos_title', 'No videos yet')}
+          </p>
+          <p className="text-xs text-gray-500 max-w-sm mx-auto">
+            {t('manage.no_videos_desc', 'Properties with video get up to 80% more booking enquiries. Show your rooms, common areas, and the vibe in one short clip.')}
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {videos.map((url, idx) => (
+            <div key={url + idx} className="relative rounded-xl overflow-hidden bg-gray-900 group">
+              <video
+                src={url}
+                controls
+                playsInline
+                preload="metadata"
+                className="w-full aspect-video object-contain bg-black"
+              />
+              {idx === 0 && (
+                <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-deep/85 text-white pointer-events-none">
+                  Hero
+                </span>
+              )}
+              {/* Action buttons (always visible — videos use the play overlay so hover doesn't reach them well) */}
+              <div className="p-2 bg-gray-50 flex items-center justify-end gap-2">
+                {idx !== 0 && (
+                  <button
+                    onClick={() => handleSetCover(idx)}
+                    className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-white border border-gray-200 text-deep hover:border-ocean hover:text-ocean cursor-pointer"
+                    title="Make this the hero video"
+                  >
+                    Set as hero
+                  </button>
+                )}
+                <button
+                  onClick={() => handleDelete(idx)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-white border border-gray-200 text-red-600 hover:bg-red-50 hover:border-red-200 cursor-pointer"
+                  title="Remove video"
+                >
+                  <Trash2 size={11} /> Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="text-[11px] text-gray-400 mt-4">
+        {videos.length} / {MAX_VIDEOS} {t('manage.videos_count', 'videos')}
+      </p>
+    </Card>
   )
 }
 

@@ -85,6 +85,7 @@ export default function AdminProperties() {
   const owner = selected ? getUserById(selected.user_id) : null
   const [lightboxIdx, setLightboxIdx] = useState(null)  // index into selected.photo_urls
   const photos = selected?.photo_urls || []
+  const videos = selected?.video_urls || []
 
   return (
     <div>
@@ -173,6 +174,41 @@ export default function AdminProperties() {
                 </div>
               )}
             </div>
+
+            {/* Videos — what the hotelier uploaded. Critical for admin review:
+                an over-promising video can mislead guests, so admin should
+                actually watch them before approving. */}
+            {videos.length > 0 && (
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                    Videos
+                  </p>
+                  <span className="text-[11px] text-gray-400">
+                    {videos.length} uploaded
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {videos.map((url, idx) => (
+                    <div key={url + idx} className="relative rounded-lg overflow-hidden bg-black">
+                      <video
+                        src={url}
+                        controls
+                        playsInline
+                        preload="metadata"
+                        poster={photos[0] || undefined}
+                        className="w-full aspect-video object-contain"
+                      />
+                      {idx === 0 && (
+                        <span className="absolute top-1 left-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-deep/85 text-white pointer-events-none">
+                          Hero
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
