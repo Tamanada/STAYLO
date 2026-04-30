@@ -7,7 +7,6 @@
     "types": "酒店 · 宾馆 · 青旅 · 度假村 · 小木屋",
     "license_note": "需持有有效的泰国营业执照（TAT / DBD 注册）",
     "cta": "注册我的房产 →",
-
     "right_now_badge": "立即开始",
     "right_now_title": "您现在就可以做这些",
     "step1_number": "第 1 步",
@@ -22,7 +21,6 @@
     "step4_number": "第 4 步",
     "step4_title": "邀请同行酒店业者",
     "step4_desc": "分享您的推荐链接。每推荐一家酒店，终身获得 2% 佣金。",
-
     "next_badge": "路线图",
     "next_title": "接下来会发生什么？",
     "timeline_now_label": "现在",
@@ -31,7 +29,6 @@
     "timeline_build_desc": "我们构建预订引擎",
     "timeline_launch_label": "上线",
     "timeline_launch_desc": "您的酒店在 Staylo 上线，佣金 10%——永久不变",
-
     "why_badge": "为什么是这座岛？",
     "why_title": "为什么首选 Koh Phangan",
     "why_subtitle": "酒店业革命的完美起点。",
@@ -44,7 +41,6 @@
     "why_stat3_number": "团结",
     "why_stat3_title": "准备就绪的社区",
     "why_stat3_desc": "独立酒店业者们彼此熟识、互相信任，准备好一起掌握自己的未来。",
-
     "deal_badge": "合作条款",
     "deal_title": "第一轮合伙人权益",
     "deal_subtitle": "独家条款，此价格不再重现。",
@@ -63,7 +59,6 @@
     "deal_founding": "创始合伙人",
     "deal_founding_sub": "身份——永久保留",
     "deal_limited": "仅 3,000 股 Alpha 份额可供认购",
-
     "who_title": "谁可以申请",
     "who_subtitle": "第一轮为限定名额，要求如下。",
     "who_eligible1": "在 Koh Phangan 注册的住宿设施",
@@ -74,7 +69,6 @@
     "who_ineligible1_note": "将在第二轮开放",
     "who_ineligible2": "Koh Phangan 以外的房产",
     "who_ineligible2_note": "将在第二轮开放",
-
     "clock_badge": "名额有限",
     "clock_title": "成为你想在生活中看到的那个改变。",
     "clock_author": "— 甘地",
@@ -82,7 +76,6 @@
     "clock_label": "创始合伙人",
     "clock_pct": "已满 {{pct}}%",
     "clock_warning": "第一轮关闭后，股价将上涨至 $1,500",
-
     "bottom_title": "您是 Koh Phangan 的酒店业者吗？",
     "bottom_subtitle": "立即注册。免费，只需 2 分钟，零承诺。",
     "bottom_cta": "注册我的房产",
@@ -97,7 +90,9 @@
     "login": "登录",
     "register": "立即加入",
     "logout": "退出登录",
-    "language": "语言"
+    "language": "语言",
+    "book": "预订",
+    "contact": "联系我们"
   },
   "hero": {
     "badge": "Alpha 内测 — 仅限创始会员",
@@ -119,9 +114,19 @@
     "title": "他们收 25%，我们只收 10%。",
     "subtitle": "看看你的钱到底花在了哪里。",
     "card1_title": "传统OTA平台",
-    "card1_items": ["每笔预订收取 15–25% 佣金", "无法控制自己的定价", "你的客人，他们的数据", "你付得越多，他们赚得越多"],
+    "card1_items": [
+      "每笔预订收取 15–25% 佣金",
+      "无法控制自己的定价",
+      "你的客人，他们的数据",
+      "你付得越多，他们赚得越多"
+    ],
     "card2_title": "使用 Staylo",
-    "card2_items": ["固定 10% 佣金 — 永久锁定", "完全掌控房价和规则", "你的客人，你的数据，你的品牌", "收益回馈社区"],
+    "card2_items": [
+      "固定 10% 佣金 — 永久锁定",
+      "完全掌控房价和规则",
+      "你的客人，你的数据，你的品牌",
+      "收益回馈社区"
+    ],
     "verdict": "同样的客人，同样的预订。但这一次，利润留在你手中。"
   },
   "commission": {
@@ -152,7 +157,12 @@
     "subtitle": "传统OTA拿走你的钱、你的数据和你的独立性。是时候摆脱束缚了。",
     "old_way": "旧方式",
     "old_way_sub": "每笔预订都在亏钱",
-    "old_pains": ["价格一致性规则", "隐藏费用", "无品牌控制权", "延迟付款"],
+    "old_pains": [
+      "价格一致性规则",
+      "隐藏费用",
+      "无品牌控制权",
+      "延迟付款"
+    ],
     "new_way": "Staylo方式",
     "new_way_sub": "重新掌控你的生意",
     "feat1_title": "固定10%佣金",
@@ -311,7 +321,8 @@
       "booking_engine": "直接预订引擎",
       "channel_manager": "渠道管理器",
       "revenue_share": "收益分配面板",
-      "guest_reviews": "住客评价"
+      "guest_reviews": "住客评价",
+      "mobile_app": "移动应用"
     },
     "founding_position": "创始会员 #{{position}}",
     "founding_partner_status": "创始合伙人状态",
@@ -336,7 +347,7 @@
       "builder": "建设者 — 前2,000名",
       "member": "会员"
     },
-    "share_title": "\uD83C\uDF34 分享给您在 Koh Phangan 的酒店业朋友！",
+    "share_title": "🌴 分享给您在 Koh Phangan 的酒店业朋友！",
     "share_subtitle": "每位朋友加入都会提升您的创始合伙人排名。帮助我们建设社区！",
     "referred_count": "您已推荐 {{count}} 位酒店业主",
     "referred_zero": "您还未推荐任何酒店业主——成为第一个分享的人吧！",
@@ -347,7 +358,7 @@
     "facebook": "Facebook",
     "copy_link": "复制链接",
     "copied": "已复制！",
-    "wa_hotelier_msg": "嘿！我刚加入了 Staylo——一个新的预订平台，酒店业主只需支付 10% 佣金，而不是 Booking.com 上的 22%。我们真正拥有这个平台！\uD83C\uDF34 来看看：{{link}}",
+    "wa_hotelier_msg": "嘿！我刚加入了 Staylo——一个新的预订平台，酒店业主只需支付 10% 佣金，而不是 Booking.com 上的 22%。我们真正拥有这个平台！🌴 来看看：{{link}}",
     "wa_ambassador_msg": "嘿！我在 Staylo 上寻找大使。每引荐一家酒店加入平台，终身获得 2% 被动收入。在这里加入：{{link}}",
     "show_qr": "显示二维码",
     "hide_qr": "隐藏二维码",
@@ -406,7 +417,6 @@
     "cta_title": "成为未来的一部分",
     "cta_button": "成为创始会员",
     "cta_subtitle": "加入 {{count}}+ 位正在夺回业务控制权的酒店业主。",
-
     "structure_title": "Staylo 的架构",
     "structure_subtitle": "一个由使用者构建、拥有和治理的平台。",
     "structure_coop_title": "合作社模式",
@@ -415,7 +425,6 @@
     "structure_vote_desc": "治理是民主的。无论您持有 1 股还是 10 股，您的房源在所有平台决策中拥有一票平等的投票权。",
     "structure_transfer_title": "可转让股份",
     "structure_transfer_desc": "股份可自由转让。投票权跟随活跃的房源注册，而非股份本身。",
-
     "share_sale_title": "Alpha 股份白名单",
     "share_sale_subtitle": "Alpha 阶段 — 仅限创始合伙人。限量 3,000 股。",
     "shares_claimed": "Alpha 股份已认购",
@@ -429,7 +438,6 @@
     "per_share_alpha": "每股（Alpha）",
     "shares_per_property": "每房源股数",
     "commission_forever": "佣金 — 永久",
-
     "revenue_distribution_title": "资金去向",
     "revenue_distribution_subtitle": "完全透明。每一美元都有据可查。",
     "traditional_otas": "传统OTA",
@@ -447,7 +455,6 @@
     "breakdown_growth_desc": "旅行者获取、SEO、合作伙伴关系",
     "breakdown_reserve": "储备基金",
     "breakdown_reserve_desc": "应急基金与未来发展",
-
     "ambassador_badge": "全新",
     "ambassador_title": "成为 Staylo 大使",
     "ambassador_subtitle": "您入住 Staylo 上的酒店，喜欢这种体验。现在您可以从中获利 — 永远。",
@@ -475,7 +482,6 @@
     "example_lifetime": "每年，终身",
     "example_passive": "被动",
     "example_disclaimer": "基于 20 间客房 × $60/晚 × 365 天 × 100% 在线预订率计算。实际结果可能有所不同。",
-
     "fund_title": "您的投资去向",
     "fund_subtitle": "每一美元投资都在为取代您对 OTA 依赖的平台提供资金。",
     "fund_tech": "技术",
@@ -486,14 +492,36 @@
     "fund_team_desc": "工程、客服、业务发展、运营",
     "fund_legal": "法律与合规",
     "fund_legal_desc": "公司注册、合同、许可证、保险",
-
     "founder_badge": "创始人",
     "founder_role": "STAYLO 创始人",
     "founder_bio1": "法国酒店业企业家，常驻泰国帕岸岛，在餐饮、酒吧、奢华服务、旅游和酒店业务发展方面拥有近 40 年的经验。",
     "founder_bio2": "在法国、摩纳哥、阿布扎比、莫斯科和泰国的国际工作经历——并创办了多家酒店企业——David 亲身了解独立经营者面临的挑战。",
     "founder_bio3": "在多年看到酒店失去控制权、利润和影响力给高佣金预订平台后，他创建了 STAYLO，使命明确：",
     "founder_quote": "将控制权还给那些接待客人的人。",
-    "founder_belief": "STAYLO 建立在这样的信念之上：独立酒店值得拥有一个更公平、更尊重、围绕他们利益设计的平台——而不是与他们为敌。"
+    "founder_belief": "STAYLO 建立在这样的信念之上：独立酒店值得拥有一个更公平、更尊重、围绕他们利益设计的平台——而不是与他们为敌。",
+    "btc_badge": "Bitcoin-Native",
+    "btc_title": "Bitcoin 为核心",
+    "btc_subtitle": "Staylo 是一个 Bitcoin-native 合作社平台。BTC 用作支付通道、储备金库和投资货币。",
+    "btc_payment_title": "BTC 作为支付通道",
+    "btc_payment_desc": "旅客通过卡、PayPal、银行转账 — 或通过 Lightning 网络以 Bitcoin 付款。酒店经营者收到 THB、USD、EUR 或 BTC,任由选择。",
+    "btc_treasury_title": "BTC 作为储备金库",
+    "btc_treasury_desc": "募集资本的 20% 进入永久 Bitcoin 储备。写入公司章程。需要 90% 股东投票才能修改。完全规模时:1.497 亿美元 BTC。永不出售。",
+    "btc_investment_title": "BTC 作为投资货币",
+    "btc_investment_desc": "Founding Partners 用 Bitcoin 购买股份。$1,000 BTC = 1 股 Alpha。年度股息可以 BTC 领取。",
+    "btc_stat1": "到 2027 年用加密货币支付的酒店预订",
+    "btc_stat2": "比法币更高的预订价值",
+    "btc_stat3": "更高的客户终身价值 (LTV)",
+    "btc_stat4": "所有加密交易中 — 旅游",
+    "btc_sources": "来源:CoinsPaid、Triple-A、Travala、PhocusWire",
+    "capital_table_title": "Alpha 资本用途 — 300 万美元",
+    "capital_btc": "₿ Bitcoin 储备",
+    "capital_acquisitions": "收购 — KP 旗舰酒店",
+    "capital_tech": "产品与技术",
+    "capital_operations": "运营储备",
+    "capital_marketing": "市场与法务",
+    "capital_note": "收购 = 在 M06 之前签下 KP 的 100 家旗舰酒店。佣金 = 每笔预订 10% 收入(单独)。",
+    "phase_wallet": "BTC 钱包",
+    "phase_wallet_desc": "内置 Lightning 网络的钱包。用 BTC、USDT 或卡充值。支付预订、领取股息、赚取推荐奖励。"
   },
   "footer": {
     "tagline": "预订一切，掌控体验。",
@@ -857,7 +885,12 @@
     "your_stay": "您的住宿",
     "rooms_available": "可用房间",
     "guarantee_title": "STAYLO 保证",
-    "guarantee_desc": "仅10%佣金——无隐藏费用。您直接与酒店预订。"
+    "guarantee_desc": "仅10%佣金——无隐藏费用。您直接与酒店预订。",
+    "deal_title": "酒店经营者定价。STAYLO 收 10%。就这样。",
+    "deal_desc": "在 OTA 上,15–25% 的佣金归中间商。在 STAYLO 上,差额归还给酒店 — 它本应属于的地方。",
+    "staylo_advantage": "公平贸易款待 — 仅 10% 佣金",
+    "advantage_desc": "酒店经营者是唯一的定价方。STAYLO 仅保留 10% 佣金 — 利润(对比 OTA 的 15–25%)归还给酒店,而不是中间商。",
+    "limited": "公平定价"
   },
   "checkout": {
     "title": "完成预订",
@@ -929,7 +962,7 @@
     "title_1": "有",
     "title_highlight": "目的",
     "title_2": "地预订。用心旅行。",
-    "subtitle": "Staylo上的每一笔预订都回馈给建设它的酒店经营者。共同拥有。10%佣金。永远属于您。",
+    "subtitle": "Staylo 上的每笔预订都回到建造它的酒店经营者手中。由全球酒店经营者共同拥有。10% 佣金永远不变…还有更多。",
     "search_placeholder": "您想住哪里？",
     "search_button": "搜索",
     "filter_all": "全部",
@@ -998,16 +1031,50 @@
     "note": "需KYC · 最低1股 · 新加坡法律 · Staylo Holdings Pte. Ltd."
   },
   "home_how": {
-    "label": "运作方式",
-    "title_1": "预订。",
-    "title_2": "赚取。",
-    "title_3": "影响。",
-    "step1_title": "预订住宿",
-    "step1_desc": "以市场上最公平的佣金搜索、比较和预订酒店。同样优质的酒店，更好的价格。",
-    "step2_title": "赚取$STAY代币",
-    "step2_desc": "每预订一晚即可赚取$STAY代币。用于折扣、参与平台决策投票或交易。",
-    "step3_title": "支持酒店业者",
-    "step3_desc": "您的预订直接支持独立酒店业者。90%留在酒店。没有中间商拿走25%。"
+    "label": "工作原理",
+    "title": "两方,一个公平的平台",
+    "subtitle": "STAYLO 围绕两个受众构建 — 预订住宿的旅客和接待他们的酒店经营者。双方都赢,都可以成为共同所有者。",
+    "footer": "与酒店经营者一起,为酒店经营者打造。一个人不可能。一起,无人能挡。",
+    "for_travelers": "面向旅客",
+    "for_hoteliers": "面向酒店经营者",
+    "cta_book": "查找住宿",
+    "cta_list": "上架您的酒店",
+    "tr_step1_title": "查找您的住宿",
+    "tr_step1_desc": "以市场上最公平的佣金搜索和预订酒店。",
+    "tr_step1_hl": "最佳价格",
+    "tr_step1_b1": "与 Booking 和 Agoda 相同的酒店",
+    "tr_step1_b2": "便宜达 15%",
+    "tr_step1_b3": "无隐藏费用",
+    "tr_step2_title": "赚取 $STAY 代币",
+    "tr_step2_desc": "您预订的每一晚都能赚取 $STAY 代币 — 可使用、投票或交易。",
+    "tr_step2_hl": "免费代币",
+    "tr_step2_b1": "未来住宿折扣",
+    "tr_step2_b2": "对平台决策投票",
+    "tr_step2_b3": "可在 Solana 交易",
+    "tr_step3_title": "成为大使",
+    "tr_step3_desc": "向 STAYLO 推荐酒店,从他们收到的每笔预订中获得 Bitcoin — 终身。",
+    "tr_step3_hl": "2% BTC · 终身",
+    "tr_step3_b1": "推荐您喜爱的酒店",
+    "tr_step3_b2": "每笔预订永远赚钱",
+    "tr_step3_b3": "通过 Lightning 以 Bitcoin 支付",
+    "ho_step1_title": "上架您的酒店 — 免费",
+    "ho_step1_desc": "15 分钟注册。免费上架。无需独家。",
+    "ho_step1_hl": "免费 · 15 分钟",
+    "ho_step1_b1": "永久免费上架",
+    "ho_step1_b2": "无独家合同",
+    "ho_step1_b3": "并行保留 Booking 和 Airbnb",
+    "ho_step2_title": "保留每笔预订的 90%",
+    "ho_step2_desc": "10% 佣金,合同制,终身锁定。退房后 1 小时内付款。",
+    "ho_step2_hl": "10% · 终身锁定",
+    "ho_step2_b1": "合同制 — 无意外涨价",
+    "ho_step2_b2": "1 小时付款,而非 45 天",
+    "ho_step2_b3": "无隐藏费用,无浮动定价",
+    "ho_step3_title": "成为共同所有者",
+    "ho_step3_desc": "购买 Founding Partner 股份,成为平台真正的共同所有者。",
+    "ho_step3_hl": "$1,000 · 1 股",
+    "ho_step3_b1": "对平台决策投 1 票",
+    "ho_step3_b2": "净利润的 20% 作为股息",
+    "ho_step3_b3": "每晚接待获得 $STAY 代币"
   },
   "home_testimonials": {
     "section_label": "用户评价",

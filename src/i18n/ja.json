@@ -7,7 +7,6 @@
     "types": "ホテル · ゲストハウス · ホステル · リゾート · バンガロー",
     "license_note": "タイの有効な事業許可証をお持ちの方（TAT / DBD登録済み）",
     "cta": "物件を登録する →",
-
     "right_now_badge": "始めよう",
     "right_now_title": "今すぐできること",
     "step1_number": "ステップ 1",
@@ -22,7 +21,6 @@
     "step4_number": "ステップ 4",
     "step4_title": "仲間のホテル経営者を招待する",
     "step4_desc": "紹介リンクをシェア。紹介した全ホテルから生涯2%のコミッションを獲得。",
-
     "next_badge": "ロードマップ",
     "next_title": "今後の流れ",
     "timeline_now_label": "今",
@@ -31,7 +29,6 @@
     "timeline_build_desc": "予約エンジンを構築",
     "timeline_launch_label": "ローンチ",
     "timeline_launch_desc": "あなたのホテルがStayloに掲載、手数料10% — 永久に",
-
     "why_badge": "なぜこの島？",
     "why_title": "なぜKoh Phanganが最初なのか",
     "why_subtitle": "ホスピタリティ革命に最適な出発点。",
@@ -44,7 +41,6 @@
     "why_stat3_number": "結束",
     "why_stat3_title": "準備ができたコミュニティ",
     "why_stat3_desc": "互いを知り、信頼し合い、共に未来を切り拓く準備ができた独立系ホテル経営者たち。",
-
     "deal_badge": "条件",
     "deal_title": "Round 1パートナーが得るもの",
     "deal_subtitle": "特別条件。この価格での提供は二度とありません。",
@@ -63,7 +59,6 @@
     "deal_founding": "創業パートナー",
     "deal_founding_sub": "ステータス — 永久に",
     "deal_limited": "Alpha株はわずか3,000株のみ",
-
     "who_title": "応募資格",
     "who_subtitle": "Round 1は限定です。条件はこちら。",
     "who_eligible1": "Koh Phanganで登録された宿泊施設",
@@ -74,7 +69,6 @@
     "who_ineligible1_note": "Round 2で受付開始",
     "who_ineligible2": "Koh Phangan以外の物件",
     "who_ineligible2_note": "Round 2で受付開始",
-
     "clock_badge": "数量限定",
     "clock_title": "あなたの人生で見たい変化に、あなた自身がなりなさい。",
     "clock_author": "— ガンジー",
@@ -82,7 +76,6 @@
     "clock_label": "創業パートナー",
     "clock_pct": "{{pct}}%達成",
     "clock_warning": "Round 1終了後、株価は$1,500に上昇します",
-
     "bottom_title": "Koh Phanganでホテルを経営していますか？",
     "bottom_subtitle": "今すぐ登録。無料、2分で完了、一切の義務なし。",
     "bottom_cta": "物件を登録する",
@@ -97,7 +90,9 @@
     "login": "ログイン",
     "register": "今すぐ参加",
     "logout": "ログアウト",
-    "language": "言語"
+    "language": "言語",
+    "book": "予約",
+    "contact": "お問い合わせ"
   },
   "hero": {
     "badge": "アルファ版 — 創設メンバー限定",
@@ -119,9 +114,19 @@
     "title": "彼らは25%取ります。私たちは10%です。",
     "subtitle": "あなたのお金が実際にどこへ行くのか、ご覧ください。",
     "card1_title": "従来のOTA",
-    "card1_items": ["予約ごとに15〜25%のコミッション", "料金設定をコントロールできない", "あなたのゲスト、でもデータは彼らのもの", "あなたが多く払うほど、彼らが多く儲かる"],
+    "card1_items": [
+      "予約ごとに15〜25%のコミッション",
+      "料金設定をコントロールできない",
+      "あなたのゲスト、でもデータは彼らのもの",
+      "あなたが多く払うほど、彼らが多く儲かる"
+    ],
     "card2_title": "Stayloなら",
-    "card2_items": ["一律10%のコミッション — 永久に固定", "料金とルールを完全にコントロール", "あなたのゲスト、あなたのデータ、あなたのブランド", "収益はコミュニティに還元"],
+    "card2_items": [
+      "一律10%のコミッション — 永久に固定",
+      "料金とルールを完全にコントロール",
+      "あなたのゲスト、あなたのデータ、あなたのブランド",
+      "収益はコミュニティに還元"
+    ],
     "verdict": "同じゲスト。同じ予約。でも今度は、利益を手にするのはあなたです。"
   },
   "commission": {
@@ -152,7 +157,12 @@
     "subtitle": "従来のOTAはあなたのお金、データ、そして独立性を奪います。今こそ解放される時です。",
     "old_way": "従来のやり方",
     "old_way_sub": "予約のたびに損をする",
-    "old_pains": ["料金パリティルール", "隠れた手数料", "ブランド管理ができない", "入金の遅延"],
+    "old_pains": [
+      "料金パリティルール",
+      "隠れた手数料",
+      "ブランド管理ができない",
+      "入金の遅延"
+    ],
     "new_way": "Stayloのやり方",
     "new_way_sub": "ビジネスを取り戻そう",
     "feat1_title": "一律10%の手数料",
@@ -311,7 +321,8 @@
       "booking_engine": "直接予約エンジン",
       "channel_manager": "チャネルマネージャー",
       "revenue_share": "収益配分ダッシュボード",
-      "guest_reviews": "ゲストレビュー"
+      "guest_reviews": "ゲストレビュー",
+      "mobile_app": "モバイルアプリ"
     },
     "founding_position": "創設メンバー #{{position}}",
     "founding_partner_status": "創業パートナーステータス",
@@ -336,7 +347,7 @@
       "builder": "ビルダー — Top 2,000",
       "member": "メンバー"
     },
-    "share_title": "\uD83C\uDF34 Koh Phanganのホテル経営者仲間にシェアしよう！",
+    "share_title": "🌴 Koh Phanganのホテル経営者仲間にシェアしよう！",
     "share_subtitle": "参加する仲間が増えるほど、あなたの創業パートナーランクが上がります。一緒にコミュニティを作りましょう！",
     "referred_count": "{{count}}名のホテル経営者を紹介済み",
     "referred_zero": "まだ誰も紹介していません — 最初にシェアしましょう！",
@@ -347,7 +358,7 @@
     "facebook": "Facebook",
     "copy_link": "リンクをコピー",
     "copied": "コピーしました！",
-    "wa_hotelier_msg": "こんにちは！Stayloに参加しました。Booking.comの22%の代わりに、たった10%のコミッションで済む新しい予約プラットフォームです。しかもプラットフォームのオーナーになれます！\uD83C\uDF34 チェックしてみて: {{link}}",
+    "wa_hotelier_msg": "こんにちは！Stayloに参加しました。Booking.comの22%の代わりに、たった10%のコミッションで済む新しい予約プラットフォームです。しかもプラットフォームのオーナーになれます！🌴 チェックしてみて: {{link}}",
     "wa_ambassador_msg": "こんにちは！Stayloでアンバサダーを募集しています。あなたが紹介したすべてのホテルから生涯2%のパッシブインカムを獲得できます。こちらから参加: {{link}}",
     "show_qr": "QRコードを表示",
     "hide_qr": "QRコードを非表示",
@@ -406,7 +417,6 @@
     "cta_title": "未来の一員になりましょう",
     "cta_button": "創設メンバーになる",
     "cta_subtitle": "{{count}}名以上のホテル経営者がビジネスを取り戻しています。",
-
     "structure_title": "Stayloの構造",
     "structure_subtitle": "利用者自身が構築し、所有し、運営するプラットフォーム。",
     "structure_coop_title": "協同組合モデル",
@@ -415,7 +425,6 @@
     "structure_vote_desc": "ガバナンスは民主的です。1株でも10株でも、あなたの施設にはすべてのプラットフォーム決定に対して平等な1票があります。",
     "structure_transfer_title": "譲渡可能な株式",
     "structure_transfer_desc": "株式は自由に譲渡できます。議決権は株式ではなく、アクティブな施設登録に紐づきます。",
-
     "share_sale_title": "アルファ株式ホワイトリスト",
     "share_sale_subtitle": "アルファフェーズ — 創設パートナー限定。3,000株限定。",
     "shares_claimed": "アルファ株式が確保済み",
@@ -429,7 +438,6 @@
     "per_share_alpha": "1株あたり（アルファ）",
     "shares_per_property": "施設あたりの株式数",
     "commission_forever": "コミッション — 永久に",
-
     "revenue_distribution_title": "お金の行き先",
     "revenue_distribution_subtitle": "完全な透明性。すべてのドルが説明されます。",
     "traditional_otas": "従来のOTA",
@@ -447,7 +455,6 @@
     "breakdown_growth_desc": "旅行者獲得、SEO、パートナーシップ",
     "breakdown_reserve": "準備金",
     "breakdown_reserve_desc": "緊急資金と将来の開発",
-
     "ambassador_badge": "新着",
     "ambassador_title": "Stayloアンバサダーになろう",
     "ambassador_subtitle": "Stayloのホテルに泊まる。体験が気に入る。今度はそこから収入を得られます — 永久に。",
@@ -475,7 +482,6 @@
     "example_lifetime": "年間、一生涯",
     "example_passive": "パッシブ",
     "example_disclaimer": "20室 x $60/泊 x 365日 x オンライン予約率100%に基づく。実際の結果は異なります。",
-
     "fund_title": "あなたの投資の使い道",
     "fund_subtitle": "Stayloに投資されたすべてのドルは、OTA依存を置き換えるプラットフォームの資金になります。",
     "fund_tech": "テクノロジー",
@@ -486,14 +492,36 @@
     "fund_team_desc": "エンジニアリング、サポート、事業開発、オペレーション",
     "fund_legal": "法務とコンプライアンス",
     "fund_legal_desc": "会社登記、契約、ライセンス、保険",
-
     "founder_badge": "創業者",
     "founder_role": "STAYLOの創業者",
     "founder_bio1": "タイ・コパンガン在住のフランス人ホスピタリティ起業家。レストラン、バー、ラグジュアリーサービス、観光、ホスピタリティ事業開発で約40年の経験を持つ。",
     "founder_bio2": "フランス、モナコ、アブダビ、モスクワ、タイで国際的に活動し、複数のホスピタリティ事業を立ち上げてきたDavidは、独立系事業者が直面する課題を身をもって理解している。",
     "founder_bio3": "ホテルが高コミッションの予約プラットフォームにコントロール、利益、影響力を奪われるのを何年も見てきた後、彼は明確なミッションを掲げてSTAYLOを創設した：",
     "founder_quote": "ホストする人々にコントロールを返す。",
-    "founder_belief": "STAYLOは、独立系ホテルがより公正で、より敬意を持ち、彼らの利益を中心に設計されたプラットフォームに値するという信念のもとに構築されています。"
+    "founder_belief": "STAYLOは、独立系ホテルがより公正で、より敬意を持ち、彼らの利益を中心に設計されたプラットフォームに値するという信念のもとに構築されています。",
+    "btc_badge": "Bitcoin-Native",
+    "btc_title": "Bitcoin が中心",
+    "btc_subtitle": "Staylo は Bitcoin-native の協同組合プラットフォームです。BTC を決済レール、財務準備金、投資通貨として使用します。",
+    "btc_payment_title": "決済レールとしての BTC",
+    "btc_payment_desc": "旅行者はカード、PayPal、銀行振込 — または Lightning Network 経由の Bitcoin で支払います。ホテル経営者は THB、USD、EUR または BTC を受け取ります。選択は自由です。",
+    "btc_treasury_title": "財務準備金としての BTC",
+    "btc_treasury_desc": "調達したすべての資本の 20% が永続的な Bitcoin 準備金に入ります。会社定款に明記。変更には株主の 90% の投票が必要。フルスケール時:1億4,970万ドル相当のBTC。決して売却されません。",
+    "btc_investment_title": "投資通貨としての BTC",
+    "btc_investment_desc": "Founding Partners は Bitcoin で株を購入します。$1,000 相当の BTC = Alpha 株 1 株。年次配当は BTC で受け取り可能。",
+    "btc_stat1": "2027 年までに暗号資産で支払われるホテル予約",
+    "btc_stat2": "法定通貨と比較して高い予約価値",
+    "btc_stat3": "より高い顧客 LTV",
+    "btc_stat4": "全暗号資産取引の中で旅行関連",
+    "btc_sources": "出典: CoinsPaid, Triple-A, Travala, PhocusWire",
+    "capital_table_title": "Alpha 資本の使途 — 300 万ドル",
+    "capital_btc": "₿ Bitcoin 準備金",
+    "capital_acquisitions": "買収 — KP のフラッグシップホテル",
+    "capital_tech": "プロダクト & テクノロジー",
+    "capital_operations": "運営資金",
+    "capital_marketing": "マーケティング & 法務",
+    "capital_note": "買収 = M06 までに KP の 100 軒のフラッグシップホテルと契約。手数料 = 予約あたり 10% の収益(別途)。",
+    "phase_wallet": "BTC ウォレット",
+    "phase_wallet_desc": "Lightning Network 内蔵ウォレット。BTC、USDT またはカードで入金。予約の支払い、配当の受け取り、紹介報酬の獲得。"
   },
   "footer": {
     "tagline": "すべてを予約。体験を自分のものに。",
@@ -857,7 +885,12 @@
     "your_stay": "あなたの滞在",
     "rooms_available": "空室あり",
     "guarantee_title": "STAYLO保証",
-    "guarantee_desc": "手数料はわずか10% — 隠れた料金なし。ホテルと直接予約できます。"
+    "guarantee_desc": "手数料はわずか10% — 隠れた料金なし。ホテルと直接予約できます。",
+    "deal_title": "ホテル経営者が価格を決める。STAYLO は 10% を取る。それだけ。",
+    "deal_desc": "OTA では 15〜25% の手数料が仲介業者に流れます。STAYLO ではその差がホテルに戻ります — 本来あるべき場所へ。",
+    "staylo_advantage": "フェアトレード・ホスピタリティ — 手数料はわずか 10%",
+    "advantage_desc": "ホテル経営者だけが価格を決めます。STAYLO は 10% の手数料のみを保持 — マージン(OTA の 15〜25% に対して)は仲介業者ではなくホテルに戻ります。",
+    "limited": "公正な価格設定"
   },
   "checkout": {
     "title": "予約を完了する",
@@ -917,14 +950,19 @@
     "check_out": "チェックアウト",
     "guests": "ゲスト",
     "confirm": "確認",
-    "mark_completed": "完了にする"
+    "mark_completed": "完了にする",
+    "confirm_delete_property": "「{{name}}」を削除しますか?この物件のすべての部屋、空室状況、予約が永久に削除されます。",
+    "delete_error": "物件の削除に失敗しました。再試行するかサポートにお問い合わせください。",
+    "stop": "停止",
+    "go_live": "公開",
+    "delete": "削除"
   },
   "home_hero": {
     "badge": "✦ ホテリエと共に、ホテリエのために",
     "title_1": "目的を持って",
     "title_highlight": "予約する。",
     "title_2": "心で旅する。",
-    "subtitle": "Stayloでの全ての予約は、それを作ったホテリエに還元されます。共同所有。手数料10%。永遠にあなたのもの。",
+    "subtitle": "Staylo の予約はすべて、それを築いたホテル経営者に戻ります。世界中のホテル経営者による共同所有。手数料 10% を永久に… それ以上。",
     "search_placeholder": "どこに泊まりたいですか？",
     "search_button": "検索",
     "filter_all": "すべて",
@@ -994,15 +1032,49 @@
   },
   "home_how": {
     "label": "仕組み",
-    "title_1": "予約する。",
-    "title_2": "稼ぐ。",
-    "title_3": "貢献する。",
-    "step1_title": "宿泊を予約",
-    "step1_desc": "市場で最も公正な手数料でホテルを検索、比較、予約。同じ素晴らしいホテル、より良い条件。",
-    "step2_title": "$STAYトークンを獲得",
-    "step2_desc": "予約した夜ごとに$STAYトークンを獲得。割引に使ったり、プラットフォームの意思決定に投票したり、取引したり。",
-    "step3_title": "ホテルを応援",
-    "step3_desc": "あなたの予約が独立系ホテルを直接支援します。90%がホテルに。25%を取る仲介者はいません。"
+    "title": "2 つの側、1 つの公正なプラットフォーム",
+    "subtitle": "STAYLO は 2 つの聴衆のために構築されています — 宿泊を予約する旅行者と、彼らをもてなすホテル経営者です。両者が勝ち、両者が共同所有者になれます。",
+    "footer": "ホテル経営者と共に、ホテル経営者のために構築。一人では不可能。一緒なら止められない。",
+    "for_travelers": "旅行者向け",
+    "for_hoteliers": "ホテル経営者向け",
+    "cta_book": "宿泊を探す",
+    "cta_list": "ホテルを掲載",
+    "tr_step1_title": "宿泊先を見つける",
+    "tr_step1_desc": "市場で最も公正な手数料でホテルを検索・予約。",
+    "tr_step1_hl": "最安値",
+    "tr_step1_b1": "Booking や Agoda と同じホテル",
+    "tr_step1_b2": "最大 15% お得",
+    "tr_step1_b3": "隠れた料金なし",
+    "tr_step2_title": "$STAY トークンを獲得",
+    "tr_step2_desc": "予約した夜ごとに $STAY トークン — 使用、投票、取引が可能。",
+    "tr_step2_hl": "無料トークン",
+    "tr_step2_b1": "今後の宿泊割引",
+    "tr_step2_b2": "プラットフォーム決定への投票",
+    "tr_step2_b3": "Solana で取引可能",
+    "tr_step3_title": "アンバサダーになる",
+    "tr_step3_desc": "ホテルを STAYLO に紹介し、彼らが受ける予約ごとに Bitcoin を獲得 — 生涯。",
+    "tr_step3_hl": "2% BTC · 生涯",
+    "tr_step3_b1": "お気に入りのホテルを紹介",
+    "tr_step3_b2": "予約ごとに永遠に稼ぐ",
+    "tr_step3_b3": "Lightning 経由の Bitcoin で支払い",
+    "ho_step1_title": "ホテルを掲載 — 無料",
+    "ho_step1_desc": "15 分でサインアップ。掲載無料。独占契約不要。",
+    "ho_step1_hl": "無料 · 15 分",
+    "ho_step1_b1": "永久無料掲載",
+    "ho_step1_b2": "独占契約なし",
+    "ho_step1_b3": "Booking と Airbnb も並行利用可",
+    "ho_step2_title": "予約の 90% を保持",
+    "ho_step2_desc": "手数料 10%、契約上、生涯ロック。チェックアウト後 1 時間以内に支払い。",
+    "ho_step2_hl": "10% · 生涯ロック",
+    "ho_step2_b1": "契約上 — 突然の値上げなし",
+    "ho_step2_b2": "45 日ではなく 1 時間で支払い",
+    "ho_step2_b3": "隠れた料金なし、サージプライシングなし",
+    "ho_step3_title": "共同所有者になる",
+    "ho_step3_desc": "Founding Partner 株を購入し、プラットフォームの真の共同所有者に。",
+    "ho_step3_hl": "$1,000 · 1 株",
+    "ho_step3_b1": "プラットフォーム決定への 1 票",
+    "ho_step3_b2": "純利益の 20% を配当として",
+    "ho_step3_b3": "ホストする夜ごとに獲得する $STAY トークン"
   },
   "home_testimonials": {
     "section_label": "お客様の声",

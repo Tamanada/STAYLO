@@ -7,7 +7,6 @@
     "types": "Hotéis · Pousadas · Hostels · Resorts · Bangalôs",
     "license_note": "Com licença comercial tailandesa válida (registrado no TAT / DBD)",
     "cta": "Cadastrar Minha Propriedade →",
-
     "right_now_badge": "Comece Agora",
     "right_now_title": "Veja o que você pode fazer agora mesmo",
     "step1_number": "Passo 1",
@@ -22,7 +21,6 @@
     "step4_number": "Passo 4",
     "step4_title": "Convide outros hoteleiros",
     "step4_desc": "Compartilhe seu link de indicação. Ganhe 2% de comissão vitalícia por cada hotel que trouxer.",
-
     "next_badge": "Roadmap",
     "next_title": "O que acontece depois?",
     "timeline_now_label": "AGORA",
@@ -31,7 +29,6 @@
     "timeline_build_desc": "Construímos o motor de reservas",
     "timeline_launch_label": "LANÇAMENTO",
     "timeline_launch_desc": "Seu hotel entra ao vivo no Staylo com 10% de comissão — para sempre",
-
     "why_badge": "Por que esta ilha?",
     "why_title": "Por que Koh Phangan Primeiro",
     "why_subtitle": "A plataforma de lançamento perfeita para uma revolução na hotelaria.",
@@ -44,7 +41,6 @@
     "why_stat3_number": "Unidos",
     "why_stat3_title": "Comunidade Pronta",
     "why_stat3_desc": "Hoteleiros independentes que se conhecem, confiam uns nos outros e estão prontos para construir seu futuro juntos.",
-
     "deal_badge": "A Oferta",
     "deal_title": "O que os Parceiros da Rodada 1 Recebem",
     "deal_subtitle": "Condições exclusivas. Nunca mais neste preço.",
@@ -63,7 +59,6 @@
     "deal_founding": "Parceiro Fundador",
     "deal_founding_sub": "Status — para sempre",
     "deal_limited": "Apenas 3.000 ações alpha disponíveis",
-
     "who_title": "Quem Pode Participar",
     "who_subtitle": "A Rodada 1 é exclusiva. Veja os requisitos.",
     "who_eligible1": "Acomodação registrada em Koh Phangan",
@@ -74,7 +69,6 @@
     "who_ineligible1_note": "Disponível na Rodada 2",
     "who_ineligible2": "Propriedades fora de Koh Phangan",
     "who_ineligible2_note": "Disponível na Rodada 2",
-
     "clock_badge": "Vagas Limitadas",
     "clock_title": "Seja a mudança que você deseja ver em sua vida.",
     "clock_author": "— Gandhi",
@@ -82,7 +76,6 @@
     "clock_label": "Parceiros Fundadores",
     "clock_pct": "{{pct}}% preenchido",
     "clock_warning": "Após o fechamento da Rodada 1, o preço da ação sobe para US$ 1.500",
-
     "bottom_title": "Você é hoteleiro em Koh Phangan?",
     "bottom_subtitle": "Cadastre-se agora. É grátis, leva 2 minutos e sem nenhum compromisso.",
     "bottom_cta": "Cadastrar Minha Propriedade",
@@ -97,7 +90,9 @@
     "login": "Entrar",
     "register": "Cadastre-se",
     "logout": "Sair",
-    "language": "Idioma"
+    "language": "Idioma",
+    "book": "Reservar",
+    "contact": "Contato"
   },
   "hero": {
     "badge": "Alpha — Apenas Membros Fundadores",
@@ -119,9 +114,19 @@
     "title": "Eles cobram 25%. Nós cobramos 10%.",
     "subtitle": "Veja para onde seu dinheiro realmente vai.",
     "card1_title": "OTAs Tradicionais",
-    "card1_items": ["15–25% de comissão em cada reserva", "Sem controle sobre seus preços", "Seus hóspedes, os dados deles", "Você paga mais, eles lucram mais"],
+    "card1_items": [
+      "15–25% de comissão em cada reserva",
+      "Sem controle sobre seus preços",
+      "Seus hóspedes, os dados deles",
+      "Você paga mais, eles lucram mais"
+    ],
     "card2_title": "Com Staylo",
-    "card2_items": ["Comissão fixa de 10% — garantida para sempre", "Controle total sobre suas tarifas e regras", "Seus hóspedes, seus dados, sua marca", "Receita compartilhada com a comunidade"],
+    "card2_items": [
+      "Comissão fixa de 10% — garantida para sempre",
+      "Controle total sobre suas tarifas e regras",
+      "Seus hóspedes, seus dados, sua marca",
+      "Receita compartilhada com a comunidade"
+    ],
     "verdict": "Os mesmos hóspedes. As mesmas reservas. Mas desta vez, VOCÊ fica com o lucro."
   },
   "commission": {
@@ -152,7 +157,12 @@
     "subtitle": "As OTAs tradicionais ficam com seu dinheiro, seus dados e sua independência. É hora de se libertar.",
     "old_way": "O jeito antigo",
     "old_way_sub": "Perca dinheiro a cada reserva",
-    "old_pains": ["Regras de paridade de preço", "Taxas ocultas", "Sem controle de marca", "Pagamentos atrasados"],
+    "old_pains": [
+      "Regras de paridade de preço",
+      "Taxas ocultas",
+      "Sem controle de marca",
+      "Pagamentos atrasados"
+    ],
     "new_way": "O jeito Staylo",
     "new_way_sub": "Retome o controle do seu negócio",
     "feat1_title": "Comissão fixa de 10%",
@@ -311,7 +321,8 @@
       "booking_engine": "Motor de Reservas Diretas",
       "channel_manager": "Gerenciador de Canais",
       "revenue_share": "Painel de Distribuição de Receita",
-      "guest_reviews": "Avaliações de Hóspedes"
+      "guest_reviews": "Avaliações de Hóspedes",
+      "mobile_app": "App Móvel"
     },
     "founding_position": "Membro Fundador #{{position}}",
     "founding_partner_status": "Status de Parceiro Fundador",
@@ -336,7 +347,7 @@
       "builder": "Construtor — Top 2.000",
       "member": "Membro"
     },
-    "share_title": "\uD83C\uDF34 Compartilhe com seus amigos hoteleiros em Koh Phangan!",
+    "share_title": "🌴 Compartilhe com seus amigos hoteleiros em Koh Phangan!",
     "share_subtitle": "Cada amigo que entra eleva seu ranking como Parceiro Fundador. Ajude-nos a construir a comunidade!",
     "referred_count": "Você indicou {{count}} hoteleiro(s)",
     "referred_zero": "Você indicou 0 hoteleiros — seja o primeiro a compartilhar!",
@@ -347,7 +358,7 @@
     "facebook": "Facebook",
     "copy_link": "Copiar Link",
     "copied": "Copiado!",
-    "wa_hotelier_msg": "Oi! Acabei de entrar no Staylo — uma nova plataforma de reservas onde hoteleiros pagam apenas 10% de comissão em vez de 22% no Booking.com. Nós realmente SOMOS donos da plataforma! \uD83C\uDF34 Confira: {{link}}",
+    "wa_hotelier_msg": "Oi! Acabei de entrar no Staylo — uma nova plataforma de reservas onde hoteleiros pagam apenas 10% de comissão em vez de 22% no Booking.com. Nós realmente SOMOS donos da plataforma! 🌴 Confira: {{link}}",
     "wa_ambassador_msg": "Oi! Estou no Staylo e procurando embaixadores. Ganhe 2% de renda passiva vitalícia em cada hotel que você trouxer para a plataforma. Entre aqui: {{link}}",
     "show_qr": "Mostrar QR Code",
     "hide_qr": "Ocultar QR Code",
@@ -388,7 +399,6 @@
     "cta_title": "Faça parte do futuro",
     "cta_button": "Torne-se um Membro Fundador",
     "cta_subtitle": "Junte-se a {{count}}+ hoteleiros que estão retomando o controle de seus negócios.",
-
     "structure_title": "A Estrutura do Staylo",
     "structure_subtitle": "Uma plataforma construída, pertencente e governada pelas pessoas que a utilizam.",
     "structure_coop_title": "Modelo Cooperativo",
@@ -397,7 +407,6 @@
     "structure_vote_desc": "A governança é democrática. Tenha 1 ação ou 10, sua propriedade tem um voto igual em todas as decisões da plataforma.",
     "structure_transfer_title": "Ações Transferíveis",
     "structure_transfer_desc": "As ações são livremente transferíveis. Os direitos de voto permanecem com o registro ativo da propriedade, não com as ações em si.",
-
     "share_sale_title": "Alpha Share Whitelisting",
     "share_sale_subtitle": "Fase Alpha — Apenas para Parceiros Fundadores. Limitado a 3.000 ações.",
     "shares_claimed": "ações alpha adquiridas",
@@ -411,7 +420,6 @@
     "per_share_alpha": "Por ação (alpha)",
     "shares_per_property": "Ações por propriedade",
     "commission_forever": "Comissão — para sempre",
-
     "revenue_distribution_title": "Para Onde Vai o Dinheiro",
     "revenue_distribution_subtitle": "Transparência total. Cada dólar contabilizado.",
     "traditional_otas": "OTAs Tradicionais",
@@ -429,7 +437,6 @@
     "breakdown_growth_desc": "Aquisição de viajantes, SEO, parcerias",
     "breakdown_reserve": "Fundo de Reserva",
     "breakdown_reserve_desc": "Fundo de emergência e desenvolvimento futuro",
-
     "ambassador_badge": "Novo",
     "ambassador_title": "Torne-se um Embaixador Staylo",
     "ambassador_subtitle": "Você se hospeda em um hotel no Staylo. Adora a experiência. Agora pode ganhar com isso — para sempre.",
@@ -457,7 +464,6 @@
     "example_lifetime": "Por ano, para sempre",
     "example_passive": "Passivo",
     "example_disclaimer": "Baseado em 20 quartos × $60/noite × 365 dias × 100% de taxa de reservas online. Os resultados reais podem variar.",
-
     "fund_title": "Para Onde Vai Seu Investimento",
     "fund_subtitle": "Cada dólar investido no Staylo financia a plataforma que substitui sua dependência de OTAs.",
     "fund_tech": "Tecnologia",
@@ -468,7 +474,6 @@
     "fund_team_desc": "Engenharia, suporte, desenvolvimento de negócios, operações",
     "fund_legal": "Jurídico e Conformidade",
     "fund_legal_desc": "Registro da empresa, contratos, licenças, seguros",
-
     "founder_badge": "O Fundador",
     "founder_role": "Fundador do STAYLO",
     "founder_bio1": "Empreendedor francês de hospitalidade baseado em Koh Phangan, Tailândia, com quase 40 anos de experiência em restaurantes, bares, serviço de luxo, turismo e desenvolvimento de negócios hoteleiros.",
@@ -476,7 +481,6 @@
     "founder_bio3": "Após anos vendo hotéis perderem controle, margem e influência para plataformas de reservas com altas comissões, ele criou o STAYLO com uma missão clara:",
     "founder_quote": "Devolver o controle a quem hospeda.",
     "founder_belief": "STAYLO é construído na crença de que hotéis independentes merecem uma plataforma mais justa, mais respeitosa e projetada em torno de seus interesses — não contra eles.",
-
     "faq": {
       "q1": "Como o Staylo é diferente do Booking.com?",
       "a1": "Staylo pertence aos seus prestadores, não a acionistas tradicionais. As comissões são de 10% em vez de 15–25%, e a receita é compartilhada com a comunidade.",
@@ -494,7 +498,30 @@
       "a7": "Todos os fundos são mantidos em uma conta dedicada da empresa com total transparência. Se o projeto não atingir a massa crítica, os fundos restantes serão redistribuídos proporcionalmente aos acionistas.",
       "q8": "Como os dividendos são distribuídos?",
       "a8": "30% da receita líquida da plataforma é distribuída como dividendos, proporcionalmente às ações detidas. Os dividendos começam quando a plataforma atinge a rentabilidade operacional."
-    }
+    },
+    "btc_badge": "Bitcoin-Native",
+    "btc_title": "Bitcoin no centro",
+    "btc_subtitle": "Staylo é uma plataforma cooperativa Bitcoin-native. BTC como meio de pagamento, reserva de tesouraria e moeda de investimento.",
+    "btc_payment_title": "BTC como meio de pagamento",
+    "btc_payment_desc": "Viajantes pagam com cartão, PayPal, transferência — ou em Bitcoin via Lightning Network. Hoteleiros recebem THB, USD, EUR ou BTC. À escolha deles.",
+    "btc_treasury_title": "BTC como reserva de tesouraria",
+    "btc_treasury_desc": "20% de TODO o capital captado vai para uma reserva Bitcoin permanente. Escrito nos estatutos da empresa. Voto de 90% dos acionistas para alterar. Em escala plena: US$ 149,7 milhões em BTC. Nunca vendido.",
+    "btc_investment_title": "BTC como moeda de investimento",
+    "btc_investment_desc": "Founding Partners compram ações COM Bitcoin. US$ 1.000 em BTC = 1 ação Alpha. Dividendos anuais resgatáveis em BTC.",
+    "btc_stat1": "Reservas de hotéis pagas em cripto até 2027",
+    "btc_stat2": "Maior valor de reserva vs fiat",
+    "btc_stat3": "Maior LTV de cliente",
+    "btc_stat4": "De todas as transações cripto = viagens",
+    "btc_sources": "Fontes: CoinsPaid, Triple-A, Travala, PhocusWire",
+    "capital_table_title": "Uso do capital Alpha — US$ 3 mi",
+    "capital_btc": "₿ Reserva Bitcoin",
+    "capital_acquisitions": "Aquisições — Hotéis-âncora KP",
+    "capital_tech": "Produto e Tecnologia",
+    "capital_operations": "Reserva operacional",
+    "capital_marketing": "Marketing e Jurídico",
+    "capital_note": "Aquisições = assinatura de 100 hotéis-âncora KP antes de M06. Comissão = 10% de receita por reserva (separado).",
+    "phase_wallet": "Wallet BTC",
+    "phase_wallet_desc": "Wallet integrado com Lightning Network. Carregue em BTC, USDT ou cartão. Pague reservas, colete dividendos, ganhe indicações."
   },
   "footer": {
     "tagline": "Reserve tudo. Seja dono da experiência.",
@@ -858,7 +885,12 @@
     "your_stay": "Sua Estadia",
     "rooms_available": "Quartos disponíveis",
     "guarantee_title": "Garantia STAYLO",
-    "guarantee_desc": "Apenas 10% de comissão — sem taxas ocultas. Você reserva diretamente com o hotel."
+    "guarantee_desc": "Apenas 10% de comissão — sem taxas ocultas. Você reserva diretamente com o hotel.",
+    "deal_title": "Hoteleiros definem os preços. STAYLO fica com 10%. Pronto.",
+    "deal_desc": "Nas OTAs, 15–25% de comissão vai para intermediários. Na STAYLO, a diferença volta para o hotel — onde pertence.",
+    "staylo_advantage": "Hospitalidade justa — só 10% de comissão",
+    "advantage_desc": "Os hoteleiros são os únicos a definir preços. STAYLO retém só 10% de comissão — a margem (vs 15–25% nas OTAs) volta para o hotel, não para intermediários.",
+    "limited": "Preços justos"
   },
   "checkout": {
     "title": "Finalizar Reserva",
@@ -930,7 +962,7 @@
     "title_1": "Reserve com ",
     "title_highlight": "propósito.",
     "title_2": "Viaje com alma.",
-    "subtitle": "Cada reserva no Staylo volta para os hoteleiros que o construíram. Co-propriedade. 10% de comissão. Seu para sempre.",
+    "subtitle": "Cada reserva na Staylo volta para os hoteleiros que a construíram. Compartilhada por hoteleiros do mundo todo. 10% de comissão para sempre… e muito mais.",
     "search_placeholder": "Onde você quer ficar?",
     "search_button": "Pesquisar",
     "filter_all": "Todos",
@@ -1000,15 +1032,49 @@
   },
   "home_how": {
     "label": "Como funciona",
-    "title_1": "Reserve.",
-    "title_2": "Ganhe.",
-    "title_3": "Impacto.",
-    "step1_title": "Reserve sua estadia",
-    "step1_desc": "Pesquise, compare e reserve hotéis com a comissão mais justa do mercado. Os mesmos ótimos hotéis, melhor preço.",
-    "step2_title": "Ganhe tokens $STAY",
-    "step2_desc": "Cada noite reservada rende tokens $STAY. Use para descontos, vote em decisões da plataforma ou negocie.",
-    "step3_title": "Apoie os hoteleiros",
-    "step3_desc": "Sua reserva apoia diretamente hoteleiros independentes. 90% fica com o hotel. Sem intermediário levando 25%."
+    "title": "Dois lados, uma plataforma justa",
+    "subtitle": "STAYLO é construída para dois públicos — viajantes que reservam estadias e hoteleiros que os hospedam. Ambos ganham, e ambos podem se tornar coproprietários.",
+    "footer": "Construída com hoteleiros, para hoteleiros. Sozinhos é impossível. Juntos somos imparáveis.",
+    "for_travelers": "Para viajantes",
+    "for_hoteliers": "Para hoteleiros",
+    "cta_book": "Encontrar uma estadia",
+    "cta_list": "Cadastrar seu hotel",
+    "tr_step1_title": "Encontre sua estadia",
+    "tr_step1_desc": "Busque e reserve hotéis com a comissão mais justa do mercado.",
+    "tr_step1_hl": "Melhor preço",
+    "tr_step1_b1": "Mesmos hotéis que Booking e Agoda",
+    "tr_step1_b2": "Até 15% mais barato",
+    "tr_step1_b3": "Sem taxas ocultas",
+    "tr_step2_title": "Ganhe tokens $STAY",
+    "tr_step2_desc": "Cada noite que você reserva ganha tokens $STAY — para usar, votar ou negociar.",
+    "tr_step2_hl": "Tokens grátis",
+    "tr_step2_b1": "Descontos em estadias futuras",
+    "tr_step2_b2": "Vote em decisões da plataforma",
+    "tr_step2_b3": "Negociáveis na Solana",
+    "tr_step3_title": "Vire Embaixador",
+    "tr_step3_desc": "Indique um hotel para a STAYLO e ganhe Bitcoin em cada reserva que receberem — para sempre.",
+    "tr_step3_hl": "2% BTC · vitalício",
+    "tr_step3_b1": "Indique hotéis que você ama",
+    "tr_step3_b2": "Ganhe em cada reserva, para sempre",
+    "tr_step3_b3": "Pago em Bitcoin via Lightning",
+    "ho_step1_title": "Cadastre seu hotel — grátis",
+    "ho_step1_desc": "Inscreva-se em 15 minutos. Cadastro grátis. Sem exclusividade.",
+    "ho_step1_hl": "GRÁTIS · 15 min",
+    "ho_step1_b1": "Cadastro grátis, para sempre",
+    "ho_step1_b2": "Sem contrato de exclusividade",
+    "ho_step1_b3": "Mantenha Booking e Airbnb em paralelo",
+    "ho_step2_title": "Fique com 90% de cada reserva",
+    "ho_step2_desc": "10% de comissão, contratual, travada para sempre. Pago em até 1 h após o check-out.",
+    "ho_step2_hl": "10% · travada vitalícia",
+    "ho_step2_b1": "Contratual — sem aumentos surpresa",
+    "ho_step2_b2": "Pago em 1 h, não em 45 dias",
+    "ho_step2_b3": "Sem taxas ocultas, sem surge pricing",
+    "ho_step3_title": "Vire coproprietário",
+    "ho_step3_desc": "Compre uma cota Founding Partner e vire um verdadeiro coproprietário da plataforma.",
+    "ho_step3_hl": "US$ 1.000 · 1 cota",
+    "ho_step3_b1": "1 voto em decisões da plataforma",
+    "ho_step3_b2": "20% do lucro líquido como dividendos",
+    "ho_step3_b3": "Tokens $STAY ganhos por noite hospedada"
   },
   "home_testimonials": {
     "section_label": "Depoimentos",
