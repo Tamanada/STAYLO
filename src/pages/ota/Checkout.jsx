@@ -181,6 +181,20 @@ export default function Checkout() {
     e.preventDefault()
     if (!guestName.trim() || !guestEmail.trim()) return
 
+    // Last-mile capacity check — even if PropertyDetail's guard was bypassed
+    // (URL tampering, stale form), refuse to insert an over-capacity booking.
+    const requestedGuests = Number(guests)
+    const roomCap = Number(room.max_guests || 0)
+    if (roomCap > 0 && requestedGuests > roomCap) {
+      setError(
+        t('checkout.over_capacity',
+          `This room sleeps up to ${roomCap} guests. You selected ${requestedGuests}. ` +
+          `Please go back and pick a larger room or reduce the guest count.`
+        )
+      )
+      return
+    }
+
     setSubmitting(true)
     setError(null)
 

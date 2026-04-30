@@ -134,6 +134,25 @@ export default function PropertyDetail() {
 
   const lowestRoom = rooms.length > 0 ? rooms.reduce((a, b) => a.price < b.price ? a : b) : null
 
+  // ── Capacity guard ────────────────────────────────
+  // The dropdown should never offer more guests than any room can take.
+  // Once a room is selected, hard-cap to that room's capacity.
+  const selectedRoomData = selectedRoom ? rooms.find(r => r.id === selectedRoom) : null
+  const maxAllowedGuests = selectedRoomData
+    ? selectedRoomData.guests
+    : (rooms.length ? Math.max(...rooms.map(r => r.guests || 1)) : 6)
+
+  // Auto-clamp guests when user picks a smaller room, so the value can never
+  // go out-of-bounds without the user noticing.
+  useEffect(() => {
+    if (selectedRoomData && Number(guests) > selectedRoomData.guests) {
+      setGuests(String(selectedRoomData.guests))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRoom])
+
+  const guestsExceedRoom = selectedRoomData && Number(guests) > selectedRoomData.guests
+
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
 
@@ -503,14 +522,36 @@ export default function PropertyDetail() {
                         className="w-full text-sm font-medium text-gray-900 border-0 p-0 focus:outline-none bg-transparent" />
                     </div>
                   </div>
-                  <div className="border border-gray-200 rounded-lg p-2.5 hover:border-[#003580] transition-colors">
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase">{t('booking.guests', 'Guests')}</label>
+                  <div className={`border rounded-lg p-2.5 transition-colors ${
+                    guestsExceedRoom ? 'border-red-400 bg-red-50' : 'border-gray-200 hover:border-[#003580]'
+                  }`}>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase">
+                      {t('booking.guests', 'Guests')}
+                      {selectedRoomData && (
+                        <span className="ml-1 normal-case text-gray-400 font-normal">
+                          (max {selectedRoomData.guests})
+                        </span>
+                      )}
+                    </label>
                     <select value={guests} onChange={e => setGuests(e.target.value)}
                       className="w-full text-sm font-medium text-gray-900 border-0 p-0 focus:outline-none bg-transparent appearance-none">
-                      {[1, 2, 3, 4, 5, 6].map(n => <option key={n} value={n}>{n} {n === 1 ? 'Adult' : 'Adults'}</option>)}
+                      {Array.from({ length: maxAllowedGuests }, (_, i) => i + 1).map(n =>
+                        <option key={n} value={n}>{n} {n === 1 ? 'Adult' : 'Adults'}</option>
+                      )}
                     </select>
                   </div>
                 </div>
+
+                {/* Capacity warning — never silent overbooking */}
+                {guestsExceedRoom && (
+                  <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-xs">
+                    <Info size={14} className="text-red-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-red-700">
+                      {t('booking.too_many_guests', 'This room sleeps up to')} <strong>{selectedRoomData.guests}</strong>{' '}
+                      {t('booking.guests_lower', 'guests. Please reduce the count or pick a larger room.')}
+                    </span>
+                  </div>
+                )}
 
                 {/* Breakdown */}
                 {lowestRoom && selectedRoom && (
@@ -539,19 +580,23 @@ export default function PropertyDetail() {
                   </div>
                 )}
 
-                {/* Reserve button */}
+                {/* Reserve button — also blocked if guest count exceeds room capacity */}
                 <button
-                  disabled={!selectedRoom}
+                  disabled={!selectedRoom || guestsExceedRoom}
                   onClick={() => {
-                    if (!selectedRoom) return
+                    if (!selectedRoom || guestsExceedRoom) return
                     navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&guests=${guests}`)
                   }}
                   className={`w-full py-3.5 rounded-lg font-bold text-base transition-all ${
-                    selectedRoom
+                    selectedRoom && !guestsExceedRoom
                       ? 'bg-[#0071c2] hover:bg-[#005fa8] text-white shadow-lg hover:shadow-xl cursor-pointer'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}>
-                  {selectedRoom ? t('booking.reserve_now', 'Reserve Now') : t('booking.select_room_first', 'Select a room to book')}
+                  {!selectedRoom
+                    ? t('booking.select_room_first', 'Select a room to book')
+                    : guestsExceedRoom
+                      ? t('booking.too_many_guests_short', 'Too many guests for this room')
+                      : t('booking.reserve_now', 'Reserve Now')}
                 </button>
 
                 <p className="text-center text-[11px] text-gray-400 mt-2">{t('booking.no_charge', "You won't be charged yet")}</p>
