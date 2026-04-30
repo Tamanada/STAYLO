@@ -187,6 +187,22 @@ export default function AdminTransactions() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shares, search, usersById, propsById, dateFrom, dateTo])
 
+  // Helper — Supabase SDK's `invoke` returns a generic "non-2xx" message and
+  // hides the actual error body. Extract it from error.context (which is the
+  // raw Response object) so the operator sees the real reason.
+  async function extractFunctionError(error) {
+    if (!error) return 'Unknown error'
+    try {
+      const body = await error.context?.json?.()
+      if (body) return body.error || body.detail || JSON.stringify(body)
+    } catch { /* body wasn't JSON */ }
+    try {
+      const text = await error.context?.text?.()
+      if (text) return text
+    } catch { /* no text either */ }
+    return error.message || String(error)
+  }
+
   // ── Action handlers ───────────────────────────────────
   async function handleForceRelease(booking) {
     if (!confirm(
@@ -197,10 +213,14 @@ export default function AdminTransactions() {
 
     try {
       const { data, error } = await supabase.functions.invoke('release-escrow', {
-        body: { booking_id: booking.id, force: true },
+        body: { booking_id: booking.id, reason: 'admin_force' },
       })
-      if (error) throw error
-      alert(`✓ Release initiated.\n${JSON.stringify(data, null, 2)}`)
+      if (error) {
+        const detail = await extractFunctionError(error)
+        alert(`Force release failed:\n\n${detail}`)
+        return
+      }
+      alert(`✓ Release initiated.\n\n${JSON.stringify(data, null, 2)}`)
       await fetchAll()
     } catch (err) {
       alert(`Force release failed: ${err.message || err}`)
@@ -222,7 +242,11 @@ export default function AdminTransactions() {
       const { data, error } = await supabase.functions.invoke('refund-booking', {
         body: { booking_id: booking.id },
       })
-      if (error) throw error
+      if (error) {
+        const detail = await extractFunctionError(error)
+        alert(`Refund failed:\n\n${detail}`)
+        return
+      }
       alert(`✓ Refund processed: ${data.refund_id}\n${formatCurrency(data.amount_refunded, data.currency || 'USD')}`)
       await fetchAll()
     } catch (err) {
