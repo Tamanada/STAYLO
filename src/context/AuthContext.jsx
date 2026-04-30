@@ -60,9 +60,15 @@ export function AuthProvider({ children }) {
   }
 
   async function signUp(email, password, fullName, referralCode) {
+    // emailRedirectTo is where Supabase will send the user when they click
+    // the magic link in the confirmation email. Our /verify-email page
+    // handles the post-confirm flow (and reads ?next from itself).
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        emailRedirectTo: window.location.origin + '/verify-email',
+      },
     })
     if (authError) throw authError
 
@@ -128,8 +134,32 @@ export function AuthProvider({ children }) {
     setProfile(null)
   }
 
+  // Re-send the confirmation email. Supabase rate-limits this server-side
+  // (default 60s between sends) — the UI should show the resulting error.
+  async function resendVerificationEmail() {
+    if (!user?.email) throw new Error('No email on file')
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: user.email,
+      options: { emailRedirectTo: window.location.origin + '/verify-email' },
+    })
+    if (error) throw error
+  }
+
+  // True when the user has clicked the confirmation link in their email.
+  // Supabase exposes this as user.email_confirmed_at (timestamp) once done.
+  // For OAuth signups (Google/Facebook/X), it's set automatically by the
+  // provider — no explicit confirmation needed. We treat null/undefined as
+  // "not verified" and rely on this flag to gate sensitive actions
+  // (booking, property creation, share purchase).
+  const emailVerified = !!user?.email_confirmed_at
+
   return (
-    <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut, fetchProfile }}>
+    <AuthContext.Provider value={{
+      user, profile, loading,
+      signUp, signIn, signOut, fetchProfile,
+      emailVerified, resendVerificationEmail,
+    }}>
       {children}
     </AuthContext.Provider>
   )

@@ -44,7 +44,9 @@ import MyBookings from './pages/dashboard/MyBookings'
 import Banking from './pages/dashboard/Banking'
 import Splash from './pages/Splash'
 import ResetPassword from './pages/ResetPassword'
+import VerifyEmail from './pages/VerifyEmail'
 import Welcome from './pages/Welcome'
+import EmailVerificationGate from './components/auth/EmailVerificationGate'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminProperties from './pages/admin/AdminProperties'
@@ -95,7 +97,7 @@ export default function App() {
             <Route path="/survey" element={<SurveyChooser />} />
             <Route path="/survey/hotelier" element={<SurveyHotelier />} />
             <Route path="/survey/traveler" element={<SurveyTraveler />} />
-            <Route path="/submit" element={<Submit />} />
+            <Route path="/submit" element={<EmailVerificationGate reason="to list a property"><Submit /></EmailVerificationGate>} />
             <Route path="/vision" element={<Vision />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -103,6 +105,7 @@ export default function App() {
             <Route path="/loi" element={<LOI />} />
             <Route path="/loi/:ref" element={<LOI />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/splash" element={<Splash />} />
             <Route path="/ambassador" element={<AmbassadorLanding />} />
             <Route path="/ambassador/register" element={<AmbassadorRegister />} />
@@ -111,7 +114,7 @@ export default function App() {
             {/* OTA — public booking site (was /dashboard/book/* until 2026-04-22) */}
             <Route path="/ota" element={<OTASearch />} />
             <Route path="/ota/:id" element={<OTAPropertyDetail />} />
-            <Route path="/ota/:id/checkout" element={<OTACheckout />} />
+            <Route path="/ota/:id/checkout" element={<EmailVerificationGate reason="to complete a booking"><OTACheckout /></EmailVerificationGate>} />
 
             {/* Legal pages — Alpha placeholders, to be replaced by counsel */}
             <Route path="/legal/terms" element={<LegalTerms />} />

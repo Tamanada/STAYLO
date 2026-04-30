@@ -6,16 +6,7 @@ import { Card } from '../components/ui/Card'
 import { Input } from '../components/ui/Input'
 import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
-
-// Returns a SAFE redirect target — only same-origin paths starting with '/'
-// (no '//' that could be a protocol-relative URL exploit, no external).
-function safeNext(raw, fallback = '/dashboard') {
-  if (!raw) return fallback
-  if (typeof raw !== 'string') return fallback
-  if (!raw.startsWith('/')) return fallback
-  if (raw.startsWith('//')) return fallback
-  return raw
-}
+import { safeNext } from '../lib/safeNext'
 
 export default function Login() {
   const { t } = useTranslation()
