@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, Eye, Rocket, ExternalLink } from 'lucide-react'
+import { CheckCircle, XCircle, Eye, Rocket, ExternalLink, ImageOff, X } from 'lucide-react'
 import { useAdminData } from '../../hooks/useAdminData'
 import { DataTable } from '../../components/admin/DataTable'
 import { Badge } from '../../components/ui/Badge'
@@ -83,6 +83,8 @@ export default function AdminProperties() {
   ]
 
   const owner = selected ? getUserById(selected.user_id) : null
+  const [lightboxIdx, setLightboxIdx] = useState(null)  // index into selected.photo_urls
+  const photos = selected?.photo_urls || []
 
   return (
     <div>
@@ -124,6 +126,52 @@ export default function AdminProperties() {
               <Badge variant={statusConfig[selected.status]?.variant}>
                 {statusConfig[selected.status]?.label}
               </Badge>
+            </div>
+
+            {/* Photo gallery — what the hotelier uploaded.
+                Critical for the admin to validate a listing before approval. */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                  Photos
+                </p>
+                <span className="text-[11px] text-gray-400">
+                  {photos.length} uploaded
+                </span>
+              </div>
+              {photos.length > 0 ? (
+                <div className="grid grid-cols-4 gap-2">
+                  {photos.map((url, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setLightboxIdx(idx)}
+                      className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 group cursor-pointer"
+                    >
+                      <img
+                        src={url}
+                        alt={`${selected.name} photo ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        onError={e => { e.target.style.display = 'none'; e.target.parentElement.classList.add('bg-red-50') }}
+                      />
+                      {idx === 0 && (
+                        <span className="absolute top-1 left-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-deep/80 text-white">
+                          Cover
+                        </span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-lg border-2 border-dashed border-amber-200 bg-amber-50/50 p-4 flex items-center gap-3 text-sm text-amber-800">
+                  <ImageOff size={20} className="flex-shrink-0" />
+                  <span>
+                    <strong>No photos uploaded.</strong> Without photos this listing
+                    cannot go live — ask the hotelier to add at least 3 images.
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -205,6 +253,49 @@ export default function AdminProperties() {
           </div>
         )}
       </Modal>
+
+      {/* Lightbox — fullscreen photo viewer over the modal */}
+      {lightboxIdx !== null && photos[lightboxIdx] && (
+        <div
+          className="fixed inset-0 z-[60] bg-black/95 flex items-center justify-center p-4"
+          onClick={() => setLightboxIdx(null)}
+        >
+          <button
+            type="button"
+            onClick={() => setLightboxIdx(null)}
+            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all cursor-pointer"
+          >
+            <X size={20} />
+          </button>
+          <img
+            src={photos[lightboxIdx]}
+            alt={`Photo ${lightboxIdx + 1}`}
+            className="max-w-[95vw] max-h-[90vh] object-contain"
+            onClick={e => e.stopPropagation()}
+          />
+          {photos.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={e => { e.stopPropagation(); setLightboxIdx((lightboxIdx - 1 + photos.length) % photos.length) }}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl cursor-pointer"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={e => { e.stopPropagation(); setLightboxIdx((lightboxIdx + 1) % photos.length) }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white text-xl cursor-pointer"
+              >
+                ›
+              </button>
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-medium">
+                {lightboxIdx + 1} / {photos.length}
+              </div>
+            </>
+          )}
+        </div>
+      )}
     </div>
   )
 }
