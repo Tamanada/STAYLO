@@ -4,7 +4,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Plus, BedDouble, Calendar, ClipboardList, Pencil, Trash2,
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
-  ChevronLeft, ChevronRight, X, Save, Loader2, Ban, Check
+  ChevronLeft, ChevronRight, X, Save, Loader2, Ban, Check,
+  Image as ImageIcon, Upload, AlertCircle, Camera
 } from 'lucide-react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -26,6 +27,7 @@ const AMENITY_OPTIONS = [
 ]
 
 const tabs = [
+  { key: 'photos', icon: Camera, label: 'Photos' },
   { key: 'rooms', icon: BedDouble, label: 'Rooms' },
   { key: 'calendar', icon: Calendar, label: 'Availability' },
   { key: 'bookings', icon: ClipboardList, label: 'Bookings' },
@@ -36,7 +38,7 @@ export default function PropertyManage() {
   const { id: propertyId } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState('rooms')
+  const [activeTab, setActiveTab] = useState('photos')
   const [property, setProperty] = useState(null)
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
@@ -162,10 +164,232 @@ export default function PropertyManage() {
       </div>
 
       {/* Tab content */}
+      {activeTab === 'photos' && <PhotosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
     </div>
+  )
+}
+
+// ============================================
+// PHOTOS TAB — manage property photos post-creation
+// ============================================
+// The hotelier could only upload photos at the initial Submit step.
+// This tab lets them add more photos, replace the cover, and remove
+// individual photos any time after.
+//
+// All uploads go to bucket `property-photos`, path properties/<id>/<file>
+// (matches what Submit.jsx writes, RLS enforced by 20260430020000).
+// ============================================
+function PhotosTab({ property, onRefresh }) {
+  const { t } = useTranslation()
+  const [photos, setPhotos] = useState(property.photo_urls || [])
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
+  const [progress, setProgress] = useState({ done: 0, total: 0 })
+  const inputRef = useState(null)
+
+  const MAX_PHOTOS = 15
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5 MB
+
+  async function handleUpload(e) {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    setError('')
+
+    if (photos.length + files.length > MAX_PHOTOS) {
+      setError(`Maximum ${MAX_PHOTOS} photos per property. You currently have ${photos.length}.`)
+      return
+    }
+    const oversized = files.find(f => f.size > MAX_FILE_SIZE)
+    if (oversized) { setError(`"${oversized.name}" is too big — max 5 MB per photo.`); return }
+    const wrongType = files.find(f => !['image/jpeg', 'image/png', 'image/webp'].includes(f.type))
+    if (wrongType) { setError(`"${wrongType.name}" is not a supported format. Use JPG, PNG, or WebP.`); return }
+
+    setUploading(true)
+    setProgress({ done: 0, total: files.length })
+    const newUrls = []
+    const failures = []
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const ext = file.name.split('.').pop()
+      const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const path = `properties/${property.id}/${filename}`
+      const { error: upErr } = await supabase.storage
+        .from('property-photos')
+        .upload(path, file, { contentType: file.type })
+      if (upErr) {
+        console.error(`Upload failed for ${file.name}:`, upErr)
+        failures.push(`${file.name}: ${upErr.message}`)
+      } else {
+        const { data } = supabase.storage.from('property-photos').getPublicUrl(path)
+        newUrls.push(data.publicUrl)
+      }
+      setProgress({ done: i + 1, total: files.length })
+    }
+
+    if (newUrls.length > 0) {
+      const merged = [...photos, ...newUrls]
+      const { error: dbErr } = await supabase
+        .from('properties')
+        .update({ photo_urls: merged })
+        .eq('id', property.id)
+      if (dbErr) {
+        setError(`Photos uploaded but couldn't save to property: ${dbErr.message}`)
+      } else {
+        setPhotos(merged)
+        onRefresh?.()
+      }
+    }
+
+    if (failures.length) {
+      setError(`${failures.length} photo${failures.length > 1 ? 's' : ''} failed to upload:\n${failures.join('\n')}`)
+    }
+
+    setUploading(false)
+    setProgress({ done: 0, total: 0 })
+    if (e.target) e.target.value = ''  // reset input so same file can re-upload
+  }
+
+  async function handleDelete(idx) {
+    if (!confirm('Remove this photo? This cannot be undone.')) return
+    const url = photos[idx]
+    const next = photos.filter((_, i) => i !== idx)
+
+    // Try to delete from Storage too (best-effort — even if it fails, the DB
+    // reference goes away so the orphan is invisible).
+    try {
+      const pathInBucket = url.split('/property-photos/')[1]
+      if (pathInBucket) {
+        await supabase.storage.from('property-photos').remove([pathInBucket])
+      }
+    } catch (e) { console.warn('Storage delete failed:', e) }
+
+    const { error: dbErr } = await supabase
+      .from('properties')
+      .update({ photo_urls: next })
+      .eq('id', property.id)
+    if (dbErr) { setError(dbErr.message); return }
+    setPhotos(next)
+    onRefresh?.()
+  }
+
+  async function handleSetCover(idx) {
+    if (idx === 0) return
+    const reordered = [photos[idx], ...photos.filter((_, i) => i !== idx)]
+    const { error: dbErr } = await supabase
+      .from('properties')
+      .update({ photo_urls: reordered })
+      .eq('id', property.id)
+    if (dbErr) { setError(dbErr.message); return }
+    setPhotos(reordered)
+    onRefresh?.()
+  }
+
+  return (
+    <Card className="p-6">
+      {/* Header + Upload button */}
+      <div className="flex items-start justify-between mb-5 gap-3 flex-wrap">
+        <div>
+          <h2 className="text-lg font-bold text-deep flex items-center gap-2">
+            <ImageIcon size={20} className="text-ocean" />
+            {t('manage.photos_title', 'Photos')}
+          </h2>
+          <p className="text-xs text-gray-500 mt-1">
+            {t('manage.photos_subtitle', 'The first photo is the cover image shown on search results. Drag-to-reorder coming soon.')}
+          </p>
+        </div>
+        <label className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm cursor-pointer transition-all ${
+          uploading
+            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            : 'bg-ocean text-white hover:bg-ocean/90'
+        }`}>
+          <Upload size={14} />
+          {uploading
+            ? `${t('manage.uploading', 'Uploading')} ${progress.done}/${progress.total}…`
+            : t('manage.upload_photos', 'Upload photos')}
+          <input
+            type="file"
+            multiple
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleUpload}
+            disabled={uploading}
+            className="hidden"
+          />
+        </label>
+      </div>
+
+      {/* Error banner */}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-sm text-red-700 whitespace-pre-line">
+          <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Empty state — clear call to action */}
+      {photos.length === 0 ? (
+        <div className="border-2 border-dashed border-gray-200 rounded-xl p-12 text-center">
+          <Camera size={40} className="text-gray-300 mx-auto mb-3" />
+          <p className="text-sm font-bold text-deep mb-1">
+            {t('manage.no_photos_title', 'No photos yet')}
+          </p>
+          <p className="text-xs text-gray-500 max-w-sm mx-auto">
+            {t('manage.no_photos_desc', 'Properties without photos cannot go live. Upload at least 3 high-quality images of your rooms, common areas, and views.')}
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Photo grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {photos.map((url, idx) => (
+              <div key={url + idx} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 group">
+                <img
+                  src={url}
+                  alt={`${property.name} ${idx + 1}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                {idx === 0 && (
+                  <span className="absolute top-2 left-2 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-deep/85 text-white">
+                    Cover
+                  </span>
+                )}
+                {/* Hover actions */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                  {idx !== 0 && (
+                    <button
+                      onClick={() => handleSetCover(idx)}
+                      className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-white text-deep hover:bg-gray-100 cursor-pointer"
+                      title="Make this the cover image"
+                    >
+                      Set cover
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDelete(idx)}
+                    className="p-1.5 rounded bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                    title="Remove photo"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-gray-400 mt-4">
+            {photos.length} / {MAX_PHOTOS} {t('manage.photos_count', 'photos')}
+            {photos.length < 3 && (
+              <span className="ml-2 text-amber-600">
+                · {t('manage.photos_warning', 'Add at least 3 photos before going live')}
+              </span>
+            )}
+          </p>
+        </>
+      )}
+    </Card>
   )
 }
 

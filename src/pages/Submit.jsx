@@ -274,15 +274,29 @@ export default function Submit() {
 
   async function uploadPhotos(propertyId) {
     const urls = []
+    const failures = []
     for (const file of photos) {
       const ext = file.name.split('.').pop()
       const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
       const path = `properties/${propertyId}/${filename}`
       const { error } = await supabase.storage.from('property-photos').upload(path, file, { contentType: file.type })
-      if (!error) {
-        const { data } = supabase.storage.from('property-photos').getPublicUrl(path)
-        urls.push(data.publicUrl)
+      if (error) {
+        // Don't swallow — surface the failure so the hotelier knows photos
+        // didn't save. Common causes: bucket missing, RLS blocking,
+        // file too large, MIME type rejected.
+        console.error(`Photo upload failed for ${file.name}:`, error)
+        failures.push(`${file.name}: ${error.message}`)
+        continue
       }
+      const { data } = supabase.storage.from('property-photos').getPublicUrl(path)
+      urls.push(data.publicUrl)
+    }
+    if (failures.length > 0) {
+      throw new Error(
+        `Photo upload failed (${failures.length}/${photos.length}):\n` +
+        failures.join('\n') +
+        '\n\nThe property was saved without photos. Edit the property to add them once the issue is resolved.'
+      )
     }
     return urls
   }
