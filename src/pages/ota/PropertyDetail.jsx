@@ -92,6 +92,20 @@ export default function PropertyDetail() {
     if (id) fetchData()
   }, [id])
 
+  // ── Capacity guard ────────────────────────────────
+  // Auto-clamp guest count when the user picks a smaller room. Must live
+  // ABOVE any early returns so the hook order stays stable across renders
+  // (React forbids conditional hooks — moving this past `if (loading)`
+  // caused a "Rendered more hooks" crash and blanked the page).
+  useEffect(() => {
+    if (!selectedRoom) return
+    const r = realRooms.find(x => x.id === selectedRoom)
+    if (r && Number(guests) > (r.max_guests || 0)) {
+      setGuests(String(r.max_guests))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRoom, realRooms])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f5f6fa] flex items-center justify-center">
@@ -140,22 +154,13 @@ export default function PropertyDetail() {
 
   const lowestRoom = rooms.length > 0 ? rooms.reduce((a, b) => a.price < b.price ? a : b) : null
 
-  // ── Capacity guard ────────────────────────────────
+  // ── Capacity guard helpers (hook moved above early returns) ─────────
   // The dropdown should never offer more guests than any room can take.
   // Once a room is selected, hard-cap to that room's capacity.
   const selectedRoomData = selectedRoom ? rooms.find(r => r.id === selectedRoom) : null
   const maxAllowedGuests = selectedRoomData
     ? selectedRoomData.guests
     : (rooms.length ? Math.max(...rooms.map(r => r.guests || 1)) : 6)
-
-  // Auto-clamp guests when user picks a smaller room, so the value can never
-  // go out-of-bounds without the user noticing.
-  useEffect(() => {
-    if (selectedRoomData && Number(guests) > selectedRoomData.guests) {
-      setGuests(String(selectedRoomData.guests))
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRoom])
 
   const guestsExceedRoom = selectedRoomData && Number(guests) > selectedRoomData.guests
 
