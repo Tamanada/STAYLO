@@ -13,17 +13,97 @@ import { Badge } from '../../components/ui/Badge'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 
-const ROOM_TYPES = ['standard', 'deluxe', 'suite', 'dormitory']
-const BED_TYPES = ['single', 'double', 'twin', 'king', 'dormitory']
-const AMENITY_OPTIONS = [
-  { key: 'wifi', icon: Wifi, label: 'WiFi' },
-  { key: 'ac', icon: Wind, label: 'Air Conditioning' },
-  { key: 'pool', icon: Waves, label: 'Pool' },
-  { key: 'minibar', icon: Coffee, label: 'Minibar' },
-  { key: 'parking', icon: Car, label: 'Parking' },
-  { key: 'beach', icon: Umbrella, label: 'Beach Access' },
-  { key: 'balcony', icon: null, label: 'Balcony' },
-  { key: 'kitchen', icon: null, label: 'Kitchen' },
+// ── Extended choices for room form (V2 — 2026-04-30) ─────────────
+// Room types follow common hotel taxonomy (Booking + Airbnb hybrid).
+// Bed types cover the majority of real-world configurations.
+// Amenities are grouped into 6 readable categories so 30+ items
+// don't overwhelm the form.
+const ROOM_TYPES = [
+  'standard', 'superior', 'deluxe', 'junior_suite', 'suite',
+  'executive_suite', 'family', 'studio', 'apartment', 'villa',
+  'bungalow', 'cabin', 'dormitory', 'capsule',
+]
+
+const BED_TYPES = [
+  'single', 'double', 'queen', 'king', 'super_king',
+  'twin', 'bunk', 'sofa_bed', 'futon', 'dormitory_bunk',
+]
+
+// Categorised amenities. Icon is optional — when null, only label is shown.
+const AMENITY_CATEGORIES = [
+  {
+    key: 'comfort', label: '🛏️ Comfort',
+    items: [
+      { key: 'wifi',         icon: Wifi,   label: 'Free WiFi' },
+      { key: 'tv',           icon: null,   label: 'TV' },
+      { key: 'smart_tv',     icon: null,   label: 'Smart TV' },
+      { key: 'ac',           icon: Wind,   label: 'Air Conditioning' },
+      { key: 'heating',      icon: null,   label: 'Heating' },
+      { key: 'ceiling_fan',  icon: null,   label: 'Ceiling Fan' },
+      { key: 'soundproof',   icon: null,   label: 'Soundproof' },
+      { key: 'workspace',    icon: null,   label: 'Workspace / Desk' },
+      { key: 'safe',         icon: null,   label: 'Safe' },
+      { key: 'iron',         icon: null,   label: 'Iron' },
+      { key: 'hair_dryer',   icon: null,   label: 'Hair Dryer' },
+    ],
+  },
+  {
+    key: 'bathroom', label: '🚿 Bathroom',
+    items: [
+      { key: 'bathtub',         icon: null, label: 'Bathtub' },
+      { key: 'walk_in_shower',  icon: null, label: 'Walk-in Shower' },
+      { key: 'outdoor_shower',  icon: null, label: 'Outdoor Shower' },
+      { key: 'bathrobe',        icon: null, label: 'Bathrobe & Slippers' },
+      { key: 'premium_toilet',  icon: null, label: 'Premium Toiletries' },
+    ],
+  },
+  {
+    key: 'kitchen_food', label: '🍳 Kitchen & Food',
+    items: [
+      { key: 'kitchen',     icon: null,   label: 'Full Kitchen' },
+      { key: 'kitchenette', icon: null,   label: 'Kitchenette' },
+      { key: 'mini_fridge', icon: null,   label: 'Mini Fridge' },
+      { key: 'microwave',   icon: null,   label: 'Microwave' },
+      { key: 'coffee_machine', icon: Coffee, label: 'Coffee Machine' },
+      { key: 'kettle',      icon: null,   label: 'Kettle' },
+      { key: 'minibar',     icon: null,   label: 'Minibar' },
+    ],
+  },
+  {
+    key: 'view_space', label: '🌅 View & Space',
+    items: [
+      { key: 'sea_view',      icon: Waves, label: 'Sea View' },
+      { key: 'mountain_view', icon: null,  label: 'Mountain View' },
+      { key: 'garden_view',   icon: null,  label: 'Garden View' },
+      { key: 'city_view',     icon: null,  label: 'City View' },
+      { key: 'pool_view',     icon: null,  label: 'Pool View' },
+      { key: 'balcony',       icon: null,  label: 'Balcony' },
+      { key: 'terrace',       icon: null,  label: 'Terrace' },
+      { key: 'private_garden', icon: null, label: 'Private Garden' },
+    ],
+  },
+  {
+    key: 'outdoor', label: '🌴 Outdoor',
+    items: [
+      { key: 'private_pool', icon: Waves,    label: 'Private Pool' },
+      { key: 'jacuzzi',      icon: null,     label: 'Jacuzzi' },
+      { key: 'bbq',          icon: null,     label: 'Outdoor BBQ' },
+      { key: 'fireplace',    icon: null,     label: 'Fireplace' },
+      { key: 'hammock',      icon: null,     label: 'Hammock' },
+      { key: 'pool',         icon: Waves,    label: 'Shared Pool' },
+      { key: 'beach',        icon: Umbrella, label: 'Beach Access' },
+      { key: 'parking',      icon: Car,      label: 'Free Parking' },
+    ],
+  },
+  {
+    key: 'access_policy', label: '♿ Access & Policy',
+    items: [
+      { key: 'wheelchair_access', icon: null, label: 'Wheelchair Access' },
+      { key: 'mosquito_net',      icon: null, label: 'Mosquito Net' },
+      { key: 'pet_friendly',      icon: null, label: 'Pet-Friendly' },
+      { key: 'smoking_allowed',   icon: null, label: 'Smoking Allowed' },
+    ],
+  },
 ]
 
 const tabs = [
@@ -627,6 +707,11 @@ function PhotosTab({ property, onRefresh }) {
   )
 }
 
+// Pretty label for snake_case enum values: "junior_suite" → "Junior Suite"
+function prettyLabel(s) {
+  return String(s || '').split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+}
+
 // ============================================
 // ROOMS TAB
 // ============================================
@@ -655,6 +740,16 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       amenities: room.amenities || [],
     })
     setShowForm(true)
+  }
+
+  // Refresh single room from DB after a media update inside the form, so
+  // the photo strip on the card list is always in sync.
+  async function refreshRoomMedia(roomId) {
+    const { data } = await supabase.from('rooms').select('photo_urls, video_urls').eq('id', roomId).single()
+    if (data) {
+      setEditingRoom(prev => prev?.id === roomId ? { ...prev, ...data } : prev)
+      onRefresh()
+    }
   }
 
   async function handleSave() {
@@ -720,34 +815,71 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       <div className="space-y-3">
         {rooms.map(room => (
           <Card key={room.id} className={`!p-4 ${!room.is_active ? 'opacity-60' : ''}`}>
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-start gap-4">
+              {/* Photo strip — first 3 photos, with media count overlay */}
+              {room.photo_urls && room.photo_urls.length > 0 ? (
+                <div className="flex-shrink-0 grid grid-cols-2 gap-1 w-32">
+                  <img src={room.photo_urls[0]} alt={room.name}
+                    className="col-span-2 w-full h-16 object-cover rounded-lg" loading="lazy" />
+                  {room.photo_urls[1] && (
+                    <img src={room.photo_urls[1]} alt=""
+                      className="w-full h-12 object-cover rounded-lg" loading="lazy" />
+                  )}
+                  <div className="relative">
+                    {room.photo_urls[2] && (
+                      <img src={room.photo_urls[2]} alt=""
+                        className="w-full h-12 object-cover rounded-lg" loading="lazy" />
+                    )}
+                    {room.photo_urls.length > 3 && (
+                      <div className="absolute inset-0 bg-black/60 rounded-lg flex items-center justify-center text-white text-[10px] font-bold">
+                        +{room.photo_urls.length - 3}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-shrink-0 w-32 h-28 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-300">
+                  <Camera size={20} />
+                  <span className="text-[9px] mt-1">No photos</span>
+                </div>
+              )}
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
                   <h3 className="font-bold text-deep">{room.name}</h3>
                   <Badge variant={room.is_active ? 'green' : 'gray'}>
                     {room.is_active ? t('manage.active', 'Active') : t('manage.inactive', 'Inactive')}
                   </Badge>
-                  <Badge variant="blue" className="capitalize">{room.type}</Badge>
+                  <Badge variant="blue">{prettyLabel(room.type)}</Badge>
+                  {room.video_urls && room.video_urls.length > 0 && (
+                    <Badge variant="orange">
+                      <Video size={10} className="inline mr-1" />
+                      {room.video_urls.length}
+                    </Badge>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-4 text-sm text-gray-500 mt-2">
-                  <span className="flex items-center gap-1"><BedDouble size={14} /> {room.bed_type}</span>
+                  <span className="flex items-center gap-1"><BedDouble size={14} /> {prettyLabel(room.bed_type)}</span>
                   <span className="flex items-center gap-1"><Users size={14} /> {room.max_guests} guests</span>
                   <span className="flex items-center gap-1"><DollarSign size={14} /> ${Number(room.base_price).toFixed(0)}/night</span>
                   <span>x{room.quantity} {t('manage.available', 'available')}</span>
                 </div>
                 {room.amenities && room.amenities.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {room.amenities.map(a => (
-                      <span key={a} className="text-xs bg-libre/10 text-libre px-2 py-0.5 rounded-full capitalize">{a}</span>
+                    {room.amenities.slice(0, 6).map(a => (
+                      <span key={a} className="text-xs bg-libre/10 text-libre px-2 py-0.5 rounded-full">{prettyLabel(a)}</span>
                     ))}
+                    {room.amenities.length > 6 && (
+                      <span className="text-xs text-gray-400 px-2 py-0.5">+{room.amenities.length - 6} more</span>
+                    )}
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <button onClick={() => toggleActive(room)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600" title={room.is_active ? 'Deactivate' : 'Activate'}>
                   {room.is_active ? <Ban size={16} /> : <Check size={16} />}
                 </button>
-                <button onClick={() => openEdit(room)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-ocean">
+                <button onClick={() => openEdit(room)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-ocean" title="Edit room & manage media">
                   <Pencil size={16} />
                 </button>
                 <button onClick={() => handleDelete(room.id)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-sunset">
@@ -786,14 +918,14 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
               <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.room_type', 'Room Type')}</label>
               <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
-                {ROOM_TYPES.map(rt => <option key={rt} value={rt} className="capitalize">{rt}</option>)}
+                {ROOM_TYPES.map(rt => <option key={rt} value={rt}>{prettyLabel(rt)}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.bed_type', 'Bed Type')}</label>
               <select value={form.bed_type} onChange={e => setForm(f => ({ ...f, bed_type: e.target.value }))}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
-                {BED_TYPES.map(bt => <option key={bt} value={bt} className="capitalize">{bt}</option>)}
+                {BED_TYPES.map(bt => <option key={bt} value={bt}>{prettyLabel(bt)}</option>)}
               </select>
             </div>
             <div>
@@ -818,23 +950,30 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
               />
             </div>
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-2">{t('manage.amenities', 'Amenities')}</label>
-              <div className="flex flex-wrap gap-2">
-                {AMENITY_OPTIONS.map(a => (
-                  <button key={a.key} onClick={() => toggleAmenity(a.key)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-all ${
-                      form.amenities.includes(a.key)
-                        ? 'bg-libre/10 border-libre/30 text-libre font-medium'
-                        : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
-                    }`}>
-                    {a.icon && <a.icon size={14} />}
-                    <span className="capitalize">{a.label}</span>
-                  </button>
-                ))}
-              </div>
+            {/* Amenities — categorised. Click anywhere to toggle. */}
+            <div className="sm:col-span-2 space-y-4">
+              <label className="block text-xs font-medium text-gray-500">{t('manage.amenities', 'Amenities')}</label>
+              {AMENITY_CATEGORIES.map(cat => (
+                <div key={cat.key}>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">{cat.label}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {cat.items.map(a => (
+                      <button key={a.key} type="button" onClick={() => toggleAmenity(a.key)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-all ${
+                          form.amenities.includes(a.key)
+                            ? 'bg-libre/10 border-libre/30 text-libre font-medium'
+                            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                        }`}>
+                        {a.icon && <a.icon size={14} />}
+                        <span>{a.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+
           <div className="flex items-center gap-3 mt-6">
             <Button onClick={handleSave} disabled={saving || !form.name.trim() || !form.base_price}>
               {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
@@ -844,7 +983,228 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
               {t('common.cancel', 'Cancel')}
             </Button>
           </div>
+
+          {/* ── Media (only for existing rooms — needs an id to upload) ── */}
+          {editingRoom ? (
+            <div className="mt-8 pt-6 border-t border-gray-200 space-y-6">
+              <RoomMediaUploader
+                kind="photo"
+                room={editingRoom}
+                propertyId={propertyId}
+                onChange={() => refreshRoomMedia(editingRoom.id)}
+              />
+              <RoomMediaUploader
+                kind="video"
+                room={editingRoom}
+                propertyId={propertyId}
+                onChange={() => refreshRoomMedia(editingRoom.id)}
+              />
+            </div>
+          ) : (
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-xs text-gray-400 italic">
+                💡 {t('manage.media_after_save', 'Save the room first, then re-open it to upload photos and videos for this specific room type.')}
+              </p>
+            </div>
+          )}
         </Card>
+      )}
+    </div>
+  )
+}
+
+// ============================================
+// ROOM MEDIA UPLOADER — used inside the Edit Room form
+// ============================================
+// Handles either photos or videos depending on `kind`. Uploads land in the
+// existing buckets under properties/<property_id>/rooms/<room_id>/<file>.
+// Same RLS policies as property-level media (path prefix is still
+// 'properties' so the simplified policy passes).
+//
+// Same UX patterns as the property-level PhotosTab/VideosTab:
+//   - cover/hero badge on first
+//   - Set cover + Delete on hover
+//   - explicit error reporting (no silent failures)
+//   - file-type and size validation client-side
+// ============================================
+function RoomMediaUploader({ kind, room, propertyId, onChange }) {
+  const isPhoto = kind === 'photo'
+  const bucket = isPhoto ? 'property-photos' : 'property-videos'
+  const dbColumn = isPhoto ? 'photo_urls' : 'video_urls'
+  const accept = isPhoto
+    ? 'image/jpeg,image/png,image/webp'
+    : 'video/mp4,video/quicktime,video/webm'
+  const maxSize = isPhoto ? 5 * 1024 * 1024 : 50 * 1024 * 1024
+  const maxCount = isPhoto ? 10 : 2
+  const allowedTypes = isPhoto
+    ? ['image/jpeg', 'image/png', 'image/webp']
+    : ['video/mp4', 'video/quicktime', 'video/webm']
+
+  const [items, setItems] = useState(room[dbColumn] || [])
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
+  const [progress, setProgress] = useState({ done: 0, total: 0 })
+
+  async function handleUpload(e) {
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
+    setError('')
+
+    if (items.length + files.length > maxCount) {
+      setError(`Maximum ${maxCount} ${kind}${maxCount > 1 ? 's' : ''} per room. You have ${items.length}.`)
+      return
+    }
+    const oversized = files.find(f => f.size > maxSize)
+    if (oversized) {
+      const sizeMB = (oversized.size / (1024 * 1024)).toFixed(1)
+      setError(`"${oversized.name}" is ${sizeMB} MB — max ${maxSize / (1024 * 1024)} MB per ${kind}.`)
+      return
+    }
+    const wrongType = files.find(f => !allowedTypes.includes(f.type))
+    if (wrongType) {
+      setError(`"${wrongType.name}" is not a supported format.`)
+      return
+    }
+
+    setUploading(true)
+    setProgress({ done: 0, total: files.length })
+    const newUrls = []
+    const failures = []
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const ext = file.name.split('.').pop()
+      const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const path = `properties/${propertyId}/rooms/${room.id}/${filename}`
+      const { error: upErr } = await supabase.storage.from(bucket).upload(path, file, { contentType: file.type })
+      if (upErr) {
+        console.error(`${kind} upload failed for ${file.name}:`, upErr)
+        failures.push(`${file.name}: ${upErr.message}`)
+      } else {
+        const { data } = supabase.storage.from(bucket).getPublicUrl(path)
+        newUrls.push(data.publicUrl)
+      }
+      setProgress({ done: i + 1, total: files.length })
+    }
+
+    if (newUrls.length) {
+      const merged = [...items, ...newUrls]
+      const { error: dbErr } = await supabase.from('rooms').update({ [dbColumn]: merged }).eq('id', room.id)
+      if (dbErr) setError(`Uploaded but DB update failed: ${dbErr.message}`)
+      else {
+        setItems(merged)
+        onChange?.()
+      }
+    }
+    if (failures.length) {
+      setError(`${failures.length} ${kind}${failures.length > 1 ? 's' : ''} failed:\n${failures.join('\n')}`)
+    }
+    setUploading(false)
+    setProgress({ done: 0, total: 0 })
+    if (e.target) e.target.value = ''
+  }
+
+  async function handleDelete(idx) {
+    if (!confirm(`Remove this ${kind}?`)) return
+    const url = items[idx]
+    const next = items.filter((_, i) => i !== idx)
+    try {
+      const pathInBucket = url.split(`/${bucket}/`)[1]
+      if (pathInBucket) await supabase.storage.from(bucket).remove([pathInBucket])
+    } catch (e) { console.warn('Storage delete failed:', e) }
+    const { error: dbErr } = await supabase.from('rooms').update({ [dbColumn]: next }).eq('id', room.id)
+    if (dbErr) { setError(dbErr.message); return }
+    setItems(next)
+    onChange?.()
+  }
+
+  async function handleSetCover(idx) {
+    if (idx === 0) return
+    const reordered = [items[idx], ...items.filter((_, i) => i !== idx)]
+    const { error: dbErr } = await supabase.from('rooms').update({ [dbColumn]: reordered }).eq('id', room.id)
+    if (dbErr) { setError(dbErr.message); return }
+    setItems(reordered)
+    onChange?.()
+  }
+
+  const Icon = isPhoto ? Camera : Video
+  const sectionLabel = isPhoto ? 'Room Photos' : 'Room Videos'
+  const subtitle = isPhoto
+    ? 'Upload photos specific to this room type. First photo is the cover.'
+    : 'Optional. 1-2 short videos showcasing this specific room.'
+
+  return (
+    <div>
+      <div className="flex items-start justify-between mb-3 gap-3 flex-wrap">
+        <div>
+          <h4 className="font-bold text-deep flex items-center gap-2">
+            <Icon size={16} className="text-ocean" />
+            {sectionLabel}
+            <span className="text-xs font-normal text-gray-400">
+              ({items.length}/{maxCount})
+            </span>
+          </h4>
+          <p className="text-[11px] text-gray-500 mt-0.5">{subtitle}</p>
+        </div>
+        {items.length < maxCount && (
+          <label className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg font-medium text-xs cursor-pointer transition-all ${
+            uploading ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-ocean text-white hover:bg-ocean/90'
+          }`}>
+            <Upload size={12} />
+            {uploading ? `${progress.done}/${progress.total}…` : `Upload ${kind}${maxCount > 1 ? 's' : ''}`}
+            <input type="file" multiple={isPhoto} accept={accept} onChange={handleUpload} disabled={uploading} className="hidden" />
+          </label>
+        )}
+      </div>
+
+      {error && (
+        <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded text-xs text-red-700 whitespace-pre-line flex items-start gap-2">
+          <AlertCircle size={14} className="flex-shrink-0 mt-0.5" /><span>{error}</span>
+        </div>
+      )}
+
+      {items.length === 0 ? (
+        <div className="border border-dashed border-gray-200 rounded-lg p-6 text-center text-xs text-gray-400">
+          <Icon size={24} className="mx-auto mb-2 opacity-50" />
+          No {kind}s yet for this room.
+        </div>
+      ) : (
+        <div className={`grid gap-2 ${isPhoto ? 'grid-cols-3 sm:grid-cols-4 md:grid-cols-5' : 'grid-cols-1 sm:grid-cols-2'}`}>
+          {items.map((url, idx) => (
+            <div key={url + idx} className="relative rounded-lg overflow-hidden bg-gray-100 group">
+              {isPhoto ? (
+                <img src={url} alt="" className="w-full aspect-square object-cover" loading="lazy" />
+              ) : (
+                <video src={url} controls playsInline preload="metadata"
+                  className="w-full aspect-video object-contain bg-black" />
+              )}
+              {idx === 0 && (
+                <span className="absolute top-1 left-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-deep/85 text-white pointer-events-none">
+                  {isPhoto ? 'Cover' : 'Hero'}
+                </span>
+              )}
+              <div className={`absolute inset-0 ${isPhoto ? 'bg-black/0 group-hover:bg-black/40 opacity-0 group-hover:opacity-100' : 'pointer-events-none'} transition-all flex items-end justify-end p-1 gap-1`}>
+                {idx !== 0 && isPhoto && (
+                  <button onClick={() => handleSetCover(idx)} type="button"
+                    className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-white text-deep hover:bg-gray-100 cursor-pointer pointer-events-auto">
+                    Set cover
+                  </button>
+                )}
+                <button onClick={() => handleDelete(idx)} type="button"
+                  className="p-1 rounded bg-red-500 text-white hover:bg-red-600 cursor-pointer pointer-events-auto">
+                  <Trash2 size={10} />
+                </button>
+              </div>
+              {/* Video controls overlay (always visible for videos since their hover is the play button) */}
+              {!isPhoto && idx !== 0 && (
+                <button onClick={() => handleSetCover(idx)} type="button"
+                  className="absolute top-1 right-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-white/90 text-deep hover:bg-white cursor-pointer pointer-events-auto">
+                  Set hero
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
       )}
     </div>
   )

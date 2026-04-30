@@ -133,6 +133,9 @@ export default function PropertyDetail() {
     sqm: 25,
     amenities: r.amenities || ['wifi'],
     desc: r.description || '',
+    // Real room media (V2 — added in 20260430050000)
+    photos: r.photo_urls || [],
+    videos: r.video_urls || [],
   }))
 
   const lowestRoom = rooms.length > 0 ? rooms.reduce((a, b) => a.price < b.price ? a : b) : null
@@ -376,6 +379,31 @@ export default function PropertyDetail() {
                         {idx === 0 && (
                           <div className="bg-[#008009] text-white px-4 py-1.5 text-xs font-bold flex items-center gap-1.5">
                             <Flame size={12} /> {t('booking.best_deal', 'Best deal — Save')} {savingsPercent}% {t('booking.vs_ota', 'vs. other platforms')}
+                          </div>
+                        )}
+
+                        {/* Room media — photo strip + optional video */}
+                        {(room.photos.length > 0 || room.videos.length > 0) && (
+                          <div className="bg-gray-100 p-2 flex gap-2 overflow-x-auto">
+                            {room.videos[0] && (
+                              <video
+                                src={room.videos[0]}
+                                controls
+                                playsInline
+                                preload="metadata"
+                                poster={room.photos[0]}
+                                className="h-32 sm:h-40 rounded flex-shrink-0 bg-black"
+                              />
+                            )}
+                            {room.photos.map((url, i) => (
+                              <img
+                                key={url + i}
+                                src={url}
+                                alt={`${room.name} ${i + 1}`}
+                                className="h-32 sm:h-40 rounded object-cover flex-shrink-0"
+                                loading="lazy"
+                              />
+                            ))}
                           </div>
                         )}
 
