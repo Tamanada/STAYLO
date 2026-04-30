@@ -7,7 +7,6 @@
     "types": "Hotel · Guesthouse · Hostel · Resort · Bungalow",
     "license_note": "Dengan izin usaha Thailand yang valid (terdaftar di TAT / DBD)",
     "cta": "Daftarkan Properti Saya →",
-
     "right_now_badge": "Mulai Sekarang",
     "right_now_title": "Inilah yang bisa Anda lakukan sekarang",
     "step1_number": "Langkah 1",
@@ -22,7 +21,6 @@
     "step4_number": "Langkah 4",
     "step4_title": "Ajak sesama pelaku perhotelan",
     "step4_desc": "Bagikan tautan referral Anda. Dapatkan komisi seumur hidup 2% untuk setiap hotel yang Anda bawa.",
-
     "next_badge": "Peta Jalan",
     "next_title": "Apa yang terjadi selanjutnya?",
     "timeline_now_label": "SEKARANG",
@@ -31,7 +29,6 @@
     "timeline_build_desc": "Kami membangun mesin pemesanan",
     "timeline_launch_label": "PELUNCURAN",
     "timeline_launch_desc": "Hotel Anda tayang di Staylo dengan komisi 10% — selamanya",
-
     "why_badge": "Kenapa pulau ini?",
     "why_title": "Kenapa Koh Phangan Duluan",
     "why_subtitle": "Landasan peluncuran sempurna untuk revolusi perhotelan.",
@@ -44,7 +41,6 @@
     "why_stat3_number": "Bersatu",
     "why_stat3_title": "Komunitas Siap",
     "why_stat3_desc": "Pelaku perhotelan independen yang saling mengenal, saling percaya, dan siap memiliki masa depan bersama.",
-
     "deal_badge": "Penawaran",
     "deal_title": "Yang Didapat Mitra Putaran 1",
     "deal_subtitle": "Ketentuan eksklusif. Tidak pernah ditawarkan lagi dengan harga ini.",
@@ -63,7 +59,6 @@
     "deal_founding": "Mitra Pendiri",
     "deal_founding_sub": "Status — selamanya",
     "deal_limited": "Hanya 3.000 saham alpha tersedia",
-
     "who_title": "Siapa yang Bisa Mendaftar",
     "who_subtitle": "Putaran 1 bersifat eksklusif. Berikut persyaratannya.",
     "who_eligible1": "Akomodasi terdaftar di Koh Phangan",
@@ -74,7 +69,6 @@
     "who_ineligible1_note": "Hadir di Putaran 2",
     "who_ineligible2": "Properti di luar Koh Phangan",
     "who_ineligible2_note": "Hadir di Putaran 2",
-
     "clock_badge": "Ketersediaan Terbatas",
     "clock_title": "Waktu Terus Berjalan",
     "clock_author": "— Gandhi",
@@ -82,7 +76,6 @@
     "clock_label": "Mitra Pendiri",
     "clock_pct": "{{pct}}% terisi",
     "clock_warning": "Setelah Putaran 1 ditutup, harga saham naik ke $1.500",
-
     "bottom_title": "Anda pelaku perhotelan di Koh Phangan?",
     "bottom_subtitle": "Daftar sekarang. Gratis, 2 menit, tanpa komitmen apa pun.",
     "bottom_cta": "Daftarkan Properti Saya",
@@ -97,7 +90,9 @@
     "login": "Masuk",
     "register": "Gabung Sekarang",
     "logout": "Keluar",
-    "language": "Bahasa"
+    "language": "Bahasa",
+    "book": "Pesan",
+    "contact": "Kontak"
   },
   "hero": {
     "badge": "Alpha — Khusus Anggota Pendiri",
@@ -119,9 +114,19 @@
     "title": "Mereka memungut 25%. Kami hanya 10%.",
     "subtitle": "Lihat ke mana uang Anda sebenarnya pergi.",
     "card1_title": "OTA Tradisional",
-    "card1_items": ["Komisi 15–25% untuk setiap pemesanan", "Tidak ada kontrol atas harga Anda", "Tamu Anda, data mereka", "Anda bayar lebih, mereka untung lebih"],
+    "card1_items": [
+      "Komisi 15–25% untuk setiap pemesanan",
+      "Tidak ada kontrol atas harga Anda",
+      "Tamu Anda, data mereka",
+      "Anda bayar lebih, mereka untung lebih"
+    ],
     "card2_title": "Dengan Staylo",
-    "card2_items": ["Komisi tetap 10% — terkunci selamanya", "Kontrol penuh atas tarif dan aturan Anda", "Tamu Anda, data Anda, merek Anda", "Pendapatan dibagikan kembali ke komunitas"],
+    "card2_items": [
+      "Komisi tetap 10% — terkunci selamanya",
+      "Kontrol penuh atas tarif dan aturan Anda",
+      "Tamu Anda, data Anda, merek Anda",
+      "Pendapatan dibagikan kembali ke komunitas"
+    ],
     "verdict": "Tamu yang sama. Pemesanan yang sama. Tapi kali ini, ANDA yang menikmati keuntungannya."
   },
   "commission": {
@@ -152,7 +157,12 @@
     "subtitle": "OTA tradisional mengambil uang, data, dan kemandirian Anda. Saatnya membebaskan diri.",
     "old_way": "Cara lama",
     "old_way_sub": "Rugi di setiap pemesanan",
-    "old_pains": ["Aturan paritas harga", "Biaya tersembunyi", "Tidak ada kontrol merek", "Pembayaran terlambat"],
+    "old_pains": [
+      "Aturan paritas harga",
+      "Biaya tersembunyi",
+      "Tidak ada kontrol merek",
+      "Pembayaran terlambat"
+    ],
     "new_way": "Cara Staylo",
     "new_way_sub": "Miliki kembali bisnis Anda",
     "feat1_title": "Komisi tetap 10%",
@@ -311,7 +321,8 @@
       "booking_engine": "Mesin Pemesanan Langsung",
       "channel_manager": "Channel Manager",
       "revenue_share": "Dasbor Bagi Hasil",
-      "guest_reviews": "Ulasan Tamu"
+      "guest_reviews": "Ulasan Tamu",
+      "mobile_app": "Aplikasi Mobile"
     },
     "founding_position": "Anggota Pendiri #{{position}}",
     "founding_partner_status": "Status Mitra Pendiri",
@@ -336,7 +347,7 @@
       "builder": "Pembangun — 2.000 Teratas",
       "member": "Anggota"
     },
-    "share_title": "\uD83C\uDF34 Bagikan kepada teman-teman pelaku perhotelan Anda di Koh Phangan!",
+    "share_title": "🌴 Bagikan kepada teman-teman pelaku perhotelan Anda di Koh Phangan!",
     "share_subtitle": "Setiap teman yang bergabung meningkatkan peringkat Anda sebagai Mitra Pendiri. Bantu kami membangun komunitas!",
     "referred_count": "Anda telah mereferensikan {{count}} pelaku perhotelan",
     "referred_zero": "Anda telah mereferensikan 0 pelaku perhotelan — jadilah yang pertama berbagi!",
@@ -347,7 +358,7 @@
     "facebook": "Facebook",
     "copy_link": "Salin Tautan",
     "copied": "Tersalin!",
-    "wa_hotelier_msg": "Hai! Saya baru saja bergabung dengan Staylo — platform pemesanan baru di mana pelaku perhotelan hanya membayar komisi 10% alih-alih 22% di Booking.com. Kami benar-benar MEMILIKI platformnya! \uD83C\uDF34 Cek di sini: {{link}}",
+    "wa_hotelier_msg": "Hai! Saya baru saja bergabung dengan Staylo — platform pemesanan baru di mana pelaku perhotelan hanya membayar komisi 10% alih-alih 22% di Booking.com. Kami benar-benar MEMILIKI platformnya! 🌴 Cek di sini: {{link}}",
     "wa_ambassador_msg": "Hai! Saya di Staylo dan mencari duta. Dapatkan 2% penghasilan pasif seumur hidup dari setiap hotel yang Anda bawa ke platform. Bergabung di sini: {{link}}",
     "show_qr": "Tampilkan Kode QR",
     "hide_qr": "Sembunyikan Kode QR",
@@ -406,7 +417,6 @@
     "cta_title": "Jadilah bagian dari masa depan",
     "cta_button": "Jadi Anggota Pendiri",
     "cta_subtitle": "Bergabung dengan {{count}}+ pelaku perhotelan yang mengambil kembali kendali bisnis mereka.",
-
     "structure_title": "Struktur Staylo",
     "structure_subtitle": "Platform yang dibangun, dimiliki, dan dikelola oleh orang-orang yang menggunakannya.",
     "structure_coop_title": "Model Koperasi",
@@ -415,7 +425,6 @@
     "structure_vote_desc": "Tata kelola bersifat demokratis. Baik Anda memiliki 1 saham atau 10, properti Anda mendapat satu suara yang setara dalam semua keputusan platform.",
     "structure_transfer_title": "Saham yang Dapat Dipindahtangankan",
     "structure_transfer_desc": "Saham dapat dipindahtangankan secara bebas. Hak suara tetap pada pendaftaran properti yang aktif, bukan pada saham itu sendiri.",
-
     "share_sale_title": "Alpha Share Whitelisting",
     "share_sale_subtitle": "Fase Alpha — Khusus Mitra Pendiri. Terbatas 3.000 saham.",
     "shares_claimed": "saham alpha telah diklaim",
@@ -429,7 +438,6 @@
     "per_share_alpha": "Per saham (alpha)",
     "shares_per_property": "Saham per properti",
     "commission_forever": "Komisi — selamanya",
-
     "revenue_distribution_title": "Ke Mana Uang Mengalir",
     "revenue_distribution_subtitle": "Transparansi penuh. Setiap dolar tercatat.",
     "traditional_otas": "OTA Tradisional",
@@ -447,7 +455,6 @@
     "breakdown_growth_desc": "Akuisisi wisatawan, SEO, kemitraan",
     "breakdown_reserve": "Dana Cadangan",
     "breakdown_reserve_desc": "Dana darurat dan pengembangan masa depan",
-
     "ambassador_badge": "Baru",
     "ambassador_title": "Jadilah Ambassador Staylo",
     "ambassador_subtitle": "Anda menginap di hotel di Staylo. Anda menyukai pengalamannya. Sekarang Anda bisa mendapat penghasilan dari itu — selamanya.",
@@ -475,7 +482,6 @@
     "example_lifetime": "Per tahun, seumur hidup",
     "example_passive": "Pasif",
     "example_disclaimer": "Berdasarkan 20 kamar × $60/malam × 365 hari × 100% tingkat pemesanan online. Hasil aktual dapat bervariasi.",
-
     "fund_title": "Ke Mana Investasi Anda Mengalir",
     "fund_subtitle": "Setiap dolar yang diinvestasikan di Staylo mendanai platform yang menggantikan ketergantungan OTA Anda.",
     "fund_tech": "Teknologi",
@@ -486,14 +492,36 @@
     "fund_team_desc": "Teknik, dukungan, pengembangan bisnis, operasional",
     "fund_legal": "Hukum & Kepatuhan",
     "fund_legal_desc": "Pendaftaran perusahaan, kontrak, lisensi, asuransi",
-
     "founder_badge": "Sang Pendiri",
     "founder_role": "Pendiri STAYLO",
     "founder_bio1": "Pengusaha perhotelan Prancis yang berbasis di Koh Phangan, Thailand, dengan pengalaman hampir 40 tahun di bidang restoran, bar, layanan mewah, pariwisata, dan pengembangan bisnis perhotelan.",
     "founder_bio2": "Setelah bekerja secara internasional di Prancis, Monaco, Abu Dhabi, Moskow, dan Thailand — serta mendirikan beberapa bisnis perhotelan — David memahami secara langsung tantangan yang dihadapi operator independen.",
     "founder_bio3": "Setelah bertahun-tahun menyaksikan hotel kehilangan kendali, margin, dan pengaruh terhadap platform pemesanan berkomisi tinggi, ia menciptakan STAYLO dengan satu misi yang jelas:",
     "founder_quote": "Mengembalikan kendali kepada mereka yang menjadi tuan rumah.",
-    "founder_belief": "STAYLO dibangun atas keyakinan bahwa hotel independen layak mendapatkan platform yang lebih adil, lebih menghargai, dan dirancang untuk kepentingan mereka — bukan melawan mereka."
+    "founder_belief": "STAYLO dibangun atas keyakinan bahwa hotel independen layak mendapatkan platform yang lebih adil, lebih menghargai, dan dirancang untuk kepentingan mereka — bukan melawan mereka.",
+    "btc_badge": "Bitcoin-Native",
+    "btc_title": "Bitcoin sebagai Inti",
+    "btc_subtitle": "Staylo adalah platform koperasi Bitcoin-native. BTC sebagai jalur pembayaran, cadangan kas, dan mata uang investasi.",
+    "btc_payment_title": "BTC sebagai Jalur Pembayaran",
+    "btc_payment_desc": "Pelancong membayar dengan kartu, PayPal, transfer bank — atau Bitcoin via Lightning Network. Pengelola hotel menerima THB, USD, EUR, atau BTC. Pilihan mereka.",
+    "btc_treasury_title": "BTC sebagai Cadangan Kas",
+    "btc_treasury_desc": "20% dari SEMUA modal yang terkumpul masuk ke cadangan Bitcoin permanen. Ditulis dalam anggaran perusahaan. Perlu 90% suara pemegang saham untuk mengubahnya. Pada skala penuh: $149,7 juta dalam BTC. Tidak pernah dijual.",
+    "btc_investment_title": "BTC sebagai Mata Uang Investasi",
+    "btc_investment_desc": "Founding Partners membeli saham DENGAN Bitcoin. $1.000 dalam BTC = 1 saham Alpha. Dividen tahunan dapat ditarik dalam BTC.",
+    "btc_stat1": "Pemesanan hotel dibayar dengan kripto pada 2027",
+    "btc_stat2": "Nilai pemesanan lebih tinggi dibanding fiat",
+    "btc_stat3": "LTV pelanggan lebih tinggi",
+    "btc_stat4": "Dari semua transaksi kripto = perjalanan",
+    "btc_sources": "Sumber: CoinsPaid, Triple-A, Travala, PhocusWire",
+    "capital_table_title": "Penggunaan Modal Alpha — $3 juta",
+    "capital_btc": "₿ Cadangan Bitcoin",
+    "capital_acquisitions": "Akuisisi — Hotel Unggulan KP",
+    "capital_tech": "Produk & Teknologi",
+    "capital_operations": "Cadangan Operasional",
+    "capital_marketing": "Pemasaran & Hukum",
+    "capital_note": "Akuisisi = penandatanganan 100 hotel unggulan KP sebelum M06. Komisi = 10% pendapatan per pemesanan (terpisah).",
+    "phase_wallet": "Dompet BTC",
+    "phase_wallet_desc": "Dompet bawaan dengan Lightning Network. Isi dengan BTC, USDT, atau kartu. Bayar pemesanan, ambil dividen, dapatkan referral."
   },
   "footer": {
     "tagline": "Pesan segalanya. Miliki pengalamannya.",
@@ -607,7 +635,12 @@
     "your_stay": "Penginapan Anda",
     "rooms_available": "Kamar tersedia",
     "guarantee_title": "Jaminan STAYLO",
-    "guarantee_desc": "Hanya 10% komisi — tanpa biaya tersembunyi. Anda memesan langsung dengan hotel."
+    "guarantee_desc": "Hanya 10% komisi — tanpa biaya tersembunyi. Anda memesan langsung dengan hotel.",
+    "deal_title": "Pengelola hotel menetapkan harga. STAYLO mengambil 10%. Selesai.",
+    "deal_desc": "Di OTA, komisi 15–25% jatuh ke perantara. Di STAYLO, selisihnya kembali ke hotel — di tempat seharusnya.",
+    "staylo_advantage": "Keramahan yang Adil — komisi hanya 10%",
+    "advantage_desc": "Pengelola hotel adalah satu-satunya penentu harga. STAYLO hanya menyimpan komisi 10% — selisihnya (vs 15–25% di OTA) kembali ke hotel, bukan ke perantara.",
+    "limited": "Harga yang Adil"
   },
   "checkout": {
     "title": "Selesaikan Pemesanan Anda",
@@ -667,7 +700,12 @@
     "check_out": "Check-out",
     "guests": "tamu",
     "confirm": "Konfirmasi",
-    "mark_completed": "Tandai Selesai"
+    "mark_completed": "Tandai Selesai",
+    "confirm_delete_property": "Hapus \"{{name}}\"? Semua kamar, ketersediaan, dan pemesanan untuk properti ini akan dihapus permanen.",
+    "delete_error": "Gagal menghapus properti. Silakan coba lagi atau hubungi dukungan.",
+    "stop": "Berhenti",
+    "go_live": "Tayangkan",
+    "delete": "Hapus"
   },
   "ambassador_register": {
     "title": "Menjadi Ambassador Staylo",
@@ -924,7 +962,7 @@
     "title_1": "Pesan dengan ",
     "title_highlight": "tujuan.",
     "title_2": "Bepergian dengan jiwa.",
-    "subtitle": "Setiap pemesanan di Staylo kembali ke pelaku perhotelan yang membangunnya. Kepemilikan bersama. Komisi 10%. Milik Anda selamanya.",
+    "subtitle": "Setiap pemesanan di Staylo kembali ke pengelola hotel yang membangunnya. Dimiliki bersama oleh pengelola hotel di seluruh dunia. Komisi 10% selamanya… dan lebih banyak lagi.",
     "search_placeholder": "Di mana Anda ingin menginap?",
     "search_button": "Cari",
     "filter_all": "Semua",
@@ -994,15 +1032,49 @@
   },
   "home_how": {
     "label": "Cara kerjanya",
-    "title_1": "Pesan.",
-    "title_2": "Hasilkan.",
-    "title_3": "Dampak.",
-    "step1_title": "Pesan penginapan Anda",
-    "step1_desc": "Cari, bandingkan, dan pesan hotel dengan komisi paling adil di pasar. Hotel hebat yang sama, harga lebih baik.",
-    "step2_title": "Dapatkan token $STAY",
-    "step2_desc": "Setiap malam yang dipesan menghasilkan token $STAY. Gunakan untuk diskon, voting keputusan platform, atau perdagangan.",
-    "step3_title": "Dukung pemilik hotel",
-    "step3_desc": "Pemesanan Anda langsung mendukung pemilik hotel independen. 90% tetap di hotel. Tanpa perantara mengambil 25%."
+    "title": "Dua sisi, satu platform yang adil",
+    "subtitle": "STAYLO dibangun untuk dua audiens — pelancong yang memesan penginapan dan pengelola hotel yang menyediakannya. Keduanya menang, dan keduanya bisa menjadi pemilik bersama.",
+    "footer": "Dibangun bersama pengelola hotel, untuk pengelola hotel. Sendirian, mustahil. Bersama, kita tak terbendung.",
+    "for_travelers": "Untuk pelancong",
+    "for_hoteliers": "Untuk pengelola hotel",
+    "cta_book": "Cari penginapan",
+    "cta_list": "Daftarkan hotel Anda",
+    "tr_step1_title": "Cari penginapan Anda",
+    "tr_step1_desc": "Cari dan pesan hotel dengan komisi paling adil di pasaran.",
+    "tr_step1_hl": "Harga terbaik",
+    "tr_step1_b1": "Hotel yang sama dengan Booking & Agoda",
+    "tr_step1_b2": "Hingga 15% lebih murah",
+    "tr_step1_b3": "Tanpa biaya tersembunyi",
+    "tr_step2_title": "Dapatkan token $STAY",
+    "tr_step2_desc": "Setiap malam yang Anda pesan menghasilkan token $STAY — untuk dipakai, divoting, atau diperdagangkan.",
+    "tr_step2_hl": "Token gratis",
+    "tr_step2_b1": "Diskon untuk penginapan berikutnya",
+    "tr_step2_b2": "Vote pada keputusan platform",
+    "tr_step2_b3": "Bisa diperdagangkan di Solana",
+    "tr_step3_title": "Jadi Ambassador",
+    "tr_step3_desc": "Rekomendasikan hotel ke STAYLO dan dapatkan Bitcoin pada setiap pemesanan yang mereka terima — seumur hidup.",
+    "tr_step3_hl": "2% BTC · seumur hidup",
+    "tr_step3_b1": "Rekomendasikan hotel kesayangan Anda",
+    "tr_step3_b2": "Hasilkan dari setiap pemesanan, selamanya",
+    "tr_step3_b3": "Dibayar dalam Bitcoin via Lightning",
+    "ho_step1_title": "Daftarkan hotel Anda — gratis",
+    "ho_step1_desc": "Daftar dalam 15 menit. Listing gratis. Tidak perlu eksklusivitas.",
+    "ho_step1_hl": "GRATIS · 15 mnt",
+    "ho_step1_b1": "Listing gratis, selamanya",
+    "ho_step1_b2": "Tanpa kontrak eksklusivitas",
+    "ho_step1_b3": "Tetap pakai Booking & Airbnb bersamaan",
+    "ho_step2_title": "Simpan 90% dari setiap pemesanan",
+    "ho_step2_desc": "Komisi 10%, kontraktual, dikunci seumur hidup. Dibayar dalam 1 jam setelah check-out.",
+    "ho_step2_hl": "10% · dikunci seumur hidup",
+    "ho_step2_b1": "Kontraktual — tanpa kenaikan mendadak",
+    "ho_step2_b2": "Dibayar dalam 1 jam, bukan 45 hari",
+    "ho_step2_b3": "Tanpa biaya tersembunyi, tanpa surge pricing",
+    "ho_step3_title": "Jadi pemilik bersama",
+    "ho_step3_desc": "Beli saham Founding Partner dan jadi pemilik bersama platform yang sesungguhnya.",
+    "ho_step3_hl": "$1.000 · 1 saham",
+    "ho_step3_b1": "1 vote pada keputusan platform",
+    "ho_step3_b2": "20% laba bersih sebagai dividen",
+    "ho_step3_b3": "Token $STAY didapat per malam yang dihosting"
   },
   "home_testimonials": {
     "section_label": "Testimoni",
