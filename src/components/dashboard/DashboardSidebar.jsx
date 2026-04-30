@@ -1,14 +1,29 @@
-import { useState } from 'react'
+// ============================================
+// DashboardSidebar — adaptive based on user state
+// ============================================
+// V2 (2026-04-30): sidebar items now appear based on what the user
+// actually owns, not a hardcoded one-size-fits-all menu.
+//
+//   - Always visible: Overview, My Trips (bookings), Referrals
+//   - Hosting section: only if user has ≥1 property (My Properties + PMS + Banking)
+//   - Investor section: only if user has ≥1 share (My Shares + My Kit)
+//   - "Become a host" CTA: shown to users with no properties yet
+//
+// This matches the Airbnb pattern — hosting tools only appear once
+// you've listed something. Avoids overwhelming a fresh signup who
+// just wanted to book a room.
+// ============================================
+import { useState, useEffect } from 'react'
 import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
+import { supabase } from '../../lib/supabase'
 import {
   LayoutDashboard,
   Building2,
   Share2,
   Gem,
   Package,
-  Search,
   ArrowLeft,
   LogOut,
   Menu,
@@ -19,22 +34,53 @@ import {
   BarChart3,
   Luggage,
   Banknote,
-  Shield
+  Shield,
+  PlusCircle
 } from 'lucide-react'
 
-const navItems = [
-  { to: '/dashboard', icon: LayoutDashboard, labelKey: 'dashboard.nav_overview', label: 'Overview', end: true },
-  { to: '/dashboard/properties', icon: Building2, labelKey: 'dashboard.nav_properties', label: 'My Properties' },
-  { to: '/dashboard/bookings', icon: Luggage, labelKey: 'dashboard.nav_my_bookings', label: 'My Bookings' },
-  { separator: true, label: 'PMS' },
-  { to: '/dashboard/front-desk', icon: ConciergeBell, labelKey: 'dashboard.nav_front_desk', label: 'Front Desk' },
-  { to: '/dashboard/housekeeping', icon: Sparkles, labelKey: 'dashboard.nav_housekeeping', label: 'Housekeeping' },
-  { to: '/dashboard/reports', icon: BarChart3, labelKey: 'dashboard.nav_reports', label: 'Reports' },
-  { separator: true, label: 'Account' },
-  { to: '/dashboard/banking', icon: Banknote, labelKey: 'dashboard.nav_banking', label: 'Banking' },
-  { to: '/dashboard/referrals', icon: Share2, labelKey: 'dashboard.nav_referrals', label: 'Referrals' },
-  { to: '/dashboard/shares', icon: Gem, labelKey: 'dashboard.nav_shares', label: 'My Shares' },
-  { to: '/dashboard/kit', icon: Package, labelKey: 'dashboard.sidebar_kit', label: 'My Kit' },
+// ── Section definitions ─────────────────────────────────
+// Each section has a `visible` predicate computed from user state.
+// Items inside inherit their parent section's visibility.
+
+const SECTIONS = [
+  {
+    // Section 1 — everyone gets these
+    visible: () => true,
+    items: [
+      { to: '/dashboard',          icon: LayoutDashboard, labelKey: 'dashboard.nav_overview',    label: 'Overview', end: true },
+      { to: '/dashboard/bookings', icon: Luggage,         labelKey: 'dashboard.nav_my_bookings', label: 'My Trips' },
+    ],
+  },
+  {
+    // Section 2 — Hosting tools (only after first property)
+    label: 'Hosting',
+    labelKey: 'dashboard.section_hosting',
+    visible: ({ hasProperties }) => hasProperties,
+    items: [
+      { to: '/dashboard/properties',   icon: Building2,     labelKey: 'dashboard.nav_properties',   label: 'My Properties' },
+      { to: '/dashboard/front-desk',   icon: ConciergeBell, labelKey: 'dashboard.nav_front_desk',   label: 'Front Desk' },
+      { to: '/dashboard/housekeeping', icon: Sparkles,      labelKey: 'dashboard.nav_housekeeping', label: 'Housekeeping' },
+      { to: '/dashboard/reports',      icon: BarChart3,     labelKey: 'dashboard.nav_reports',      label: 'Reports' },
+      { to: '/dashboard/banking',      icon: Banknote,      labelKey: 'dashboard.nav_banking',      label: 'Banking' },
+    ],
+  },
+  {
+    // Section 3 — Investor (only if user holds shares)
+    label: 'Investor',
+    labelKey: 'dashboard.section_investor',
+    visible: ({ hasShares }) => hasShares,
+    items: [
+      { to: '/dashboard/shares', icon: Gem,     labelKey: 'dashboard.nav_shares',      label: 'My Shares' },
+      { to: '/dashboard/kit',    icon: Package, labelKey: 'dashboard.sidebar_kit',     label: 'My Kit' },
+    ],
+  },
+  {
+    // Section 4 — Community (everyone)
+    visible: () => true,
+    items: [
+      { to: '/dashboard/referrals', icon: Share2, labelKey: 'dashboard.nav_referrals', label: 'Referrals' },
+    ],
+  },
 ]
 
 export function DashboardSidebar() {
@@ -43,10 +89,43 @@ export function DashboardSidebar() {
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  // Adaptive flags — query Supabase once on mount.
+  // Use head:true + count:'exact' so we don't pull actual rows.
+  const [hasProperties, setHasProperties] = useState(false)
+  const [hasShares, setHasShares] = useState(false)
+  const [stateLoaded, setStateLoaded] = useState(false)
+
+  useEffect(() => {
+    if (!user) { setStateLoaded(true); return }
+    let cancelled = false
+
+    Promise.all([
+      supabase.from('properties').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      supabase.from('shares').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+    ]).then(([propRes, shareRes]) => {
+      if (cancelled) return
+      setHasProperties((propRes.count || 0) > 0)
+      setHasShares((shareRes.count || 0) > 0)
+      setStateLoaded(true)
+    }).catch(() => {
+      // On error fail open — show everything (defensive: don't lock the user out)
+      if (!cancelled) {
+        setHasProperties(true)
+        setHasShares(true)
+        setStateLoaded(true)
+      }
+    })
+
+    return () => { cancelled = true }
+  }, [user])
+
   async function handleSignOut() {
     await signOut()
     navigate('/')
   }
+
+  const userState = { hasProperties, hasShares }
+  const visibleSections = SECTIONS.filter(s => s.visible(userState))
 
   const sidebarContent = (
     <>
@@ -69,33 +148,53 @@ export function DashboardSidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        {navItems.map((item, idx) => {
-          if (item.separator) {
-            return (
-              <div key={`sep-${idx}`} className="pt-4 pb-1 px-4">
-                <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/25">{item.label}</p>
+        {visibleSections.map((section, sIdx) => (
+          <div key={sIdx}>
+            {section.label && (
+              <div className="pt-4 pb-1 px-4">
+                <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-white/25">
+                  {section.labelKey ? t(section.labelKey, section.label) : section.label}
+                </p>
               </div>
-            )
-          }
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
+            )}
+            {section.items.map(item => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.end}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 no-underline ${
+                    isActive
+                      ? 'bg-electric/15 text-electric border-l-4 border-electric -ml-1 pl-5'
+                      : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`
+                }
+              >
+                <item.icon size={18} />
+                <span>{t(item.labelKey, item.label)}</span>
+              </NavLink>
+            ))}
+          </div>
+        ))}
+
+        {/* "Become a host" CTA — visible to anyone without properties yet.
+            Wait for stateLoaded so we don't flash it for hoteliers on a slow query. */}
+        {stateLoaded && !hasProperties && (
+          <div className="pt-6">
+            <Link
+              to="/submit"
               onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 no-underline ${
-                  isActive
-                    ? 'bg-electric/15 text-electric border-l-4 border-electric -ml-1 pl-5'
-                    : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`
-              }
+              className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold no-underline transition-all duration-200 bg-gradient-to-br from-electric/15 to-libre/10 text-electric border border-electric/20 hover:border-electric/40 hover:shadow-lg hover:shadow-electric/10"
             >
-              <item.icon size={18} />
-              <span>{t(item.labelKey, item.label)}</span>
-            </NavLink>
-          )
-        })}
+              <PlusCircle size={18} />
+              <span>{t('dashboard.cta_become_host', 'List your property')}</span>
+            </Link>
+            <p className="text-[10px] text-white/30 px-4 pt-2 leading-relaxed">
+              {t('dashboard.cta_become_host_sub', 'Become a hotelier on STAYLO — free, 15 minutes.')}
+            </p>
+          </div>
+        )}
 
         {/* Admin shortcut — only visible to users with role='admin' (RLS-enforced server-side too) */}
         {profile?.role === 'admin' && (
