@@ -282,6 +282,7 @@ function EmptyState({ isHotelier, t }) {
 }
 
 function BookingCard({ booking, property, room, isHotelier, isPast }) {
+  const { t } = useTranslation()
   const nights = Math.max(1, Math.ceil(
     (new Date(booking.check_out) - new Date(booking.check_in)) / (1000 * 60 * 60 * 24)
   ))
