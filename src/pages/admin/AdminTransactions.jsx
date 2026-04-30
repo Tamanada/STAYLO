@@ -13,7 +13,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Calendar, Search, CheckCircle, XCircle, Clock, ExternalLink,
   Download, MoreVertical, RefreshCw, RotateCcw, Mail, Lock, Gem,
-  Banknote, ZapOff, AlertCircle
+  Banknote, ZapOff, AlertCircle, FileCheck
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { Badge } from '../../components/ui/Badge'
@@ -263,6 +263,35 @@ export default function AdminTransactions() {
     )
   }
 
+  // Manual settlement — escape hatch for cases where Stripe Transfer can't run
+  // (hotelier never finished onboarding, paid out via bank transfer, Lightning,
+  // etc.). Marks the booking as released without calling Stripe.
+  async function handleMarkSettled(booking) {
+    const note = prompt(
+      `Mark booking ${booking.booking_ref || booking.id.slice(0,8)} as MANUALLY settled?\n\n` +
+      `This skips the Stripe Transfer entirely — use only when you've paid the hotelier through ` +
+      `another channel (bank transfer, Lightning, etc.). Funds stay on STAYLO's platform balance.\n\n` +
+      `Optional note (e.g. "Paid via Wise tx-1234"):`,
+      ''
+    )
+    if (note === null) return  // user cancelled
+
+    try {
+      const { data, error } = await supabase.functions.invoke('mark-booking-settled', {
+        body: { booking_id: booking.id, note },
+      })
+      if (error) {
+        const detail = await extractFunctionError(error)
+        alert(`Mark settled failed:\n\n${detail}`)
+        return
+      }
+      alert(`✓ Marked as settled.\n\n${data?.reason || ''}`)
+      await fetchAll()
+    } catch (err) {
+      alert(`Mark settled failed: ${err.message || err}`)
+    }
+  }
+
   // ── CSV exporters ─────────────────────────────────────
   function exportBookingsCSV() {
     const rows = filteredBookings.map(b => ({
@@ -407,11 +436,13 @@ export default function AdminTransactions() {
       {/* Tab content */}
       {activeTab === 'bookings' && (
         <BookingsTable bookings={filteredBookings} propsById={propsById} usersById={usersById}
-          onForceRelease={handleForceRelease} onRefund={handleRefund} onResend={handleResendConfirmation} />
+          onForceRelease={handleForceRelease} onRefund={handleRefund}
+          onResend={handleResendConfirmation} onMarkSettled={handleMarkSettled} />
       )}
       {activeTab === 'escrow' && (
         <BookingsTable bookings={escrowBookings} propsById={propsById} usersById={usersById} escrowMode
-          onForceRelease={handleForceRelease} onRefund={handleRefund} onResend={handleResendConfirmation} />
+          onForceRelease={handleForceRelease} onRefund={handleRefund}
+          onResend={handleResendConfirmation} onMarkSettled={handleMarkSettled} />
       )}
       {activeTab === 'shares' && (
         <SharesTable shares={filteredShares} propsById={propsById} usersById={usersById} />
@@ -444,7 +475,7 @@ function KpiCard({ icon: Icon, label, value, subline, color = 'ocean' }) {
 }
 
 // ──────────────────────────────────────────────────────
-function BookingsTable({ bookings, propsById, usersById, escrowMode = false, onForceRelease, onRefund, onResend }) {
+function BookingsTable({ bookings, propsById, usersById, escrowMode = false, onForceRelease, onRefund, onResend, onMarkSettled }) {
   if (bookings.length === 0) {
     return (
       <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
@@ -534,6 +565,7 @@ function BookingsTable({ bookings, propsById, usersById, escrowMode = false, onF
                       onForceRelease={() => onForceRelease(b)}
                       onRefund={() => onRefund(b)}
                       onResend={() => onResend(b)}
+                      onMarkSettled={() => onMarkSettled(b)}
                     />
                   </td>
                 </tr>
@@ -547,7 +579,7 @@ function BookingsTable({ bookings, propsById, usersById, escrowMode = false, onF
 }
 
 // ──────────────────────────────────────────────────────
-function ActionsMenu({ booking, onForceRelease, onRefund, onResend }) {
+function ActionsMenu({ booking, onForceRelease, onRefund, onResend, onMarkSettled }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -567,10 +599,14 @@ function ActionsMenu({ booking, onForceRelease, onRefund, onResend }) {
         <MoreVertical size={14} />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-20 py-1">
-          <ActionItem icon={ZapOff} label="Force release escrow" disabled={!canRelease}
+        <div className="absolute right-0 top-full mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-20 py-1">
+          <ActionItem icon={ZapOff} label="Force release escrow (Stripe)" disabled={!canRelease}
             disabledReason={canRelease ? null : 'Only available when escrow is held'}
             onClick={() => { setOpen(false); onForceRelease() }} />
+          <ActionItem icon={FileCheck} label="Mark as manually settled" disabled={!canRelease}
+            disabledReason={canRelease ? null : 'Only available when escrow is held'}
+            onClick={() => { setOpen(false); onMarkSettled() }} />
+          <div className="border-t border-gray-100 my-1" />
           <ActionItem icon={RotateCcw} label="Refund this booking" disabled={!canRefund} danger
             disabledReason={!booking.stripe_payment_intent_id ? 'No Stripe payment to refund' : 'Already cancelled'}
             onClick={() => { setOpen(false); onRefund() }} />

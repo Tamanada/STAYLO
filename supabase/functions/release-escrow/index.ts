@@ -114,23 +114,55 @@ serve(async (req) => {
     } else {
       reason = body.reason ?? 'admin_manual'
       if (!body.booking_id) return errorResponse('booking_id required when cron=false')
+
+      // Use LEFT joins so we can return a useful error per missing piece,
+      // instead of a generic "Booking not found" when really the hotelier
+      // just hasn't completed Stripe Connect onboarding.
       const { data, error } = await supa
         .from('bookings')
         .select(`
           id, stripe_payment_intent_id, payout_amount_cents, currency, escrow_status,
-          properties!inner(user_id, stripe_accounts:stripe_accounts!inner(stripe_account_id))
+          properties:properties(
+            id, name, user_id,
+            owner:users!properties_user_id_fkey(email, full_name),
+            stripe_accounts(stripe_account_id, charges_enabled, payouts_enabled)
+          )
         `)
         .eq('id', body.booking_id)
         .single()
-      if (error || !data) return errorResponse('Booking not found', 404)
+      if (error || !data) return errorResponse('Booking not found', 404, { detail: error?.message })
       if (data.escrow_status !== 'held') {
         return errorResponse(`Booking is in escrow_status=${data.escrow_status}, cannot release`, 409)
       }
-      const props = data.properties as Record<string, unknown>
-      const accts = props?.stripe_accounts as Record<string, unknown>
+      if (!data.stripe_payment_intent_id) {
+        return errorResponse('Booking has no Stripe payment to transfer (Lightning or manual booking?)', 400)
+      }
+      const props = data.properties as Record<string, unknown> | null
+      if (!props) {
+        return errorResponse('Booking has no linked property', 500)
+      }
+      const owner = props.owner as Record<string, unknown> | null
+      const accts = props.stripe_accounts as Record<string, unknown> | Record<string, unknown>[] | null
+      const acct = Array.isArray(accts) ? accts[0] : accts
+      if (!acct?.stripe_account_id) {
+        return errorResponse(
+          `Hotelier ${owner?.email ?? props.user_id} has not completed Stripe Connect onboarding. ` +
+          `They must finish setup at /dashboard/banking before payout is possible. ` +
+          `As a workaround, you can use "Mark as manually settled" to release the funds without a Stripe transfer.`,
+          409,
+          { hotelier_email: owner?.email, property_name: props.name }
+        )
+      }
+      if (acct?.payouts_enabled === false) {
+        return errorResponse(
+          `Hotelier ${owner?.email ?? ''}'s Stripe account has payouts disabled (account: ${acct.stripe_account_id}). ` +
+          `They must complete Stripe verification before payout is possible.`,
+          409
+        )
+      }
       toRelease = [{
         booking_id:               data.id,
-        stripe_account_id:        accts?.stripe_account_id as string,
+        stripe_account_id:        acct.stripe_account_id as string,
         stripe_payment_intent_id: data.stripe_payment_intent_id,
         payout_amount_cents:      data.payout_amount_cents,
         currency:                 data.currency,
