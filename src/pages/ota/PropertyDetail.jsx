@@ -482,7 +482,7 @@ export default function PropertyDetail() {
                                   <span className="text-sm text-gray-400 line-through">${totalOTA}</span>
                                 </div>
                                 <p className="text-2xl font-extrabold text-gray-900">${total}</p>
-                                <p className="text-[11px] text-gray-400">{t('booking.includes_fees', 'Includes taxes & fees')}</p>
+                                <p className="text-[11px] text-gray-400">{t('booking.before_pay_fees', '+ payment fees at checkout')}</p>
                                 <p className="text-xs text-[#008009] font-semibold mt-0.5">
                                   {t('booking.you_save', 'You save')} ${savings} ({savingsPercent}%)
                                 </p>
@@ -647,21 +647,25 @@ export default function PropertyDetail() {
                     {(() => {
                       const room = rooms.find(r => r.id === selectedRoom) || lowestRoom
                       const total = room.price * nights
-                      const fee = Math.round(total * 0.1)
+                      // Pricing model — must match Checkout.jsx exactly:
+                      //   - Guest pays the room price (commission is INSIDE)
+                      //   - STAYLO takes 10% out of room → hotelier gets 90%
+                      //   - Processing fees added on top at checkout based on
+                      //     payment method (3% card / 0% Lightning / 1% on-chain).
+                      //     We don't know the method yet here, so we just hint.
                       return (
                         <>
                           <div className="flex justify-between text-gray-600">
                             <span>${room.price} × {nights} {nights === 1 ? 'night' : 'nights'}</span>
-                            <span>${total}</span>
-                          </div>
-                          <div className="flex justify-between text-gray-600">
-                            <span>{t('booking.service_fee', 'STAYLO fee')} (10%)</span>
-                            <span>${fee}</span>
+                            <span>${total.toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
-                            <span>{t('booking.total', 'Total')}</span>
-                            <span>${total + fee}</span>
+                            <span>{t('booking.subtotal', 'Subtotal')}</span>
+                            <span>${total.toFixed(2)}</span>
                           </div>
+                          <p className="text-[11px] text-gray-400 pt-1 leading-snug">
+                            {t('booking.fees_at_checkout', 'Payment processing fees added at checkout (free with Bitcoin Lightning).')}
+                          </p>
                         </>
                       )
                     })()}
