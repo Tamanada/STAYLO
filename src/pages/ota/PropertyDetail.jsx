@@ -404,12 +404,31 @@ export default function PropertyDetail() {
                           </div>
                         )}
 
-                        {/* Promo badge — when at least one night in the range
-                            has a promo_label or promo_pct > 0 */}
-                        {pricing.hasPromo && (
+                        {/* Perks banner — green/libre, value-add (no discount).
+                            Listed line by line so the guest sees exactly what
+                            they get included with the room. */}
+                        {pricing.hasPerks && (
+                          <div className="bg-libre/95 text-white px-4 py-2 text-xs">
+                            <p className="font-bold flex items-center gap-1.5 mb-1">
+                              🎁 {pricing.perkLabel || 'Reward included'}
+                            </p>
+                            <ul className="space-y-0.5">
+                              {pricing.perks.map((p, i) => (
+                                <li key={i} className="flex items-start gap-1.5 text-white/90">
+                                  <span className="opacity-70">+</span>
+                                  <span>{p}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Discount badge — orange, used only when promo_pct > 0
+                            AND no perk is set on the same date. Honest discount. */}
+                        {pricing.hasPromo && !pricing.hasPerks && (
                           <div className="bg-orange/95 text-white px-4 py-1.5 text-xs font-bold flex items-center gap-1.5">
                             <Flame size={12} />
-                            {pricing.promoLabel || 'Special offer'}
+                            {pricing.promoLabel || 'Special rate'}
                             {pricing.promoPct > 0 && <span className="ml-auto">−{Math.round(pricing.promoPct)}%</span>}
                           </div>
                         )}

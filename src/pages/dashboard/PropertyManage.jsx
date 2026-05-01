@@ -5,8 +5,9 @@ import {
   ArrowLeft, Plus, BedDouble, Calendar, ClipboardList, Pencil, Trash2,
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
   ChevronLeft, ChevronRight, X, Save, Loader2, Ban, Check,
-  Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw
+  Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw, Gift
 } from 'lucide-react'
+import RewardModal from '../../components/dashboard/RewardModal'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
@@ -1316,6 +1317,7 @@ function CalendarTab({ rooms }) {
   // or an action is applied. Stored as a Set of "yyyy-mm-dd" strings.
   const [bulkMode, setBulkMode] = useState(false)
   const [selectedDays, setSelectedDays] = useState(new Set())
+  const [rewardModalOpen, setRewardModalOpen] = useState(false)
   // Undo snapshot — captures the state of all rows touched by the last bulk
   // action. `before` is the original row (or null if no row existed before
   // the action). One click on Undo restores everything atomically.
@@ -1509,6 +1511,7 @@ function CalendarTab({ rooms }) {
         min_stay: payload.min_stay ?? null,
         promo_label: payload.promo_label ?? null,
         promo_pct: payload.promo_pct ?? null,
+        perk: payload.perk ?? null,
         internal_note: payload.internal_note ?? null,
       }))
       await supabase.from('room_availability').insert(rows)
@@ -1534,6 +1537,7 @@ function CalendarTab({ rooms }) {
           min_stay:       before.min_stay,
           promo_label:    before.promo_label,
           promo_pct:      before.promo_pct,
+          perk:           before.perk,
           internal_note:  before.internal_note,
         }).eq('id', before.id)
       } else {
@@ -1591,34 +1595,13 @@ function CalendarTab({ rooms }) {
     await bulkUpdate({ min_stay: val }, val ? `Set min stay to ${val} night(s)` : 'Remove min stay')
   }
 
-  // B — Promotion (% discount + label)
-  async function bulkSetPromo() {
-    const labelInput = prompt(
-      `Promotion label shown to guests on ${selectedDays.size} selected day${selectedDays.size > 1 ? 's' : ''}.\n\n` +
-      `Examples: "🔥 Hot deal", "⚡ Last minute", "🎄 Christmas special"\n\n` +
-      `Leave blank to clear the promo entirely.`
-    )
-    if (labelInput === null) return
-    let promoLabel = labelInput.trim() || null
-    let promoPct = null
-    if (promoLabel) {
-      const pctInput = prompt(
-        `Discount percentage to apply (0–50%).\n\n` +
-        `Example: 20 = "-20%" off the room price.\n` +
-        `Leave blank for a label-only promo (no automatic discount).`,
-        '20'
-      )
-      if (pctInput === null) return
-      const trimmed = pctInput.trim()
-      if (trimmed !== '') {
-        promoPct = Number(trimmed)
-        if (!isFinite(promoPct) || promoPct < 0 || promoPct > 100) {
-          alert('Invalid percentage (must be 0–100).'); return
-        }
-      }
-    }
-    await bulkUpdate({ promo_label: promoLabel, promo_pct: promoPct },
-      promoLabel ? `Apply promo "${promoLabel}"${promoPct ? ` (-${promoPct}%)` : ''}` : 'Clear promo')
+  // B — Reward / Special Rate (opens the catalog modal)
+  function bulkSetReward() {
+    if (selectedDays.size === 0) { alert('Select some days first.'); return }
+    setRewardModalOpen(true)
+  }
+  async function handleRewardModalApply(payload, label) {
+    await bulkUpdate(payload, label)
   }
 
   // G — Internal note (hotelier-only)
@@ -1717,9 +1700,9 @@ function CalendarTab({ rooms }) {
                     className="px-2.5 py-1 rounded text-xs font-bold bg-deep/5 text-deep hover:bg-deep/10 border border-deep/15">
                     🌙 Min stay
                   </button>
-                  <button onClick={bulkSetPromo} type="button"
-                    className="px-2.5 py-1 rounded text-xs font-bold bg-orange/10 text-orange hover:bg-orange/20 border border-orange/15">
-                    🔥 Promo
+                  <button onClick={bulkSetReward} type="button"
+                    className="px-2.5 py-1 rounded text-xs font-bold bg-libre/10 text-libre hover:bg-libre/20 border border-libre/15">
+                    🎁 Reward
                   </button>
                   <button onClick={bulkSetNote} type="button"
                     className="px-2.5 py-1 rounded text-xs font-bold bg-electric/10 text-electric hover:bg-electric/20 border border-electric/15">
@@ -1777,6 +1760,7 @@ function CalendarTab({ rooms }) {
             const minStay = avail?.min_stay
             const promoLabel = avail?.promo_label
             const promoPct = avail?.promo_pct
+            const perk = avail?.perk
             const internalNote = avail?.internal_note
             // Apply discount visually if any
             const priceAfterPromo = promoPct
@@ -1817,17 +1801,22 @@ function CalendarTab({ rooms }) {
                   )}
                 </div>
 
-                {/* Middle row — chips for promo / min stay / note (compact icons).
-                    Always visible if set, regardless of block state. */}
-                {!isPast && (promoPct || promoLabel || minStay || internalNote) && (
+                {/* Middle row — chips for perk / discount / min stay / note.
+                    Reward (perk) shown in green/golden, discount in orange. */}
+                {!isPast && (perk || promoPct || promoLabel || minStay || internalNote) && (
                   <div className="flex flex-wrap gap-1 mt-1 mb-1">
-                    {promoPct ? (
-                      <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange" title={promoLabel || 'Promo'}>
-                        -{Number(promoPct).toFixed(0)}%
+                    {perk && (
+                      <span className="text-[9px] font-bold px-1 rounded bg-libre/15 text-libre" title={`${promoLabel ? promoLabel + ' — ' : ''}${perk}`}>
+                        🎁
                       </span>
-                    ) : promoLabel ? (
+                    )}
+                    {promoPct ? (
+                      <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange" title={promoLabel || 'Discount'}>
+                        −{Number(promoPct).toFixed(0)}%
+                      </span>
+                    ) : (promoLabel && !perk) ? (
                       <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange" title={promoLabel}>
-                        🔥
+                        🏷️
                       </span>
                     ) : null}
                     {minStay && (
@@ -1907,6 +1896,14 @@ function CalendarTab({ rooms }) {
           <span className="text-gray-400 italic">· {t('manage.click_toggle', 'Click a date to block/unblock')}</span>
         </div>
       </Card>
+
+      {/* Reward picker modal */}
+      <RewardModal
+        open={rewardModalOpen}
+        onClose={() => setRewardModalOpen(false)}
+        onApply={handleRewardModalApply}
+        selectedCount={selectedDays.size}
+      />
 
       {/* Undo toast — appears after every bulk action, auto-clears in 30s */}
       {undo && (

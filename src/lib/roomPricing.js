@@ -31,6 +31,10 @@ export function computeRoomPricing(room, checkIn, checkOut, roomsCount = 1) {
   let topLabel = null
   let minStayRequired = 1
   let hasBlockedDay = false
+  // Collect unique perks across the stay (a 5-night stay could span 2
+  // different reward windows — show both to the guest).
+  const perksSet = new Set()
+  let primaryPerkLabel = null
 
   const d = new Date(checkIn)
   for (let i = 0; i < nights; i++) {
@@ -55,12 +59,18 @@ export function computeRoomPricing(room, checkIn, checkOut, roomsCount = 1) {
       if (avail?.promo_label && !topLabel) topLabel = avail.promo_label
     }
 
+    if (avail?.perk) {
+      perksSet.add(avail.perk)
+      if (!primaryPerkLabel && avail?.promo_label) primaryPerkLabel = avail.promo_label
+    }
+
     if (avail?.min_stay && avail.min_stay > minStayRequired) {
       minStayRequired = avail.min_stay
     }
 
     d.setDate(d.getDate() + 1)
   }
+  const perks = [...perksSet]
 
   const originalTotal = perRoomOriginal * roomsCount
   const discountedTotal = perRoomDiscounted * roomsCount
@@ -78,6 +88,9 @@ export function computeRoomPricing(room, checkIn, checkOut, roomsCount = 1) {
     promoPct: highestPct,
     promoLabel: topLabel,
     hasPromo: highestPct > 0 || !!topLabel,
+    perks,                                   // array of unique perk strings
+    perkLabel: primaryPerkLabel,             // the title to show beside perks
+    hasPerks: perks.length > 0,
     minStayRequired,
     minStayOK: nights >= minStayRequired,
     hasBlockedDay,
