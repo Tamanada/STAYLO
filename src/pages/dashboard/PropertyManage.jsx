@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
@@ -1529,6 +1529,14 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     }))
   }
 
+  // Props bundle reused at every render site of <RoomEditFormCard />.
+  const formProps = {
+    editingRoom, t, form, setForm,
+    copiedMedia, copyFromRoom, rooms,
+    handleSave, saving, setShowForm,
+    toggleAmenity, propertyId, refreshRoomMedia,
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -1545,10 +1553,11 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
         </Card>
       )}
 
-      {/* Room cards */}
+      {/* Room cards — when editing, the form renders inline below its row */}
       <div className="space-y-3">
         {rooms.map(room => (
-          <Card key={room.id} className={`!p-4 ${!room.is_active ? 'opacity-60' : ''}`}>
+          <Fragment key={room.id}>
+          <Card className={`!p-4 ${!room.is_active ? 'opacity-60' : ''}`}>
             <div className="flex items-start gap-4">
               {/* Photo strip — first 3 photos, with media count overlay */}
               {room.photo_urls && room.photo_urls.length > 0 ? (
@@ -1622,218 +1631,234 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
               </div>
             </div>
           </Card>
+          {/* Inline edit form — appears directly under the room being edited */}
+          {showForm && editingRoom?.id === room.id && (
+            <RoomEditFormCard {...formProps} />
+          )}
+          </Fragment>
         ))}
       </div>
 
-      {/* Add/Edit Room Form */}
-      {showForm && (
-        <Card className="mt-4 border-2 border-ocean/20">
-          <h3 className="font-bold text-deep mb-4">
-            {editingRoom ? t('manage.edit_room', 'Edit Room') : t('manage.new_room', 'New Room Type')}
-          </h3>
-
-          {/* Copy-from-existing-room shortcut — only for NEW rooms.
-              Pre-fills every field including amenities + media references.
-              Hotelier still has to click Save and can edit anything first. */}
-          {!editingRoom && rooms.length > 0 && (
-            <div className="mb-5 p-3 rounded-xl bg-electric/5 border border-electric/20">
-              <label className="block text-xs font-bold text-electric mb-1.5 flex items-center gap-1.5">
-                ⚡ {t('manage.copy_from', 'Copy from an existing room')}
-                <span className="text-gray-400 font-normal normal-case">— {t('manage.copy_from_hint', 'optional, pre-fills everything')}</span>
-              </label>
-              <select
-                onChange={e => copyFromRoom(e.target.value)}
-                defaultValue=""
-                className="w-full px-3 py-2 rounded-lg border border-electric/20 bg-white text-sm text-deep focus:outline-none focus:ring-2 focus:ring-electric/30"
-              >
-                <option value="">— {t('manage.copy_from_none', 'Start blank')} —</option>
-                {rooms.map(r => (
-                  <option key={r.id} value={r.id}>
-                    {r.name} ({prettyLabel(r.type)} · ${Number(r.base_price).toFixed(0)} · x{r.quantity})
-                  </option>
-                ))}
-              </select>
-              {(copiedMedia.photo_urls.length > 0 || copiedMedia.video_urls.length > 0) && (
-                <p className="text-[10px] text-gray-500 mt-2 italic">
-                  ✓ Copied: {copiedMedia.photo_urls.length} photo{copiedMedia.photo_urls.length !== 1 ? 's' : ''}
-                  {copiedMedia.video_urls.length > 0 && `, ${copiedMedia.video_urls.length} video${copiedMedia.video_urls.length !== 1 ? 's' : ''}`}.
-                  {' '}You can replace them after saving.
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.room_name', 'Room Name')} *</label>
-              <input
-                type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                placeholder="e.g. Deluxe Double, Ocean View Suite"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean text-sm"
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.description', 'Description')}</label>
-              <textarea
-                value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-                rows={2} placeholder="Brief description of the room..."
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean text-sm resize-none"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.room_type', 'Room Type')}</label>
-              <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
-                {ROOM_TYPES.map(rt => <option key={rt} value={rt}>{prettyLabel(rt)}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.bed_type', 'Bed Type')}</label>
-              <select value={form.bed_type} onChange={e => setForm(f => ({ ...f, bed_type: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
-                {BED_TYPES.map(bt => <option key={bt} value={bt}>{prettyLabel(bt)}</option>)}
-              </select>
-            </div>
-            {/* Pricing unit — per-room or per-bed (dorm-style) */}
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-1">
-                {t('manage.pricing_unit', 'Pricing model')}
-              </label>
-              <div className="flex gap-2">
-                <button type="button"
-                  onClick={() => setForm(f => ({ ...f, pricing_unit: 'room' }))}
-                  className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                    form.pricing_unit === 'room'
-                      ? 'bg-ocean/10 border-ocean text-ocean'
-                      : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
-                  }`}>
-                  🚪 Per room <span className="text-xs opacity-60 ml-1">(standard hotel)</span>
-                </button>
-                <button type="button"
-                  onClick={() => setForm(f => ({ ...f, pricing_unit: 'bed' }))}
-                  className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                    form.pricing_unit === 'bed'
-                      ? 'bg-ocean/10 border-ocean text-ocean'
-                      : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
-                  }`}>
-                  🛏️ Per bed <span className="text-xs opacity-60 ml-1">(dorm / hostel)</span>
-                </button>
-              </div>
-              {form.pricing_unit === 'bed' && (
-                <p className="text-[11px] text-gray-500 mt-1.5">
-                  💡 <strong>Quantity</strong> = total beds available · <strong>Max guests</strong> = people PER BED
-                  (1 = single, 2 = double/queen/king, 3+ = bunk for groups)
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
-                {form.pricing_unit === 'bed'
-                  ? t('manage.people_per_bed', 'People per bed')
-                  : t('manage.max_guests', 'Max Guests')}
-              </label>
-              <input type="number" min={1} max={20} value={form.max_guests}
-                onChange={e => setForm(f => ({ ...f, max_guests: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
-              />
-              {form.pricing_unit === 'bed' && (
-                <p className="text-[10px] text-gray-400 mt-1">
-                  1 = single · 2 = double/queen/king · 3+ = group bunk
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">
-                {t('manage.base_price', 'Default price per night')} (USD, per {form.pricing_unit === 'bed' ? 'bed' : 'room'}) *
-                <span className="block text-[10px] text-gray-400 font-normal mt-0.5 normal-case">
-                  {t('manage.price_default_hint', 'This is what the guest pays. You can override it per day in the Availability tab.')}
-                </span>
-              </label>
-              <input type="number" min={1} step="0.01" value={form.base_price}
-                onChange={e => setForm(f => ({ ...f, base_price: e.target.value }))}
-                placeholder="e.g. 45"
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
-              />
-              {/* Auto-calculated net the hotelier receives — STAYLO keeps 10%.
-                  Always shown so the hotelier knows exactly what lands in their account. */}
-              {form.base_price && Number(form.base_price) > 0 && (
-                <div className="mt-2 px-3 py-2 rounded-lg bg-libre/5 border border-libre/15 flex items-center justify-between text-xs">
-                  <span className="text-gray-500">
-                    {t('manage.net_received', 'Net you receive')} <span className="text-gray-400">({t('manage.after_commission', 'after 10% STAYLO commission')})</span>
-                  </span>
-                  <span className="font-bold text-libre">
-                    ${(Number(form.base_price) * 0.9).toFixed(2)} / {form.pricing_unit === 'bed' ? 'bed' : 'room'} / {t('manage.night', 'night')}
-                  </span>
-                </div>
-              )}
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.quantity', 'Quantity (how many of this type)')}</label>
-              <input type="number" min={1} max={999} value={form.quantity}
-                onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
-              />
-            </div>
-            {/* Amenities — categorised. Click anywhere to toggle. */}
-            <div className="sm:col-span-2 space-y-4">
-              <label className="block text-xs font-medium text-gray-500">{t('manage.amenities', 'Amenities')}</label>
-              {AMENITY_CATEGORIES.map(cat => (
-                <div key={cat.key}>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">{cat.label}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {cat.items.map(a => (
-                      <button key={a.key} type="button" onClick={() => toggleAmenity(a.key)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-all ${
-                          form.amenities.includes(a.key)
-                            ? 'bg-libre/10 border-libre/30 text-libre font-medium'
-                            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
-                        }`}>
-                        {a.icon && <a.icon size={14} />}
-                        <span>{a.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 mt-6">
-            <Button onClick={handleSave} disabled={saving || !form.name.trim() || !form.base_price}>
-              {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-              {editingRoom ? t('manage.save_changes', 'Save Changes') : t('manage.create_room', 'Create Room')}
-            </Button>
-            <Button variant="secondary" onClick={() => setShowForm(false)}>
-              {t('common.cancel', 'Cancel')}
-            </Button>
-          </div>
-
-          {/* ── Media (only for existing rooms — needs an id to upload) ── */}
-          {editingRoom ? (
-            <div className="mt-8 pt-6 border-t border-gray-200 space-y-6">
-              <RoomMediaUploader
-                kind="photo"
-                room={editingRoom}
-                propertyId={propertyId}
-                onChange={() => refreshRoomMedia(editingRoom.id)}
-              />
-              <RoomMediaUploader
-                kind="video"
-                room={editingRoom}
-                propertyId={propertyId}
-                onChange={() => refreshRoomMedia(editingRoom.id)}
-              />
-            </div>
-          ) : (
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-xs text-gray-400 italic">
-                💡 {t('manage.media_after_save', 'Save the room first, then re-open it to upload photos and videos for this specific room type.')}
-              </p>
-            </div>
-          )}
-        </Card>
-      )}
+      {/* New room form — when adding (not editing), render at the bottom */}
+      {showForm && !editingRoom && <RoomEditFormCard {...formProps} />}
     </div>
+  )
+}
+
+// ============================================
+// ROOM EDIT FORM CARD — extracted so it can render inline below the
+// edited room card (instead of always at the bottom of the page).
+// All state lives in the parent (RoomsTab) and is passed via props,
+// so React doesn't recreate the component on every render.
+// ============================================
+function RoomEditFormCard({
+  editingRoom, t, form, setForm,
+  copiedMedia, copyFromRoom, rooms,
+  handleSave, saving, setShowForm,
+  toggleAmenity, propertyId, refreshRoomMedia,
+}) {
+  return (
+    <Card className="mt-4 border-2 border-ocean/20">
+      <h3 className="font-bold text-deep mb-4">
+        {editingRoom ? t('manage.edit_room', 'Edit Room') : t('manage.new_room', 'New Room Type')}
+      </h3>
+
+      {/* Copy-from-existing-room shortcut — only for NEW rooms.
+          Pre-fills every field including amenities + media references.
+          Hotelier still has to click Save and can edit anything first. */}
+      {!editingRoom && rooms.length > 0 && (
+        <div className="mb-5 p-3 rounded-xl bg-electric/5 border border-electric/20">
+          <label className="block text-xs font-bold text-electric mb-1.5 flex items-center gap-1.5">
+            ⚡ {t('manage.copy_from', 'Copy from an existing room')}
+            <span className="text-gray-400 font-normal normal-case">— {t('manage.copy_from_hint', 'optional, pre-fills everything')}</span>
+          </label>
+          <select
+            onChange={e => copyFromRoom(e.target.value)}
+            defaultValue=""
+            className="w-full px-3 py-2 rounded-lg border border-electric/20 bg-white text-sm text-deep focus:outline-none focus:ring-2 focus:ring-electric/30"
+          >
+            <option value="">— {t('manage.copy_from_none', 'Start blank')} —</option>
+            {rooms.map(r => (
+              <option key={r.id} value={r.id}>
+                {r.name} ({prettyLabel(r.type)} · ${Number(r.base_price).toFixed(0)} · x{r.quantity})
+              </option>
+            ))}
+          </select>
+          {(copiedMedia.photo_urls.length > 0 || copiedMedia.video_urls.length > 0) && (
+            <p className="text-[10px] text-gray-500 mt-2 italic">
+              ✓ Copied: {copiedMedia.photo_urls.length} photo{copiedMedia.photo_urls.length !== 1 ? 's' : ''}
+              {copiedMedia.video_urls.length > 0 && `, ${copiedMedia.video_urls.length} video${copiedMedia.video_urls.length !== 1 ? 's' : ''}`}.
+              {' '}You can replace them after saving.
+            </p>
+          )}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.room_name', 'Room Name')} *</label>
+          <input
+            type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            placeholder="e.g. Deluxe Double, Ocean View Suite"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean text-sm"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.description', 'Description')}</label>
+          <textarea
+            value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+            rows={2} placeholder="Brief description of the room..."
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean text-sm resize-none"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.room_type', 'Room Type')}</label>
+          <select value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
+            {ROOM_TYPES.map(rt => <option key={rt} value={rt}>{prettyLabel(rt)}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.bed_type', 'Bed Type')}</label>
+          <select value={form.bed_type} onChange={e => setForm(f => ({ ...f, bed_type: e.target.value }))}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
+            {BED_TYPES.map(bt => <option key={bt} value={bt}>{prettyLabel(bt)}</option>)}
+          </select>
+        </div>
+        {/* Pricing unit — per-room or per-bed (dorm-style) */}
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-medium text-gray-500 mb-1">
+            {t('manage.pricing_unit', 'Pricing model')}
+          </label>
+          <div className="flex gap-2">
+            <button type="button"
+              onClick={() => setForm(f => ({ ...f, pricing_unit: 'room' }))}
+              className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                form.pricing_unit === 'room'
+                  ? 'bg-ocean/10 border-ocean text-ocean'
+                  : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+              }`}>
+              🚪 Per room <span className="text-xs opacity-60 ml-1">(standard hotel)</span>
+            </button>
+            <button type="button"
+              onClick={() => setForm(f => ({ ...f, pricing_unit: 'bed' }))}
+              className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                form.pricing_unit === 'bed'
+                  ? 'bg-ocean/10 border-ocean text-ocean'
+                  : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+              }`}>
+              🛏️ Per bed <span className="text-xs opacity-60 ml-1">(dorm / hostel)</span>
+            </button>
+          </div>
+          {form.pricing_unit === 'bed' && (
+            <p className="text-[11px] text-gray-500 mt-1.5">
+              💡 <strong>Quantity</strong> = total beds available · <strong>Max guests</strong> = people PER BED
+              (1 = single, 2 = double/queen/king, 3+ = bunk for groups)
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">
+            {form.pricing_unit === 'bed'
+              ? t('manage.people_per_bed', 'People per bed')
+              : t('manage.max_guests', 'Max Guests')}
+          </label>
+          <input type="number" min={1} max={20} value={form.max_guests}
+            onChange={e => setForm(f => ({ ...f, max_guests: e.target.value }))}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+          />
+          {form.pricing_unit === 'bed' && (
+            <p className="text-[10px] text-gray-400 mt-1">
+              1 = single · 2 = double/queen/king · 3+ = group bunk
+            </p>
+          )}
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">
+            {t('manage.base_price', 'Default price per night')} (USD, per {form.pricing_unit === 'bed' ? 'bed' : 'room'}) *
+            <span className="block text-[10px] text-gray-400 font-normal mt-0.5 normal-case">
+              {t('manage.price_default_hint', 'This is what the guest pays. You can override it per day in the Availability tab.')}
+            </span>
+          </label>
+          <input type="number" min={1} step="0.01" value={form.base_price}
+            onChange={e => setForm(f => ({ ...f, base_price: e.target.value }))}
+            placeholder="e.g. 45"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+          />
+          {form.base_price && Number(form.base_price) > 0 && (
+            <div className="mt-2 px-3 py-2 rounded-lg bg-libre/5 border border-libre/15 flex items-center justify-between text-xs">
+              <span className="text-gray-500">
+                {t('manage.net_received', 'Net you receive')} <span className="text-gray-400">({t('manage.after_commission', 'after 10% STAYLO commission')})</span>
+              </span>
+              <span className="font-bold text-libre">
+                ${(Number(form.base_price) * 0.9).toFixed(2)} / {form.pricing_unit === 'bed' ? 'bed' : 'room'} / {t('manage.night', 'night')}
+              </span>
+            </div>
+          )}
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.quantity', 'Quantity (how many of this type)')}</label>
+          <input type="number" min={1} max={999} value={form.quantity}
+            onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+          />
+        </div>
+        <div className="sm:col-span-2 space-y-4">
+          <label className="block text-xs font-medium text-gray-500">{t('manage.amenities', 'Amenities')}</label>
+          {AMENITY_CATEGORIES.map(cat => (
+            <div key={cat.key}>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">{cat.label}</p>
+              <div className="flex flex-wrap gap-2">
+                {cat.items.map(a => (
+                  <button key={a.key} type="button" onClick={() => toggleAmenity(a.key)}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm border transition-all ${
+                      form.amenities.includes(a.key)
+                        ? 'bg-libre/10 border-libre/30 text-libre font-medium'
+                        : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                    }`}>
+                    {a.icon && <a.icon size={14} />}
+                    <span>{a.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 mt-6">
+        <Button onClick={handleSave} disabled={saving || !form.name.trim() || !form.base_price}>
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {editingRoom ? t('manage.save_changes', 'Save Changes') : t('manage.create_room', 'Create Room')}
+        </Button>
+        <Button variant="secondary" onClick={() => setShowForm(false)}>
+          {t('common.cancel', 'Cancel')}
+        </Button>
+      </div>
+
+      {editingRoom ? (
+        <div className="mt-8 pt-6 border-t border-gray-200 space-y-6">
+          <RoomMediaUploader
+            kind="photo"
+            room={editingRoom}
+            propertyId={propertyId}
+            onChange={() => refreshRoomMedia(editingRoom.id)}
+          />
+          <RoomMediaUploader
+            kind="video"
+            room={editingRoom}
+            propertyId={propertyId}
+            onChange={() => refreshRoomMedia(editingRoom.id)}
+          />
+        </div>
+      ) : (
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <p className="text-xs text-gray-400 italic">
+            💡 {t('manage.media_after_save', 'Save the room first, then re-open it to upload photos and videos for this specific room type.')}
+          </p>
+        </div>
+      )}
+    </Card>
   )
 }
 
