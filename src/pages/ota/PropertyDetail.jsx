@@ -470,7 +470,7 @@ export default function PropertyDetail() {
 
                               <div className="flex items-center gap-3 text-xs text-[#008009]">
                                 <span className="flex items-center gap-1"><Check size={12} /> {t('booking.free_cancel', 'Free cancellation')}</span>
-                                <span className="flex items-center gap-1"><Check size={12} /> {t('booking.pay_later', 'No prepayment')}</span>
+                                <span className="flex items-center gap-1"><Check size={12} /> {t('booking.escrow_short', 'Held in escrow')}</span>
                               </div>
                             </div>
 
@@ -700,12 +700,12 @@ export default function PropertyDetail() {
                     <span>{t('booking.badge_cancel', 'Free cancellation before check-in')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-600">
-                    <CheckCircle2 size={14} className="text-[#008009] flex-shrink-0" />
-                    <span>{t('booking.badge_pay', 'No prepayment needed')}</span>
+                    <Shield size={14} className="text-[#003580] flex-shrink-0" />
+                    <span>{t('booking.badge_escrow', 'Funds held safely until check-out')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-600">
-                    <Shield size={14} className="text-[#003580] flex-shrink-0" />
-                    <span>{t('booking.badge_direct', 'Book directly with the hotel')}</span>
+                    <CheckCircle2 size={14} className="text-[#008009] flex-shrink-0" />
+                    <span>{t('booking.badge_coop', 'Hotels co-own STAYLO — no middleman')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-600">
                     <BadgeCheck size={14} className="text-[#003580] flex-shrink-0" />
