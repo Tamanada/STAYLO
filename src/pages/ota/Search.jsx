@@ -533,11 +533,16 @@ export default function OTASearch() {
                         <div className="flex-1 p-4 sm:p-5 flex flex-col">
                           <div className="flex items-start justify-between gap-3 mb-1">
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
                                 <StarRating stars={prop.stars} />
                                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#003580]">
                                   {prop.type}
                                 </span>
+                                {prop.min_age && (
+                                  <span className="text-[10px] font-bold uppercase tracking-wider text-orange bg-orange/10 px-1.5 py-0.5 rounded border border-orange/20">
+                                    🔞 {prop.min_age}+ only
+                                  </span>
+                                )}
                               </div>
                               <h3 className="text-base sm:text-lg font-bold text-[#003580] group-hover:underline line-clamp-1">
                                 {prop.name}

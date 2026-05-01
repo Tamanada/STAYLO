@@ -713,6 +713,10 @@ function ShareInviteModal({ data, property, onClose }) {
 // ============================================
 function SettingsTab({ property, onRefresh }) {
   const { t } = useTranslation()
+  // Lock editing once the property has been verified (status >= validated).
+  // Hoteliers must contact STAYLO admin to amend legal info after that point.
+  // Admins can still edit via /admin/properties (their RLS bypass).
+  const isLocked = property.status === 'validated' || property.status === 'live'
   const [form, setForm] = useState({
     name:          property.name || '',
     description:   property.description || '',
@@ -740,6 +744,7 @@ function SettingsTab({ property, onRefresh }) {
   }
 
   async function handleSave() {
+    if (isLocked) { setError('This property is verified — contact STAYLO admin to request changes.'); return }
     if (!form.name.trim()) { setError('Property name is required'); return }
     setSaving(true)
     setError('')
@@ -782,7 +787,29 @@ function SettingsTab({ property, onRefresh }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* Lock banner — once the property is verified by STAYLO, the legal
+          info (name, address, contact, etc.) can no longer be changed
+          freely. Hoteliers contact admin to request amendments. */}
+      {isLocked && (
+        <div className="mb-5 p-4 rounded-xl bg-deep/5 border border-deep/20 flex items-start gap-3">
+          <span className="text-xl flex-shrink-0">🔒</span>
+          <div className="text-sm">
+            <p className="font-bold text-deep mb-0.5">
+              {t('manage.locked_title', 'Property settings are locked')}
+            </p>
+            <p className="text-gray-600 text-xs leading-relaxed">
+              {t('manage.locked_desc',
+                'Your property has been verified by STAYLO. Legal info (name, address, contact details, policies) is now read-only. '
+                + 'To request changes, please email '
+              )}
+              <a href="mailto:contact@staylo.app" className="text-ocean hover:underline font-medium">contact@staylo.app</a>
+              .
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 sm:grid-cols-2 gap-4 ${isLocked ? 'opacity-70 pointer-events-none' : ''}`}>
         <div className="sm:col-span-2">
           <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.property_name', 'Property name')} *</label>
           <input type="text" value={form.name} onChange={e => update('name', e.target.value)}
@@ -902,9 +929,11 @@ function SettingsTab({ property, onRefresh }) {
       )}
 
       <div className="flex items-center gap-3 mt-6 pt-4 border-t border-gray-100">
-        <Button onClick={handleSave} disabled={saving}>
+        <Button onClick={handleSave} disabled={saving || isLocked}>
           {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
-          {saving ? t('manage.saving', 'Saving…') : t('manage.save_changes', 'Save changes')}
+          {isLocked
+            ? t('manage.locked_button', 'Locked — contact admin')
+            : saving ? t('manage.saving', 'Saving…') : t('manage.save_changes', 'Save changes')}
         </Button>
         {savedAt && (
           <span className="text-xs text-libre flex items-center gap-1">
