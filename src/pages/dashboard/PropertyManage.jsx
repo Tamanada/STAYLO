@@ -288,13 +288,18 @@ const ROLE_INFO = {
 
 function TeamTab({ property }) {
   const { t } = useTranslation()
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [members, setMembers] = useState([])
   const [loading, setLoading] = useState(true)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteRole, setInviteRole] = useState('staff')
   const [adding, setAdding] = useState(false)
   const [error, setError] = useState('')
+  // Share modal state — opens after a successful pending invite so the
+  // inviter can either copy the link or share via WhatsApp/email even if
+  // Resend isn't yet configured.
+  const [shareModal, setShareModal] = useState(null)
+  // { email, role, signupUrl, emailSent: bool, emailError: string|null }
 
   async function fetchMembers() {
     setLoading(true)
@@ -389,6 +394,42 @@ function TeamTab({ property }) {
       setAdding(false)
       return
     }
+
+    // For PENDING invites (user doesn't exist yet) → trigger the email +
+    // open the share modal so the inviter has fallback options if email
+    // sending fails (no RESEND_API_KEY configured, etc).
+    if (!foundUser) {
+      const signupUrl = `${window.location.origin}/register?email=${encodeURIComponent(email)}`
+      const inviterName = profile?.full_name || user?.email || 'A STAYLO hotelier'
+
+      let emailSent = false
+      let emailError = null
+      try {
+        const { error: fnErr } = await supabase.functions.invoke('send-team-invite', {
+          body: {
+            email,
+            property_name: property.name,
+            inviter_name: inviterName,
+            role: inviteRole,
+            signup_url: signupUrl,
+          },
+        })
+        if (fnErr) {
+          // Try to get the real error body
+          try {
+            const body = await fnErr.context?.json?.()
+            emailError = body?.detail || body?.error || fnErr.message
+          } catch { emailError = fnErr.message }
+        } else {
+          emailSent = true
+        }
+      } catch (e) {
+        emailError = e?.message || 'Email function unreachable'
+      }
+
+      setShareModal({ email, role: inviteRole, signupUrl, emailSent, emailError })
+    }
+
     setInviteEmail('')
     setInviteRole('staff')
     setAdding(false)
@@ -560,6 +601,96 @@ function TeamTab({ property }) {
           Only the property owner can add or remove team members.
         </Card>
       )}
+
+      {/* Share-invite modal — opens after a successful pending invite.
+          Always offers Copy + WhatsApp + Email buttons; if Resend wasn't
+          configured, the email send step is reported as a warning. */}
+      {shareModal && (
+        <ShareInviteModal data={shareModal} property={property} onClose={() => setShareModal(null)} />
+      )}
+    </div>
+  )
+}
+
+// ============================================
+// ShareInviteModal — fallback share UI for pending invitations
+// ============================================
+function ShareInviteModal({ data, property, onClose }) {
+  const { email, role, signupUrl, emailSent, emailError } = data
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(signupUrl)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      alert(`Copy failed. Manual link:\n${signupUrl}`)
+    }
+  }
+
+  const message = `You've been invited to join ${property.name} on STAYLO with the role ${role}. ` +
+    `Sign up with ${email} to accept: ${signupUrl}`
+  const waUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
+  const mailtoUrl = `mailto:${encodeURIComponent(email)}` +
+    `?subject=${encodeURIComponent(`Invite to ${property.name} on STAYLO`)}` +
+    `&body=${encodeURIComponent(message)}`
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-bold text-deep">
+              {emailSent ? '✉️ Invitation sent' : '🔗 Share invitation manually'}
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              {emailSent
+                ? `We emailed ${email}. Forward the link below if needed.`
+                : `We couldn't send the email automatically. Use one of the options below to share it.`}
+            </p>
+          </div>
+          <button onClick={onClose} className="p-1 rounded hover:bg-gray-100 cursor-pointer">
+            <X size={18} />
+          </button>
+        </div>
+
+        {emailError && !emailSent && (
+          <div className="mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
+            <strong>Email service not configured:</strong> {emailError}
+          </div>
+        )}
+
+        <div className="mb-3">
+          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Signup link</label>
+          <div className="flex gap-1">
+            <input
+              type="text" value={signupUrl} readOnly
+              onFocus={e => e.target.select()}
+              className="flex-1 min-w-0 px-2.5 py-1.5 rounded border border-gray-200 bg-gray-50 text-xs font-mono text-deep focus:outline-none"
+            />
+            <Button size="sm" onClick={handleCopy}>
+              {copied ? '✓ Copied' : 'Copy'}
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 mt-4">
+          <a href={waUrl} target="_blank" rel="noreferrer"
+            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-[#25D366] text-white font-bold text-sm hover:opacity-90 no-underline">
+            💬 WhatsApp
+          </a>
+          <a href={mailtoUrl}
+            className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-deep text-white font-bold text-sm hover:opacity-90 no-underline">
+            ✉️ Email
+          </a>
+        </div>
+
+        <p className="text-[11px] text-gray-400 mt-4 italic">
+          The invitation auto-activates the moment {email} signs up at staylo.app/register.
+          They don't need to enter any code.
+        </p>
+      </div>
     </div>
   )
 }

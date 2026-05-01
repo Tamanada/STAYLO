@@ -29,7 +29,8 @@ export default function Register() {
     window.location.origin + '/verify-email?next=' + encodeURIComponent(nextPath)
 
   const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
+  // Pre-fill from ?email= so team-invite links land on a ready-to-go form
+  const [email, setEmail] = useState(searchParams.get('email') || '')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
