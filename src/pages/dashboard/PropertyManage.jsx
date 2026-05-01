@@ -6,7 +6,7 @@ import {
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
   ChevronLeft, ChevronRight, X, Save, Loader2, Ban, Check,
   Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw, Gift,
-  Settings as SettingsIcon
+  Settings as SettingsIcon, UserPlus, Shield, Mail, Crown
 } from 'lucide-react'
 import RewardModal from '../../components/dashboard/RewardModal'
 import { Card } from '../../components/ui/Card'
@@ -114,6 +114,7 @@ const tabs = [
   { key: 'rooms', icon: BedDouble, label: 'Rooms' },
   { key: 'calendar', icon: Calendar, label: 'Availability' },
   { key: 'bookings', icon: ClipboardList, label: 'Bookings' },
+  { key: 'team', icon: Users, label: 'Team' },
   { key: 'settings', icon: SettingsIcon, label: 'Settings' },
 ]
 
@@ -253,7 +254,276 @@ export default function PropertyManage() {
       {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
+      {activeTab === 'team' && <TeamTab property={property} />}
       {activeTab === 'settings' && <SettingsTab property={property} onRefresh={fetchData} />}
+    </div>
+  )
+}
+
+// ============================================
+// TEAM TAB — multi-user access per property
+// ============================================
+// Roles & permissions:
+//   👑 Owner   — created the property. Full control. Can add/remove team
+//                + change roles + manage payouts. Cannot be removed.
+//   ⚙️ Manager — edits property settings + rooms + bookings. No payouts,
+//                no team management.
+//   🧑 Staff   — read-only on property + bookings + can update calendar
+//                (block/unblock days, set promos).
+//
+// Adding a member: enter their STAYLO email. They must already have a
+// STAYLO account. If found, they're added immediately. If not found,
+// we show a clear error so the inviter can ask them to sign up first.
+// (Email-based invitations to non-users will ship with Chantier #4 Resend.)
+// ============================================
+const ROLE_INFO = {
+  owner:   { icon: Crown,  label: 'Owner',   color: 'bg-golden/15 text-golden border-golden/25',
+             desc: 'Full control · payouts · team management' },
+  manager: { icon: Shield, label: 'Manager', color: 'bg-ocean/15 text-ocean border-ocean/25',
+             desc: 'Edits property + rooms + bookings' },
+  staff:   { icon: Users,  label: 'Staff',   color: 'bg-libre/15 text-libre border-libre/25',
+             desc: 'Read-only + calendar' },
+}
+
+function TeamTab({ property }) {
+  const { t } = useTranslation()
+  const { user } = useAuth()
+  const [members, setMembers] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('staff')
+  const [adding, setAdding] = useState(false)
+  const [error, setError] = useState('')
+
+  async function fetchMembers() {
+    setLoading(true)
+    // pull members + their user info via 2 queries (Supabase auth.users isn't
+    // reachable via a join — public.users is)
+    const { data: m } = await supabase
+      .from('property_members')
+      .select('*')
+      .eq('property_id', property.id)
+      .neq('status', 'removed')
+      .order('role')  // owners first
+    if (!m || m.length === 0) {
+      setMembers([])
+      setLoading(false)
+      return
+    }
+    const userIds = m.map(x => x.user_id).filter(Boolean)
+    const { data: users } = userIds.length > 0
+      ? await supabase.from('users').select('id, email, full_name').in('id', userIds)
+      : { data: [] }
+    const byId = {}
+    ;(users || []).forEach(u => { byId[u.id] = u })
+    setMembers(m.map(x => ({ ...x, user: byId[x.user_id] })))
+    setLoading(false)
+  }
+
+  useEffect(() => { fetchMembers() }, [property.id])
+
+  // Find current user's role on this property — drives "Add" / "Remove" rights
+  const myMembership = members.find(m => m.user_id === user?.id)
+  const isOwner = myMembership?.role === 'owner'
+
+  async function handleAdd(e) {
+    e.preventDefault()
+    if (!inviteEmail.trim()) return
+    setAdding(true)
+    setError('')
+
+    // Look up the user by email
+    const { data: foundUser } = await supabase
+      .from('users')
+      .select('id, email, full_name')
+      .eq('email', inviteEmail.trim().toLowerCase())
+      .maybeSingle()
+
+    if (!foundUser) {
+      setError(`No STAYLO account found for ${inviteEmail}. Ask them to sign up first at staylo.app/register, then add them here.`)
+      setAdding(false)
+      return
+    }
+    if (foundUser.id === user?.id) {
+      setError("You're already on the team as Owner.")
+      setAdding(false)
+      return
+    }
+    if (members.some(m => m.user_id === foundUser.id)) {
+      setError(`${foundUser.email} is already on the team.`)
+      setAdding(false)
+      return
+    }
+
+    const { error: dbErr } = await supabase
+      .from('property_members')
+      .insert({
+        property_id: property.id,
+        user_id: foundUser.id,
+        role: inviteRole,
+        status: 'active',
+        invited_email: foundUser.email,
+        invited_by: user?.id,
+        accepted_at: new Date().toISOString(),
+      })
+    if (dbErr) {
+      setError(dbErr.message)
+      setAdding(false)
+      return
+    }
+    setInviteEmail('')
+    setInviteRole('staff')
+    setAdding(false)
+    await fetchMembers()
+  }
+
+  async function handleChangeRole(memberId, newRole) {
+    const { error: dbErr } = await supabase
+      .from('property_members')
+      .update({ role: newRole })
+      .eq('id', memberId)
+    if (dbErr) { alert(dbErr.message); return }
+    await fetchMembers()
+  }
+
+  async function handleRemove(member) {
+    if (!confirm(
+      `Remove ${member.user?.full_name || member.user?.email || 'this member'} from the team?\n\n` +
+      `They will lose access to this property immediately.`
+    )) return
+    const { error: dbErr } = await supabase
+      .from('property_members')
+      .delete()
+      .eq('id', member.id)
+    if (dbErr) { alert(dbErr.message); return }
+    await fetchMembers()
+  }
+
+  if (loading) {
+    return <div className="py-12 text-center text-gray-400"><Loader2 className="animate-spin mx-auto" size={24} /></div>
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-bold text-deep flex items-center gap-2 mb-1">
+          <Users size={18} className="text-ocean" />
+          {t('manage.team_title', 'Team & permissions')}
+        </h2>
+        <p className="text-xs text-gray-500">
+          {t('manage.team_subtitle', 'Add staff or co-managers to help run this property. They need a STAYLO account first.')}
+        </p>
+      </div>
+
+      {/* Members list */}
+      <Card className="!p-0 overflow-hidden">
+        {members.map(m => {
+          const info = ROLE_INFO[m.role] || ROLE_INFO.staff
+          const Icon = info.icon
+          const isMe = m.user_id === user?.id
+          const isOnlyOwner = m.role === 'owner' && members.filter(x => x.role === 'owner').length === 1
+          return (
+            <div key={m.id} className="flex items-center gap-3 p-4 border-b border-gray-100 last:border-0">
+              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                <Users size={18} className="text-gray-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-bold text-deep truncate">
+                    {m.user?.full_name || m.user?.email || m.invited_email || 'Unknown'}
+                    {isMe && <span className="ml-1 text-[10px] text-gray-400">(you)</span>}
+                  </p>
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${info.color}`}>
+                    <Icon size={10} /> {info.label}
+                  </span>
+                </div>
+                {m.user?.email && (
+                  <p className="text-xs text-gray-500 truncate">{m.user.email}</p>
+                )}
+                <p className="text-[10px] text-gray-400 mt-0.5">{info.desc}</p>
+              </div>
+
+              {/* Role / remove actions — only owner can change others, only owner+self can remove */}
+              {isOwner && !isMe && (
+                <div className="flex items-center gap-1">
+                  <select
+                    value={m.role}
+                    onChange={e => handleChangeRole(m.id, e.target.value)}
+                    className="px-2 py-1 text-xs rounded border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-ocean/30"
+                  >
+                    <option value="manager">Manager</option>
+                    <option value="staff">Staff</option>
+                  </select>
+                  <button onClick={() => handleRemove(m)}
+                    title="Remove from team"
+                    className="p-2 rounded-lg text-gray-400 hover:text-sunset hover:bg-sunset/10 cursor-pointer">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              )}
+              {/* Self-leave (any non-owner can remove themselves) */}
+              {isMe && m.role !== 'owner' && (
+                <button onClick={() => handleRemove(m)}
+                  className="text-xs text-gray-400 hover:text-sunset px-2 py-1 cursor-pointer">
+                  Leave team
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </Card>
+
+      {/* Add member — owner only */}
+      {isOwner ? (
+        <Card className="border-2 border-ocean/15">
+          <h3 className="font-bold text-deep mb-3 flex items-center gap-2">
+            <UserPlus size={16} /> Add team member
+          </h3>
+          <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 items-start">
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">STAYLO email</label>
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                placeholder="staff@example.com"
+                required
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Role</label>
+              <select
+                value={inviteRole}
+                onChange={e => setInviteRole(e.target.value)}
+                className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+              >
+                <option value="manager">Manager</option>
+                <option value="staff">Staff</option>
+              </select>
+            </div>
+            <div className="self-end">
+              <Button type="submit" disabled={adding}>
+                {adding ? <Loader2 size={14} className="animate-spin" /> : <UserPlus size={14} />}
+                Add
+              </Button>
+            </div>
+          </form>
+          {error && (
+            <p className="mt-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded p-2">
+              {error}
+            </p>
+          )}
+          <p className="mt-3 text-[11px] text-gray-400 italic">
+            💡 Email invitations to non-STAYLO users will ship with Chantier #4 (transactional email).
+            For now, ask them to sign up at <a href="/register" className="text-ocean hover:underline">staylo.app/register</a> first.
+          </p>
+        </Card>
+      ) : (
+        <Card className="bg-gray-50 text-center text-xs text-gray-500 italic">
+          Only the property owner can add or remove team members.
+        </Card>
+      )}
     </div>
   )
 }
@@ -282,6 +552,8 @@ function SettingsTab({ property, onRefresh }) {
     city:          property.city || '',
     country:       property.country || '',
     address:       property.address || '',
+    contact_name:  property.contact_name || '',
+    contact_role:  property.contact_role || '',
     contact_email: property.contact_email || '',
     contact_phone: property.contact_phone || '',
     check_in_time:  property.check_in_time  || '14:00',
@@ -310,6 +582,8 @@ function SettingsTab({ property, onRefresh }) {
       city:          form.city.trim() || null,
       country:       form.country.trim() || null,
       address:       form.address.trim() || null,
+      contact_name:  form.contact_name.trim() || null,
+      contact_role:  form.contact_role.trim() || null,
       contact_email: form.contact_email.trim() || null,
       contact_phone: form.contact_phone.trim() || null,
       check_in_time:  form.check_in_time  || '14:00',
@@ -374,6 +648,18 @@ function SettingsTab({ property, onRefresh }) {
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </div>
 
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Contact name</label>
+          <input type="text" value={form.contact_name} onChange={e => update('contact_name', e.target.value)}
+            placeholder="e.g. Sarah Chen"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Contact role</label>
+          <input type="text" value={form.contact_role} onChange={e => update('contact_role', e.target.value)}
+            placeholder="e.g. General Manager"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">Contact email</label>
           <input type="email" value={form.contact_email} onChange={e => update('contact_email', e.target.value)}
