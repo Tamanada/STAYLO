@@ -12,6 +12,7 @@ import LightningPaymentModal from '../../components/ota/LightningPaymentModal'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { computeRoomPricing } from '../../lib/roomPricing'
+import PhoneInput from '../../components/ui/PhoneInput'
 
 const COMMISSION_RATE = 0.10 // 10% STAYLO commission (on room price, NOT total)
 
@@ -432,9 +433,7 @@ export default function Checkout() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-500 mb-1">{t('checkout.phone', 'Phone')}</label>
-                  <input type="tel" value={guestPhone} onChange={e => setGuestPhone(e.target.value)}
-                    placeholder="+66..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean" />
+                  <PhoneInput value={guestPhone} onChange={setGuestPhone} />
                 </div>
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-medium text-gray-500 mb-1">{t('checkout.special_requests', 'Special Requests')}</label>

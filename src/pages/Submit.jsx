@@ -17,6 +17,7 @@ import { supabase } from '../lib/supabase'
 import { trackEvent, EVENTS } from '../lib/analytics'
 import { countries, thailandCities } from '../lib/countries'
 import { currencies, getCurrency } from '../lib/currencies'
+import PhoneInput from '../components/ui/PhoneInput'
 
 const propertyTypes = ['hotel', 'guesthouse', 'resort', 'villa', 'hostel', 'apartment', 'bungalow', 'homestay']
 
@@ -467,8 +468,10 @@ export default function Submit() {
               <div className="grid grid-cols-2 gap-4">
                 <Input label="Contact Email *" type="email" required
                   value={form.contact_email} onChange={e => updateField('contact_email', e.target.value)} />
-                <Input label="Phone" type="tel"
-                  value={form.contact_phone} onChange={e => updateField('contact_phone', e.target.value)} />
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <PhoneInput value={form.contact_phone} onChange={v => updateField('contact_phone', v)} />
+                </div>
               </div>
 
               <div>

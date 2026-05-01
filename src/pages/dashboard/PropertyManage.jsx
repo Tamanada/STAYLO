@@ -9,6 +9,7 @@ import {
   Settings as SettingsIcon, UserPlus, Shield, Mail, Crown
 } from 'lucide-react'
 import RewardModal from '../../components/dashboard/RewardModal'
+import PhoneInput from '../../components/ui/PhoneInput'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
@@ -328,7 +329,8 @@ function TeamTab({ property }) {
 
   async function handleAdd(e) {
     e.preventDefault()
-    if (!inviteEmail.trim()) return
+    const email = inviteEmail.trim().toLowerCase()
+    if (!email) return
     setAdding(true)
     setError('')
 
@@ -336,36 +338,52 @@ function TeamTab({ property }) {
     const { data: foundUser } = await supabase
       .from('users')
       .select('id, email, full_name')
-      .eq('email', inviteEmail.trim().toLowerCase())
+      .eq('email', email)
       .maybeSingle()
 
-    if (!foundUser) {
-      setError(`No STAYLO account found for ${inviteEmail}. Ask them to sign up first at staylo.app/register, then add them here.`)
-      setAdding(false)
-      return
-    }
-    if (foundUser.id === user?.id) {
+    // Already-on-team checks (cover both registered users and pending invites)
+    if (foundUser && foundUser.id === user?.id) {
       setError("You're already on the team as Owner.")
       setAdding(false)
       return
     }
-    if (members.some(m => m.user_id === foundUser.id)) {
+    if (foundUser && members.some(m => m.user_id === foundUser.id)) {
       setError(`${foundUser.email} is already on the team.`)
       setAdding(false)
       return
     }
+    if (members.some(m => !m.user_id && m.invited_email?.toLowerCase() === email)) {
+      setError(`An invitation for ${email} is already pending.`)
+      setAdding(false)
+      return
+    }
 
+    // Two paths:
+    //   1. User exists → INSERT with user_id, status='active' (immediate access)
+    //   2. User doesn't exist → INSERT with user_id=NULL, status='invited'
+    //      The trigger claim_pending_invitations() will auto-link them
+    //      when they sign up.
+    const insertPayload = foundUser
+      ? {
+          property_id: property.id,
+          user_id: foundUser.id,
+          role: inviteRole,
+          status: 'active',
+          invited_email: foundUser.email,
+          invited_by: user?.id,
+          accepted_at: new Date().toISOString(),
+        }
+      : {
+          property_id: property.id,
+          user_id: null,
+          role: inviteRole,
+          status: 'invited',
+          invited_email: email,
+          invited_by: user?.id,
+        }
     const { error: dbErr } = await supabase
       .from('property_members')
-      .insert({
-        property_id: property.id,
-        user_id: foundUser.id,
-        role: inviteRole,
-        status: 'active',
-        invited_email: foundUser.email,
-        invited_by: user?.id,
-        accepted_at: new Date().toISOString(),
-      })
+      .insert(insertPayload)
     if (dbErr) {
       setError(dbErr.message)
       setAdding(false)
@@ -421,11 +439,13 @@ function TeamTab({ property }) {
           const info = ROLE_INFO[m.role] || ROLE_INFO.staff
           const Icon = info.icon
           const isMe = m.user_id === user?.id
-          const isOnlyOwner = m.role === 'owner' && members.filter(x => x.role === 'owner').length === 1
+          const isPending = m.status === 'invited' && !m.user_id
           return (
-            <div key={m.id} className="flex items-center gap-3 p-4 border-b border-gray-100 last:border-0">
-              <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
-                <Users size={18} className="text-gray-400" />
+            <div key={m.id} className={`flex items-center gap-3 p-4 border-b border-gray-100 last:border-0 ${isPending ? 'bg-amber-50/40' : ''}`}>
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isPending ? 'bg-amber-100' : 'bg-gray-100'}`}>
+                {isPending
+                  ? <Mail size={16} className="text-amber-600" />
+                  : <Users size={18} className="text-gray-400" />}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -436,26 +456,40 @@ function TeamTab({ property }) {
                   <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${info.color}`}>
                     <Icon size={10} /> {info.label}
                   </span>
+                  {isPending && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                      ⏳ Pending invite
+                    </span>
+                  )}
                 </div>
                 {m.user?.email && (
                   <p className="text-xs text-gray-500 truncate">{m.user.email}</p>
                 )}
-                <p className="text-[10px] text-gray-400 mt-0.5">{info.desc}</p>
+                {isPending && (
+                  <p className="text-[10px] text-amber-700 mt-0.5">
+                    Will activate when {m.invited_email} signs up at staylo.app/register
+                  </p>
+                )}
+                {!isPending && (
+                  <p className="text-[10px] text-gray-400 mt-0.5">{info.desc}</p>
+                )}
               </div>
 
               {/* Role / remove actions — only owner can change others, only owner+self can remove */}
               {isOwner && !isMe && (
                 <div className="flex items-center gap-1">
-                  <select
-                    value={m.role}
-                    onChange={e => handleChangeRole(m.id, e.target.value)}
-                    className="px-2 py-1 text-xs rounded border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-ocean/30"
-                  >
-                    <option value="manager">Manager</option>
-                    <option value="staff">Staff</option>
-                  </select>
+                  {!isPending && (
+                    <select
+                      value={m.role}
+                      onChange={e => handleChangeRole(m.id, e.target.value)}
+                      className="px-2 py-1 text-xs rounded border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-ocean/30"
+                    >
+                      <option value="manager">Manager</option>
+                      <option value="staff">Staff</option>
+                    </select>
+                  )}
                   <button onClick={() => handleRemove(m)}
-                    title="Remove from team"
+                    title={isPending ? 'Cancel invitation' : 'Remove from team'}
                     className="p-2 rounded-lg text-gray-400 hover:text-sunset hover:bg-sunset/10 cursor-pointer">
                     <Trash2 size={14} />
                   </button>
@@ -515,8 +549,10 @@ function TeamTab({ property }) {
             </p>
           )}
           <p className="mt-3 text-[11px] text-gray-400 italic">
-            💡 Email invitations to non-STAYLO users will ship with Chantier #4 (transactional email).
-            For now, ask them to sign up at <a href="/register" className="text-ocean hover:underline">staylo.app/register</a> first.
+            💡 You can invite an email even if they don't have a STAYLO account yet —
+            their invitation will activate the moment they sign up at{' '}
+            <a href="/register" className="text-ocean hover:underline">staylo.app/register</a>.
+            Auto-emailed invitations land with Chantier #4 (transactional email).
           </p>
         </Card>
       ) : (
@@ -667,8 +703,7 @@ function SettingsTab({ property, onRefresh }) {
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">Contact phone</label>
-          <input type="text" value={form.contact_phone} onChange={e => update('contact_phone', e.target.value)}
-            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+          <PhoneInput value={form.contact_phone} onChange={v => update('contact_phone', v)} />
         </div>
 
         <div>

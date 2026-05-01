@@ -6,6 +6,7 @@ import { Badge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import { supabase } from '../../lib/supabase'
+import PhoneInput from '../../components/ui/PhoneInput'
 
 const statusConfig = {
   pending: { variant: 'orange', label: 'Pending' },
@@ -229,10 +230,9 @@ export default function AdminProperties() {
                   </div>
                   <div>
                     <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Contact phone</label>
-                    <input
-                      type="text" value={editForm.contact_phone}
-                      onChange={e => setEditForm(f => ({ ...f, contact_phone: e.target.value }))}
-                      className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+                    <PhoneInput
+                      value={editForm.contact_phone}
+                      onChange={v => setEditForm(f => ({ ...f, contact_phone: v }))}
                     />
                   </div>
                   <div className="sm:col-span-2">
