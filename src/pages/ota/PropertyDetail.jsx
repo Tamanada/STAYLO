@@ -78,6 +78,31 @@ export default function PropertyDetail() {
   // Lightbox for room media — { photos: string[], videos: string[], idx: number, name: string } | null
   // Combines videos (first) + photos so prev/next navigates through the whole gallery.
   const [roomLightbox, setRoomLightbox] = useState(null)
+  const [shareToast, setShareToast] = useState('')
+
+  // Share the property — uses native Web Share API on supported devices
+  // (mobile mostly), falls back to copying the URL to clipboard.
+  async function handleShare() {
+    const shareData = {
+      title: property?.name || 'STAYLO',
+      text: property ? `Check out ${property.name} on STAYLO` : 'Check out this property on STAYLO',
+      url: window.location.href,
+    }
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData)
+        return
+      }
+    } catch (e) { /* user cancelled or unsupported — fall through to copy */ }
+    try {
+      await navigator.clipboard.writeText(window.location.href)
+      setShareToast('Link copied!')
+      setTimeout(() => setShareToast(''), 2500)
+    } catch {
+      setShareToast('Could not share — copy the URL manually.')
+      setTimeout(() => setShareToast(''), 3000)
+    }
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -153,7 +178,6 @@ export default function PropertyDetail() {
     id: r.id,
     name: r.name,
     price: Number(r.base_price),
-    otaPrice: Math.round(Number(r.base_price) * 1.25),
     beds: r.bed_type || 'Double',
     guests: r.max_guests || 2,
     sqm: 25,
@@ -161,6 +185,7 @@ export default function PropertyDetail() {
     desc: r.description || '',
     photos: r.photo_urls || [],
     videos: r.video_urls || [],
+    pricingUnit: r.pricing_unit || 'room',  // 'room' | 'bed'
     // Carry the raw availability rows so we can compute promo + min_stay
     // per the actual selected dates without refetching.
     raw: r,
@@ -196,7 +221,12 @@ export default function PropertyDetail() {
               <ArrowLeft size={16} /> {t('booking.back', 'Back to results')}
             </Link>
             <div className="flex items-center gap-2">
-              <button className="p-2.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-all shadow-lg">
+              <button
+                type="button"
+                onClick={handleShare}
+                title="Share this property"
+                className="p-2.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-all shadow-lg cursor-pointer"
+              >
                 <Share2 size={16} className="text-gray-700" />
               </button>
               <button onClick={() => setIsFav(!isFav)}
@@ -391,10 +421,6 @@ export default function PropertyDetail() {
                     const pricing = computeRoomPricing(room.raw, checkIn, checkOut, 1)
                     const total      = pricing.discountedTotal
                     const original   = pricing.originalTotal
-                    const totalOTA   = room.otaPrice * nights
-                    // OTA savings calculated on the actual (post-promo) price
-                    const savingsVsOTA = totalOTA - total
-                    const savingsPercent = Math.round((savingsVsOTA / totalOTA) * 100)
                     const isSelected = selectedRoom === room.id
 
                     return (
@@ -404,10 +430,11 @@ export default function PropertyDetail() {
                           idx === 0 ? 'border-[#008009]/30' : 'border-gray-200'
                         } overflow-hidden`}>
 
-                        {/* Best value badge */}
-                        {idx === 0 && (
+                        {/* Lowest price highlight — keeps the visual anchor for the cheapest room
+                            but no more invented "savings vs OTA" claim. */}
+                        {idx === 0 && rooms.length > 1 && (
                           <div className="bg-[#008009] text-white px-4 py-1.5 text-xs font-bold flex items-center gap-1.5">
-                            <Flame size={12} /> {t('booking.best_deal', 'Best deal — Save')} {savingsPercent}% {t('booking.vs_ota', 'vs. other platforms')}
+                            <Flame size={12} /> {t('booking.best_value', 'Best value')}
                           </div>
                         )}
 
@@ -507,10 +534,20 @@ export default function PropertyDetail() {
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                             {/* Room info */}
                             <div className="flex-1">
-                              <h3 className="font-bold text-gray-900 text-base mb-1">{room.name}</h3>
+                              <h3 className="font-bold text-gray-900 text-base mb-1">
+                                {room.name}
+                                {room.pricingUnit === 'bed' && (
+                                  <span className="ml-2 text-[10px] font-bold uppercase tracking-wider bg-deep/10 text-deep px-2 py-0.5 rounded">
+                                    Per bed
+                                  </span>
+                                )}
+                              </h3>
                               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mb-2">
                                 <span className="flex items-center gap-1"><BedDouble size={14} /> {room.beds}</span>
-                                <span className="flex items-center gap-1"><Users size={14} /> {t('booking.up_to', 'Up to')} {room.guests} {room.guests === 1 ? 'guest' : 'guests'}</span>
+                                {room.pricingUnit === 'bed'
+                                  ? <span className="flex items-center gap-1"><Users size={14} /> {t('booking.dorm_capacity', 'Dorm room')}</span>
+                                  : <span className="flex items-center gap-1"><Users size={14} /> {t('booking.up_to', 'Up to')} {room.guests} {room.guests === 1 ? 'guest' : 'guests'}</span>
+                                }
                                 {room.sqm && <span>{room.sqm} m²</span>}
                               </div>
                               {room.desc && <p className="text-xs text-gray-500 mb-2">{room.desc}</p>}
@@ -539,18 +576,14 @@ export default function PropertyDetail() {
                             <div className="flex flex-col items-end gap-3 flex-shrink-0 sm:min-w-[180px] sm:text-right">
                               <div>
                                 <p className="text-xs text-gray-500 mb-0.5">{nights} {nights === 1 ? 'night' : 'nights'}, {guests} {Number(guests) === 1 ? 'adult' : 'adults'}</p>
-                                {/* If a promo is active, show the original price strike-through next to the OTA strike */}
-                                <div className="flex items-center gap-2 justify-end">
-                                  <span className="text-sm text-gray-400 line-through">${totalOTA}</span>
-                                  {pricing.hasPromo && pricing.savings > 0 && (
+                                {/* If a promo is active, show original price strike-through */}
+                                {pricing.hasPromo && pricing.savings > 0 && (
+                                  <div className="flex items-center gap-2 justify-end">
                                     <span className="text-sm text-orange/80 line-through">${original.toFixed(0)}</span>
-                                  )}
-                                </div>
+                                  </div>
+                                )}
                                 <p className="text-2xl font-extrabold text-gray-900">${total.toFixed(0)}</p>
                                 <p className="text-[11px] text-gray-400">{t('booking.before_pay_fees', '+ payment fees at checkout')}</p>
-                                <p className="text-xs text-[#008009] font-semibold mt-0.5">
-                                  {t('booking.you_save', 'You save')} ${savingsVsOTA.toFixed(0)} ({savingsPercent}%)
-                                </p>
                                 {pricing.hasPromo && pricing.savings > 0 && (
                                   <p className="text-[11px] text-orange font-semibold mt-0.5">
                                     🔥 Promo applied: −${pricing.savings.toFixed(0)}
@@ -649,10 +682,11 @@ export default function PropertyDetail() {
                       <>
                         <p className="text-xs text-gray-500">{t('booking.from', 'From')}</p>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-400 line-through">${lowestRoom.otaPrice}</span>
                           <span className="text-3xl font-extrabold text-gray-900">${lowestRoom.price}</span>
                         </div>
-                        <p className="text-xs text-gray-500">/ {t('booking.night', 'night')}</p>
+                        <p className="text-xs text-gray-500">
+                          / {lowestRoom.pricingUnit === 'bed' ? t('booking.bed', 'bed') : ''} {t('booking.night', 'night')}
+                        </p>
                       </>
                     ) : (
                       <p className="text-base font-bold text-gray-400">{t('booking.check_avail', 'Check availability')}</p>
@@ -706,21 +740,24 @@ export default function PropertyDetail() {
                   </div>
                 </div>
 
-                {/* Rooms count — only meaningful once a room is selected and
-                    the room type has more than 1 unit available. */}
+                {/* Rooms (or Beds for dorm-style) count — only meaningful once
+                    a room is selected and the room type has more than 1 unit. */}
                 {selectedRoomData && maxRoomsAvailable > 1 && (
                   <div className="border border-gray-200 rounded-lg p-2.5 hover:border-[#003580] transition-colors mt-2">
                     <label className="block text-[10px] font-bold text-gray-500 uppercase">
-                      {t('booking.rooms', 'Rooms')}
+                      {selectedRoomData.pricingUnit === 'bed' ? 'Beds' : t('booking.rooms', 'Rooms')}
                       <span className="ml-1 normal-case text-gray-400 font-normal">
                         (max {maxRoomsAvailable} available)
                       </span>
                     </label>
                     <select value={roomsCount} onChange={e => setRoomsCount(Number(e.target.value))}
                       className="w-full text-sm font-medium text-gray-900 border-0 p-0 focus:outline-none bg-transparent appearance-none">
-                      {Array.from({ length: maxRoomsAvailable }, (_, i) => i + 1).map(n =>
-                        <option key={n} value={n}>{n} {n === 1 ? 'room' : 'rooms'}</option>
-                      )}
+                      {Array.from({ length: maxRoomsAvailable }, (_, i) => i + 1).map(n => {
+                        const unit = selectedRoomData.pricingUnit === 'bed'
+                          ? (n === 1 ? 'bed' : 'beds')
+                          : (n === 1 ? 'room' : 'rooms')
+                        return <option key={n} value={n}>{n} {unit}</option>
+                      })}
                     </select>
                   </div>
                 )}
@@ -747,7 +784,13 @@ export default function PropertyDetail() {
                           <div className="flex justify-between text-gray-600">
                             <span>
                               ${room.price} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
-                              {roomsCount > 1 && <span className="text-gray-400"> × {roomsCount} rooms</span>}
+                              {roomsCount > 1 && (
+                                <span className="text-gray-400">
+                                  {' '}× {roomsCount} {room.pricingUnit === 'bed'
+                                    ? (roomsCount === 1 ? 'bed' : 'beds')
+                                    : (roomsCount === 1 ? 'room' : 'rooms')}
+                                </span>
+                              )}
                             </span>
                             <span className={pricing.hasPromo && pricing.savings > 0 ? 'text-gray-400 line-through' : ''}>
                               ${pricing.originalTotal.toFixed(2)}
@@ -822,6 +865,13 @@ export default function PropertyDetail() {
           </div>
         </div>
       </div>
+
+      {/* Share toast — feedback after a successful copy/share */}
+      {shareToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] bg-deep text-white px-4 py-2.5 rounded-full shadow-2xl text-sm font-medium animate-in fade-in slide-in-from-bottom-2">
+          {shareToast}
+        </div>
+      )}
 
       {/* ─── Room media lightbox ───────────────────────────
           Combines a room's videos (first) + photos into one virtual list.

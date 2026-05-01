@@ -724,6 +724,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
   const [form, setForm] = useState({
     name: '', description: '', type: 'standard', max_guests: 2,
     bed_type: 'double', base_price: '', quantity: 1, amenities: [],
+    pricing_unit: 'room',
   })
   // Carry photo/video URLs from a source room when "Copy from..." is used.
   // Stored separately because handleSave's regular flow doesn't touch media.
@@ -731,7 +732,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
 
   function openAdd() {
     setEditingRoom(null)
-    setForm({ name: '', description: '', type: 'standard', max_guests: 2, bed_type: 'double', base_price: '', quantity: 1, amenities: [] })
+    setForm({ name: '', description: '', type: 'standard', max_guests: 2, bed_type: 'double', base_price: '', quantity: 1, amenities: [], pricing_unit: 'room' })
     setCopiedMedia({ photo_urls: [], video_urls: [] })
     setShowForm(true)
   }
@@ -743,7 +744,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
   function copyFromRoom(sourceRoomId) {
     if (!sourceRoomId) {
       // Reset to blank
-      setForm({ name: '', description: '', type: 'standard', max_guests: 2, bed_type: 'double', base_price: '', quantity: 1, amenities: [] })
+      setForm({ name: '', description: '', type: 'standard', max_guests: 2, bed_type: 'double', base_price: '', quantity: 1, amenities: [], pricing_unit: 'room' })
       setCopiedMedia({ photo_urls: [], video_urls: [] })
       return
     }
@@ -772,6 +773,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       max_guests: room.max_guests, bed_type: room.bed_type,
       base_price: room.base_price, quantity: room.quantity,
       amenities: room.amenities || [],
+      pricing_unit: room.pricing_unit || 'room',
     })
     setShowForm(true)
   }
@@ -799,6 +801,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       base_price: Number(form.base_price),
       quantity: Number(form.quantity),
       amenities: form.amenities,
+      pricing_unit: form.pricing_unit || 'room',
     }
 
     if (editingRoom) {
@@ -1001,6 +1004,37 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
                 {BED_TYPES.map(bt => <option key={bt} value={bt}>{prettyLabel(bt)}</option>)}
               </select>
             </div>
+            {/* Pricing unit — per-room or per-bed (dorm-style) */}
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                {t('manage.pricing_unit', 'Pricing model')}
+              </label>
+              <div className="flex gap-2">
+                <button type="button"
+                  onClick={() => setForm(f => ({ ...f, pricing_unit: 'room' }))}
+                  className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                    form.pricing_unit === 'room'
+                      ? 'bg-ocean/10 border-ocean text-ocean'
+                      : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                  }`}>
+                  🚪 Per room <span className="text-xs opacity-60 ml-1">(standard hotel)</span>
+                </button>
+                <button type="button"
+                  onClick={() => setForm(f => ({ ...f, pricing_unit: 'bed', max_guests: 1 }))}
+                  className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
+                    form.pricing_unit === 'bed'
+                      ? 'bg-ocean/10 border-ocean text-ocean'
+                      : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                  }`}>
+                  🛏️ Per bed <span className="text-xs opacity-60 ml-1">(dorm / hostel)</span>
+                </button>
+              </div>
+              {form.pricing_unit === 'bed' && (
+                <p className="text-[11px] text-gray-500 mt-1.5">
+                  💡 Quantity = total beds available · Max guests = 1 per bed (or 2 for double bunks)
+                </p>
+              )}
+            </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.max_guests', 'Max Guests')}</label>
               <input type="number" min={1} max={20} value={form.max_guests}
@@ -1010,7 +1044,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                {t('manage.base_price', 'Default price per night (USD)')} *
+                {t('manage.base_price', 'Default price per night')} (USD, per {form.pricing_unit === 'bed' ? 'bed' : 'room'}) *
                 <span className="block text-[10px] text-gray-400 font-normal mt-0.5 normal-case">
                   {t('manage.price_default_hint', 'This is what the guest pays. You can override it per day in the Availability tab.')}
                 </span>
@@ -1028,7 +1062,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
                     {t('manage.net_received', 'Net you receive')} <span className="text-gray-400">({t('manage.after_commission', 'after 10% STAYLO commission')})</span>
                   </span>
                   <span className="font-bold text-libre">
-                    ${(Number(form.base_price) * 0.9).toFixed(2)} / {t('manage.night', 'night')}
+                    ${(Number(form.base_price) * 0.9).toFixed(2)} / {form.pricing_unit === 'bed' ? 'bed' : 'room'} / {t('manage.night', 'night')}
                   </span>
                 </div>
               )}
