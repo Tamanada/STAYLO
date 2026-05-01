@@ -5,7 +5,8 @@ import {
   ArrowLeft, Plus, BedDouble, Calendar, ClipboardList, Pencil, Trash2,
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
   ChevronLeft, ChevronRight, X, Save, Loader2, Ban, Check,
-  Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw, Gift
+  Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw, Gift,
+  Settings as SettingsIcon
 } from 'lucide-react'
 import RewardModal from '../../components/dashboard/RewardModal'
 import { Card } from '../../components/ui/Card'
@@ -113,6 +114,7 @@ const tabs = [
   { key: 'rooms', icon: BedDouble, label: 'Rooms' },
   { key: 'calendar', icon: Calendar, label: 'Availability' },
   { key: 'bookings', icon: ClipboardList, label: 'Bookings' },
+  { key: 'settings', icon: SettingsIcon, label: 'Settings' },
 ]
 
 export default function PropertyManage() {
@@ -251,7 +253,214 @@ export default function PropertyManage() {
       {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
+      {activeTab === 'settings' && <SettingsTab property={property} onRefresh={fetchData} />}
     </div>
+  )
+}
+
+// ============================================
+// SETTINGS TAB — property-level fields the hotelier may need to edit later
+// ============================================
+// Most basic info (name, location, description, amenities…) was set at
+// creation. This tab exposes the fields most likely to change over time:
+//   - name / city / country / address
+//   - contact email + phone
+//   - description
+//   - check-in / check-out times
+//   - cancellation policy
+//   - smoking policy
+//   - minimum age (adults-only / 18+ / 21+)
+//   - star rating
+//
+// Photos / videos / rooms / availability live in their own tabs.
+// ============================================
+function SettingsTab({ property, onRefresh }) {
+  const { t } = useTranslation()
+  const [form, setForm] = useState({
+    name:          property.name || '',
+    description:   property.description || '',
+    city:          property.city || '',
+    country:       property.country || '',
+    address:       property.address || '',
+    contact_email: property.contact_email || '',
+    contact_phone: property.contact_phone || '',
+    check_in_time:  property.check_in_time  || '14:00',
+    check_out_time: property.check_out_time || '12:00',
+    cancellation_policy: property.cancellation_policy || 'flexible',
+    smoking_policy:      property.smoking_policy || 'no_smoking',
+    star_rating:   property.star_rating ?? 3,
+    min_age:       property.min_age != null ? String(property.min_age) : '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [savedAt, setSavedAt] = useState(null)
+  const [error, setError] = useState('')
+
+  function update(field, value) {
+    setForm(f => ({ ...f, [field]: value }))
+    setSavedAt(null)
+  }
+
+  async function handleSave() {
+    if (!form.name.trim()) { setError('Property name is required'); return }
+    setSaving(true)
+    setError('')
+    const payload = {
+      name:          form.name.trim(),
+      description:   form.description.trim() || null,
+      city:          form.city.trim() || null,
+      country:       form.country.trim() || null,
+      address:       form.address.trim() || null,
+      contact_email: form.contact_email.trim() || null,
+      contact_phone: form.contact_phone.trim() || null,
+      check_in_time:  form.check_in_time  || '14:00',
+      check_out_time: form.check_out_time || '12:00',
+      cancellation_policy: form.cancellation_policy,
+      smoking_policy:      form.smoking_policy,
+      star_rating:   Number(form.star_rating) || 3,
+      min_age:       form.min_age ? Number(form.min_age) : null,
+    }
+    const { error: dbErr } = await supabase.from('properties').update(payload).eq('id', property.id)
+    setSaving(false)
+    if (dbErr) {
+      setError(dbErr.message)
+      return
+    }
+    setSavedAt(new Date())
+    onRefresh?.()
+  }
+
+  return (
+    <Card className="p-6">
+      <div className="mb-5">
+        <h2 className="text-lg font-bold text-deep flex items-center gap-2">
+          <SettingsIcon size={18} className="text-ocean" />
+          {t('manage.settings_title', 'Property settings')}
+        </h2>
+        <p className="text-xs text-gray-500 mt-1">
+          {t('manage.settings_subtitle', 'General property info that may change over time. Save commits everything at once.')}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.property_name', 'Property name')} *</label>
+          <input type="text" value={form.name} onChange={e => update('name', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.description', 'Description')}</label>
+          <textarea value={form.description} onChange={e => update('description', e.target.value)}
+            rows={3}
+            placeholder="A short paragraph that will appear at the top of your listing."
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 resize-none" />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">City</label>
+          <input type="text" value={form.city} onChange={e => update('city', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Country</label>
+          <input type="text" value={form.country} onChange={e => update('country', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+
+        <div className="sm:col-span-2">
+          <label className="block text-xs font-medium text-gray-500 mb-1">Full address</label>
+          <input type="text" value={form.address} onChange={e => update('address', e.target.value)}
+            placeholder="Street, district…"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Contact email</label>
+          <input type="email" value={form.contact_email} onChange={e => update('contact_email', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Contact phone</label>
+          <input type="text" value={form.contact_phone} onChange={e => update('contact_phone', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Check-in time</label>
+          <input type="time" value={form.check_in_time} onChange={e => update('check_in_time', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Check-out time</label>
+          <input type="time" value={form.check_out_time} onChange={e => update('check_out_time', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Cancellation policy</label>
+          <select value={form.cancellation_policy} onChange={e => update('cancellation_policy', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
+            <option value="flexible">Flexible</option>
+            <option value="moderate">Moderate (48h)</option>
+            <option value="strict">Strict (7 days)</option>
+            <option value="non_refundable">Non-refundable</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Smoking policy</label>
+          <select value={form.smoking_policy} onChange={e => update('smoking_policy', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
+            <option value="no_smoking">No Smoking</option>
+            <option value="designated_areas">Designated Areas</option>
+            <option value="allowed">Allowed</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">Star rating</label>
+          <select value={form.star_rating} onChange={e => update('star_rating', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
+            {[1, 2, 3, 4, 5].map(n => (
+              <option key={n} value={n}>{'⭐'.repeat(n)} ({n} star{n > 1 ? 's' : ''})</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">
+            🔞 {t('manage.min_age', 'Minimum age')}
+          </label>
+          <select value={form.min_age} onChange={e => update('min_age', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
+            <option value="">All ages welcome</option>
+            <option value="16">16+ (teens & adults)</option>
+            <option value="18">18+ (adults only)</option>
+            <option value="21">21+ (party / adults)</option>
+            <option value="25">25+ (luxury)</option>
+          </select>
+          <p className="text-[11px] text-gray-400 mt-1">
+            18+ properties refuse bookings with children at the OTA level.
+          </p>
+        </div>
+      </div>
+
+      {error && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-gray-100">
+        <Button onClick={handleSave} disabled={saving}>
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {saving ? t('manage.saving', 'Saving…') : t('manage.save_changes', 'Save changes')}
+        </Button>
+        {savedAt && (
+          <span className="text-xs text-libre flex items-center gap-1">
+            <Check size={12} /> Saved
+          </span>
+        )}
+      </div>
+    </Card>
   )
 }
 
