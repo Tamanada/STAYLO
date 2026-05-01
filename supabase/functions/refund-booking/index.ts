@@ -12,22 +12,22 @@
 //     refunded_at=now(), stripe_refund_id=re_xxx
 // ============================================================================
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
-import { getSupabase, getAuthUser, jsonResponse } from '../_shared/supabase.ts'
+import { getServiceClient, getAuthUser } from '../_shared/supabase.ts'
 import { stripeFetch } from '../_shared/stripe.ts'
-import { corsHeaders, handleOptions } from '../_shared/cors.ts'
+import { preflight, jsonResponse } from '../_shared/cors.ts'
 
 interface RefundReq { booking_id: string; reason?: string }
 interface StripeRefund { id: string; status: string; amount: number }
 
 serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return handleOptions()
+  const pre = preflight(req); if (pre) return pre
   if (req.method !== 'POST') return jsonResponse({ error: 'POST only' }, 405)
 
   // 1. Auth — must be a logged-in admin
   const user = await getAuthUser(req)
   if (!user) return jsonResponse({ error: 'Unauthorized' }, 401)
 
-  const sb = getSupabase()
+  const sb = getServiceClient()
   const { data: profile } = await sb.from('users').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') {
     return jsonResponse({ error: 'Admin role required' }, 403)

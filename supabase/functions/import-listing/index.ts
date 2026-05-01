@@ -19,8 +19,8 @@
 // Caller: any authenticated STAYLO user (the form on /submit).
 // ============================================================================
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
-import { getAuthUser, jsonResponse } from '../_shared/supabase.ts'
-import { handleOptions } from '../_shared/cors.ts'
+import { getAuthUser } from '../_shared/supabase.ts'
+import { preflight, jsonResponse } from '../_shared/cors.ts'
 
 interface Req { url: string }
 
@@ -43,7 +43,7 @@ interface Extracted {
 const USER_AGENT = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
 serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return handleOptions()
+  const pre = preflight(req); if (pre) return pre
   if (req.method !== 'POST') return jsonResponse({ error: 'POST only' }, 405)
 
   // Auth — must be a logged-in user (any role). Prevents random anon abuse.

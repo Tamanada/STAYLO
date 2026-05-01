@@ -23,19 +23,19 @@
 // Auth: admin-only.
 // ============================================================================
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
-import { getSupabase, getAuthUser, jsonResponse } from '../_shared/supabase.ts'
-import { handleOptions } from '../_shared/cors.ts'
+import { getServiceClient, getAuthUser } from '../_shared/supabase.ts'
+import { preflight, jsonResponse } from '../_shared/cors.ts'
 
 interface ReqBody { booking_id: string; note?: string }
 
 serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return handleOptions()
+  const pre = preflight(req); if (pre) return pre
   if (req.method !== 'POST') return jsonResponse({ error: 'POST only' }, 405)
 
   const user = await getAuthUser(req)
   if (!user) return jsonResponse({ error: 'Unauthorized' }, 401)
 
-  const sb = getSupabase()
+  const sb = getServiceClient()
   const { data: profile } = await sb.from('users').select('role, email').eq('id', user.id).single()
   if (profile?.role !== 'admin') return jsonResponse({ error: 'Admin only' }, 403)
 

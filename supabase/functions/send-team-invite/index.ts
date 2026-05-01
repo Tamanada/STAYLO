@@ -16,8 +16,8 @@
 // frontend can fall back to the manual share link.
 // ============================================================================
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
-import { getAuthUser, jsonResponse } from '../_shared/supabase.ts'
-import { handleOptions } from '../_shared/cors.ts'
+import { getAuthUser } from '../_shared/supabase.ts'
+import { preflight, jsonResponse } from '../_shared/cors.ts'
 
 interface Req {
   email: string
@@ -30,7 +30,7 @@ interface Req {
 const FALLBACK_FROM = 'STAYLO <onboarding@resend.dev>'
 
 serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return handleOptions()
+  const pre = preflight(req); if (pre) return pre
   if (req.method !== 'POST') return jsonResponse({ error: 'POST only' }, 405)
 
   // Auth — must be authenticated user (any user; team RLS is checked at insert)
