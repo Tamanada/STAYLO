@@ -1273,7 +1273,9 @@ function CalendarTab({ rooms }) {
     const year = currentMonth.getFullYear()
     const month = currentMonth.getMonth()
     const daysInMonth = new Date(year, month + 1, 0).getDate()
-    const firstDay = new Date(year, month, 1).getDay()
+    // Convert JS getDay() (0=Sun ... 6=Sat) to Monday-first (0=Mon ... 6=Sun)
+    const rawDay = new Date(year, month, 1).getDay()
+    const firstDay = (rawDay + 6) % 7
     return { daysInMonth, firstDay }
   }
 
@@ -1666,10 +1668,12 @@ function CalendarTab({ rooms }) {
           )}
         </div>
 
-        {/* Day headers */}
+        {/* Day headers — Monday-first (matches getDaysInMonth firstDay calc) */}
         <div className="grid grid-cols-7 gap-1 mb-1">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-            <div key={d} className="text-center text-xs font-medium text-gray-400 py-1">{d}</div>
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
+            <div key={d} className={`text-center text-xs font-medium py-1 ${d === 'Sat' || d === 'Sun' ? 'text-orange/70' : 'text-gray-400'}`}>
+              {d}
+            </div>
           ))}
         </div>
 
