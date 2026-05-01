@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, Eye, Rocket, ExternalLink, ImageOff, X } from 'lucide-react'
+import { CheckCircle, XCircle, Eye, Rocket, ExternalLink, ImageOff, X, Pencil, Save, Loader2 } from 'lucide-react'
 import { useAdminData } from '../../hooks/useAdminData'
 import { DataTable } from '../../components/admin/DataTable'
 import { Badge } from '../../components/ui/Badge'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
+import { supabase } from '../../lib/supabase'
 
 const statusConfig = {
   pending: { variant: 'orange', label: 'Pending' },
@@ -16,9 +17,51 @@ const statusConfig = {
 const filters = ['all', 'pending', 'reviewing', 'validated', 'live']
 
 export default function AdminProperties() {
-  const { properties, users, updatePropertyStatus, getUserById } = useAdminData()
+  const { properties, users, updatePropertyStatus, getUserById, refetch } = useAdminData()
   const [filter, setFilter] = useState('all')
   const [selected, setSelected] = useState(null)
+  const [editing, setEditing] = useState(false)
+  const [editForm, setEditForm] = useState({})
+  const [saving, setSaving] = useState(false)
+  const [editError, setEditError] = useState('')
+
+  function openEdit() {
+    if (!selected) return
+    setEditForm({
+      name:          selected.name || '',
+      city:          selected.city || '',
+      country:       selected.country || '',
+      contact_email: selected.contact_email || '',
+      contact_phone: selected.contact_phone || '',
+    })
+    setEditError('')
+    setEditing(true)
+  }
+
+  async function handleSaveEdit() {
+    if (!selected) return
+    if (!editForm.name.trim()) { setEditError('Name is required'); return }
+    setSaving(true)
+    setEditError('')
+    const payload = {
+      name:          editForm.name.trim(),
+      city:          editForm.city.trim() || null,
+      country:       editForm.country.trim() || null,
+      contact_email: editForm.contact_email.trim() || null,
+      contact_phone: editForm.contact_phone.trim() || null,
+    }
+    const { error } = await supabase.from('properties').update(payload).eq('id', selected.id)
+    setSaving(false)
+    if (error) {
+      setEditError(error.message)
+      return
+    }
+    // Optimistically update the open modal so the user sees the new values
+    // immediately, then refetch the full list in the background.
+    setSelected(prev => ({ ...prev, ...payload }))
+    setEditing(false)
+    refetch()
+  }
 
   const filtered = filter === 'all' ? properties : properties.filter(p => p.status === filter)
 
@@ -119,15 +162,92 @@ export default function AdminProperties() {
       />
 
       {/* Property detail modal */}
-      <Modal open={!!selected} onClose={() => setSelected(null)} title="Property Details">
+      <Modal
+        open={!!selected}
+        onClose={() => { setSelected(null); setEditing(false); setEditError('') }}
+        title="Property Details"
+      >
         {selected && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-deep">{selected.name}</h2>
+            <div className="flex items-start justify-between gap-3">
+              {editing ? (
+                <input
+                  type="text"
+                  value={editForm.name}
+                  onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                  autoFocus
+                  className="flex-1 text-xl font-bold text-deep border-b-2 border-ocean focus:outline-none bg-transparent"
+                />
+              ) : (
+                <h2 className="text-xl font-bold text-deep flex items-center gap-2">
+                  {selected.name}
+                  <button
+                    type="button"
+                    onClick={openEdit}
+                    title="Edit property details"
+                    className="p-1 rounded hover:bg-gray-100 text-gray-400 hover:text-ocean cursor-pointer transition-colors"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                </h2>
+              )}
               <Badge variant={statusConfig[selected.status]?.variant}>
                 {statusConfig[selected.status]?.label}
               </Badge>
             </div>
+
+            {/* Inline edit form — appears below the header in edit mode */}
+            {editing && (
+              <div className="bg-ocean/5 border border-ocean/20 rounded-xl p-4 space-y-3">
+                <p className="text-xs font-bold uppercase tracking-wider text-ocean">Edit property</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">City</label>
+                    <input
+                      type="text" value={editForm.city}
+                      onChange={e => setEditForm(f => ({ ...f, city: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Country</label>
+                    <input
+                      type="text" value={editForm.country}
+                      onChange={e => setEditForm(f => ({ ...f, country: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Contact email</label>
+                    <input
+                      type="email" value={editForm.contact_email}
+                      onChange={e => setEditForm(f => ({ ...f, contact_email: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Contact phone</label>
+                    <input
+                      type="text" value={editForm.contact_phone}
+                      onChange={e => setEditForm(f => ({ ...f, contact_phone: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+                    />
+                  </div>
+                </div>
+                {editError && (
+                  <p className="text-xs text-red-600">{editError}</p>
+                )}
+                <div className="flex items-center gap-2 pt-1">
+                  <Button size="sm" onClick={handleSaveEdit} disabled={saving}>
+                    {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+                    {saving ? 'Saving…' : 'Save changes'}
+                  </Button>
+                  <Button variant="secondary" size="sm" onClick={() => { setEditing(false); setEditError('') }}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* Photo gallery — what the hotelier uploaded.
                 Critical for the admin to validate a listing before approval. */}
