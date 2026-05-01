@@ -143,23 +143,9 @@ export default function PropertyDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoom, realRooms])
 
-  // ── Per-bed auto-sync ──────────────────────────────
-  // For dorm-style rooms (pricing_unit='bed'), the number of beds needed is
-  // ceil(guests / people_per_bed). E.g. 4 guests in a double-bed dorm =
-  // 2 beds (2 couples), in a single-bed dorm = 4 beds.
-  useEffect(() => {
-    if (!selectedRoom) return
-    const r = realRooms.find(x => x.id === selectedRoom)
-    if (r?.pricing_unit === 'bed') {
-      const totalPeople = (Number(adults) || 0) + (Number(children) || 0)
-      const peoplePerBed = Math.max(1, Number(r.max_guests) || 1)
-      const bedsNeeded = Math.max(1, Math.ceil(totalPeople / peoplePerBed))
-      if (bedsNeeded !== roomsCount) {
-        setRoomsCount(bedsNeeded)
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRoom, adults, children, realRooms])
+  // ── Effective bed count for per-bed rooms ────────────
+  // PURELY DERIVED — no state drift, always reflects current guests.
+  // Computed once below as `effectiveRoomsCount`.
 
   if (loading) {
     return (
@@ -219,12 +205,18 @@ export default function PropertyDetail() {
   const selectedRoomData = selectedRoom ? rooms.find(r => r.id === selectedRoom) : null
   const isPerBed = selectedRoomData?.pricingUnit === 'bed'
   const rawRoom = selectedRoom ? realRooms.find(r => r.id === selectedRoom) : null
-  const peoplePerBed = Math.max(1, Number(rawRoom?.max_guests) || 1)
-  // Total beds for per-bed rooms. Defensive: legacy data may have stored
-  // capacity in max_guests with quantity=1 → take the larger.
-  const totalBeds = isPerBed
-    ? Math.max(rawRoom?.quantity || 1, rawRoom?.max_guests || 1)
-    : 1
+  // Sanity-cap: a "bed" should never sleep more than 4 people in practice.
+  // Anything beyond is bad data (e.g. max_guests=10 was a per-room capacity).
+  const peoplePerBed = isPerBed
+    ? Math.min(4, Math.max(1, Number(rawRoom?.max_guests) || 1))
+    : Math.max(1, Number(rawRoom?.max_guests) || 1)
+  // Total beds for per-bed rooms.
+  const totalBeds = isPerBed ? (rawRoom?.quantity || 1) : 1
+  // For per-bed: the booked bed count is purely derived from guest count.
+  // No more drift between picker state and reality.
+  const effectiveRoomsCount = isPerBed
+    ? Math.max(1, Math.min(totalBeds, Math.ceil((adults + children) / peoplePerBed)))
+    : roomsCount
   const effectiveMax = selectedRoomData
     ? (isPerBed
         ? totalBeds * peoplePerBed
@@ -788,10 +780,10 @@ export default function PropertyDetail() {
                   </div>
                 )}
 
-                {/* Per-bed info banner — bed count auto = ceil(guests / people_per_bed) */}
+                {/* Per-bed info banner — bed count = ceil(guests / people_per_bed) */}
                 {selectedRoomData && isPerBed && (adults + children) > 0 && (
                   <div className="bg-deep/5 border border-deep/15 rounded-lg p-2.5 mt-2 text-xs text-deep">
-                    🛏️ <strong>{roomsCount} bed{roomsCount > 1 ? 's' : ''}</strong> reserved
+                    🛏️ <strong>{effectiveRoomsCount} bed{effectiveRoomsCount > 1 ? 's' : ''}</strong> reserved
                     {peoplePerBed > 1 && (
                       <span className="text-gray-500"> (each bed sleeps up to {peoplePerBed})</span>
                     )}
@@ -816,17 +808,19 @@ export default function PropertyDetail() {
                   <div className="bg-gray-50 rounded-lg p-3 mb-3 space-y-1.5 text-sm">
                     {(() => {
                       const room = rooms.find(r => r.id === selectedRoom) || lowestRoom
-                      const pricing = computeRoomPricing(room.raw, checkIn, checkOut, roomsCount)
+                      // Use effective bed count for per-bed rooms — picker is hidden, derived from guests
+                      const computeUnits = room.raw?.pricing_unit === 'bed' ? effectiveRoomsCount : roomsCount
+                      const pricing = computeRoomPricing(room.raw, checkIn, checkOut, computeUnits)
                       return (
                         <>
                           <div className="flex justify-between text-gray-600">
                             <span>
                               ${room.price} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
-                              {roomsCount > 1 && (
+                              {computeUnits > 1 && (
                                 <span className="text-gray-400">
-                                  {' '}× {roomsCount} {room.pricingUnit === 'bed'
-                                    ? (roomsCount === 1 ? 'bed' : 'beds')
-                                    : (roomsCount === 1 ? 'room' : 'rooms')}
+                                  {' '}× {computeUnits} {room.pricingUnit === 'bed'
+                                    ? (computeUnits === 1 ? 'bed' : 'beds')
+                                    : (computeUnits === 1 ? 'room' : 'rooms')}
                                 </span>
                               )}
                             </span>

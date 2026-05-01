@@ -18,6 +18,7 @@ import {
 import { supabase } from '../../lib/supabase'
 import { Badge } from '../../components/ui/Badge'
 import { formatCurrency } from '../../lib/currencies'
+import { formatDate } from '../../lib/dateFormat'
 
 const TABS = [
   { key: 'bookings', label: 'Bookings',  icon: Calendar },
@@ -526,7 +527,7 @@ function BookingsTable({ bookings, propsById, usersById, escrowMode = false, onF
                     )}
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
-                    {new Date(b.created_at).toLocaleDateString()}
+                    {formatDate(b.created_at)}
                   </td>
                   <td className="px-4 py-3">
                     <p className="font-medium text-deep">{b.guest_name || '—'}</p>
@@ -541,7 +542,7 @@ function BookingsTable({ bookings, propsById, usersById, escrowMode = false, onF
                     {prop && <p className="text-[11px] text-gray-400">{prop.city}, {prop.country}</p>}
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-600 whitespace-nowrap">
-                    {b.check_in} → {b.check_out}
+                    {formatDate(b.check_in)} → {formatDate(b.check_out)}
                     <p className="text-[11px] text-gray-400">{b.guests || 1} guest{(b.guests || 1) > 1 ? 's' : ''}</p>
                   </td>
                   <td className="px-4 py-3 text-right font-bold text-deep whitespace-nowrap">

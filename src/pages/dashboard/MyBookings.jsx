@@ -23,6 +23,7 @@ import {
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { formatCurrency } from '../../lib/currencies'
+import { formatDate } from '../../lib/dateFormat'
 
 const STATUS_CONFIG = {
   pending:   { label: 'Pending',   icon: Clock,       color: 'bg-amber-50 text-amber-700 border-amber-200',     dot: 'bg-amber-500' },
@@ -367,14 +368,14 @@ function BookingCard({ booking, property, room, isHotelier, isPast }) {
               <p className="text-gray-400 text-xs">Check-in</p>
               <p className="font-medium text-gray-900 flex items-center gap-1">
                 <Calendar size={12} className="text-ocean" />
-                {booking.check_in}
+                {formatDate(booking.check_in)}
               </p>
             </div>
             <div>
               <p className="text-gray-400 text-xs">Check-out</p>
               <p className="font-medium text-gray-900 flex items-center gap-1">
                 <Calendar size={12} className="text-ocean" />
-                {booking.check_out}
+                {formatDate(booking.check_out)}
               </p>
             </div>
             <div>
