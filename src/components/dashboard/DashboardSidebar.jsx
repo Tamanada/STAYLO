@@ -99,8 +99,14 @@ export function DashboardSidebar() {
     if (!user) { setStateLoaded(true); return }
     let cancelled = false
 
+    // Count via property_members so team members (managers/staff) also see
+    // the Hosting section, not just owners. Each property they belong to
+    // gets one row in property_members regardless of role.
     Promise.all([
-      supabase.from('properties').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+      supabase.from('property_members')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', 'active'),
       supabase.from('shares').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
     ]).then(([propRes, shareRes]) => {
       if (cancelled) return

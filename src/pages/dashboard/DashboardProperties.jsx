@@ -38,16 +38,40 @@ export default function DashboardProperties() {
 
   useEffect(() => {
     if (!user) return
+    let cancelled = false
     setLoading(true)
-    supabase
-      .from('properties')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        setProperties(data || [])
+    // Show every property the user has access to — owner OR team member.
+    // We query property_members (which always has a row for the owner +
+    // each invited team member) and resolve the linked property records.
+    async function fetchAll() {
+      const { data: memberships } = await supabase
+        .from('property_members')
+        .select('property_id, role')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+
+      const propIds = (memberships || []).map(m => m.property_id)
+      if (propIds.length === 0) {
+        if (!cancelled) { setProperties([]); setLoading(false) }
+        return
+      }
+      const { data: props } = await supabase
+        .from('properties')
+        .select('*')
+        .in('id', propIds)
+        .order('created_at', { ascending: false })
+
+      // Attach the user's role for display
+      const roleByProp = {}
+      ;(memberships || []).forEach(m => { roleByProp[m.property_id] = m.role })
+      const enriched = (props || []).map(p => ({ ...p, _myRole: roleByProp[p.id] || 'member' }))
+      if (!cancelled) {
+        setProperties(enriched)
         setLoading(false)
-      })
+      }
+    }
+    fetchAll()
+    return () => { cancelled = true }
   }, [user])
 
   if (authLoading || loading) {
@@ -102,11 +126,16 @@ export default function DashboardProperties() {
                       <Icon size={22} className="text-ocean" />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-3 mb-1">
+                      <div className="flex items-center gap-3 mb-1 flex-wrap">
                         <h3 className="font-bold text-deep text-lg truncate">{prop.name}</h3>
                         <Badge variant={statusColors[prop.status]}>
                           {t(`dashboard.status.${prop.status}`, prop.status)}
                         </Badge>
+                        {prop._myRole && prop._myRole !== 'owner' && (
+                          <Badge variant="blue">
+                            {prop._myRole === 'manager' ? '⚙️ Manager' : '🧑 Staff'}
+                          </Badge>
+                        )}
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
                         {prop.type && (
