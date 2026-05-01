@@ -50,6 +50,7 @@ import EmailVerificationGate from './components/auth/EmailVerificationGate'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminProperties from './pages/admin/AdminProperties'
+import AdminProspects from './pages/admin/AdminProspects'
 import AdminSurveys from './pages/admin/AdminSurveys'
 import AdminReferrals from './pages/admin/AdminReferrals'
 import AdminAmbassadors from './pages/admin/AdminAmbassadors'
@@ -67,6 +68,7 @@ export default function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="properties" element={<AdminProperties />} />
+            <Route path="prospects" element={<AdminProspects />} />
             <Route path="surveys" element={<AdminSurveys />} />
             <Route path="referrals" element={<AdminReferrals />} />
             <Route path="ambassadors" element={<AdminAmbassadors />} />
