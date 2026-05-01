@@ -704,10 +704,6 @@ export default function PropertyDetail() {
                     <span>{t('booking.badge_escrow', 'Funds held safely until check-out')}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-gray-600">
-                    <CheckCircle2 size={14} className="text-[#008009] flex-shrink-0" />
-                    <span>{t('booking.badge_coop', 'Hotels co-own STAYLO — no middleman')}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-600">
                     <BadgeCheck size={14} className="text-[#003580] flex-shrink-0" />
                     <span>{t('booking.badge_verified', 'STAYLO verified property')}</span>
                   </div>
