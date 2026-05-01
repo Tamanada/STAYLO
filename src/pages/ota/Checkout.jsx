@@ -73,6 +73,7 @@ export default function Checkout() {
   const checkIn = searchParams.get('in')
   const checkOut = searchParams.get('out')
   const guests = searchParams.get('guests') || '2'
+  const roomsCount = Math.max(1, Number(searchParams.get('rooms')) || 1)
 
   const [property, setProperty] = useState(null)
   const [room, setRoom] = useState(null)
@@ -157,17 +158,19 @@ export default function Checkout() {
 
   const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)))
 
-  // Calculate total with potential price overrides
-  let roomTotal = 0
+  // Calculate total with potential price overrides — for ONE room first.
+  let perRoomTotal = 0
   const d = new Date(checkIn)
   const availabilityList = Array.isArray(room.room_availability) ? room.room_availability : []
   for (let i = 0; i < nights; i++) {
     const dateStr = d.toISOString().split('T')[0]
     const override = availabilityList.find(a => a.date === dateStr)
     const nightlyPrice = Number(override?.price_override ?? room.base_price ?? 0)
-    roomTotal += isFinite(nightlyPrice) ? nightlyPrice : 0
+    perRoomTotal += isFinite(nightlyPrice) ? nightlyPrice : 0
     d.setDate(d.getDate() + 1)
   }
+  // Multiply by number of rooms reserved (1 by default).
+  const roomTotal = perRoomTotal * roomsCount
 
   // Pricing model: STAYLO commission comes OUT OF the room price (10%).
   // The processing fee is added ON TOP and paid by the guest.
@@ -185,13 +188,20 @@ export default function Checkout() {
     // (URL tampering, stale form), refuse to insert an over-capacity booking.
     const requestedGuests = Number(guests)
     const roomCap = Number(room.max_guests || 0)
-    if (roomCap > 0 && requestedGuests > roomCap) {
+    const effectiveCap = roomCap * roomsCount
+    if (roomCap > 0 && requestedGuests > effectiveCap) {
       setError(
         t('checkout.over_capacity',
-          `This room sleeps up to ${roomCap} guests. You selected ${requestedGuests}. ` +
-          `Please go back and pick a larger room or reduce the guest count.`
+          `Your ${roomsCount} room${roomsCount > 1 ? 's' : ''} sleep up to ${effectiveCap} guests total. ` +
+          `You selected ${requestedGuests}. Please go back and reduce the guest count or add more rooms.`
         )
       )
+      return
+    }
+    // Stock check — can't book more rooms than the room type has
+    const stockCap = Number(room.quantity || 1)
+    if (roomsCount > stockCap) {
+      setError(`Only ${stockCap} of this room type available — you tried to book ${roomsCount}.`)
       return
     }
 
@@ -209,6 +219,7 @@ export default function Checkout() {
           check_in: checkIn,
           check_out: checkOut,
           guests: Number(guests),
+          rooms_count: roomsCount,
           total_price: totalPrice,
           commission: commission,
           status: 'pending',
@@ -468,12 +479,21 @@ export default function Checkout() {
                   <Users size={14} className="text-ocean" />
                   <span>{guests} {Number(guests) === 1 ? 'guest' : 'guests'}</span>
                 </div>
+                {roomsCount > 1 && (
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <BedDouble size={14} className="text-ocean" />
+                    <span>{roomsCount} {roomsCount === 1 ? 'room' : 'rooms'}</span>
+                  </div>
+                )}
               </div>
 
               {/* Price breakdown — transparent: room, hotelier-net, processing fee, total */}
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">{room.name} × {nights} {nights === 1 ? 'night' : 'nights'}</span>
+                  <span className="text-gray-500">
+                    {room.name} × {nights} {nights === 1 ? 'night' : 'nights'}
+                    {roomsCount > 1 && <span className="text-gray-400"> × {roomsCount} rooms</span>}
+                  </span>
                   <span className="text-deep">${roomTotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-gray-400 pl-3">

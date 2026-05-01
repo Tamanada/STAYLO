@@ -62,6 +62,7 @@ export default function PropertyDetail() {
   const [checkIn, setCheckIn] = useState(searchParams.get('in') || getDefaultCheckIn())
   const [checkOut, setCheckOut] = useState(searchParams.get('out') || getDefaultCheckOut())
   const [guests, setGuests] = useState(searchParams.get('guests') || '2')
+  const [roomsCount, setRoomsCount] = useState(Number(searchParams.get('rooms')) || 1)
   const [photoIndex, setPhotoIndex] = useState(0)
   const [isFav, setIsFav] = useState(false)
   const [showAllPhotos, setShowAllPhotos] = useState(false)
@@ -158,14 +159,19 @@ export default function PropertyDetail() {
   const lowestRoom = rooms.length > 0 ? rooms.reduce((a, b) => a.price < b.price ? a : b) : null
 
   // ── Capacity guard helpers (hook moved above early returns) ─────────
-  // The dropdown should never offer more guests than any room can take.
-  // Once a room is selected, hard-cap to that room's capacity.
+  // The dropdown caps guests at (rooms_selected × room.max_guests).
+  // E.g. 3 doubles = up to 6 guests. Auto-clamp on smaller selection.
   const selectedRoomData = selectedRoom ? rooms.find(r => r.id === selectedRoom) : null
-  const maxAllowedGuests = selectedRoomData
-    ? selectedRoomData.guests
+  const effectiveMax = selectedRoomData
+    ? selectedRoomData.guests * roomsCount
     : (rooms.length ? Math.max(...rooms.map(r => r.guests || 1)) : 6)
+  const maxAllowedGuests = effectiveMax
+  // How many of THIS room type can be selected (limited by room.quantity, the
+  // total stock the hotelier listed). Real per-day availability is enforced
+  // server-side; this is a coarse client-side cap.
+  const maxRoomsAvailable = selectedRoomData ? (realRooms.find(r => r.id === selectedRoom)?.quantity || 1) : 1
 
-  const guestsExceedRoom = selectedRoomData && Number(guests) > selectedRoomData.guests
+  const guestsExceedRoom = selectedRoomData && Number(guests) > effectiveMax
 
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
@@ -617,7 +623,7 @@ export default function PropertyDetail() {
                       {t('booking.guests', 'Guests')}
                       {selectedRoomData && (
                         <span className="ml-1 normal-case text-gray-400 font-normal">
-                          (max {selectedRoomData.guests})
+                          (max {effectiveMax})
                         </span>
                       )}
                     </label>
@@ -629,6 +635,25 @@ export default function PropertyDetail() {
                     </select>
                   </div>
                 </div>
+
+                {/* Rooms count — only meaningful once a room is selected and
+                    the room type has more than 1 unit available. */}
+                {selectedRoomData && maxRoomsAvailable > 1 && (
+                  <div className="border border-gray-200 rounded-lg p-2.5 hover:border-[#003580] transition-colors mt-2">
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase">
+                      {t('booking.rooms', 'Rooms')}
+                      <span className="ml-1 normal-case text-gray-400 font-normal">
+                        (max {maxRoomsAvailable} available)
+                      </span>
+                    </label>
+                    <select value={roomsCount} onChange={e => setRoomsCount(Number(e.target.value))}
+                      className="w-full text-sm font-medium text-gray-900 border-0 p-0 focus:outline-none bg-transparent appearance-none">
+                      {Array.from({ length: maxRoomsAvailable }, (_, i) => i + 1).map(n =>
+                        <option key={n} value={n}>{n} {n === 1 ? 'room' : 'rooms'}</option>
+                      )}
+                    </select>
+                  </div>
+                )}
 
                 {/* Capacity warning — never silent overbooking */}
                 {guestsExceedRoom && (
@@ -646,17 +671,15 @@ export default function PropertyDetail() {
                   <div className="bg-gray-50 rounded-lg p-3 mb-3 space-y-1.5 text-sm">
                     {(() => {
                       const room = rooms.find(r => r.id === selectedRoom) || lowestRoom
-                      const total = room.price * nights
-                      // Pricing model — must match Checkout.jsx exactly:
-                      //   - Guest pays the room price (commission is INSIDE)
-                      //   - STAYLO takes 10% out of room → hotelier gets 90%
-                      //   - Processing fees added on top at checkout based on
-                      //     payment method (3% card / 0% Lightning / 1% on-chain).
-                      //     We don't know the method yet here, so we just hint.
+                      const perNightTotal = room.price * roomsCount
+                      const total = perNightTotal * nights
                       return (
                         <>
                           <div className="flex justify-between text-gray-600">
-                            <span>${room.price} × {nights} {nights === 1 ? 'night' : 'nights'}</span>
+                            <span>
+                              ${room.price} × {nights} {nights === 1 ? 'night' : 'nights'}
+                              {roomsCount > 1 && <span className="text-gray-400"> × {roomsCount} rooms</span>}
+                            </span>
                             <span>${total.toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
@@ -677,7 +700,7 @@ export default function PropertyDetail() {
                   disabled={!selectedRoom || guestsExceedRoom}
                   onClick={() => {
                     if (!selectedRoom || guestsExceedRoom) return
-                    navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&guests=${guests}`)
+                    navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&guests=${guests}&rooms=${roomsCount}`)
                   }}
                   className={`w-full py-3.5 rounded-lg font-bold text-base transition-all ${
                     selectedRoom && !guestsExceedRoom
