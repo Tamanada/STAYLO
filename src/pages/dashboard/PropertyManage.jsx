@@ -1020,7 +1020,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
                   🚪 Per room <span className="text-xs opacity-60 ml-1">(standard hotel)</span>
                 </button>
                 <button type="button"
-                  onClick={() => setForm(f => ({ ...f, pricing_unit: 'bed', max_guests: 1 }))}
+                  onClick={() => setForm(f => ({ ...f, pricing_unit: 'bed' }))}
                   className={`flex-1 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
                     form.pricing_unit === 'bed'
                       ? 'bg-ocean/10 border-ocean text-ocean'
@@ -1031,16 +1031,26 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
               </div>
               {form.pricing_unit === 'bed' && (
                 <p className="text-[11px] text-gray-500 mt-1.5">
-                  💡 Quantity = total beds available · Max guests = 1 per bed (or 2 for double bunks)
+                  💡 <strong>Quantity</strong> = total beds available · <strong>Max guests</strong> = people PER BED
+                  (1 = single, 2 = double/queen/king, 3+ = bunk for groups)
                 </p>
               )}
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.max_guests', 'Max Guests')}</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                {form.pricing_unit === 'bed'
+                  ? t('manage.people_per_bed', 'People per bed')
+                  : t('manage.max_guests', 'Max Guests')}
+              </label>
               <input type="number" min={1} max={20} value={form.max_guests}
                 onChange={e => setForm(f => ({ ...f, max_guests: e.target.value }))}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
               />
+              {form.pricing_unit === 'bed' && (
+                <p className="text-[10px] text-gray-400 mt-1">
+                  1 = single · 2 = double/queen/king · 3+ = group bunk
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">

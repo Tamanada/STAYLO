@@ -144,16 +144,18 @@ export default function PropertyDetail() {
   }, [selectedRoom, realRooms])
 
   // ── Per-bed auto-sync ──────────────────────────────
-  // For dorm-style rooms (pricing_unit='bed'), each guest needs 1 bed.
-  // Force roomsCount (which doubles as bed count) = total guests so the
-  // total price = price × nights × people. Hides the manual Beds picker.
+  // For dorm-style rooms (pricing_unit='bed'), the number of beds needed is
+  // ceil(guests / people_per_bed). E.g. 4 guests in a double-bed dorm =
+  // 2 beds (2 couples), in a single-bed dorm = 4 beds.
   useEffect(() => {
     if (!selectedRoom) return
     const r = realRooms.find(x => x.id === selectedRoom)
     if (r?.pricing_unit === 'bed') {
       const totalPeople = (Number(adults) || 0) + (Number(children) || 0)
-      if (totalPeople > 0 && roomsCount !== totalPeople) {
-        setRoomsCount(totalPeople)
+      const peoplePerBed = Math.max(1, Number(r.max_guests) || 1)
+      const bedsNeeded = Math.max(1, Math.ceil(totalPeople / peoplePerBed))
+      if (bedsNeeded !== roomsCount) {
+        setRoomsCount(bedsNeeded)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -210,20 +212,22 @@ export default function PropertyDetail() {
   const lowestRoom = rooms.length > 0 ? rooms.reduce((a, b) => a.price < b.price ? a : b) : null
 
   // ── Capacity guard helpers (hook moved above early returns) ─────────
-  // - For per-room rooms: max guests = room.max_guests × roomsCount (e.g. 3 doubles = 6).
-  // - For per-bed rooms : max guests = total beds. Legacy data may have set
-  //   max_guests as the dorm's total capacity (with quantity=1) — defensive
-  //   fallback takes whichever is bigger so the picker doesn't get stuck.
+  // - Per-room: max guests = room.max_guests × roomsCount (e.g. 3 doubles = 6).
+  // - Per-bed : max guests = total_beds × people_per_bed
+  //             (e.g. 9 double beds × 2 ppl = 18 max, but only the beds
+  //             actually needed are billed — see auto-sync above).
   const selectedRoomData = selectedRoom ? rooms.find(r => r.id === selectedRoom) : null
   const isPerBed = selectedRoomData?.pricingUnit === 'bed'
   const rawRoom = selectedRoom ? realRooms.find(r => r.id === selectedRoom) : null
-  // Canonical bed count for per-bed rooms: max(quantity, max_guests).
-  // - Clean data: quantity = N beds, max_guests = 1 → uses quantity. ✓
-  // - Legacy data: quantity = 1, max_guests = N → falls back to max_guests. ✓
-  const totalBeds = Math.max(rawRoom?.quantity || 1, rawRoom?.max_guests || 1)
+  const peoplePerBed = Math.max(1, Number(rawRoom?.max_guests) || 1)
+  // Total beds for per-bed rooms. Defensive: legacy data may have stored
+  // capacity in max_guests with quantity=1 → take the larger.
+  const totalBeds = isPerBed
+    ? Math.max(rawRoom?.quantity || 1, rawRoom?.max_guests || 1)
+    : 1
   const effectiveMax = selectedRoomData
     ? (isPerBed
-        ? totalBeds
+        ? totalBeds * peoplePerBed
         : selectedRoomData.guests * roomsCount)
     : (rooms.length ? Math.max(...rooms.map(r => r.guests || 1)) : 6)
   const maxAllowedGuests = effectiveMax
@@ -784,11 +788,14 @@ export default function PropertyDetail() {
                   </div>
                 )}
 
-                {/* Per-bed info banner — beds = guests, no manual picker */}
+                {/* Per-bed info banner — bed count auto = ceil(guests / people_per_bed) */}
                 {selectedRoomData && isPerBed && (adults + children) > 0 && (
                   <div className="bg-deep/5 border border-deep/15 rounded-lg p-2.5 mt-2 text-xs text-deep">
-                    🛏️ <strong>{adults + children} bed{adults + children > 1 ? 's' : ''}</strong> reserved
-                    (1 per guest) ·{' '}
+                    🛏️ <strong>{roomsCount} bed{roomsCount > 1 ? 's' : ''}</strong> reserved
+                    {peoplePerBed > 1 && (
+                      <span className="text-gray-500"> (each bed sleeps up to {peoplePerBed})</span>
+                    )}
+                    {' · '}
                     <span className="text-gray-500">${selectedRoomData.price}/bed/night</span>
                   </div>
                 )}
