@@ -1449,6 +1449,64 @@ function CalendarTab({ rooms }) {
   async function bulkBlock()   { await bulkUpdate({ is_blocked: true,  available_count: 0 },             'Block') }
   async function bulkUnblock() { await bulkUpdate({ is_blocked: false, available_count: room?.quantity || 1 }, 'Unblock') }
 
+  // A — Min stay
+  async function bulkSetMinStay() {
+    const input = prompt(
+      `Minimum nights required if the booking includes ${selectedDays.size} selected day${selectedDays.size > 1 ? 's' : ''}.\n\n` +
+      `Enter a number (e.g. 3 = guest must book 3+ nights). Leave blank to remove the constraint.`
+    )
+    if (input === null) return
+    const trimmed = input.trim()
+    let val = null
+    if (trimmed !== '') {
+      val = Math.floor(Number(trimmed))
+      if (!isFinite(val) || val < 1) { alert('Invalid min stay (must be ≥ 1).'); return }
+    }
+    await bulkUpdate({ min_stay: val }, val ? `Set min stay to ${val} night(s)` : 'Remove min stay')
+  }
+
+  // B — Promotion (% discount + label)
+  async function bulkSetPromo() {
+    const labelInput = prompt(
+      `Promotion label shown to guests on ${selectedDays.size} selected day${selectedDays.size > 1 ? 's' : ''}.\n\n` +
+      `Examples: "🔥 Hot deal", "⚡ Last minute", "🎄 Christmas special"\n\n` +
+      `Leave blank to clear the promo entirely.`
+    )
+    if (labelInput === null) return
+    let promoLabel = labelInput.trim() || null
+    let promoPct = null
+    if (promoLabel) {
+      const pctInput = prompt(
+        `Discount percentage to apply (0–50%).\n\n` +
+        `Example: 20 = "-20%" off the room price.\n` +
+        `Leave blank for a label-only promo (no automatic discount).`,
+        '20'
+      )
+      if (pctInput === null) return
+      const trimmed = pctInput.trim()
+      if (trimmed !== '') {
+        promoPct = Number(trimmed)
+        if (!isFinite(promoPct) || promoPct < 0 || promoPct > 100) {
+          alert('Invalid percentage (must be 0–100).'); return
+        }
+      }
+    }
+    await bulkUpdate({ promo_label: promoLabel, promo_pct: promoPct },
+      promoLabel ? `Apply promo "${promoLabel}"${promoPct ? ` (-${promoPct}%)` : ''}` : 'Clear promo')
+  }
+
+  // G — Internal note (hotelier-only)
+  async function bulkSetNote() {
+    const input = prompt(
+      `Internal note for ${selectedDays.size} selected day${selectedDays.size > 1 ? 's' : ''}. NEVER shown to guests.\n\n` +
+      `Examples: "Wedding Smith — pre-booked", "Maintenance morning of 8am-noon"\n\n` +
+      `Leave blank to clear the note.`
+    )
+    if (input === null) return
+    const note = input.trim() || null
+    await bulkUpdate({ internal_note: note }, note ? 'Set internal note' : 'Clear note')
+  }
+
   function prevMonth() {
     setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1))
   }
@@ -1521,14 +1579,27 @@ function CalendarTab({ rooms }) {
               )}
 
               {selectedDays.size > 0 && (
-                <div className="ml-auto flex items-center gap-2">
-                  <span className="text-xs text-gray-400">
-                    {selectedDays.size} day{selectedDays.size > 1 ? 's' : ''} selected →
+                <div className="basis-full pt-2 mt-1 border-t border-gray-100 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs text-gray-400 mr-1">
+                    {selectedDays.size} day{selectedDays.size > 1 ? 's' : ''} →
                   </span>
                   <button onClick={bulkSetPrice} type="button"
                     className="px-2.5 py-1 rounded text-xs font-bold bg-ocean text-white hover:bg-ocean/90">
-                    Set price
+                    💰 Price
                   </button>
+                  <button onClick={bulkSetMinStay} type="button"
+                    className="px-2.5 py-1 rounded text-xs font-bold bg-deep/5 text-deep hover:bg-deep/10 border border-deep/15">
+                    🌙 Min stay
+                  </button>
+                  <button onClick={bulkSetPromo} type="button"
+                    className="px-2.5 py-1 rounded text-xs font-bold bg-orange/10 text-orange hover:bg-orange/20 border border-orange/15">
+                    🔥 Promo
+                  </button>
+                  <button onClick={bulkSetNote} type="button"
+                    className="px-2.5 py-1 rounded text-xs font-bold bg-electric/10 text-electric hover:bg-electric/20 border border-electric/15">
+                    📝 Note
+                  </button>
+                  <span className="mx-1 text-gray-200">|</span>
                   <button onClick={bulkBlock} type="button"
                     className="px-2.5 py-1 rounded text-xs font-bold bg-sunset/10 text-sunset hover:bg-sunset/20">
                     Block
@@ -1575,6 +1646,15 @@ function CalendarTab({ rooms }) {
               else toggleBlock(day)
             }
             const hasOverride = avail?.price_override != null
+            const minStay = avail?.min_stay
+            const promoLabel = avail?.promo_label
+            const promoPct = avail?.promo_pct
+            const internalNote = avail?.internal_note
+            // Apply discount visually if any
+            const priceAfterPromo = promoPct
+              ? priceBrut * (1 - Number(promoPct) / 100)
+              : priceBrut
+            const netAfterPromo = priceAfterPromo * 0.9
 
             return (
               <button
@@ -1609,6 +1689,32 @@ function CalendarTab({ rooms }) {
                   )}
                 </div>
 
+                {/* Middle row — chips for promo / min stay / note (compact icons).
+                    Always visible if set, regardless of block state. */}
+                {!isPast && (promoPct || promoLabel || minStay || internalNote) && (
+                  <div className="flex flex-wrap gap-1 mt-1 mb-1">
+                    {promoPct ? (
+                      <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange" title={promoLabel || 'Promo'}>
+                        -{Number(promoPct).toFixed(0)}%
+                      </span>
+                    ) : promoLabel ? (
+                      <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange" title={promoLabel}>
+                        🔥
+                      </span>
+                    ) : null}
+                    {minStay && (
+                      <span className="text-[9px] font-bold px-1 rounded bg-deep/10 text-deep" title={`Minimum ${minStay} nights`}>
+                        🌙{minStay}
+                      </span>
+                    )}
+                    {internalNote && (
+                      <span className="text-[9px] font-bold px-1 rounded bg-electric/15 text-electric" title={internalNote}>
+                        📝
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Bottom: brut + net prices.
                     Click on the price text (in normal mode) → edit override for that day.
                     In bulk mode the click goes to selection toggle (cell-level handler). */}
@@ -1620,11 +1726,24 @@ function CalendarTab({ rooms }) {
                     }`}
                     title={bulkMode ? undefined : 'Click to set a custom price for this day'}
                   >
-                    <p className="text-sm font-bold text-ocean">
-                      ${priceBrut.toFixed(0)}
-                      {hasOverride && <span className="ml-1 text-[9px] font-normal text-orange">★</span>}
-                    </p>
-                    <p className="text-[11px] text-libre/90 font-medium">net ${priceNet.toFixed(0)}</p>
+                    {promoPct ? (
+                      <>
+                        <p className="text-sm font-bold text-ocean">
+                          ${priceAfterPromo.toFixed(0)}
+                          <span className="ml-1 text-[10px] font-normal text-gray-400 line-through">${priceBrut.toFixed(0)}</span>
+                          {hasOverride && <span className="ml-1 text-[9px] text-orange">★</span>}
+                        </p>
+                        <p className="text-[11px] text-libre/90 font-medium">net ${netAfterPromo.toFixed(0)}</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm font-bold text-ocean">
+                          ${priceBrut.toFixed(0)}
+                          {hasOverride && <span className="ml-1 text-[9px] font-normal text-orange">★</span>}
+                        </p>
+                        <p className="text-[11px] text-libre/90 font-medium">net ${priceNet.toFixed(0)}</p>
+                      </>
+                    )}
                   </div>
                 )}
                 {!isPast && isBlocked && (
