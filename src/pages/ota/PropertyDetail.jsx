@@ -229,6 +229,9 @@ export default function PropertyDetail() {
 
   const guestsExceedRoom = selectedRoomData && Number(guests) > effectiveMax
 
+  // Age restriction check — refuse children if property has min_age >= 18
+  const childrenNotAllowed = property?.min_age && property.min_age >= 18 && children > 0
+
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
 
@@ -362,11 +365,16 @@ export default function PropertyDetail() {
             <div className="bg-white rounded-xl p-5 border border-gray-200">
               <div className="flex items-start justify-between">
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-3 mb-2 flex-wrap">
                     <StarRating stars={property.stars} />
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#003580] bg-[#003580]/8 px-2 py-0.5 rounded">
                       {property.type}
                     </span>
+                    {property.min_age && (
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-orange bg-orange/10 px-2 py-0.5 rounded border border-orange/20">
+                        {property.min_age}+ only
+                      </span>
+                    )}
                   </div>
                   <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-1">{property.name}</h1>
                   <p className="text-sm text-[#0071c2] flex items-center gap-1 font-medium">
@@ -803,6 +811,16 @@ export default function PropertyDetail() {
                   </div>
                 )}
 
+                {/* Age restriction — refuse children on 18+ properties */}
+                {childrenNotAllowed && (
+                  <div className="mb-3 p-2.5 bg-orange/10 border border-orange/20 rounded-lg flex items-start gap-2 text-xs">
+                    <Info size={14} className="text-orange flex-shrink-0 mt-0.5" />
+                    <span className="text-orange/90">
+                      <strong>This is a {property.min_age}+ only property.</strong> Children under {property.min_age} are not permitted. Please remove children from your party.
+                    </span>
+                  </div>
+                )}
+
                 {/* Breakdown */}
                 {lowestRoom && selectedRoom && (
                   <div className="bg-gray-50 rounded-lg p-3 mb-3 space-y-1.5 text-sm">
@@ -849,21 +867,23 @@ export default function PropertyDetail() {
 
                 {/* Reserve button — also blocked if guest count exceeds room capacity */}
                 <button
-                  disabled={!selectedRoom || guestsExceedRoom}
+                  disabled={!selectedRoom || guestsExceedRoom || childrenNotAllowed}
                   onClick={() => {
-                    if (!selectedRoom || guestsExceedRoom) return
+                    if (!selectedRoom || guestsExceedRoom || childrenNotAllowed) return
                     navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}`)
                   }}
                   className={`w-full py-3.5 rounded-lg font-bold text-base transition-all ${
-                    selectedRoom && !guestsExceedRoom
+                    selectedRoom && !guestsExceedRoom && !childrenNotAllowed
                       ? 'bg-[#0071c2] hover:bg-[#005fa8] text-white shadow-lg hover:shadow-xl cursor-pointer'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}>
                   {!selectedRoom
                     ? t('booking.select_room_first', 'Select a room to book')
-                    : guestsExceedRoom
-                      ? t('booking.too_many_guests_short', 'Too many guests for this room')
-                      : t('booking.reserve_now', 'Reserve Now')}
+                    : childrenNotAllowed
+                      ? `${property.min_age}+ only`
+                      : guestsExceedRoom
+                        ? t('booking.too_many_guests_short', 'Too many guests for this room')
+                        : t('booking.reserve_now', 'Reserve Now')}
                 </button>
 
                 <p className="text-center text-[11px] text-gray-400 mt-2">{t('booking.no_charge', "You won't be charged yet")}</p>

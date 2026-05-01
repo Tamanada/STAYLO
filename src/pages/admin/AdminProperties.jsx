@@ -33,6 +33,7 @@ export default function AdminProperties() {
       country:       selected.country || '',
       contact_email: selected.contact_email || '',
       contact_phone: selected.contact_phone || '',
+      min_age:       selected.min_age != null ? String(selected.min_age) : '',
     })
     setEditError('')
     setEditing(true)
@@ -49,6 +50,7 @@ export default function AdminProperties() {
       country:       editForm.country.trim() || null,
       contact_email: editForm.contact_email.trim() || null,
       contact_phone: editForm.contact_phone.trim() || null,
+      min_age:       editForm.min_age ? Number(editForm.min_age) : null,
     }
     const { error } = await supabase.from('properties').update(payload).eq('id', selected.id)
     setSaving(false)
@@ -232,6 +234,20 @@ export default function AdminProperties() {
                       onChange={e => setEditForm(f => ({ ...f, contact_phone: e.target.value }))}
                       className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
                     />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">Minimum age</label>
+                    <select
+                      value={editForm.min_age}
+                      onChange={e => setEditForm(f => ({ ...f, min_age: e.target.value }))}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+                    >
+                      <option value="">All ages welcome</option>
+                      <option value="16">16+ (teens & adults)</option>
+                      <option value="18">18+ (adults only)</option>
+                      <option value="21">21+ (party / adults)</option>
+                      <option value="25">25+ (luxury)</option>
+                    </select>
                   </div>
                 </div>
                 {editError && (

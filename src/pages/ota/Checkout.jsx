@@ -200,6 +200,14 @@ export default function Checkout() {
       setError(`Only ${stockCap} of this room type available — you tried to book ${roomsCount}.`)
       return
     }
+    // Age policy enforcement — refuse children if property has min_age >= 18
+    if (property.min_age && property.min_age >= 18 && children > 0) {
+      setError(
+        `This property is restricted to guests aged ${property.min_age}+. ` +
+        `Children are not permitted. Please remove the ${children} child${children > 1 ? 'ren' : ''} from your booking.`
+      )
+      return
+    }
     // Min stay enforcement — refuse if any night in the range requires more
     if (!pricing.minStayOK) {
       setError(

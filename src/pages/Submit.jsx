@@ -219,6 +219,7 @@ export default function Submit() {
     special_requests: '',
     cancellation_policy: 'flexible',
     smoking_policy: 'no_smoking',
+    min_age: '',
     lat: '', lng: '', address: '',
   })
 
@@ -337,6 +338,7 @@ export default function Submit() {
         special_requests: form.special_requests || null,
         cancellation_policy: form.cancellation_policy || 'flexible',
         smoking_policy: form.smoking_policy || 'no_smoking',
+        min_age: form.min_age ? Number(form.min_age) : null,
       }).select('id').single()
       if (insertErr) throw insertErr
 
@@ -555,6 +557,15 @@ export default function Submit() {
                     <option value="no_smoking">No Smoking</option>
                     <option value="designated_areas">Designated Areas</option>
                     <option value="allowed">Allowed</option>
+                  </Select>
+                  <Select label="Minimum age"
+                    value={form.min_age || ''}
+                    onChange={e => updateField('min_age', e.target.value)}>
+                    <option value="">All ages welcome</option>
+                    <option value="16">16+ (teens & adults)</option>
+                    <option value="18">18+ (adults only)</option>
+                    <option value="21">21+ (party / adults)</option>
+                    <option value="25">25+ (luxury)</option>
                   </Select>
                 </div>
               </div>
