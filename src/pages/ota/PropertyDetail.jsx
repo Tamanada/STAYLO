@@ -10,6 +10,7 @@ import {
 import { Button } from '../../components/ui/Button'
 import { supabase } from '../../lib/supabase'
 import { computeRoomPricing } from '../../lib/roomPricing'
+import GuestPicker from '../../components/ota/GuestPicker'
 
 const amenityConfig = {
   wifi: { icon: Wifi, label: 'Free WiFi' },
@@ -62,7 +63,13 @@ export default function PropertyDetail() {
   const [loading, setLoading] = useState(true)
   const [checkIn, setCheckIn] = useState(searchParams.get('in') || getDefaultCheckIn())
   const [checkOut, setCheckOut] = useState(searchParams.get('out') || getDefaultCheckOut())
-  const [guests, setGuests] = useState(searchParams.get('guests') || '2')
+  // Adults + Children — back-compat: ?guests=N still works (treats as adults)
+  const [adults, setAdults] = useState(
+    Number(searchParams.get('adults')) || Number(searchParams.get('guests')) || 2
+  )
+  const [children, setChildren] = useState(Number(searchParams.get('children')) || 0)
+  const guests = adults + children  // total kept for capacity / display
+  const setGuests = (n) => setAdults(Math.max(1, Number(n) || 1))  // legacy compat
   const [roomsCount, setRoomsCount] = useState(Number(searchParams.get('rooms')) || 1)
   const [photoIndex, setPhotoIndex] = useState(0)
   const [isFav, setIsFav] = useState(false)
@@ -184,7 +191,7 @@ export default function PropertyDetail() {
         <div className="max-w-6xl mx-auto relative">
           {/* Breadcrumb bar */}
           <div className="absolute top-0 left-0 right-0 z-20 p-4 flex items-center justify-between">
-            <Link to={`/ota?q=${property.city || ''}&in=${checkIn}&out=${checkOut}&guests=${guests}`}
+            <Link to={`/ota?q=${property.city || ''}&in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}`}
               className="flex items-center gap-2 bg-white/90 backdrop-blur-sm text-gray-800 px-4 py-2 rounded-full text-sm font-medium hover:bg-white transition-all no-underline shadow-lg">
               <ArrowLeft size={16} /> {t('booking.back', 'Back to results')}
             </Link>
@@ -680,10 +687,8 @@ export default function PropertyDetail() {
                         className="w-full text-sm font-medium text-gray-900 border-0 p-0 focus:outline-none bg-transparent" />
                     </div>
                   </div>
-                  <div className={`border rounded-lg p-2.5 transition-colors ${
-                    guestsExceedRoom ? 'border-red-400 bg-red-50' : 'border-gray-200 hover:border-[#003580]'
-                  }`}>
-                    <label className="block text-[10px] font-bold text-gray-500 uppercase">
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">
                       {t('booking.guests', 'Guests')}
                       {selectedRoomData && (
                         <span className="ml-1 normal-case text-gray-400 font-normal">
@@ -691,12 +696,13 @@ export default function PropertyDetail() {
                         </span>
                       )}
                     </label>
-                    <select value={guests} onChange={e => setGuests(e.target.value)}
-                      className="w-full text-sm font-medium text-gray-900 border-0 p-0 focus:outline-none bg-transparent appearance-none">
-                      {Array.from({ length: maxAllowedGuests }, (_, i) => i + 1).map(n =>
-                        <option key={n} value={n}>{n} {n === 1 ? 'Adult' : 'Adults'}</option>
-                      )}
-                    </select>
+                    <GuestPicker
+                      adults={adults}
+                      children={children}
+                      onChange={({ adults: a, children: c }) => { setAdults(a); setChildren(c) }}
+                      maxTotal={selectedRoomData ? effectiveMax : undefined}
+                      compact
+                    />
                   </div>
                 </div>
 
@@ -771,7 +777,7 @@ export default function PropertyDetail() {
                   disabled={!selectedRoom || guestsExceedRoom}
                   onClick={() => {
                     if (!selectedRoom || guestsExceedRoom) return
-                    navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&guests=${guests}&rooms=${roomsCount}`)
+                    navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}`)
                   }}
                   className={`w-full py-3.5 rounded-lg font-bold text-base transition-all ${
                     selectedRoom && !guestsExceedRoom

@@ -10,6 +10,7 @@ import {
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { matchRegion, propertyMatchesRegion } from '../../lib/regions'
+import GuestPicker from '../../components/ota/GuestPicker'
 
 
 const DESTINATIONS = [
@@ -59,7 +60,13 @@ export default function OTASearch() {
   const [searchCity, setSearchCity] = useState(searchParams.get('q') || '')
   const [checkIn, setCheckIn] = useState(searchParams.get('in') || getDefaultCheckIn())
   const [checkOut, setCheckOut] = useState(searchParams.get('out') || getDefaultCheckOut())
-  const [guests, setGuests] = useState(searchParams.get('guests') || '2')
+  // Adults + Children — back-compat with legacy ?guests=N
+  const [adults, setAdults] = useState(
+    Number(searchParams.get('adults')) || Number(searchParams.get('guests')) || 2
+  )
+  const [children, setChildren] = useState(Number(searchParams.get('children')) || 0)
+  const guests = String(adults + children)
+  const setGuests = (n) => setAdults(Math.max(1, Number(n) || 1))
   const [sortBy, setSortBy] = useState('recommended')
   const [typeFilter, setTypeFilter] = useState('')
   // Upper bound high enough to include luxury rooms; UI can still filter down.
@@ -235,16 +242,13 @@ export default function OTASearch() {
                 />
               </div>
 
-              {/* Guests */}
-              <div className="flex-1 relative">
-                <Users size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none z-10" />
-                <select value={guests} onChange={e => setGuests(e.target.value)}
-                  className="w-full pl-11 pr-8 py-4 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium appearance-none">
-                  {[1, 2, 3, 4, 5, 6].map(n => (
-                    <option key={n} value={n}>{n} {n === 1 ? t('booking.adult', 'Adult') : t('booking.adults', 'Adults')}</option>
-                  ))}
-                </select>
-                <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              {/* Guests — adults + children with manual input */}
+              <div className="flex-1">
+                <GuestPicker
+                  adults={adults}
+                  children={children}
+                  onChange={({ adults: a, children: c }) => { setAdults(a); setChildren(c) }}
+                />
               </div>
 
               {/* Search button */}
@@ -391,7 +395,7 @@ export default function OTASearch() {
                   if (isFeatured) {
                     return (
                       <Link key={prop.id}
-                        to={`/ota/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}`}
+                        to={`/ota/${prop.id}?in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}`}
                         className="no-underline">
                         <div className="rounded-2xl overflow-hidden border-2 border-[#ffb700]/50 shadow-xl shadow-[#ffb700]/10 hover:shadow-2xl hover:shadow-[#ffb700]/20 transition-all duration-300 group">
                           {/* Featured banner */}
@@ -501,7 +505,7 @@ export default function OTASearch() {
                   // ── REGULAR CARD ──
                   return (
                     <Link key={prop.id}
-                      to={`/ota/${prop.id}?in=${checkIn}&out=${checkOut}&guests=${guests}`}
+                      to={`/ota/${prop.id}?in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}`}
                       className="no-underline">
                       <div className="bg-white rounded-xl border border-gray-200 hover:border-[#0071c2]/40 hover:shadow-lg transition-all duration-200 overflow-hidden flex flex-col sm:flex-row group">
 

@@ -73,7 +73,10 @@ export default function Checkout() {
   const roomId = searchParams.get('room')
   const checkIn = searchParams.get('in')
   const checkOut = searchParams.get('out')
-  const guests = searchParams.get('guests') || '2'
+  // Adults + Children — back-compat with legacy ?guests=N
+  const adults   = Math.max(1, Number(searchParams.get('adults'))   || Number(searchParams.get('guests')) || 2)
+  const children = Math.max(0, Number(searchParams.get('children')) || 0)
+  const guests   = String(adults + children)        // total used by legacy code paths
   const roomsCount = Math.max(1, Number(searchParams.get('rooms')) || 1)
 
   const [property, setProperty] = useState(null)
@@ -225,6 +228,8 @@ export default function Checkout() {
           check_in: checkIn,
           check_out: checkOut,
           guests: Number(guests),
+          adults,
+          children,
           rooms_count: roomsCount,
           total_price: totalPrice,
           commission: commission,
@@ -390,7 +395,7 @@ export default function Checkout() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       {/* Back */}
       <Link
-        to={`/ota/${propertyId}?in=${checkIn}&out=${checkOut}&guests=${guests}`}
+        to={`/ota/${propertyId}?in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}`}
         className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-ocean transition-colors mb-6 no-underline"
       >
         <ArrowLeft size={16} />
@@ -483,7 +488,12 @@ export default function Checkout() {
                 </div>
                 <div className="flex items-center gap-2 text-gray-600">
                   <Users size={14} className="text-ocean" />
-                  <span>{guests} {Number(guests) === 1 ? 'guest' : 'guests'}</span>
+                  <span>
+                    {adults} {adults === 1 ? 'adult' : 'adults'}
+                    {children > 0 && (
+                      <> · {children} {children === 1 ? 'child' : 'children'}</>
+                    )}
+                  </span>
                 </div>
                 {roomsCount > 1 && (
                   <div className="flex items-center gap-2 text-gray-600">
