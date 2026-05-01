@@ -239,19 +239,55 @@ export default function Submit() {
 
   async function handleLinkPaste(field, value) {
     updateField(field, value)
-    if (!value) return
-    const isBooking = value.includes('booking.com')
-    const isAirbnb = value.includes('airbnb.com')
-    if (isBooking || isAirbnb) {
-      setParsing(true)
-      trackEvent(EVENTS.LINK_PARSE, { type: isBooking ? 'booking' : 'airbnb' })
-      await new Promise(r => setTimeout(r, 1500))
-      if (isBooking) {
-        const name = extractNameFromBookingUrl(value)
-        if (name && !form.name) updateField('name', name)
-        const country = extractCountryFromBookingUrl(value)
-        if (country && !form.country) updateField('country', country)
+  }
+
+  // ── Import-from-URL ──────────────────────────────────
+  // Calls the import-listing edge function which fetches the URL on the
+  // server side and extracts public Open Graph + schema.org metadata
+  // (no scraping of proprietary data). Pre-fills as many fields as
+  // possible and tells the user exactly what they still need to fill in.
+  const [importUrl, setImportUrl] = useState('')
+  const [importResult, setImportResult] = useState(null) // { success, extracted, message }
+
+  async function handleImport() {
+    const url = importUrl.trim()
+    if (!url) return
+    setParsing(true)
+    setImportResult(null)
+    try {
+      const { data, error } = await supabase.functions.invoke('import-listing', {
+        body: { url },
+      })
+      if (error) {
+        let detail = error.message
+        try { const body = await error.context?.json?.(); detail = body?.detail || body?.error || detail } catch {}
+        setImportResult({ success: false, message: detail })
+        setParsing(false)
+        return
       }
+      // Pre-fill form with whatever we got, never overwriting non-empty user input
+      const e = data
+      const setIfEmpty = (field, value) => {
+        if (value && !form[field]) updateField(field, value)
+      }
+      setIfEmpty('name', e.name)
+      setIfEmpty('description', e.description)
+      setIfEmpty('city', e.city)
+      setIfEmpty('country', e.country)
+      setIfEmpty('address', e.address)
+      if (e.star_rating) setIfEmpty('star_rating', String(e.star_rating))
+      if (e.type)        setIfEmpty('type', e.type)
+      if (e.latitude)    setIfEmpty('lat', e.latitude)
+      if (e.longitude)   setIfEmpty('lng', e.longitude)
+      // Drop the URL into booking_link or airbnb_link based on source
+      if (e.source === 'booking') setIfEmpty('booking_link', url)
+      else if (e.source === 'airbnb') setIfEmpty('airbnb_link', url)
+
+      setImportResult({ success: true, extracted: e })
+      trackEvent(EVENTS.LINK_PARSE, { source: e.source })
+    } catch (err) {
+      setImportResult({ success: false, message: err?.message || 'Unknown error' })
+    } finally {
       setParsing(false)
     }
   }
@@ -413,22 +449,81 @@ export default function Submit() {
                 <Building2 size={20} className="text-ocean" /> Basic Information
               </h2>
 
-              {/* Smart link */}
-              <div className="bg-ocean/5 rounded-xl p-5 space-y-4">
-                <div className="flex items-center gap-2 text-sm font-medium text-ocean">
-                  <LinkIcon size={16} /> Paste your existing listing URL to auto-fill
+              {/* Smart link — Import from any listing URL.
+                  Calls the import-listing edge function which extracts public
+                  Open Graph + schema.org data (no proprietary scraping). */}
+              <div className="bg-ocean/5 rounded-xl p-5 space-y-3 border border-ocean/15">
+                <div className="flex items-start gap-2">
+                  <LinkIcon size={18} className="text-ocean mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-deep">Already listed on Booking, Airbnb or another OTA?</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Paste the URL — we'll auto-fill what we can (name, location, cover photo, description) so you start from a populated form instead of a blank one.
+                    </p>
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Input label="Booking.com URL" placeholder="https://www.booking.com/hotel/..."
-                    value={form.booking_link} onChange={e => handleLinkPaste('booking_link', e.target.value)} />
-                  <Input label="Airbnb URL" placeholder="https://www.airbnb.com/rooms/..."
-                    value={form.airbnb_link} onChange={e => handleLinkPaste('airbnb_link', e.target.value)} />
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    value={importUrl}
+                    onChange={e => setImportUrl(e.target.value)}
+                    placeholder="https://www.booking.com/hotel/... or https://www.airbnb.com/rooms/..."
+                    className="flex-1 min-w-0 px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm text-deep focus:outline-none focus:ring-2 focus:ring-ocean/30"
+                  />
+                  <Button onClick={handleImport} disabled={parsing || !importUrl.trim()}>
+                    {parsing ? <Loader2 size={14} className="animate-spin" /> : <LinkIcon size={14} />}
+                    {parsing ? 'Fetching…' : 'Import'}
+                  </Button>
                 </div>
-                {parsing && (
-                  <div className="flex items-center gap-2 text-sm text-ocean">
-                    <Loader2 size={16} className="animate-spin" /> Fetching property info...
+
+                {/* Import result — success or failure breakdown */}
+                {importResult?.success && importResult.extracted && (
+                  <div className="bg-libre/5 border border-libre/20 rounded-lg p-3 space-y-2">
+                    <p className="text-xs font-bold text-libre flex items-center gap-1.5">
+                      ✅ Imported from {importResult.extracted.source}
+                    </p>
+                    <div className="text-xs text-gray-700 space-y-0.5">
+                      {importResult.extracted.name        && <div>✓ <strong>Name:</strong> {importResult.extracted.name}</div>}
+                      {importResult.extracted.city        && <div>✓ <strong>City:</strong> {importResult.extracted.city}</div>}
+                      {importResult.extracted.country     && <div>✓ <strong>Country:</strong> {importResult.extracted.country}</div>}
+                      {importResult.extracted.address     && <div>✓ <strong>Address:</strong> {importResult.extracted.address}</div>}
+                      {importResult.extracted.image_url   && <div>✓ <strong>Cover image</strong> (preview below)</div>}
+                      {importResult.extracted.star_rating && <div>✓ <strong>Star rating:</strong> {importResult.extracted.star_rating}</div>}
+                      {importResult.extracted.type        && <div>✓ <strong>Type:</strong> {importResult.extracted.type}</div>}
+                    </div>
+                    {importResult.extracted.image_url && (
+                      <img src={importResult.extracted.image_url} alt="Cover preview"
+                        className="w-32 h-20 object-cover rounded border border-gray-200" />
+                    )}
+                    {importResult.extracted.manual_fields_needed?.length > 0 && (
+                      <details className="pt-2 border-t border-libre/20">
+                        <summary className="text-xs font-bold text-amber-700 cursor-pointer">
+                          ⚠️ {importResult.extracted.manual_fields_needed.length} fields you still need to fill in manually
+                        </summary>
+                        <ul className="mt-2 space-y-0.5 text-[11px] text-gray-600 pl-4 list-disc">
+                          {importResult.extracted.manual_fields_needed.map((f, i) => (
+                            <li key={i}>{f}</li>
+                          ))}
+                        </ul>
+                      </details>
+                    )}
                   </div>
                 )}
+
+                {importResult && !importResult.success && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
+                    <strong>Import failed:</strong> {importResult.message}
+                    <p className="text-red-600 mt-1">No worries — fill the form manually below. The URL is saved either way.</p>
+                  </div>
+                )}
+
+                {/* Manual URL fields — kept so the link is stored even if import didn't run */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-ocean/10">
+                  <Input label="Booking.com URL (optional)" placeholder="https://www.booking.com/hotel/..."
+                    value={form.booking_link} onChange={e => handleLinkPaste('booking_link', e.target.value)} />
+                  <Input label="Airbnb URL (optional)" placeholder="https://www.airbnb.com/rooms/..."
+                    value={form.airbnb_link} onChange={e => handleLinkPaste('airbnb_link', e.target.value)} />
+                </div>
               </div>
 
               <Input label="Property Name *" placeholder="e.g., Sunset Beach Resort" required
