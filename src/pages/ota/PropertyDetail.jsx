@@ -211,13 +211,19 @@ export default function PropertyDetail() {
 
   // ── Capacity guard helpers (hook moved above early returns) ─────────
   // - For per-room rooms: max guests = room.max_guests × roomsCount (e.g. 3 doubles = 6).
-  // - For per-bed rooms : max guests = room.quantity (total beds), each bed = 1 person.
+  // - For per-bed rooms : max guests = total beds. Legacy data may have set
+  //   max_guests as the dorm's total capacity (with quantity=1) — defensive
+  //   fallback takes whichever is bigger so the picker doesn't get stuck.
   const selectedRoomData = selectedRoom ? rooms.find(r => r.id === selectedRoom) : null
   const isPerBed = selectedRoomData?.pricingUnit === 'bed'
   const rawRoom = selectedRoom ? realRooms.find(r => r.id === selectedRoom) : null
+  // Canonical bed count for per-bed rooms: max(quantity, max_guests).
+  // - Clean data: quantity = N beds, max_guests = 1 → uses quantity. ✓
+  // - Legacy data: quantity = 1, max_guests = N → falls back to max_guests. ✓
+  const totalBeds = Math.max(rawRoom?.quantity || 1, rawRoom?.max_guests || 1)
   const effectiveMax = selectedRoomData
     ? (isPerBed
-        ? (rawRoom?.quantity || rawRoom?.max_guests || 1)   // total beds in the dorm
+        ? totalBeds
         : selectedRoomData.guests * roomsCount)
     : (rooms.length ? Math.max(...rooms.map(r => r.guests || 1)) : 6)
   const maxAllowedGuests = effectiveMax
