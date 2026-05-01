@@ -11,6 +11,7 @@ import { Badge } from '../../components/ui/Badge'
 import LightningPaymentModal from '../../components/ota/LightningPaymentModal'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
+import { computeRoomPricing } from '../../lib/roomPricing'
 
 const COMMISSION_RATE = 0.10 // 10% STAYLO commission (on room price, NOT total)
 
@@ -158,19 +159,11 @@ export default function Checkout() {
 
   const nights = Math.max(1, Math.ceil((new Date(checkOut) - new Date(checkIn)) / (1000 * 60 * 60 * 24)))
 
-  // Calculate total with potential price overrides — for ONE room first.
-  let perRoomTotal = 0
-  const d = new Date(checkIn)
-  const availabilityList = Array.isArray(room.room_availability) ? room.room_availability : []
-  for (let i = 0; i < nights; i++) {
-    const dateStr = d.toISOString().split('T')[0]
-    const override = availabilityList.find(a => a.date === dateStr)
-    const nightlyPrice = Number(override?.price_override ?? room.base_price ?? 0)
-    perRoomTotal += isFinite(nightlyPrice) ? nightlyPrice : 0
-    d.setDate(d.getDate() + 1)
-  }
-  // Multiply by number of rooms reserved (1 by default).
-  const roomTotal = perRoomTotal * roomsCount
+  // Pricing — use the shared helper so PropertyDetail (display) and
+  // Checkout (insert) compute identical numbers, applying overrides + promos
+  // identically. Also returns min_stay constraint info.
+  const pricing = computeRoomPricing(room, checkIn, checkOut, roomsCount)
+  const roomTotal = pricing.discountedTotal
 
   // Pricing model: STAYLO commission comes OUT OF the room price (10%).
   // The processing fee is added ON TOP and paid by the guest.
@@ -202,6 +195,19 @@ export default function Checkout() {
     const stockCap = Number(room.quantity || 1)
     if (roomsCount > stockCap) {
       setError(`Only ${stockCap} of this room type available — you tried to book ${roomsCount}.`)
+      return
+    }
+    // Min stay enforcement — refuse if any night in the range requires more
+    if (!pricing.minStayOK) {
+      setError(
+        `These dates require a minimum of ${pricing.minStayRequired} nights. ` +
+        `You picked ${pricing.nights}. Please go back and extend your stay.`
+      )
+      return
+    }
+    // Also refuse if any night in the range is blocked
+    if (pricing.hasBlockedDay) {
+      setError(`At least one night in your range is unavailable. Please go back and try different dates.`)
       return
     }
 
@@ -494,8 +500,22 @@ export default function Checkout() {
                     {room.name} × {nights} {nights === 1 ? 'night' : 'nights'}
                     {roomsCount > 1 && <span className="text-gray-400"> × {roomsCount} rooms</span>}
                   </span>
-                  <span className="text-deep">${roomTotal.toFixed(2)}</span>
+                  <span className={pricing.hasPromo && pricing.savings > 0 ? 'text-gray-400 line-through' : 'text-deep'}>
+                    ${pricing.originalTotal.toFixed(2)}
+                  </span>
                 </div>
+                {pricing.hasPromo && pricing.savings > 0 && (
+                  <div className="flex justify-between text-orange font-medium text-xs">
+                    <span>🔥 {pricing.promoLabel || 'Promo'}{pricing.promoPct > 0 && ` (−${Math.round(pricing.promoPct)}%)`}</span>
+                    <span>−${pricing.savings.toFixed(2)}</span>
+                  </div>
+                )}
+                {pricing.hasPromo && pricing.savings > 0 && (
+                  <div className="flex justify-between font-medium pt-1 border-t border-gray-100">
+                    <span className="text-deep">Room subtotal</span>
+                    <span className="text-deep">${roomTotal.toFixed(2)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-xs text-gray-400 pl-3">
                   <span>↳ {t('checkout.staylo_commission', 'STAYLO commission (10%)')}</span>
                   <span>−${commission.toFixed(2)}</span>

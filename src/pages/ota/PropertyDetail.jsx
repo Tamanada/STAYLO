@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { supabase } from '../../lib/supabase'
+import { computeRoomPricing } from '../../lib/roomPricing'
 
 const amenityConfig = {
   wifi: { icon: Wifi, label: 'Free WiFi' },
@@ -151,9 +152,11 @@ export default function PropertyDetail() {
     sqm: 25,
     amenities: r.amenities || ['wifi'],
     desc: r.description || '',
-    // Real room media (V2 — added in 20260430050000)
     photos: r.photo_urls || [],
     videos: r.video_urls || [],
+    // Carry the raw availability rows so we can compute promo + min_stay
+    // per the actual selected dates without refetching.
+    raw: r,
   }))
 
   const lowestRoom = rooms.length > 0 ? rooms.reduce((a, b) => a.price < b.price ? a : b) : null
@@ -376,10 +379,15 @@ export default function PropertyDetail() {
               ) : (
                 <div className="space-y-3">
                   {rooms.map((room, idx) => {
-                    const total = room.price * nights
-                    const totalOTA = room.otaPrice * nights
-                    const savings = totalOTA - total
-                    const savingsPercent = Math.round((savings / totalOTA) * 100)
+                    // Real pricing for the selected dates: applies per-day
+                    // overrides, promo discounts, and computes min_stay constraint.
+                    const pricing = computeRoomPricing(room.raw, checkIn, checkOut, 1)
+                    const total      = pricing.discountedTotal
+                    const original   = pricing.originalTotal
+                    const totalOTA   = room.otaPrice * nights
+                    // OTA savings calculated on the actual (post-promo) price
+                    const savingsVsOTA = totalOTA - total
+                    const savingsPercent = Math.round((savingsVsOTA / totalOTA) * 100)
                     const isSelected = selectedRoom === room.id
 
                     return (
@@ -393,6 +401,27 @@ export default function PropertyDetail() {
                         {idx === 0 && (
                           <div className="bg-[#008009] text-white px-4 py-1.5 text-xs font-bold flex items-center gap-1.5">
                             <Flame size={12} /> {t('booking.best_deal', 'Best deal — Save')} {savingsPercent}% {t('booking.vs_ota', 'vs. other platforms')}
+                          </div>
+                        )}
+
+                        {/* Promo badge — when at least one night in the range
+                            has a promo_label or promo_pct > 0 */}
+                        {pricing.hasPromo && (
+                          <div className="bg-orange/95 text-white px-4 py-1.5 text-xs font-bold flex items-center gap-1.5">
+                            <Flame size={12} />
+                            {pricing.promoLabel || 'Special offer'}
+                            {pricing.promoPct > 0 && <span className="ml-auto">−{Math.round(pricing.promoPct)}%</span>}
+                          </div>
+                        )}
+
+                        {/* Min stay warning — disable Reserve if not met */}
+                        {!pricing.minStayOK && (
+                          <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 flex items-center gap-2">
+                            <Info size={13} className="flex-shrink-0" />
+                            <span>
+                              <strong>Minimum {pricing.minStayRequired} nights</strong> required for these dates.
+                              You picked {nights}.
+                            </span>
                           </div>
                         )}
 
@@ -484,24 +513,40 @@ export default function PropertyDetail() {
                             <div className="flex flex-col items-end gap-3 flex-shrink-0 sm:min-w-[180px] sm:text-right">
                               <div>
                                 <p className="text-xs text-gray-500 mb-0.5">{nights} {nights === 1 ? 'night' : 'nights'}, {guests} {Number(guests) === 1 ? 'adult' : 'adults'}</p>
+                                {/* If a promo is active, show the original price strike-through next to the OTA strike */}
                                 <div className="flex items-center gap-2 justify-end">
                                   <span className="text-sm text-gray-400 line-through">${totalOTA}</span>
+                                  {pricing.hasPromo && pricing.savings > 0 && (
+                                    <span className="text-sm text-orange/80 line-through">${original.toFixed(0)}</span>
+                                  )}
                                 </div>
-                                <p className="text-2xl font-extrabold text-gray-900">${total}</p>
+                                <p className="text-2xl font-extrabold text-gray-900">${total.toFixed(0)}</p>
                                 <p className="text-[11px] text-gray-400">{t('booking.before_pay_fees', '+ payment fees at checkout')}</p>
                                 <p className="text-xs text-[#008009] font-semibold mt-0.5">
-                                  {t('booking.you_save', 'You save')} ${savings} ({savingsPercent}%)
+                                  {t('booking.you_save', 'You save')} ${savingsVsOTA.toFixed(0)} ({savingsPercent}%)
                                 </p>
+                                {pricing.hasPromo && pricing.savings > 0 && (
+                                  <p className="text-[11px] text-orange font-semibold mt-0.5">
+                                    🔥 Promo applied: −${pricing.savings.toFixed(0)}
+                                  </p>
+                                )}
                               </div>
 
                               <button
-                                onClick={() => setSelectedRoom(room.id)}
+                                onClick={() => pricing.minStayOK && setSelectedRoom(room.id)}
+                                disabled={!pricing.minStayOK}
                                 className={`w-full sm:w-auto px-6 py-3 rounded-lg font-bold text-sm transition-all ${
-                                  isSelected
-                                    ? 'bg-[#003580] text-white shadow-lg'
-                                    : 'bg-[#0071c2] hover:bg-[#005fa8] text-white'
+                                  !pricing.minStayOK
+                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                                    : isSelected
+                                      ? 'bg-[#003580] text-white shadow-lg'
+                                      : 'bg-[#0071c2] hover:bg-[#005fa8] text-white'
                                 }`}>
-                                {isSelected ? '✓ Selected' : t('booking.select', 'Select')}
+                                {!pricing.minStayOK
+                                  ? `Need ${pricing.minStayRequired}+ nights`
+                                  : isSelected
+                                    ? '✓ Selected'
+                                    : t('booking.select', 'Select')}
                               </button>
                             </div>
                           </div>
@@ -671,20 +716,27 @@ export default function PropertyDetail() {
                   <div className="bg-gray-50 rounded-lg p-3 mb-3 space-y-1.5 text-sm">
                     {(() => {
                       const room = rooms.find(r => r.id === selectedRoom) || lowestRoom
-                      const perNightTotal = room.price * roomsCount
-                      const total = perNightTotal * nights
+                      const pricing = computeRoomPricing(room.raw, checkIn, checkOut, roomsCount)
                       return (
                         <>
                           <div className="flex justify-between text-gray-600">
                             <span>
-                              ${room.price} × {nights} {nights === 1 ? 'night' : 'nights'}
+                              ${room.price} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
                               {roomsCount > 1 && <span className="text-gray-400"> × {roomsCount} rooms</span>}
                             </span>
-                            <span>${total.toFixed(2)}</span>
+                            <span className={pricing.hasPromo && pricing.savings > 0 ? 'text-gray-400 line-through' : ''}>
+                              ${pricing.originalTotal.toFixed(2)}
+                            </span>
                           </div>
+                          {pricing.hasPromo && pricing.savings > 0 && (
+                            <div className="flex justify-between text-orange font-medium">
+                              <span>🔥 {pricing.promoLabel || 'Promo'}{pricing.promoPct > 0 && ` (−${Math.round(pricing.promoPct)}%)`}</span>
+                              <span>−${pricing.savings.toFixed(2)}</span>
+                            </div>
+                          )}
                           <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
                             <span>{t('booking.subtotal', 'Subtotal')}</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>${pricing.discountedTotal.toFixed(2)}</span>
                           </div>
                           <p className="text-[11px] text-gray-400 pt-1 leading-snug">
                             {t('booking.fees_at_checkout', 'Payment processing fees added at checkout (free with Bitcoin Lightning).')}
