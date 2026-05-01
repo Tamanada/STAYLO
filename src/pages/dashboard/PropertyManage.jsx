@@ -1371,7 +1371,7 @@ function CalendarTab({ rooms }) {
                 key={day}
                 onClick={() => !isPast && toggleBlock(day)}
                 disabled={isPast || saving}
-                className={`relative aspect-square min-h-[72px] rounded-lg transition-all flex flex-col p-1.5 text-left ${
+                className={`relative aspect-square min-h-[96px] rounded-lg transition-all flex flex-col p-2 text-left ${
                   isPast
                     ? 'text-gray-300 bg-gray-50 cursor-not-allowed border border-gray-100'
                     : isBlocked
@@ -1380,12 +1380,12 @@ function CalendarTab({ rooms }) {
                 }`}
               >
                 {/* Top row: date (left) + stock (right) */}
-                <div className="flex items-start justify-between w-full">
-                  <span className={`text-xs font-bold ${isPast ? 'text-gray-300' : isBlocked ? 'text-sunset' : 'text-deep'}`}>
+                <div className="flex items-start justify-between w-full mb-1">
+                  <span className={`text-base font-bold ${isPast ? 'text-gray-300' : isBlocked ? 'text-sunset' : 'text-deep'}`}>
                     {day}
                   </span>
                   {!isPast && (
-                    <span className={`text-[9px] font-bold px-1 rounded ${
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                       availableStock === 0
                         ? 'bg-sunset/15 text-sunset'
                         : availableStock < totalStock
@@ -1400,12 +1400,12 @@ function CalendarTab({ rooms }) {
                 {/* Bottom: brut + net prices */}
                 {!isPast && !isBlocked && priceBrut > 0 && (
                   <div className="mt-auto w-full leading-tight">
-                    <p className="text-[10px] font-bold text-ocean">${priceBrut.toFixed(0)}</p>
-                    <p className="text-[9px] text-libre/80">net ${priceNet.toFixed(0)}</p>
+                    <p className="text-sm font-bold text-ocean">${priceBrut.toFixed(0)}</p>
+                    <p className="text-[11px] text-libre/90 font-medium">net ${priceNet.toFixed(0)}</p>
                   </div>
                 )}
                 {!isPast && isBlocked && (
-                  <div className="mt-auto w-full text-[9px] font-bold text-sunset uppercase">
+                  <div className="mt-auto w-full text-xs font-bold text-sunset uppercase tracking-wider">
                     Blocked
                   </div>
                 )}
