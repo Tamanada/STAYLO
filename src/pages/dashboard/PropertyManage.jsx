@@ -937,7 +937,10 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">
-                {t('manage.base_price', 'Price per Night (USD)')} <span className="text-gray-400 normal-case font-normal">— {t('manage.price_paid_by_guest', 'paid by guest')}</span> *
+                {t('manage.base_price', 'Default price per night (USD)')} *
+                <span className="block text-[10px] text-gray-400 font-normal mt-0.5 normal-case">
+                  {t('manage.price_default_hint', 'This is what the guest pays. You can override it per day in the Availability tab.')}
+                </span>
               </label>
               <input type="number" min={1} step="0.01" value={form.base_price}
                 onChange={e => setForm(f => ({ ...f, base_price: e.target.value }))}
@@ -1236,6 +1239,11 @@ function CalendarTab({ rooms }) {
   })
   const [availability, setAvailability] = useState([])
   const [saving, setSaving] = useState(false)
+  // Bulk-edit mode: when on, clicking a day adds/removes it from the selection
+  // instead of toggling block. Selection persists until bulk mode is exited
+  // or an action is applied. Stored as a Set of "yyyy-mm-dd" strings.
+  const [bulkMode, setBulkMode] = useState(false)
+  const [selectedDays, setSelectedDays] = useState(new Set())
 
   const room = rooms.find(r => r.id === selectedRoom)
 
@@ -1268,6 +1276,18 @@ function CalendarTab({ rooms }) {
     return availability.find(a => a.date === dateStr)
   }
 
+  async function refreshMonth() {
+    const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
+    const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+    const { data } = await supabase
+      .from('room_availability')
+      .select('*')
+      .eq('room_id', selectedRoom)
+      .gte('date', start.toISOString().split('T')[0])
+      .lte('date', end.toISOString().split('T')[0])
+    setAvailability(data || [])
+  }
+
   async function toggleBlock(day) {
     if (!room) return
     setSaving(true)
@@ -1288,18 +1308,146 @@ function CalendarTab({ rooms }) {
       })
     }
 
-    // Refresh
-    const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
-    const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
-    const { data } = await supabase
-      .from('room_availability')
-      .select('*')
-      .eq('room_id', selectedRoom)
-      .gte('date', start.toISOString().split('T')[0])
-      .lte('date', end.toISOString().split('T')[0])
-    setAvailability(data || [])
+    await refreshMonth()
     setSaving(false)
   }
+
+  // Build YYYY-MM-DD string for a day in current month (1-31)
+  function dateStrFor(day) {
+    return `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  }
+
+  // Edit per-day price override. Empty string → revert to default base_price.
+  async function editPrice(day, e) {
+    e.stopPropagation()  // don't toggle block / select
+    if (!room) return
+    const dateStr = dateStrFor(day)
+    const existing = getAvailForDate(day)
+    const current = existing?.price_override ?? room.base_price
+
+    const input = prompt(
+      `Set price for ${dateStr} (currently $${Number(current).toFixed(0)}).\n\n` +
+      `Leave blank to revert to default ($${Number(room.base_price).toFixed(0)}).`,
+      String(current)
+    )
+    if (input === null) return
+    const trimmed = input.trim()
+    let newPrice = null
+    if (trimmed !== '') {
+      newPrice = Number(trimmed)
+      if (!isFinite(newPrice) || newPrice <= 0) {
+        alert('Invalid price. Must be a positive number.')
+        return
+      }
+    }
+
+    setSaving(true)
+    if (existing) {
+      await supabase.from('room_availability').update({ price_override: newPrice }).eq('id', existing.id)
+    } else {
+      await supabase.from('room_availability').insert({
+        room_id: selectedRoom, date: dateStr,
+        available_count: room.quantity, is_blocked: false,
+        price_override: newPrice,
+      })
+    }
+    await refreshMonth()
+    setSaving(false)
+  }
+
+  // ── Bulk edit handlers ───────────────────────────────────
+  function toggleBulkMode() {
+    setBulkMode(b => !b)
+    setSelectedDays(new Set())
+  }
+
+  function toggleDaySelection(day) {
+    const ds = dateStrFor(day)
+    setSelectedDays(prev => {
+      const next = new Set(prev)
+      if (next.has(ds)) next.delete(ds)
+      else next.add(ds)
+      return next
+    })
+  }
+
+  function selectAllDays() {
+    const today = new Date()
+    const next = new Set()
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cellDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d)
+      if (cellDate >= new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+        next.add(dateStrFor(d))
+      }
+    }
+    setSelectedDays(next)
+  }
+
+  function selectWeekends() {
+    const today = new Date()
+    const next = new Set()
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cellDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), d)
+      const dow = cellDate.getDay()
+      if ((dow === 0 || dow === 5 || dow === 6) &&
+          cellDate >= new Date(today.getFullYear(), today.getMonth(), today.getDate())) {
+        next.add(dateStrFor(d))
+      }
+    }
+    setSelectedDays(next)
+  }
+
+  // Apply an upsert payload to all selected days in one round-trip.
+  async function bulkUpdate(payload, label) {
+    if (selectedDays.size === 0) { alert('Select some days first.'); return }
+    if (!confirm(`${label} for ${selectedDays.size} day${selectedDays.size > 1 ? 's' : ''}?`)) return
+    setSaving(true)
+    const dates = [...selectedDays]
+    // Existing rows we already have in availability state — update those.
+    // Missing rows — insert new with payload + sane defaults.
+    const existingByDate = {}
+    availability.forEach(a => { existingByDate[a.date] = a })
+    const updates = dates.filter(d => existingByDate[d])
+    const inserts = dates.filter(d => !existingByDate[d])
+
+    // Updates — one statement per row (Supabase doesn't bulk-update by id list)
+    for (const d of updates) {
+      await supabase.from('room_availability').update(payload).eq('id', existingByDate[d].id)
+    }
+    // Inserts — single bulk insert
+    if (inserts.length > 0) {
+      const rows = inserts.map(date => ({
+        room_id: selectedRoom,
+        date,
+        available_count: payload.is_blocked ? 0 : room.quantity,
+        is_blocked: payload.is_blocked ?? false,
+        price_override: payload.price_override ?? null,
+      }))
+      await supabase.from('room_availability').insert(rows)
+    }
+    await refreshMonth()
+    setSelectedDays(new Set())
+    setSaving(false)
+  }
+
+  async function bulkSetPrice() {
+    const input = prompt(
+      `Set price for ${selectedDays.size} selected day${selectedDays.size > 1 ? 's' : ''}.\n\n` +
+      `Enter the new price in USD, or leave blank to revert to the room default ($${Number(room?.base_price || 0).toFixed(0)}).`,
+      String(room?.base_price || '')
+    )
+    if (input === null) return
+    const trimmed = input.trim()
+    let newPrice = null
+    if (trimmed !== '') {
+      newPrice = Number(trimmed)
+      if (!isFinite(newPrice) || newPrice <= 0) { alert('Invalid price.'); return }
+    }
+    await bulkUpdate({ price_override: newPrice }, `Set price to $${newPrice ?? 'default'}`)
+  }
+
+  async function bulkBlock()   { await bulkUpdate({ is_blocked: true,  available_count: 0 },             'Block') }
+  async function bulkUnblock() { await bulkUpdate({ is_blocked: false, available_count: room?.quantity || 1 }, 'Unblock') }
 
   function prevMonth() {
     setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1))
@@ -1341,6 +1489,60 @@ function CalendarTab({ rooms }) {
           <button onClick={nextMonth} className="p-2 rounded-lg hover:bg-gray-100"><ChevronRight size={20} /></button>
         </div>
 
+        {/* Bulk-edit toolbar — toggleable mode for changing many days at once */}
+        <div className="mb-3 flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={toggleBulkMode}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              bulkMode
+                ? 'bg-ocean text-white shadow-sm'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-ocean hover:text-ocean'
+            }`}
+          >
+            {bulkMode ? '✓ Bulk edit ON' : 'Bulk edit'}
+          </button>
+
+          {bulkMode && (
+            <>
+              <button onClick={selectAllDays} type="button"
+                className="px-2.5 py-1 rounded text-xs text-gray-500 hover:text-deep hover:bg-gray-50 transition-all">
+                Select month
+              </button>
+              <button onClick={selectWeekends} type="button"
+                className="px-2.5 py-1 rounded text-xs text-gray-500 hover:text-deep hover:bg-gray-50 transition-all">
+                Weekends only
+              </button>
+              {selectedDays.size > 0 && (
+                <button onClick={() => setSelectedDays(new Set())} type="button"
+                  className="px-2.5 py-1 rounded text-xs text-gray-400 hover:text-sunset transition-all">
+                  Clear ({selectedDays.size})
+                </button>
+              )}
+
+              {selectedDays.size > 0 && (
+                <div className="ml-auto flex items-center gap-2">
+                  <span className="text-xs text-gray-400">
+                    {selectedDays.size} day{selectedDays.size > 1 ? 's' : ''} selected →
+                  </span>
+                  <button onClick={bulkSetPrice} type="button"
+                    className="px-2.5 py-1 rounded text-xs font-bold bg-ocean text-white hover:bg-ocean/90">
+                    Set price
+                  </button>
+                  <button onClick={bulkBlock} type="button"
+                    className="px-2.5 py-1 rounded text-xs font-bold bg-sunset/10 text-sunset hover:bg-sunset/20">
+                    Block
+                  </button>
+                  <button onClick={bulkUnblock} type="button"
+                    className="px-2.5 py-1 rounded text-xs font-bold bg-libre/10 text-libre hover:bg-libre/20">
+                    Unblock
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
         {/* Day headers */}
         <div className="grid grid-cols-7 gap-1 mb-1">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
@@ -1366,17 +1568,27 @@ function CalendarTab({ rooms }) {
                   ? avail.available_count
                   : totalStock)
 
+            const isSelected = bulkMode && selectedDays.has(dateStrFor(day))
+            const handleCellClick = () => {
+              if (isPast) return
+              if (bulkMode) toggleDaySelection(day)
+              else toggleBlock(day)
+            }
+            const hasOverride = avail?.price_override != null
+
             return (
               <button
                 key={day}
-                onClick={() => !isPast && toggleBlock(day)}
+                onClick={handleCellClick}
                 disabled={isPast || saving}
                 className={`relative aspect-square min-h-[96px] rounded-lg transition-all flex flex-col p-2 text-left ${
                   isPast
                     ? 'text-gray-300 bg-gray-50 cursor-not-allowed border border-gray-100'
-                    : isBlocked
-                      ? 'bg-sunset/10 border border-sunset/20 hover:bg-sunset/20 cursor-pointer'
-                      : 'bg-libre/5 border border-libre/10 hover:bg-libre/15 cursor-pointer'
+                    : isSelected
+                      ? 'bg-ocean/15 border-2 border-ocean ring-2 ring-ocean/30 cursor-pointer'
+                      : isBlocked
+                        ? 'bg-sunset/10 border border-sunset/20 hover:bg-sunset/20 cursor-pointer'
+                        : 'bg-libre/5 border border-libre/10 hover:bg-libre/15 cursor-pointer'
                 }`}
               >
                 {/* Top row: date (left) + stock (right) */}
@@ -1397,10 +1609,21 @@ function CalendarTab({ rooms }) {
                   )}
                 </div>
 
-                {/* Bottom: brut + net prices */}
+                {/* Bottom: brut + net prices.
+                    Click on the price text (in normal mode) → edit override for that day.
+                    In bulk mode the click goes to selection toggle (cell-level handler). */}
                 {!isPast && !isBlocked && priceBrut > 0 && (
-                  <div className="mt-auto w-full leading-tight">
-                    <p className="text-sm font-bold text-ocean">${priceBrut.toFixed(0)}</p>
+                  <div
+                    onClick={bulkMode ? undefined : (e) => editPrice(day, e)}
+                    className={`mt-auto w-full leading-tight ${
+                      bulkMode ? '' : 'rounded px-1 -mx-1 hover:bg-white/60 hover:ring-1 hover:ring-ocean/30 cursor-pointer'
+                    }`}
+                    title={bulkMode ? undefined : 'Click to set a custom price for this day'}
+                  >
+                    <p className="text-sm font-bold text-ocean">
+                      ${priceBrut.toFixed(0)}
+                      {hasOverride && <span className="ml-1 text-[9px] font-normal text-orange">★</span>}
+                    </p>
                     <p className="text-[11px] text-libre/90 font-medium">net ${priceNet.toFixed(0)}</p>
                   </div>
                 )}
