@@ -143,6 +143,22 @@ export default function PropertyDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoom, realRooms])
 
+  // ── Per-bed auto-sync ──────────────────────────────
+  // For dorm-style rooms (pricing_unit='bed'), each guest needs 1 bed.
+  // Force roomsCount (which doubles as bed count) = total guests so the
+  // total price = price × nights × people. Hides the manual Beds picker.
+  useEffect(() => {
+    if (!selectedRoom) return
+    const r = realRooms.find(x => x.id === selectedRoom)
+    if (r?.pricing_unit === 'bed') {
+      const totalPeople = (Number(adults) || 0) + (Number(children) || 0)
+      if (totalPeople > 0 && roomsCount !== totalPeople) {
+        setRoomsCount(totalPeople)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedRoom, adults, children, realRooms])
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f5f6fa] flex items-center justify-center">
@@ -194,17 +210,20 @@ export default function PropertyDetail() {
   const lowestRoom = rooms.length > 0 ? rooms.reduce((a, b) => a.price < b.price ? a : b) : null
 
   // ── Capacity guard helpers (hook moved above early returns) ─────────
-  // The dropdown caps guests at (rooms_selected × room.max_guests).
-  // E.g. 3 doubles = up to 6 guests. Auto-clamp on smaller selection.
+  // - For per-room rooms: max guests = room.max_guests × roomsCount (e.g. 3 doubles = 6).
+  // - For per-bed rooms : max guests = room.quantity (total beds), each bed = 1 person.
   const selectedRoomData = selectedRoom ? rooms.find(r => r.id === selectedRoom) : null
+  const isPerBed = selectedRoomData?.pricingUnit === 'bed'
+  const rawRoom = selectedRoom ? realRooms.find(r => r.id === selectedRoom) : null
   const effectiveMax = selectedRoomData
-    ? selectedRoomData.guests * roomsCount
+    ? (isPerBed
+        ? (rawRoom?.quantity || rawRoom?.max_guests || 1)   // total beds in the dorm
+        : selectedRoomData.guests * roomsCount)
     : (rooms.length ? Math.max(...rooms.map(r => r.guests || 1)) : 6)
   const maxAllowedGuests = effectiveMax
-  // How many of THIS room type can be selected (limited by room.quantity, the
-  // total stock the hotelier listed). Real per-day availability is enforced
-  // server-side; this is a coarse client-side cap.
-  const maxRoomsAvailable = selectedRoomData ? (realRooms.find(r => r.id === selectedRoom)?.quantity || 1) : 1
+  // How many of THIS room type can be selected. For per-room: total rooms.
+  // For per-bed: hidden (auto = guests count).
+  const maxRoomsAvailable = selectedRoomData ? (rawRoom?.quantity || 1) : 1
 
   const guestsExceedRoom = selectedRoomData && Number(guests) > effectiveMax
 
@@ -726,7 +745,7 @@ export default function PropertyDetail() {
                       {t('booking.guests', 'Guests')}
                       {selectedRoomData && (
                         <span className="ml-1 normal-case text-gray-400 font-normal">
-                          (max {effectiveMax})
+                          (max {effectiveMax}{isPerBed ? ' beds' : ''})
                         </span>
                       )}
                     </label>
@@ -740,25 +759,31 @@ export default function PropertyDetail() {
                   </div>
                 </div>
 
-                {/* Rooms (or Beds for dorm-style) count — only meaningful once
-                    a room is selected and the room type has more than 1 unit. */}
-                {selectedRoomData && maxRoomsAvailable > 1 && (
+                {/* Rooms picker — only for per-room; per-bed rooms auto-derive
+                    bed count from guest count (handled by useEffect above). */}
+                {selectedRoomData && !isPerBed && maxRoomsAvailable > 1 && (
                   <div className="border border-gray-200 rounded-lg p-2.5 hover:border-[#003580] transition-colors mt-2">
                     <label className="block text-[10px] font-bold text-gray-500 uppercase">
-                      {selectedRoomData.pricingUnit === 'bed' ? 'Beds' : t('booking.rooms', 'Rooms')}
+                      {t('booking.rooms', 'Rooms')}
                       <span className="ml-1 normal-case text-gray-400 font-normal">
                         (max {maxRoomsAvailable} available)
                       </span>
                     </label>
                     <select value={roomsCount} onChange={e => setRoomsCount(Number(e.target.value))}
                       className="w-full text-sm font-medium text-gray-900 border-0 p-0 focus:outline-none bg-transparent appearance-none">
-                      {Array.from({ length: maxRoomsAvailable }, (_, i) => i + 1).map(n => {
-                        const unit = selectedRoomData.pricingUnit === 'bed'
-                          ? (n === 1 ? 'bed' : 'beds')
-                          : (n === 1 ? 'room' : 'rooms')
-                        return <option key={n} value={n}>{n} {unit}</option>
-                      })}
+                      {Array.from({ length: maxRoomsAvailable }, (_, i) => i + 1).map(n =>
+                        <option key={n} value={n}>{n} {n === 1 ? 'room' : 'rooms'}</option>
+                      )}
                     </select>
+                  </div>
+                )}
+
+                {/* Per-bed info banner — beds = guests, no manual picker */}
+                {selectedRoomData && isPerBed && (adults + children) > 0 && (
+                  <div className="bg-deep/5 border border-deep/15 rounded-lg p-2.5 mt-2 text-xs text-deep">
+                    🛏️ <strong>{adults + children} bed{adults + children > 1 ? 's' : ''}</strong> reserved
+                    (1 per guest) ·{' '}
+                    <span className="text-gray-500">${selectedRoomData.price}/bed/night</span>
                   </div>
                 )}
 
