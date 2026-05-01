@@ -5,7 +5,7 @@ import {
   ArrowLeft, Plus, BedDouble, Calendar, ClipboardList, Pencil, Trash2,
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
   ChevronLeft, ChevronRight, X, Save, Loader2, Ban, Check,
-  Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film
+  Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw
 } from 'lucide-react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -1244,6 +1244,12 @@ function CalendarTab({ rooms }) {
   // or an action is applied. Stored as a Set of "yyyy-mm-dd" strings.
   const [bulkMode, setBulkMode] = useState(false)
   const [selectedDays, setSelectedDays] = useState(new Set())
+  // Undo snapshot — captures the state of all rows touched by the last bulk
+  // action. `before` is the original row (or null if no row existed before
+  // the action). One click on Undo restores everything atomically.
+  // Auto-expires after 30s so it doesn't linger forever.
+  const [undo, setUndo] = useState(null)
+  // { label: string, snapshot: [{ date: 'yyyy-mm-dd', before: row | null }] }
 
   const room = rooms.find(r => r.id === selectedRoom)
 
@@ -1398,23 +1404,27 @@ function CalendarTab({ rooms }) {
   }
 
   // Apply an upsert payload to all selected days in one round-trip.
+  // Captures a pre-state snapshot so the user can Undo with one click.
   async function bulkUpdate(payload, label) {
     if (selectedDays.size === 0) { alert('Select some days first.'); return }
     if (!confirm(`${label} for ${selectedDays.size} day${selectedDays.size > 1 ? 's' : ''}?`)) return
     setSaving(true)
     const dates = [...selectedDays]
-    // Existing rows we already have in availability state — update those.
-    // Missing rows — insert new with payload + sane defaults.
     const existingByDate = {}
     availability.forEach(a => { existingByDate[a.date] = a })
+
+    // Snapshot BEFORE mutation — we'll need this to undo
+    const snapshot = dates.map(d => ({
+      date: d,
+      before: existingByDate[d] ? { ...existingByDate[d] } : null,
+    }))
+
     const updates = dates.filter(d => existingByDate[d])
     const inserts = dates.filter(d => !existingByDate[d])
 
-    // Updates — one statement per row (Supabase doesn't bulk-update by id list)
     for (const d of updates) {
       await supabase.from('room_availability').update(payload).eq('id', existingByDate[d].id)
     }
-    // Inserts — single bulk insert
     if (inserts.length > 0) {
       const rows = inserts.map(date => ({
         room_id: selectedRoom,
@@ -1422,13 +1432,55 @@ function CalendarTab({ rooms }) {
         available_count: payload.is_blocked ? 0 : room.quantity,
         is_blocked: payload.is_blocked ?? false,
         price_override: payload.price_override ?? null,
+        min_stay: payload.min_stay ?? null,
+        promo_label: payload.promo_label ?? null,
+        promo_pct: payload.promo_pct ?? null,
+        internal_note: payload.internal_note ?? null,
       }))
       await supabase.from('room_availability').insert(rows)
     }
     await refreshMonth()
     setSelectedDays(new Set())
+    setUndo({ label, snapshot })
     setSaving(false)
   }
+
+  // Reverse the last bulk action by restoring the captured snapshot.
+  async function handleUndo() {
+    if (!undo) return
+    if (!confirm(`Undo "${undo.label}" on ${undo.snapshot.length} day${undo.snapshot.length > 1 ? 's' : ''}?`)) return
+    setSaving(true)
+    for (const { date, before } of undo.snapshot) {
+      if (before) {
+        // Row existed before — restore its full prior state
+        await supabase.from('room_availability').update({
+          is_blocked:     before.is_blocked,
+          available_count: before.available_count,
+          price_override: before.price_override,
+          min_stay:       before.min_stay,
+          promo_label:    before.promo_label,
+          promo_pct:      before.promo_pct,
+          internal_note:  before.internal_note,
+        }).eq('id', before.id)
+      } else {
+        // Row didn't exist before — delete the one we created
+        await supabase.from('room_availability').delete()
+          .eq('room_id', selectedRoom).eq('date', date)
+      }
+    }
+    await refreshMonth()
+    setUndo(null)
+    setSaving(false)
+  }
+
+  // Auto-expire the undo offer after 30s so it doesn't sit around and
+  // surprise the operator (the snapshot would no longer match reality if
+  // they made other changes in between).
+  useEffect(() => {
+    if (!undo) return
+    const timer = setTimeout(() => setUndo(null), 30_000)
+    return () => clearTimeout(timer)
+  }, [undo])
 
   async function bulkSetPrice() {
     const input = prompt(
@@ -1779,6 +1831,31 @@ function CalendarTab({ rooms }) {
           <span className="text-gray-400 italic">· {t('manage.click_toggle', 'Click a date to block/unblock')}</span>
         </div>
       </Card>
+
+      {/* Undo toast — appears after every bulk action, auto-clears in 30s */}
+      {undo && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-deep text-white px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+          <span className="text-sm">
+            <span className="text-libre">✓</span> {undo.label} <span className="text-white/40">· {undo.snapshot.length} day{undo.snapshot.length > 1 ? 's' : ''}</span>
+          </span>
+          <button
+            type="button"
+            onClick={handleUndo}
+            disabled={saving}
+            className="px-3 py-1 rounded-full bg-white/15 hover:bg-white/25 text-xs font-bold flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+          >
+            <RotateCcw size={11} /> Undo
+          </button>
+          <button
+            type="button"
+            onClick={() => setUndo(null)}
+            className="text-white/50 hover:text-white text-base leading-none cursor-pointer"
+            aria-label="Dismiss"
+          >
+            ×
+          </button>
+        </div>
+      )}
     </div>
   )
 }
