@@ -936,12 +936,26 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.base_price', 'Price per Night (USD)')} *</label>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                {t('manage.base_price', 'Price per Night (USD)')} <span className="text-gray-400 normal-case font-normal">— {t('manage.price_paid_by_guest', 'paid by guest')}</span> *
+              </label>
               <input type="number" min={1} step="0.01" value={form.base_price}
                 onChange={e => setForm(f => ({ ...f, base_price: e.target.value }))}
                 placeholder="e.g. 45"
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
               />
+              {/* Auto-calculated net the hotelier receives — STAYLO keeps 10%.
+                  Always shown so the hotelier knows exactly what lands in their account. */}
+              {form.base_price && Number(form.base_price) > 0 && (
+                <div className="mt-2 px-3 py-2 rounded-lg bg-libre/5 border border-libre/15 flex items-center justify-between text-xs">
+                  <span className="text-gray-500">
+                    {t('manage.net_received', 'Net you receive')} <span className="text-gray-400">({t('manage.after_commission', 'after 10% STAYLO commission')})</span>
+                  </span>
+                  <span className="font-bold text-libre">
+                    ${(Number(form.base_price) * 0.9).toFixed(2)} / {t('manage.night', 'night')}
+                  </span>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.quantity', 'Quantity (how many of this type)')}</label>
@@ -1334,46 +1348,93 @@ function CalendarTab({ rooms }) {
           ))}
         </div>
 
-        {/* Calendar grid */}
+        {/* Calendar grid — each cell shows date, stock count, brut + net price */}
         <div className="grid grid-cols-7 gap-1">
           {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} />)}
           {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
             const avail = getAvailForDate(day)
             const isBlocked = avail?.is_blocked
             const isPast = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day) < new Date(today.getFullYear(), today.getMonth(), today.getDate())
-            const priceOverride = avail?.price_override
+            const priceBrut = Number(avail?.price_override ?? room.base_price ?? 0)
+            const priceNet = priceBrut * 0.9
+            // Stock — default = quantity. If avail row exists, use available_count.
+            // Blocked = 0. Quantity is the total of this room type.
+            const totalStock = room.quantity || 1
+            const availableStock = isBlocked
+              ? 0
+              : (avail && typeof avail.available_count === 'number'
+                  ? avail.available_count
+                  : totalStock)
 
             return (
               <button
                 key={day}
                 onClick={() => !isPast && toggleBlock(day)}
                 disabled={isPast || saving}
-                className={`relative aspect-square rounded-lg text-sm font-medium transition-all flex flex-col items-center justify-center gap-0.5 ${
+                className={`relative aspect-square min-h-[72px] rounded-lg transition-all flex flex-col p-1.5 text-left ${
                   isPast
-                    ? 'text-gray-300 bg-gray-50 cursor-not-allowed'
+                    ? 'text-gray-300 bg-gray-50 cursor-not-allowed border border-gray-100'
                     : isBlocked
-                    ? 'bg-sunset/10 text-sunset border border-sunset/20 hover:bg-sunset/20'
-                    : 'bg-libre/5 text-deep border border-libre/10 hover:bg-libre/15 cursor-pointer'
+                      ? 'bg-sunset/10 border border-sunset/20 hover:bg-sunset/20 cursor-pointer'
+                      : 'bg-libre/5 border border-libre/10 hover:bg-libre/15 cursor-pointer'
                 }`}
               >
-                <span>{day}</span>
-                {!isPast && priceOverride && (
-                  <span className="text-[10px] text-ocean">${Number(priceOverride).toFixed(0)}</span>
+                {/* Top row: date (left) + stock (right) */}
+                <div className="flex items-start justify-between w-full">
+                  <span className={`text-xs font-bold ${isPast ? 'text-gray-300' : isBlocked ? 'text-sunset' : 'text-deep'}`}>
+                    {day}
+                  </span>
+                  {!isPast && (
+                    <span className={`text-[9px] font-bold px-1 rounded ${
+                      availableStock === 0
+                        ? 'bg-sunset/15 text-sunset'
+                        : availableStock < totalStock
+                          ? 'bg-orange/15 text-orange'
+                          : 'bg-libre/15 text-libre'
+                    }`}>
+                      {availableStock}/{totalStock}
+                    </span>
+                  )}
+                </div>
+
+                {/* Bottom: brut + net prices */}
+                {!isPast && !isBlocked && priceBrut > 0 && (
+                  <div className="mt-auto w-full leading-tight">
+                    <p className="text-[10px] font-bold text-ocean">${priceBrut.toFixed(0)}</p>
+                    <p className="text-[9px] text-libre/80">net ${priceNet.toFixed(0)}</p>
+                  </div>
                 )}
-                {isBlocked && <X size={10} className="text-sunset" />}
+                {!isPast && isBlocked && (
+                  <div className="mt-auto w-full text-[9px] font-bold text-sunset uppercase">
+                    Blocked
+                  </div>
+                )}
               </button>
             )
           })}
         </div>
 
-        <div className="flex items-center gap-4 mt-4 text-xs text-gray-500">
+        {/* Legend */}
+        <div className="flex items-center gap-4 mt-4 text-xs text-gray-500 flex-wrap">
           <span className="flex items-center gap-1">
             <span className="w-3 h-3 rounded bg-libre/10 border border-libre/10" /> {t('manage.available', 'Available')}
           </span>
           <span className="flex items-center gap-1">
             <span className="w-3 h-3 rounded bg-sunset/10 border border-sunset/20" /> {t('manage.blocked', 'Blocked')}
           </span>
-          <span className="text-gray-400">{t('manage.click_toggle', 'Click a date to block/unblock')}</span>
+          <span className="flex items-center gap-1">
+            <span className="text-ocean font-bold text-[11px]">$X</span>
+            <span className="text-gray-400">price guest pays</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-libre font-bold text-[11px]">net $X</span>
+            <span className="text-gray-400">you receive (90%)</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="text-libre font-bold text-[11px]">N/M</span>
+            <span className="text-gray-400">rooms available / total</span>
+          </span>
+          <span className="text-gray-400 italic">· {t('manage.click_toggle', 'Click a date to block/unblock')}</span>
         </div>
       </Card>
     </div>
