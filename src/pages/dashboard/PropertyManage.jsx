@@ -724,11 +724,44 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     name: '', description: '', type: 'standard', max_guests: 2,
     bed_type: 'double', base_price: '', quantity: 1, amenities: [],
   })
+  // Carry photo/video URLs from a source room when "Copy from..." is used.
+  // Stored separately because handleSave's regular flow doesn't touch media.
+  const [copiedMedia, setCopiedMedia] = useState({ photo_urls: [], video_urls: [] })
 
   function openAdd() {
     setEditingRoom(null)
     setForm({ name: '', description: '', type: 'standard', max_guests: 2, bed_type: 'double', base_price: '', quantity: 1, amenities: [] })
+    setCopiedMedia({ photo_urls: [], video_urls: [] })
     setShowForm(true)
+  }
+
+  // Pre-fill the form from another room. User can still edit anything after.
+  // Media (photo_urls / video_urls) are copied by REFERENCE — both rooms
+  // point to the same Storage files. This keeps the operation instant.
+  // The hotelier can re-upload independent media later from the Edit form.
+  function copyFromRoom(sourceRoomId) {
+    if (!sourceRoomId) {
+      // Reset to blank
+      setForm({ name: '', description: '', type: 'standard', max_guests: 2, bed_type: 'double', base_price: '', quantity: 1, amenities: [] })
+      setCopiedMedia({ photo_urls: [], video_urls: [] })
+      return
+    }
+    const src = rooms.find(r => r.id === sourceRoomId)
+    if (!src) return
+    setForm({
+      name: `${src.name} (copy)`,
+      description: src.description || '',
+      type: src.type,
+      max_guests: src.max_guests,
+      bed_type: src.bed_type,
+      base_price: src.base_price,
+      quantity: src.quantity,
+      amenities: [...(src.amenities || [])],
+    })
+    setCopiedMedia({
+      photo_urls: [...(src.photo_urls || [])],
+      video_urls: [...(src.video_urls || [])],
+    })
   }
 
   function openEdit(room) {
@@ -770,10 +803,17 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     if (editingRoom) {
       await supabase.from('rooms').update(payload).eq('id', editingRoom.id)
     } else {
+      // For new rooms only — carry any media copied from a source room.
+      // Empty arrays for non-copied creates are fine (DB default is '{}').
+      if (copiedMedia.photo_urls.length || copiedMedia.video_urls.length) {
+        payload.photo_urls = copiedMedia.photo_urls
+        payload.video_urls = copiedMedia.video_urls
+      }
       await supabase.from('rooms').insert(payload)
     }
     setSaving(false)
     setShowForm(false)
+    setCopiedMedia({ photo_urls: [], video_urls: [] })
     onRefresh()
   }
 
@@ -897,6 +937,38 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
           <h3 className="font-bold text-deep mb-4">
             {editingRoom ? t('manage.edit_room', 'Edit Room') : t('manage.new_room', 'New Room Type')}
           </h3>
+
+          {/* Copy-from-existing-room shortcut — only for NEW rooms.
+              Pre-fills every field including amenities + media references.
+              Hotelier still has to click Save and can edit anything first. */}
+          {!editingRoom && rooms.length > 0 && (
+            <div className="mb-5 p-3 rounded-xl bg-electric/5 border border-electric/20">
+              <label className="block text-xs font-bold text-electric mb-1.5 flex items-center gap-1.5">
+                ⚡ {t('manage.copy_from', 'Copy from an existing room')}
+                <span className="text-gray-400 font-normal normal-case">— {t('manage.copy_from_hint', 'optional, pre-fills everything')}</span>
+              </label>
+              <select
+                onChange={e => copyFromRoom(e.target.value)}
+                defaultValue=""
+                className="w-full px-3 py-2 rounded-lg border border-electric/20 bg-white text-sm text-deep focus:outline-none focus:ring-2 focus:ring-electric/30"
+              >
+                <option value="">— {t('manage.copy_from_none', 'Start blank')} —</option>
+                {rooms.map(r => (
+                  <option key={r.id} value={r.id}>
+                    {r.name} ({prettyLabel(r.type)} · ${Number(r.base_price).toFixed(0)} · x{r.quantity})
+                  </option>
+                ))}
+              </select>
+              {(copiedMedia.photo_urls.length > 0 || copiedMedia.video_urls.length > 0) && (
+                <p className="text-[10px] text-gray-500 mt-2 italic">
+                  ✓ Copied: {copiedMedia.photo_urls.length} photo{copiedMedia.photo_urls.length !== 1 ? 's' : ''}
+                  {copiedMedia.video_urls.length > 0 && `, ${copiedMedia.video_urls.length} video${copiedMedia.video_urls.length !== 1 ? 's' : ''}`}.
+                  {' '}You can replace them after saving.
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.room_name', 'Room Name')} *</label>
