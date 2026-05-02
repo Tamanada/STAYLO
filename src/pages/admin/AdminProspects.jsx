@@ -281,6 +281,10 @@ function ProspectModal({ prospect, onClose, onSaved }) {
   const [contactPosition, setContactPosition] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
+  // Branded-email-via-Resend state (separate from form save)
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const [emailSentInfo, setEmailSentInfo] = useState(null)
+  const [emailError, setEmailError]       = useState('')
 
   useEffect(() => {
     if (!prospect) return
@@ -293,6 +297,8 @@ function ProspectModal({ prospect, onClose, onSaved }) {
     setContactName(prospect.contact_name || '')
     setContactPosition(prospect.contact_position || '')
     setError('')
+    setEmailSentInfo(null)
+    setEmailError('')
   }, [prospect])
 
   if (!prospect) return null
@@ -350,6 +356,59 @@ function ProspectModal({ prospect, onClose, onSaved }) {
     // Then update CRM state
     setStatus('contacted')
     setTimeout(handleSave, 100)
+  }
+
+  // Send the branded HTML email via the send-prospect-invite edge function.
+  // The function itself updates status='contacted' + bumps contact_count,
+  // so we just need to refresh the row afterward.
+  async function sendBrandedEmail() {
+    setEmailError('')
+    setEmailSentInfo(null)
+    if (!email || !email.includes('@')) {
+      setEmailError('Fill in a valid email first, then save.')
+      return
+    }
+    // Persist the contact-info edits before sending — the edge function reads
+    // from the DB row, so unsaved field changes wouldn't make it into the email.
+    if (
+      email.trim()        !== (prospect.email        || '') ||
+      contactName.trim()  !== (prospect.contact_name || '')
+    ) {
+      await handleSave()
+    }
+    setSendingEmail(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Not authenticated')
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-prospect-invite`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ prospect_id: prospect.id }),
+        },
+      )
+      const json = await resp.json()
+      if (!resp.ok) {
+        setEmailError(json.error || `HTTP ${resp.status}`)
+        return
+      }
+      setEmailSentInfo(json)
+      // Refresh the prospect row to pull the new contacted_at / status
+      const { data: refreshed } = await supabase
+        .from('prospects').select('*').eq('id', prospect.id).single()
+      if (refreshed) {
+        setStatus(refreshed.status)
+        onSaved(refreshed)
+      }
+    } catch (err) {
+      setEmailError(err.message)
+    } finally {
+      setSendingEmail(false)
+    }
   }
 
   const mapsUrl = (prospect.latitude && prospect.longitude)
@@ -428,15 +487,45 @@ function ProspectModal({ prospect, onClose, onSaved }) {
           </div>
         </div>
 
-        {/* Quick action: mailto with pre-filled template */}
-        {mailto && (
-          <div className="p-3 bg-libre/5 border border-libre/15 rounded-xl">
-            <p className="text-xs text-gray-500 mb-2">
-              Opens YOUR mail client with the standard outreach pitch pre-filled, then auto-marks as contacted.
-            </p>
-            <Button onClick={markContactedAndOpenMail}>
-              <Send size={14} /> Send invite & mark contacted
-            </Button>
+        {/* Outreach actions — primary path = branded HTML via Resend, fallback = mailto */}
+        {email && email.includes('@') && (
+          <div className="p-3 bg-gradient-to-r from-libre/10 to-electric/5 border border-libre/20 rounded-xl space-y-3">
+            {/* Primary: branded HTML email via edge function */}
+            <div>
+              <p className="text-xs text-gray-600 mb-2">
+                <strong className="text-deep">Send a branded HTML invitation</strong>
+                {contactName ? ` to ${contactName}` : ''} from <code className="text-[10px] bg-white px-1 rounded">invites@staylo.app</code>
+                — replies land in your personal inbox.
+              </p>
+              <Button onClick={sendBrandedEmail} disabled={sendingEmail}>
+                {sendingEmail
+                  ? <><Loader2 size={14} className="animate-spin" /> Sending…</>
+                  : <><Send size={14} /> Send STAYLO email & mark contacted</>}
+              </Button>
+              {emailSentInfo && (
+                <p className="text-xs text-libre mt-2 flex items-center gap-1">
+                  <CheckCircle2 size={12} /> Sent to {emailSentInfo.sent_to}
+                  {emailSentInfo.warning ? ` — ${emailSentInfo.warning}` : ''}
+                </p>
+              )}
+              {emailError && (
+                <p className="text-xs text-sunset mt-2">{emailError}</p>
+              )}
+            </div>
+
+            {/* Fallback: open in mail client (when you want to personalise) */}
+            <details className="text-xs">
+              <summary className="cursor-pointer text-gray-400 hover:text-gray-600">
+                Or open in my own mail client (plain text, customisable)
+              </summary>
+              <p className="mt-2 text-gray-500 mb-2">
+                Opens YOUR Gmail/Outlook so you can edit before sending. Doesn't auto-mark contacted.
+              </p>
+              <button onClick={markContactedAndOpenMail}
+                className="text-xs text-ocean hover:text-electric font-medium underline">
+                Open in mail client →
+              </button>
+            </details>
           </div>
         )}
 
