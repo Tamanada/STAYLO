@@ -37,6 +37,10 @@ interface EnrichmentResult {
   website?: string | null
   contact_name?: string | null
   contact_position?: string | null
+  // Thai-government hotel license (Hotel Act B.E. 2547) — see migration
+  // 20260502030000 for tri-state semantics. Claude returns true/false/null.
+  licensed?: boolean | null
+  license_number?: string | null
   notes?: string | null
   confidence?: 'high' | 'medium' | 'low'
   sources?: string[]
@@ -73,7 +77,7 @@ serve(async (req: Request) => {
   // 4. Load the prospect
   const { data: prospect, error: pErr } = await sb
     .from('prospects')
-    .select('id, name_en, name_th, district, province, latitude, longitude, email, phone, website, contact_name, contact_position')
+    .select('id, name_en, name_th, district, province, latitude, longitude, email, phone, website, contact_name, contact_position, licensed, license_number')
     .eq('id', body.prospect_id)
     .single()
 
@@ -90,16 +94,29 @@ serve(async (req: Request) => {
   if (prospect.contact_name)     known.push(`contact: ${prospect.contact_name}`)
   if (prospect.contact_position) known.push(`position: ${prospect.contact_position}`)
 
-  const systemPrompt = `You are a hotel-research assistant. The user gives you a hotel name and location.
-Use web_search and web_fetch to find:
+  const systemPrompt = `You are a hotel-research assistant for STAYLO, a hotelier-owned booking platform launching in Thailand. The user gives you a Thai hotel name and location. Use web_search and web_fetch to find:
+
   - email (general contact, reservations, or manager)
   - phone (any working number — landline or WhatsApp)
   - website (official hotel site, NOT booking aggregators)
   - contact_name (name of owner / general manager / front desk lead, if discoverable)
   - contact_position (their title — Owner, GM, Manager, etc.)
+  - licensed (Thai government Hotel Act B.E. 2547 license — see below)
+  - license_number (the license # itself if you find it)
 
-Be concise. Look at: hotel's own website, Google Maps listing, Facebook page, TripAdvisor.
-Skip aggregators (Booking, Agoda, Expedia, Hotels.com) for the website field — they're not the hotel's own site.
+Where to look:
+  - Hotel's own website (especially "About" / "Contact" / footer / legal pages)
+  - Google Maps listing
+  - Facebook page
+  - TripAdvisor profile
+  - For LICENSE specifically: Booking.com or Agoda listings (they REQUIRE a Thai hotel license # before publishing — if the hotel is on those platforms, it's almost certainly licensed). Also tourismthailand.org TAT directory.
+
+Skip aggregators (Booking, Agoda, Expedia, Hotels.com) for the WEBSITE field — those aren't the hotel's own site. They're fine for license verification only.
+
+License rules:
+  - licensed=true if you find any of: a license number, a TAT directory listing, an active Booking.com or Agoda page, or a "licensed by Tourism Authority of Thailand" mention on the hotel's own site
+  - licensed=false ONLY if you actively searched the TAT directory + Booking.com and the hotel doesn't appear (uncommon — be cautious)
+  - licensed=null if you genuinely couldn't determine either way
 
 Return a JSON object with these EXACT keys (use null for anything you can't find with reasonable confidence):
 {
@@ -108,6 +125,8 @@ Return a JSON object with these EXACT keys (use null for anything you can't find
   "website": "string or null",
   "contact_name": "string or null",
   "contact_position": "string or null",
+  "licensed": true | false | null,
+  "license_number": "string or null",
   "notes": "1-line summary of what you found and where",
   "confidence": "high" | "medium" | "low",
   "sources": ["url1", "url2"]
@@ -200,6 +219,16 @@ Find the missing pieces and return the JSON.`
   // Drop nulls and empty values
   for (const k of Object.keys(update)) {
     if (!update[k]) delete update[k]
+  }
+
+  // License fields — separate handling because `false` is a meaningful value
+  // (we don't want it filtered out by the truthiness check above).
+  if (typeof result.licensed === 'boolean' && (force || prospect.licensed === null || prospect.licensed === undefined)) {
+    update.licensed           = result.licensed
+    update.license_checked_at = new Date().toISOString()
+  }
+  if (result.license_number && (force || !prospect.license_number)) {
+    update.license_number = String(result.license_number).trim()
   }
 
   const filledFields = Object.keys(update)

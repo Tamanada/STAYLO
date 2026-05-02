@@ -16,7 +16,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Mail, Phone, Globe, MapPin, ExternalLink, Save, Loader2,
   CheckCircle2, XCircle, Clock, MessageSquare, Sparkles, AlertTriangle,
-  TrendingUp, Send,
+  TrendingUp, Send, Calendar as CalendarIcon, BadgeCheck,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { DataTable } from '../../components/admin/DataTable'
@@ -79,6 +79,10 @@ export default function AdminProspects() {
   const [filterDistrict, setFilterDistrict] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
   const [emailOnly, setEmailOnly] = useState(false)
+  // Follow-up cohort filter: 'all' | 'overdue' | 'today' | 'week' | 'none'
+  const [filterFollowup, setFilterFollowup] = useState('all')
+  // Licensed filter: 'all' | 'yes' | 'no' | 'unchecked'
+  const [filterLicensed, setFilterLicensed] = useState('all')
 
   // PostgREST caps every response at ~1000 rows by default. To get all 16k+
   // prospects we paginate via .range(from, to) and accumulate.
@@ -223,6 +227,28 @@ export default function AdminProspects() {
     setFilterDistrict('all')
   }, [filterProvince])
 
+  // ── Follow-up cohorts — computed once, used by both the filter and the KPI ──
+  // Today's date as a YYYY-MM-DD string so we can compare to the date column
+  // without timezone surprises (next_follow_up is a DATE, not a TIMESTAMPTZ).
+  const todayStr = useMemo(() => new Date().toISOString().slice(0, 10), [])
+  const weekFromNow = useMemo(() => {
+    const d = new Date(); d.setDate(d.getDate() + 7)
+    return d.toISOString().slice(0, 10)
+  }, [])
+
+  // A prospect is "actionable" (worth following up) only if not in a final state
+  const FOLLOWUP_DEAD_STATES = new Set(['signed_up', 'not_interested', 'blacklisted'])
+  function isActionable(r) { return !FOLLOWUP_DEAD_STATES.has(r.status) }
+
+  function followupCohort(r) {
+    if (!isActionable(r)) return 'dead'
+    if (!r.next_follow_up) return 'none'
+    if (r.next_follow_up <  todayStr)   return 'overdue'
+    if (r.next_follow_up === todayStr)  return 'today'
+    if (r.next_follow_up <= weekFromNow) return 'week'
+    return 'later'
+  }
+
   // Apply filters
   const filtered = useMemo(() => {
     return rows.filter(r => {
@@ -231,22 +257,42 @@ export default function AdminProspects() {
       if (filterDistrict !== 'all' && r.district !== filterDistrict) return false
       if (filterCategory !== 'all' && r.category !== filterCategory) return false
       if (emailOnly && !r.email) return false
+      if (filterLicensed !== 'all') {
+        if (filterLicensed === 'yes'       && r.licensed !== true)  return false
+        if (filterLicensed === 'no'        && r.licensed !== false) return false
+        if (filterLicensed === 'unchecked' && r.licensed != null)   return false
+      }
+      if (filterFollowup !== 'all') {
+        const c = followupCohort(r)
+        // "overdue+today" merged for the urgent cohort the KPI tile points at
+        if (filterFollowup === 'due'     && !(c === 'overdue' || c === 'today')) return false
+        if (filterFollowup === 'overdue' && c !== 'overdue') return false
+        if (filterFollowup === 'today'   && c !== 'today')   return false
+        if (filterFollowup === 'week'    && !(c === 'overdue' || c === 'today' || c === 'week')) return false
+        if (filterFollowup === 'none'    && c !== 'none')    return false
+      }
       return true
     })
-  }, [rows, filterStatus, filterProvince, filterDistrict, filterCategory, emailOnly])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, filterStatus, filterProvince, filterDistrict, filterCategory, emailOnly, filterFollowup, filterLicensed, todayStr, weekFromNow])
 
   // KPI tiles
   const stats = useMemo(() => {
-    const s = { total: rows.length }
+    const s = { total: rows.length, due_today: 0, overdue: 0 }
     for (const k of STATUS_KEYS) s[k] = 0
     s.with_email = 0
     for (const r of rows) {
       if (s[r.status] != null) s[r.status]++
       if (r.email) s.with_email++
+      if (isActionable(r) && r.next_follow_up) {
+        if (r.next_follow_up <  todayStr) s.overdue++
+        if (r.next_follow_up === todayStr) s.due_today++
+      }
     }
     s.conversion = s.total ? ((s.signed_up / s.total) * 100).toFixed(1) : '0.0'
     return s
-  }, [rows])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows, todayStr])
 
   const columns = [
     {
@@ -282,6 +328,28 @@ export default function AdminProspects() {
           {!row.email && !row.phone && !row.website && <span className="text-gray-300">—</span>}
         </div>
       ),
+    },
+    {
+      key: 'licensed',
+      label: 'Lic.',
+      render: v => {
+        if (v === true)  return <BadgeCheck size={16} className="text-libre" />
+        if (v === false) return <XCircle size={16} className="text-sunset/60" />
+        return <span className="text-gray-300 text-xs">?</span>
+      },
+    },
+    {
+      key: 'next_follow_up',
+      label: 'Follow-up',
+      render: (v, row) => {
+        if (!v) return <span className="text-gray-300 text-xs">—</span>
+        const c = followupCohort(row)
+        if (c === 'overdue') return <Badge variant="sunset">{v} (late)</Badge>
+        if (c === 'today')   return <Badge variant="orange">Today</Badge>
+        if (c === 'week')    return <span className="text-xs text-electric font-medium">{v}</span>
+        if (c === 'dead')    return <span className="text-xs text-gray-400">—</span>
+        return <span className="text-xs text-gray-500">{v}</span>
+      },
     },
     {
       key: 'status',
@@ -379,9 +447,26 @@ export default function AdminProspects() {
       )}
 
       {/* KPI tiles */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         <KpiTile label="Total"       value={stats.total}       icon={Sparkles}       tone="gray" />
         <KpiTile label="With email"  value={stats.with_email}  icon={Mail}           tone="blue" />
+        {/* Due today — clickable. Combines today + overdue so one click shows
+            everything you should chase right now. */}
+        <button onClick={() => setFilterFollowup('due')} type="button"
+          className="text-left rounded-2xl bg-white border border-sunset/40 shadow-sm p-4 flex items-center gap-3 hover:border-sunset hover:shadow transition-all cursor-pointer">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-sunset/15 text-sunset">
+            <CalendarIcon size={18} />
+          </div>
+          <div>
+            <div className="text-xs text-sunset uppercase tracking-wider font-bold">Due today</div>
+            <div className="text-xl font-bold text-deep">
+              {(stats.due_today + stats.overdue).toLocaleString()}
+              {stats.overdue > 0 && (
+                <span className="text-[10px] ml-1.5 text-sunset font-normal align-middle">+{stats.overdue} late</span>
+              )}
+            </div>
+          </div>
+        </button>
         <KpiTile label="Contacted"   value={stats.contacted}   icon={Send}           tone="orange" />
         <KpiTile label="Signed up"   value={stats.signed_up}   icon={CheckCircle2}   tone="green" />
         <KpiTile label="Conversion"  value={`${stats.conversion}%`} icon={TrendingUp} tone="electric" />
@@ -402,6 +487,22 @@ export default function AdminProspects() {
           ]} />
         <FilterSelect label="Type"      value={filterCategory} onChange={setFilterCategory}
           options={[{ value: 'all', label: `All` }, ...categories.map(c => ({ value: c, label: c }))]} />
+        <FilterSelect label="Follow-up" value={filterFollowup} onChange={setFilterFollowup}
+          options={[
+            { value: 'all',     label: 'All' },
+            { value: 'due',     label: `Due today + overdue (${stats.due_today + stats.overdue})` },
+            { value: 'today',   label: `Today only (${stats.due_today})` },
+            { value: 'overdue', label: `Overdue (${stats.overdue})` },
+            { value: 'week',    label: `This week + overdue` },
+            { value: 'none',    label: 'No follow-up set' },
+          ]} />
+        <FilterSelect label="Licensed"  value={filterLicensed} onChange={setFilterLicensed}
+          options={[
+            { value: 'all',       label: 'All' },
+            { value: 'yes',       label: '✓ Licensed' },
+            { value: 'no',        label: '✗ Not licensed' },
+            { value: 'unchecked', label: '? Unchecked' },
+          ]} />
         <label className="ml-auto flex items-center gap-2 text-gray-500 cursor-pointer">
           <input type="checkbox" checked={emailOnly} onChange={e => setEmailOnly(e.target.checked)} />
           With email only
@@ -479,6 +580,9 @@ function ProspectModal({ prospect, onClose, onSaved }) {
   const [website, setWebsite]               = useState('')
   const [contactName, setContactName]       = useState('')
   const [contactPosition, setContactPosition] = useState('')
+  // Tri-state license: null = unchecked, true = licensed, false = unlicensed
+  const [licensed, setLicensed]             = useState(null)
+  const [licenseNumber, setLicenseNumber]   = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
   // Branded-email-via-Resend state (separate from form save)
@@ -502,6 +606,8 @@ function ProspectModal({ prospect, onClose, onSaved }) {
     setWebsite(prospect.website || '')
     setContactName(prospect.contact_name || '')
     setContactPosition(prospect.contact_position || '')
+    setLicensed(prospect.licensed === undefined ? null : prospect.licensed)
+    setLicenseNumber(prospect.license_number || '')
     setError('')
     setEmailSentInfo(null)
     setEmailError('')
@@ -599,6 +705,8 @@ function ProspectModal({ prospect, onClose, onSaved }) {
         setWebsite(json.prospect.website || '')
         setContactName(json.prospect.contact_name || '')
         setContactPosition(json.prospect.contact_position || '')
+        setLicensed(json.prospect.licensed === undefined ? null : json.prospect.licensed)
+        setLicenseNumber(json.prospect.license_number || '')
         onSaved(json.prospect)
       }
     } catch (err) {
@@ -608,32 +716,42 @@ function ProspectModal({ prospect, onClose, onSaved }) {
     }
   }
 
-  // Autosave the 5 contact fields when the user blurs out of an input.
+  // Autosave the contact + license fields when the user blurs/toggles.
   // Skips if nothing actually changed since the last load to avoid spam writes.
   // Bumps manually_enriched_at the first time any field changes from import.
   async function autoSaveContacts() {
-    const cleanEmail   = email.trim()           || null
-    const cleanPhone   = phone.trim()           || null
-    const cleanWebsite = website.trim()         || null
-    const cleanName    = contactName.trim()     || null
-    const cleanPos     = contactPosition.trim() || null
+    const cleanEmail     = email.trim()           || null
+    const cleanPhone     = phone.trim()           || null
+    const cleanWebsite   = website.trim()         || null
+    const cleanName      = contactName.trim()     || null
+    const cleanPos       = contactPosition.trim() || null
+    const cleanLicNum    = licenseNumber.trim()   || null
+    const prevLicensed   = prospect.licensed === undefined ? null : prospect.licensed
 
     const changed =
-      cleanEmail   !== (prospect.email            || null) ||
-      cleanPhone   !== (prospect.phone            || null) ||
-      cleanWebsite !== (prospect.website          || null) ||
-      cleanName    !== (prospect.contact_name     || null) ||
-      cleanPos     !== (prospect.contact_position || null)
+      cleanEmail     !== (prospect.email            || null) ||
+      cleanPhone     !== (prospect.phone            || null) ||
+      cleanWebsite   !== (prospect.website          || null) ||
+      cleanName      !== (prospect.contact_name     || null) ||
+      cleanPos       !== (prospect.contact_position || null) ||
+      licensed       !== prevLicensed                        ||
+      cleanLicNum    !== (prospect.license_number   || null)
 
     if (!changed) return  // nothing to do — silent
 
     setAutoSaveState('saving')
+    const licenseChanged = licensed !== prevLicensed
     const { data, error } = await supabase.from('prospects').update({
       email:            cleanEmail,
       phone:            cleanPhone,
       website:          cleanWebsite,
       contact_name:     cleanName,
       contact_position: cleanPos,
+      licensed,                                         // boolean | null
+      license_number:   cleanLicNum,
+      ...(licenseChanged ? {
+        license_checked_at: new Date().toISOString(),
+      } : {}),
       ...(prospect.manually_enriched_at ? {} : {
         manually_enriched_at: new Date().toISOString(),
       }),
@@ -863,6 +981,54 @@ function ProspectModal({ prospect, onClose, onSaved }) {
                 placeholder="Owner / GM / Front desk / Marketing"
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </ProspectField>
+          </div>
+
+          {/* ───── Thai government license (Hotel Act B.E. 2547) ───── */}
+          <div className="mt-4 pt-3 border-t border-cream-foreground/10">
+            <h4 className="text-[11px] font-bold uppercase tracking-wider text-gray-400 mb-2">
+              Licensed by Thai gov?
+            </h4>
+            <div className="flex items-center gap-3 flex-wrap">
+              <button type="button"
+                onClick={() => { setLicensed(true);  setTimeout(autoSaveContacts, 50) }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                  licensed === true
+                    ? 'bg-libre text-white border-libre'
+                    : 'bg-white text-gray-500 border-gray-200 hover:border-libre/40'
+                }`}>
+                ✓ Licensed
+              </button>
+              <button type="button"
+                onClick={() => { setLicensed(false); setTimeout(autoSaveContacts, 50) }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                  licensed === false
+                    ? 'bg-sunset text-white border-sunset'
+                    : 'bg-white text-gray-500 border-gray-200 hover:border-sunset/40'
+                }`}>
+                ✗ Not licensed
+              </button>
+              <button type="button"
+                onClick={() => { setLicensed(null);  setTimeout(autoSaveContacts, 50) }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-colors ${
+                  licensed === null
+                    ? 'bg-gray-100 text-gray-600 border-gray-300'
+                    : 'bg-white text-gray-400 border-gray-200 hover:border-gray-300'
+                }`}>
+                ? Unchecked
+              </button>
+              {licensed === true && (
+                <input type="text" value={licenseNumber}
+                  onChange={e => setLicenseNumber(e.target.value)}
+                  onBlur={() => autoSaveContacts()}
+                  placeholder="License # (optional)"
+                  className="flex-1 min-w-[160px] px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-libre/30" />
+              )}
+            </div>
+            {prospect.license_checked_at && (
+              <p className="text-[10px] text-gray-400 mt-1.5">
+                Last checked {new Date(prospect.license_checked_at).toLocaleDateString()}
+              </p>
+            )}
           </div>
         </div>
 

@@ -84,7 +84,6 @@ export default function Dashboard() {
   const [shares, setShares] = useState([])
   const [copied, setCopied] = useState(false)
   const [memberPosition, setMemberPosition] = useState(1)
-  const [showQR, setShowQR] = useState(false)
   // Real metrics: monthly revenue + ambassador count derived from DB
   const [monthlyRevenueUsd, setMonthlyRevenueUsd] = useState(0)
   const [ambassadorCount,   setAmbassadorCount]   = useState(0)
@@ -336,19 +335,23 @@ export default function Dashboard() {
       `}</style>
       <div className="referral-border rounded-2xl p-[3px] mb-8">
         <div className="bg-white rounded-[13px] p-6 sm:p-8">
-          <div className="flex items-start gap-4 mb-4">
-            <div className="w-14 h-14 bg-gradient-to-br from-ocean/10 to-libre/10 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <Share2 size={28} className="text-ocean share-icon-bounce" />
-            </div>
-            <div>
-              <h3 className="text-xl sm:text-2xl font-bold text-deep leading-tight">
-                {t('dashboard.share_title', 'Share with your hotelier friends on Koh Phangan!')}
-              </h3>
-              <p className="text-sm text-gray-500 mt-1">
-                {t('dashboard.share_subtitle', 'Every friend who joins earns you a higher rank as Founding Partner. Help us build the community!')}
-              </p>
-            </div>
-          </div>
+          {/* 2-column layout: share content on the left, permanent QR on the right
+              (collapses to single column under lg breakpoint, QR moves to bottom). */}
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-ocean/10 to-libre/10 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <Share2 size={28} className="text-ocean share-icon-bounce" />
+                </div>
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-deep leading-tight">
+                    {t('dashboard.share_title', 'Share with your hotelier friends on Koh Phangan!')}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {t('dashboard.share_subtitle', 'Every friend who joins earns you a higher rank as Founding Partner. Help us build the community!')}
+                  </p>
+                </div>
+              </div>
 
           {/* Referral counter */}
           <div className="flex items-center gap-2 mb-5">
@@ -445,64 +448,52 @@ export default function Dashboard() {
               )}
             </button>
           </div>
-        </div>
-      </div>
-
-      {/* QR Code for sharing — toggleable */}
-      {referralLink && (
-        <div className="mb-8">
-          <button
-            onClick={() => setShowQR(!showQR)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-ocean hover:text-electric transition-colors mb-3"
-          >
-            {showQR ? `▾ ${t('dashboard.hide_qr', 'Hide QR Code')}` : `▸ ${t('dashboard.show_qr', 'Show QR Code')}`}
-          </button>
-          {showQR && (
-            <Card className="p-6">
-              <div className="flex flex-col sm:flex-row items-center gap-6">
-                <div className="qr-hotelier bg-white p-3 rounded-2xl shadow-md border border-gray-100 shrink-0">
+            </div>
+            {/* ─── Right column: QR code, always visible ─── */}
+            {referralLink && (
+              <div className="lg:w-48 shrink-0 flex flex-col items-center lg:items-stretch">
+                <div className="qr-hotelier bg-white p-2.5 rounded-2xl shadow-md border border-gray-100 self-center">
                   <QRCodeSVG
                     value={`https://staylo.app/welcome?ref=${referralCode || ''}`}
-                    size={150}
+                    size={156}
                     bgColor="#FFFFFF"
                     fgColor="#0A1628"
                     level="M"
                   />
                 </div>
-                <div className="text-center sm:text-left">
-                  <h3 className="font-bold text-deep mb-2">{t('dashboard.qr_title', 'Scan to join Staylo')}</h3>
-                  <p className="text-sm text-gray-500 mb-3">{t('dashboard.qr_desc', 'Print it, show it, share it — any hotelier who scans it is linked to you forever.')}</p>
-                  <button
-                    onClick={() => {
-                      const svg = document.querySelector('.qr-hotelier svg')
-                      if (!svg) return
-                      const canvas = document.createElement('canvas')
-                      canvas.width = 400
-                      canvas.height = 400
-                      const ctx = canvas.getContext('2d')
-                      ctx.fillStyle = '#FFFFFF'
-                      ctx.fillRect(0, 0, 400, 400)
-                      const img = new Image()
-                      const svgData = new XMLSerializer().serializeToString(svg)
-                      img.onload = () => {
-                        ctx.drawImage(img, 10, 10, 380, 380)
-                        const a = document.createElement('a')
-                        a.download = 'staylo-referral-qr.png'
-                        a.href = canvas.toDataURL('image/png')
-                        a.click()
-                      }
-                      img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
-                    }}
-                    className="inline-flex items-center gap-2 text-sm text-ocean hover:text-electric transition-colors font-medium"
-                  >
-                    <Download size={14} /> {t('dashboard.qr_download', 'Download QR Code')}
-                  </button>
-                </div>
+                <p className="text-[11px] text-center text-gray-500 mt-2 leading-snug">
+                  {t('dashboard.qr_desc_short', 'Print it, show it — anyone who scans is linked to you forever.')}
+                </p>
+                <button
+                  onClick={() => {
+                    const svg = document.querySelector('.qr-hotelier svg')
+                    if (!svg) return
+                    const canvas = document.createElement('canvas')
+                    canvas.width = 400
+                    canvas.height = 400
+                    const ctx = canvas.getContext('2d')
+                    ctx.fillStyle = '#FFFFFF'
+                    ctx.fillRect(0, 0, 400, 400)
+                    const img = new Image()
+                    const svgData = new XMLSerializer().serializeToString(svg)
+                    img.onload = () => {
+                      ctx.drawImage(img, 10, 10, 380, 380)
+                      const a = document.createElement('a')
+                      a.download = 'staylo-referral-qr.png'
+                      a.href = canvas.toDataURL('image/png')
+                      a.click()
+                    }
+                    img.src = 'data:image/svg+xml;base64,' + btoa(svgData)
+                  }}
+                  className="inline-flex items-center justify-center gap-1.5 text-xs text-ocean hover:text-electric transition-colors font-medium mt-2 self-center"
+                >
+                  <Download size={12} /> {t('dashboard.qr_download', 'Download QR Code')}
+                </button>
               </div>
-            </Card>
-          )}
+            )}
+          </div>
         </div>
-      )}
+      </div>
 
       {/* Savings estimate — with calculation breakdown */}
       {totalRooms > 0 && (
