@@ -87,6 +87,14 @@ export default function Dashboard() {
   // Real metrics: monthly revenue + ambassador count derived from DB
   const [monthlyRevenueUsd, setMonthlyRevenueUsd] = useState(0)
   const [ambassadorCount,   setAmbassadorCount]   = useState(0)
+  // Editable savings calculator inputs — initialised from the user's actual
+  // property data once it loads, otherwise defaults so a new visitor can play
+  // with the numbers immediately. `calcEdited` flips true on first edit so we
+  // can show a "Reset to my data" link.
+  const [calcRooms, setCalcRooms]         = useState(10)
+  const [calcRate, setCalcRate]           = useState(50)
+  const [calcOccupancy, setCalcOccupancy] = useState(65)
+  const [calcEdited, setCalcEdited]       = useState(false)
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/login')
@@ -182,7 +190,29 @@ export default function Dashboard() {
   const avgRate = properties.length
     ? properties.reduce((sum, p) => sum + Number(p.avg_nightly_rate || 0), 0) / properties.length
     : 0
-  const estimatedSavings = totalRooms * avgRate * 365 * 0.65 * 0.07 // saving = 17% - 10% = 7%
+  // Seed the editable calculator with the user's real property data the first
+  // time it becomes available. Only seeds while the user hasn't edited yet,
+  // so we don't overwrite their tweaks if properties refetch.
+  useEffect(() => {
+    if (calcEdited) return
+    if (totalRooms > 0) setCalcRooms(totalRooms)
+    if (avgRate > 0)    setCalcRate(Math.round(avgRate))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalRooms, avgRate])
+
+  // Live recompute from the editable inputs (replaces the old fixed avgRate-
+  // based math). `estimatedSavings` is the number the big "YOU SAVE" tile shows.
+  const calcAnnualRevenue = calcRooms * calcRate * 365 * (calcOccupancy / 100)
+  const calcOTACommission = calcAnnualRevenue * 0.17
+  const calcStayloCommission = calcAnnualRevenue * 0.10
+  const estimatedSavings = calcOTACommission - calcStayloCommission
+
+  function resetCalc() {
+    setCalcRooms(totalRooms || 10)
+    setCalcRate(Math.round(avgRate) || 50)
+    setCalcOccupancy(65)
+    setCalcEdited(false)
+  }
   const totalShares = shares.reduce((sum, s) => sum + (s.quantity || 0), 0)
   const hasSignedLOI = shares.some(s => s.loi_signed)
   const loiStatus = shares.some(s => s.payment_confirmed)
@@ -495,54 +525,74 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Savings estimate — with calculation breakdown */}
-      {totalRooms > 0 && (
-        <div className="mb-8">
-          <Card className="p-6">
-            <h3 className="font-semibold text-deep mb-4">{t('dashboard.savings_title', 'Estimated Annual Savings')}</h3>
-
-            {/* Calculation breakdown */}
-            <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 text-sm">
-              <div className="flex justify-between text-gray-500">
-                <span>{t('dashboard.calc_rooms', 'Total rooms')}</span>
-                <span className="font-medium text-deep">{totalRooms}</span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>{t('dashboard.calc_rate', 'Avg. nightly rate')}</span>
-                <span className="font-medium text-deep">{fmt(Math.round(avgRate))}</span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>{t('dashboard.calc_occupancy', 'Avg. occupancy')}</span>
-                <span className="font-medium text-deep">65%</span>
-              </div>
-              <div className="h-px bg-gray-200 my-1" />
-              <div className="flex justify-between text-gray-500">
-                <span>{t('dashboard.calc_annual_revenue', 'Est. annual booking revenue')}</span>
-                <span className="font-medium text-deep">{fmt(Math.round(totalRooms * avgRate * 365 * 0.65))}</span>
-              </div>
-              <div className="h-px bg-gray-200 my-1" />
-              <div className="flex justify-between text-gray-500">
-                <span>{t('dashboard.calc_ota_commission', 'OTA commission (~17%)')}</span>
-                <span className="font-medium text-sunset">-{fmt(Math.round(totalRooms * avgRate * 365 * 0.65 * 0.17))}</span>
-              </div>
-              <div className="flex justify-between text-gray-500">
-                <span>{t('dashboard.calc_staylo_commission', 'Staylo commission (10%)')}</span>
-                <span className="font-medium text-libre">-{fmt(Math.round(totalRooms * avgRate * 365 * 0.65 * 0.10))}</span>
-              </div>
-            </div>
-
-            {/* Result */}
-            <div className="bg-libre/5 border-2 border-libre/20 rounded-xl p-4 text-center">
-              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('dashboard.calc_you_save', 'You save')}</p>
-              <p className="text-3xl font-black text-libre">
-                {fmt(Math.round(estimatedSavings))}
-                <span className="text-sm font-normal text-gray-400">/{t('dashboard.per_year', 'year')}</span>
+      {/* Savings estimate — interactive calculator (editable inputs, live recompute) */}
+      <div className="mb-8">
+        <Card className="p-6">
+          <div className="flex items-start justify-between mb-4 flex-wrap gap-2">
+            <div>
+              <h3 className="font-semibold text-deep">{t('dashboard.savings_title', 'Estimated Annual Savings')}</h3>
+              <p className="text-xs text-gray-400 mt-0.5">
+                {t('dashboard.calc_hint', 'Tap any number to edit and see your savings update live.')}
               </p>
-              <p className="text-xs text-gray-400 mt-1">{t('dashboard.calc_explanation', 'Difference between 17% OTA and 10% Staylo commission on your estimated bookings')}</p>
             </div>
-          </Card>
-        </div>
-      )}
+            {calcEdited && (
+              <button onClick={resetCalc}
+                className="text-xs text-ocean hover:text-electric font-medium underline-offset-2 hover:underline">
+                ↺ {t('dashboard.calc_reset', 'Reset to my data')}
+              </button>
+            )}
+          </div>
+
+          {/* Editable inputs row — full width on mobile, three columns on sm+ */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            <CalcInput
+              label={t('dashboard.calc_rooms', 'Total rooms')}
+              value={calcRooms}
+              onChange={v => { setCalcRooms(v); setCalcEdited(true) }}
+              min={1} max={9999}
+            />
+            <CalcInput
+              label={t('dashboard.calc_rate', 'Avg. nightly rate')}
+              value={calcRate}
+              onChange={v => { setCalcRate(v); setCalcEdited(true) }}
+              min={1} max={9999} prefix="$"
+            />
+            <CalcInput
+              label={t('dashboard.calc_occupancy', 'Avg. occupancy')}
+              value={calcOccupancy}
+              onChange={v => { setCalcOccupancy(Math.min(100, Math.max(0, v))); setCalcEdited(true) }}
+              min={0} max={100} suffix="%"
+            />
+          </div>
+
+          {/* Calculation breakdown — read-only derived values */}
+          <div className="bg-gray-50 rounded-xl p-4 mb-4 space-y-2 text-sm">
+            <div className="flex justify-between text-gray-500">
+              <span>{t('dashboard.calc_annual_revenue', 'Est. annual booking revenue')}</span>
+              <span className="font-medium text-deep">{fmt(Math.round(calcAnnualRevenue))}</span>
+            </div>
+            <div className="h-px bg-gray-200 my-1" />
+            <div className="flex justify-between text-gray-500">
+              <span>{t('dashboard.calc_ota_commission', 'OTA commission (~17%)')}</span>
+              <span className="font-medium text-sunset">-{fmt(Math.round(calcOTACommission))}</span>
+            </div>
+            <div className="flex justify-between text-gray-500">
+              <span>{t('dashboard.calc_staylo_commission', 'Staylo commission (10%)')}</span>
+              <span className="font-medium text-libre">-{fmt(Math.round(calcStayloCommission))}</span>
+            </div>
+          </div>
+
+          {/* Result */}
+          <div className="bg-libre/5 border-2 border-libre/20 rounded-xl p-4 text-center">
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t('dashboard.calc_you_save', 'You save')}</p>
+            <p className="text-3xl font-black text-libre">
+              {fmt(Math.round(estimatedSavings))}
+              <span className="text-sm font-normal text-gray-400">/{t('dashboard.per_year', 'year')}</span>
+            </p>
+            <p className="text-xs text-gray-400 mt-1">{t('dashboard.calc_explanation', 'Difference between 17% OTA and 10% Staylo commission on your estimated bookings')}</p>
+          </div>
+        </Card>
+      </div>
 
       {/* Properties */}
       <div className="mb-8">
@@ -601,5 +651,35 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+  )
+}
+
+// Editable number input for the savings calculator. Lets the hotelier
+// punch in their own rooms / rate / occupancy so the "YOU SAVE" tile
+// recomputes against THEIR reality, not platform-defaults guesses.
+function CalcInput({ label, value, onChange, min, max, prefix, suffix }) {
+  return (
+    <label className="block">
+      <span className="block text-[11px] font-medium text-gray-500 uppercase tracking-wider mb-1">{label}</span>
+      <div className="relative flex items-center bg-gray-50 border-2 border-gray-200 rounded-xl focus-within:border-ocean focus-within:bg-white transition-colors">
+        {prefix && (
+          <span className="pl-3 text-deep font-bold">{prefix}</span>
+        )}
+        <input
+          type="number"
+          value={value}
+          onChange={e => {
+            const n = e.target.value === '' ? 0 : Number(e.target.value)
+            onChange(Number.isFinite(n) ? n : 0)
+          }}
+          onFocus={e => e.target.select()}
+          min={min} max={max}
+          className="flex-1 min-w-0 bg-transparent px-3 py-2.5 text-deep font-bold text-lg focus:outline-none"
+        />
+        {suffix && (
+          <span className="pr-3 text-deep font-bold">{suffix}</span>
+        )}
+      </div>
+    </label>
   )
 }
