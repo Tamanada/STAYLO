@@ -76,6 +76,7 @@ export default function AdminProspects() {
   const [selected, setSelected] = useState(null)
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterProvince, setFilterProvince] = useState('all')
+  const [filterDistrict, setFilterDistrict] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
   const [emailOnly, setEmailOnly] = useState(false)
 
@@ -198,21 +199,41 @@ export default function AdminProspects() {
     return Array.from(set).sort()
   }, [rows])
 
+  // District options are scoped to the selected province — there are
+  // hundreds of districts across Thailand, listing them all would be
+  // unusable. When Province=All we just return [] (the dropdown disables).
+  const districts = useMemo(() => {
+    if (filterProvince === 'all') return []
+    const set = new Set(
+      rows.filter(r => r.province === filterProvince)
+          .map(r => r.district)
+          .filter(Boolean)
+    )
+    return Array.from(set).sort()
+  }, [rows, filterProvince])
+
   const categories = useMemo(() => {
     const set = new Set(rows.map(r => r.category).filter(Boolean))
     return Array.from(set).sort()
   }, [rows])
+
+  // Reset district whenever province changes — the old district likely doesn't
+  // exist in the new province. Done in an effect to avoid stale state.
+  useEffect(() => {
+    setFilterDistrict('all')
+  }, [filterProvince])
 
   // Apply filters
   const filtered = useMemo(() => {
     return rows.filter(r => {
       if (filterStatus   !== 'all' && r.status   !== filterStatus)   return false
       if (filterProvince !== 'all' && r.province !== filterProvince) return false
+      if (filterDistrict !== 'all' && r.district !== filterDistrict) return false
       if (filterCategory !== 'all' && r.category !== filterCategory) return false
       if (emailOnly && !r.email) return false
       return true
     })
-  }, [rows, filterStatus, filterProvince, filterCategory, emailOnly])
+  }, [rows, filterStatus, filterProvince, filterDistrict, filterCategory, emailOnly])
 
   // KPI tiles
   const stats = useMemo(() => {
@@ -373,6 +394,12 @@ export default function AdminProspects() {
             ...STATUS_KEYS.map(k => ({ value: k, label: `${STATUS_CONFIG[k].label} (${stats[k]})` }))]} />
         <FilterSelect label="Province"  value={filterProvince} onChange={setFilterProvince}
           options={[{ value: 'all', label: `All` }, ...provinces.map(p => ({ value: p, label: p }))]} />
+        <FilterSelect label="District"  value={filterDistrict} onChange={setFilterDistrict}
+          disabled={filterProvince === 'all'}
+          options={[
+            { value: 'all', label: filterProvince === 'all' ? '(pick a province first)' : `All (${districts.length})` },
+            ...districts.map(d => ({ value: d, label: d })),
+          ]} />
         <FilterSelect label="Type"      value={filterCategory} onChange={setFilterCategory}
           options={[{ value: 'all', label: `All` }, ...categories.map(c => ({ value: c, label: c }))]} />
         <label className="ml-auto flex items-center gap-2 text-gray-500 cursor-pointer">
@@ -422,13 +449,18 @@ function KpiTile({ label, value, icon: Icon, tone }) {
   )
 }
 
-function FilterSelect({ label, value, onChange, options }) {
+function FilterSelect({ label, value, onChange, options, disabled = false }) {
   return (
-    <label className="flex items-center gap-2 text-gray-500">
+    <label className={`flex items-center gap-2 ${disabled ? 'text-gray-300' : 'text-gray-500'}`}>
       <span className="text-xs uppercase tracking-wider">{label}</span>
       <select
         value={value} onChange={e => onChange(e.target.value)}
-        className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 max-w-[200px]"
+        disabled={disabled}
+        className={`px-3 py-1.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 max-w-[220px] ${
+          disabled
+            ? 'border-gray-100 bg-gray-50 text-gray-300 cursor-not-allowed'
+            : 'border-gray-200 bg-white text-deep'
+        }`}
       >
         {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
       </select>
