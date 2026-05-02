@@ -71,25 +71,57 @@ function buildMailto(p) {
 export default function AdminProspects() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
+  const [loadProgress, setLoadProgress] = useState(0)   // 0–total, drives the progress bar
+  const [totalCount, setTotalCount] = useState(0)
   const [selected, setSelected] = useState(null)
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterProvince, setFilterProvince] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
   const [emailOnly, setEmailOnly] = useState(false)
 
+  // PostgREST caps every response at ~1000 rows by default. To get all 16k+
+  // prospects we paginate via .range(from, to) and accumulate.
+  const PAGE_SIZE = 1000
+
   async function load() {
     setLoading(true)
-    // Cap at 5,000 to keep the table responsive — admins can filter to find more.
-    const { data, error } = await supabase
+    setLoadProgress(0)
+
+    // First pass: get the total count + the first page in a single trip
+    const firstPage = await supabase
       .from('prospects')
-      .select('*')
+      .select('*', { count: 'exact' })
       .order('imported_at', { ascending: false })
-      .limit(5000)
-    if (error) {
-      console.error('Failed to load prospects:', error)
-    } else {
-      setRows(data || [])
+      .range(0, PAGE_SIZE - 1)
+
+    if (firstPage.error) {
+      console.error('Failed to load prospects:', firstPage.error)
+      setLoading(false)
+      return
     }
+
+    const total = firstPage.count || 0
+    setTotalCount(total)
+    let acc = firstPage.data || []
+    setRows(acc)
+    setLoadProgress(acc.length)
+
+    // Subsequent pages — render as they arrive so the table feels alive
+    for (let from = PAGE_SIZE; from < total; from += PAGE_SIZE) {
+      const { data, error } = await supabase
+        .from('prospects')
+        .select('*')
+        .order('imported_at', { ascending: false })
+        .range(from, from + PAGE_SIZE - 1)
+      if (error) {
+        console.error('Page fetch failed at offset', from, error)
+        break
+      }
+      acc = acc.concat(data || [])
+      setRows(acc)
+      setLoadProgress(acc.length)
+    }
+
     setLoading(false)
   }
 
@@ -177,17 +209,27 @@ export default function AdminProspects() {
 
   return (
     <div>
-      <div className="mb-6 flex items-start justify-between flex-wrap gap-4">
+      <div className="mb-4 flex items-start justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-deep">Prospects</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {loading ? 'Loading…' : `${stats.total.toLocaleString()} hoteliers in the outreach pipeline`}
+            {loading
+              ? `Loading ${loadProgress.toLocaleString()} / ${totalCount.toLocaleString()}…`
+              : `${stats.total.toLocaleString()} hoteliers in the outreach pipeline`}
           </p>
         </div>
         <Button onClick={load} variant="secondary" disabled={loading}>
           {loading ? <Loader2 size={14} className="animate-spin" /> : null} Refresh
         </Button>
       </div>
+
+      {/* Live progress bar — disappears once everything is loaded */}
+      {loading && totalCount > 0 && (
+        <div className="mb-4 h-1 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-ocean to-electric transition-all"
+            style={{ width: `${Math.min(100, (loadProgress / totalCount) * 100)}%` }} />
+        </div>
+      )}
 
       {/* KPI tiles */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
