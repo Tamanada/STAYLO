@@ -12,7 +12,7 @@
 // collector JSON. The CRM state columns (status, notes, contacted_at) are
 // preserved across re-imports.
 // ============================================================================
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import {
   Mail, Phone, Globe, MapPin, ExternalLink, Save, Loader2,
   CheckCircle2, XCircle, Clock, MessageSquare, Sparkles, AlertTriangle,
@@ -82,6 +82,71 @@ export default function AdminProspects() {
   // PostgREST caps every response at ~1000 rows by default. To get all 16k+
   // prospects we paginate via .range(from, to) and accumulate.
   const PAGE_SIZE = 1000
+
+  // Bulk AI enrichment state
+  const [bulkEnriching, setBulkEnriching] = useState(false)
+  const [bulkProgress, setBulkProgress] = useState({ done: 0, total: 0, current: '' })
+  const [bulkLog, setBulkLog] = useState([])
+  const bulkAbortRef = useRef({ abort: false })
+
+  // Run AI enrichment over the currently FILTERED set (so the operator can
+  // narrow to "Surat Thani only" then bulk-enrich just that subset).
+  // Skips rows that already have an enrichment_source set, unless force=true.
+  async function bulkEnrich(targets, { delayMs = 1500 } = {}) {
+    bulkAbortRef.current.abort = false
+    setBulkEnriching(true)
+    setBulkLog([])
+    setBulkProgress({ done: 0, total: targets.length, current: '' })
+
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      setBulkLog([{ type: 'err', msg: 'Not authenticated' }])
+      setBulkEnriching(false)
+      return
+    }
+
+    for (let i = 0; i < targets.length; i++) {
+      if (bulkAbortRef.current.abort) {
+        setBulkLog(l => [...l, { type: 'info', msg: `Stopped by user at ${i}/${targets.length}` }])
+        break
+      }
+      const p = targets[i]
+      setBulkProgress({ done: i, total: targets.length, current: p.name_en || p.name_th || p.id })
+      try {
+        const resp = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-prospect`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ prospect_id: p.id }),
+          },
+        )
+        const json = await resp.json()
+        if (!resp.ok) {
+          setBulkLog(l => [...l.slice(-9), { type: 'err', msg: `${p.name_en || p.id}: ${json.error}` }])
+        } else {
+          setBulkLog(l => [...l.slice(-9), {
+            type: 'ok',
+            msg: `${p.name_en || p.name_th || p.id} → ${json.filled?.join(', ') || 'nothing new'}`,
+          }])
+          // Update the row inline without refetching the whole list
+          if (json.prospect) {
+            setRows(rs => rs.map(r => r.id === json.prospect.id ? json.prospect : r))
+          }
+        }
+      } catch (err) {
+        setBulkLog(l => [...l.slice(-9), { type: 'err', msg: `${p.name_en || p.id}: ${err.message}` }])
+      }
+      // Rate-limit so we don't hammer Anthropic and trigger 429s
+      await new Promise(r => setTimeout(r, delayMs))
+    }
+
+    setBulkProgress(p => ({ ...p, done: p.total }))
+    setTimeout(() => setBulkEnriching(false), 1500)
+  }
 
   async function load() {
     setLoading(true)
@@ -218,10 +283,71 @@ export default function AdminProspects() {
               : `${stats.total.toLocaleString()} hoteliers in the outreach pipeline`}
           </p>
         </div>
-        <Button onClick={load} variant="secondary" disabled={loading}>
-          {loading ? <Loader2 size={14} className="animate-spin" /> : null} Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Bulk AI enrich — operates on what's currently filtered */}
+          <Button
+            onClick={() => {
+              // Target = filtered list, NOT yet enriched — stops at 50 to keep
+              // costs sane. Operator can re-run for the next 50.
+              const targets = filtered
+                .filter(p => !p.manually_enriched_at)
+                .slice(0, 50)
+              if (targets.length === 0) {
+                alert('No un-enriched prospects in the current filter.')
+                return
+              }
+              if (!confirm(
+                `Auto-enrich ${targets.length} prospect${targets.length === 1 ? '' : 's'} via Claude AI?\n\n` +
+                `Approx cost: ~$${(targets.length * 0.015).toFixed(2)}.\n` +
+                `Takes ~${Math.ceil(targets.length * 1.5 / 60)} min (1 per 1.5s).\n\n` +
+                `You can stop at any moment.`
+              )) return
+              bulkEnrich(targets)
+            }}
+            variant="secondary"
+            disabled={loading || bulkEnriching}
+          >
+            ✨ Auto-enrich next 50
+          </Button>
+          <Button onClick={load} variant="secondary" disabled={loading}>
+            {loading ? <Loader2 size={14} className="animate-spin" /> : null} Refresh
+          </Button>
+        </div>
       </div>
+
+      {/* Bulk enrichment overlay — sits at the top while running, with live log */}
+      {bulkEnriching && (
+        <div className="mb-4 p-4 rounded-2xl border border-electric/30 bg-gradient-to-r from-electric/10 to-ocean/5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="font-bold text-deep text-sm flex items-center gap-2">
+              <Loader2 size={14} className="animate-spin text-electric" />
+              ✨ AI enriching {bulkProgress.done} / {bulkProgress.total}
+            </div>
+            <button onClick={() => { bulkAbortRef.current.abort = true }}
+              className="text-xs text-sunset hover:text-pink-600 font-bold">
+              Stop
+            </button>
+          </div>
+          {bulkProgress.current && (
+            <div className="text-xs text-gray-500 truncate mb-2">
+              Currently: <strong className="text-deep">{bulkProgress.current}</strong>
+            </div>
+          )}
+          <div className="h-1.5 bg-white rounded-full overflow-hidden mb-3">
+            <div className="h-full bg-gradient-to-r from-electric to-ocean transition-all"
+              style={{ width: `${bulkProgress.total ? (bulkProgress.done / bulkProgress.total) * 100 : 0}%` }} />
+          </div>
+          {bulkLog.length > 0 && (
+            <div className="space-y-1 text-[11px] font-mono max-h-32 overflow-y-auto">
+              {bulkLog.map((l, i) => (
+                <div key={i} className={l.type === 'ok' ? 'text-libre' : l.type === 'err' ? 'text-sunset' : 'text-gray-500'}>
+                  {l.type === 'ok' ? '✓ ' : l.type === 'err' ? '✗ ' : '· '}{l.msg}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Live progress bar — disappears once everything is loaded */}
       {loading && totalCount > 0 && (
@@ -327,6 +453,12 @@ function ProspectModal({ prospect, onClose, onSaved }) {
   const [sendingEmail, setSendingEmail] = useState(false)
   const [emailSentInfo, setEmailSentInfo] = useState(null)
   const [emailError, setEmailError]       = useState('')
+  // Autosave state for contact fields ('idle' | 'saving' | 'saved')
+  const [autoSaveState, setAutoSaveState] = useState('idle')
+  // AI enrichment state
+  const [enriching, setEnriching] = useState(false)
+  const [enrichResult, setEnrichResult] = useState(null)
+  const [enrichError, setEnrichError]   = useState('')
 
   useEffect(() => {
     if (!prospect) return
@@ -341,6 +473,8 @@ function ProspectModal({ prospect, onClose, onSaved }) {
     setError('')
     setEmailSentInfo(null)
     setEmailError('')
+    setEnrichResult(null)
+    setEnrichError('')
   }, [prospect])
 
   if (!prospect) return null
@@ -398,6 +532,90 @@ function ProspectModal({ prospect, onClose, onSaved }) {
     // Then update CRM state
     setStatus('contacted')
     setTimeout(handleSave, 100)
+  }
+
+  // Call the enrich-prospect edge function — Claude AI fills missing contact
+  // fields via web search. Refreshes the form with whatever it found.
+  async function enrichWithAI() {
+    setEnrichError('')
+    setEnrichResult(null)
+    setEnriching(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Not authenticated')
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/enrich-prospect`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ prospect_id: prospect.id }),
+        },
+      )
+      const json = await resp.json()
+      if (!resp.ok) {
+        setEnrichError(json.error + (json.detail ? ` — ${json.detail}` : ''))
+        return
+      }
+      setEnrichResult(json)
+      // Refresh form fields with what AI found
+      if (json.prospect) {
+        setEmail(json.prospect.email || '')
+        setPhone(json.prospect.phone || '')
+        setWebsite(json.prospect.website || '')
+        setContactName(json.prospect.contact_name || '')
+        setContactPosition(json.prospect.contact_position || '')
+        onSaved(json.prospect)
+      }
+    } catch (err) {
+      setEnrichError(err.message)
+    } finally {
+      setEnriching(false)
+    }
+  }
+
+  // Autosave the 5 contact fields when the user blurs out of an input.
+  // Skips if nothing actually changed since the last load to avoid spam writes.
+  // Bumps manually_enriched_at the first time any field changes from import.
+  async function autoSaveContacts() {
+    const cleanEmail   = email.trim()           || null
+    const cleanPhone   = phone.trim()           || null
+    const cleanWebsite = website.trim()         || null
+    const cleanName    = contactName.trim()     || null
+    const cleanPos     = contactPosition.trim() || null
+
+    const changed =
+      cleanEmail   !== (prospect.email            || null) ||
+      cleanPhone   !== (prospect.phone            || null) ||
+      cleanWebsite !== (prospect.website          || null) ||
+      cleanName    !== (prospect.contact_name     || null) ||
+      cleanPos     !== (prospect.contact_position || null)
+
+    if (!changed) return  // nothing to do — silent
+
+    setAutoSaveState('saving')
+    const { data, error } = await supabase.from('prospects').update({
+      email:            cleanEmail,
+      phone:            cleanPhone,
+      website:          cleanWebsite,
+      contact_name:     cleanName,
+      contact_position: cleanPos,
+      ...(prospect.manually_enriched_at ? {} : {
+        manually_enriched_at: new Date().toISOString(),
+      }),
+    }).eq('id', prospect.id).select().single()
+
+    if (error) {
+      setAutoSaveState('idle')
+      setError(error.message)
+      return
+    }
+    setAutoSaveState('saved')
+    onSaved(data)
+    // Reset the "saved" indicator after 1.5s so it doesn't linger
+    setTimeout(() => setAutoSaveState('idle'), 1500)
   }
 
   // Send the branded HTML email via the send-prospect-invite edge function.
@@ -493,36 +711,123 @@ function ProspectModal({ prospect, onClose, onSaved }) {
         )}
 
         {/* ──────────────────────────────────────────────────────────────
-            EDITABLE CONTACT FIELDS — fill these in as you research the
-            prospect (Google reviews, hotel website, walk-in visit, etc.).
+            QUICK RESEARCH LINKS — open Google / Maps / Facebook with the
+            hotel name pre-filled in a new tab. One click instead of
+            Cmd+T → Cmd+L → typing.
+            ────────────────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-2 flex-wrap p-2 bg-electric/5 border border-electric/15 rounded-xl">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-electric px-2">
+            ⚡ Find info
+          </span>
+          {(() => {
+            const q = encodeURIComponent(
+              `${prospect.name_en || prospect.name_th || ''} ${prospect.district || ''} ${prospect.province || ''}`.trim()
+            )
+            const links = [
+              { href: `https://www.google.com/search?q=${q}+email+contact`,            label: 'Google',  icon: '🔍' },
+              { href: `https://www.google.com/maps/search/${q}`,                       label: 'Maps',    icon: '📍' },
+              { href: `https://www.facebook.com/search/top/?q=${q}`,                   label: 'FB',      icon: '📘' },
+              { href: `https://www.tripadvisor.com/Search?q=${q}`,                     label: 'TripAdv', icon: '🦉' },
+              { href: `https://www.instagram.com/explore/search/keyword/?q=${q}`,       label: 'Insta',   icon: '📷' },
+            ]
+            return links.map(l => (
+              <a key={l.label} href={l.href} target="_blank" rel="noopener"
+                className="text-xs px-2.5 py-1 rounded-lg bg-white border border-electric/20 text-deep hover:border-electric hover:text-electric transition-colors no-underline">
+                {l.icon} {l.label}
+              </a>
+            ))
+          })()}
+          {website && website.includes('://') && (
+            <a href={website} target="_blank" rel="noopener"
+              className="text-xs px-2.5 py-1 rounded-lg bg-white border border-libre/30 text-libre hover:border-libre hover:bg-libre/5 transition-colors no-underline">
+              🌐 Their site →
+            </a>
+          )}
+          <button onClick={enrichWithAI} disabled={enriching}
+            className="ml-auto text-xs px-3 py-1 rounded-lg bg-gradient-to-r from-electric to-ocean text-white font-bold hover:opacity-90 transition-opacity disabled:opacity-50 inline-flex items-center gap-1">
+            {enriching
+              ? <><Loader2 size={12} className="animate-spin" /> Researching…</>
+              : <>✨ Enrich with AI</>}
+          </button>
+        </div>
+
+        {enrichResult && (
+          <div className="text-xs p-2.5 bg-libre/10 border border-libre/30 rounded-lg flex items-start gap-2">
+            <CheckCircle2 size={14} className="text-libre flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <div className="font-bold text-libre">
+                AI filled {enrichResult.filled?.length || 0} field{enrichResult.filled?.length === 1 ? '' : 's'}
+                {enrichResult.confidence ? ` · ${enrichResult.confidence} confidence` : ''}
+              </div>
+              {enrichResult.notes && <div className="text-gray-600 mt-1">{enrichResult.notes}</div>}
+              {enrichResult.note && <div className="text-gray-500 mt-1 italic">{enrichResult.note}</div>}
+              {enrichResult.sources && enrichResult.sources.length > 0 && (
+                <div className="text-[10px] text-gray-400 mt-1 truncate">
+                  Sources: {enrichResult.sources.slice(0, 3).join(' · ')}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {enrichError && (
+          <div className="text-xs p-2.5 bg-sunset/10 border border-sunset/30 rounded-lg text-sunset">
+            ⚠ {enrichError}
+          </div>
+        )}
+
+        {/* ──────────────────────────────────────────────────────────────
+            EDITABLE CONTACT FIELDS — autosaved on blur, no Save click needed.
             ────────────────────────────────────────────────────────────── */}
         <div className="bg-cream/40 -mx-1 px-3 py-3 rounded-xl border border-cream">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
-            Contact info <span className="font-normal normal-case text-gray-300">— fill in as you research</span>
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              Contact info
+              <span className="font-normal normal-case text-gray-300 ml-2">— autosaves on blur</span>
+            </h3>
+            {autoSaveState === 'saving' && (
+              <span className="text-[11px] text-gray-400 flex items-center gap-1">
+                <Loader2 size={11} className="animate-spin" /> saving…
+              </span>
+            )}
+            {autoSaveState === 'saved' && (
+              <span className="text-[11px] text-libre flex items-center gap-1">
+                <CheckCircle2 size={11} /> saved
+              </span>
+            )}
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <ProspectField label="Email" icon={Mail}>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              <input type="email" value={email}
+                onChange={e => setEmail(e.target.value)}
+                onBlur={() => autoSaveContacts()}
                 placeholder="manager@hotel.com"
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </ProspectField>
             <ProspectField label="Phone / WhatsApp" icon={Phone}>
-              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+              <input type="tel" value={phone}
+                onChange={e => setPhone(e.target.value)}
+                onBlur={() => autoSaveContacts()}
                 placeholder="+66 …"
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </ProspectField>
             <ProspectField label="Website" icon={Globe}>
-              <input type="url" value={website} onChange={e => setWebsite(e.target.value)}
+              <input type="url" value={website}
+                onChange={e => setWebsite(e.target.value)}
+                onBlur={() => autoSaveContacts()}
                 placeholder="https://…"
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </ProspectField>
             <ProspectField label="Contact name">
-              <input type="text" value={contactName} onChange={e => setContactName(e.target.value)}
+              <input type="text" value={contactName}
+                onChange={e => setContactName(e.target.value)}
+                onBlur={() => autoSaveContacts()}
                 placeholder="Khun Som / Marie Dupont"
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </ProspectField>
             <ProspectField label="Contact position">
-              <input type="text" value={contactPosition} onChange={e => setContactPosition(e.target.value)}
+              <input type="text" value={contactPosition}
+                onChange={e => setContactPosition(e.target.value)}
+                onBlur={() => autoSaveContacts()}
                 placeholder="Owner / GM / Front desk / Marketing"
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </ProspectField>
