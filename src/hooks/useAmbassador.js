@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
 
 export function useAmbassador() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [ambassador, setAmbassador] = useState(null)
   const [hotels, setHotels] = useState([])
   const [loading, setLoading] = useState(true)
@@ -16,7 +16,7 @@ export function useAmbassador() {
   async function fetchAmbassador() {
     setLoading(true)
     try {
-      // Get ambassador profile
+      // Get ambassador profile (existence flag + payout settings)
       const { data: amb } = await supabase
         .from('ambassadors')
         .select('*')
@@ -47,8 +47,12 @@ export function useAmbassador() {
     return total + (annualGMV * 0.02)
   }, 0)
 
-  const ambassadorLink = ambassador
-    ? `https://staylo.app/join?amb=${ambassador.referral_code}`
+  // KISS: ONE referral code per user (the STAYLO-XXXX from users.referral_code).
+  // Backend attribution uses users.referred_by (FK on user id), not the code
+  // string — so dropping the separate AMB code costs nothing operationally.
+  // Old ?amb= links keep working: Welcome.jsx still accepts both ?ref= and ?amb=.
+  const ambassadorLink = (ambassador && profile?.referral_code)
+    ? `https://staylo.app/welcome?ref=${profile.referral_code}`
     : null
 
   return {

@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { useAmbassador } from '../hooks/useAmbassador'
+import { useAuth } from '../hooks/useAuth'
 import AmbassadorCommissionsWidget from '../components/dashboard/AmbassadorCommissionsWidget'
 
 const statusColors = {
@@ -29,8 +30,11 @@ function calcHotelEarnings(hotel) {
 
 export default function AmbassadorDashboard() {
   const { t } = useTranslation()
+  const { profile } = useAuth()
   const { ambassador, hotels, loading, estimatedEarnings, ambassadorLink } = useAmbassador()
   const [copied, setCopied] = useState(false)
+  // KISS: single code per user (the STAYLO-XXXX from users.referral_code).
+  const displayCode = profile?.referral_code || ambassador?.referral_code || ''
 
   function copyLink() {
     if (ambassadorLink) {
@@ -66,7 +70,7 @@ export default function AmbassadorDashboard() {
           {t('ambassador_dashboard.welcome', { name: ambassador.full_name || t('ambassador_dashboard.ambassador') })}
         </h1>
         <p className="text-gray-500 mt-1">
-          {t('ambassador_dashboard.ambassador_code')}: <code className="font-mono bg-gray-100 px-2 py-0.5 rounded text-ocean">{ambassador.referral_code}</code>
+          {t('ambassador_dashboard.ambassador_code')}: <code className="font-mono bg-gray-100 px-2 py-0.5 rounded text-ocean">{displayCode}</code>
         </p>
         <Link to="/ambassador/guide" className="inline-flex items-center gap-2 mt-3 text-sm text-ocean hover:text-electric transition-colors no-underline">
           {t('ambassador_dashboard.read_guide')}
@@ -101,7 +105,7 @@ export default function AmbassadorDashboard() {
             <p className="text-sm font-medium text-deep mb-3">{t('ambassador_dashboard.scan_to_share')}</p>
             <div className="qr-download bg-white p-4 rounded-2xl shadow-md border border-gray-100">
               <QRCodeSVG
-                value={`https://staylo.app/welcome?amb=${ambassador.referral_code}`}
+                value={`https://staylo.app/welcome?ref=${displayCode}`}
                 size={180}
                 bgColor="#FFFFFF"
                 fgColor="#0A1628"

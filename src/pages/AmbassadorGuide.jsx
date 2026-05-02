@@ -12,6 +12,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { useAmbassador } from '../hooks/useAmbassador'
+import { useAuth } from '../hooks/useAuth'
 
 const AVG_ROOMS = 15
 const AVG_RATE = 60
@@ -23,16 +24,25 @@ const PER_HOTEL = Math.round(AVG_ANNUAL * AMBASSADOR_PCT)
 export default function AmbassadorGuide() {
   const { t } = useTranslation()
   const { ambassador } = useAmbassador()
+  const { profile } = useAuth()
   const [openObjection, setOpenObjection] = useState(null)
   const [hotelCount, setHotelCount] = useState(5)
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false)
   const [copiedLink, setCopiedLink] = useState(false)
 
-  const ambCode = ambassador?.referral_code || 'AMB-XXXXX'
-  const ambLink = `staylo.app/join?amb=${ambCode}`
+  // KISS: single referral code per user (STAYLO-XXXX from users.referral_code).
+  // The translated strings still contain the legacy "amb=AMB-XXXXX" placeholder,
+  // so we replace BOTH old and new patterns to handle every locale gracefully.
+  const ambCode = profile?.referral_code || ambassador?.referral_code || 'STAYLO-XXXXX'
+  const ambLink = `staylo.app/welcome?ref=${ambCode}`
   const totalIncome = PER_HOTEL * hotelCount
 
-  const whatsAppTemplate = t('ambassador_guide.whatsapp_template', `Hi! I wanted to share something interesting with you. There's a new booking platform called Staylo — it works like Booking.com but only charges 10% commission instead of 15-25%. The hotels actually own the platform as shareholders. They're onboarding founding members right now at a special price. Check it out: ${ambLink}`).replace(/amb=AMB-XXXXX/g, `amb=${ambCode}`)
+  const swap = (s) => s
+    .replace(/staylo\.app\/join\?amb=[A-Z0-9-]+/gi, ambLink)
+    .replace(/amb=AMB-XXXXX/g, `ref=${ambCode}`)
+    .replace(/amb=YOUR-CODE/g, `ref=${ambCode}`)
+    .replace(/AMB-XXXXX/g, ambCode)
+  const whatsAppTemplate = swap(t('ambassador_guide.whatsapp_template', `Hi! I wanted to share something interesting with you. There's a new booking platform called Staylo — it works like Booking.com but only charges 10% commission instead of 15-25%. The hotels actually own the platform as shareholders. They're onboarding founding members right now at a special price. Check it out: ${ambLink}`))
 
   const handleCopy = (text, setter) => {
     navigator.clipboard.writeText(text)
@@ -66,7 +76,7 @@ export default function AmbassadorGuide() {
       num: 4,
       icon: Link2,
       title: t('ambassador_guide.step4_title', 'Share your link'),
-      desc: t('ambassador_guide.step4_desc', `Give them your personal link: ${ambLink}. When they register through it, they are linked to you forever.`).replace(/amb=AMB-XXXXX/g, `amb=${ambCode}`),
+      desc: swap(t('ambassador_guide.step4_desc', `Give them your personal link: ${ambLink}. When they register through it, they are linked to you forever.`)),
       gradient: 'from-sunset to-sunrise',
     },
     {
@@ -126,7 +136,7 @@ export default function AmbassadorGuide() {
     },
     {
       q: t('ambassador_guide.objection4_q', "I need to think about it"),
-      a: t('ambassador_guide.objection4_a', `Of course! Here's my link — ${ambLink}. Take your time. Just know that alpha shares are limited to 3,000 and the price goes up after this phase. Registration is free either way.`).replace(/amb=YOUR-CODE/g, `amb=${ambCode}`),
+      a: swap(t('ambassador_guide.objection4_a', `Of course! Here's my link — ${ambLink}. Take your time. Just know that alpha shares are limited to 3,000 and the price goes up after this phase. Registration is free either way.`)),
     },
     {
       q: t('ambassador_guide.objection5_q', "Can I try it first?"),
