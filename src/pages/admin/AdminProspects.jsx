@@ -38,17 +38,19 @@ const STATUS_CONFIG = {
 const STATUS_KEYS = Object.keys(STATUS_CONFIG)
 
 const EMAIL_TEMPLATE = (p) => {
-  const name = p.name_en || p.name_th || 'team'
+  // Greeting: prefer the human contact name if known, else fall back to hotel name
+  const greetName = p.contact_name || p.name_en || p.name_th || 'team'
+  const hotelName = p.name_en || p.name_th || 'your property'
   const area = [p.district, p.province].filter(Boolean).join(', ') || 'your area'
   const subject = `10% commission for life — STAYLO is hotelier-owned`
   const body =
-`Hi ${name},
+`Hi ${greetName},
 
 I'm David, founder of STAYLO — a small hotelier-owned booking platform.
 
 We charge 10% commission instead of the 18-25% Booking and Agoda take, and that 10% is locked for life for the first hoteliers who join.
 
-We're focusing on ${area} first, and I'd love to have ${name} on board for the launch.
+We're focusing on ${area} first, and I'd love to have ${hotelName} on board for the launch.
 
 Signup: https://staylo.app/register?utm_source=outreach&utm_campaign=cold
 
@@ -267,36 +269,68 @@ function FilterSelect({ label, value, onChange, options }) {
 }
 
 function ProspectModal({ prospect, onClose, onSaved }) {
-  const [status, setStatus]       = useState('new')
-  const [notes, setNotes]         = useState('')
-  const [followUp, setFollowUp]   = useState('')
-  const [saving, setSaving]       = useState(false)
-  const [error, setError]         = useState('')
+  // CRM state
+  const [status, setStatus]     = useState('new')
+  const [notes, setNotes]       = useState('')
+  const [followUp, setFollowUp] = useState('')
+  // Editable contact fields — manually enriched during outreach research
+  const [email, setEmail]                   = useState('')
+  const [phone, setPhone]                   = useState('')
+  const [website, setWebsite]               = useState('')
+  const [contactName, setContactName]       = useState('')
+  const [contactPosition, setContactPosition] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError]   = useState('')
 
   useEffect(() => {
     if (!prospect) return
     setStatus(prospect.status || 'new')
     setNotes(prospect.notes || '')
     setFollowUp(prospect.next_follow_up || '')
+    setEmail(prospect.email || '')
+    setPhone(prospect.phone || '')
+    setWebsite(prospect.website || '')
+    setContactName(prospect.contact_name || '')
+    setContactPosition(prospect.contact_position || '')
     setError('')
   }, [prospect])
 
   if (!prospect) return null
 
-  const mailto = buildMailto(prospect)
+  // Build mailto from the CURRENT (possibly edited) email — so right after the
+  // admin types one in, "Send invite" works without needing to save first.
+  const mailto = email && email.includes('@')
+    ? buildMailto({ ...prospect, email, name_en: prospect.name_en, contact_name: contactName })
+    : null
   const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.new
 
   async function handleSave() {
     setSaving(true)
     setError('')
     const wasContacted = prospect.status !== 'contacted' && status === 'contacted'
+    // Detect if any contact field was manually changed → bump manually_enriched_at
+    const enriched =
+      (email.trim()           || null) !== (prospect.email            || null) ||
+      (phone.trim()           || null) !== (prospect.phone            || null) ||
+      (website.trim()         || null) !== (prospect.website          || null) ||
+      (contactName.trim()     || null) !== (prospect.contact_name     || null) ||
+      (contactPosition.trim() || null) !== (prospect.contact_position || null)
+
     const payload = {
       status,
       notes: notes.trim() || null,
       next_follow_up: followUp || null,
+      email:            email.trim()            || null,
+      phone:            phone.trim()            || null,
+      website:          website.trim()          || null,
+      contact_name:     contactName.trim()      || null,
+      contact_position: contactPosition.trim()  || null,
       ...(wasContacted ? {
         contacted_at: new Date().toISOString(),
         contact_count: (prospect.contact_count || 0) + 1,
+      } : {}),
+      ...(enriched && !prospect.manually_enriched_at ? {
+        manually_enriched_at: new Date().toISOString(),
       } : {}),
     }
     const { data, error } = await supabase
@@ -337,36 +371,61 @@ function ProspectModal({ prospect, onClose, onSaved }) {
             <Badge variant={cfg.variant}>{cfg.label}</Badge>
             {prospect.category && <Badge variant="blue">{prospect.category}</Badge>}
             {prospect.source && <span className="text-[10px] uppercase tracking-wider text-gray-400">via {prospect.source}</span>}
+            {prospect.manually_enriched_at && (
+              <span className="text-[10px] uppercase tracking-wider text-libre font-bold">researched ✓</span>
+            )}
           </div>
         </div>
 
-        {/* Contact + location grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-          {prospect.email && (
-            <a href={`mailto:${prospect.email}`} className="flex items-center gap-2 text-ocean hover:underline">
-              <Mail size={14} /> {prospect.email}
-            </a>
-          )}
-          {prospect.phone && (
-            <a href={`tel:${prospect.phone}`} className="flex items-center gap-2 text-libre hover:underline">
-              <Phone size={14} /> {prospect.phone}
-            </a>
-          )}
-          {prospect.website && (
-            <a href={prospect.website} target="_blank" rel="noopener" className="flex items-center gap-2 text-electric hover:underline truncate">
-              <Globe size={14} /> <span className="truncate">{prospect.website}</span> <ExternalLink size={11} />
-            </a>
-          )}
-          {(prospect.district || prospect.province) && (
-            <div className="flex items-center gap-2 text-gray-600">
-              <MapPin size={14} /> {[prospect.district, prospect.province].filter(Boolean).join(', ')}
-            </div>
-          )}
-          {mapsUrl && (
-            <a href={mapsUrl} target="_blank" rel="noopener" className="flex items-center gap-2 text-gray-500 hover:text-ocean text-xs col-span-full">
-              📍 View on Google Maps <ExternalLink size={11} />
-            </a>
-          )}
+        {/* Location (read-only — comes from import) */}
+        {(prospect.district || prospect.province || mapsUrl) && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <MapPin size={14} />
+            <span>{[prospect.district, prospect.province].filter(Boolean).join(', ') || '—'}</span>
+            {mapsUrl && (
+              <a href={mapsUrl} target="_blank" rel="noopener"
+                className="ml-auto text-xs text-ocean hover:underline inline-flex items-center gap-1 no-underline">
+                Maps <ExternalLink size={11} />
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* ──────────────────────────────────────────────────────────────
+            EDITABLE CONTACT FIELDS — fill these in as you research the
+            prospect (Google reviews, hotel website, walk-in visit, etc.).
+            ────────────────────────────────────────────────────────────── */}
+        <div className="bg-cream/40 -mx-1 px-3 py-3 rounded-xl border border-cream">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
+            Contact info <span className="font-normal normal-case text-gray-300">— fill in as you research</span>
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ProspectField label="Email" icon={Mail}>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="manager@hotel.com"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </ProspectField>
+            <ProspectField label="Phone / WhatsApp" icon={Phone}>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)}
+                placeholder="+66 …"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </ProspectField>
+            <ProspectField label="Website" icon={Globe}>
+              <input type="url" value={website} onChange={e => setWebsite(e.target.value)}
+                placeholder="https://…"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </ProspectField>
+            <ProspectField label="Contact name">
+              <input type="text" value={contactName} onChange={e => setContactName(e.target.value)}
+                placeholder="Khun Som / Marie Dupont"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </ProspectField>
+            <ProspectField label="Contact position">
+              <input type="text" value={contactPosition} onChange={e => setContactPosition(e.target.value)}
+                placeholder="Owner / GM / Front desk / Marketing"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </ProspectField>
+          </div>
         </div>
 
         {/* Quick action: mailto with pre-filled template */}
@@ -449,5 +508,18 @@ function ProspectModal({ prospect, onClose, onSaved }) {
         </div>
       </div>
     </Modal>
+  )
+}
+
+// Small labelled-field helper used throughout the prospect modal.
+function ProspectField({ label, icon: Icon, children }) {
+  return (
+    <label className="block">
+      <span className="block text-xs font-medium text-gray-500 mb-1 flex items-center gap-1.5">
+        {Icon ? <Icon size={11} className="text-gray-400" /> : null}
+        {label}
+      </span>
+      {children}
+    </label>
   )
 }
