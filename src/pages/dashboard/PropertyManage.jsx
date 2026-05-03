@@ -2135,22 +2135,41 @@ function CalendarTab({ rooms }) {
     const dateStr = `${currentMonth.getFullYear()}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     const existing = getAvailForDate(day)
 
+    // We deliberately ONLY toggle is_blocked here — never set available_count
+    // by hand. The DB function recompute_room_availability() then computes
+    // the correct value by counting overlapping active bookings, which means
+    // unblocking a day with an in-house guest restores the room to e.g. 2/3,
+    // NOT 3/3 (the bug we just fixed).
     if (existing) {
       await supabase.from('room_availability').update({
         is_blocked: !existing.is_blocked,
-        available_count: existing.is_blocked ? room.quantity : 0
       }).eq('id', existing.id)
     } else {
       await supabase.from('room_availability').insert({
         room_id: selectedRoom,
         date: dateStr,
-        available_count: 0,
+        available_count: 0,            // safe initial value, recompute fixes it
         is_blocked: true,
       })
     }
 
+    // Re-sync from source of truth (active bookings + is_blocked override)
+    await supabase.rpc('recompute_room_availability', {
+      p_room_id:   selectedRoom,
+      p_check_in:  dateStr,
+      p_check_out: addDaysISO(dateStr, 1),
+    })
+
     await refreshMonth()
     setSaving(false)
+  }
+
+  // Tiny helper — adds N days to a YYYY-MM-DD string and returns same format.
+  // Used by toggleBlock to give the RPC a [start, end) range of one day.
+  function addDaysISO(dateStr, n) {
+    const d = new Date(dateStr + 'T00:00:00Z')
+    d.setUTCDate(d.getUTCDate() + n)
+    return d.toISOString().slice(0, 10)
   }
 
   // Build YYYY-MM-DD string for a day in current month (1-31)
@@ -2286,7 +2305,8 @@ function CalendarTab({ rooms }) {
     }
     if (inserts.length > 0) {
       // For brand-new (no existing row) days, the array starts empty
-      // unless we're inserting a special right away.
+      // unless we're inserting a special right away. available_count is
+      // a placeholder — recompute_room_availability fixes it below.
       const startingSpecials = add_special ? [add_special] : []
       const rows = inserts.map(date => ({
         room_id: selectedRoom,
@@ -2303,6 +2323,23 @@ function CalendarTab({ rooms }) {
       }))
       await supabase.from('room_availability').insert(rows)
     }
+
+    // After ANY change to is_blocked, recompute available_count from active
+    // bookings so we never leave stale stock numbers (e.g. unblocking a day
+    // with an in-house guest must show 2/3, not 3/3). For other changes
+    // (price overrides, specials, notes) the recompute is a cheap no-op.
+    if ('is_blocked' in directWrites) {
+      const sortedDates = [...dates].sort()
+      const minDate = sortedDates[0]
+      const maxDateExclusive = addDaysISO(sortedDates[sortedDates.length - 1], 1)
+      // Recompute the whole spanning range in one RPC — function iterates day-by-day internally
+      await supabase.rpc('recompute_room_availability', {
+        p_room_id:   selectedRoom,
+        p_check_in:  minDate,
+        p_check_out: maxDateExclusive,
+      })
+    }
+
     await refreshMonth()
     setSelectedDays(new Set())
     setUndo({ label, snapshot })
@@ -2364,8 +2401,12 @@ function CalendarTab({ rooms }) {
     await bulkUpdate({ price_override: newPrice }, `Set price to $${newPrice ?? 'default'}`)
   }
 
-  async function bulkBlock()   { await bulkUpdate({ is_blocked: true,  available_count: 0 },             'Block') }
-  async function bulkUnblock() { await bulkUpdate({ is_blocked: false, available_count: room?.quantity || 1 }, 'Unblock') }
+  // Block / Unblock — only toggle is_blocked. The bulkUpdate function then
+  // re-syncs available_count via the recompute_room_availability RPC for
+  // each selected day, so unblocking a day with an in-house guest restores
+  // the correct stock (e.g. 2/3) instead of overwriting to room.quantity.
+  async function bulkBlock()   { await bulkUpdate({ is_blocked: true  }, 'Block') }
+  async function bulkUnblock() { await bulkUpdate({ is_blocked: false }, 'Unblock') }
 
   // A — Min stay
   async function bulkSetMinStay() {
