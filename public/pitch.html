@@ -87,6 +87,29 @@
     display: flex; align-items: flex-start; gap: 14px;
     padding: 10px 0; font-size: 19px; color: #333;
   }
+  /* Two-column variant — used when there's a lot of bullets to fit */
+  .bullets.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 32px;
+    margin-top: 16px;
+  }
+  .bullets.two-col li {
+    padding: 8px 0;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+  .bullets.two-col .ico { width: 28px; height: 28px; font-size: 13px; }
+  .bullets.two-col .col-title {
+    grid-column: 1 / -1;
+    font-size: 11px; font-weight: 800;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    color: var(--orange);
+    padding: 12px 0 2px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 4px;
+  }
+  .bullets.two-col .col-title:first-child { padding-top: 0; }
   .bullets .ico {
     flex-shrink: 0; width: 32px; height: 32px;
     background: var(--grad); color: white;
@@ -363,13 +386,33 @@
 <section class="slide" data-page="4">
   <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">The solution</h2>
   <h1 class="tight">Meet <span class="gradient">STAYLO</span>.</h1>
-  <p class="lead" style="margin-top: 16px;">The first booking platform <strong>owned by the hoteliers themselves.</strong></p>
-  <ul class="bullets" style="margin-top: 32px;">
-    <li><span class="ico">🔒</span><div><strong>10% commission. Locked for life.</strong></div></li>
-    <li><span class="ico">🗳</span><div><strong>Hoteliers vote</strong> on platform decisions</div></li>
-    <li><span class="ico">$</span><div><strong>Free to join.</strong> No exclusivity. No cancellation fee.</div></li>
+  <p class="lead" style="margin-top: 12px; font-size: 20px;">
+    The first booking platform <strong>owned by the hoteliers themselves</strong> — with the full hospitality stack included, <strong>free</strong>.
+  </p>
+
+  <ul class="bullets two-col">
+    <li class="col-title">Money &amp; ownership</li>
+    <li class="col-title">Tools included free</li>
+
+    <li><span class="ico">🔒</span><div><strong>10% commission</strong> — locked for life</div></li>
+    <li><span class="ico">🏨</span><div><strong>Property Management System</strong> built in</div></li>
+
+    <li><span class="ico">🗳</span><div><strong>Hoteliers vote</strong> on every decision</div></li>
+    <li><span class="ico">🔄</span><div><strong>Channel Manager</strong> built in</div></li>
+
+    <li><span class="ico">🌍</span><div><strong>Only 500,000 shares worldwide</strong> — own a piece</div></li>
+    <li><span class="ico">🍽</span><div><strong>Full hospitality stack</strong> — bar, restaurant POS, stock, reception, staff planning</div></li>
+
+    <li><span class="ico">💸</span><div><strong>Free to join</strong> — no exclusivity, no cancellation fee</div></li>
+    <li><span class="ico">🪙</span><div><strong>Native BTC + tokenization</strong> — unique on the market</div></li>
+
     <li><span class="ico">⚡</span><div><strong>Optional Bitcoin payouts</strong> — no FX, no bank delays</div></li>
+    <li><span class="ico">🤝</span><div><strong>Ambassador Program</strong> — refer hotels, earn 2% BTC for life</div></li>
   </ul>
+
+  <div class="callout" style="margin-top: 16px; padding: 14px 22px; font-size: 18px;">
+    The <strong>absolute all-in-one</strong> for independent hoteliers — at <span class="accent">half the cost</span> of OTAs alone.
+  </div>
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
 </section>
 
