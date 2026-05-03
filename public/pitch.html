@@ -628,6 +628,7 @@
     <li><span class="ico">💻</span><div>Code <strong>public on github.com/Tamanada/STAYLO</strong> — anyone can audit</div></li>
     <li><span class="ico">📊</span><div>Commission structure <strong>verifiable on-chain</strong> (BTC payouts auditable)</div></li>
     <li><span class="ico">👋</span><div>Founder <strong>David lives on Koh Phangan</strong> — drop by for coffee anytime</div></li>
+    <li><span class="ico">🛏</span><div><strong>STAYLO Foundation</strong> — David's personal referral commissions fund beds &amp; shelter for people who have none</div></li>
   </ul>
   <div class="callout" style="background: linear-gradient(90deg, rgba(22,163,74,0.08), rgba(22,163,74,0.04)); border-left-color: var(--green);">
     Not a Silicon Valley promise. A neighbour you can knock on the door of.
@@ -677,19 +678,29 @@
         <div><strong>Visit our office</strong><small>[address] · Koh Phangan · weekdays 9-5</small></div>
       </div>
     </div>
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
-      <!-- QR placeholder. Replace with a real QR image (e.g. from qr-code-generator.com pointing to staylo.app/submit?utm_source=pitch). -->
-      <div class="qr-placeholder">
-        Generate a QR for<br/>staylo.app/submit<br/>and paste it here
-      </div>
-      <p class="small" style="text-align: center; max-width: 220px;">Free to register · No credit card · No commitment</p>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+      <!-- Real QR — generated server-side by qrserver.com from the URL.
+           Points to /submit with attribution params so we can track which
+           pitches actually convert. Falls back gracefully if offline. -->
+      <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fstaylo.app%2Fsubmit%3Futm_source%3Dpitch_qr%26utm_campaign%3Dhotelier_deck&size=190x190&margin=2&color=2D3436&bgcolor=FFFDF8"
+           alt="Scan to register on staylo.app/submit"
+           style="width: 190px; height: 190px; border: 4px solid var(--deep); border-radius: 12px; padding: 6px; background: white;" />
+      <p class="small" style="text-align: center; max-width: 220px; font-weight: 700; color: var(--deep);">
+        staylo.app/submit
+      </p>
+      <p class="small" style="text-align: center; max-width: 220px; font-size: 12px;">
+        Free · No credit card · No commitment
+      </p>
+      <p class="small" style="text-align: center; font-size: 11px; margin-top: 2px;">
+        Follow on X: <strong style="color: var(--orange);">@STAYLO_007</strong>
+      </p>
     </div>
   </div>
 
-  <div style="position: absolute; bottom: 64px; left: 80px; right: 80px; padding-top: 20px; border-top: 1px solid var(--line);">
+  <div style="position: absolute; bottom: 64px; left: 80px; right: 80px; padding-top: 16px; border-top: 1px solid var(--line);">
     <p class="small" style="text-align: center;">
-      The 22% you give Booking today is a choice. So is the 10% you'll give STAYLO tomorrow.<br/>
-      <strong style="color: var(--deep);">Most hoteliers will keep paying 22% out of habit. The smart ones will switch. The smartest will become founding members.</strong>
+      The <strong>20%</strong> you give OTAs today is a choice. So is the <strong>10%</strong> you'll give STAYLO tomorrow.<br/>
+      <strong style="color: var(--deep);">Most hoteliers will keep paying 20% out of habit. The smart ones will switch. The smartest will become founding members.</strong>
     </p>
   </div>
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
