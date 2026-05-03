@@ -466,6 +466,10 @@ function CalendarStrip({ room, bookings }) {
 function BookingRow({ booking }) {
   const [open, setOpen] = useState(false)
   const [tab, setTab] = useState('checkin')   // 'checkin' | 'checkout'
+  // Local copy of room_number so the receptionist can edit-in-place without
+  // the row collapsing or losing focus on every keystroke.
+  const [roomNumber, setRoomNumber] = useState(booking.room_number || '')
+  const [savingNumber, setSavingNumber] = useState(false)
   const capacity = (booking.adults || 1) + (booking.children || 0) + (booking.extra_beds_count || 0)
 
   // Build URL + QR src for whichever tab is active
@@ -474,13 +478,32 @@ function BookingRow({ booking }) {
   const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=240x240&margin=2&color=2D3436&bgcolor=FFFFFF`
   const tokenAvailable = isCheckout ? !!booking.check_out_token : !!booking.check_in_token
 
+  // Save the new room number on blur. No-op if unchanged. Failure is silent
+  // (logs to console) — receptionist can retry, no destructive risk.
+  async function persistRoomNumber() {
+    const next = roomNumber.trim() || null
+    if (next === (booking.room_number || null)) return
+    setSavingNumber(true)
+    const { error } = await supabase
+      .from('bookings')
+      .update({ room_number: next })
+      .eq('id', booking.id)
+    setSavingNumber(false)
+    if (error) console.warn('room_number update failed:', error)
+    else booking.room_number = next   // mutate local copy so the badge stays consistent
+  }
+
   return (
     <div className="rounded-lg bg-gray-50 overflow-hidden">
-      <button onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between text-xs px-3 py-2 text-left hover:bg-gray-100 transition-colors">
-        <span className="font-medium text-deep flex items-center gap-2">
-          {booking.guest_name || 'Guest'}
-          <span className="text-[10px] text-gray-400">· {capacity} {capacity === 1 ? 'guest' : 'guests'}</span>
+      <div className="w-full flex items-center justify-between text-xs px-3 py-2 hover:bg-gray-100 transition-colors gap-2">
+        {/* LEFT: guest name + badges + room # input. NOT inside the toggle button so
+            the room-number input doesn't accidentally collapse the row when clicked. */}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <button type="button" onClick={() => setOpen(o => !o)}
+            className="font-medium text-deep flex items-center gap-2 text-left">
+            {booking.guest_name || 'Guest'}
+            <span className="text-[10px] text-gray-400">· {capacity} {capacity === 1 ? 'guest' : 'guests'}</span>
+          </button>
           {booking.communicating_rooms_requested && (
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold uppercase" title="Guest requested communicating rooms — assign adjoining units">🚪 Connecting</span>
           )}
@@ -490,13 +513,28 @@ function BookingRow({ booking }) {
           {booking.checkout_survey_submitted_at && (
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-libre/15 text-libre font-bold uppercase">✓ Reviewed</span>
           )}
-        </span>
-        <span className="text-gray-500">
+          {/* Room number — editable inline */}
+          <span className="flex items-center gap-1 ml-2 text-[10px] text-gray-400">
+            #
+            <input type="text" value={roomNumber}
+              onChange={e => setRoomNumber(e.target.value)}
+              onBlur={persistRoomNumber}
+              placeholder="—"
+              className={`w-16 px-1.5 py-0.5 rounded border text-[11px] font-mono text-deep focus:outline-none focus:ring-2 focus:ring-ocean/30 ${
+                booking.room_number ? 'border-ocean/30 bg-ocean/5' : 'border-gray-200 bg-white'
+              }`}
+              title="Physical room number — click to edit" />
+            {savingNumber && <Loader2 size={10} className="animate-spin" />}
+          </span>
+        </div>
+        {/* RIGHT: dates + source + QR toggle */}
+        <button type="button" onClick={() => setOpen(o => !o)}
+          className="text-gray-500 text-right flex-shrink-0">
           {booking.check_in} → {booking.check_out}
           <span className="ml-2 px-1.5 py-0.5 rounded bg-white text-[10px] uppercase">{booking.booking_source || 'online'}</span>
           <span className="ml-1 text-[10px] text-ocean">{open ? '▴' : '▾ QR'}</span>
-        </span>
-      </button>
+        </button>
+      </div>
 
       {open && (
         <div className="border-t border-gray-200 bg-white p-4">

@@ -1421,6 +1421,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     extra_bed_price:     '',
     extra_bed_max_age:   10,
     communicating_rooms_available: false,
+    communicating_with_room_id: '',
   })
   // Carry photo/video URLs from a source room when "Copy from..." is used.
   // Stored separately because handleSave's regular flow doesn't touch media.
@@ -1437,6 +1438,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     extra_bed_price:     '',
     extra_bed_max_age:   10,
     communicating_rooms_available: false,
+    communicating_with_room_id: '',
   })
 
   function openAdd() {
@@ -1474,6 +1476,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_price:     src.extra_bed_price ?? '',
       extra_bed_max_age:   src.extra_bed_max_age || 10,
       communicating_rooms_available: !!src.communicating_rooms_available,
+      communicating_with_room_id:    src.communicating_with_room_id || '',
     })
     setCopiedMedia({
       photo_urls: [...(src.photo_urls || [])],
@@ -1495,6 +1498,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_price:     room.extra_bed_price ?? '',
       extra_bed_max_age:   room.extra_bed_max_age || 10,
       communicating_rooms_available: !!room.communicating_rooms_available,
+      communicating_with_room_id:    room.communicating_with_room_id || '',
     })
     setShowForm(true)
   }
@@ -1528,6 +1532,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_price:     form.extra_bed_price ? Number(form.extra_bed_price) : null,
       extra_bed_max_age:   Number(form.extra_bed_max_age) || 10,
       communicating_rooms_available: !!form.communicating_rooms_available,
+      communicating_with_room_id:    form.communicating_with_room_id || null,
     }
 
     if (editingRoom) {
@@ -1840,20 +1845,43 @@ function RoomEditFormCard({
           />
         </div>
 
-        {/* ───── Communicating rooms toggle ───── */}
+        {/* ───── Communicating rooms toggle + linked-room dropdown ───── */}
         <div className="sm:col-span-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
           <label className="flex items-center gap-2 cursor-pointer">
             <input type="checkbox"
               checked={!!form.communicating_rooms_available}
-              onChange={e => setForm(f => ({ ...f, communicating_rooms_available: e.target.checked }))}
+              onChange={e => setForm(f => ({
+                ...f,
+                communicating_rooms_available: e.target.checked,
+                // If they uncheck, clear the linked room too
+                communicating_with_room_id: e.target.checked ? f.communicating_with_room_id : '',
+              }))}
               className="w-4 h-4 accent-amber-500" />
             <span className="text-sm font-bold text-deep">
               🚪 {t('manage.communicating_rooms', 'Communicating rooms available')}
             </span>
             <span className="text-[11px] text-gray-400 ml-auto">
-              {t('manage.communicating_rooms_hint', 'At least one pair of this room type connects through an internal door — great for families')}
+              {t('manage.communicating_rooms_hint', 'At least one pair of this room type connects through an internal door')}
             </span>
           </label>
+          {form.communicating_rooms_available && (
+            <div className="mt-2 pl-6">
+              <label className="block text-[11px] font-bold uppercase text-gray-500 mb-1">
+                {t('manage.communicating_with', 'Connects with which room type?')}
+              </label>
+              <select value={form.communicating_with_room_id || ''}
+                onChange={e => setForm(f => ({ ...f, communicating_with_room_id: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-amber-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-amber-400/30">
+                <option value="">— same type ({form.name || 'this'} ↔ {form.name || 'this'}) —</option>
+                {rooms.filter(r => !editingRoom || r.id !== editingRoom.id).map(r => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
+              <p className="text-[10px] text-gray-400 mt-1 italic">
+                E.g. Jungle ↔ Forest. Leave empty if pairs are within the same type (Jungle ↔ Jungle).
+              </p>
+            </div>
+          )}
         </div>
 
         {/* ───── Extra bed (kid only) configuration ───── */}
