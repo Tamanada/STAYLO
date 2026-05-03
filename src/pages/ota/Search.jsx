@@ -337,7 +337,7 @@ export default function OTASearch() {
                     : `${filtered.length} ${t('booking.properties_found', 'properties found')}`}
                 </h2>
                 <p className="text-sm text-gray-500">
-                  {nights} {nights === 1 ? t('booking.night', 'night') : t('booking.nights', 'nights')} · {guests} {Number(guests) === 1 ? t('booking.adult', 'adult') : t('booking.adults', 'adults')}
+                  {nights} {nights === 1 ? t('booking.night', 'night') : t('booking.nights', 'nights')} · {adults} {Number(adults) === 1 ? t('booking.adult', 'adult') : t('booking.adults', 'adults')}{Number(children) > 0 ? ` · ${children} ${Number(children) === 1 ? t('booking.child', 'child') : t('booking.children', 'children')}` : ''}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -596,7 +596,7 @@ export default function OTASearch() {
 
                             <div className="text-right">
                               <p className="text-xs text-gray-500">
-                                {nights} {nights === 1 ? t('booking.night', 'night') : t('booking.nights', 'nights')}, {guests} {Number(guests) === 1 ? t('booking.adult', 'adult') : t('booking.adults', 'adults')}
+                                {nights} {nights === 1 ? t('booking.night', 'night') : t('booking.nights', 'nights')}, {adults} {Number(adults) === 1 ? t('booking.adult', 'adult') : t('booking.adults', 'adults')}{Number(children) > 0 ? ` · ${children} ${Number(children) === 1 ? t('booking.child', 'child') : t('booking.children', 'children')}` : ''}
                               </p>
                               {hasOtaPrice ? (
                                 <>
