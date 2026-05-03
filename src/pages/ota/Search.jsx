@@ -10,6 +10,7 @@ import {
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { matchRegion, propertyMatchesRegion } from '../../lib/regions'
+import { getAmenityMeta, aggregatePropertyAmenities } from '../../lib/amenityIcons'
 import GuestPicker from '../../components/ota/GuestPicker'
 
 
@@ -22,10 +23,9 @@ const DESTINATIONS = [
   { name: 'Krabi', count: 98, img: 'https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=600&q=80' },
 ]
 
-const amenityIcons = {
-  wifi: Wifi, pool: Waves, spa: Sparkles, beach: Waves, restaurant: Utensils,
-  parking: Car, gym: Dumbbell, ac: Wind, minibar: Coffee,
-}
+// Local amenityIcons map removed — single source of truth now lives in
+// src/lib/amenityIcons.js (covers every key used in PropertyManage's
+// AMENITY_CATEGORIES and renders unknown keys as a generic chip).
 
 function getDefaultCheckIn() { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] }
 function getDefaultCheckOut() { const d = new Date(); d.setDate(d.getDate() + 10); return d.toISOString().split('T')[0] }
@@ -108,7 +108,9 @@ export default function OTASearch() {
         otaPrice: Math.round(lowestPrice * 1.25),
         rating: 8.5,
         reviews: 0,
-        amenities: ['wifi'],
+        // Real amenities aggregated from every room of this property —
+        // unique keys, deterministic order. Empty array if rooms have none.
+        amenities: aggregatePropertyAmenities(pRooms),
         desc: p.description || '',
         isReal: true,
       }
@@ -470,17 +472,25 @@ export default function OTASearch() {
                                 ))}
                               </div>
 
-                              {/* Amenities */}
-                              <div className="flex flex-wrap gap-1.5 mb-4">
-                                {prop.amenities.map(a => {
-                                  const Icon = amenityIcons[a]
-                                  return Icon ? (
-                                    <span key={a} className="flex items-center gap-1 text-[11px] text-gray-600 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full">
-                                      <Icon size={12} className="text-[#003580]" /> {a}
+                              {/* Amenities — every unique amenity across all rooms, max 8 visible + overflow */}
+                              {prop.amenities.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mb-4">
+                                  {prop.amenities.slice(0, 8).map(a => {
+                                    const { icon: Icon, label } = getAmenityMeta(a)
+                                    return (
+                                      <span key={a} className="flex items-center gap-1.5 text-[11px] text-gray-700 bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-full">
+                                        <Icon size={12} className="text-[#003580]" /> {label}
+                                      </span>
+                                    )
+                                  })}
+                                  {prop.amenities.length > 8 && (
+                                    <span className="flex items-center text-[11px] text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full font-medium"
+                                      title={prop.amenities.slice(8).map(a => getAmenityMeta(a).label).join(' · ')}>
+                                      +{prop.amenities.length - 8} more
                                     </span>
-                                  ) : null
-                                })}
-                              </div>
+                                  )}
+                                </div>
+                              )}
 
                               {/* CTA */}
                               <div className="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between">
@@ -567,17 +577,25 @@ export default function OTASearch() {
                           {/* Description */}
                           <p className="text-xs text-gray-600 line-clamp-2 mt-1 mb-2 leading-relaxed">{prop.desc}</p>
 
-                          {/* Amenities */}
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {prop.amenities.slice(0, 5).map(a => {
-                              const Icon = amenityIcons[a]
-                              return Icon ? (
-                                <span key={a} className="flex items-center gap-1 text-[10px] text-gray-500 bg-gray-50 px-2 py-0.5 rounded">
-                                  <Icon size={10} /> {a}
+                          {/* Amenities — compact list (top 6) + overflow tooltip */}
+                          {prop.amenities.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-3">
+                              {prop.amenities.slice(0, 6).map(a => {
+                                const { icon: Icon, label } = getAmenityMeta(a)
+                                return (
+                                  <span key={a} className="flex items-center gap-1 text-[10px] text-gray-600 bg-gray-50 px-2 py-0.5 rounded" title={label}>
+                                    <Icon size={10} /> {label}
+                                  </span>
+                                )
+                              })}
+                              {prop.amenities.length > 6 && (
+                                <span className="text-[10px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded font-medium"
+                                  title={prop.amenities.slice(6).map(a => getAmenityMeta(a).label).join(' · ')}>
+                                  +{prop.amenities.length - 6}
                                 </span>
-                              ) : null
-                            })}
-                          </div>
+                              )}
+                            </div>
+                          )}
 
                           {/* Bottom — price section */}
                           <div className="mt-auto pt-3 border-t border-gray-100 flex items-end justify-between">
