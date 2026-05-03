@@ -502,6 +502,12 @@ function BookingRow({ booking }) {
           <button type="button" onClick={() => setOpen(o => !o)}
             className="font-medium text-deep flex items-center gap-2 text-left">
             {booking.guest_name || 'Guest'}
+            {booking.booking_ref && (
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-deep/5 text-deep/70 tracking-wider"
+                title="Booking reference — quote this on phone / email">
+                {booking.booking_ref}
+              </span>
+            )}
             <span className="text-[10px] text-gray-400">· {capacity} {capacity === 1 ? 'guest' : 'guests'}</span>
           </button>
           {booking.communicating_rooms_requested && (
@@ -775,7 +781,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     const { data: inserted, error: insErr } = await supabase
       .from('bookings')
       .insert(payload)
-      .select('id')
+      .select('id, booking_ref')
       .single()
     if (insErr) {
       setSaving(false)
@@ -822,7 +828,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
       const nightsLabel = nights === 1 ? '1 night' : `${nights} nights`
       const leadName = [lead.first_name, lead.last_name].filter(Boolean).join(' ').trim() || form.guest_name.trim()
       onUndoOffer({
-        label:    `Walk-in checked in: ${leadName}`,
+        label:    `Walk-in checked in: ${leadName}${inserted.booking_ref ? ` · ${inserted.booking_ref}` : ''}`,
         sublabel: `${nightsLabel} · ${room.name} · ${guestRows.length} guest${guestRows.length === 1 ? '' : 's'} · $${totalPrice.toFixed(0)}`,
         onUndo:   async () => {
           await supabase.from('bookings').delete().eq('id', inserted.id)
