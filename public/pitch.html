@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>STAYLO — Hotelier Pitch Deck</title>
+<style>
+  /* ============================================================
+     STAYLO Pitch Deck — 10 slides, single self-contained HTML.
+     - Open in Chrome → File → Print → Save as PDF (Layout: Landscape)
+     - Each slide is a 16:9 landscape page in print mode.
+     - On screen: scrollable vertical stack with snap.
+     ============================================================ */
+  :root {
+    --orange:   #FF6B00;
+    --pink:     #E91E63;
+    --deep:     #2D3436;
+    --cream:    #FFFDF8;
+    --line:     #E8E0D8;
+    --muted:    #6b6b6b;
+    --green:    #16a34a;
+    --gold:     #B8860B;
+    --grad:     linear-gradient(135deg, #FF6B00 0%, #E91E63 100%);
+  }
+
+  /* Reset */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: #f5f5f5;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--deep);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Slide page ─── */
+  .slide {
+    width: 1280px;
+    height: 720px;        /* exact 16:9 — matches Save as PDF "1280x720" */
+    margin: 16px auto;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 64px 80px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    page-break-after: always;
+    break-after: page;
+  }
+  .slide:last-of-type { page-break-after: auto; }
+
+  /* Page number + brand watermark */
+  .slide::before {
+    content: 'STAYLO';
+    position: absolute; top: 28px; left: 80px;
+    font-weight: 900; font-size: 18px; letter-spacing: -0.5px;
+    background: var(--grad);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .slide::after {
+    content: attr(data-page) ' / 10';
+    position: absolute; bottom: 28px; right: 80px;
+    font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums;
+  }
+  .footer-url {
+    position: absolute; bottom: 28px; left: 80px;
+    font-size: 11px; color: var(--muted);
+  }
+  .footer-url a { color: var(--orange); text-decoration: none; font-weight: 700; }
+
+  /* Typography */
+  h1 { font-size: 64px; font-weight: 900; line-height: 1.05; letter-spacing: -1.5px; margin-top: 24px; }
+  h1.tight { font-size: 56px; }
+  h2 { font-size: 36px; font-weight: 800; line-height: 1.15; letter-spacing: -0.5px; }
+  h3 { font-size: 22px; font-weight: 700; }
+  p  { font-size: 19px; line-height: 1.55; color: #444; max-width: 980px; }
+  p.lead { font-size: 22px; color: var(--deep); }
+  .small { font-size: 14px; color: var(--muted); }
+  .gradient { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .accent { color: var(--orange); font-weight: 800; }
+
+  /* Bullets */
+  .bullets { list-style: none; margin-top: 24px; }
+  .bullets li {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 10px 0; font-size: 19px; color: #333;
+  }
+  .bullets .ico {
+    flex-shrink: 0; width: 32px; height: 32px;
+    background: var(--grad); color: white;
+    border-radius: 8px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px;
+  }
+  .bullets li strong { color: var(--deep); }
+
+  /* Pull-quote / callout band */
+  .callout {
+    margin-top: auto;
+    padding: 22px 28px;
+    border-radius: 16px;
+    background: linear-gradient(90deg, rgba(255,107,0,0.08), rgba(233,30,99,0.06));
+    border-left: 5px solid var(--orange);
+    font-size: 22px; font-weight: 700; color: var(--deep); line-height: 1.4;
+  }
+  .callout .small { display: block; margin-top: 6px; font-weight: 400; color: var(--muted); }
+
+  /* Comparison table */
+  table.compare {
+    width: 100%; border-collapse: collapse; margin-top: 32px;
+    font-size: 20px;
+  }
+  table.compare th, table.compare td {
+    padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--line);
+  }
+  table.compare th {
+    background: rgba(0,0,0,0.04); font-weight: 800; font-size: 14px;
+    text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted);
+  }
+  table.compare td.you  { background: rgba(255,107,0,0.06); font-weight: 800; color: var(--orange); }
+  table.compare td.them { color: #888; }
+  table.compare tr:last-child td {
+    border-bottom: none; font-weight: 900; font-size: 22px;
+  }
+  table.compare tr.gain td { background: rgba(22,163,74,0.08); color: var(--green); font-size: 24px; }
+
+  /* Donut chart (pure CSS for slide 3) */
+  .donut-wrap { display: flex; gap: 48px; align-items: center; margin-top: 40px; }
+  .donut {
+    width: 280px; height: 280px; flex-shrink: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+      #c0392b 0% 53%,
+      #e67e22 53% 80%,
+      #f39c12 80% 92%,
+      #95a5a6 92% 100%
+    );
+    position: relative;
+  }
+  .donut::after {
+    content: '';
+    position: absolute; inset: 70px;
+    background: var(--cream);
+    border-radius: 50%;
+  }
+  .donut-legend { font-size: 18px; }
+  .donut-legend div { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+  .donut-legend .swatch { width: 16px; height: 16px; border-radius: 4px; flex-shrink: 0; }
+
+  /* CTA buttons */
+  .cta-list { display: flex; flex-direction: column; gap: 16px; margin-top: 36px; }
+  .cta-btn {
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 24px; background: white;
+    border: 2px solid var(--line); border-radius: 14px;
+    font-size: 18px; color: var(--deep);
+  }
+  .cta-btn .ico {
+    width: 44px; height: 44px;
+    background: var(--grad); color: white; border-radius: 10px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+  .cta-btn strong { color: var(--deep); }
+  .cta-btn small { color: var(--muted); display: block; margin-top: 2px; font-size: 13px; }
+
+  /* QR placeholder */
+  .qr-placeholder {
+    width: 180px; height: 180px;
+    background: white;
+    border: 4px solid var(--deep);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; color: var(--muted); text-align: center; padding: 12px;
+  }
+
+  /* Two-column layouts */
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+  .cols.cta { grid-template-columns: 2fr 1fr; }
+
+  /* ============== Cover slide ============== */
+  .cover {
+    background: linear-gradient(135deg, #2D3436 0%, #1a1f23 100%);
+    color: white;
+  }
+  .cover::before {
+    background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .cover::after { color: rgba(255,255,255,0.3); }
+  .cover h1 { color: white; font-size: 72px; }
+  .cover .accent { color: #FFB347; }
+  .cover p { color: rgba(255,255,255,0.7); }
+  .cover .footer-url { color: rgba(255,255,255,0.5); }
+  .cover .footer-url a { color: #FFB347; }
+
+  /* ============== Final slide ============== */
+  .finale h1 { font-size: 52px; }
+
+  /* ─── Print rules — Save as PDF ─── */
+  @media print {
+    body { background: white; }
+    .slide {
+      margin: 0; box-shadow: none; border: none;
+      width: 100%; height: 100vh;
+    }
+    @page {
+      size: 1280px 720px;     /* matches our slide dimensions */
+      margin: 0;
+    }
+    .no-print { display: none !important; }
+  }
+
+  /* ─── Floating helper bar (screen only) ─── */
+  .helper-bar {
+    position: fixed; top: 16px; right: 16px;
+    background: var(--deep); color: white;
+    padding: 10px 16px; border-radius: 12px;
+    font-size: 13px; z-index: 100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .helper-bar button {
+    background: var(--grad); color: white; border: none;
+    padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 12px; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<div class="helper-bar no-print">
+  📄 To save as PDF: Ctrl+P (Cmd+P on Mac) → Layout: <b>Landscape</b> → Margins: <b>None</b>
+  <button onclick="window.print()">Print / PDF</button>
+</div>
+
+<!-- ============================================================
+     SLIDE 1 — COVER / HOOK
+     ============================================================ -->
+<section class="slide cover" data-page="1">
+  <h1>You make the bed.<br/><span class="accent">Booking takes 22%.</span></h1>
+  <p class="lead" style="margin-top: 32px; font-size: 26px;">A booking platform built by hoteliers, for hoteliers.</p>
+  <div class="footer-url">
+    <a href="https://staylo.app">staylo.app</a> · Founding member program · Koh Phangan launch
+  </div>
+</section>
+
+<!-- ============================================================
+     SLIDE 2 — THE PROBLEM
+     ============================================================ -->
+<section class="slide" data-page="2">
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">The problem</h2>
+  <h1 class="tight">The OTA tax is <span class="gradient">bleeding</span><br/>your business.</h1>
+  <ul class="bullets">
+    <li><span class="ico">B</span><div><strong>Booking.com</strong> &nbsp;·&nbsp; 22% commission</div></li>
+    <li><span class="ico">A</span><div><strong>Agoda</strong> &nbsp;·&nbsp; 18 – 25% commission</div></li>
+    <li><span class="ico">E</span><div><strong>Expedia / Hotels.com</strong> &nbsp;·&nbsp; 20 – 25% commission</div></li>
+    <li><span class="ico">+</span><div>Plus payment fees, paid ads, and bidding wars on your own brand name</div></li>
+  </ul>
+  <div class="callout">
+    On a $100 room at 70% occupancy across 10 rooms, you hand over <span class="accent">$56,000 a year</span> to OTAs.
+    <span class="small">That's a new staff member. A renovation. A second property.</span>
+  </div>
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 3 — WHO PROFITS
+     ============================================================ -->
+<section class="slide" data-page="3">
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">Where every $22 goes</h2>
+  <h1 class="tight">Less than <span class="gradient">1¢</span> reaches you.</h1>
+
+  <div class="donut-wrap">
+    <div class="donut"></div>
+    <div class="donut-legend">
+      <div><span class="swatch" style="background:#c0392b"></span><strong>53%</strong> &nbsp;→ Wall Street shareholders</div>
+      <div><span class="swatch" style="background:#e67e22"></span><strong>27%</strong> &nbsp;→ Marketing (often bidding on YOUR hotel name)</div>
+      <div><span class="swatch" style="background:#f39c12"></span><strong>12%</strong> &nbsp;→ Executive bonuses</div>
+      <div><span class="swatch" style="background:#95a5a6"></span><strong>8%</strong> &nbsp;→ Technology &amp; operations</div>
+      <div style="color:var(--orange); font-weight:800; padding-top:12px;"><strong>&lt; 1%</strong> &nbsp;→ Hotelier ecosystem</div>
+    </div>
+  </div>
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 4 — MEET STAYLO
+     ============================================================ -->
+<section class="slide" data-page="4">
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">The solution</h2>
+  <h1 class="tight">Meet <span class="gradient">STAYLO</span>.</h1>
+  <p class="lead" style="margin-top: 16px;">The first booking platform <strong>owned by the hoteliers themselves.</strong></p>
+  <ul class="bullets" style="margin-top: 32px;">
+    <li><span class="ico">🔒</span><div><strong>10% commission. Locked for life.</strong></div></li>
+    <li><span class="ico">🗳</span><div><strong>Hoteliers vote</strong> on platform decisions</div></li>
+    <li><span class="ico">$</span><div><strong>Free to join.</strong> No exclusivity. No cancellation fee.</div></li>
+    <li><span class="ico">⚡</span><div><strong>Optional Bitcoin payouts</strong> — no FX, no bank delays</div></li>
+  </ul>
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 5 — HOW IT WORKS
+     ============================================================ -->
+<section class="slide" data-page="5">
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">How it works</h2>
+  <h1 class="tight">Three steps.<br/><span class="gradient">Fifteen minutes.</span></h1>
+  <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px;">
+    <div style="text-align: center;">
+      <div style="width: 80px; height: 80px; background: var(--grad); border-radius: 20px; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900;">1</div>
+      <h3 style="margin-top: 20px;">List your property</h3>
+      <p class="small" style="margin-top: 8px;">Name, photos, room types — we import from your existing Booking.com listing in 1 click.</p>
+    </div>
+    <div style="text-align: center;">
+      <div style="width: 80px; height: 80px; background: var(--grad); border-radius: 20px; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900;">2</div>
+      <h3 style="margin-top: 20px;">Set your prices</h3>
+      <p class="small" style="margin-top: 8px;">Sync with your channel manager, or manage them right on STAYLO. Stackable rewards (Half Moon, Birthday, etc.).</p>
+    </div>
+    <div style="text-align: center;">
+      <div style="width: 80px; height: 80px; background: var(--grad); border-radius: 20px; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900;">3</div>
+      <h3 style="margin-top: 20px;">Get bookings, keep 90%</h3>
+      <p class="small" style="margin-top: 8px;">Payouts every Friday in fiat or Bitcoin. Direct guest contact, real email — no aggregator middleman.</p>
+    </div>
+  </div>
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 6 — THE NUMBERS
+     ============================================================ -->
+<section class="slide" data-page="6">
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">The numbers</h2>
+  <h1 class="tight">What this means for <span class="gradient">YOUR hotel.</span></h1>
+
+  <table class="compare">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Booking.com</th>
+        <th>STAYLO</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Guest pays</td>
+        <td class="them">$100</td>
+        <td class="you">$100</td>
+      </tr>
+      <tr>
+        <td>Commission</td>
+        <td class="them">$22</td>
+        <td class="you">$10</td>
+      </tr>
+      <tr>
+        <td>You receive</td>
+        <td class="them">$78</td>
+        <td class="you">$90</td>
+      </tr>
+      <tr class="gain">
+        <td><strong>Per booking gain</strong></td>
+        <td>—</td>
+        <td>+$12</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    10 rooms · 70% occupancy · $100 average rate
+    = <span class="accent">$30,660 saved per year</span> vs Booking.com.
+    <span class="small">Calculator live on staylo.app — punch in your real numbers.</span>
+  </div>
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 7 — DIFFERENTIATION
+     ============================================================ -->
+<section class="slide" data-page="7">
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">What makes STAYLO different</h2>
+  <h1 class="tight">Not just <span class="gradient">another OTA.</span></h1>
+  <ul class="bullets" style="margin-top: 28px;">
+    <li><span class="ico">✓</span><div><strong>You're a shareholder, not a supplier</strong> — vote, get profit share</div></li>
+    <li><span class="ico">✓</span><div><strong>10% locked for life</strong> — Booking has raised commissions every year since 2010</div></li>
+    <li><span class="ico">✓</span><div><strong>No bidding wars on your brand</strong> — STAYLO never buys ads against your hotel name on Google</div></li>
+    <li><span class="ico">✓</span><div><strong>Direct guest contact</strong> — real email, not a forwarding address</div></li>
+    <li><span class="ico">✓</span><div><strong>Open source</strong> — code public on github.com/Tamanada/STAYLO</div></li>
+    <li><span class="ico">✓</span><div><strong>Bitcoin payouts</strong> — instant settlement, no FX fees, no Friday-bank-delay</div></li>
+  </ul>
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 8 — WHY NOW, WHY US
+     ============================================================ -->
+<section class="slide" data-page="8">
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">Why now, why us</h2>
+  <h1 class="tight">We're real. <span class="gradient">Here's the proof.</span></h1>
+  <ul class="bullets" style="margin-top: 28px;">
+    <li><span class="ico">🇹🇭</span><div>Built in <strong>Koh Phangan since 2026</strong></div></li>
+    <li><span class="ico">🏨</span><div><strong>16,000+ Thai hoteliers</strong> mapped and contacted in our launch pipeline</div></li>
+    <li><span class="ico">💻</span><div>Code <strong>public on github.com/Tamanada/STAYLO</strong> — anyone can audit</div></li>
+    <li><span class="ico">📊</span><div>Commission structure <strong>verifiable on-chain</strong> (BTC payouts auditable)</div></li>
+    <li><span class="ico">👋</span><div>Founder <strong>David lives on Koh Phangan</strong> — drop by for coffee anytime</div></li>
+  </ul>
+  <div class="callout" style="background: linear-gradient(90deg, rgba(22,163,74,0.08), rgba(22,163,74,0.04)); border-left-color: var(--green);">
+    Not a Silicon Valley promise. A neighbour you can knock on the door of.
+  </div>
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 9 — FOUNDING MEMBER BENEFITS
+     ============================================================ -->
+<section class="slide" data-page="9">
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">Founding member program</h2>
+  <h1 class="tight">Join the first <span class="gradient">500 hotels</span>.<br/>Keep these forever.</h1>
+  <ul class="bullets" style="margin-top: 28px;">
+    <li><span class="ico">🔒</span><div><strong>10% commission, locked for life</strong> &nbsp;·&nbsp; rest of market: 22% and climbing</div></li>
+    <li><span class="ico">🗳</span><div><strong>Voting rights</strong> on every platform decision</div></li>
+    <li><span class="ico">💰</span><div><strong>Profit share</strong> when STAYLO scales beyond Thailand</div></li>
+    <li><span class="ico">🏅</span><div><strong>Founding Member badge</strong> on your guest-facing listing (trust signal)</div></li>
+    <li><span class="ico">⚡</span><div><strong>Free Lightning wallet</strong> integration &amp; onboarding session</div></li>
+  </ul>
+  <div class="callout" style="background: linear-gradient(90deg, rgba(255,107,0,0.1), rgba(233,30,99,0.06));">
+    Once 500 hotels are live, founding-member status closes <strong>forever</strong>.
+    <span class="small">After that, new hotels still get 10% commission today — but no voting rights, no profit share.</span>
+  </div>
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+</section>
+
+<!-- ============================================================
+     SLIDE 10 — CTA
+     ============================================================ -->
+<section class="slide finale" data-page="10">
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">Take back what's yours</h2>
+  <h1 class="tight">List your property in <span class="gradient">15 minutes.</span></h1>
+
+  <div class="cols cta" style="margin-top: 40px;">
+    <div class="cta-list">
+      <div class="cta-btn">
+        <span class="ico">📱</span>
+        <div><strong>Scan the QR</strong><small>Direct to staylo.app/submit · pre-filled form</small></div>
+      </div>
+      <div class="cta-btn">
+        <span class="ico">💬</span>
+        <div><strong>WhatsApp David</strong><small>+66 [your number] · English / Thai / French</small></div>
+      </div>
+      <div class="cta-btn">
+        <span class="ico">☕</span>
+        <div><strong>Visit our office</strong><small>[address] · Koh Phangan · weekdays 9-5</small></div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+      <!-- QR placeholder. Replace with a real QR image (e.g. from qr-code-generator.com pointing to staylo.app/submit?utm_source=pitch). -->
+      <div class="qr-placeholder">
+        Generate a QR for<br/>staylo.app/submit<br/>and paste it here
+      </div>
+      <p class="small" style="text-align: center; max-width: 220px;">Free to register · No credit card · No commitment</p>
+    </div>
+  </div>
+
+  <div style="position: absolute; bottom: 64px; left: 80px; right: 80px; padding-top: 20px; border-top: 1px solid var(--line);">
+    <p class="small" style="text-align: center;">
+      The 22% you give Booking today is a choice. So is the 10% you'll give STAYLO tomorrow.<br/>
+      <strong style="color: var(--deep);">Most hoteliers will keep paying 22% out of habit. The smart ones will switch. The smartest will become founding members.</strong>
+    </p>
+  </div>
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+</section>
+
+</body>
+</html>
