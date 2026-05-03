@@ -54,6 +54,7 @@ import Splash from './pages/Splash'
 import ResetPassword from './pages/ResetPassword'
 import VerifyEmail from './pages/VerifyEmail'
 import Welcome from './pages/Welcome'
+import PublicCheckIn from './pages/PublicCheckIn'
 import EmailVerificationGate from './components/auth/EmailVerificationGate'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
@@ -105,6 +106,9 @@ export default function App() {
 
           {/* Welcome — standalone, no Navbar/Footer */}
           <Route path="/welcome" element={<Welcome />} />
+
+          {/* Public guest self check-in — accessed via QR code, no auth required */}
+          <Route path="/checkin/:token" element={<PublicCheckIn />} />
 
           {/* Public routes — with Navbar + Footer */}
           <Route element={<Layout />}>

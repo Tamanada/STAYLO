@@ -443,22 +443,68 @@ function CalendarStrip({ room, bookings }) {
         })}
       </div>
 
-      {/* Upcoming bookings list */}
+      {/* Upcoming bookings list — each row shows the QR check-in link for guests */}
       {bookings.length > 0 && (
         <div className="mt-4 pt-4 border-t border-gray-100">
           <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-            Upcoming bookings ({bookings.length})
+            Upcoming bookings ({bookings.length}) · click for guest self check-in QR
           </h4>
           <div className="space-y-1">
             {bookings.slice(0, 5).map(b => (
-              <div key={b.id} className="flex items-center justify-between text-xs px-3 py-2 rounded-lg bg-gray-50">
-                <span className="font-medium text-deep">{b.guest_name || 'Guest'}</span>
-                <span className="text-gray-500">
-                  {b.check_in} → {b.check_out}
-                  <span className="ml-2 px-1.5 py-0.5 rounded bg-white text-[10px] uppercase">{b.booking_source || 'online'}</span>
-                </span>
-              </div>
+              <BookingRow key={b.id} booking={b} />
             ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// One row of the upcoming-bookings list. Click to expand a QR code that
+// guests scan to self-register their TM30 / passport info on this booking.
+function BookingRow({ booking }) {
+  const [open, setOpen] = useState(false)
+  const checkinUrl = `https://staylo.app/checkin/${booking.check_in_token}`
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(checkinUrl)}&size=240x240&margin=2&color=2D3436&bgcolor=FFFFFF`
+  const capacity = (booking.adults || 1) + (booking.children || 0) + (booking.extra_beds_count || 0)
+
+  return (
+    <div className="rounded-lg bg-gray-50 overflow-hidden">
+      <button onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between text-xs px-3 py-2 text-left hover:bg-gray-100 transition-colors">
+        <span className="font-medium text-deep flex items-center gap-2">
+          {booking.guest_name || 'Guest'}
+          <span className="text-[10px] text-gray-400">· {capacity} {capacity === 1 ? 'guest' : 'guests'}</span>
+        </span>
+        <span className="text-gray-500">
+          {booking.check_in} → {booking.check_out}
+          <span className="ml-2 px-1.5 py-0.5 rounded bg-white text-[10px] uppercase">{booking.booking_source || 'online'}</span>
+          <span className="ml-1 text-[10px] text-ocean">{open ? '▴' : '▾ QR'}</span>
+        </span>
+      </button>
+      {open && booking.check_in_token && (
+        <div className="border-t border-gray-200 bg-white p-4 flex flex-col items-center gap-3">
+          <img src={qrSrc} alt="Guest check-in QR"
+            className="w-44 h-44 border-2 border-deep rounded-lg p-2 bg-white" />
+          <div className="text-center">
+            <p className="text-xs font-bold text-deep">Guest self check-in</p>
+            <p className="text-[10px] text-gray-500 mt-0.5 max-w-xs">
+              Each guest scans, fills their info in 30s. Up to {capacity} can register.
+            </p>
+            <a href={checkinUrl} target="_blank" rel="noopener"
+              className="text-[10px] text-ocean font-mono mt-1 inline-block break-all">
+              {checkinUrl}
+            </a>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => navigator.clipboard?.writeText(checkinUrl)}
+              className="text-[11px] px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold">
+              Copy link
+            </button>
+            <button onClick={() => window.open(qrSrc, '_blank')}
+              className="text-[11px] px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold">
+              Open QR (print)
+            </button>
           </div>
         </div>
       )}
