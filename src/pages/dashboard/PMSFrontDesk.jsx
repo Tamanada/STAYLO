@@ -490,10 +490,52 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     payment_method: 'manual',  // walk-ins typically pay cash / direct
     special_requests: '',
   })
+  // Per-guest registry (TM30 compliance + ops). Auto-resized to adults+children.
+  // Each entry: { first_name, last_name, nationality, passport_number, is_child }
+  // The first entry is always the lead (booker).
+  const [guests, setGuests] = useState([
+    { first_name: '', last_name: '', nationality: '', passport_number: '', is_child: false },
+  ])
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
   function set(k, v) { setForm(f => ({ ...f, [k]: v })) }
+
+  // Resize the guest list to match adults + children.
+  // Adults come first (is_child=false), then children. Existing data preserved.
+  useEffect(() => {
+    const totalAdults   = Math.max(1, Number(form.adults)   || 1)
+    const totalChildren = Math.max(0, Number(form.children) || 0)
+    setGuests(prev => {
+      const next = []
+      // Re-fill adults from existing adult entries first
+      const existingAdults   = prev.filter(g => !g.is_child)
+      const existingChildren = prev.filter(g =>  g.is_child)
+      for (let i = 0; i < totalAdults; i++) {
+        next.push(existingAdults[i] || { first_name: '', last_name: '', nationality: '', passport_number: '', is_child: false })
+      }
+      for (let i = 0; i < totalChildren; i++) {
+        next.push(existingChildren[i] || { first_name: '', last_name: '', nationality: '', passport_number: '', is_child: true })
+      }
+      return next
+    })
+  }, [form.adults, form.children])
+
+  function updateGuest(idx, key, value) {
+    setGuests(g => g.map((row, i) => i === idx ? { ...row, [key]: value } : row))
+  }
+
+  // Two-way sync: when the lead guest's name changes, mirror it into the
+  // top-level form.guest_name field (kept on bookings for backward compat).
+  useEffect(() => {
+    const lead = guests[0]
+    if (!lead) return
+    const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ').trim()
+    if (fullName !== form.guest_name) {
+      set('guest_name', fullName)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [guests[0]?.first_name, guests[0]?.last_name])
 
   // Live computed nights and total
   const nights = useMemo(() => {
@@ -514,7 +556,13 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
 
   async function handleSave() {
     setError('')
-    if (!form.guest_name.trim()) { setError(t('pms.err_name', 'Guest name is required')); return }
+    // Validate the LEAD guest (always row 0). The other rows are optional names
+    // until the receptionist has time to fill them — but the lead must be set.
+    const lead = guests[0]
+    if (!lead?.first_name?.trim()) {
+      setError(t('pms.err_name', 'At least the lead guest first name is required'))
+      return
+    }
     if (nights <= 0) { setError(t('pms.err_dates', 'Check-out must be after check-in')); return }
     if (!form.rate || Number(form.rate) <= 0) { setError(t('pms.err_rate', 'Rate must be > 0')); return }
     if (conflict) { setError(t('pms.err_conflict', 'These dates overlap an existing booking')); return }
@@ -550,20 +598,46 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
       .insert(payload)
       .select('id')
       .single()
-    setSaving(false)
     if (insErr) {
+      setSaving(false)
       console.error('Walk-in insert failed:', insErr)
       setError(insErr.message)
       return
     }
 
+    // Insert the per-guest registry rows (TM30 compliance + ops).
+    // Skip empty rows (entries with no first_name) — receptionist can fill
+    // them in later via the booking detail page.
+    const guestRows = guests
+      .map((g, i) => ({
+        booking_id:      inserted.id,
+        first_name:      g.first_name?.trim() || '',
+        last_name:       g.last_name?.trim() || null,
+        nationality:     g.nationality?.trim().toUpperCase() || null,
+        passport_number: g.passport_number?.trim() || null,
+        is_lead:         i === 0,
+        is_child:        !!g.is_child,
+        created_by:      userId,
+      }))
+      .filter(g => g.first_name)        // skip blanks
+    if (guestRows.length > 0) {
+      const { error: gErr } = await supabase.from('booking_guests').insert(guestRows)
+      // Don't fail the whole flow if guest insert fails — booking is created,
+      // hotelier can fix names later. Log it so we know.
+      if (gErr) console.warn('Guest registry insert failed (booking still created):', gErr)
+    }
+
+    setSaving(false)
+
     // Offer one-click undo for 30s. Deleting the booking auto-restores
-    // the room's available_count via the bookings_sync_availability trigger.
+    // the room's available_count via the bookings_sync_availability trigger,
+    // and cascades the booking_guests rows.
     if (onUndoOffer && inserted?.id) {
       const nightsLabel = nights === 1 ? '1 night' : `${nights} nights`
+      const leadName = [lead.first_name, lead.last_name].filter(Boolean).join(' ').trim() || form.guest_name.trim()
       onUndoOffer({
-        label:    `Walk-in checked in: ${form.guest_name.trim()}`,
-        sublabel: `${nightsLabel} · ${room.name} · $${totalPrice.toFixed(0)}`,
+        label:    `Walk-in checked in: ${leadName}`,
+        sublabel: `${nightsLabel} · ${room.name} · ${guestRows.length} guest${guestRows.length === 1 ? '' : 's'} · $${totalPrice.toFixed(0)}`,
         onUndo:   async () => {
           await supabase.from('bookings').delete().eq('id', inserted.id)
           onDone()        // refresh list + close any open modal
@@ -575,15 +649,9 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Field label={t('pms.guest_name', 'Guest name *')}>
-          <input
-            type="text" value={form.guest_name} onChange={e => set('guest_name', e.target.value)}
-            placeholder="Somchai R." autoFocus
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
-          />
-        </Field>
-        <Field label={t('pms.guest_phone', 'Phone')}>
+      {/* Contact + payment (lead booker contact details) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Field label={t('pms.guest_phone', 'Lead phone')}>
           <PhoneInput value={form.guest_phone} onChange={v => set('guest_phone', v)} />
         </Field>
         <Field label={t('pms.guest_email', 'Email (optional)')}>
@@ -623,6 +691,80 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
           <input type="number" min={1} step="0.01" value={form.rate} onChange={e => set('rate', e.target.value)}
             className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </Field>
+      </div>
+
+      {/* ───────────────────────────────────────────────────────────────
+          Per-guest registry — one row per adult/child.
+          Auto-resized when adults/children counts change.
+          Required by Thai TM30 immigration law for foreign guests +
+          good practice for everyone (fire safety, claims, CRM).
+          ─────────────────────────────────────────────────────────────── */}
+      <div className="bg-cream/40 -mx-1 px-3 py-3 rounded-xl border border-cream space-y-2">
+        <div className="flex items-center justify-between">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">
+            Guest registry
+            <span className="text-gray-300 font-normal normal-case ml-1.5">— {guests.length} {guests.length === 1 ? 'person' : 'people'}, TM30 compliant</span>
+          </h4>
+          <button type="button"
+            onClick={() => setGuests(g => [...g, { first_name: '', last_name: '', nationality: '', passport_number: '', is_child: false }])}
+            className="text-[11px] font-bold text-ocean hover:text-electric flex items-center gap-1">
+            + Add another
+          </button>
+        </div>
+
+        {guests.map((g, idx) => (
+          <div key={idx} className="grid grid-cols-12 gap-1.5 items-start bg-white p-2 rounded-lg border border-gray-100">
+            <div className="col-span-1 flex items-center justify-center text-[10px] font-bold text-gray-400 pt-2.5">
+              {idx === 0 ? '👤' : g.is_child ? '👶' : '👤'}
+              <span className="ml-0.5">{idx + 1}</span>
+            </div>
+            <div className="col-span-3">
+              <input type="text" value={g.first_name}
+                onChange={e => updateGuest(idx, 'first_name', e.target.value)}
+                placeholder={idx === 0 ? 'First name *' : 'First name'}
+                autoFocus={idx === 0}
+                className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </div>
+            <div className="col-span-3">
+              <input type="text" value={g.last_name}
+                onChange={e => updateGuest(idx, 'last_name', e.target.value)}
+                placeholder="Last name"
+                className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </div>
+            <div className="col-span-2">
+              <input type="text" value={g.nationality}
+                onChange={e => updateGuest(idx, 'nationality', e.target.value.toUpperCase().slice(0, 2))}
+                placeholder="FR / TH"
+                maxLength={2}
+                className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </div>
+            <div className="col-span-2">
+              <input type="text" value={g.passport_number}
+                onChange={e => updateGuest(idx, 'passport_number', e.target.value)}
+                placeholder={g.is_child ? 'opt.' : 'Passport #'}
+                className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </div>
+            <div className="col-span-1 flex items-center justify-end pt-1.5 gap-1">
+              {idx > 0 && (
+                <>
+                  <button type="button" onClick={() => updateGuest(idx, 'is_child', !g.is_child)}
+                    className="text-[9px] text-gray-400 hover:text-electric font-medium"
+                    title={g.is_child ? 'Mark as adult' : 'Mark as child'}>
+                    {g.is_child ? 'A' : 'C'}
+                  </button>
+                  <button type="button"
+                    onClick={() => setGuests(arr => arr.filter((_, i) => i !== idx))}
+                    className="text-gray-300 hover:text-sunset text-base leading-none px-1"
+                    title="Remove this guest">×</button>
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+
+        <p className="text-[10px] text-gray-400 italic">
+          ID #1 = lead booker. Nationality = 2-letter code (FR, TH, US, GB...). Passport optional for children.
+        </p>
       </div>
 
       <Field label={t('pms.special_requests', 'Special requests (optional)')}>
