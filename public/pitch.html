@@ -96,6 +96,61 @@
   }
   .bullets li strong { color: var(--deep); }
 
+  /* ======================================================
+     "1/5 disappears" loss-visualization band (slide 2)
+     5 blocks across — 4 libre (you keep) + 1 orange (gone),
+     with a giant 1/5 fraction as typographic hero.
+     ====================================================== */
+  .loss-viz {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 32px;
+    margin: 28px 0;
+    padding: 16px 0;
+  }
+  .loss-blocks { display: flex; gap: 6px; justify-content: flex-end; }
+  .loss-block {
+    width: 56px; height: 56px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 18px; color: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .loss-block.keep {
+    background: linear-gradient(135deg, #1da851, #16a34a);
+  }
+  .loss-block.lost {
+    background: linear-gradient(135deg, #c0392b, #962a1f);
+    transform: rotate(-12deg) translateY(-6px);
+    opacity: 0.85;
+    position: relative;
+  }
+  .loss-block.lost::after {
+    content: '✗';
+    position: absolute;
+    inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; color: white;
+  }
+  .loss-fraction {
+    font-weight: 900;
+    font-size: 130px;
+    line-height: 1;
+    letter-spacing: -4px;
+    background: var(--grad);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-align: center;
+    padding: 0 8px;
+  }
+  .loss-text {
+    font-size: 18px;
+    line-height: 1.35;
+    color: #444;
+  }
+  .loss-text strong { color: var(--deep); display: block; font-size: 22px; margin-bottom: 4px; }
+  .loss-text .small-note { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
   /* Pull-quote / callout band */
   .callout {
     margin-top: auto;
@@ -252,12 +307,29 @@
 <section class="slide" data-page="2">
   <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">The problem</h2>
   <h1 class="tight">The OTA tax is <span class="gradient">bleeding</span><br/>your business.</h1>
-  <ul class="bullets">
+  <ul class="bullets" style="margin-top: 16px;">
     <li><span class="ico">B</span><div><strong>Booking.com</strong> &nbsp;·&nbsp; 22% commission</div></li>
     <li><span class="ico">A</span><div><strong>Agoda</strong> &nbsp;·&nbsp; 18 – 25% commission</div></li>
     <li><span class="ico">E</span><div><strong>Expedia / Hotels.com</strong> &nbsp;·&nbsp; 20 – 25% commission</div></li>
-    <li><span class="ico">+</span><div>Plus payment fees, paid ads, and bidding wars on your own brand name</div></li>
   </ul>
+
+  <!-- Loss visualization — 1/5 of every booking disappears -->
+  <div class="loss-viz">
+    <div class="loss-blocks">
+      <div class="loss-block keep">$</div>
+      <div class="loss-block keep">$</div>
+      <div class="loss-block keep">$</div>
+      <div class="loss-block keep">$</div>
+      <div class="loss-block lost">$</div>
+    </div>
+    <div class="loss-fraction">1/5</div>
+    <div class="loss-text">
+      <strong>of every booking disappears</strong>
+      You only see <span class="accent">80%</span> — the rest is taken by OTAs, processors and ad bidders.
+      <div class="small-note">→ slide 3 shows exactly where it goes.</div>
+    </div>
+  </div>
+
   <div class="callout">
     On a $100 room at 70% occupancy across 10 rooms, you hand over <span class="accent">$56,000 a year</span> to OTAs.
     <span class="small">That's a new staff member. A renovation. A second property.</span>
@@ -269,7 +341,7 @@
      SLIDE 3 — WHO PROFITS
      ============================================================ -->
 <section class="slide" data-page="3">
-  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">Where every $22 goes</h2>
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">Where that 20% goes</h2>
   <h1 class="tight">Less than <span class="gradient">1¢</span> reaches you.</h1>
 
   <div class="donut-wrap">
