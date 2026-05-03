@@ -1535,8 +1535,10 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       communicating_with_room_id:    form.communicating_with_room_id || null,
     }
 
+    let opError = null
     if (editingRoom) {
-      await supabase.from('rooms').update(payload).eq('id', editingRoom.id)
+      const { error } = await supabase.from('rooms').update(payload).eq('id', editingRoom.id)
+      opError = error
     } else {
       // For new rooms only — carry any media copied from a source room.
       // Empty arrays for non-copied creates are fine (DB default is '{}').
@@ -1544,9 +1546,27 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
         payload.photo_urls = copiedMedia.photo_urls
         payload.video_urls = copiedMedia.video_urls
       }
-      await supabase.from('rooms').insert(payload)
+      const { error } = await supabase.from('rooms').insert(payload)
+      opError = error
     }
     setSaving(false)
+
+    // Surface DB errors so the operator doesn't end up with a silent failure
+    // (the previous behaviour just closed the form and called onRefresh,
+    // leading to the "I created a room but it didn't appear" support ticket).
+    if (opError) {
+      console.error('Room save failed:', opError)
+      // Common case: missing column because a migration hasn't been applied.
+      // Tell the operator clearly what to do.
+      const isMissingColumn = /column .* does not exist/i.test(opError.message || '')
+      alert(
+        isMissingColumn
+          ? `Save failed: ${opError.message}\n\nThis usually means a SQL migration hasn't been applied yet. Check the Supabase SQL Editor — there are pending migrations under supabase/migrations/.`
+          : `Save failed: ${opError.message || opError.code}`
+      )
+      return
+    }
+
     setShowForm(false)
     setCopiedMedia({ photo_urls: [], video_urls: [] })
     onRefresh()
