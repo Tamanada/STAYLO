@@ -192,10 +192,11 @@ export default function PropertyDetail() {
     videos: r.video_urls || [],
     pricingUnit: r.pricing_unit || 'room',  // 'room' | 'bed'
     // Extra-bed config — surfaces capacity that ONLY children ≤ max_age can use
-    extraBedAvailable: !!r.extra_bed_available,
-    extraBedMaxQty:    Number(r.extra_bed_max_qty) || 0,
-    extraBedPrice:     Number(r.extra_bed_price)   || 0,
-    extraBedMaxAge:    Number(r.extra_bed_max_age) || 10,
+    extraBedAvailable:     !!r.extra_bed_available,
+    extraBedMaxQty:        Number(r.extra_bed_max_qty) || 0,
+    extraBedPrice:         Number(r.extra_bed_price)   || 0,
+    extraBedMaxAge:        Number(r.extra_bed_max_age) || 10,
+    extraBedAdultsAllowed: !!r.extra_bed_adults_allowed,
     communicatingRoomsAvailable: !!r.communicating_rooms_available,
     // Carry the raw availability rows so we can compute promo + min_stay
     // per the actual selected dates without refetching.
@@ -239,15 +240,25 @@ export default function PropertyDetail() {
     : (rooms.length ? Math.max(...rooms.map(r => (r.guests || 1) + (r.extraBedAvailable ? r.extraBedMaxQty : 0))) : 6)
   const maxAllowedGuests = effectiveMax
 
-  // Auto-compute how many extra beds are needed for the current group:
-  // children that don't fit in regular slots after the adults take theirs.
-  // Bounded by extra_bed_max_qty × roomsCount (the ceiling).
-  const adultSlots         = (selectedRoomData?.guests || 1) * (isPerBed ? 1 : roomsCount)
-  const childrenNeedingBeds = Math.max(0, (adults + children) - adultSlots)
+  // Auto-allocate extra beds.
+  // Default: STRICTLY for children that overflow regular slots (kids only).
+  // When the hotelier ticked extra_bed_adults_allowed: adults can use them too
+  // (use case: last-minute friend, accompanist for a mobility-reduced guest).
+  //
+  // Allocation order is always: adults take regular slots first, children fill
+  // the rest, then overflow → extra beds (capped at max_qty × roomsCount).
+  // The "adults_allowed" flag only changes whether ADULT overflow is also
+  // eligible to take extra beds, or treated as over-capacity.
+  const adultSlots              = (selectedRoomData?.guests || 1) * (isPerBed ? 1 : roomsCount)
+  const adultsInRegularSlots    = Math.min(adults, adultSlots)
+  const adultsOverflow          = Math.max(0, adults - adultSlots)
+  const remainingRegularSlots   = Math.max(0, adultSlots - adultsInRegularSlots)
+  const childrenOverflow        = Math.max(0, children - remainingRegularSlots)
   const totalExtraBedsAvailable = selectedRoomData?.extraBedAvailable
     ? (selectedRoomData.extraBedMaxQty * (isPerBed ? 1 : roomsCount))
     : 0
-  const extraBedsUsed = Math.min(childrenNeedingBeds, totalExtraBedsAvailable)
+  const extraBedsForAdults      = selectedRoomData?.extraBedAdultsAllowed ? adultsOverflow : 0
+  const extraBedsUsed           = Math.min(childrenOverflow + extraBedsForAdults, totalExtraBedsAvailable)
   // How many of THIS room type can be selected. For per-room: total rooms.
   // For per-bed: hidden (auto = guests count).
   const maxRoomsAvailable = selectedRoomData ? (rawRoom?.quantity || 1) : 1
@@ -849,7 +860,9 @@ export default function PropertyDetail() {
                     <span className="text-red-700">
                       {t('booking.too_many_guests', 'This room sleeps up to')} <strong>{selectedRoomData.guests}</strong>{' '}
                       {selectedRoomData.extraBedAvailable && selectedRoomData.extraBedMaxQty > 0 && (
-                        <>+ {selectedRoomData.extraBedMaxQty} {t('booking.extra_bed_kid', 'extra bed for child ≤')} {selectedRoomData.extraBedMaxAge}y </>
+                        selectedRoomData.extraBedAdultsAllowed
+                          ? <>+ {selectedRoomData.extraBedMaxQty} extra bed{selectedRoomData.extraBedMaxQty > 1 ? 's' : ''} (adults OK) </>
+                          : <>+ {selectedRoomData.extraBedMaxQty} {t('booking.extra_bed_kid', 'extra bed for child ≤')} {selectedRoomData.extraBedMaxAge}y </>
                       )}
                       {t('booking.guests_lower', 'guests. Please reduce the count or pick a larger room.')}
                     </span>
@@ -863,7 +876,9 @@ export default function PropertyDetail() {
                     <span className="text-deep">
                       🛏️ <strong>{extraBedsUsed}</strong> extra bed{extraBedsUsed > 1 ? 's' : ''}{' '}
                       will be added (+${(extraBedsUsed * selectedRoomData.extraBedPrice * nights).toFixed(0)} total).
-                      For child{extraBedsUsed > 1 ? 'ren' : ''} ≤ {selectedRoomData.extraBedMaxAge}y old.
+                      {selectedRoomData.extraBedAdultsAllowed
+                        ? ' Adults welcome (e.g. accompanist or extra friend).'
+                        : ` For child${extraBedsUsed > 1 ? 'ren' : ''} ≤ ${selectedRoomData.extraBedMaxAge}y old.`}
                     </span>
                   </div>
                 )}

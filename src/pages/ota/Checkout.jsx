@@ -170,17 +170,23 @@ export default function Checkout() {
   const pricing = computeRoomPricing(room, checkIn, checkOut, roomsCount)
   const roomTotal = pricing.discountedTotal
 
-  // Extra beds — auto-allocated when children > the regular room slots.
-  // Same rule as PropertyDetail: a room can host max_guests + extra_bed_max_qty,
-  // billed per bed per night (kids ≤ extra_bed_max_age only).
-  const adultSlots = (Number(room?.max_guests) || 1) * roomsCount
-  const childrenOverflow = Math.max(0, (adults + children) - adultSlots)
+  // Extra beds — children always eligible; adults too if the hotelier
+  // ticked extra_bed_adults_allowed (use case: last-minute friend OR
+  // accompanist for a mobility-reduced guest).
+  // Adults take regular slots first, children fill the rest, then overflow
+  // → extra beds (capped at extra_bed_max_qty × roomsCount).
+  const adultSlots             = (Number(room?.max_guests) || 1) * roomsCount
+  const adultsInRegularSlots   = Math.min(adults, adultSlots)
+  const adultsOverflow         = Math.max(0, adults - adultSlots)
+  const remainingRegularSlots  = Math.max(0, adultSlots - adultsInRegularSlots)
+  const childrenOverflow       = Math.max(0, children - remainingRegularSlots)
   const extraBedCeiling = room?.extra_bed_available
     ? (Number(room.extra_bed_max_qty) || 0) * roomsCount
     : 0
-  const extraBedsCount = Math.min(childrenOverflow, extraBedCeiling)
-  const extraBedPrice  = Number(room?.extra_bed_price) || 0
-  const extraBedSubtotal = extraBedsCount * extraBedPrice * nights
+  const extraBedsForAdults = room?.extra_bed_adults_allowed ? adultsOverflow : 0
+  const extraBedsCount     = Math.min(childrenOverflow + extraBedsForAdults, extraBedCeiling)
+  const extraBedPrice      = Number(room?.extra_bed_price) || 0
+  const extraBedSubtotal   = extraBedsCount * extraBedPrice * nights
 
   // Pricing model: STAYLO commission comes OUT OF the room price (10%).
   // Extra-bed line is added INTO the chargeable subtotal so commission applies
@@ -555,7 +561,9 @@ export default function Checkout() {
                   <div className="flex justify-between text-deep">
                     <span>
                       🛏️ Extra bed × {extraBedsCount} × {nights} {nights === 1 ? 'night' : 'nights'}
-                      <span className="text-gray-400 text-xs ml-1">({room.extra_bed_max_age || 10}y &amp; under)</span>
+                      <span className="text-gray-400 text-xs ml-1">
+                        ({room.extra_bed_adults_allowed ? 'adults OK' : `${room.extra_bed_max_age || 10}y & under`})
+                      </span>
                     </span>
                     <span>+${extraBedSubtotal.toFixed(2)}</span>
                   </div>

@@ -1420,6 +1420,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     extra_bed_max_qty:   1,
     extra_bed_price:     '',
     extra_bed_max_age:   10,
+    extra_bed_adults_allowed: false,
     communicating_rooms_available: false,
     communicating_with_room_id: '',
   })
@@ -1437,6 +1438,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     extra_bed_max_qty:   1,
     extra_bed_price:     '',
     extra_bed_max_age:   10,
+    extra_bed_adults_allowed: false,
     communicating_rooms_available: false,
     communicating_with_room_id: '',
   })
@@ -1475,6 +1477,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_max_qty:   src.extra_bed_max_qty || 1,
       extra_bed_price:     src.extra_bed_price ?? '',
       extra_bed_max_age:   src.extra_bed_max_age || 10,
+      extra_bed_adults_allowed: !!src.extra_bed_adults_allowed,
       communicating_rooms_available: !!src.communicating_rooms_available,
       communicating_with_room_id:    src.communicating_with_room_id || '',
     })
@@ -1497,6 +1500,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_max_qty:   room.extra_bed_max_qty || 1,
       extra_bed_price:     room.extra_bed_price ?? '',
       extra_bed_max_age:   room.extra_bed_max_age || 10,
+      extra_bed_adults_allowed: !!room.extra_bed_adults_allowed,
       communicating_rooms_available: !!room.communicating_rooms_available,
       communicating_with_room_id:    room.communicating_with_room_id || '',
     })
@@ -1531,6 +1535,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_max_qty:   Number(form.extra_bed_max_qty) || 1,
       extra_bed_price:     form.extra_bed_price ? Number(form.extra_bed_price) : null,
       extra_bed_max_age:   Number(form.extra_bed_max_age) || 10,
+      extra_bed_adults_allowed: !!form.extra_bed_adults_allowed,
       communicating_rooms_available: !!form.communicating_rooms_available,
       communicating_with_room_id:    form.communicating_with_room_id || null,
     }
@@ -1943,9 +1948,29 @@ function RoomEditFormCard({
                 </label>
                 <input type="number" min={0} max={17} value={form.extra_bed_max_age}
                   onChange={e => setForm(f => ({ ...f, extra_bed_max_age: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                  disabled={!!form.extra_bed_adults_allowed}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-100 disabled:text-gray-400" />
               </div>
             </div>
+          )}
+          {/* Adults-too toggle — for last-minute friends OR mobility-reduced
+              guests' accompanists. Disabled visually when extra-bed off. */}
+          {form.extra_bed_available && (
+            <label className="flex items-start gap-2 mt-3 pt-3 border-t border-electric/10 cursor-pointer">
+              <input type="checkbox"
+                checked={!!form.extra_bed_adults_allowed}
+                onChange={e => setForm(f => ({ ...f, extra_bed_adults_allowed: e.target.checked }))}
+                className="mt-0.5 accent-electric" />
+              <div className="text-xs">
+                <span className="font-bold text-deep">
+                  👥 {t('manage.extra_bed_adults', 'Allow adults on the extra bed too')}
+                </span>
+                <span className="block text-gray-500 mt-0.5">
+                  {t('manage.extra_bed_adults_hint',
+                    'For last-minute friends, OR a companion of a guest with reduced mobility (caregiver, accessibility helper). When checked, the age limit above becomes informational.')}
+                </span>
+              </div>
+            </label>
           )}
         </div>
 
