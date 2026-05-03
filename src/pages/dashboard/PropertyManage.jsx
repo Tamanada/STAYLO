@@ -2240,6 +2240,14 @@ function CalendarTab({ rooms }) {
 
   // Apply an upsert payload to all selected days in one round-trip.
   // Captures a pre-state snapshot so the user can Undo with one click.
+  //
+  // Special payload kinds:
+  //   - { add_special: {label, perk, min_stay} } → APPENDS to the day's
+  //     specials jsonb array (multiple rewards stack on the same day).
+  //   - { clear_specials: true } → wipes the array entirely.
+  //   - { remove_special_at: <index> } → removes the special at that
+  //     position in the array (single-day chip-click flow).
+  // Any other keys behave as before (direct column writes).
   async function bulkUpdate(payload, label) {
     if (selectedDays.size === 0) { alert('Select some days first.'); return }
     if (!confirm(`${label} for ${selectedDays.size} day${selectedDays.size > 1 ? 's' : ''}?`)) return
@@ -2254,24 +2262,44 @@ function CalendarTab({ rooms }) {
       before: existingByDate[d] ? { ...existingByDate[d] } : null,
     }))
 
+    // Pull the meta-actions out of the payload — they need per-row processing
+    const { add_special, clear_specials, remove_special_at, ...directWrites } = payload
+
     const updates = dates.filter(d => existingByDate[d])
     const inserts = dates.filter(d => !existingByDate[d])
 
     for (const d of updates) {
-      await supabase.from('room_availability').update(payload).eq('id', existingByDate[d].id)
+      const row = existingByDate[d]
+      const currentSpecials = Array.isArray(row.specials) ? row.specials : []
+      let nextSpecials = currentSpecials
+      if (clear_specials) {
+        nextSpecials = []
+      } else if (add_special) {
+        nextSpecials = [...currentSpecials, add_special]
+      } else if (typeof remove_special_at === 'number') {
+        nextSpecials = currentSpecials.filter((_, i) => i !== remove_special_at)
+      }
+      const rowPayload = (add_special || clear_specials || typeof remove_special_at === 'number')
+        ? { ...directWrites, specials: nextSpecials }
+        : directWrites
+      await supabase.from('room_availability').update(rowPayload).eq('id', row.id)
     }
     if (inserts.length > 0) {
+      // For brand-new (no existing row) days, the array starts empty
+      // unless we're inserting a special right away.
+      const startingSpecials = add_special ? [add_special] : []
       const rows = inserts.map(date => ({
         room_id: selectedRoom,
         date,
-        available_count: payload.is_blocked ? 0 : room.quantity,
-        is_blocked: payload.is_blocked ?? false,
-        price_override: payload.price_override ?? null,
-        min_stay: payload.min_stay ?? null,
-        promo_label: payload.promo_label ?? null,
-        promo_pct: payload.promo_pct ?? null,
-        perk: payload.perk ?? null,
-        internal_note: payload.internal_note ?? null,
+        available_count: directWrites.is_blocked ? 0 : room.quantity,
+        is_blocked: directWrites.is_blocked ?? false,
+        price_override: directWrites.price_override ?? null,
+        min_stay: directWrites.min_stay ?? null,
+        promo_label: directWrites.promo_label ?? null,
+        promo_pct: directWrites.promo_pct ?? null,
+        perk: directWrites.perk ?? null,
+        specials: startingSpecials,
+        internal_note: directWrites.internal_note ?? null,
       }))
       await supabase.from('room_availability').insert(rows)
     }
@@ -2297,6 +2325,7 @@ function CalendarTab({ rooms }) {
           promo_label:    before.promo_label,
           promo_pct:      before.promo_pct,
           perk:           before.perk,
+          specials:       before.specials ?? [],
           internal_note:  before.internal_note,
         }).eq('id', before.id)
       } else {
@@ -2521,6 +2550,13 @@ function CalendarTab({ rooms }) {
             const promoPct = avail?.promo_pct
             const perk = avail?.perk
             const internalNote = avail?.internal_note
+            // Stackable rewards (new model). Falls back to the legacy
+            // perk/promo_label single-reward when the array is empty,
+            // so existing days keep displaying until they're re-saved.
+            const specials = Array.isArray(avail?.specials) ? avail.specials : []
+            const visibleSpecials = specials.length > 0
+              ? specials
+              : (perk ? [{ label: promoLabel, perk }] : [])
             // Apply discount visually if any
             const priceAfterPromo = promoPct
               ? priceBrut * (1 - Number(promoPct) / 100)
@@ -2560,20 +2596,28 @@ function CalendarTab({ rooms }) {
                   )}
                 </div>
 
-                {/* Middle row — chips for perk / discount / min stay / note.
-                    Reward (perk) shown in green/golden, discount in orange. */}
-                {!isPast && (perk || promoPct || promoLabel || minStay || internalNote) && (
+                {/* Middle row — chips for ALL rewards (stackable) + discount + min stay + note.
+                    Each reward shows as its own 🎁 chip; hover for label+perk. */}
+                {!isPast && (visibleSpecials.length > 0 || promoPct || promoLabel || minStay || internalNote) && (
                   <div className="flex flex-wrap gap-1 mt-1 mb-1">
-                    {perk && (
-                      <span className="text-[9px] font-bold px-1 rounded bg-libre/15 text-libre" title={`${promoLabel ? promoLabel + ' — ' : ''}${perk}`}>
-                        🎁
+                    {visibleSpecials.slice(0, 3).map((sp, i) => (
+                      <span key={i}
+                        className="text-[9px] font-bold px-1 rounded bg-libre/15 text-libre"
+                        title={`${sp.label ? sp.label + ' — ' : ''}${sp.perk || ''}${sp.min_stay ? ` · min ${sp.min_stay} nights` : ''}`}>
+                        🎁{visibleSpecials.length > 1 ? <sup className="ml-0.5 text-[7px]">{i + 1}</sup> : ''}
+                      </span>
+                    ))}
+                    {visibleSpecials.length > 3 && (
+                      <span className="text-[9px] font-bold px-1 rounded bg-libre/10 text-libre/80"
+                        title={visibleSpecials.slice(3).map(s => s.label).join(' · ')}>
+                        +{visibleSpecials.length - 3}
                       </span>
                     )}
                     {promoPct ? (
                       <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange" title={promoLabel || 'Discount'}>
                         −{Number(promoPct).toFixed(0)}%
                       </span>
-                    ) : (promoLabel && !perk) ? (
+                    ) : (promoLabel && visibleSpecials.length === 0) ? (
                       <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange" title={promoLabel}>
                         🏷️
                       </span>

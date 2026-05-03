@@ -54,15 +54,16 @@ export default function RewardModal({ open, onClose, onApply, selectedCount }) {
   function handleApply() {
     if (mode === 'reward') {
       if (!selectedOption) return
-      const payload = {
-        promo_label: labelOverride.trim() || selectedOption.label,
-        perk: perkOverride.trim() || selectedOption.perk,
-        promo_pct: null,
-      }
+      // NEW: emit `add_special` instead of replacing perk/promo_label.
+      // bulkUpdate() in PropertyManage detects this and APPENDS the special
+      // to the existing specials array → multiple rewards stack on a day.
       const ms = minStayOverride.trim() ? Number(minStayOverride) : selectedOption.minStay ?? null
-      if (ms && ms >= 1) payload.min_stay = ms
-      else payload.min_stay = null
-      onApply(payload, `Apply reward "${payload.promo_label}"`)
+      const special = {
+        label:    labelOverride.trim() || selectedOption.label,
+        perk:     perkOverride.trim()  || selectedOption.perk,
+        ...(ms && ms >= 1 ? { min_stay: ms } : {}),
+      }
+      onApply({ add_special: special }, `Add reward "${special.label}"`)
     } else {
       const pct = Number(discountPct)
       if (!isFinite(pct) || pct <= 0 || pct > 100) {
@@ -72,15 +73,20 @@ export default function RewardModal({ open, onClose, onApply, selectedCount }) {
       onApply({
         promo_label: discountLabel.trim() || DISCOUNT_PRESETS[discountIdx].label,
         promo_pct: pct,
-        perk: null,
       }, `Apply ${pct}% rate "${discountLabel || DISCOUNT_PRESETS[discountIdx].label}"`)
     }
     onClose()
   }
 
   function handleClear() {
-    if (!confirm(`Clear reward & discount on ${selectedCount} selected day${selectedCount > 1 ? 's' : ''}?`)) return
-    onApply({ promo_label: null, perk: null, promo_pct: null, min_stay: null }, 'Clear reward / discount')
+    if (!confirm(`Clear ALL rewards & discount on ${selectedCount} selected day${selectedCount > 1 ? 's' : ''}?`)) return
+    onApply({
+      clear_specials: true,        // wipes the specials array
+      promo_label: null,
+      perk: null,
+      promo_pct: null,
+      min_stay: null,
+    }, 'Clear all rewards / discount')
     onClose()
   }
 
