@@ -491,11 +491,26 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     special_requests: '',
   })
   // Per-guest registry (TM30 compliance + ops). Auto-resized to adults+children.
-  // Each entry: { first_name, last_name, nationality, passport_number, is_child }
-  // The first entry is always the lead (booker).
-  const [guests, setGuests] = useState([
-    { first_name: '', last_name: '', nationality: '', passport_number: '', is_child: false },
-  ])
+  // Each entry covers EVERY field Thai Immigration TM30 requires.
+  // The first entry is always the lead (booker). See docs/TM30_COMPLIANCE.md.
+  const blankGuest = () => ({
+    first_name:               '',
+    last_name:                '',
+    sex:                      '',           // M / F / X
+    nationality:              '',
+    date_of_birth:            '',
+    passport_number:          '',
+    travel_doc_type:          'passport',
+    thailand_arrival_date:    '',           // when they entered the country
+    thailand_port_of_entry:   '',           // BKK, DMK, HKT...
+    visa_type:                '',
+    visa_number:              '',
+    is_child:                 false,
+  })
+  const [guests, setGuests] = useState([blankGuest()])
+  // Per-guest "show TM30 details" toggle — collapsed by default to keep the
+  // form short for domestic guests, expanded when nationality is non-Thai.
+  const [tm30Open, setTm30Open] = useState({})
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -508,14 +523,13 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     const totalChildren = Math.max(0, Number(form.children) || 0)
     setGuests(prev => {
       const next = []
-      // Re-fill adults from existing adult entries first
       const existingAdults   = prev.filter(g => !g.is_child)
       const existingChildren = prev.filter(g =>  g.is_child)
       for (let i = 0; i < totalAdults; i++) {
-        next.push(existingAdults[i] || { first_name: '', last_name: '', nationality: '', passport_number: '', is_child: false })
+        next.push(existingAdults[i] || { ...blankGuest(), is_child: false })
       }
       for (let i = 0; i < totalChildren; i++) {
-        next.push(existingChildren[i] || { first_name: '', last_name: '', nationality: '', passport_number: '', is_child: true })
+        next.push(existingChildren[i] || { ...blankGuest(), is_child: true })
       }
       return next
     })
@@ -633,14 +647,21 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     // them in later via the booking detail page.
     const guestRows = guests
       .map((g, i) => ({
-        booking_id:      inserted.id,
-        first_name:      g.first_name?.trim() || '',
-        last_name:       g.last_name?.trim() || null,
-        nationality:     g.nationality?.trim().toUpperCase() || null,
-        passport_number: g.passport_number?.trim() || null,
-        is_lead:         i === 0,
-        is_child:        !!g.is_child,
-        created_by:      userId,
+        booking_id:               inserted.id,
+        first_name:               g.first_name?.trim() || '',
+        last_name:                g.last_name?.trim() || null,
+        sex:                      g.sex || null,
+        nationality:              g.nationality?.trim().toUpperCase() || null,
+        date_of_birth:            g.date_of_birth || null,
+        passport_number:          g.passport_number?.trim() || null,
+        travel_doc_type:          g.travel_doc_type || 'passport',
+        thailand_arrival_date:    g.thailand_arrival_date || null,
+        thailand_port_of_entry:   g.thailand_port_of_entry?.trim().toUpperCase() || null,
+        visa_type:                g.visa_type || null,
+        visa_number:              g.visa_number?.trim() || null,
+        is_lead:                  i === 0,
+        is_child:                 !!g.is_child,
+        created_by:               userId,
       }))
       .filter(g => g.first_name)        // skip blanks
     if (guestRows.length > 0) {
@@ -729,64 +750,164 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
             <span className="text-gray-300 font-normal normal-case ml-1.5">— {guests.length} {guests.length === 1 ? 'person' : 'people'}, TM30 compliant</span>
           </h4>
           <button type="button"
-            onClick={() => setGuests(g => [...g, { first_name: '', last_name: '', nationality: '', passport_number: '', is_child: false }])}
+            onClick={() => setGuests(g => [...g, blankGuest()])}
             className="text-[11px] font-bold text-ocean hover:text-electric flex items-center gap-1">
             + Add another
           </button>
         </div>
 
-        {guests.map((g, idx) => (
-          <div key={idx} className="grid grid-cols-12 gap-1.5 items-start bg-white p-2 rounded-lg border border-gray-100">
-            <div className="col-span-1 flex items-center justify-center text-[10px] font-bold text-gray-400 pt-2.5">
-              {idx === 0 ? '👤' : g.is_child ? '👶' : '👤'}
-              <span className="ml-0.5">{idx + 1}</span>
+        {guests.map((g, idx) => {
+          // Auto-flag non-Thai non-children as needing TM30 (we still allow opt-in for everyone)
+          const needsTM30 = !g.is_child && g.nationality && g.nationality.toUpperCase() !== 'TH'
+          const isOpen   = tm30Open[idx] ?? needsTM30
+          return (
+          <div key={idx} className="bg-white rounded-lg border border-gray-100">
+            {/* Top row — basics: name / nat / passport */}
+            <div className="grid grid-cols-12 gap-1.5 items-start p-2">
+              <div className="col-span-1 flex items-center justify-center text-[10px] font-bold text-gray-400 pt-2.5">
+                {idx === 0 ? '👤' : g.is_child ? '👶' : '👤'}
+                <span className="ml-0.5">{idx + 1}</span>
+              </div>
+              <div className="col-span-3">
+                <input type="text" value={g.first_name}
+                  onChange={e => updateGuest(idx, 'first_name', e.target.value)}
+                  placeholder={idx === 0 ? 'First name *' : 'First name'}
+                  autoFocus={idx === 0}
+                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+              </div>
+              <div className="col-span-3">
+                <input type="text" value={g.last_name}
+                  onChange={e => updateGuest(idx, 'last_name', e.target.value)}
+                  placeholder="Last name"
+                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+              </div>
+              <div className="col-span-2">
+                <input type="text" value={g.nationality}
+                  onChange={e => updateGuest(idx, 'nationality', e.target.value.toUpperCase().slice(0, 2))}
+                  placeholder="FR / TH"
+                  maxLength={2}
+                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+              </div>
+              <div className="col-span-2">
+                <input type="text" value={g.passport_number}
+                  onChange={e => updateGuest(idx, 'passport_number', e.target.value)}
+                  placeholder={g.is_child ? 'opt.' : 'Passport #'}
+                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+              </div>
+              <div className="col-span-1 flex items-center justify-end pt-1.5 gap-1">
+                {idx > 0 && (
+                  <>
+                    <button type="button" onClick={() => updateGuest(idx, 'is_child', !g.is_child)}
+                      className="text-[9px] text-gray-400 hover:text-electric font-medium"
+                      title={g.is_child ? 'Mark as adult' : 'Mark as child'}>
+                      {g.is_child ? 'A' : 'C'}
+                    </button>
+                    <button type="button"
+                      onClick={() => setGuests(arr => arr.filter((_, i) => i !== idx))}
+                      className="text-gray-300 hover:text-sunset text-base leading-none px-1"
+                      title="Remove this guest">×</button>
+                  </>
+                )}
+              </div>
             </div>
-            <div className="col-span-3">
-              <input type="text" value={g.first_name}
-                onChange={e => updateGuest(idx, 'first_name', e.target.value)}
-                placeholder={idx === 0 ? 'First name *' : 'First name'}
-                autoFocus={idx === 0}
-                className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-            </div>
-            <div className="col-span-3">
-              <input type="text" value={g.last_name}
-                onChange={e => updateGuest(idx, 'last_name', e.target.value)}
-                placeholder="Last name"
-                className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-            </div>
-            <div className="col-span-2">
-              <input type="text" value={g.nationality}
-                onChange={e => updateGuest(idx, 'nationality', e.target.value.toUpperCase().slice(0, 2))}
-                placeholder="FR / TH"
-                maxLength={2}
-                className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-            </div>
-            <div className="col-span-2">
-              <input type="text" value={g.passport_number}
-                onChange={e => updateGuest(idx, 'passport_number', e.target.value)}
-                placeholder={g.is_child ? 'opt.' : 'Passport #'}
-                className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-            </div>
-            <div className="col-span-1 flex items-center justify-end pt-1.5 gap-1">
-              {idx > 0 && (
-                <>
-                  <button type="button" onClick={() => updateGuest(idx, 'is_child', !g.is_child)}
-                    className="text-[9px] text-gray-400 hover:text-electric font-medium"
-                    title={g.is_child ? 'Mark as adult' : 'Mark as child'}>
-                    {g.is_child ? 'A' : 'C'}
-                  </button>
-                  <button type="button"
-                    onClick={() => setGuests(arr => arr.filter((_, i) => i !== idx))}
-                    className="text-gray-300 hover:text-sunset text-base leading-none px-1"
-                    title="Remove this guest">×</button>
-                </>
-              )}
-            </div>
+
+            {/* TM30 details toggle — auto-opens for foreign adults */}
+            <button type="button"
+              onClick={() => setTm30Open(s => ({ ...s, [idx]: !isOpen }))}
+              className={`w-full text-left px-3 py-1 text-[10px] font-bold uppercase tracking-wider border-t flex items-center justify-between ${
+                isOpen ? 'bg-ocean/5 text-ocean border-ocean/15' : 'bg-gray-50 text-gray-400 hover:text-gray-600 border-gray-100'
+              }`}>
+              <span>{isOpen ? '▾' : '▸'} TM30 immigration details {needsTM30 && !isOpen ? '· required for foreign guests' : ''}</span>
+              <span className="text-[9px] normal-case font-normal opacity-60">
+                {[g.sex, g.date_of_birth, g.thailand_arrival_date, g.visa_type, g.visa_number].filter(Boolean).length} / 5 filled
+              </span>
+            </button>
+
+            {/* Expanded TM30 fields */}
+            {isOpen && (
+              <div className="grid grid-cols-12 gap-1.5 p-2 pt-1 bg-ocean/5">
+                {/* Sex */}
+                <div className="col-span-2">
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Sex</label>
+                  <select value={g.sex || ''}
+                    onChange={e => updateGuest(idx, 'sex', e.target.value)}
+                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30">
+                    <option value="">—</option>
+                    <option value="M">M</option>
+                    <option value="F">F</option>
+                    <option value="X">X</option>
+                  </select>
+                </div>
+                {/* DOB */}
+                <div className="col-span-2">
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Date of birth</label>
+                  <input type="date" value={g.date_of_birth || ''}
+                    onChange={e => updateGuest(idx, 'date_of_birth', e.target.value)}
+                    max={new Date().toISOString().slice(0, 10)}
+                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                </div>
+                {/* Travel doc type */}
+                <div className="col-span-2">
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">ID type</label>
+                  <select value={g.travel_doc_type || 'passport'}
+                    onChange={e => updateGuest(idx, 'travel_doc_type', e.target.value)}
+                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30">
+                    <option value="passport">Passport</option>
+                    <option value="national_id">National ID</option>
+                    <option value="border_pass">Border pass</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                {/* Thailand arrival date */}
+                <div className="col-span-3">
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Arrived in Thailand on</label>
+                  <input type="date" value={g.thailand_arrival_date || ''}
+                    onChange={e => updateGuest(idx, 'thailand_arrival_date', e.target.value)}
+                    max={form.check_in}
+                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                </div>
+                {/* Port of entry */}
+                <div className="col-span-3">
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Port of entry</label>
+                  <input type="text" value={g.thailand_port_of_entry || ''}
+                    onChange={e => updateGuest(idx, 'thailand_port_of_entry', e.target.value.toUpperCase().slice(0, 12))}
+                    placeholder="BKK / DMK / HKT / CNX"
+                    maxLength={12}
+                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs uppercase font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                </div>
+                {/* Visa type */}
+                <div className="col-span-3">
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Visa type</label>
+                  <select value={g.visa_type || ''}
+                    onChange={e => updateGuest(idx, 'visa_type', e.target.value)}
+                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30">
+                    <option value="">—</option>
+                    <option value="exempt">Exempt (visa-on-arrival)</option>
+                    <option value="TR">TR (Tourist)</option>
+                    <option value="TR-VOA">TR-VOA</option>
+                    <option value="NON-B">NON-B (Business)</option>
+                    <option value="NON-O">NON-O (Other)</option>
+                    <option value="ED">ED (Education)</option>
+                    <option value="RETIRE">Retirement</option>
+                    <option value="DTV">DTV (Digital Nomad)</option>
+                    <option value="LTR">LTR (Long-Term Resident)</option>
+                  </select>
+                </div>
+                {/* Visa number */}
+                <div className="col-span-3">
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Visa number</label>
+                  <input type="text" value={g.visa_number || ''}
+                    onChange={e => updateGuest(idx, 'visa_number', e.target.value)}
+                    placeholder="from sticker"
+                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                </div>
+              </div>
+            )}
           </div>
-        ))}
+        )})}
 
         <p className="text-[10px] text-gray-400 italic">
-          ID #1 = lead booker. Nationality = 2-letter code (FR, TH, US, GB...). Passport optional for children.
+          ID #1 = lead booker. Nationality = 2-letter code (FR, TH, US, GB...). TM30 details auto-opens for foreign guests, optional for Thais.
         </p>
       </div>
 
