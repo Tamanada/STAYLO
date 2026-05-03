@@ -128,16 +128,16 @@
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    gap: 32px;
-    margin: 28px 0;
-    padding: 16px 0;
+    gap: 24px;
+    margin: 16px 0 8px;
+    padding: 8px 0;
   }
-  .loss-blocks { display: flex; gap: 6px; justify-content: flex-end; }
+  .loss-blocks { display: flex; gap: 5px; justify-content: flex-end; }
   .loss-block {
-    width: 56px; height: 56px;
+    width: 46px; height: 46px;
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 18px; color: white;
+    font-weight: 900; font-size: 16px; color: white;
     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
   }
   .loss-block.keep {
@@ -158,30 +158,31 @@
   }
   .loss-fraction {
     font-weight: 900;
-    font-size: 130px;
+    font-size: 110px;
     line-height: 1;
     letter-spacing: -4px;
     background: var(--grad);
     -webkit-background-clip: text; background-clip: text; color: transparent;
     text-align: center;
-    padding: 0 8px;
+    padding: 0 4px;
   }
   .loss-text {
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1.35;
     color: #444;
   }
-  .loss-text strong { color: var(--deep); display: block; font-size: 22px; margin-bottom: 4px; }
-  .loss-text .small-note { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .loss-text strong { color: var(--deep); display: block; font-size: 19px; margin-bottom: 4px; }
+  .loss-text .small-note { font-size: 12px; color: var(--muted); margin-top: 4px; }
 
   /* Pull-quote / callout band */
   .callout {
     margin-top: auto;
-    padding: 22px 28px;
+    margin-bottom: 36px;       /* clears the absolute-positioned footer-url */
+    padding: 18px 24px;
     border-radius: 16px;
     background: linear-gradient(90deg, rgba(255,107,0,0.08), rgba(233,30,99,0.06));
     border-left: 5px solid var(--orange);
-    font-size: 22px; font-weight: 700; color: var(--deep); line-height: 1.4;
+    font-size: 20px; font-weight: 700; color: var(--deep); line-height: 1.4;
   }
   .callout .small { display: block; margin-top: 6px; font-weight: 400; color: var(--muted); }
 
@@ -203,6 +204,57 @@
     border-bottom: none; font-weight: 900; font-size: 22px;
   }
   table.compare tr.gain td { background: rgba(22,163,74,0.08); color: var(--green); font-size: 24px; }
+
+  /* Multi-OTA comparison table (slide 7) — Booking | Agoda | Airbnb | STAYLO */
+  table.compare-multi {
+    width: 100%; border-collapse: separate; border-spacing: 0;
+    margin-top: 28px;
+    font-size: 16px;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  table.compare-multi th, table.compare-multi td {
+    padding: 14px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+  }
+  table.compare-multi th:first-child, table.compare-multi td:first-child {
+    text-align: left;
+    font-weight: 600;
+    color: var(--deep);
+    background: rgba(0,0,0,0.02);
+    width: 28%;
+  }
+  table.compare-multi th {
+    font-weight: 800; font-size: 13px;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--muted);
+    background: white;
+    padding-top: 18px; padding-bottom: 18px;
+  }
+  table.compare-multi td.them {
+    color: #c0392b;
+    font-weight: 600;
+  }
+  table.compare-multi td.x {
+    color: #c0392b;
+    font-size: 20px;
+    font-weight: 800;
+  }
+  /* STAYLO column highlighted */
+  table.compare-multi th.staylo,
+  table.compare-multi td.staylo {
+    background: linear-gradient(180deg, rgba(22,163,74,0.10), rgba(22,163,74,0.05));
+    color: var(--green);
+    font-weight: 800;
+    border-left: 2px solid rgba(22,163,74,0.3);
+  }
+  table.compare-multi th.staylo {
+    color: var(--green);
+    font-size: 14px;
+  }
+  table.compare-multi tr:last-child td { border-bottom: none; }
 
   /* Donut chart (pure CSS for slide 3) */
   .donut-wrap { display: flex; gap: 48px; align-items: center; margin-top: 40px; }
@@ -436,7 +488,7 @@
     <div style="text-align: center;">
       <div style="width: 80px; height: 80px; background: var(--grad); border-radius: 20px; color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 900;">3</div>
       <h3 style="margin-top: 20px;">Get bookings, keep 90%</h3>
-      <p class="small" style="margin-top: 8px;">Payouts every Friday in fiat or Bitcoin. Direct guest contact, real email — no aggregator middleman.</p>
+      <p class="small" style="margin-top: 8px;"><strong>Payout 72h max after check-out</strong> — fiat or Bitcoin. Direct guest contact, real email — no aggregator middleman.</p>
     </div>
   </div>
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
@@ -493,16 +545,71 @@
      SLIDE 7 — DIFFERENTIATION
      ============================================================ -->
 <section class="slide" data-page="7">
-  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">What makes STAYLO different</h2>
+  <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">Side by side</h2>
   <h1 class="tight">Not just <span class="gradient">another OTA.</span></h1>
-  <ul class="bullets" style="margin-top: 28px;">
-    <li><span class="ico">✓</span><div><strong>You're a shareholder, not a supplier</strong> — vote, get profit share</div></li>
-    <li><span class="ico">✓</span><div><strong>10% locked for life</strong> — Booking has raised commissions every year since 2010</div></li>
-    <li><span class="ico">✓</span><div><strong>No bidding wars on your brand</strong> — STAYLO never buys ads against your hotel name on Google</div></li>
-    <li><span class="ico">✓</span><div><strong>Direct guest contact</strong> — real email, not a forwarding address</div></li>
-    <li><span class="ico">✓</span><div><strong>Open source</strong> — code public on github.com/Tamanada/STAYLO</div></li>
-    <li><span class="ico">✓</span><div><strong>Bitcoin payouts</strong> — instant settlement, no FX fees, no Friday-bank-delay</div></li>
-  </ul>
+
+  <table class="compare-multi">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Booking.com</th>
+        <th>Agoda</th>
+        <th>Airbnb</th>
+        <th class="staylo">STAYLO ✓</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Commission rate</td>
+        <td class="them">17–22%</td>
+        <td class="them">17%</td>
+        <td class="them">15%</td>
+        <td class="staylo">10% locked forever</td>
+      </tr>
+      <tr>
+        <td>Co-ownership</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo">Real shares ✓</td>
+      </tr>
+      <tr>
+        <td>Governance vote</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo">1 property = 1 vote ✓</td>
+      </tr>
+      <tr>
+        <td>Annual dividends</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo">20% net profit ✓</td>
+      </tr>
+      <tr>
+        <td>Token rewards</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo">$STAY per night ✓</td>
+      </tr>
+      <tr>
+        <td>Payout delay</td>
+        <td class="them">Monthly</td>
+        <td class="them">15 days</td>
+        <td class="them">24h after check-in</td>
+        <td class="staylo">72h max after check-out ✓</td>
+      </tr>
+      <tr>
+        <td>Commission can rise?</td>
+        <td class="them">Yes — every year</td>
+        <td class="them">Yes</td>
+        <td class="them">Yes</td>
+        <td class="staylo">Only if 90% vote ✓</td>
+      </tr>
+    </tbody>
+  </table>
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
 </section>
 
