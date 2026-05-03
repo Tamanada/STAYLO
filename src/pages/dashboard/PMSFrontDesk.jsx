@@ -478,6 +478,14 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     return d.toISOString().split('T')[0]
   })()
 
+  // Caps from the room's published config — receptionist can't overbook
+  // a room beyond its physical capacity. Extra beds extend it for kids only.
+  const maxAdults    = Math.max(1, Number(room.max_guests) || 1)
+  const extraBedAvail = !!room.extra_bed_available
+  const maxExtraBeds = extraBedAvail ? (Number(room.extra_bed_max_qty) || 1) : 0
+  const extraBedPrice = Number(room.extra_bed_price) || 0
+  const extraBedMaxAge = Number(room.extra_bed_max_age) || 10
+
   const [form, setForm] = useState({
     guest_name: '',
     guest_phone: '',
@@ -486,6 +494,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     check_out: tomorrow,
     adults: 1,
     children: 0,
+    extra_beds: 0,
     rate: room.base_price ? String(room.base_price) : '',
     payment_method: 'manual',  // walk-ins typically pay cash / direct
     special_requests: '',
@@ -557,8 +566,11 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     const diff = Math.round((b - a) / 86400000)
     return diff > 0 ? diff : 0
   }, [form.check_in, form.check_out])
-  const totalPrice = nights * (Number(form.rate) || 0)
-  const commission = totalPrice * 0.10
+  // Price breakdown: room nights + extra bed nights (kids only)
+  const roomSubtotal     = nights * (Number(form.rate) || 0)
+  const extraBedSubtotal = nights * (Number(form.extra_beds) || 0) * extraBedPrice
+  const totalPrice       = roomSubtotal + extraBedSubtotal
+  const commission       = totalPrice * 0.10
 
   // Conflict check — count overlapping ACTIVE bookings on each day in the
   // requested range. Refuse only when a day already has room.quantity
@@ -615,6 +627,8 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
       guests:         Number(form.adults) + Number(form.children),
       adults:         Number(form.adults),
       children:       Number(form.children),
+      extra_beds_count:   Number(form.extra_beds) || 0,
+      extra_bed_subtotal: Number(extraBedSubtotal.toFixed(2)),
       total_price:    Number(totalPrice.toFixed(2)),
       commission:     Number(commission.toFixed(2)),
       currency:       'USD',
@@ -723,14 +737,30 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
             min={form.check_in}
             className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </Field>
-        <Field label={t('pms.adults', 'Adults')}>
-          <input type="number" min={1} max={20} value={form.adults} onChange={e => set('adults', e.target.value)}
+        <Field label={`${t('pms.adults', 'Adults')} (max ${maxAdults})`}>
+          <input type="number" min={1} max={maxAdults} value={form.adults}
+            onChange={e => {
+              const n = Number(e.target.value) || 1
+              // Hard cap — receptionist can't overbook the room's physical capacity
+              set('adults', Math.min(maxAdults, Math.max(1, n)))
+            }}
             className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </Field>
         <Field label={t('pms.children', 'Children')}>
-          <input type="number" min={0} max={20} value={form.children} onChange={e => set('children', e.target.value)}
+          <input type="number" min={0} max={20} value={form.children}
+            onChange={e => set('children', Math.max(0, Number(e.target.value) || 0))}
             className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </Field>
+        {extraBedAvail && (
+          <Field label={`Extra beds (kids ≤ ${extraBedMaxAge}y)`}>
+            <input type="number" min={0} max={maxExtraBeds} value={form.extra_beds}
+              onChange={e => set('extra_beds', Math.min(maxExtraBeds, Math.max(0, Number(e.target.value) || 0)))}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+            <span className="text-[10px] text-gray-400 block mt-0.5">
+              +${extraBedPrice.toFixed(0)}/night each · max {maxExtraBeds}
+            </span>
+          </Field>
+        )}
         <Field label={t('pms.rate_per_night', 'Rate per night (USD)')}>
           <input type="number" min={1} step="0.01" value={form.rate} onChange={e => set('rate', e.target.value)}
             className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
@@ -920,12 +950,22 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
       {/* Live total + commission breakdown */}
       <div className="p-3 bg-libre/5 border border-libre/15 rounded-xl space-y-1 text-sm">
         <div className="flex justify-between text-gray-600">
-          <span>{nights} {nights === 1 ? 'night' : 'nights'} × ${Number(form.rate || 0).toFixed(2)}</span>
-          <span className="font-bold">${totalPrice.toFixed(2)}</span>
+          <span>Room: {nights} {nights === 1 ? 'night' : 'nights'} × ${Number(form.rate || 0).toFixed(2)}</span>
+          <span className="font-medium">${roomSubtotal.toFixed(2)}</span>
+        </div>
+        {form.extra_beds > 0 && (
+          <div className="flex justify-between text-gray-600">
+            <span>Extra beds: {nights} × {form.extra_beds} × ${extraBedPrice.toFixed(2)}</span>
+            <span className="font-medium">${extraBedSubtotal.toFixed(2)}</span>
+          </div>
+        )}
+        <div className="flex justify-between font-bold pt-1 border-t border-libre/15">
+          <span>Total guest pays</span>
+          <span>${totalPrice.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-xs text-gray-400">
           <span>STAYLO commission (10%)</span>
-          <span>${commission.toFixed(2)}</span>
+          <span>−${commission.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-xs text-libre font-bold pt-1 border-t border-libre/15">
           <span>You receive (paid directly)</span>

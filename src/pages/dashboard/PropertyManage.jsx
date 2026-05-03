@@ -1415,14 +1415,31 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     name: '', description: '', type: 'standard', max_guests: 2,
     bed_type: 'double', base_price: '', quantity: 1, amenities: [],
     pricing_unit: 'room',
+    // Extra bed config (kids only, see migration 20260503050000)
+    extra_bed_available: false,
+    extra_bed_max_qty:   1,
+    extra_bed_price:     '',
+    extra_bed_max_age:   10,
   })
   // Carry photo/video URLs from a source room when "Copy from..." is used.
   // Stored separately because handleSave's regular flow doesn't touch media.
   const [copiedMedia, setCopiedMedia] = useState({ photo_urls: [], video_urls: [] })
 
+  // Helper — keeps the blank form definition in one place so we don't
+  // forget to add new fields in two places.
+  const blankRoomForm = () => ({
+    name: '', description: '', type: 'standard', max_guests: 2,
+    bed_type: 'double', base_price: '', quantity: 1, amenities: [],
+    pricing_unit: 'room',
+    extra_bed_available: false,
+    extra_bed_max_qty:   1,
+    extra_bed_price:     '',
+    extra_bed_max_age:   10,
+  })
+
   function openAdd() {
     setEditingRoom(null)
-    setForm({ name: '', description: '', type: 'standard', max_guests: 2, bed_type: 'double', base_price: '', quantity: 1, amenities: [], pricing_unit: 'room' })
+    setForm(blankRoomForm())
     setCopiedMedia({ photo_urls: [], video_urls: [] })
     setShowForm(true)
   }
@@ -1433,14 +1450,14 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
   // The hotelier can re-upload independent media later from the Edit form.
   function copyFromRoom(sourceRoomId) {
     if (!sourceRoomId) {
-      // Reset to blank
-      setForm({ name: '', description: '', type: 'standard', max_guests: 2, bed_type: 'double', base_price: '', quantity: 1, amenities: [], pricing_unit: 'room' })
+      setForm(blankRoomForm())
       setCopiedMedia({ photo_urls: [], video_urls: [] })
       return
     }
     const src = rooms.find(r => r.id === sourceRoomId)
     if (!src) return
     setForm({
+      ...blankRoomForm(),
       name: `${src.name} (copy)`,
       description: src.description || '',
       type: src.type,
@@ -1449,6 +1466,11 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       base_price: src.base_price,
       quantity: src.quantity,
       amenities: [...(src.amenities || [])],
+      pricing_unit: src.pricing_unit || 'room',
+      extra_bed_available: !!src.extra_bed_available,
+      extra_bed_max_qty:   src.extra_bed_max_qty || 1,
+      extra_bed_price:     src.extra_bed_price ?? '',
+      extra_bed_max_age:   src.extra_bed_max_age || 10,
     })
     setCopiedMedia({
       photo_urls: [...(src.photo_urls || [])],
@@ -1459,11 +1481,16 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
   function openEdit(room) {
     setEditingRoom(room)
     setForm({
+      ...blankRoomForm(),
       name: room.name, description: room.description || '', type: room.type,
       max_guests: room.max_guests, bed_type: room.bed_type,
       base_price: room.base_price, quantity: room.quantity,
       amenities: room.amenities || [],
       pricing_unit: room.pricing_unit || 'room',
+      extra_bed_available: !!room.extra_bed_available,
+      extra_bed_max_qty:   room.extra_bed_max_qty || 1,
+      extra_bed_price:     room.extra_bed_price ?? '',
+      extra_bed_max_age:   room.extra_bed_max_age || 10,
     })
     setShowForm(true)
   }
@@ -1492,6 +1519,10 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       quantity: Number(form.quantity),
       amenities: form.amenities,
       pricing_unit: form.pricing_unit || 'room',
+      extra_bed_available: !!form.extra_bed_available,
+      extra_bed_max_qty:   Number(form.extra_bed_max_qty) || 1,
+      extra_bed_price:     form.extra_bed_price ? Number(form.extra_bed_price) : null,
+      extra_bed_max_age:   Number(form.extra_bed_max_age) || 10,
     }
 
     if (editingRoom) {
@@ -1803,6 +1834,52 @@ function RoomEditFormCard({
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
           />
         </div>
+
+        {/* ───── Extra bed (kid only) configuration ───── */}
+        <div className="sm:col-span-2 p-4 rounded-xl bg-electric/5 border border-electric/15">
+          <label className="flex items-center gap-2 cursor-pointer mb-2">
+            <input type="checkbox"
+              checked={!!form.extra_bed_available}
+              onChange={e => setForm(f => ({ ...f, extra_bed_available: e.target.checked }))}
+              className="w-4 h-4 accent-electric" />
+            <span className="text-sm font-bold text-deep">
+              🛏️ {t('manage.extra_bed_offer', 'Offer extra beds for children')}
+            </span>
+            <span className="text-[11px] text-gray-400 ml-auto">
+              {t('manage.extra_bed_hint', 'Roll-away bed billed per night, kids only')}
+            </span>
+          </label>
+          {form.extra_bed_available && (
+            <div className="grid grid-cols-3 gap-3 mt-2">
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                  {t('manage.extra_bed_max_qty', 'Max extra beds')}
+                </label>
+                <input type="number" min={1} max={5} value={form.extra_bed_max_qty}
+                  onChange={e => setForm(f => ({ ...f, extra_bed_max_qty: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                  {t('manage.extra_bed_price', 'Price/night (USD)')}
+                </label>
+                <input type="number" min={0} step="0.01" value={form.extra_bed_price}
+                  onChange={e => setForm(f => ({ ...f, extra_bed_price: e.target.value }))}
+                  placeholder="e.g. 15"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                  {t('manage.extra_bed_max_age', 'Max child age')}
+                </label>
+                <input type="number" min={0} max={17} value={form.extra_bed_max_age}
+                  onChange={e => setForm(f => ({ ...f, extra_bed_max_age: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="sm:col-span-2 space-y-4">
           <label className="block text-xs font-medium text-gray-500">{t('manage.amenities', 'Amenities')}</label>
           {AMENITY_CATEGORIES.map(cat => (
