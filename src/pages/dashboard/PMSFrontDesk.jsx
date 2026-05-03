@@ -460,13 +460,19 @@ function CalendarStrip({ room, bookings }) {
   )
 }
 
-// One row of the upcoming-bookings list. Click to expand a QR code that
-// guests scan to self-register their TM30 / passport info on this booking.
+// One row of the upcoming-bookings list. Click to expand TWO QR codes:
+//   - Check-in QR  → guests register themselves (TM30 / passport)
+//   - Check-out QR → guests submit the stay survey (drives escrow release)
 function BookingRow({ booking }) {
   const [open, setOpen] = useState(false)
-  const checkinUrl = `https://staylo.app/checkin/${booking.check_in_token}`
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(checkinUrl)}&size=240x240&margin=2&color=2D3436&bgcolor=FFFFFF`
+  const [tab, setTab] = useState('checkin')   // 'checkin' | 'checkout'
   const capacity = (booking.adults || 1) + (booking.children || 0) + (booking.extra_beds_count || 0)
+
+  // Build URL + QR src for whichever tab is active
+  const isCheckout = tab === 'checkout'
+  const url   = `https://staylo.app/${isCheckout ? 'checkout' : 'checkin'}/${isCheckout ? booking.check_out_token : booking.check_in_token}`
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}&size=240x240&margin=2&color=2D3436&bgcolor=FFFFFF`
+  const tokenAvailable = isCheckout ? !!booking.check_out_token : !!booking.check_in_token
 
   return (
     <div className="rounded-lg bg-gray-50 overflow-hidden">
@@ -475,6 +481,12 @@ function BookingRow({ booking }) {
         <span className="font-medium text-deep flex items-center gap-2">
           {booking.guest_name || 'Guest'}
           <span className="text-[10px] text-gray-400">· {capacity} {capacity === 1 ? 'guest' : 'guests'}</span>
+          {booking.dispute_status === 'open' && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-sunset/15 text-sunset font-bold uppercase">🚩 Dispute</span>
+          )}
+          {booking.checkout_survey_submitted_at && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-libre/15 text-libre font-bold uppercase">✓ Reviewed</span>
+          )}
         </span>
         <span className="text-gray-500">
           {booking.check_in} → {booking.check_out}
@@ -482,30 +494,57 @@ function BookingRow({ booking }) {
           <span className="ml-1 text-[10px] text-ocean">{open ? '▴' : '▾ QR'}</span>
         </span>
       </button>
-      {open && booking.check_in_token && (
-        <div className="border-t border-gray-200 bg-white p-4 flex flex-col items-center gap-3">
-          <img src={qrSrc} alt="Guest check-in QR"
-            className="w-44 h-44 border-2 border-deep rounded-lg p-2 bg-white" />
-          <div className="text-center">
-            <p className="text-xs font-bold text-deep">Guest self check-in</p>
-            <p className="text-[10px] text-gray-500 mt-0.5 max-w-xs">
-              Each guest scans, fills their info in 30s. Up to {capacity} can register.
+
+      {open && (
+        <div className="border-t border-gray-200 bg-white p-4">
+          {/* Tabs: Check-in QR vs Check-out QR */}
+          <div className="flex gap-1 mb-3 p-1 bg-gray-100 rounded-lg">
+            <button onClick={() => setTab('checkin')} type="button"
+              className={`flex-1 py-1.5 rounded text-xs font-bold transition-all ${
+                tab === 'checkin' ? 'bg-white shadow-sm text-ocean' : 'text-gray-500'
+              }`}>
+              📥 Check-in QR
+            </button>
+            <button onClick={() => setTab('checkout')} type="button"
+              className={`flex-1 py-1.5 rounded text-xs font-bold transition-all ${
+                tab === 'checkout' ? 'bg-white shadow-sm text-orange' : 'text-gray-500'
+              }`}>
+              📤 Check-out QR
+            </button>
+          </div>
+
+          {tokenAvailable ? (
+            <div className="flex flex-col items-center gap-3">
+              <img src={qrSrc} alt={isCheckout ? 'Stay survey QR' : 'Guest check-in QR'}
+                className="w-44 h-44 border-2 border-deep rounded-lg p-2 bg-white" />
+              <div className="text-center">
+                <p className="text-xs font-bold text-deep">
+                  {isCheckout ? '⭐ Stay survey' : '👤 Guest self check-in'}
+                </p>
+                <p className="text-[10px] text-gray-500 mt-0.5 max-w-xs">
+                  {isCheckout
+                    ? 'Guest fills 5-rating survey. No red flag → you get paid within 1h. Red flag → STAYLO mediates.'
+                    : `Each guest scans, fills info in 30s. Up to ${capacity} can register.`}
+                </p>
+                <a href={url} target="_blank" rel="noopener"
+                  className="text-[10px] text-ocean font-mono mt-1 inline-block break-all">{url}</a>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => navigator.clipboard?.writeText(url)}
+                  className="text-[11px] px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold">
+                  Copy link
+                </button>
+                <button onClick={() => window.open(qrSrc, '_blank')}
+                  className="text-[11px] px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold">
+                  Open QR (print)
+                </button>
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-gray-500 text-center py-4">
+              Token missing — apply migration 20260503070000 if this is unexpected.
             </p>
-            <a href={checkinUrl} target="_blank" rel="noopener"
-              className="text-[10px] text-ocean font-mono mt-1 inline-block break-all">
-              {checkinUrl}
-            </a>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => navigator.clipboard?.writeText(checkinUrl)}
-              className="text-[11px] px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold">
-              Copy link
-            </button>
-            <button onClick={() => window.open(qrSrc, '_blank')}
-              className="text-[11px] px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold">
-              Open QR (print)
-            </button>
-          </div>
+          )}
         </div>
       )}
     </div>

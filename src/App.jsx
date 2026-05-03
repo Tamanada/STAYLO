@@ -55,6 +55,7 @@ import ResetPassword from './pages/ResetPassword'
 import VerifyEmail from './pages/VerifyEmail'
 import Welcome from './pages/Welcome'
 import PublicCheckIn from './pages/PublicCheckIn'
+import PublicCheckOut from './pages/PublicCheckOut'
 import EmailVerificationGate from './components/auth/EmailVerificationGate'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
@@ -109,6 +110,9 @@ export default function App() {
 
           {/* Public guest self check-in — accessed via QR code, no auth required */}
           <Route path="/checkin/:token" element={<PublicCheckIn />} />
+
+          {/* Public stay survey at check-out — drives escrow release timing */}
+          <Route path="/checkout/:token" element={<PublicCheckOut />} />
 
           {/* Public routes — with Navbar + Footer */}
           <Route element={<Layout />}>
