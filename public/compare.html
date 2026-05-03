@@ -1,0 +1,755 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>STAYLO vs OTAs — Full Feature Comparison</title>
+<meta name="description" content="Side-by-side: STAYLO vs Booking.com, Agoda, Airbnb. 40+ features compared. Even as a 'service provider only' hotelier (no shares), STAYLO already wins on every dimension." />
+<style>
+  /* Same brand tokens as pitch.html for visual continuity */
+  :root {
+    --orange: #FF6B00;
+    --pink:   #E91E63;
+    --deep:   #2D3436;
+    --cream:  #FFFDF8;
+    --line:   #E8E0D8;
+    --muted:  #6b6b6b;
+    --green:  #16a34a;
+    --green-light: #dcfce7;
+    --red:    #c0392b;
+    --grad:   linear-gradient(135deg, #FF6B00 0%, #E91E63 100%);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--cream);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--deep);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .helper-bar {
+    position: fixed; top: 16px; right: 16px;
+    background: var(--deep); color: white;
+    padding: 10px 16px; border-radius: 12px;
+    font-size: 13px; z-index: 100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .helper-bar button {
+    background: var(--grad); color: white; border: none;
+    padding: 6px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 12px; font-weight: 700;
+  }
+
+  .container { max-width: 1240px; margin: 0 auto; padding: 60px 32px 80px; }
+
+  /* Header */
+  .brand {
+    display: inline-block;
+    font-weight: 900; font-size: 18px; letter-spacing: -0.5px;
+    background: var(--grad);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 56px; font-weight: 900; line-height: 1.05;
+    letter-spacing: -1.5px; margin-bottom: 16px;
+  }
+  h1 .gradient {
+    background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .lead {
+    font-size: 19px; color: #444; line-height: 1.6;
+    max-width: 880px; margin-bottom: 24px;
+  }
+
+  /* Two-tier explanation card */
+  .tiers {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin: 24px 0 40px;
+  }
+  .tier {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 24px;
+  }
+  .tier h3 {
+    font-size: 16px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    margin-bottom: 8px;
+  }
+  .tier.standard h3 { color: var(--deep); }
+  .tier.founding h3 { color: var(--orange); }
+  .tier p { font-size: 14px; color: #555; line-height: 1.5; }
+  .tier .badge {
+    display: inline-block; font-size: 10px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 3px 10px; border-radius: 999px;
+    margin-bottom: 8px;
+  }
+  .tier.standard .badge { background: rgba(0,0,0,0.06); color: var(--muted); }
+  .tier.founding .badge { background: rgba(255,107,0,0.12); color: var(--orange); }
+
+  /* The big table */
+  .compare-table {
+    width: 100%;
+    border-collapse: separate; border-spacing: 0;
+    margin: 16px 0 40px;
+    font-size: 14px;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    border: 1px solid var(--line);
+  }
+  .compare-table thead th {
+    padding: 16px 12px;
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--muted);
+    background: white;
+    border-bottom: 2px solid var(--line);
+    text-align: center;
+    position: sticky; top: 0;
+    z-index: 5;
+  }
+  .compare-table thead th:first-child { text-align: left; padding-left: 24px; }
+  .compare-table thead th.staylo-std {
+    background: rgba(0,0,0,0.04);
+    color: var(--deep);
+    font-size: 12px;
+  }
+  .compare-table thead th.staylo-fnd {
+    background: linear-gradient(180deg, rgba(255,107,0,0.10), rgba(255,107,0,0.05));
+    color: var(--orange);
+    font-size: 12px;
+    border-left: 2px solid rgba(255,107,0,0.25);
+  }
+
+  .compare-table tbody td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  .compare-table tbody td:first-child {
+    text-align: left;
+    padding-left: 24px;
+    font-weight: 600;
+    color: var(--deep);
+    background: rgba(0,0,0,0.015);
+    width: 26%;
+  }
+  .compare-table tbody td.them {
+    color: var(--red);
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .compare-table tbody td.x {
+    color: var(--red);
+    font-size: 18px;
+    font-weight: 800;
+  }
+  .compare-table tbody td.partial {
+    color: #c0892b;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  /* STAYLO Standard column */
+  .compare-table tbody td.staylo-std {
+    background: rgba(22,163,74,0.05);
+    color: var(--green);
+    font-weight: 700;
+  }
+  /* STAYLO Founding column — extra emphasis */
+  .compare-table tbody td.staylo-fnd {
+    background: linear-gradient(180deg, rgba(255,107,0,0.08), rgba(233,30,99,0.04));
+    color: var(--orange);
+    font-weight: 800;
+    border-left: 2px solid rgba(255,107,0,0.18);
+  }
+  .compare-table tbody td.staylo-std small,
+  .compare-table tbody td.staylo-fnd small {
+    display: block; font-weight: 500; font-size: 11px; opacity: 0.8; margin-top: 2px;
+  }
+
+  /* Section header rows inside the table */
+  .compare-table tr.section td {
+    background: var(--deep);
+    color: white;
+    font-size: 12px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 2px;
+    padding: 14px 24px;
+    text-align: left;
+  }
+  .compare-table tr.section td:first-child { text-align: left; }
+  .compare-table tr.section.first td { border-top: none; }
+
+  /* Summary band at the bottom */
+  .summary-band {
+    background: linear-gradient(135deg, rgba(255,107,0,0.06), rgba(233,30,99,0.04));
+    border-left: 5px solid var(--orange);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin: 24px 0;
+  }
+  .summary-band h2 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .summary-band p { font-size: 16px; color: #444; line-height: 1.6; }
+  .summary-band p strong { color: var(--deep); }
+
+  /* CTA */
+  .cta-row {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin: 32px 0 0;
+  }
+  .cta-btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 28px;
+    background: var(--grad);
+    color: white;
+    text-decoration: none;
+    border-radius: 9999px;
+    font-weight: 800; font-size: 15px;
+    box-shadow: 0 4px 14px rgba(233,30,99,0.25);
+  }
+  .cta-btn.secondary {
+    background: white;
+    color: var(--deep);
+    border: 2px solid var(--line);
+    box-shadow: none;
+  }
+
+  footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--muted);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  footer a { color: var(--orange); text-decoration: none; font-weight: 700; }
+
+  /* Print rules */
+  @media print {
+    body { background: white; }
+    .helper-bar { display: none !important; }
+    .container { padding: 24px; max-width: 100%; }
+    .compare-table { box-shadow: none; }
+    .compare-table thead th { position: static; }
+    @page { size: A4 landscape; margin: 12mm; }
+  }
+
+  @media (max-width: 900px) {
+    h1 { font-size: 36px; }
+    .tiers { grid-template-columns: 1fr; }
+    .compare-table { font-size: 12px; }
+    .compare-table tbody td:first-child { width: 35%; padding-left: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="helper-bar">
+  📄 Save as PDF: Ctrl+P → A4 landscape
+  <button onclick="window.print()">Print / PDF</button>
+</div>
+
+<div class="container">
+
+  <span class="brand">STAYLO</span>
+  <h1>The full picture: <span class="gradient">STAYLO vs OTAs.</span></h1>
+  <p class="lead">
+    Forty-plus features compared side by side. Pick your path: stay a simple <strong>service-provider hotelier</strong>
+    (no commitment, no shares — and STAYLO still beats every OTA on every line) or become a
+    <strong>founding member</strong> to own a piece of the platform you sell on.
+  </p>
+
+  <!-- Two-tier explanation -->
+  <div class="tiers">
+    <div class="tier standard">
+      <span class="badge">Path 1 · No commitment</span>
+      <h3>STAYLO Standard</h3>
+      <p>Use STAYLO as a normal booking platform. 10% commission, full toolkit, 72h payouts. No shares, no governance, no investment required. Cancel any time.</p>
+    </div>
+    <div class="tier founding">
+      <span class="badge">Path 2 · First 500 hotels only</span>
+      <h3>STAYLO Founding Member</h3>
+      <p>Everything in Standard, PLUS real cooperative shares, voting rights, 20% net profit dividends, $STAY token rewards, and the founding-member badge on your listings — for life.</p>
+    </div>
+  </div>
+
+  <!-- The mega-table -->
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Feature</th>
+        <th>Booking.com</th>
+        <th>Agoda</th>
+        <th>Airbnb</th>
+        <th class="staylo-std">STAYLO<br><small style="font-weight: 600; text-transform: none; letter-spacing: 0;">Standard</small></th>
+        <th class="staylo-fnd">STAYLO<br><small style="font-weight: 600; text-transform: none; letter-spacing: 0;">Founding</small></th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <!-- ========== COMMISSION & MONEY ========== -->
+      <tr class="section first"><td colspan="6">💰 &nbsp; Commission &amp; money</td></tr>
+      <tr>
+        <td>Commission rate</td>
+        <td class="them">17 – 22%</td>
+        <td class="them">17%</td>
+        <td class="them">15%</td>
+        <td class="staylo-std">10%</td>
+        <td class="staylo-fnd">10% locked for life</td>
+      </tr>
+      <tr>
+        <td>Commission can be raised later</td>
+        <td class="them">Yes — every year</td>
+        <td class="them">Yes</td>
+        <td class="them">Yes</td>
+        <td class="staylo-std">Possible<small>but transparent</small></td>
+        <td class="staylo-fnd">Only if 90% vote</td>
+      </tr>
+      <tr>
+        <td>Payment processing fee deducted</td>
+        <td class="them">~3% extra</td>
+        <td class="them">~3% extra</td>
+        <td class="them">3 – 5%</td>
+        <td class="staylo-std">0%</td>
+        <td class="staylo-fnd">0%</td>
+      </tr>
+      <tr>
+        <td>Annual dividends from platform profit</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-fnd">20% of net profit</td>
+      </tr>
+      <tr>
+        <td>Token rewards per booking</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-fnd">$STAY per night</td>
+      </tr>
+
+      <!-- ========== OWNERSHIP & GOVERNANCE ========== -->
+      <tr class="section"><td colspan="6">🏛 &nbsp; Ownership &amp; governance</td></tr>
+      <tr>
+        <td>Real cooperative shares</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-fnd">Yes — 500,000 worldwide</td>
+      </tr>
+      <tr>
+        <td>Voting rights on platform decisions</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-fnd">1 property = 1 vote</td>
+      </tr>
+      <tr>
+        <td>Open-source code (auditable)</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Yes — public on GitHub</td>
+        <td class="staylo-fnd">Yes — public on GitHub</td>
+      </tr>
+      <tr>
+        <td>Transparent commission breakdown</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Public</td>
+        <td class="staylo-fnd">Public + on-chain</td>
+      </tr>
+
+      <!-- ========== PAYOUTS ========== -->
+      <tr class="section"><td colspan="6">⚡ &nbsp; Payouts</td></tr>
+      <tr>
+        <td>Payout speed after check-out</td>
+        <td class="them">Monthly</td>
+        <td class="them">15 days</td>
+        <td class="them">24h after check-IN</td>
+        <td class="staylo-std">72h max</td>
+        <td class="staylo-fnd">72h max</td>
+      </tr>
+      <tr>
+        <td>Bitcoin / Lightning payouts</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Optional</td>
+        <td class="staylo-fnd">Optional</td>
+      </tr>
+      <tr>
+        <td>Multi-currency native</td>
+        <td class="partial">USD, EUR, THB only</td>
+        <td class="partial">Limited</td>
+        <td class="partial">Limited</td>
+        <td class="staylo-std">USD + BTC</td>
+        <td class="staylo-fnd">USD + BTC + $STAY</td>
+      </tr>
+      <tr>
+        <td>FX fees on international guests</td>
+        <td class="them">2 – 4%</td>
+        <td class="them">2 – 4%</td>
+        <td class="them">2 – 4%</td>
+        <td class="staylo-std">0% with BTC</td>
+        <td class="staylo-fnd">0% with BTC</td>
+      </tr>
+
+      <!-- ========== TOOLS INCLUDED ========== -->
+      <tr class="section"><td colspan="6">🧰 &nbsp; All-in-one toolkit (built in, free)</td></tr>
+      <tr>
+        <td>Property Management System (PMS)</td>
+        <td class="them">External / paid</td>
+        <td class="them">External / paid</td>
+        <td class="them">External / paid</td>
+        <td class="staylo-std">Free, built in</td>
+        <td class="staylo-fnd">Free, built in</td>
+      </tr>
+      <tr>
+        <td>Channel Manager</td>
+        <td class="them">External (~€80/mo)</td>
+        <td class="them">External (~€80/mo)</td>
+        <td class="them">External (~€80/mo)</td>
+        <td class="staylo-std">Free, built in</td>
+        <td class="staylo-fnd">Free, built in</td>
+      </tr>
+      <tr>
+        <td>Front Desk + walk-in check-in</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Built in</td>
+        <td class="staylo-fnd">Built in</td>
+      </tr>
+      <tr>
+        <td>Housekeeping management</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Built in</td>
+        <td class="staylo-fnd">Built in</td>
+      </tr>
+      <tr>
+        <td>Bar / Restaurant POS</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Built in</td>
+        <td class="staylo-fnd">Built in</td>
+      </tr>
+      <tr>
+        <td>Stock &amp; inventory management</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Built in</td>
+        <td class="staylo-fnd">Built in</td>
+      </tr>
+      <tr>
+        <td>Staff planning &amp; rotas</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Built in</td>
+        <td class="staylo-fnd">Built in</td>
+      </tr>
+      <tr>
+        <td>Internal team communication</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Built in</td>
+        <td class="staylo-fnd">Built in</td>
+      </tr>
+      <tr>
+        <td>Banking dashboard &amp; reports</td>
+        <td class="them">Limited</td>
+        <td class="them">Limited</td>
+        <td class="them">Limited</td>
+        <td class="staylo-std">Built in</td>
+        <td class="staylo-fnd">Built in</td>
+      </tr>
+
+      <!-- ========== PRICING FLEXIBILITY ========== -->
+      <tr class="section"><td colspan="6">💲 &nbsp; Pricing flexibility</td></tr>
+      <tr>
+        <td>Per-room or per-bed pricing (dorms)</td>
+        <td class="partial">Per room only</td>
+        <td class="partial">Per room only</td>
+        <td class="partial">Per room only</td>
+        <td class="staylo-std">Both supported</td>
+        <td class="staylo-fnd">Both supported</td>
+      </tr>
+      <tr>
+        <td>Day-by-day price overrides</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-fnd">Yes</td>
+      </tr>
+      <tr>
+        <td>Stackable multi-rewards per day</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Unlimited</td>
+        <td class="staylo-fnd">Unlimited</td>
+      </tr>
+      <tr>
+        <td>Custom min-stay rules per day</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-fnd">Yes</td>
+      </tr>
+      <tr>
+        <td>Internal hotelier-only notes</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-fnd">Yes</td>
+      </tr>
+
+      <!-- ========== MARKETING & VISIBILITY ========== -->
+      <tr class="section"><td colspan="6">📣 &nbsp; Marketing &amp; visibility</td></tr>
+      <tr>
+        <td>Buys ads on YOUR hotel name (Google)</td>
+        <td class="them">Yes — bids against you</td>
+        <td class="them">Yes</td>
+        <td class="them">Yes</td>
+        <td class="staylo-std">Never</td>
+        <td class="staylo-fnd">Never</td>
+      </tr>
+      <tr>
+        <td>SEO-friendly listing pages</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-fnd">Yes</td>
+      </tr>
+      <tr>
+        <td>Custom branding on your listing</td>
+        <td class="them">Standardised</td>
+        <td class="them">Standardised</td>
+        <td class="them">Standardised</td>
+        <td class="staylo-std">Allowed</td>
+        <td class="staylo-fnd">Featured slot</td>
+      </tr>
+      <tr>
+        <td>Founding-member badge on listing</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-fnd">Yes — trust signal</td>
+      </tr>
+      <tr>
+        <td>Multi-language listing (14 langs)</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes — auto</td>
+        <td class="staylo-fnd">Yes — auto</td>
+      </tr>
+
+      <!-- ========== GUEST EXPERIENCE ========== -->
+      <tr class="section"><td colspan="6">🛏 &nbsp; Guest experience</td></tr>
+      <tr>
+        <td>Direct guest contact (real email)</td>
+        <td class="them">Forwarded address</td>
+        <td class="them">Forwarded</td>
+        <td class="them">Forwarded</td>
+        <td class="staylo-std">Real email</td>
+        <td class="staylo-fnd">Real email</td>
+      </tr>
+      <tr>
+        <td>Guest can pay in Bitcoin</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Optional</td>
+        <td class="staylo-fnd">Optional</td>
+      </tr>
+      <tr>
+        <td>NFT booking proof (anti-overbooking)</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Built in</td>
+        <td class="staylo-fnd">Built in</td>
+      </tr>
+      <tr>
+        <td>Built-in BTC wallet for guests</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Built in</td>
+        <td class="staylo-fnd">Built in</td>
+      </tr>
+      <tr>
+        <td>Loyalty / repeat-guest rewards</td>
+        <td class="them">Genius (loyalty to OTA, not you)</td>
+        <td class="them">Loyalty to Agoda</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Direct to guest</td>
+        <td class="staylo-fnd">$STAY token rewards</td>
+      </tr>
+
+      <!-- ========== OPERATIONS ========== -->
+      <tr class="section"><td colspan="6">🛠 &nbsp; Operations</td></tr>
+      <tr>
+        <td>Multi-property support</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-fnd">Yes</td>
+      </tr>
+      <tr>
+        <td>Team / staff RBAC roles</td>
+        <td class="them">Limited</td>
+        <td class="them">Limited</td>
+        <td class="them">Limited</td>
+        <td class="staylo-std">Owner / Manager / Staff</td>
+        <td class="staylo-fnd">Owner / Manager / Staff</td>
+      </tr>
+      <tr>
+        <td>1-click import from Booking listing</td>
+        <td class="x">N/A</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Yes</td>
+        <td class="staylo-fnd">Yes</td>
+      </tr>
+      <tr>
+        <td>Refund handling (admin escape hatch)</td>
+        <td class="them">Slow</td>
+        <td class="them">Slow</td>
+        <td class="them">Slow</td>
+        <td class="staylo-std">Self-serve</td>
+        <td class="staylo-fnd">Self-serve</td>
+      </tr>
+
+      <!-- ========== TRUST & SUPPORT ========== -->
+      <tr class="section"><td colspan="6">🤝 &nbsp; Trust &amp; support</td></tr>
+      <tr>
+        <td>Founder accessible directly</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">WhatsApp David</td>
+        <td class="staylo-fnd">WhatsApp + AGM</td>
+      </tr>
+      <tr>
+        <td>Local presence (Thailand)</td>
+        <td class="them">Amsterdam HQ</td>
+        <td class="them">Singapore HQ</td>
+        <td class="them">San Francisco HQ</td>
+        <td class="staylo-std">Koh Phangan</td>
+        <td class="staylo-fnd">Koh Phangan</td>
+      </tr>
+      <tr>
+        <td>Free onboarding session</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">15 min self-serve</td>
+        <td class="staylo-fnd">1h with David in person</td>
+      </tr>
+      <tr>
+        <td>Public roadmap (community input)</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Public on /vision</td>
+        <td class="staylo-fnd">Public + voting power</td>
+      </tr>
+
+      <!-- ========== DISTRIBUTION / GROWTH ========== -->
+      <tr class="section"><td colspan="6">🌱 &nbsp; Distribution &amp; growth</td></tr>
+      <tr>
+        <td>Referral commission for inviting peers</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-std">Standard referral</td>
+        <td class="staylo-fnd">Ambassador 2% BTC for life</td>
+      </tr>
+      <tr>
+        <td>Ambassador-program revenue share</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="x">✗</td>
+        <td class="staylo-fnd">2% of every referred booking</td>
+      </tr>
+      <tr>
+        <td>Cancellation fee from STAYLO</td>
+        <td class="them">Lock-in contract</td>
+        <td class="them">Lock-in</td>
+        <td class="them">Lock-in</td>
+        <td class="staylo-std">None — leave anytime</td>
+        <td class="staylo-fnd">None — leave anytime</td>
+      </tr>
+      <tr>
+        <td>Exclusivity required</td>
+        <td class="them">Pushed via parity clauses</td>
+        <td class="them">Yes</td>
+        <td class="them">Soft</td>
+        <td class="staylo-std">Never</td>
+        <td class="staylo-fnd">Never</td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <!-- Summary band -->
+  <div class="summary-band">
+    <h2>The bottom line for hoteliers who don't want to invest:</h2>
+    <p>
+      Even on the <strong>Standard</strong> path — no shares, no commitment, no investment —
+      STAYLO already wins on <strong>every single category</strong>. Half the commission, faster payouts,
+      no FX fees, no hidden processing charges, and a complete free toolkit (PMS, channel manager,
+      restaurant POS, staff planning) that would normally cost €100-300/month elsewhere.
+      <br><br>
+      The <strong>Founding Member</strong> path is for hoteliers who want to own a piece of the
+      industry's future. But it's optional — and the Standard alone already pays for itself in the
+      first month.
+    </p>
+  </div>
+
+  <div class="cta-row">
+    <a class="cta-btn" href="https://staylo.app/submit?utm_source=compare">
+      List your property — 15 min, free
+    </a>
+    <a class="cta-btn secondary" href="https://staylo.app/pitch.html">
+      Watch the 10-slide pitch
+    </a>
+    <a class="cta-btn secondary" href="https://staylo.app/vision">
+      Read the vision
+    </a>
+  </div>
+
+  <footer>
+    <span>STAYLO Hotels · <a href="https://staylo.app">staylo.app</a> · Open source on <a href="https://github.com/Tamanada/STAYLO">GitHub</a></span>
+    <span>OTA commission rates from public sources (Booking.com Investor Relations, Agoda partner agreements, Airbnb host fees · Q1 2026).</span>
+  </footer>
+
+</div>
+</body>
+</html>
