@@ -170,13 +170,27 @@ export default function Checkout() {
   const pricing = computeRoomPricing(room, checkIn, checkOut, roomsCount)
   const roomTotal = pricing.discountedTotal
 
+  // Extra beds — auto-allocated when children > the regular room slots.
+  // Same rule as PropertyDetail: a room can host max_guests + extra_bed_max_qty,
+  // billed per bed per night (kids ≤ extra_bed_max_age only).
+  const adultSlots = (Number(room?.max_guests) || 1) * roomsCount
+  const childrenOverflow = Math.max(0, (adults + children) - adultSlots)
+  const extraBedCeiling = room?.extra_bed_available
+    ? (Number(room.extra_bed_max_qty) || 0) * roomsCount
+    : 0
+  const extraBedsCount = Math.min(childrenOverflow, extraBedCeiling)
+  const extraBedPrice  = Number(room?.extra_bed_price) || 0
+  const extraBedSubtotal = extraBedsCount * extraBedPrice * nights
+
   // Pricing model: STAYLO commission comes OUT OF the room price (10%).
-  // The processing fee is added ON TOP and paid by the guest.
-  const commission       = roomTotal * COMMISSION_RATE                  // 10% goes to STAYLO
-  const hotelierNet      = roomTotal - commission                        // 90% to hotelier
+  // Extra-bed line is added INTO the chargeable subtotal so commission applies
+  // to it too — STAYLO collects 10% on the full booking value.
+  const chargeableSubtotal = roomTotal + extraBedSubtotal
+  const commission       = chargeableSubtotal * COMMISSION_RATE          // 10% goes to STAYLO
+  const hotelierNet      = chargeableSubtotal - commission                // 90% to hotelier
   const selectedMethod   = PAYMENT_METHODS.find(m => m.key === paymentMethod) || PAYMENT_METHODS[0]
-  const processingFee    = roomTotal * (selectedMethod.feeRate || 0)
-  const totalPrice       = roomTotal + processingFee                     // What the guest pays
+  const processingFee    = chargeableSubtotal * (selectedMethod.feeRate || 0)
+  const totalPrice       = chargeableSubtotal + processingFee             // What the guest pays
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -242,6 +256,8 @@ export default function Checkout() {
           children,
           rooms_count: roomsCount,
           communicating_rooms_requested: requestCommunicating,
+          extra_beds_count:   extraBedsCount,
+          extra_bed_subtotal: Number(extraBedSubtotal.toFixed(2)),
           total_price: totalPrice,
           commission: commission,
           status: 'pending',
@@ -533,6 +549,15 @@ export default function Checkout() {
                   <div className="flex justify-between font-medium pt-1 border-t border-gray-100">
                     <span className="text-deep">Room subtotal</span>
                     <span className="text-deep">${roomTotal.toFixed(2)}</span>
+                  </div>
+                )}
+                {extraBedsCount > 0 && (
+                  <div className="flex justify-between text-deep">
+                    <span>
+                      🛏️ Extra bed × {extraBedsCount} × {nights} {nights === 1 ? 'night' : 'nights'}
+                      <span className="text-gray-400 text-xs ml-1">({room.extra_bed_max_age || 10}y &amp; under)</span>
+                    </span>
+                    <span>+${extraBedSubtotal.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-xs text-gray-400 pl-3">
