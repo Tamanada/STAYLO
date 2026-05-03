@@ -11,6 +11,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import PhoneInput from '../../components/ui/PhoneInput'
+import UndoToast from '../../components/ui/UndoToast'
 
 const STATUS_CONFIG = {
   available: { label: 'Available', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
@@ -34,6 +35,7 @@ export default function PMSFrontDesk() {
   const [loading, setLoading] = useState(true)
   const [today] = useState(new Date().toISOString().split('T')[0])
   const [openRoom, setOpenRoom] = useState(null)   // room object whose modal is open
+  const [undo, setUndo] = useState(null)           // last reversible action (walk-in / etc.)
 
   async function fetchData() {
     setLoading(true)
@@ -273,7 +275,11 @@ export default function PMSFrontDesk() {
         propertyId={selectedProperty}
         userId={user?.id}
         onSaved={() => { fetchData(); setOpenRoom(null) }}
+        onUndoOffer={setUndo}
       />
+
+      {/* Undo toast — appears for 30s after any reversible action (walk-in, etc.) */}
+      <UndoToast undo={undo} onClose={() => setUndo(null)} />
     </div>
   )
 }
@@ -284,7 +290,7 @@ export default function PMSFrontDesk() {
 //   1. Calendar — 30-day view, shows which days are booked / free / arrival
 //   2. Walk-in  — quick check-in form for guests showing up unannounced
 // ============================================================================
-function RoomDetailModal({ room, onClose, bookings, propertyId, userId, onSaved }) {
+function RoomDetailModal({ room, onClose, bookings, propertyId, userId, onSaved, onUndoOffer }) {
   const { t } = useTranslation()
   const [tab, setTab] = useState('calendar')
 
@@ -329,6 +335,7 @@ function RoomDetailModal({ room, onClose, bookings, propertyId, userId, onSaved 
             existingBookings={bookings}
             onDone={onSaved}
             onCancel={onClose}
+            onUndoOffer={onUndoOffer}
           />
         )}
       </div>
@@ -442,7 +449,7 @@ function CalendarStrip({ room, bookings }) {
 // WalkInForm — record a guest who showed up at the front desk.
 // Fields kept minimal so the receptionist can finish in <30 seconds.
 // ────────────────────────────────────────────────────────────────────────
-function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCancel }) {
+function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCancel, onUndoOffer }) {
   const { t } = useTranslation()
   const today = new Date().toISOString().split('T')[0]
   const tomorrow = (() => {
@@ -515,12 +522,32 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
       special_requests: form.special_requests.trim() || null,
     }
 
-    const { error: insErr } = await supabase.from('bookings').insert(payload)
+    // Insert with .select() so we get the new row's id back — needed to
+    // wire the Undo toast (which deletes by id).
+    const { data: inserted, error: insErr } = await supabase
+      .from('bookings')
+      .insert(payload)
+      .select('id')
+      .single()
     setSaving(false)
     if (insErr) {
       console.error('Walk-in insert failed:', insErr)
       setError(insErr.message)
       return
+    }
+
+    // Offer one-click undo for 30s. Deleting the booking auto-restores
+    // the room's available_count via the bookings_sync_availability trigger.
+    if (onUndoOffer && inserted?.id) {
+      const nightsLabel = nights === 1 ? '1 night' : `${nights} nights`
+      onUndoOffer({
+        label:    `Walk-in checked in: ${form.guest_name.trim()}`,
+        sublabel: `${nightsLabel} · ${room.name} · $${totalPrice.toFixed(0)}`,
+        onUndo:   async () => {
+          await supabase.from('bookings').delete().eq('id', inserted.id)
+          onDone()        // refresh list + close any open modal
+        },
+      })
     }
     onDone()
   }
