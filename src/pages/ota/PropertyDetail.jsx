@@ -924,9 +924,17 @@ export default function PropertyDetail() {
                               <span>−${pricing.savings.toFixed(2)}</span>
                             </div>
                           )}
+                          {extraBedsUsed > 0 && (
+                            <div className="flex justify-between text-deep">
+                              <span>
+                                🛏️ Extra bed × {extraBedsUsed} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
+                              </span>
+                              <span>+${(extraBedsUsed * (selectedRoomData?.extraBedPrice || 0) * pricing.nights).toFixed(2)}</span>
+                            </div>
+                          )}
                           <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
                             <span>{t('booking.subtotal', 'Subtotal')}</span>
-                            <span>${pricing.discountedTotal.toFixed(2)}</span>
+                            <span>${(pricing.discountedTotal + (extraBedsUsed * (selectedRoomData?.extraBedPrice || 0) * pricing.nights)).toFixed(2)}</span>
                           </div>
                           <p className="text-[11px] text-gray-400 pt-1 leading-snug">
                             {t('booking.fees_at_checkout', 'Payment processing fees added at checkout (free with Bitcoin Lightning).')}
