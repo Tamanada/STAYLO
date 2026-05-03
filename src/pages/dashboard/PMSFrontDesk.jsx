@@ -14,11 +14,12 @@ import PhoneInput from '../../components/ui/PhoneInput'
 import UndoToast from '../../components/ui/UndoToast'
 
 const STATUS_CONFIG = {
-  available: { label: 'Available', color: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
-  occupied: { label: 'Occupied', color: 'bg-blue-100 text-blue-700 border-blue-200', dot: 'bg-blue-500' },
-  checkout: { label: 'Check-out Today', color: 'bg-amber-100 text-amber-700 border-amber-200', dot: 'bg-amber-500' },
-  arriving: { label: 'Arriving Today', color: 'bg-purple-100 text-purple-700 border-purple-200', dot: 'bg-purple-500' },
-  maintenance: { label: 'Maintenance', color: 'bg-gray-100 text-gray-500 border-gray-200', dot: 'bg-gray-400' },
+  available:   { label: 'Available',        color: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
+  partial:     { label: 'Partly Occupied',  color: 'bg-blue-50 text-blue-700 border-blue-200',          dot: 'bg-blue-400' },
+  occupied:    { label: 'Fully Occupied',   color: 'bg-blue-100 text-blue-700 border-blue-200',         dot: 'bg-blue-500' },
+  checkout:    { label: 'Check-out Today',  color: 'bg-amber-100 text-amber-700 border-amber-200',      dot: 'bg-amber-500' },
+  arriving:    { label: 'Arriving Today',   color: 'bg-purple-100 text-purple-700 border-purple-200',   dot: 'bg-purple-500' },
+  maintenance: { label: 'Maintenance',      color: 'bg-gray-100 text-gray-500 border-gray-200',         dot: 'bg-gray-400' },
 }
 
 function formatDate(d) {
@@ -67,42 +68,51 @@ export default function PMSFrontDesk() {
   const currentProperty = properties.find(p => p.id === selectedProperty)
   const propertyRooms = rooms.filter(r => r.property_id === selectedProperty)
 
-  // Compute room statuses
+  // Compute live stock & status per ROOM TYPE.
+  // Each row in `rooms` is a TYPE with a `quantity` (e.g. Jungle ×3 = 3
+  // physical units). The card header shows aggregate stock (e.g. "1/3
+  // occupied"), and we surface today's notable activity (arrivals and
+  // check-outs) so the receptionist sees the day at a glance.
   const roomStatuses = useMemo(() => {
     return propertyRooms.map(room => {
+      const qty = Math.max(1, Number(room.quantity) || 1)
       const roomBookings = bookings.filter(b => b.room_id === room.id)
-      const activeBooking = roomBookings.find(b =>
-        b.check_in <= today && b.check_out > today
-      )
-      const checkingOut = roomBookings.find(b => b.check_out === today)
-      const arriving = roomBookings.find(b => b.check_in === today)
+      const occupiedToday   = roomBookings.filter(b => b.check_in <= today && b.check_out >  today)
+      const checkingOutToday = roomBookings.filter(b => b.check_out === today)
+      const arrivingToday    = roomBookings.filter(b => b.check_in  === today)
 
+      const occupiedCount = occupiedToday.length
+      const availableCount = Math.max(0, qty - occupiedCount)
+
+      // Card-level visual status — picks the most "active" thing happening today
       let status = 'available'
-      let guest = null
-      if (activeBooking) {
-        status = 'occupied'
-        guest = activeBooking
-      }
-      if (checkingOut) {
-        status = 'checkout'
-        guest = checkingOut
-      }
-      if (arriving && !activeBooking) {
-        status = 'arriving'
-        guest = arriving
-      }
+      if (occupiedCount >= qty) status = 'occupied'         // all units full
+      else if (occupiedCount > 0) status = 'partial'        // mixed
+      if (checkingOutToday.length > 0) status = 'checkout'
+      if (arrivingToday.length > 0 && status === 'available') status = 'arriving'
 
-      return { ...room, status, guest }
+      return {
+        ...room,
+        qty,
+        occupiedCount,
+        availableCount,
+        arrivingCount:    arrivingToday.length,
+        checkingOutCount: checkingOutToday.length,
+        guests:           occupiedToday,                    // array of in-stay bookings (may be 0..qty)
+        arrivingList:     arrivingToday,
+        checkingOutList:  checkingOutToday,
+        status,
+      }
     })
   }, [propertyRooms, bookings, today])
 
-  // Stats
-  const totalRooms = roomStatuses.length
-  const occupied = roomStatuses.filter(r => r.status === 'occupied' || r.status === 'checkout').length
-  const arriving = roomStatuses.filter(r => r.status === 'arriving').length
-  const available = roomStatuses.filter(r => r.status === 'available').length
-  const checkingOut = roomStatuses.filter(r => r.status === 'checkout').length
-  const occupancyRate = totalRooms > 0 ? Math.round((occupied / totalRooms) * 100) : 0
+  // Stats — sum across types using each type's quantity, not row count.
+  const totalRooms     = roomStatuses.reduce((s, r) => s + r.qty, 0)
+  const occupied       = roomStatuses.reduce((s, r) => s + r.occupiedCount, 0)
+  const available      = roomStatuses.reduce((s, r) => s + r.availableCount, 0)
+  const arriving       = roomStatuses.reduce((s, r) => s + r.arrivingCount, 0)
+  const checkingOut    = roomStatuses.reduce((s, r) => s + r.checkingOutCount, 0)
+  const occupancyRate  = totalRooms > 0 ? Math.round((occupied / totalRooms) * 100) : 0
 
   if (loading) {
     return (
@@ -213,10 +223,16 @@ export default function PMSFrontDesk() {
                 onClick={() => setOpenRoom(room)}
                 className={`text-left rounded-xl border-2 p-4 transition-all hover:shadow-md hover:scale-[1.02] cursor-pointer ${cfg.color}`}
                 title={t('pms.click_to_manage', 'Click to view calendar / check in a guest')}>
-                {/* Room header */}
+                {/* Room header — name + live X / Y stock badge */}
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-lg font-extrabold">{room.name}</span>
-                  <span className={`w-3 h-3 rounded-full ${cfg.dot}`} />
+                  <span className="text-lg font-extrabold truncate">{room.name}</span>
+                  <span className="flex items-center gap-1.5 flex-shrink-0">
+                    <span className="text-xs font-extrabold tabular-nums px-2 py-0.5 rounded bg-white/70 border border-current/15"
+                      title={`${room.availableCount} of ${room.qty} units available`}>
+                      {room.availableCount}/{room.qty}
+                    </span>
+                    <span className={`w-2.5 h-2.5 rounded-full ${cfg.dot}`} />
+                  </span>
                 </div>
 
                 {/* Status */}
@@ -228,36 +244,41 @@ export default function PMSFrontDesk() {
                   <span className="flex items-center gap-0.5"><Users size={10} /> {room.max_guests || 2}</span>
                 </div>
 
-                {/* Guest info */}
-                {room.guest && (
-                  <div className="mt-2 pt-2 border-t border-current/10">
-                    <p className="text-xs font-bold truncate">{room.guest.guest_name || 'Guest'}</p>
-                    <p className="text-[10px] opacity-60">
-                      {room.guest.check_in} → {room.guest.check_out}
-                    </p>
+                {/* Guest list — show up to 2 in-stay guests, then a +N overflow */}
+                {room.guests && room.guests.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-current/10 space-y-1">
+                    {room.guests.slice(0, 2).map(g => (
+                      <div key={g.id}>
+                        <p className="text-xs font-bold truncate">{g.guest_name || 'Guest'}</p>
+                        <p className="text-[10px] opacity-60">{g.check_in} → {g.check_out}</p>
+                      </div>
+                    ))}
+                    {room.guests.length > 2 && (
+                      <p className="text-[10px] opacity-60 italic">+{room.guests.length - 2} more in-stay</p>
+                    )}
                   </div>
                 )}
 
                 {/* Action buttons */}
                 <div className="mt-3 flex gap-1.5">
-                  {room.status === 'arriving' && (
+                  {room.arrivingCount > 0 && (
                     <span className="flex-1 py-1.5 bg-white/60 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                      <LogIn size={10} /> Check In
+                      <LogIn size={10} /> {room.arrivingCount > 1 ? `${room.arrivingCount} Check-Ins` : 'Check In'}
                     </span>
                   )}
-                  {room.status === 'checkout' && (
+                  {room.checkingOutCount > 0 && (
                     <span className="flex-1 py-1.5 bg-white/60 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1">
-                      <LogOut size={10} /> Check Out
+                      <LogOut size={10} /> {room.checkingOutCount > 1 ? `${room.checkingOutCount} Check-Outs` : 'Check Out'}
                     </span>
                   )}
-                  {room.status === 'available' && (
+                  {room.availableCount > 0 && room.arrivingCount === 0 && room.checkingOutCount === 0 && (
                     <span className="flex-1 py-1.5 text-center text-[10px] font-bold uppercase tracking-wider opacity-70 flex items-center justify-center gap-1">
-                      <UserPlus size={10} /> Walk-in
+                      <UserPlus size={10} /> Walk-in ({room.availableCount} free)
                     </span>
                   )}
-                  {room.status === 'occupied' && (
+                  {room.status === 'occupied' && room.arrivingCount === 0 && room.checkingOutCount === 0 && (
                     <span className="flex-1 py-1.5 text-center text-[10px] font-medium opacity-50 flex items-center justify-center gap-1">
-                      <Clock size={10} /> In stay
+                      <Clock size={10} /> Full house
                     </span>
                   )}
                 </div>
