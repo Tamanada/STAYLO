@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { useAuth } from '../hooks/useAuth'
+import SEO from '../components/SEO'
 import { supabase } from '../lib/supabase'
 
 const AVG_ROOMS = 15
@@ -60,6 +61,11 @@ export default function AmbassadorLanding() {
 
   return (
     <div className="relative">
+      <SEO
+        title="Become a STAYLO Ambassador — earn 2% BTC for life"
+        description="Refer hotels to STAYLO and earn 2% in Bitcoin on every booking they receive — paid to your Lightning wallet, forever. Free to join. Lifetime commission."
+        path="/ambassador"
+      />
       {/* ── Hero ── */}
       <section className="bg-gradient-to-br from-deep via-electric/80 to-ocean text-white py-20 sm:py-28 relative overflow-hidden animate-gradient">
         <div className="absolute inset-0">

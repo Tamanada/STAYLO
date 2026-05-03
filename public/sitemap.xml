@@ -1,48 +1,95 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ====================================================================
+       Home — top priority, highest crawl frequency
+       ==================================================================== -->
   <url>
     <loc>https://staylo.app/</loc>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://staylo.app/" />
+    <xhtml:link rel="alternate" hreflang="fr" href="https://staylo.app/" />
+    <xhtml:link rel="alternate" hreflang="th" href="https://staylo.app/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://staylo.app/" />
   </url>
+
+  <!-- ====================================================================
+       Strategic landing pages — the routes we WANT Google to rank
+       ==================================================================== -->
   <url>
     <loc>https://staylo.app/vision</loc>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://staylo.app/ambassador</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://staylo.app/ambassador/guide</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- ====================================================================
+       Conversion entry points
+       ==================================================================== -->
+  <url>
+    <loc>https://staylo.app/welcome</loc>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://staylo.app/survey</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://staylo.app/register</loc>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://staylo.app/login</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://staylo.app/submit</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://staylo.app/loi</loc>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
+  </url>
+
+  <!-- ====================================================================
+       Surveys (intent capture)
+       ==================================================================== -->
+  <url>
+    <loc>https://staylo.app/survey</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- ====================================================================
+       Auth + utility (lower priority — useful for indexing but not ranking)
+       ==================================================================== -->
+  <url>
+    <loc>https://staylo.app/login</loc>
+    <lastmod>2026-05-03</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
   <url>
     <loc>https://staylo.app/splash</loc>
+    <lastmod>2026-05-03</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
+    <priority>0.5</priority>
   </url>
-  <url>
-    <loc>https://staylo.app/welcome</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
+
 </urlset>

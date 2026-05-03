@@ -7,6 +7,7 @@ import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
+import SEO from '../components/SEO'
 
 const phases = [
   { key: 'phase1', icon: Hotel, gradient: 'from-ocean to-electric', status: 'Alpha', timeline: 'Now' },
@@ -71,6 +72,11 @@ export default function Vision() {
 
   return (
     <div className="relative">
+      <SEO
+        title="Vision — A booking platform owned by hoteliers"
+        description="Why STAYLO exists: 22% commissions are killing hotel margins. We're building a hotelier-owned cooperative where members vote, share revenue, and pay 10% for life. Roadmap, milestones, and ownership model."
+        path="/vision"
+      />
       {/* Hero */}
       <section className="bg-gradient-to-br from-deep via-[#0d1f3c] to-ocean/90 text-white py-10 sm:py-14 relative overflow-hidden animate-gradient">
         <div className="absolute inset-0">
