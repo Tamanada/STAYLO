@@ -40,6 +40,21 @@ Ideas captured during dev sessions, kept here so we don't lose them.
 
 ---
 
+## 🎓 The Little Hotelier — International Standards Academy (HIGH priority, post-50 sign-ups)
+
+Free educational platform for independent hoteliers worldwide. Per-country
+regulatory packs (licensing, immigration, tax, fire, accessibility,
+employment) + international hospitality standards + inspiration vault.
+Strategic moat via SEO, brand differentiation vs OTAs, lead magnet for
+prospect outreach, partnership leverage with regulators / tourism schools.
+
+Full vision in [`THE_LITTLE_HOTELIER_ACADEMY.md`](./THE_LITTLE_HOTELIER_ACADEMY.md).
+
+Phased rollout starts at Phase 1 (10 launch articles, Thailand only) once
+STAYLO has 50+ live hotels.
+
+---
+
 ## Other ideas captured along the way
 
 - **WhatsApp Business via Brevo** — once 5+ hoteliers are pinged via WhatsApp regularly, formalise this with the Meta Business API. €0.06/msg.
