@@ -10,19 +10,12 @@ import {
 import { Button } from '../../components/ui/Button'
 import { supabase } from '../../lib/supabase'
 import { computeRoomPricing } from '../../lib/roomPricing'
+import { getAmenityMeta } from '../../lib/amenityIcons'
 import GuestPicker from '../../components/ota/GuestPicker'
 
-const amenityConfig = {
-  wifi: { icon: Wifi, label: 'Free WiFi' },
-  ac: { icon: Wind, label: 'Air Conditioning' },
-  pool: { icon: Waves, label: 'Swimming Pool' },
-  spa: { icon: Sparkles, label: 'Spa & Wellness' },
-  minibar: { icon: Coffee, label: 'Minibar' },
-  parking: { icon: Car, label: 'Free Parking' },
-  beach: { icon: Umbrella, label: 'Beach Access' },
-  restaurant: { icon: Utensils, label: 'Restaurant' },
-  gym: { icon: Dumbbell, label: 'Fitness Center' },
-}
+// Local amenityConfig removed — single source of truth lives in
+// src/lib/amenityIcons.js (covers every key from PropertyManage's
+// AMENITY_CATEGORIES and falls back gracefully on unknowns).
 
 function ratingLabel(r) {
   if (r >= 9.0) return 'Exceptional'
@@ -447,16 +440,14 @@ export default function PropertyDetail() {
               <p className="text-sm text-gray-600 leading-relaxed mb-4">{property.desc}</p>
 
               {/* Amenities grid */}
-              <h3 className="text-sm font-bold text-gray-900 mb-3">{t('booking.amenities', 'Most popular amenities')}</h3>
+              <h3 className="text-sm font-bold text-gray-900 mb-3">{t('booking.amenities', 'All amenities')} ({property.amenities.length})</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {property.amenities.map(a => {
-                  const cfg = amenityConfig[a]
-                  if (!cfg) return null
-                  const Icon = cfg.icon
+                  const { icon: Icon, label } = getAmenityMeta(a)
                   return (
                     <div key={a} className="flex items-center gap-2.5 py-2 px-3 bg-gray-50 rounded-lg text-sm text-gray-700">
                       <Icon size={16} className="text-[#003580] flex-shrink-0" />
-                      {cfg.label}
+                      {label}
                     </div>
                   )
                 })}
@@ -617,15 +608,13 @@ export default function PropertyDetail() {
                               </div>
                               {room.desc && <p className="text-xs text-gray-500 mb-2">{room.desc}</p>}
 
-                              {/* Room amenities */}
+                              {/* Room amenities — every key, no silent skip */}
                               <div className="flex flex-wrap gap-1.5 mb-2">
                                 {(room.amenities || []).map(a => {
-                                  const cfg = amenityConfig[a]
-                                  if (!cfg) return null
-                                  const Icon = cfg.icon
+                                  const { icon: Icon, label } = getAmenityMeta(a)
                                   return (
                                     <span key={a} className="flex items-center gap-1 text-[11px] text-gray-600 bg-gray-50 px-2 py-0.5 rounded">
-                                      <Icon size={10} /> {cfg.label}
+                                      <Icon size={10} /> {label}
                                     </span>
                                   )
                                 })}
@@ -918,9 +907,15 @@ export default function PropertyDetail() {
                               ${pricing.originalTotal.toFixed(2)}
                             </span>
                           </div>
-                          {pricing.hasPromo && pricing.savings > 0 && (
+                          {pricing.hasPromo && pricing.savings > 0 && !pricing.longStayTier && (
                             <div className="flex justify-between text-orange font-medium">
                               <span>🔥 {pricing.promoLabel || 'Promo'}{pricing.promoPct > 0 && ` (−${Math.round(pricing.promoPct)}%)`}</span>
+                              <span>−${pricing.savings.toFixed(2)}</span>
+                            </div>
+                          )}
+                          {pricing.longStayTier && (
+                            <div className="flex justify-between text-libre font-medium">
+                              <span>🗓️ {pricing.longStayLabel}</span>
                               <span>−${pricing.savings.toFixed(2)}</span>
                             </div>
                           )}

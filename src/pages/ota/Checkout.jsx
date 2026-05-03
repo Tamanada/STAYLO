@@ -545,13 +545,19 @@ export default function Checkout() {
                     ${pricing.originalTotal.toFixed(2)}
                   </span>
                 </div>
-                {pricing.hasPromo && pricing.savings > 0 && (
+                {pricing.hasPromo && pricing.savings > 0 && !pricing.longStayTier && (
                   <div className="flex justify-between text-orange font-medium text-xs">
                     <span>🔥 {pricing.promoLabel || 'Promo'}{pricing.promoPct > 0 && ` (−${Math.round(pricing.promoPct)}%)`}</span>
                     <span>−${pricing.savings.toFixed(2)}</span>
                   </div>
                 )}
-                {pricing.hasPromo && pricing.savings > 0 && (
+                {pricing.longStayTier && (
+                  <div className="flex justify-between text-libre font-medium text-xs">
+                    <span>🗓️ {pricing.longStayLabel}</span>
+                    <span>−${pricing.savings.toFixed(2)}</span>
+                  </div>
+                )}
+                {(pricing.savings > 0) && (
                   <div className="flex justify-between font-medium pt-1 border-t border-gray-100">
                     <span className="text-deep">Room subtotal</span>
                     <span className="text-deep">${roomTotal.toFixed(2)}</span>

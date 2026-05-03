@@ -15,6 +15,7 @@ import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
+import { getAmenityMeta } from '../../lib/amenityIcons'
 
 // ── Extended choices for room form (V2 — 2026-04-30) ─────────────
 // Room types follow common hotel taxonomy (Booking + Airbnb hybrid).
@@ -1423,6 +1424,10 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     extra_bed_adults_allowed: false,
     communicating_rooms_available: false,
     communicating_with_room_id: '',
+    monthly_rate:        '',
+    monthly_min_nights:  28,
+    weekly_discount_pct: 0,
+    weekly_min_nights:   7,
   })
   // Carry photo/video URLs from a source room when "Copy from..." is used.
   // Stored separately because handleSave's regular flow doesn't touch media.
@@ -1441,6 +1446,10 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     extra_bed_adults_allowed: false,
     communicating_rooms_available: false,
     communicating_with_room_id: '',
+    monthly_rate:        '',
+    monthly_min_nights:  28,
+    weekly_discount_pct: 0,
+    weekly_min_nights:   7,
   })
 
   function openAdd() {
@@ -1480,6 +1489,10 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_adults_allowed: !!src.extra_bed_adults_allowed,
       communicating_rooms_available: !!src.communicating_rooms_available,
       communicating_with_room_id:    src.communicating_with_room_id || '',
+      monthly_rate:        src.monthly_rate ?? '',
+      monthly_min_nights:  src.monthly_min_nights || 28,
+      weekly_discount_pct: src.weekly_discount_pct || 0,
+      weekly_min_nights:   src.weekly_min_nights || 7,
     })
     setCopiedMedia({
       photo_urls: [...(src.photo_urls || [])],
@@ -1503,6 +1516,10 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_adults_allowed: !!room.extra_bed_adults_allowed,
       communicating_rooms_available: !!room.communicating_rooms_available,
       communicating_with_room_id:    room.communicating_with_room_id || '',
+      monthly_rate:        room.monthly_rate ?? '',
+      monthly_min_nights:  room.monthly_min_nights || 28,
+      weekly_discount_pct: room.weekly_discount_pct || 0,
+      weekly_min_nights:   room.weekly_min_nights || 7,
     })
     setShowForm(true)
   }
@@ -1538,6 +1555,10 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_adults_allowed: !!form.extra_bed_adults_allowed,
       communicating_rooms_available: !!form.communicating_rooms_available,
       communicating_with_room_id:    form.communicating_with_room_id || null,
+      monthly_rate:        form.monthly_rate ? Number(form.monthly_rate) : null,
+      monthly_min_nights:  Number(form.monthly_min_nights) || 28,
+      weekly_discount_pct: Number(form.weekly_discount_pct) || 0,
+      weekly_min_nights:   Number(form.weekly_min_nights) || 7,
     }
 
     let opError = null
@@ -1675,12 +1696,14 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
                 </div>
                 {room.amenities && room.amenities.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {room.amenities.slice(0, 6).map(a => (
-                      <span key={a} className="text-xs bg-libre/10 text-libre px-2 py-0.5 rounded-full">{prettyLabel(a)}</span>
-                    ))}
-                    {room.amenities.length > 6 && (
-                      <span className="text-xs text-gray-400 px-2 py-0.5">+{room.amenities.length - 6} more</span>
-                    )}
+                    {room.amenities.map(a => {
+                      const { icon: Icon, label } = getAmenityMeta(a)
+                      return (
+                        <span key={a} className="inline-flex items-center gap-1 text-xs bg-libre/10 text-libre px-2 py-0.5 rounded-full">
+                          <Icon size={11} /> {label}
+                        </span>
+                      )
+                    })}
                   </div>
                 )}
               </div>
@@ -1971,6 +1994,62 @@ function RoomEditFormCard({
                 </span>
               </div>
             </label>
+          )}
+        </div>
+
+        {/* ───── Long-stay rates (monthly + weekly tiers) ───── */}
+        <div className="sm:col-span-2 p-4 rounded-xl bg-libre/5 border border-libre/15">
+          <h4 className="text-sm font-bold text-deep flex items-center gap-2 mb-1">
+            🗓️ {t('manage.long_stay_title', 'Long-stay rates')}
+            <span className="text-[11px] text-gray-400 font-normal ml-auto">
+              {t('manage.long_stay_hint', 'Optional. Catches digital nomads + monthly travellers.')}
+            </span>
+          </h4>
+          <p className="text-[11px] text-gray-500 mb-3">
+            {t('manage.long_stay_desc',
+              'Set a monthly rate for stays of ≥ N nights. STAYLO auto-applies the better of (daily × nights) vs (monthly_rate × nights / 30) — guests with long stays pay less, you fill the room.')}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                {t('manage.monthly_rate', 'Monthly rate (USD per 30 nights)')}
+              </label>
+              <input type="number" min={0} step="0.01" value={form.monthly_rate}
+                onChange={e => setForm(f => ({ ...f, monthly_rate: e.target.value }))}
+                placeholder={t('manage.monthly_rate_eg', 'e.g. 600 (= $20/night)')}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                {t('manage.monthly_min_nights', 'Triggered at (nights)')}
+              </label>
+              <input type="number" min={14} max={90} value={form.monthly_min_nights}
+                onChange={e => setForm(f => ({ ...f, monthly_min_nights: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                {t('manage.weekly_discount', 'Weekly discount (%)')}
+              </label>
+              <input type="number" min={0} max={80} value={form.weekly_discount_pct}
+                onChange={e => setForm(f => ({ ...f, weekly_discount_pct: e.target.value }))}
+                placeholder="0 = off"
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                {t('manage.weekly_min_nights', 'Weekly triggered at (nights)')}
+              </label>
+              <input type="number" min={3} max={28} value={form.weekly_min_nights}
+                onChange={e => setForm(f => ({ ...f, weekly_min_nights: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30" />
+            </div>
+          </div>
+          {form.monthly_rate && form.base_price && (
+            <p className="text-[11px] text-libre mt-2 italic">
+              ✓ Monthly = ~${(Number(form.monthly_rate) / 30).toFixed(0)}/night
+              ({Math.round((1 - (Number(form.monthly_rate) / 30) / Number(form.base_price)) * 100)}% off your daily rate of ${form.base_price})
+            </p>
           )}
         </div>
 

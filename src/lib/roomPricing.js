@@ -72,15 +72,49 @@ export function computeRoomPricing(room, checkIn, checkOut, roomsCount = 1) {
   }
   const perks = [...perksSet]
 
+  // ─── Long-stay tiers (monthly + weekly) ───
+  // If the stay is long enough, override the per-day total with a tier rate.
+  // Monthly always wins over weekly. The per-night equivalent ensures that
+  // 29-night stays don't pay more than 30-night ones (no perverse threshold).
+  const monthlyRate       = Number(room?.monthly_rate)        || 0
+  const monthlyMinNights  = Number(room?.monthly_min_nights)  || 28
+  const weeklyDiscountPct = Number(room?.weekly_discount_pct) || 0
+  const weeklyMinNights   = Number(room?.weekly_min_nights)   || 7
+
+  let longStayTier  = null      // 'monthly' | 'weekly' | null
+  let longStayLabel = null
+  let perRoomLongStay = perRoomDiscounted
+
+  if (monthlyRate > 0 && nights >= monthlyMinNights) {
+    // Per-night equivalent of the monthly rate, applied across every night.
+    const perNight = monthlyRate / 30
+    perRoomLongStay = perNight * nights
+    longStayTier  = 'monthly'
+    longStayLabel = `Monthly rate ($${monthlyRate.toFixed(0)} / 30 nights)`
+  } else if (weeklyDiscountPct > 0 && nights >= weeklyMinNights) {
+    perRoomLongStay = perRoomOriginal * (1 - weeklyDiscountPct / 100)
+    longStayTier  = 'weekly'
+    longStayLabel = `Weekly rate (−${weeklyDiscountPct}% on stays ≥ ${weeklyMinNights} nights)`
+  }
+
+  // Long-stay rate ONLY overrides if it's actually cheaper than what the
+  // per-day calculation already produced (defensive: a hotelier with a
+  // weak monthly rate + active Half Moon discount shouldn't accidentally
+  // charge MORE for the long stay).
+  const finalPerRoom = longStayTier !== null
+    ? Math.min(perRoomLongStay, perRoomDiscounted)
+    : perRoomDiscounted
+  const longStayApplied = longStayTier !== null && perRoomLongStay <= perRoomDiscounted
+
   const originalTotal = perRoomOriginal * roomsCount
-  const discountedTotal = perRoomDiscounted * roomsCount
+  const discountedTotal = finalPerRoom * roomsCount
   const savings = originalTotal - discountedTotal
   const savingsPct = originalTotal > 0 ? Math.round((savings / originalTotal) * 100) : 0
 
   return {
     nights,
     perRoomOriginal,
-    perRoomDiscounted,
+    perRoomDiscounted: finalPerRoom,         // now reflects long-stay if applied
     originalTotal,
     discountedTotal,
     savings,
@@ -94,5 +128,9 @@ export function computeRoomPricing(room, checkIn, checkOut, roomsCount = 1) {
     minStayRequired,
     minStayOK: nights >= minStayRequired,
     hasBlockedDay,
+    // Long-stay tier surfaces — null if not triggered, populated otherwise
+    longStayTier:    longStayApplied ? longStayTier : null,
+    longStayLabel:   longStayApplied ? longStayLabel : null,
+    perNightEffective: nights > 0 ? finalPerRoom / nights : 0,
   }
 }
