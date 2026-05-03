@@ -16,11 +16,13 @@ import {
   Shield,
   Handshake,
   Receipt,
-  Sparkles
+  Sparkles,
+  TrendingUp
 } from 'lucide-react'
 
 const allNavItems = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
+  { to: '/admin/analytics', icon: TrendingUp, label: 'Analytics' },
   { to: '/admin/users', icon: Users, label: 'Users' },
   { to: '/admin/properties', icon: Building2, label: 'Properties' },
   { to: '/admin/prospects', icon: Sparkles, label: 'Prospects' },

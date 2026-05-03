@@ -1,11 +1,19 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { usePageViewLogger } from './hooks/usePageViewLogger'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
+  return null
+}
+
+// Tiny mount-only component so the page-view hook (which needs <BrowserRouter>
+// + <AuthProvider> in scope) runs once at the App root.
+function PageViewLogger() {
+  usePageViewLogger()
   return null
 }
 import { AuthProvider } from './context/AuthContext'
@@ -51,6 +59,7 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminProperties from './pages/admin/AdminProperties'
 import AdminProspects from './pages/admin/AdminProspects'
+import AdminAnalytics from './pages/admin/AdminAnalytics'
 import AdminSurveys from './pages/admin/AdminSurveys'
 import AdminReferrals from './pages/admin/AdminReferrals'
 import AdminAmbassadors from './pages/admin/AdminAmbassadors'
@@ -62,6 +71,7 @@ export default function App() {
     <BrowserRouter>
       <ScrollToTop />
       <AuthProvider>
+        <PageViewLogger />
         <Routes>
           {/* Admin routes — separate layout, no public Navbar/Footer */}
           <Route path="/admin" element={<AdminGuard><AdminLayout /></AdminGuard>}>
@@ -69,6 +79,7 @@ export default function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="properties" element={<AdminProperties />} />
             <Route path="prospects" element={<AdminProspects />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="surveys" element={<AdminSurveys />} />
             <Route path="referrals" element={<AdminReferrals />} />
             <Route path="ambassadors" element={<AdminAmbassadors />} />
