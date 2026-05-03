@@ -120,26 +120,92 @@
   .bullets li strong { color: var(--deep); }
 
   /* ======================================================
-     "1/5 disappears" loss-visualization band (slide 2)
-     5 blocks across — 4 libre (you keep) + 1 orange (gone),
-     with a giant 1/5 fraction as typographic hero.
+     "1/5 disappears" loss-visualization (slide 2)
+     New layout per David's spec:
+       - Title + 1/5 hero on the same row
+       - 5 cards centered underneath
+       - Explanation text under the cards
+       - Bridge to slide 3
      ====================================================== */
+  .title-with-fraction {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    margin-top: 8px;
+  }
+  .title-with-fraction h1 { margin-top: 0; flex: 1; }
+  .title-fraction {
+    font-weight: 900;
+    font-size: 160px;
+    line-height: 0.9;
+    letter-spacing: -6px;
+    background: var(--grad);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    flex-shrink: 0;
+    padding-right: 8px;
+  }
+  /* Compact OTA pill row */
+  .ota-pills {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-top: 18px;
+    font-size: 13px;
+  }
+  .ota-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: #444;
+  }
+  .ota-pill .ota-letter {
+    width: 22px; height: 22px;
+    background: var(--grad); color: white;
+    border-radius: 6px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 11px;
+  }
+  .ota-pill strong { color: var(--deep); }
+
+  /* 5-cards row, centered */
+  .loss-cards-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 24px 0 16px;
+  }
+  .loss-block {
+    width: 64px; height: 64px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 20px; color: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  }
+
+  /* Caption under the cards */
+  .loss-caption {
+    text-align: center;
+    font-size: 17px;
+    line-height: 1.45;
+    color: #444;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .loss-caption strong { color: var(--deep); }
+  .loss-caption .bridge {
+    display: block; margin-top: 6px;
+    font-size: 13px; color: var(--muted); font-style: italic;
+  }
+
+  /* Old loss-viz grid — keep declared but unused for slide 2 */
   .loss-viz {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 24px;
-    margin: 16px 0 8px;
-    padding: 8px 0;
   }
   .loss-blocks { display: flex; gap: 5px; justify-content: flex-end; }
-  .loss-block {
-    width: 46px; height: 46px;
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: 16px; color: white;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  }
   .loss-block.keep {
     background: linear-gradient(135deg, #1da851, #16a34a);
   }
@@ -381,29 +447,35 @@
      ============================================================ -->
 <section class="slide" data-page="2">
   <h2 style="color: var(--muted); font-weight: 600; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; margin-top: 8px;">The problem</h2>
-  <h1 class="tight">The OTA tax is <span class="gradient">bleeding</span><br/>your business.</h1>
-  <ul class="bullets" style="margin-top: 16px;">
-    <li><span class="ico">B</span><div><strong>Booking.com</strong> &nbsp;·&nbsp; 22% commission</div></li>
-    <li><span class="ico">A</span><div><strong>Agoda</strong> &nbsp;·&nbsp; 18 – 25% commission</div></li>
-    <li><span class="ico">E</span><div><strong>Expedia / Hotels.com</strong> &nbsp;·&nbsp; 20 – 25% commission</div></li>
-  </ul>
 
-  <!-- Loss visualization — 1/5 of every booking disappears -->
-  <div class="loss-viz">
-    <div class="loss-blocks">
-      <div class="loss-block keep">$</div>
-      <div class="loss-block keep">$</div>
-      <div class="loss-block keep">$</div>
-      <div class="loss-block keep">$</div>
-      <div class="loss-block lost">$</div>
-    </div>
-    <div class="loss-fraction">1/5</div>
-    <div class="loss-text">
-      <strong>of every booking disappears</strong>
-      You only see <span class="accent">80%</span> — the rest is taken by OTAs, processors and ad bidders.
-      <div class="small-note">→ slide 3 shows exactly where it goes.</div>
-    </div>
+  <!-- Title row: heading on the left, huge 1/5 fraction on the right -->
+  <div class="title-with-fraction">
+    <h1 class="tight">The OTA tax is <span class="gradient">bleeding</span><br/>your business.</h1>
+    <div class="title-fraction">1/5</div>
   </div>
+
+  <!-- Compact OTA commission pills -->
+  <div class="ota-pills">
+    <div class="ota-pill"><span class="ota-letter">B</span><span><strong>Booking.com</strong> 22%</span></div>
+    <div class="ota-pill"><span class="ota-letter">A</span><span><strong>Agoda</strong> 18–25%</span></div>
+    <div class="ota-pill"><span class="ota-letter">E</span><span><strong>Expedia / Hotels.com</strong> 20–25%</span></div>
+  </div>
+
+  <!-- 5 cards centered: 4 you keep, 1 lost -->
+  <div class="loss-cards-row">
+    <div class="loss-block keep">$</div>
+    <div class="loss-block keep">$</div>
+    <div class="loss-block keep">$</div>
+    <div class="loss-block keep">$</div>
+    <div class="loss-block lost">$</div>
+  </div>
+
+  <!-- Caption under the cards -->
+  <p class="loss-caption">
+    <strong>of every booking disappears.</strong>
+    You only see <span class="accent">80%</span> — the rest is taken by OTAs, processors and ad bidders.
+    <span class="bridge">→ slide 3 shows exactly where it goes.</span>
+  </p>
 
   <div class="callout">
     On a $100 room at 70% occupancy across 10 rooms, you hand over <span class="accent">$56,000 a year</span> to OTAs.
@@ -682,14 +754,17 @@
       <!-- Real QR — generated server-side by qrserver.com from the URL.
            Points to /submit with attribution params so we can track which
            pitches actually convert. Falls back gracefully if offline. -->
-      <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fstaylo.app%2Fsubmit%3Futm_source%3Dpitch_qr%26utm_campaign%3Dhotelier_deck&size=190x190&margin=2&color=2D3436&bgcolor=FFFDF8"
-           alt="Scan to register on staylo.app/submit"
+      <img src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fstaylo.app%2Fwelcome%3Fref%3DSTAYLO-N3CK007%26utm_source%3Dpitch_qr%26utm_campaign%3Dhotelier_deck&size=190x190&margin=2&color=2D3436&bgcolor=FFFDF8"
+           alt="Scan to register on staylo.app — referral code STAYLO-N3CK007"
            style="width: 190px; height: 190px; border: 4px solid var(--deep); border-radius: 12px; padding: 6px; background: white;" />
       <p class="small" style="text-align: center; max-width: 220px; font-weight: 700; color: var(--deep);">
-        staylo.app/submit
+        staylo.app/welcome
       </p>
-      <p class="small" style="text-align: center; max-width: 220px; font-size: 12px;">
-        Free · No credit card · No commitment
+      <p class="small" style="text-align: center; max-width: 220px; font-size: 11px;">
+        Code: <strong style="color: var(--orange); font-family: monospace;">STAYLO-N3CK007</strong>
+      </p>
+      <p class="small" style="text-align: center; max-width: 220px; font-size: 11px; line-height: 1.35; color: var(--green); font-weight: 600;">
+        Every signup via this code funds the<br/>STAYLO Foundation 🛏 (beds for those without one)
       </p>
       <p class="small" style="text-align: center; font-size: 11px; margin-top: 2px;">
         Follow on X: <strong style="color: var(--orange);">@STAYLO_007</strong>
