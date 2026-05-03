@@ -1420,6 +1420,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     extra_bed_max_qty:   1,
     extra_bed_price:     '',
     extra_bed_max_age:   10,
+    communicating_rooms_available: false,
   })
   // Carry photo/video URLs from a source room when "Copy from..." is used.
   // Stored separately because handleSave's regular flow doesn't touch media.
@@ -1435,6 +1436,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
     extra_bed_max_qty:   1,
     extra_bed_price:     '',
     extra_bed_max_age:   10,
+    communicating_rooms_available: false,
   })
 
   function openAdd() {
@@ -1471,6 +1473,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_max_qty:   src.extra_bed_max_qty || 1,
       extra_bed_price:     src.extra_bed_price ?? '',
       extra_bed_max_age:   src.extra_bed_max_age || 10,
+      communicating_rooms_available: !!src.communicating_rooms_available,
     })
     setCopiedMedia({
       photo_urls: [...(src.photo_urls || [])],
@@ -1491,6 +1494,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_max_qty:   room.extra_bed_max_qty || 1,
       extra_bed_price:     room.extra_bed_price ?? '',
       extra_bed_max_age:   room.extra_bed_max_age || 10,
+      communicating_rooms_available: !!room.communicating_rooms_available,
     })
     setShowForm(true)
   }
@@ -1523,6 +1527,7 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
       extra_bed_max_qty:   Number(form.extra_bed_max_qty) || 1,
       extra_bed_price:     form.extra_bed_price ? Number(form.extra_bed_price) : null,
       extra_bed_max_age:   Number(form.extra_bed_max_age) || 10,
+      communicating_rooms_available: !!form.communicating_rooms_available,
     }
 
     if (editingRoom) {
@@ -1833,6 +1838,22 @@ function RoomEditFormCard({
             onChange={e => setForm(f => ({ ...f, quantity: e.target.value }))}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
           />
+        </div>
+
+        {/* ───── Communicating rooms toggle ───── */}
+        <div className="sm:col-span-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox"
+              checked={!!form.communicating_rooms_available}
+              onChange={e => setForm(f => ({ ...f, communicating_rooms_available: e.target.checked }))}
+              className="w-4 h-4 accent-amber-500" />
+            <span className="text-sm font-bold text-deep">
+              🚪 {t('manage.communicating_rooms', 'Communicating rooms available')}
+            </span>
+            <span className="text-[11px] text-gray-400 ml-auto">
+              {t('manage.communicating_rooms_hint', 'At least one pair of this room type connects through an internal door — great for families')}
+            </span>
+          </label>
         </div>
 
         {/* ───── Extra bed (kid only) configuration ───── */}

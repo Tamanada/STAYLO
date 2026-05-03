@@ -481,6 +481,9 @@ function BookingRow({ booking }) {
         <span className="font-medium text-deep flex items-center gap-2">
           {booking.guest_name || 'Guest'}
           <span className="text-[10px] text-gray-400">· {capacity} {capacity === 1 ? 'guest' : 'guests'}</span>
+          {booking.communicating_rooms_requested && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-bold uppercase" title="Guest requested communicating rooms — assign adjoining units">🚪 Connecting</span>
+          )}
           {booking.dispute_status === 'open' && (
             <span className="text-[9px] px-1.5 py-0.5 rounded bg-sunset/15 text-sunset font-bold uppercase">🚩 Dispute</span>
           )}
@@ -582,6 +585,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     extra_beds: 0,
     rate: room.base_price ? String(room.base_price) : '',
     payment_method: 'manual',  // walk-ins typically pay cash / direct
+    communicating_rooms_requested: false,
     special_requests: '',
   })
   // Per-guest registry (TM30 compliance + ops). Auto-resized to adults+children.
@@ -714,6 +718,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
       children:       Number(form.children),
       extra_beds_count:   Number(form.extra_beds) || 0,
       extra_bed_subtotal: Number(extraBedSubtotal.toFixed(2)),
+      communicating_rooms_requested: !!form.communicating_rooms_requested,
       total_price:    Number(totalPrice.toFixed(2)),
       commission:     Number(commission.toFixed(2)),
       currency:       'USD',
@@ -1025,6 +1030,19 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
           ID #1 = lead booker. Nationality = 2-letter code (FR, TH, US, GB...). TM30 details auto-opens for foreign guests, optional for Thais.
         </p>
       </div>
+
+      {/* Communicating rooms — only offered when this room type advertises pairs */}
+      {!!room.communicating_rooms_available && (
+        <label className="flex items-center gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg cursor-pointer">
+          <input type="checkbox" checked={!!form.communicating_rooms_requested}
+            onChange={e => set('communicating_rooms_requested', e.target.checked)}
+            className="accent-amber-500" />
+          <span className="text-xs text-deep">
+            🚪 <strong>Assign communicating rooms</strong>
+            <span className="text-gray-500"> — pair this booking with an adjoining room (family-friendly)</span>
+          </span>
+        </label>
+      )}
 
       <Field label={t('pms.special_requests', 'Special requests (optional)')}>
         <textarea value={form.special_requests} onChange={e => set('special_requests', e.target.value)}

@@ -79,6 +79,7 @@ export default function Checkout() {
   const children = Math.max(0, Number(searchParams.get('children')) || 0)
   const guests   = String(adults + children)        // total used by legacy code paths
   const roomsCount = Math.max(1, Number(searchParams.get('rooms')) || 1)
+  const requestCommunicating = searchParams.get('communicating') === '1'
 
   const [property, setProperty] = useState(null)
   const [room, setRoom] = useState(null)
@@ -240,6 +241,7 @@ export default function Checkout() {
           adults,
           children,
           rooms_count: roomsCount,
+          communicating_rooms_requested: requestCommunicating,
           total_price: totalPrice,
           commission: commission,
           status: 'pending',

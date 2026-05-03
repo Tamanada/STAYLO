@@ -71,6 +71,7 @@ export default function PropertyDetail() {
   const guests = adults + children  // total kept for capacity / display
   const setGuests = (n) => setAdults(Math.max(1, Number(n) || 1))  // legacy compat
   const [roomsCount, setRoomsCount] = useState(Number(searchParams.get('rooms')) || 1)
+  const [requestCommunicating, setRequestCommunicating] = useState(false)
   const [photoIndex, setPhotoIndex] = useState(0)
   const [isFav, setIsFav] = useState(false)
   const [showAllPhotos, setShowAllPhotos] = useState(false)
@@ -195,6 +196,7 @@ export default function PropertyDetail() {
     extraBedMaxQty:    Number(r.extra_bed_max_qty) || 0,
     extraBedPrice:     Number(r.extra_bed_price)   || 0,
     extraBedMaxAge:    Number(r.extra_bed_max_age) || 10,
+    communicatingRoomsAvailable: !!r.communicating_rooms_available,
     // Carry the raw availability rows so we can compute promo + min_stay
     // per the actual selected dates without refetching.
     raw: r,
@@ -823,6 +825,23 @@ export default function PropertyDetail() {
                   </div>
                 )}
 
+                {/* Communicating-rooms request — only shown when booking ≥2 rooms
+                    AND the room type advertises that connecting pairs exist. */}
+                {roomsCount >= 2 && selectedRoomData?.communicatingRoomsAvailable && (
+                  <label className="mb-3 flex items-start gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg cursor-pointer">
+                    <input type="checkbox"
+                      checked={requestCommunicating}
+                      onChange={e => setRequestCommunicating(e.target.checked)}
+                      className="mt-0.5 accent-amber-500" />
+                    <div className="text-xs">
+                      <strong className="text-deep">🚪 Request communicating rooms</strong>
+                      <p className="text-gray-500 mt-0.5">
+                        We'll try to give you adjoining rooms with an internal door (subject to availability — confirmed at check-in).
+                      </p>
+                    </div>
+                  </label>
+                )}
+
                 {/* Capacity warning — never silent overbooking */}
                 {guestsExceedRoom && (
                   <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-xs">
@@ -908,7 +927,7 @@ export default function PropertyDetail() {
                   disabled={!selectedRoom || guestsExceedRoom || childrenNotAllowed}
                   onClick={() => {
                     if (!selectedRoom || guestsExceedRoom || childrenNotAllowed) return
-                    navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}`)
+                    navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}${requestCommunicating ? '&communicating=1' : ''}`)
                   }}
                   className={`w-full py-3.5 rounded-lg font-bold text-base transition-all ${
                     selectedRoom && !guestsExceedRoom && !childrenNotAllowed
