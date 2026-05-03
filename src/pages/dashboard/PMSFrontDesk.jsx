@@ -546,13 +546,36 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
   const totalPrice = nights * (Number(form.rate) || 0)
   const commission = totalPrice * 0.10
 
-  // Conflict check — refuse if these dates overlap an existing booking
+  // Conflict check — count overlapping ACTIVE bookings on each day in the
+  // requested range. Refuse only when a day already has room.quantity
+  // bookings (i.e. all units of this room TYPE are taken). With Jungle ×3,
+  // 1 existing walk-in + new walk-in = 2 → still 1 free, so allowed.
   const conflict = useMemo(() => {
-    return existingBookings.find(b =>
-      // overlap: a.check_in < b.check_out AND a.check_out > b.check_in
-      form.check_in < b.check_out && form.check_out > b.check_in
-    )
-  }, [existingBookings, form.check_in, form.check_out])
+    const qty = Math.max(1, Number(room.quantity) || 1)
+    const a = new Date(form.check_in + 'T00:00:00Z')
+    const b = new Date(form.check_out + 'T00:00:00Z')
+    if (!(b > a)) return null
+    // Walk every date in [check_in, check_out)
+    for (let d = new Date(a); d < b; d.setUTCDate(d.getUTCDate() + 1)) {
+      const iso = d.toISOString().slice(0, 10)
+      const overlapping = existingBookings.filter(bk =>
+        bk.check_in <= iso && bk.check_out > iso &&
+        // Only "active" statuses occupy a slot; cancelled/refunded/etc. don't
+        ['pending', 'confirmed', 'checked_in'].includes(bk.status)
+      )
+      if (overlapping.length >= qty) {
+        // Surface the FIRST conflicting booking on the saturated day for the
+        // error message (so the receptionist sees a real name to investigate).
+        return {
+          ...overlapping[0],
+          saturated_on: iso,
+          overlap_count: overlapping.length,
+          quantity: qty,
+        }
+      }
+    }
+    return null
+  }, [existingBookings, form.check_in, form.check_out, room.quantity])
 
   async function handleSave() {
     setError('')
@@ -792,8 +815,8 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
       {conflict && (
         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
           <AlertCircle size={14} className="inline mr-1" />
-          Conflicts with existing booking {conflict.check_in} → {conflict.check_out}
-          {conflict.guest_name ? ` (${conflict.guest_name})` : ''}
+          <strong>Fully booked on {conflict.saturated_on}</strong> — all {conflict.quantity} {room.name} units already taken
+          {conflict.guest_name ? ` (incl. ${conflict.guest_name} ${conflict.check_in} → ${conflict.check_out})` : ''}
         </div>
       )}
       {error && (
