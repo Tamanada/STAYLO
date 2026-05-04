@@ -580,6 +580,7 @@ function ProspectModal({ prospect, onClose, onSaved }) {
   const [website, setWebsite]               = useState('')
   const [contactName, setContactName]       = useState('')
   const [contactPosition, setContactPosition] = useState('')
+  const [address, setAddress]               = useState('')
   // Tri-state license: null = unchecked, true = licensed, false = unlicensed
   const [licensed, setLicensed]             = useState(null)
   const [licenseNumber, setLicenseNumber]   = useState('')
@@ -606,6 +607,7 @@ function ProspectModal({ prospect, onClose, onSaved }) {
     setWebsite(prospect.website || '')
     setContactName(prospect.contact_name || '')
     setContactPosition(prospect.contact_position || '')
+    setAddress(prospect.address || '')
     setLicensed(prospect.licensed === undefined ? null : prospect.licensed)
     setLicenseNumber(prospect.license_number || '')
     setError('')
@@ -634,7 +636,8 @@ function ProspectModal({ prospect, onClose, onSaved }) {
       (phone.trim()           || null) !== (prospect.phone            || null) ||
       (website.trim()         || null) !== (prospect.website          || null) ||
       (contactName.trim()     || null) !== (prospect.contact_name     || null) ||
-      (contactPosition.trim() || null) !== (prospect.contact_position || null)
+      (contactPosition.trim() || null) !== (prospect.contact_position || null) ||
+      (address.trim()         || null) !== (prospect.address          || null)
 
     const payload = {
       status,
@@ -645,6 +648,7 @@ function ProspectModal({ prospect, onClose, onSaved }) {
       website:          website.trim()          || null,
       contact_name:     contactName.trim()      || null,
       contact_position: contactPosition.trim()  || null,
+      address:          address.trim()          || null,
       ...(wasContacted ? {
         contacted_at: new Date().toISOString(),
         contact_count: (prospect.contact_count || 0) + 1,
@@ -705,6 +709,7 @@ function ProspectModal({ prospect, onClose, onSaved }) {
         setWebsite(json.prospect.website || '')
         setContactName(json.prospect.contact_name || '')
         setContactPosition(json.prospect.contact_position || '')
+        setAddress(json.prospect.address || '')
         setLicensed(json.prospect.licensed === undefined ? null : json.prospect.licensed)
         setLicenseNumber(json.prospect.license_number || '')
         onSaved(json.prospect)
@@ -725,6 +730,7 @@ function ProspectModal({ prospect, onClose, onSaved }) {
     const cleanWebsite   = website.trim()         || null
     const cleanName      = contactName.trim()     || null
     const cleanPos       = contactPosition.trim() || null
+    const cleanAddress   = address.trim()         || null
     const cleanLicNum    = licenseNumber.trim()   || null
     const prevLicensed   = prospect.licensed === undefined ? null : prospect.licensed
 
@@ -734,6 +740,7 @@ function ProspectModal({ prospect, onClose, onSaved }) {
       cleanWebsite   !== (prospect.website          || null) ||
       cleanName      !== (prospect.contact_name     || null) ||
       cleanPos       !== (prospect.contact_position || null) ||
+      cleanAddress   !== (prospect.address          || null) ||
       licensed       !== prevLicensed                        ||
       cleanLicNum    !== (prospect.license_number   || null)
 
@@ -747,6 +754,7 @@ function ProspectModal({ prospect, onClose, onSaved }) {
       website:          cleanWebsite,
       contact_name:     cleanName,
       contact_position: cleanPos,
+      address:          cleanAddress,
       licensed,                                         // boolean | null
       license_number:   cleanLicNum,
       ...(licenseChanged ? {
@@ -981,6 +989,18 @@ function ProspectModal({ prospect, onClose, onSaved }) {
                 placeholder="Owner / GM / Front desk / Marketing"
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </ProspectField>
+            {/* Street-level address — full-width row, 2 lines high so a
+                full Thai-style address (moo, road, sub-district, district)
+                fits without scrolling. */}
+            <div className="sm:col-span-2">
+              <ProspectField label="Address" icon={MapPin}>
+                <textarea value={address} rows={2}
+                  onChange={e => setAddress(e.target.value)}
+                  onBlur={() => autoSaveContacts()}
+                  placeholder="123 Moo 5, Baan Tai, Koh Phangan 84280 — multi-line OK"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 resize-y" />
+              </ProspectField>
+            </div>
           </div>
 
           {/* ───── Thai government license (Hotel Act B.E. 2547) ───── */}
