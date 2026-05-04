@@ -2268,24 +2268,40 @@ function RoomEditFormCard({
                           </p>
                         ) : (
                           <div className="space-y-1">
-                            {dates.map((d, i) => (
-                              <div key={i} className="flex items-center gap-1 text-[11px]">
-                                <input type="date" value={d.start || ''}
-                                  onChange={e => updatePackageDateBlock?.(pkg.id, i, 'start', e.target.value)}
-                                  className="px-1.5 py-0.5 rounded border border-gray-200 text-[11px]" />
-                                <span className="text-gray-400">→</span>
-                                <input type="date" value={d.end || ''}
-                                  onChange={e => updatePackageDateBlock?.(pkg.id, i, 'end', e.target.value)}
-                                  min={d.start || undefined}
-                                  className="px-1.5 py-0.5 rounded border border-gray-200 text-[11px]" />
-                                <button type="button"
-                                  onClick={() => removePackageDateBlock?.(pkg.id, i)}
-                                  className="ml-auto p-1 text-gray-400 hover:text-sunset"
-                                  title="Remove this window">
-                                  <X size={12} />
-                                </button>
-                              </div>
-                            ))}
+                            {dates.map((d, i) => {
+                              // Inclusive duration in days. Same date start=end = 1 day.
+                              // Used for the hover tooltip.
+                              let durationDays = null
+                              if (d.start && d.end && d.end >= d.start) {
+                                const ms = new Date(d.end + 'T00:00:00') - new Date(d.start + 'T00:00:00')
+                                durationDays = Math.round(ms / (1000 * 60 * 60 * 24)) + 1
+                              }
+                              return (
+                                <div key={i} className="group relative flex items-center gap-1 text-[11px]">
+                                  {/* Hover popup — shows number of days covered */}
+                                  {durationDays !== null && (
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 z-30 bg-deep text-white text-[11px] font-semibold px-2.5 py-1 rounded-md shadow-lg whitespace-nowrap">
+                                      {durationDays} day{durationDays > 1 ? 's' : ''} ({durationDays - 1} night{durationDays - 1 === 1 ? '' : 's'})
+                                      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-deep rotate-45" />
+                                    </div>
+                                  )}
+                                  <input type="date" value={d.start || ''}
+                                    onChange={e => updatePackageDateBlock?.(pkg.id, i, 'start', e.target.value)}
+                                    className="px-1.5 py-0.5 rounded border border-gray-200 text-[11px]" />
+                                  <span className="text-gray-400">→</span>
+                                  <input type="date" value={d.end || ''}
+                                    onChange={e => updatePackageDateBlock?.(pkg.id, i, 'end', e.target.value)}
+                                    min={d.start || undefined}
+                                    className="px-1.5 py-0.5 rounded border border-gray-200 text-[11px]" />
+                                  <button type="button"
+                                    onClick={() => removePackageDateBlock?.(pkg.id, i)}
+                                    className="ml-auto p-1 text-gray-400 hover:text-sunset"
+                                    title="Remove this window">
+                                    <X size={12} />
+                                  </button>
+                                </div>
+                              )
+                            })}
                           </div>
                         )}
                       </div>
