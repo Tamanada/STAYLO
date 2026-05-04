@@ -68,6 +68,7 @@ export default function PropertyDetail() {
   const [photoIndex, setPhotoIndex] = useState(0)
   const [isFav, setIsFav] = useState(false)
   const [showAllPhotos, setShowAllPhotos] = useState(false)
+  const [showAllAmenities, setShowAllAmenities] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState(null)
   // Lightbox for room media — { photos: string[], videos: string[], idx: number, name: string } | null
   // Combines videos (first) + photos so prev/next navigates through the whole gallery.
@@ -439,10 +440,10 @@ export default function PropertyDetail() {
               <h2 className="text-lg font-bold text-gray-900 mb-3">{t('booking.about', 'About this property')}</h2>
               <p className="text-sm text-gray-600 leading-relaxed mb-4">{property.desc}</p>
 
-              {/* Amenities grid */}
+              {/* Amenities grid — show first 12, expand to all on click */}
               <h3 className="text-sm font-bold text-gray-900 mb-3">{t('booking.amenities', 'All amenities')} ({property.amenities.length})</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {property.amenities.map(a => {
+                {(showAllAmenities ? property.amenities : property.amenities.slice(0, 12)).map(a => {
                   const { icon: Icon, label } = getAmenityMeta(a)
                   return (
                     <div key={a} className="flex items-center gap-2.5 py-2 px-3 bg-gray-50 rounded-lg text-sm text-gray-700">
@@ -452,6 +453,17 @@ export default function PropertyDetail() {
                   )
                 })}
               </div>
+              {property.amenities.length > 12 && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllAmenities(v => !v)}
+                  className="mt-3 text-sm font-semibold text-libre hover:underline"
+                >
+                  {showAllAmenities
+                    ? t('booking.amenities_collapse', 'Show less')
+                    : t('booking.amenities_expand', `Show all ${property.amenities.length} amenities`)}
+                </button>
+              )}
             </div>
 
             {/* ── Room Selection ─────────────── */}
@@ -608,9 +620,10 @@ export default function PropertyDetail() {
                               </div>
                               {room.desc && <p className="text-xs text-gray-500 mb-2">{room.desc}</p>}
 
-                              {/* Room amenities — every key, no silent skip */}
+                              {/* Room amenities — first 8, rest in a tooltip
+                                  (full list lives in "All amenities" above) */}
                               <div className="flex flex-wrap gap-1.5 mb-2">
-                                {(room.amenities || []).map(a => {
+                                {(room.amenities || []).slice(0, 8).map(a => {
                                   const { icon: Icon, label } = getAmenityMeta(a)
                                   return (
                                     <span key={a} className="flex items-center gap-1 text-[11px] text-gray-600 bg-gray-50 px-2 py-0.5 rounded">
@@ -618,6 +631,14 @@ export default function PropertyDetail() {
                                     </span>
                                   )
                                 })}
+                                {(room.amenities || []).length > 8 && (
+                                  <span
+                                    className="flex items-center gap-1 text-[11px] text-libre bg-libre/10 px-2 py-0.5 rounded cursor-help"
+                                    title={(room.amenities || []).slice(8).map(a => getAmenityMeta(a).label).join(' · ')}
+                                  >
+                                    +{(room.amenities || []).length - 8} more
+                                  </span>
+                                )}
                               </div>
 
                               <div className="flex items-center gap-3 text-xs text-[#008009]">
