@@ -1049,6 +1049,25 @@ export default function PropertyDetail() {
                       // Use effective bed count for per-bed rooms — picker is hidden, derived from guests
                       const computeUnits = room.raw?.pricing_unit === 'bed' ? effectiveRoomsCount : roomsCount
                       const pricing = computeRoomPricing(room.raw, checkIn, checkOut, computeUnits)
+
+                      // ── Apply selected package (if any) using its room-specific qty
+                      const pkg = selectedPackage
+                        ? allPackages.find(p => p.id === selectedPackage)
+                        : null
+                      const pkgLink = pkg
+                        ? (roomPackageMap[selectedRoom] || []).find(rp => rp.id === pkg.id)
+                        : null
+                      const pkgQty = pkgLink?.qty || 1
+                      const guestCount = Number(adults) + Number(children)
+                      const pkgPricing = applyPackagePricing(pricing, pkg, pricing.nights, pkgQty, guestCount)
+                      const packageCost = pkgPricing.packageCost || 0
+                      const packageMode = pkgPricing.packageMode
+
+                      const extraBedTotal = extraBedsUsed * (selectedRoomData?.extraBedPrice || 0) * pricing.nights
+                      // 'replace' mode: package overrides the room rate entirely
+                      const effectiveRoomTotal = packageMode === 'replace' ? 0 : pricing.discountedTotal
+                      const subtotal = effectiveRoomTotal + extraBedTotal + packageCost
+
                       return (
                         <>
                           <div className="flex justify-between text-gray-600">
@@ -1062,7 +1081,11 @@ export default function PropertyDetail() {
                                 </span>
                               )}
                             </span>
-                            <span className={pricing.hasPromo && pricing.savings > 0 ? 'text-gray-400 line-through' : ''}>
+                            <span className={
+                              (pricing.hasPromo && pricing.savings > 0) || packageMode === 'replace'
+                                ? 'text-gray-400 line-through'
+                                : ''
+                            }>
                               ${pricing.originalTotal.toFixed(2)}
                             </span>
                           </div>
@@ -1083,12 +1106,23 @@ export default function PropertyDetail() {
                               <span>
                                 🛏️ Extra bed × {extraBedsUsed} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
                               </span>
-                              <span>+${(extraBedsUsed * (selectedRoomData?.extraBedPrice || 0) * pricing.nights).toFixed(2)}</span>
+                              <span>+${extraBedTotal.toFixed(2)}</span>
+                            </div>
+                          )}
+                          {pkg && (
+                            <div className="flex justify-between text-libre font-medium">
+                              <span>
+                                ✨ {pkg.name}
+                                <span className="text-[10px] text-gray-400 ml-1">
+                                  ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'}{pkgQty > 1 ? ` · ${pkgQty}× $${Number(pkg.price).toFixed(0)}` : ''})
+                                </span>
+                              </span>
+                              <span>{packageMode === 'replace' ? '' : '+'}${packageCost.toFixed(2)}</span>
                             </div>
                           )}
                           <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
                             <span>{t('booking.subtotal', 'Subtotal')}</span>
-                            <span>${(pricing.discountedTotal + (extraBedsUsed * (selectedRoomData?.extraBedPrice || 0) * pricing.nights)).toFixed(2)}</span>
+                            <span>${subtotal.toFixed(2)}</span>
                           </div>
                           <p className="text-[11px] text-gray-400 pt-1 leading-snug">
                             {t('booking.fees_at_checkout', 'Payment processing fees added at checkout (free with Bitcoin Lightning).')}
