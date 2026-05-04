@@ -763,7 +763,7 @@ function CalendarStrip({ room, bookings }) {
       </p>
 
       <div className="grid grid-cols-7 gap-1">
-        {days.map(d => {
+        {days.map((d, dayIdx) => {
           const dayBookings = findBookings(d)
           const arrivals    = findArrivals(d)
           const occupied    = dayBookings.length
@@ -811,9 +811,26 @@ function CalendarStrip({ room, bookings }) {
               )}
 
               {/* ── Rich hover popup — full guest info for the day.
+                  Anchor switches to keep the popup inside the modal:
+                  - first 2 columns of the row → align to the LEFT edge of the cell
+                  - last  2 columns of the row → align to the RIGHT edge
+                  - middle 3 columns           → centred (default)
                   pointer-events-none so it never blocks clicks. */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-72 max-w-[90vw] bg-white rounded-xl shadow-2xl border border-gray-200 p-3 text-left">
-                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200" />
+              {(() => {
+                const col = dayIdx % 7
+                const anchorCls = col <= 1
+                  ? 'left-0'
+                  : col >= 5
+                    ? 'right-0'
+                    : 'left-1/2 -translate-x-1/2'
+                const arrowCls = col <= 1
+                  ? 'left-4'
+                  : col >= 5
+                    ? 'right-4'
+                    : 'left-1/2 -translate-x-1/2'
+                return (
+              <div className={`opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none absolute bottom-full ${anchorCls} mb-2 z-50 w-72 max-w-[calc(100vw-1rem)] bg-white rounded-xl shadow-2xl border border-gray-200 p-3 text-left`}>
+                <div className={`absolute -bottom-1.5 ${arrowCls} w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200`} />
 
                 {/* Header — date + occupancy */}
                 <div className="flex items-baseline justify-between pb-2 mb-2 border-b border-gray-100">
@@ -874,6 +891,8 @@ function CalendarStrip({ room, bookings }) {
                   </div>
                 )}
               </div>
+                )
+              })()}
             </div>
           )
         })}
