@@ -112,6 +112,10 @@ export default function OTASearch() {
         // unique keys, deterministic order. Empty array if rooms have none.
         amenities: aggregatePropertyAmenities(pRooms),
         desc: p.description || '',
+        // Long-stay friendly = at least one room has a monthly rate or
+        // weekly discount configured. Surfaced as a badge so digital
+        // nomads / slow travelers spot the offer in the result list.
+        hasLongStay: pRooms.some(r => Number(r.monthly_rate) > 0 || Number(r.weekly_discount_pct) > 0),
         isReal: true,
       }
     })
@@ -551,6 +555,12 @@ export default function OTASearch() {
                                 {prop.min_age && (
                                   <span className="text-[10px] font-bold uppercase tracking-wider text-orange bg-orange/10 px-1.5 py-0.5 rounded border border-orange/20">
                                     🔞 {prop.min_age}+ only
+                                  </span>
+                                )}
+                                {prop.hasLongStay && (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-libre bg-libre/10 px-1.5 py-0.5 rounded border border-libre/20"
+                                    title="Weekly and/or monthly long-stay rates available">
+                                    <Calendar size={10} /> Long-stay friendly
                                   </span>
                                 )}
                               </div>

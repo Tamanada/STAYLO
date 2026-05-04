@@ -192,6 +192,12 @@ export default function PropertyDetail() {
     extraBedMaxAge:        Number(r.extra_bed_max_age) || 10,
     extraBedAdultsAllowed: !!r.extra_bed_adults_allowed,
     communicatingRoomsAvailable: !!r.communicating_rooms_available,
+    // Long-stay tiers — surfaced as permanent info regardless of selected
+    // dates so browsers see them and consider extending their stay.
+    monthlyRate:        Number(r.monthly_rate)        || 0,
+    monthlyMinNights:   Number(r.monthly_min_nights)  || 28,
+    weeklyDiscountPct:  Number(r.weekly_discount_pct) || 0,
+    weeklyMinNights:    Number(r.weekly_min_nights)   || 7,
     // Carry the raw availability rows so we can compute promo + min_stay
     // per the actual selected dates without refetching.
     raw: r,
@@ -685,6 +691,29 @@ export default function PropertyDetail() {
                                   </p>
                                 )}
                               </div>
+
+                              {/* Permanent long-stay info — visible regardless
+                                  of selected dates so digital nomads & slow
+                                  travelers spot the offer in one glance. */}
+                              {(room.monthlyRate > 0 || room.weeklyDiscountPct > 0) && (
+                                <div className="mt-2 w-full rounded-lg border border-libre/30 bg-libre/5 px-3 py-2 text-left">
+                                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-libre uppercase tracking-wide mb-1">
+                                    <Calendar size={12} /> Long-stay rates
+                                  </div>
+                                  {room.weeklyDiscountPct > 0 && (
+                                    <div className="flex justify-between text-[11px] text-deep">
+                                      <span>Weekly (≥{room.weeklyMinNights} nts)</span>
+                                      <span className="font-semibold">−{room.weeklyDiscountPct}%</span>
+                                    </div>
+                                  )}
+                                  {room.monthlyRate > 0 && (
+                                    <div className="flex justify-between text-[11px] text-deep">
+                                      <span>Monthly (≥{room.monthlyMinNights} nts)</span>
+                                      <span className="font-semibold">${(room.monthlyRate / 30).toFixed(0)}/night</span>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
 
                               <button
                                 onClick={() => pricing.minStayOK && setSelectedRoom(room.id)}
