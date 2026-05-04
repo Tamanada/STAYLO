@@ -6,8 +6,10 @@ import {
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
   ChevronLeft, ChevronRight, X, Save, Loader2, Ban, Check,
   Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw, Gift,
-  Settings as SettingsIcon, UserPlus, Shield, Mail, Crown
+  Settings as SettingsIcon, UserPlus, Shield, Mail, Crown,
+  Package as PackageIcon
 } from 'lucide-react'
+import PackagesTab from './PackagesTab'
 import RewardModal from '../../components/dashboard/RewardModal'
 import PhoneInput from '../../components/ui/PhoneInput'
 import { Card } from '../../components/ui/Card'
@@ -114,6 +116,7 @@ const tabs = [
   { key: 'photos', icon: Camera, label: 'Photos' },
   { key: 'videos', icon: Video, label: 'Videos' },
   { key: 'rooms', icon: BedDouble, label: 'Rooms' },
+  { key: 'packages', icon: PackageIcon, label: 'Packages' },
   { key: 'calendar', icon: Calendar, label: 'Availability' },
   { key: 'bookings', icon: ClipboardList, label: 'Bookings' },
   { key: 'team', icon: Users, label: 'Team' },
@@ -254,6 +257,7 @@ export default function PropertyManage() {
       {activeTab === 'photos' && <PhotosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'videos' && <VideosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
+      {activeTab === 'packages' && <PackagesTab propertyId={propertyId} rooms={rooms} />}
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'team' && <TeamTab property={property} />}
