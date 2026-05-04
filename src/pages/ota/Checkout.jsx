@@ -567,34 +567,39 @@ export default function Checkout() {
 
               {/* Price breakdown — transparent: room, hotelier-net, processing fee, total */}
               <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">
-                    {room.name} × {nights} {nights === 1 ? 'night' : 'nights'}
-                    {roomsCount > 1 && <span className="text-gray-400"> × {roomsCount} rooms</span>}
-                  </span>
-                  <span className={pricing.hasPromo && pricing.savings > 0 ? 'text-gray-400 line-through' : 'text-deep'}>
-                    ${pricing.originalTotal.toFixed(2)}
-                  </span>
-                </div>
-                {pricing.hasPromo && pricing.savings > 0 && !pricing.longStayTier && (
-                  <div className="flex justify-between text-orange font-medium text-xs">
-                    <span>🔥 {pricing.promoLabel || 'Promo'}{pricing.promoPct > 0 && ` (−${Math.round(pricing.promoPct)}%)`}</span>
-                    <span>−${pricing.savings.toFixed(2)}</span>
-                  </div>
-                )}
-                {pricing.longStayTier && (
-                  <div className="flex justify-between text-libre font-medium text-xs">
-                    <span>🗓️ {pricing.longStayLabel}</span>
-                    <span>−${pricing.savings.toFixed(2)}</span>
-                  </div>
-                )}
-                {(pricing.savings > 0) && (
-                  <div className="flex justify-between font-medium pt-1 border-t border-gray-100">
-                    <span className="text-deep">Room subtotal</span>
-                    <span className={packageMode === 'replace' ? 'text-gray-400 line-through' : 'text-deep'}>
-                      ${roomTotal.toFixed(2)}
-                    </span>
-                  </div>
+                {/* When the package is "all-inclusive" (replace mode), the
+                    room rate is already inside the package — hide all room
+                    math entirely so the breakdown stays honest. */}
+                {packageMode !== 'replace' && (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">
+                        {room.name} × {nights} {nights === 1 ? 'night' : 'nights'}
+                        {roomsCount > 1 && <span className="text-gray-400"> × {roomsCount} rooms</span>}
+                      </span>
+                      <span className={pricing.hasPromo && pricing.savings > 0 ? 'text-gray-400 line-through' : 'text-deep'}>
+                        ${pricing.originalTotal.toFixed(2)}
+                      </span>
+                    </div>
+                    {pricing.hasPromo && pricing.savings > 0 && !pricing.longStayTier && (
+                      <div className="flex justify-between text-orange font-medium text-xs">
+                        <span>🔥 {pricing.promoLabel || 'Promo'}{pricing.promoPct > 0 && ` (−${Math.round(pricing.promoPct)}%)`}</span>
+                        <span>−${pricing.savings.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {pricing.longStayTier && (
+                      <div className="flex justify-between text-libre font-medium text-xs">
+                        <span>🗓️ {pricing.longStayLabel}</span>
+                        <span>−${pricing.savings.toFixed(2)}</span>
+                      </div>
+                    )}
+                    {(pricing.savings > 0) && (
+                      <div className="flex justify-between font-medium pt-1 border-t border-gray-100">
+                        <span className="text-deep">Room subtotal</span>
+                        <span className="text-deep">${roomTotal.toFixed(2)}</span>
+                      </div>
+                    )}
+                  </>
                 )}
                 {pkg && (
                   <div className="flex justify-between text-libre font-medium pt-1 border-t border-gray-100">

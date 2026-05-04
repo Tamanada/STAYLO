@@ -141,8 +141,8 @@ export default function PropertyManage() {
       supabase.from('properties').select('*').eq('id', propertyId).single(),
       supabase.from('rooms').select('*').eq('property_id', propertyId).order('created_at'),
       supabase.from('bookings').select('*').eq('property_id', propertyId).order('created_at', { ascending: false }),
-      // Pull qty from the junction so room form can pre-populate it
-      supabase.from('packages').select('*, room_packages(room_id, qty)').eq('property_id', propertyId),
+      // Pull qty + date_blocks from the junction for the room form
+      supabase.from('packages').select('*, room_packages(room_id, qty, date_blocks)').eq('property_id', propertyId),
     ])
     setProperty(propRes.data)
     // Decorate each room with its linked packages (with qty) so RoomsTab
@@ -153,7 +153,9 @@ export default function PropertyManage() {
       _packages: allPkgs
         .map(p => {
           const link = (p.room_packages || []).find(rp => rp.room_id === r.id)
-          return link ? { ...p, _qty: link.qty || 1 } : null
+          return link
+            ? { ...p, _qty: link.qty || 1, _dateBlocks: Array.isArray(link.date_blocks) ? link.date_blocks : [] }
+            : null
         })
         .filter(Boolean),
     }))
@@ -1432,7 +1434,8 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
   const [showForm, setShowForm] = useState(false)
   const [editingRoom, setEditingRoom] = useState(null)
   const [saving, setSaving] = useState(false)
-  // Linked packages on the room being edited: { [packageId]: qty }
+  // Linked packages on the room being edited:
+  //   { [packageId]: { qty: number, dates: [{start, end}, ...] } }
   // Pre-loaded from room._packages on openEdit, reset on openAdd.
   const [linkedPkgs, setLinkedPkgs] = useState({})
   const [form, setForm] = useState({
@@ -1545,9 +1548,11 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       weekly_discount_pct: room.weekly_discount_pct || 0,
       weekly_min_nights:   room.weekly_min_nights || 7,
     })
-    // Pre-populate linked packages from the decorated room (with qty).
+    // Pre-populate linked packages from the decorated room (with qty + dates).
     const seed = {}
-    for (const p of (room._packages || [])) seed[p.id] = p._qty || 1
+    for (const p of (room._packages || [])) {
+      seed[p.id] = { qty: p._qty || 1, dates: p._dateBlocks || [] }
+    }
     setLinkedPkgs(seed)
     setShowForm(true)
   }
@@ -1560,15 +1565,51 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
         const { [pkgId]: _, ...rest } = prev
         return rest
       }
-      // Auto qty: room capacity is the natural unit count for per-person packages
       const autoQty = Math.max(1, Number(form.max_guests) || 1)
-      return { ...prev, [pkgId]: autoQty }
+      return { ...prev, [pkgId]: { qty: autoQty, dates: [] } }
     })
   }
 
   function setPackageQty(pkgId, qty) {
     const n = Math.max(1, Math.min(50, Number(qty) || 1))
-    setLinkedPkgs(prev => ({ ...prev, [pkgId]: n }))
+    setLinkedPkgs(prev => ({
+      ...prev,
+      [pkgId]: { ...(prev[pkgId] || { dates: [] }), qty: n },
+    }))
+  }
+
+  // ── Date blocks per linked package — array of {start, end} in YYYY-MM-DD ──
+  function addPackageDateBlock(pkgId) {
+    setLinkedPkgs(prev => {
+      const cur = prev[pkgId]
+      if (!cur) return prev
+      const today = new Date().toISOString().slice(0, 10)
+      return {
+        ...prev,
+        [pkgId]: { ...cur, dates: [...(cur.dates || []), { start: today, end: today }] },
+      }
+    })
+  }
+
+  function updatePackageDateBlock(pkgId, idx, field, value) {
+    setLinkedPkgs(prev => {
+      const cur = prev[pkgId]
+      if (!cur) return prev
+      const next = [...(cur.dates || [])]
+      next[idx] = { ...next[idx], [field]: value }
+      return { ...prev, [pkgId]: { ...cur, dates: next } }
+    })
+  }
+
+  function removePackageDateBlock(pkgId, idx) {
+    setLinkedPkgs(prev => {
+      const cur = prev[pkgId]
+      if (!cur) return prev
+      return {
+        ...prev,
+        [pkgId]: { ...cur, dates: (cur.dates || []).filter((_, i) => i !== idx) },
+      }
+    })
   }
 
   // Refresh single room from DB after a media update inside the form, so
@@ -1625,11 +1666,14 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       savedRoomId = insertedRoom?.id
     }
 
-    // Sync room↔package links (drop & re-insert with qty).
+    // Sync room↔package links (drop & re-insert with qty + date_blocks).
     if (!opError && savedRoomId) {
       await supabase.from('room_packages').delete().eq('room_id', savedRoomId)
-      const rows = Object.entries(linkedPkgs).map(([package_id, qty]) => ({
-        room_id: savedRoomId, package_id, qty,
+      const rows = Object.entries(linkedPkgs).map(([package_id, val]) => ({
+        room_id:     savedRoomId,
+        package_id,
+        qty:         val.qty || 1,
+        date_blocks: Array.isArray(val.dates) ? val.dates.filter(d => d.start && d.end) : [],
       }))
       if (rows.length > 0) {
         const { error: linkErr } = await supabase.from('room_packages').insert(rows)
@@ -1686,6 +1730,7 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
     handleSave, saving, setShowForm,
     toggleAmenity, propertyId, refreshRoomMedia,
     packages, linkedPkgs, togglePackageLink, setPackageQty,
+    addPackageDateBlock, updatePackageDateBlock, removePackageDateBlock,
     onJumpToPackages,
   }
 
@@ -1828,6 +1873,7 @@ function RoomEditFormCard({
   handleSave, saving, setShowForm,
   toggleAmenity, propertyId, refreshRoomMedia,
   packages = [], linkedPkgs = {}, togglePackageLink, setPackageQty,
+  addPackageDateBlock, updatePackageDateBlock, removePackageDateBlock,
   onJumpToPackages,
 }) {
   return (
@@ -2162,36 +2208,87 @@ function RoomEditFormCard({
           ) : (
             <div className="space-y-2">
               {packages.map(pkg => {
-                const linked = !!linkedPkgs[pkg.id]
-                const qty    = linkedPkgs[pkg.id] || 1
+                const link = linkedPkgs[pkg.id]
+                const linked = !!link
+                const qty    = link?.qty || 1
+                const dates  = link?.dates || []
                 const unitPrice = Number(pkg.price) || 0
                 const lineTotal = unitPrice * qty
                 return (
                   <div key={pkg.id}
-                    className={`flex items-center gap-3 p-2.5 rounded-lg border ${
+                    className={`p-2.5 rounded-lg border ${
                       linked ? 'border-orange/40 bg-white' : 'border-gray-200 bg-white/60'
                     }`}>
-                    <input type="checkbox" checked={linked}
-                      onChange={() => togglePackageLink(pkg.id)}
-                      className="w-4 h-4 accent-orange flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-deep truncate">{pkg.name}</div>
-                      <div className="text-[11px] text-gray-500">
-                        ${unitPrice.toFixed(0)}/unit · {pkg.pricing_type?.replace('_', ' ')} · {pkg.pricing_mode}
+                    <div className="flex items-center gap-3">
+                      <input type="checkbox" checked={linked}
+                        onChange={() => togglePackageLink(pkg.id)}
+                        className="w-4 h-4 accent-orange flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-deep truncate">{pkg.name}</div>
+                        <div className="text-[11px] text-gray-500">
+                          ${unitPrice.toFixed(0)}/unit · {pkg.pricing_type?.replace('_', ' ')} · {pkg.pricing_mode}
+                        </div>
                       </div>
+                      {linked && (
+                        <>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <span className="text-[11px] text-gray-400">qty</span>
+                            <input type="number" min={1} max={50} value={qty}
+                              onChange={e => setPackageQty(pkg.id, e.target.value)}
+                              className="w-14 px-2 py-1 rounded border border-gray-200 text-sm text-center" />
+                          </div>
+                          <div className="text-xs font-bold text-orange w-20 text-right">
+                            = ${lineTotal.toFixed(0)}
+                          </div>
+                        </>
+                      )}
                     </div>
+
+                    {/* ── Date blocks — when this package is offered for this room.
+                        Empty = always available. Multiple windows supported
+                        (Full Moon happens monthly etc.). */}
                     {linked && (
-                      <>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <span className="text-[11px] text-gray-400">qty</span>
-                          <input type="number" min={1} max={50} value={qty}
-                            onChange={e => setPackageQty(pkg.id, e.target.value)}
-                            className="w-14 px-2 py-1 rounded border border-gray-200 text-sm text-center" />
+                      <div className="mt-2 pt-2 border-t border-orange/20">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[11px] font-bold uppercase tracking-wide text-gray-500">
+                            📅 Available dates
+                            <span className="font-normal text-gray-400 ml-1">
+                              ({dates.length === 0 ? 'always' : `${dates.length} window${dates.length > 1 ? 's' : ''}`})
+                            </span>
+                          </span>
+                          <button type="button"
+                            onClick={() => addPackageDateBlock?.(pkg.id)}
+                            className="text-[11px] text-orange font-semibold hover:underline">
+                            + Add window
+                          </button>
                         </div>
-                        <div className="text-xs font-bold text-orange w-20 text-right">
-                          = ${lineTotal.toFixed(0)}
-                        </div>
-                      </>
+                        {dates.length === 0 ? (
+                          <p className="text-[11px] text-gray-400 italic">
+                            No date restriction — bookable on any night you have stock.
+                          </p>
+                        ) : (
+                          <div className="space-y-1">
+                            {dates.map((d, i) => (
+                              <div key={i} className="flex items-center gap-1 text-[11px]">
+                                <input type="date" value={d.start || ''}
+                                  onChange={e => updatePackageDateBlock?.(pkg.id, i, 'start', e.target.value)}
+                                  className="px-1.5 py-0.5 rounded border border-gray-200 text-[11px]" />
+                                <span className="text-gray-400">→</span>
+                                <input type="date" value={d.end || ''}
+                                  onChange={e => updatePackageDateBlock?.(pkg.id, i, 'end', e.target.value)}
+                                  min={d.start || undefined}
+                                  className="px-1.5 py-0.5 rounded border border-gray-200 text-[11px]" />
+                                <button type="button"
+                                  onClick={() => removePackageDateBlock?.(pkg.id, i)}
+                                  className="ml-auto p-1 text-gray-400 hover:text-sunset"
+                                  title="Remove this window">
+                                  <X size={12} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
                 )

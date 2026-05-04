@@ -38,6 +38,16 @@ function StarRating({ stars }) {
 function getDefaultCheckIn() { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] }
 function getDefaultCheckOut() { const d = new Date(); d.setDate(d.getDate() + 10); return d.toISOString().split('T')[0] }
 
+// Returns true when the booking range [in, out) is fully covered by at
+// least one of the package's date_blocks. Empty list = always available.
+function bookingFitsDateBlocks(checkIn, checkOut, blocks) {
+  if (!Array.isArray(blocks) || blocks.length === 0) return true
+  return blocks.some(b => {
+    if (!b?.start || !b?.end) return false
+    return checkIn >= b.start && checkOut <= b.end
+  })
+}
+
 // ── Fake reviews ──────────────────────────────────────
 const FAKE_REVIEWS = [
   { name: 'Sarah M.', country: '🇬🇧', date: 'March 2026', rating: 9, title: 'Wonderful stay!', text: 'Beautiful property, amazing staff. The pool area is stunning and the breakfast buffet was incredible.' },
@@ -109,9 +119,9 @@ export default function PropertyDetail() {
       const [propRes, roomsRes, pkgRes] = await Promise.all([
         supabase.from('properties').select('*').eq('id', id).single(),
         supabase.from('rooms').select('*, room_availability(*)').eq('property_id', id).eq('is_active', true).order('base_price'),
-        // Active packages + their room links (with qty) — public read policy
-        // lets anonymous browsers fetch this directly. RLS guards write access.
-        supabase.from('packages').select('*, room_packages(room_id, qty)').eq('property_id', id).eq('is_active', true),
+        // Active packages + their room links (with qty + date_blocks).
+        // Public read policy lets anonymous browsers fetch this directly.
+        supabase.from('packages').select('*, room_packages(room_id, qty, date_blocks)').eq('property_id', id).eq('is_active', true),
       ])
       if (propRes.data) {
         setProperty({
@@ -126,14 +136,18 @@ export default function PropertyDetail() {
         })
         setRealRooms(roomsRes.data || [])
         // Index packages by room for O(1) lookup in the room card.
-        // Map shape: { roomId: [{ id, qty }, ...] }
+        // Map shape: { roomId: [{ id, qty, dateBlocks }, ...] }
         const pkgs = pkgRes.data || []
         setAllPackages(pkgs)
         const map = {}
         for (const pkg of pkgs) {
           for (const rp of (pkg.room_packages || [])) {
             if (!map[rp.room_id]) map[rp.room_id] = []
-            map[rp.room_id].push({ id: pkg.id, qty: rp.qty || 1 })
+            map[rp.room_id].push({
+              id: pkg.id,
+              qty: rp.qty || 1,
+              dateBlocks: Array.isArray(rp.date_blocks) ? rp.date_blocks : [],
+            })
           }
         }
         setRoomPackageMap(map)
@@ -779,12 +793,15 @@ export default function PropertyDetail() {
                                   <div className="font-bold text-sm text-gray-900">Just the room</div>
                                   <div className="text-xs text-gray-500">No package</div>
                                 </button>
-                                {(roomPackageMap[room.id] || []).map(({ id: pkgId, qty: pkgQty }) => {
+                                {(roomPackageMap[room.id] || []).map(({ id: pkgId, qty: pkgQty, dateBlocks }) => {
                                   const pkg = allPackages.find(p => p.id === pkgId)
                                   if (!pkg) return null
                                   const guestCount = Number(adults) + Number(children)
                                   const impact = formatPackageImpact(pkg, pricing.nights, pkgQty, guestCount)
-                                  const eligible = pricing.nights >= (pkg.min_nights || 1) && guestCount >= (pkg.min_guests || 1)
+                                  const dateOK = bookingFitsDateBlocks(checkIn, checkOut, dateBlocks)
+                                  const eligible = pricing.nights >= (pkg.min_nights || 1)
+                                    && guestCount >= (pkg.min_guests || 1)
+                                    && dateOK
                                   const picked = selectedPackage === pkg.id
                                   return (
                                     <button
@@ -813,7 +830,9 @@ export default function PropertyDetail() {
                                       )}
                                       {!eligible && (
                                         <div className="text-[10px] text-sunset font-semibold mt-1">
-                                          Needs ≥{pkg.min_nights}n / ≥{pkg.min_guests}g
+                                          {!dateOK
+                                            ? `📅 Available: ${dateBlocks.map(b => `${b.start}→${b.end}`).join(' · ')}`
+                                            : `Needs ≥${pkg.min_nights}n / ≥${pkg.min_guests}g`}
                                         </div>
                                       )}
                                     </button>
@@ -1068,46 +1087,52 @@ export default function PropertyDetail() {
                       const effectiveRoomTotal = packageMode === 'replace' ? 0 : pricing.discountedTotal
                       const subtotal = effectiveRoomTotal + extraBedTotal + packageCost
 
+                      // When the package is "all-inclusive" (replace mode),
+                      // the room rate is already inside the package — showing
+                      // it (even struck-through) is misleading and noisy.
+                      // We render only the package line + subtotal in that case.
+                      const isAllInclusive = packageMode === 'replace'
+
                       return (
                         <>
-                          <div className="flex justify-between text-gray-600">
-                            <span>
-                              ${room.price} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
-                              {computeUnits > 1 && (
-                                <span className="text-gray-400">
-                                  {' '}× {computeUnits} {room.pricingUnit === 'bed'
-                                    ? (computeUnits === 1 ? 'bed' : 'beds')
-                                    : (computeUnits === 1 ? 'room' : 'rooms')}
+                          {!isAllInclusive && (
+                            <>
+                              <div className="flex justify-between text-gray-600">
+                                <span>
+                                  ${room.price} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
+                                  {computeUnits > 1 && (
+                                    <span className="text-gray-400">
+                                      {' '}× {computeUnits} {room.pricingUnit === 'bed'
+                                        ? (computeUnits === 1 ? 'bed' : 'beds')
+                                        : (computeUnits === 1 ? 'room' : 'rooms')}
+                                    </span>
+                                  )}
                                 </span>
+                                <span className={pricing.hasPromo && pricing.savings > 0 ? 'text-gray-400 line-through' : ''}>
+                                  ${pricing.originalTotal.toFixed(2)}
+                                </span>
+                              </div>
+                              {pricing.hasPromo && pricing.savings > 0 && !pricing.longStayTier && (
+                                <div className="flex justify-between text-orange font-medium">
+                                  <span>🔥 {pricing.promoLabel || 'Promo'}{pricing.promoPct > 0 && ` (−${Math.round(pricing.promoPct)}%)`}</span>
+                                  <span>−${pricing.savings.toFixed(2)}</span>
+                                </div>
                               )}
-                            </span>
-                            <span className={
-                              (pricing.hasPromo && pricing.savings > 0) || packageMode === 'replace'
-                                ? 'text-gray-400 line-through'
-                                : ''
-                            }>
-                              ${pricing.originalTotal.toFixed(2)}
-                            </span>
-                          </div>
-                          {pricing.hasPromo && pricing.savings > 0 && !pricing.longStayTier && (
-                            <div className="flex justify-between text-orange font-medium">
-                              <span>🔥 {pricing.promoLabel || 'Promo'}{pricing.promoPct > 0 && ` (−${Math.round(pricing.promoPct)}%)`}</span>
-                              <span>−${pricing.savings.toFixed(2)}</span>
-                            </div>
-                          )}
-                          {pricing.longStayTier && (
-                            <div className="flex justify-between text-libre font-medium">
-                              <span>🗓️ {pricing.longStayLabel}</span>
-                              <span>−${pricing.savings.toFixed(2)}</span>
-                            </div>
-                          )}
-                          {extraBedsUsed > 0 && (
-                            <div className="flex justify-between text-deep">
-                              <span>
-                                🛏️ Extra bed × {extraBedsUsed} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
-                              </span>
-                              <span>+${extraBedTotal.toFixed(2)}</span>
-                            </div>
+                              {pricing.longStayTier && (
+                                <div className="flex justify-between text-libre font-medium">
+                                  <span>🗓️ {pricing.longStayLabel}</span>
+                                  <span>−${pricing.savings.toFixed(2)}</span>
+                                </div>
+                              )}
+                              {extraBedsUsed > 0 && (
+                                <div className="flex justify-between text-deep">
+                                  <span>
+                                    🛏️ Extra bed × {extraBedsUsed} × {pricing.nights} {pricing.nights === 1 ? 'night' : 'nights'}
+                                  </span>
+                                  <span>+${extraBedTotal.toFixed(2)}</span>
+                                </div>
+                              )}
+                            </>
                           )}
                           {pkg && (
                             <div className="flex justify-between text-libre font-medium">
@@ -1117,8 +1142,13 @@ export default function PropertyDetail() {
                                   ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'}{pkgQty > 1 ? ` · ${pkgQty}× $${Number(pkg.price).toFixed(0)}` : ''})
                                 </span>
                               </span>
-                              <span>{packageMode === 'replace' ? '' : '+'}${packageCost.toFixed(2)}</span>
+                              <span>${packageCost.toFixed(2)}</span>
                             </div>
+                          )}
+                          {isAllInclusive && (
+                            <p className="text-[10px] text-gray-400 italic leading-snug">
+                              Room rate, taxes &amp; package perks all included — flat all-in price.
+                            </p>
                           )}
                           <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
                             <span>{t('booking.subtotal', 'Subtotal')}</span>
