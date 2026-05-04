@@ -64,6 +64,7 @@ const EMPTY_FORM = {
   price: '',
   pricing_type: 'per_stay',
   pricing_mode: 'addon',
+  duration_days: 1,
   min_nights: 1,
   min_guests: 1,
   photo_url: '',
@@ -122,6 +123,7 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
       price: pkg.price ?? '',
       pricing_type: pkg.pricing_type || 'per_stay',
       pricing_mode: pkg.pricing_mode || 'addon',
+      duration_days: pkg.duration_days || 1,
       min_nights: pkg.min_nights || 1,
       min_guests: pkg.min_guests || 1,
       photo_url: pkg.photo_url || '',
@@ -155,6 +157,7 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
       price: Number(form.price) || 0,
       pricing_type: form.pricing_type,
       pricing_mode: form.pricing_mode,
+      duration_days: Math.max(1, Math.min(365, Number(form.duration_days) || 1)),
       min_nights: Number(form.min_nights) || 1,
       min_guests: Number(form.min_guests) || 1,
       photo_url: form.photo_url?.trim() || null,
@@ -452,6 +455,22 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
                     <div className="text-xs opacity-70">{m.hint}</div>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Duration — drives the END of every room↔package date window */}
+            <div className="md:col-span-2 p-3 rounded-lg bg-libre/5 border border-libre/15">
+              <label className="block text-xs font-semibold text-gray-700 mb-1">
+                📅 Duration (days)
+              </label>
+              <div className="flex items-center gap-3">
+                <input type="number" min="1" max="365" value={form.duration_days}
+                  onChange={e => setForm({ ...form, duration_days: e.target.value })}
+                  className="w-24 px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                <p className="text-[11px] text-gray-500">
+                  Length of the package. When attaching to a room you'll only enter the
+                  <strong> start date</strong> — the end is auto-computed (start + {form.duration_days || 1} day{form.duration_days > 1 ? 's' : ''} - 1).
+                </p>
               </div>
             </div>
 

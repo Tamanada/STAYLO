@@ -1673,7 +1673,11 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
         room_id:     savedRoomId,
         package_id,
         qty:         val.qty || 1,
-        date_blocks: Array.isArray(val.dates) ? val.dates.filter(d => d.start && d.end) : [],
+        // Persist only {start} — end is derived from package.duration_days
+        // at read time. Drop any window without a start date.
+        date_blocks: Array.isArray(val.dates)
+          ? val.dates.filter(d => d.start).map(d => ({ start: d.start }))
+          : [],
       }))
       if (rows.length > 0) {
         const { error: linkErr } = await supabase.from('room_packages').insert(rows)
@@ -2269,30 +2273,33 @@ function RoomEditFormCard({
                         ) : (
                           <div className="space-y-1">
                             {dates.map((d, i) => {
-                              // Inclusive duration in days. Same date start=end = 1 day.
-                              // Used for the hover tooltip.
-                              let durationDays = null
-                              if (d.start && d.end && d.end >= d.start) {
-                                const ms = new Date(d.end + 'T00:00:00') - new Date(d.start + 'T00:00:00')
-                                durationDays = Math.round(ms / (1000 * 60 * 60 * 24)) + 1
+                              // End is derived from package.duration_days
+                              // (start + duration - 1, inclusive). The hotelier
+                              // only enters the start; the OTA validates the
+                              // booking against the derived window.
+                              const dur = Number(pkg.duration_days) || 1
+                              let endStr = ''
+                              if (d.start) {
+                                const dt = new Date(d.start + 'T00:00:00')
+                                dt.setDate(dt.getDate() + dur - 1)
+                                endStr = dt.toISOString().slice(0, 10)
                               }
                               return (
-                                <div key={i} className="group relative flex items-center gap-1 text-[11px]">
-                                  {/* Hover popup — shows number of days covered */}
-                                  {durationDays !== null && (
-                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none absolute -top-9 left-1/2 -translate-x-1/2 z-30 bg-deep text-white text-[11px] font-semibold px-2.5 py-1 rounded-md shadow-lg whitespace-nowrap">
-                                      {durationDays} day{durationDays > 1 ? 's' : ''} ({durationDays - 1} night{durationDays - 1 === 1 ? '' : 's'})
+                                <div key={i} className="group relative flex items-center gap-2 text-[11px]">
+                                  {/* Hover popup — shows the auto-computed end + duration */}
+                                  {d.start && (
+                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 z-30 bg-deep text-white text-[11px] font-semibold px-2.5 py-1 rounded-md shadow-lg whitespace-nowrap">
+                                      Ends {endStr} · {dur} day{dur > 1 ? 's' : ''} ({dur - 1} night{dur - 1 === 1 ? '' : 's'})
                                       <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-deep rotate-45" />
                                     </div>
                                   )}
+                                  <span className="text-[10px] text-gray-400 uppercase tracking-wide">Start</span>
                                   <input type="date" value={d.start || ''}
                                     onChange={e => updatePackageDateBlock?.(pkg.id, i, 'start', e.target.value)}
                                     className="px-1.5 py-0.5 rounded border border-gray-200 text-[11px]" />
-                                  <span className="text-gray-400">→</span>
-                                  <input type="date" value={d.end || ''}
-                                    onChange={e => updatePackageDateBlock?.(pkg.id, i, 'end', e.target.value)}
-                                    min={d.start || undefined}
-                                    className="px-1.5 py-0.5 rounded border border-gray-200 text-[11px]" />
+                                  {endStr && (
+                                    <span className="text-[10px] text-gray-500">→ {endStr}</span>
+                                  )}
                                   <button type="button"
                                     onClick={() => removePackageDateBlock?.(pkg.id, i)}
                                     className="ml-auto p-1 text-gray-400 hover:text-sunset"

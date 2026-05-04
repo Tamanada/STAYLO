@@ -38,14 +38,25 @@ function StarRating({ stars }) {
 function getDefaultCheckIn() { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split('T')[0] }
 function getDefaultCheckOut() { const d = new Date(); d.setDate(d.getDate() + 10); return d.toISOString().split('T')[0] }
 
-// Returns true when the booking range [in, out) is fully covered by at
-// least one of the package's date_blocks. Empty list = always available.
-function bookingFitsDateBlocks(checkIn, checkOut, blocks) {
+// Returns true when the booking range [checkIn, checkOut] fits inside at
+// least one of the package's date windows. Each window is just { start }
+// — end is derived as start + (durationDays - 1) inclusive. Empty list =
+// always available.
+function bookingFitsDateBlocks(checkIn, checkOut, blocks, durationDays = 1) {
   if (!Array.isArray(blocks) || blocks.length === 0) return true
   return blocks.some(b => {
-    if (!b?.start || !b?.end) return false
-    return checkIn >= b.start && checkOut <= b.end
+    if (!b?.start) return false
+    // Backwards-compat: respect a stored end if present, otherwise derive.
+    const end = b.end || addDaysISO(b.start, Math.max(1, durationDays) - 1)
+    return checkIn >= b.start && checkOut <= addDaysISO(end, 1)  // checkOut is exclusive
   })
+}
+
+// Tiny helper — adds N days to a YYYY-MM-DD and returns same format.
+function addDaysISO(dateStr, n) {
+  const d = new Date(dateStr + 'T00:00:00Z')
+  d.setUTCDate(d.getUTCDate() + n)
+  return d.toISOString().slice(0, 10)
 }
 
 // ── Fake reviews ──────────────────────────────────────
@@ -798,7 +809,7 @@ export default function PropertyDetail() {
                                   if (!pkg) return null
                                   const guestCount = Number(adults) + Number(children)
                                   const impact = formatPackageImpact(pkg, pricing.nights, pkgQty, guestCount)
-                                  const dateOK = bookingFitsDateBlocks(checkIn, checkOut, dateBlocks)
+                                  const dateOK = bookingFitsDateBlocks(checkIn, checkOut, dateBlocks, pkg.duration_days || 1)
                                   const eligible = pricing.nights >= (pkg.min_nights || 1)
                                     && guestCount >= (pkg.min_guests || 1)
                                     && dateOK
@@ -831,7 +842,11 @@ export default function PropertyDetail() {
                                       {!eligible && (
                                         <div className="text-[10px] text-sunset font-semibold mt-1">
                                           {!dateOK
-                                            ? `📅 Available: ${dateBlocks.map(b => `${b.start}→${b.end}`).join(' · ')}`
+                                            ? `📅 Available: ${dateBlocks.map(b => {
+                                                const dur = pkg.duration_days || 1
+                                                const end = b.end || addDaysISO(b.start, dur - 1)
+                                                return `${b.start}→${end}`
+                                              }).join(' · ')}`
                                             : `Needs ≥${pkg.min_nights}n / ≥${pkg.min_guests}g`}
                                         </div>
                                       )}
