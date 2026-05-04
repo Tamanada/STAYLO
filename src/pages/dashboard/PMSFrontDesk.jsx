@@ -33,6 +33,7 @@ export default function PMSFrontDesk() {
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
   const [selectedProperty, setSelectedProperty] = useState(null)
+  const [viewMode, setViewMode] = useState('cards')   // 'cards' | 'grid'
   const [loading, setLoading] = useState(true)
   const [today] = useState(new Date().toISOString().split('T')[0])
   const [openRoom, setOpenRoom] = useState(null)   // room object whose modal is open
@@ -105,6 +106,66 @@ export default function PMSFrontDesk() {
       }
     })
   }, [propertyRooms, bookings, today])
+
+  // ── Per-physical-unit grid view ────────────────────────────────────────────
+  // Each room TYPE is exploded into one row per physical unit. The unit
+  // identifier comes from rooms.unit_numbers (configured in PropertyManage).
+  // If the pool isn't filled, we synthesise '#1, #2, …' up to room.quantity
+  // so the receptionist still sees the right number of rows.
+  // Booking↔unit mapping:
+  //   - Numbered units: exact match against booking.room_number
+  //   - Synthetic units: bookings without an assigned room_number are spread
+  //     across remaining slots in arrival order (first occupied → #1 etc.)
+  const unitRows = useMemo(() => {
+    const rows = []
+    for (const r of roomStatuses) {
+      const numbered = Array.isArray(r.unit_numbers) ? r.unit_numbers : []
+      const totalUnits = Math.max(numbered.length, r.qty)
+      const labels = []
+      for (let i = 0; i < totalUnits; i++) {
+        labels.push(numbered[i] || `#${i + 1}`)
+      }
+
+      // Bucket bookings by their assigned room_number (exact match)
+      const byNumber = new Map()
+      const unassigned = []
+      const allRelevant = [...r.guests, ...r.arrivingList, ...r.checkingOutList]
+        .filter((b, i, arr) => arr.findIndex(x => x.id === b.id) === i) // dedupe
+      for (const b of allRelevant) {
+        if (b.room_number && labels.includes(b.room_number)) {
+          if (!byNumber.has(b.room_number)) byNumber.set(b.room_number, [])
+          byNumber.get(b.room_number).push(b)
+        } else {
+          unassigned.push(b)
+        }
+      }
+
+      for (const label of labels) {
+        let booking = byNumber.get(label)?.[0] || null
+        // Pull from unassigned pool if this slot is still free (in label order)
+        if (!booking && unassigned.length > 0) booking = unassigned.shift()
+
+        let unitStatus = 'available'
+        if (booking) {
+          if (booking.check_in === today)        unitStatus = 'arriving'
+          else if (booking.check_out === today)  unitStatus = 'checkout'
+          else if (booking.check_in <= today && booking.check_out > today) unitStatus = 'occupied'
+        }
+
+        rows.push({
+          key:        `${r.id}::${label}`,
+          roomTypeId: r.id,
+          roomType:   r.name,
+          bedType:    r.bed_type,
+          unitLabel:  label,
+          numbered:   numbered.includes(label),
+          status:     unitStatus,
+          booking,
+        })
+      }
+    }
+    return rows
+  }, [roomStatuses, today])
 
   // Stats — sum across types using each type's quantity, not row count.
   const totalRooms     = roomStatuses.reduce((s, r) => s + r.qty, 0)
@@ -203,6 +264,29 @@ export default function PMSFrontDesk() {
         ))}
       </div>
 
+      {/* View toggle — Cards (by type) ↔ Grid (by physical unit) */}
+      {roomStatuses.length > 0 && (
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xs font-bold uppercase tracking-wide text-gray-500">View:</span>
+          <button onClick={() => setViewMode('cards')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              viewMode === 'cards'
+                ? 'bg-deep text-white shadow'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+            }`}>
+            🗂️ Cards (by type)
+          </button>
+          <button onClick={() => setViewMode('grid')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              viewMode === 'grid'
+                ? 'bg-deep text-white shadow'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+            }`}>
+            📊 Grid (by unit · {unitRows.length} rows)
+          </button>
+        </div>
+      )}
+
       {/* Room grid */}
       {roomStatuses.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
@@ -213,6 +297,67 @@ export default function PMSFrontDesk() {
             className="px-4 py-2 bg-ocean text-white rounded-lg font-medium text-sm hover:bg-ocean/90 no-underline inline-block">
             {t('pms.manage_rooms', 'Manage Rooms')}
           </Link>
+        </div>
+      ) : viewMode === 'grid' ? (
+        // ── Per-unit table view ─────────────────────────────────────────────
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-[11px] font-bold uppercase tracking-wide text-gray-500">
+                <tr>
+                  <th className="px-3 py-2 text-left">Unit</th>
+                  <th className="px-3 py-2 text-left">Type</th>
+                  <th className="px-3 py-2 text-left">Status</th>
+                  <th className="px-3 py-2 text-left">Guest</th>
+                  <th className="px-3 py-2 text-left">Dates</th>
+                  <th className="px-3 py-2 text-left">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {unitRows.map(u => {
+                  const cfg = STATUS_CONFIG[u.status]
+                  return (
+                    <tr key={u.key} className="border-t border-gray-100 hover:bg-gray-50/60">
+                      <td className="px-3 py-2 font-mono font-bold text-deep">
+                        {u.numbered
+                          ? u.unitLabel
+                          : <span className="text-gray-400 italic">{u.unitLabel}</span>}
+                      </td>
+                      <td className="px-3 py-2 text-gray-700">{u.roomType}</td>
+                      <td className="px-3 py-2">
+                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded ${cfg.color}`}>
+                          <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+                          {cfg.label}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-gray-700">
+                        {u.booking
+                          ? (u.booking.guest_name || <span className="text-gray-400 italic">no name</span>)
+                          : <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-gray-500 font-mono">
+                        {u.booking
+                          ? `${u.booking.check_in} → ${u.booking.check_out}`
+                          : <span className="text-gray-300">—</span>}
+                      </td>
+                      <td className="px-3 py-2">
+                        <button onClick={() => {
+                            const room = roomStatuses.find(r => r.id === u.roomTypeId)
+                            if (room) setOpenRoom(room)
+                          }}
+                          className="text-[11px] font-semibold text-ocean hover:underline">
+                          {u.booking ? 'Manage' : 'Walk-in'}
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="bg-gray-50 px-3 py-2 text-[11px] text-gray-500 border-t border-gray-100">
+            {unitRows.length} units · numbered shown in mono · italic = synthetic placeholder (configure unit numbers in PropertyManage)
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
