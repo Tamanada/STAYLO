@@ -717,15 +717,20 @@ function CalendarStrip({ room, bookings }) {
     return out
   }, [])
 
-  function findBooking(d) {
+  // Return ALL bookings overlapping a given day — needed because a single
+  // room TYPE may host several physical units. Returning only the first
+  // hit (the previous bug) made every partly-booked day look fully booked.
+  function findBookings(d) {
     const iso = d.toISOString().split('T')[0]
-    return bookings.find(b => b.check_in <= iso && b.check_out > iso)
+    return bookings.filter(b => b.check_in <= iso && b.check_out > iso)
   }
 
-  function findArrival(d) {
+  function findArrivals(d) {
     const iso = d.toISOString().split('T')[0]
-    return bookings.find(b => b.check_in === iso)
+    return bookings.filter(b => b.check_in === iso)
   }
+
+  const totalUnits = Math.max(1, Number(room.quantity) || 1)
 
   return (
     <div>
@@ -735,30 +740,53 @@ function CalendarStrip({ room, bookings }) {
 
       <div className="grid grid-cols-7 gap-1">
         {days.map(d => {
-          const booking = findBooking(d)
-          const arrival = findArrival(d)
-          const dayNum = d.getDate()
-          const isToday = d.toDateString() === new Date().toDateString()
-          let bg = 'bg-emerald-50 text-emerald-800 border-emerald-200'
-          let label = 'Free'
-          if (booking) {
+          const dayBookings = findBookings(d)
+          const arrivals    = findArrivals(d)
+          const occupied    = dayBookings.length
+          const available   = Math.max(0, totalUnits - occupied)
+          const dayNum      = d.getDate()
+          const isToday     = d.toDateString() === new Date().toDateString()
+
+          // 3-state colouring:
+          //   0 occupied            → green ('Free')
+          //   some occupied, slots  → amber ('N/M free')
+          //   all occupied          → blue (guest name + count if many)
+          let bg, label
+          if (occupied === 0) {
+            bg = 'bg-emerald-50 text-emerald-800 border-emerald-200'
+            label = totalUnits > 1 ? `${totalUnits}/${totalUnits} free` : 'Free'
+          } else if (available > 0) {
+            bg = 'bg-amber-50 text-amber-800 border-amber-200'
+            label = `${available}/${totalUnits} free`
+          } else {
             bg = 'bg-blue-100 text-blue-800 border-blue-300'
-            label = booking.guest_name?.split(' ')[0] || 'Booked'
+            const firstName = dayBookings[0].guest_name?.split(' ')[0] || 'Booked'
+            label = dayBookings.length > 1
+              ? `${firstName} +${dayBookings.length - 1}`
+              : firstName
           }
-          if (arrival && !booking) {
-            bg = 'bg-purple-100 text-purple-800 border-purple-300'
-            label = `→ ${arrival.guest_name?.split(' ')[0] || 'arr.'}`
-          }
+
+          // Tooltip lists every guest on that day so the hotelier can audit
+          const allNames = dayBookings.map(b => b.guest_name || 'no name').join(', ')
+          const titleSuffix = occupied > 0
+            ? ` · ${occupied}/${totalUnits} occupied: ${allNames}`
+            : ''
+
           return (
             <div key={d.toISOString()}
               className={`rounded-lg border-2 p-2 text-center ${bg} ${isToday ? 'ring-2 ring-ocean' : ''}`}
-              title={`${d.toDateString()}${booking ? ` · ${booking.guest_name || 'booking'}` : ''}`}
+              title={`${d.toDateString()}${titleSuffix}`}
             >
               <div className="text-[10px] font-bold uppercase opacity-60">
                 {d.toLocaleDateString('en', { weekday: 'short' })}
               </div>
               <div className="text-lg font-extrabold">{dayNum}</div>
               <div className="text-[9px] truncate">{label}</div>
+              {arrivals.length > 0 && available > 0 && (
+                <div className="text-[8px] text-purple-600 mt-0.5">
+                  → {arrivals.length} arr
+                </div>
+              )}
             </div>
           )
         })}
