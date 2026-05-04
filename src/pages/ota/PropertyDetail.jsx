@@ -109,9 +109,9 @@ export default function PropertyDetail() {
       const [propRes, roomsRes, pkgRes] = await Promise.all([
         supabase.from('properties').select('*').eq('id', id).single(),
         supabase.from('rooms').select('*, room_availability(*)').eq('property_id', id).eq('is_active', true).order('base_price'),
-        // Active packages + their room links — public read policy lets
-        // anonymous browsers fetch this directly. RLS guards write access.
-        supabase.from('packages').select('*, room_packages(room_id)').eq('property_id', id).eq('is_active', true),
+        // Active packages + their room links (with qty) — public read policy
+        // lets anonymous browsers fetch this directly. RLS guards write access.
+        supabase.from('packages').select('*, room_packages(room_id, qty)').eq('property_id', id).eq('is_active', true),
       ])
       if (propRes.data) {
         setProperty({
@@ -125,14 +125,15 @@ export default function PropertyDetail() {
           rooms: [],
         })
         setRealRooms(roomsRes.data || [])
-        // Index packages by room for O(1) lookup in the room card
+        // Index packages by room for O(1) lookup in the room card.
+        // Map shape: { roomId: [{ id, qty }, ...] }
         const pkgs = pkgRes.data || []
         setAllPackages(pkgs)
         const map = {}
         for (const pkg of pkgs) {
           for (const rp of (pkg.room_packages || [])) {
             if (!map[rp.room_id]) map[rp.room_id] = []
-            map[rp.room_id].push(pkg.id)
+            map[rp.room_id].push({ id: pkg.id, qty: rp.qty || 1 })
           }
         }
         setRoomPackageMap(map)
@@ -778,11 +779,11 @@ export default function PropertyDetail() {
                                   <div className="font-bold text-sm text-gray-900">Just the room</div>
                                   <div className="text-xs text-gray-500">No package</div>
                                 </button>
-                                {(roomPackageMap[room.id] || []).map(pkgId => {
+                                {(roomPackageMap[room.id] || []).map(({ id: pkgId, qty: pkgQty }) => {
                                   const pkg = allPackages.find(p => p.id === pkgId)
                                   if (!pkg) return null
                                   const guestCount = Number(adults) + Number(children)
-                                  const impact = formatPackageImpact(pkg, pricing.nights, guestCount)
+                                  const impact = formatPackageImpact(pkg, pricing.nights, pkgQty, guestCount)
                                   const eligible = pricing.nights >= (pkg.min_nights || 1) && guestCount >= (pkg.min_guests || 1)
                                   const picked = selectedPackage === pkg.id
                                   return (

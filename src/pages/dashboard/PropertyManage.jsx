@@ -132,6 +132,7 @@ export default function PropertyManage() {
   const [property, setProperty] = useState(null)
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
+  const [propertyPackages, setPropertyPackages] = useState([])
   const [loading, setLoading] = useState(true)
 
   const fetchData = useCallback(async () => {
@@ -140,18 +141,25 @@ export default function PropertyManage() {
       supabase.from('properties').select('*').eq('id', propertyId).single(),
       supabase.from('rooms').select('*').eq('property_id', propertyId).order('created_at'),
       supabase.from('bookings').select('*').eq('property_id', propertyId).order('created_at', { ascending: false }),
-      supabase.from('packages').select('*, room_packages(room_id)').eq('property_id', propertyId),
+      // Pull qty from the junction so room form can pre-populate it
+      supabase.from('packages').select('*, room_packages(room_id, qty)').eq('property_id', propertyId),
     ])
     setProperty(propRes.data)
-    // Decorate each room with its linked packages so RoomsTab can display
-    // them inline (hotelier doesn't have to switch to PackagesTab to check).
+    // Decorate each room with its linked packages (with qty) so RoomsTab
+    // can both DISPLAY them on the card and PRE-POPULATE the edit form.
     const allPkgs = pkgRes.data || []
     const decoratedRooms = (roomsRes.data || []).map(r => ({
       ...r,
-      _packages: allPkgs.filter(p => (p.room_packages || []).some(rp => rp.room_id === r.id)),
+      _packages: allPkgs
+        .map(p => {
+          const link = (p.room_packages || []).find(rp => rp.room_id === r.id)
+          return link ? { ...p, _qty: link.qty || 1 } : null
+        })
+        .filter(Boolean),
     }))
     setRooms(decoratedRooms)
     setBookings(bookingsRes.data || [])
+    setPropertyPackages(allPkgs)
     setLoading(false)
   }, [propertyId])
 
@@ -264,7 +272,7 @@ export default function PropertyManage() {
       {/* Tab content */}
       {activeTab === 'photos' && <PhotosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'videos' && <VideosTab property={property} onRefresh={fetchData} />}
-      {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} onJumpToPackages={() => setActiveTab('packages')} />}
+      {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} packages={propertyPackages} onRefresh={fetchData} onJumpToPackages={() => setActiveTab('packages')} />}
       {activeTab === 'packages' && <PackagesTab propertyId={propertyId} rooms={rooms} />}
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
@@ -1419,11 +1427,14 @@ function prettyLabel(s) {
 // ============================================
 // ROOMS TAB
 // ============================================
-function RoomsTab({ propertyId, rooms, onRefresh, onJumpToPackages }) {
+function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackages }) {
   const { t } = useTranslation()
   const [showForm, setShowForm] = useState(false)
   const [editingRoom, setEditingRoom] = useState(null)
   const [saving, setSaving] = useState(false)
+  // Linked packages on the room being edited: { [packageId]: qty }
+  // Pre-loaded from room._packages on openEdit, reset on openAdd.
+  const [linkedPkgs, setLinkedPkgs] = useState({})
   const [form, setForm] = useState({
     name: '', description: '', type: 'standard', max_guests: 2,
     bed_type: 'double', base_price: '', quantity: 1, amenities: [],
@@ -1468,6 +1479,7 @@ function RoomsTab({ propertyId, rooms, onRefresh, onJumpToPackages }) {
     setEditingRoom(null)
     setForm(blankRoomForm())
     setCopiedMedia({ photo_urls: [], video_urls: [] })
+    setLinkedPkgs({})
     setShowForm(true)
   }
 
@@ -1533,7 +1545,30 @@ function RoomsTab({ propertyId, rooms, onRefresh, onJumpToPackages }) {
       weekly_discount_pct: room.weekly_discount_pct || 0,
       weekly_min_nights:   room.weekly_min_nights || 7,
     })
+    // Pre-populate linked packages from the decorated room (with qty).
+    const seed = {}
+    for (const p of (room._packages || [])) seed[p.id] = p._qty || 1
+    setLinkedPkgs(seed)
     setShowForm(true)
+  }
+
+  // Toggle a package on/off — auto-suggests qty = current room.max_guests
+  // when ticking on (the user can override afterwards). Removing is just delete.
+  function togglePackageLink(pkgId) {
+    setLinkedPkgs(prev => {
+      if (prev[pkgId]) {
+        const { [pkgId]: _, ...rest } = prev
+        return rest
+      }
+      // Auto qty: room capacity is the natural unit count for per-person packages
+      const autoQty = Math.max(1, Number(form.max_guests) || 1)
+      return { ...prev, [pkgId]: autoQty }
+    })
+  }
+
+  function setPackageQty(pkgId, qty) {
+    const n = Math.max(1, Math.min(50, Number(qty) || 1))
+    setLinkedPkgs(prev => ({ ...prev, [pkgId]: n }))
   }
 
   // Refresh single room from DB after a media update inside the form, so
@@ -1574,6 +1609,7 @@ function RoomsTab({ propertyId, rooms, onRefresh, onJumpToPackages }) {
     }
 
     let opError = null
+    let savedRoomId = editingRoom?.id
     if (editingRoom) {
       const { error } = await supabase.from('rooms').update(payload).eq('id', editingRoom.id)
       opError = error
@@ -1584,9 +1620,23 @@ function RoomsTab({ propertyId, rooms, onRefresh, onJumpToPackages }) {
         payload.photo_urls = copiedMedia.photo_urls
         payload.video_urls = copiedMedia.video_urls
       }
-      const { error } = await supabase.from('rooms').insert(payload)
+      const { data: insertedRoom, error } = await supabase.from('rooms').insert(payload).select('id').single()
       opError = error
+      savedRoomId = insertedRoom?.id
     }
+
+    // Sync room↔package links (drop & re-insert with qty).
+    if (!opError && savedRoomId) {
+      await supabase.from('room_packages').delete().eq('room_id', savedRoomId)
+      const rows = Object.entries(linkedPkgs).map(([package_id, qty]) => ({
+        room_id: savedRoomId, package_id, qty,
+      }))
+      if (rows.length > 0) {
+        const { error: linkErr } = await supabase.from('room_packages').insert(rows)
+        if (linkErr) opError = linkErr
+      }
+    }
+
     setSaving(false)
 
     // Surface DB errors so the operator doesn't end up with a silent failure
@@ -1607,6 +1657,7 @@ function RoomsTab({ propertyId, rooms, onRefresh, onJumpToPackages }) {
 
     setShowForm(false)
     setCopiedMedia({ photo_urls: [], video_urls: [] })
+    setLinkedPkgs({})
     onRefresh()
   }
 
@@ -1634,6 +1685,8 @@ function RoomsTab({ propertyId, rooms, onRefresh, onJumpToPackages }) {
     copiedMedia, copyFromRoom, rooms,
     handleSave, saving, setShowForm,
     toggleAmenity, propertyId, refreshRoomMedia,
+    packages, linkedPkgs, togglePackageLink, setPackageQty,
+    onJumpToPackages,
   }
 
   return (
@@ -1733,10 +1786,10 @@ function RoomsTab({ propertyId, rooms, onRefresh, onJumpToPackages }) {
                   ) : (
                     <>
                       {room._packages.map(p => (
-                        <button key={p.id} onClick={() => onJumpToPackages?.()}
+                        <button key={p.id} onClick={() => openEdit(room)}
                           className="inline-flex items-center gap-1 text-xs bg-orange/10 text-orange px-2 py-0.5 rounded-full hover:bg-orange/20"
-                          title={`${p.name} — click to manage in Packages tab`}>
-                          ✨ {p.name}
+                          title={`${p.name} × ${p._qty} — click to edit room links`}>
+                          ✨ {p.name}{p._qty > 1 && <span className="font-bold">×{p._qty}</span>}
                         </button>
                       ))}
                     </>
@@ -1781,6 +1834,8 @@ function RoomEditFormCard({
   copiedMedia, copyFromRoom, rooms,
   handleSave, saving, setShowForm,
   toggleAmenity, propertyId, refreshRoomMedia,
+  packages = [], linkedPkgs = {}, togglePackageLink, setPackageQty,
+  onJumpToPackages,
 }) {
   return (
     <Card className="mt-4 border-2 border-ocean/20">
@@ -2086,6 +2141,69 @@ function RoomEditFormCard({
               ✓ Monthly = ~${(Number(form.monthly_rate) / 30).toFixed(0)}/night
               ({Math.round((1 - (Number(form.monthly_rate) / 30) / Number(form.base_price)) * 100)}% off your daily rate of ${form.base_price})
             </p>
+          )}
+        </div>
+
+        {/* ───── Linked packages — connect any package to this room with qty ───── */}
+        <div className="sm:col-span-2 p-4 rounded-xl bg-orange/5 border border-orange/15">
+          <h4 className="text-sm font-bold text-deep flex items-center gap-2 mb-1">
+            ✨ {t('manage.linked_packages_title', 'Linked packages')}
+            <span className="text-[11px] text-gray-400 font-normal ml-auto">
+              {Object.keys(linkedPkgs).length} selected
+            </span>
+          </h4>
+          <p className="text-[11px] text-gray-500 mb-3">
+            {t('manage.linked_packages_desc',
+              'Tick any package to bundle it with this room. Qty defaults to the room capacity (1 unit per guest); change it manually for couple-only or family-only packages.')}
+          </p>
+          {packages.length === 0 ? (
+            <p className="text-xs text-gray-500 italic">
+              No packages yet.{' '}
+              {onJumpToPackages && (
+                <button type="button" onClick={onJumpToPackages}
+                  className="text-orange underline hover:text-orange/80">
+                  Create one in the Packages tab →
+                </button>
+              )}
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {packages.map(pkg => {
+                const linked = !!linkedPkgs[pkg.id]
+                const qty    = linkedPkgs[pkg.id] || 1
+                const unitPrice = Number(pkg.price) || 0
+                const lineTotal = unitPrice * qty
+                return (
+                  <div key={pkg.id}
+                    className={`flex items-center gap-3 p-2.5 rounded-lg border ${
+                      linked ? 'border-orange/40 bg-white' : 'border-gray-200 bg-white/60'
+                    }`}>
+                    <input type="checkbox" checked={linked}
+                      onChange={() => togglePackageLink(pkg.id)}
+                      className="w-4 h-4 accent-orange flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-deep truncate">{pkg.name}</div>
+                      <div className="text-[11px] text-gray-500">
+                        ${unitPrice.toFixed(0)}/unit · {pkg.pricing_type?.replace('_', ' ')} · {pkg.pricing_mode}
+                      </div>
+                    </div>
+                    {linked && (
+                      <>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <span className="text-[11px] text-gray-400">qty</span>
+                          <input type="number" min={1} max={50} value={qty}
+                            onChange={e => setPackageQty(pkg.id, e.target.value)}
+                            className="w-14 px-2 py-1 rounded border border-gray-200 text-sm text-center" />
+                        </div>
+                        <div className="text-xs font-bold text-orange w-20 text-right">
+                          = ${lineTotal.toFixed(0)}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           )}
         </div>
 

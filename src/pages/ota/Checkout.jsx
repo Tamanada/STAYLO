@@ -116,8 +116,10 @@ export default function Checkout() {
         const [propRes, roomRes, pkgRes] = await Promise.all([
           supabase.from('properties').select('*').eq('id', propertyId).single(),
           supabase.from('rooms').select('*, room_availability(*)').eq('id', roomId).single(),
+          // Pull the package together with its room_packages link for the
+          // current room so we know the qty bundled with that booking.
           packageId
-            ? supabase.from('packages').select('*').eq('id', packageId).single()
+            ? supabase.from('packages').select('*, room_packages!inner(qty, room_id)').eq('id', packageId).eq('room_packages.room_id', roomId).single()
             : Promise.resolve({ data: null }),
         ])
         if (propRes.error) console.error('Checkout: property fetch failed', propRes.error)
@@ -198,8 +200,11 @@ export default function Checkout() {
   // ── Package pricing ───────────────────────────────────────────────────────
   // Layered on top of the room math. 'addon' stacks; 'replace' overrides
   // the room rate entirely (typical for all-inclusive retreats).
+  // qty comes from room_packages (set by the hotelier per room↔package link,
+  // defaults to room.max_guests at link time, can be manually overridden).
   const guestCount    = adults + children
-  const pkgPricing    = applyPackagePricing(pricing, pkg, nights, guestCount)
+  const pkgQty        = pkg?.room_packages?.[0]?.qty || 1
+  const pkgPricing    = applyPackagePricing(pricing, pkg, nights, pkgQty, guestCount)
   const packageCost   = pkgPricing.packageCost || 0
   const packageMode   = pkgPricing.packageMode
   // If 'replace': the package fully replaces the room rate, so we ignore
@@ -596,7 +601,7 @@ export default function Checkout() {
                     <span>
                       ✨ {pkg.name}
                       <span className="text-[10px] text-gray-400 ml-1">
-                        ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'} · {pkg.pricing_type.replace('_', ' ')})
+                        ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'} · {pkgQty}× ${Number(pkg.price).toFixed(0)})
                       </span>
                     </span>
                     <span>{packageMode === 'replace' ? '' : '+'}${packageCost.toFixed(2)}</span>

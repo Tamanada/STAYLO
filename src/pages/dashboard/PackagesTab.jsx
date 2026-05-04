@@ -161,23 +161,15 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
       is_active: !!form.is_active,
     }
 
-    let pkgId = editing?.id
     if (editing) {
       const { error: upErr } = await supabase.from('packages').update(payload).eq('id', editing.id)
       if (upErr) { setError(upErr.message); setSaving(false); return }
     } else {
-      const { data, error: insErr } = await supabase.from('packages').insert(payload).select('id').single()
+      const { error: insErr } = await supabase.from('packages').insert(payload)
       if (insErr) { setError(insErr.message); setSaving(false); return }
-      pkgId = data.id
     }
-
-    // Sync room links: drop all then re-insert (simple + atomic enough at this scale)
-    await supabase.from('room_packages').delete().eq('package_id', pkgId)
-    if (linkedRoomIds.length > 0) {
-      const rows = linkedRoomIds.map(room_id => ({ room_id, package_id: pkgId }))
-      const { error: linkErr } = await supabase.from('room_packages').insert(rows)
-      if (linkErr) { setError(`Saved, but room linking failed: ${linkErr.message}`); setSaving(false); return }
-    }
+    // Note: room_packages links are managed from the Room edit form (with qty),
+    // not from this package form. We don't touch the junction here.
 
     setSaving(false)
     closeForm()
@@ -507,28 +499,29 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
               )}
             </div>
 
-            {/* Room links */}
+            {/* Linked rooms — read-only summary. The actual linking is now
+                done from each Room edit form (Rooms tab) so the hotelier can
+                set a per-room qty (1 unit per guest by default). */}
             <div className="md:col-span-2">
               <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Attach to rooms ({linkedRoomIds.length} selected)
+                Linked rooms ({linkedRoomIds.length})
               </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Pick which rooms this package can be sold with. Leave empty to keep it as a standalone product.
+              <p className="text-xs text-gray-500 italic">
+                {linkedRoomIds.length === 0
+                  ? 'Not linked to any room yet. Open a room in the Rooms tab and tick this package to bundle it with that room.'
+                  : `Attached via ${linkedRoomIds.length} room${linkedRoomIds.length > 1 ? 's' : ''}. To change links, open the room and tick/untick this package there.`}
               </p>
-              {rooms.length === 0 ? (
-                <p className="text-xs text-gray-400 italic">No rooms yet — create a room first to attach packages.</p>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {rooms.map(r => (
-                    <label key={r.id} className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer ${
-                      linkedRoomIds.includes(r.id) ? 'border-libre bg-libre/5' : 'border-gray-200'
-                    }`}>
-                      <input type="checkbox" checked={linkedRoomIds.includes(r.id)}
-                        onChange={() => toggleRoomLink(r.id)} />
-                      <span className="text-sm">{r.name}</span>
-                      <span className="text-xs text-gray-400 ml-auto">${Number(r.base_price).toFixed(0)}/n</span>
-                    </label>
-                  ))}
+              {linkedRoomIds.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {linkedRoomIds.map(rid => {
+                    const r = rooms.find(x => x.id === rid)
+                    if (!r) return null
+                    return (
+                      <span key={rid} className="text-xs bg-libre/10 text-libre px-2 py-0.5 rounded-full">
+                        🛏️ {r.name}
+                      </span>
+                    )
+                  })}
                 </div>
               )}
             </div>
