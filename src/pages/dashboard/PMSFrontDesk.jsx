@@ -192,44 +192,68 @@ export default function PMSFrontDesk() {
     return m
   }, [bookings])
 
-  // For each day, allocate bookings to physical units the same way the
-  // grid view does for "today" — numbered units take exact matches first,
-  // unassigned bookings spread to remaining slots in arrival order.
+  // ── Stable allocation: each booking keeps the SAME unit row across every
+  //    day of its stay. Computed ONCE per type using greedy interval
+  //    scheduling on the visible window — so 'c.havp/a · May 4 → May 22'
+  //    stays on slot #3 throughout instead of jumping to #1 the next day.
   // Returns { [dateStr]: { [unitKey]: booking | undefined } }
+  const windowStart = windowDays[0]
+  const windowEnd   = windowDays[windowDays.length - 1]
+
   const dailyAllocations = useMemo(() => {
     const result = {}
-    // Group units by type for efficient per-day processing
+    for (const d of windowDays) result[d] = {}
+
+    // Group units by room type for efficient per-type processing
     const unitsByType = {}
     for (const u of unitRows) {
       if (!unitsByType[u.roomTypeId]) unitsByType[u.roomTypeId] = []
       unitsByType[u.roomTypeId].push(u)
     }
-    for (const day of windowDays) {
-      const dayMap = {}
-      for (const [typeId, units] of Object.entries(unitsByType)) {
-        const covering = (bookingsByType.get(typeId) || []).filter(b =>
-          b.check_in <= day && b.check_out > day
-        )
-        const assigned = new Set()
-        // Numbered units take exact matches first
-        for (const u of units) {
-          if (u.numbered) {
-            const b = covering.find(x => x.room_number === u.unitLabel && !assigned.has(x.id))
-            if (b) { dayMap[u.key] = b; assigned.add(b.id) }
-          }
-        }
-        // Spread remaining bookings to leftover slots in label order
-        const leftover = covering.filter(b => !assigned.has(b.id))
-        for (const u of units) {
-          if (dayMap[u.key]) continue
-          const b = leftover.shift()
-          if (b) dayMap[u.key] = b
+
+    for (const [typeId, units] of Object.entries(unitsByType)) {
+      // Bookings of this type that overlap the visible window
+      const overlapping = (bookingsByType.get(typeId) || []).filter(b =>
+        b.check_in <= windowEnd && b.check_out > windowStart
+      )
+
+      // 1) Numbered bookings take their named slot first
+      const consumedBookings = new Set()
+      const slotBusy = {}            // unitKey → true after a booking is placed there
+      const place = (booking, unitKey) => {
+        consumedBookings.add(booking.id)
+        slotBusy[unitKey] = slotBusy[unitKey] || []
+        slotBusy[unitKey].push(booking)
+        for (const d of windowDays) {
+          if (booking.check_in <= d && booking.check_out > d) result[d][unitKey] = booking
         }
       }
-      result[day] = dayMap
+
+      for (const u of units) {
+        if (!u.numbered) continue
+        const exact = overlapping.find(b => b.room_number === u.unitLabel && !consumedBookings.has(b.id))
+        if (exact) place(exact, u.key)
+      }
+
+      // 2) Greedy interval-scheduling for the rest:
+      //    sort by check_in (then id) and place each in the FIRST slot
+      //    whose existing bookings don't overlap.
+      const remaining = overlapping
+        .filter(b => !consumedBookings.has(b.id))
+        .sort((a, b) =>
+          a.check_in.localeCompare(b.check_in) ||
+          String(a.id).localeCompare(String(b.id))
+        )
+      for (const b of remaining) {
+        const slot = units.find(u => {
+          const bookings = slotBusy[u.key] || []
+          return bookings.every(x => x.check_out <= b.check_in || x.check_in >= b.check_out)
+        })
+        if (slot) place(b, slot.key)
+      }
     }
     return result
-  }, [windowDays, unitRows, bookingsByType])
+  }, [windowDays, windowStart, windowEnd, unitRows, bookingsByType])
 
   // Stats — sum across types using each type's quantity, not row count.
   const totalRooms     = roomStatuses.reduce((s, r) => s + r.qty, 0)
