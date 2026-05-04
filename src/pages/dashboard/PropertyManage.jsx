@@ -2277,11 +2277,14 @@ function RoomEditFormCard({
                               // (start + duration - 1, inclusive). The hotelier
                               // only enters the start; the OTA validates the
                               // booking against the derived window.
+                              // ⚠️ Use UTC-only date math — local TZ parsing
+                              //    of 'YYYY-MM-DDT00:00:00' shifts a full day
+                              //    east of UTC after toISOString().
                               const dur = Number(pkg.duration_days) || 1
                               let endStr = ''
                               if (d.start) {
-                                const dt = new Date(d.start + 'T00:00:00')
-                                dt.setDate(dt.getDate() + dur - 1)
+                                const dt = new Date(d.start + 'T00:00:00Z')
+                                dt.setUTCDate(dt.getUTCDate() + dur - 1)
                                 endStr = dt.toISOString().slice(0, 10)
                               }
                               return (
