@@ -1247,52 +1247,57 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
           const isOpen   = tm30Open[idx] ?? needsTM30
           return (
           <div key={idx} className="bg-white rounded-lg border border-gray-100">
-            {/* Top row — basics: name / nat / passport */}
-            <div className="grid grid-cols-12 gap-1.5 items-start p-2">
-              <div className="col-span-1 flex items-center justify-center text-[10px] font-bold text-gray-400 pt-2.5">
+            {/* Row 1 — name + actions (always fits) */}
+            <div className="grid grid-cols-12 gap-1.5 items-center p-2 pb-1">
+              <div className="col-span-1 flex items-center justify-center text-[10px] font-bold text-gray-400">
                 {idx === 0 ? '👤' : g.is_child ? '👶' : '👤'}
                 <span className="ml-0.5">{idx + 1}</span>
               </div>
-              <div className="col-span-3">
+              <div className="col-span-5">
                 <input type="text" value={g.first_name}
                   onChange={e => updateGuest(idx, 'first_name', e.target.value)}
                   placeholder={idx === 0 ? 'First name *' : 'First name'}
                   autoFocus={idx === 0}
                   className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
               </div>
-              <div className="col-span-3">
+              <div className="col-span-5">
                 <input type="text" value={g.last_name}
                   onChange={e => updateGuest(idx, 'last_name', e.target.value)}
                   placeholder="Last name"
                   className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
               </div>
-              <div className="col-span-2">
-                <input type="text" value={g.nationality}
-                  onChange={e => updateGuest(idx, 'nationality', e.target.value.toUpperCase().slice(0, 2))}
-                  placeholder="FR / TH"
-                  maxLength={2}
-                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-              </div>
-              <div className="col-span-2">
-                <input type="text" value={g.passport_number}
-                  onChange={e => updateGuest(idx, 'passport_number', e.target.value)}
-                  placeholder={g.is_child ? 'opt.' : 'Passport #'}
-                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-              </div>
-              <div className="col-span-1 flex items-center justify-end pt-1.5 gap-1">
+              <div className="col-span-1 flex items-center justify-end gap-1">
                 {idx > 0 && (
                   <>
                     <button type="button" onClick={() => updateGuest(idx, 'is_child', !g.is_child)}
-                      className="text-[9px] text-gray-400 hover:text-electric font-medium"
+                      className="text-[10px] text-gray-400 hover:text-electric font-bold w-5 h-5 rounded border border-gray-200 hover:border-electric flex items-center justify-center"
                       title={g.is_child ? 'Mark as adult' : 'Mark as child'}>
                       {g.is_child ? 'A' : 'C'}
                     </button>
                     <button type="button"
                       onClick={() => setGuests(arr => arr.filter((_, i) => i !== idx))}
-                      className="text-gray-300 hover:text-sunset text-base leading-none px-1"
+                      className="text-gray-300 hover:text-sunset text-base leading-none w-5 h-5 flex items-center justify-center"
                       title="Remove this guest">×</button>
                   </>
                 )}
+              </div>
+            </div>
+
+            {/* Row 2 — nationality + passport (full breathing room) */}
+            <div className="grid grid-cols-12 gap-1.5 items-center px-2 pb-2">
+              <div className="col-span-1" />
+              <div className="col-span-3">
+                <input type="text" value={g.nationality}
+                  onChange={e => updateGuest(idx, 'nationality', e.target.value.toUpperCase().slice(0, 2))}
+                  placeholder="FR / TH"
+                  maxLength={2}
+                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs uppercase font-mono tracking-wider text-center focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+              </div>
+              <div className="col-span-8">
+                <input type="text" value={g.passport_number}
+                  onChange={e => updateGuest(idx, 'passport_number', e.target.value)}
+                  placeholder={g.is_child ? 'Passport / ID (optional for child)' : 'Passport / ID number'}
+                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
               </div>
             </div>
 
