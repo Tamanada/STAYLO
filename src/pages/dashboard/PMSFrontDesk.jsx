@@ -766,16 +766,14 @@ function CalendarStrip({ room, bookings }) {
               : firstName
           }
 
-          // Tooltip lists every guest on that day so the hotelier can audit
-          const allNames = dayBookings.map(b => b.guest_name || 'no name').join(', ')
-          const titleSuffix = occupied > 0
-            ? ` · ${occupied}/${totalUnits} occupied: ${allNames}`
-            : ''
+          const fullDate = d.toLocaleDateString(undefined, {
+            weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+          })
+          const arrivalIds = new Set(arrivals.map(a => a.id))
 
           return (
             <div key={d.toISOString()}
-              className={`rounded-lg border-2 p-2 text-center ${bg} ${isToday ? 'ring-2 ring-ocean' : ''}`}
-              title={`${d.toDateString()}${titleSuffix}`}
+              className={`group relative rounded-lg border-2 p-2 text-center ${bg} ${isToday ? 'ring-2 ring-ocean' : ''}`}
             >
               <div className="text-[10px] font-bold uppercase opacity-60">
                 {d.toLocaleDateString('en', { weekday: 'short' })}
@@ -787,6 +785,71 @@ function CalendarStrip({ room, bookings }) {
                   → {arrivals.length} arr
                 </div>
               )}
+
+              {/* ── Rich hover popup — full guest info for the day.
+                  pointer-events-none so it never blocks clicks. */}
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-72 max-w-[90vw] bg-white rounded-xl shadow-2xl border border-gray-200 p-3 text-left">
+                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200" />
+
+                {/* Header — date + occupancy */}
+                <div className="flex items-baseline justify-between pb-2 mb-2 border-b border-gray-100">
+                  <div className="text-xs font-bold text-deep">{fullDate}</div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                    occupied === 0 ? 'bg-emerald-100 text-emerald-700'
+                    : available > 0 ? 'bg-amber-100 text-amber-700'
+                    : 'bg-blue-100 text-blue-700'
+                  }`}>
+                    {occupied}/{totalUnits} taken
+                  </span>
+                </div>
+
+                {/* Guests on this day */}
+                {occupied === 0 ? (
+                  <p className="text-xs text-gray-400 italic text-center py-1">
+                    All {totalUnits} unit{totalUnits > 1 ? 's' : ''} free
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {dayBookings.map(b => {
+                      const isArrival  = arrivalIds.has(b.id)
+                      const isCheckout = (() => {
+                        const dt = new Date(b.check_out + 'T00:00:00Z')
+                        dt.setUTCDate(dt.getUTCDate() - 1)
+                        return dt.toISOString().slice(0, 10) === d.toISOString().split('T')[0]
+                      })()
+                      const status = isArrival ? 'ARRIVING' : isCheckout ? 'LAST NIGHT' : 'IN-STAY'
+                      const statusColor = isArrival ? 'bg-purple-100 text-purple-700'
+                        : isCheckout ? 'bg-amber-100 text-amber-700'
+                        : 'bg-blue-100 text-blue-700'
+                      return (
+                        <div key={b.id} className="text-[11px] leading-tight pb-2 last:pb-0 border-b last:border-0 border-gray-50">
+                          <div className="flex items-center justify-between gap-2 mb-0.5">
+                            <span className="font-bold text-deep truncate">{b.guest_name || 'no name'}</span>
+                            <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${statusColor}`}>
+                              {status}
+                            </span>
+                          </div>
+                          <div className="text-gray-500 font-mono text-[10px]">
+                            {b.check_in} → {b.check_out}
+                            {b.room_number && <span className="ml-2 text-deep font-bold">#{b.room_number}</span>}
+                          </div>
+                          <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-gray-500 mt-0.5">
+                            {b.guest_email && <span>📧 {b.guest_email}</span>}
+                            {b.guest_phone && <span>📞 {b.guest_phone}</span>}
+                            <span>👥 {(b.adults || 1) + (b.children || 0)} guest{((b.adults || 1) + (b.children || 0)) > 1 ? 's' : ''}</span>
+                            {b.booking_ref && <span className="font-mono text-deep/60">{b.booking_ref}</span>}
+                          </div>
+                          {b.special_requests && (
+                            <div className="mt-1 text-[10px] text-orange italic">
+                              ✦ {b.special_requests}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           )
         })}
