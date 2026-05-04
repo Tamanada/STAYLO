@@ -609,6 +609,16 @@ export default function PropertyDetail() {
                                     Per bed
                                   </span>
                                 )}
+                                {pricing.longStayTier === 'monthly' && (
+                                  <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-libre/10 text-libre px-2 py-0.5 rounded">
+                                    <Calendar size={10} /> Monthly rate
+                                  </span>
+                                )}
+                                {pricing.longStayTier === 'weekly' && (
+                                  <span className="ml-2 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-libre/10 text-libre px-2 py-0.5 rounded">
+                                    <Calendar size={10} /> Weekly rate
+                                  </span>
+                                )}
                               </h3>
                               <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mb-2">
                                 <span className="flex items-center gap-1"><BedDouble size={14} /> {room.beds}</span>
@@ -659,7 +669,17 @@ export default function PropertyDetail() {
                                 )}
                                 <p className="text-2xl font-extrabold text-gray-900">${total.toFixed(0)}</p>
                                 <p className="text-[11px] text-gray-400">{t('booking.before_pay_fees', '+ payment fees at checkout')}</p>
-                                {pricing.hasPromo && pricing.savings > 0 && (
+                                {pricing.longStayTier === 'monthly' && (
+                                  <p className="text-[11px] text-libre font-semibold mt-0.5 flex items-center gap-1 justify-end">
+                                    <Calendar size={11} /> Monthly: ~${pricing.perNightEffective.toFixed(0)}/night
+                                  </p>
+                                )}
+                                {pricing.longStayTier === 'weekly' && (
+                                  <p className="text-[11px] text-libre font-semibold mt-0.5 flex items-center gap-1 justify-end">
+                                    <Calendar size={11} /> Weekly: −${pricing.savings.toFixed(0)}
+                                  </p>
+                                )}
+                                {pricing.hasPromo && pricing.savings > 0 && !pricing.longStayTier && (
                                   <p className="text-[11px] text-orange font-semibold mt-0.5">
                                     🔥 Promo applied: −${pricing.savings.toFixed(0)}
                                   </p>
