@@ -33,7 +33,8 @@ export default function PMSFrontDesk() {
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
   const [selectedProperty, setSelectedProperty] = useState(null)
-  const [viewMode, setViewMode] = useState('cards')   // 'cards' | 'grid'
+  const [viewMode, setViewMode] = useState('cards')   // 'cards' | 'grid' | 'calendar'
+  const [calStartOffset, setCalStartOffset] = useState(0)  // days from today; user can page
   const [loading, setLoading] = useState(true)
   const [today] = useState(new Date().toISOString().split('T')[0])
   const [openRoom, setOpenRoom] = useState(null)   // room object whose modal is open
@@ -167,6 +168,69 @@ export default function PMSFrontDesk() {
     return rows
   }, [roomStatuses, today])
 
+  // ── Calendar (rack-chart) view: 14-day window, 1 row per physical unit ────
+  const CAL_DAYS = 14
+  const windowDays = useMemo(() => {
+    const arr = []
+    const start = new Date(today + 'T00:00:00Z')
+    start.setUTCDate(start.getUTCDate() + calStartOffset)
+    for (let i = 0; i < CAL_DAYS; i++) {
+      const d = new Date(start)
+      d.setUTCDate(d.getUTCDate() + i)
+      arr.push(d.toISOString().slice(0, 10))
+    }
+    return arr
+  }, [today, calStartOffset])
+
+  // O(1) bookings-by-room-type lookup
+  const bookingsByType = useMemo(() => {
+    const m = new Map()
+    for (const b of bookings) {
+      if (!m.has(b.room_id)) m.set(b.room_id, [])
+      m.get(b.room_id).push(b)
+    }
+    return m
+  }, [bookings])
+
+  // For each day, allocate bookings to physical units the same way the
+  // grid view does for "today" — numbered units take exact matches first,
+  // unassigned bookings spread to remaining slots in arrival order.
+  // Returns { [dateStr]: { [unitKey]: booking | undefined } }
+  const dailyAllocations = useMemo(() => {
+    const result = {}
+    // Group units by type for efficient per-day processing
+    const unitsByType = {}
+    for (const u of unitRows) {
+      if (!unitsByType[u.roomTypeId]) unitsByType[u.roomTypeId] = []
+      unitsByType[u.roomTypeId].push(u)
+    }
+    for (const day of windowDays) {
+      const dayMap = {}
+      for (const [typeId, units] of Object.entries(unitsByType)) {
+        const covering = (bookingsByType.get(typeId) || []).filter(b =>
+          b.check_in <= day && b.check_out > day
+        )
+        const assigned = new Set()
+        // Numbered units take exact matches first
+        for (const u of units) {
+          if (u.numbered) {
+            const b = covering.find(x => x.room_number === u.unitLabel && !assigned.has(x.id))
+            if (b) { dayMap[u.key] = b; assigned.add(b.id) }
+          }
+        }
+        // Spread remaining bookings to leftover slots in label order
+        const leftover = covering.filter(b => !assigned.has(b.id))
+        for (const u of units) {
+          if (dayMap[u.key]) continue
+          const b = leftover.shift()
+          if (b) dayMap[u.key] = b
+        }
+      }
+      result[day] = dayMap
+    }
+    return result
+  }, [windowDays, unitRows, bookingsByType])
+
   // Stats — sum across types using each type's quantity, not row count.
   const totalRooms     = roomStatuses.reduce((s, r) => s + r.qty, 0)
   const occupied       = roomStatuses.reduce((s, r) => s + r.occupiedCount, 0)
@@ -284,6 +348,14 @@ export default function PMSFrontDesk() {
             }`}>
             📊 Grid (by unit · {unitRows.length} rows)
           </button>
+          <button onClick={() => setViewMode('calendar')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              viewMode === 'calendar'
+                ? 'bg-deep text-white shadow'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
+            }`}>
+            📅 Calendar (rack · {CAL_DAYS} days)
+          </button>
         </div>
       )}
 
@@ -297,6 +369,110 @@ export default function PMSFrontDesk() {
             className="px-4 py-2 bg-ocean text-white rounded-lg font-medium text-sm hover:bg-ocean/90 no-underline inline-block">
             {t('pms.manage_rooms', 'Manage Rooms')}
           </Link>
+        </div>
+      ) : viewMode === 'calendar' ? (
+        // ── Rack-chart calendar: rows = units, cols = days, cells = status
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          {/* Window pager */}
+          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-100 bg-gray-50">
+            <button onClick={() => setCalStartOffset(o => o - CAL_DAYS)}
+              className="px-2 py-1 rounded hover:bg-white text-xs font-semibold text-gray-600">
+              ← Earlier
+            </button>
+            <span className="text-xs font-bold text-gray-700">
+              {windowDays[0]} → {windowDays[windowDays.length - 1]}
+              {calStartOffset !== 0 && (
+                <button onClick={() => setCalStartOffset(0)}
+                  className="ml-2 text-libre underline font-normal">jump to today</button>
+              )}
+            </span>
+            <button onClick={() => setCalStartOffset(o => o + CAL_DAYS)}
+              className="px-2 py-1 rounded hover:bg-white text-xs font-semibold text-gray-600">
+              Later →
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <div className="min-w-max">
+              {/* Header row — date columns */}
+              <div className="grid border-b border-gray-200"
+                style={{ gridTemplateColumns: `200px repeat(${CAL_DAYS}, minmax(72px, 1fr))` }}>
+                <div className="px-3 py-2 text-[11px] font-bold uppercase tracking-wide text-gray-500 bg-gray-50 sticky left-0 z-10 border-r border-gray-200">
+                  Unit / Type
+                </div>
+                {windowDays.map(d => {
+                  const dt = new Date(d + 'T00:00:00Z')
+                  const isToday = d === today
+                  const isWeekend = [0, 6].includes(dt.getUTCDay())
+                  return (
+                    <div key={d}
+                      className={`px-1 py-1.5 text-center text-[10px] font-semibold border-l border-gray-100 ${
+                        isToday ? 'bg-libre/15 text-libre'
+                        : isWeekend ? 'bg-gray-50 text-gray-500'
+                        : 'bg-white text-gray-600'
+                      }`}>
+                      <div>{dt.toLocaleDateString(undefined, { weekday: 'short', timeZone: 'UTC' })}</div>
+                      <div className={`text-base ${isToday ? 'font-extrabold' : 'font-bold'}`}>
+                        {dt.getUTCDate()}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Body — one row per unit */}
+              {unitRows.map(u => (
+                <div key={u.key} className="grid border-b border-gray-100 hover:bg-gray-50/40"
+                  style={{ gridTemplateColumns: `200px repeat(${CAL_DAYS}, minmax(72px, 1fr))` }}>
+                  <div className="px-3 py-1.5 text-xs sticky left-0 z-10 bg-white border-r border-gray-200">
+                    <div className={`font-mono font-bold ${u.numbered ? 'text-deep' : 'text-gray-400 italic'}`}>
+                      {u.unitLabel}
+                    </div>
+                    <div className="text-[10px] text-gray-500 truncate">{u.roomType}</div>
+                  </div>
+                  {windowDays.map(d => {
+                    const b = dailyAllocations[d]?.[u.key]
+                    let bg = 'bg-emerald-50'   // free
+                    let txt = ''
+                    let title = ''
+                    if (b) {
+                      const lastNight = (() => {
+                        const dt = new Date(b.check_out + 'T00:00:00Z')
+                        dt.setUTCDate(dt.getUTCDate() - 1)
+                        return dt.toISOString().slice(0, 10)
+                      })()
+                      if (b.check_in === d)      { bg = 'bg-purple-200 text-purple-900'; }
+                      else if (lastNight === d)  { bg = 'bg-amber-200 text-amber-900'; }
+                      else                       { bg = 'bg-blue-200 text-blue-900'; }
+                      // Show guest name only on the FIRST day of the stay so it
+                      // doesn't repeat across cells (visually feels like a bar)
+                      if (b.check_in === d) txt = (b.guest_name || '?').split(' ')[0].slice(0, 8)
+                      title = `${b.guest_name || 'no name'} · ${b.check_in} → ${b.check_out}`
+                    }
+                    const isToday = d === today
+                    return (
+                      <div key={d}
+                        title={title || (u.roomType + ' — ' + d)}
+                        onClick={() => {
+                          const room = roomStatuses.find(r => r.id === u.roomTypeId)
+                          if (room) setOpenRoom(room)
+                        }}
+                        className={`relative h-9 border-l border-gray-100 text-[10px] font-bold flex items-center justify-center cursor-pointer ${bg} ${isToday ? 'ring-1 ring-inset ring-libre/40' : ''}`}>
+                        {txt}
+                      </div>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Mini-legend */}
+          <div className="bg-gray-50 px-3 py-2 text-[11px] text-gray-500 border-t border-gray-100 flex items-center gap-3 flex-wrap">
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-50 border border-gray-200" /> free</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-purple-200" /> arriving</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-blue-200" /> in-stay</span>
+            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-amber-200" /> last night</span>
+            <span className="text-gray-400">· click a cell to open the unit</span>
+          </div>
         </div>
       ) : viewMode === 'grid' ? (
         // ── Per-unit table view ─────────────────────────────────────────────
