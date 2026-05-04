@@ -1006,17 +1006,26 @@ export default function PropertyDetail() {
                   </div>
                 )}
 
-                {/* Per-bed info banner — bed count = ceil(guests / people_per_bed) */}
-                {selectedRoomData && isPerBed && (adults + children) > 0 && (
-                  <div className="bg-deep/5 border border-deep/15 rounded-lg p-2.5 mt-2 text-xs text-deep">
-                    🛏️ <strong>{effectiveRoomsCount} bed{effectiveRoomsCount > 1 ? 's' : ''}</strong> reserved
-                    {peoplePerBed > 1 && (
-                      <span className="text-gray-500"> (each bed sleeps up to {peoplePerBed})</span>
-                    )}
-                    {' · '}
-                    <span className="text-gray-500">${selectedRoomData.price}/bed/night</span>
-                  </div>
-                )}
+                {/* Per-bed info banner — bed count = ceil(guests / people_per_bed)
+                    When the selected package is "all-inclusive" (replace mode),
+                    the per-bed price is moot — hide it so the guest doesn't
+                    think they pay $10/night on top of the $1000 all-in. */}
+                {selectedRoomData && isPerBed && (adults + children) > 0 && (() => {
+                  const selPkg = selectedPackage ? allPackages.find(p => p.id === selectedPackage) : null
+                  const isReplace = selPkg?.pricing_mode === 'replace'
+                  return (
+                    <div className="bg-deep/5 border border-deep/15 rounded-lg p-2.5 mt-2 text-xs text-deep">
+                      🛏️ <strong>{effectiveRoomsCount} bed{effectiveRoomsCount > 1 ? 's' : ''}</strong> reserved
+                      {peoplePerBed > 1 && (
+                        <span className="text-gray-500"> (each bed sleeps up to {peoplePerBed})</span>
+                      )}
+                      {' · '}
+                      {isReplace
+                        ? <span className="text-libre font-semibold">included in package</span>
+                        : <span className="text-gray-500">${selectedRoomData.price}/bed/night</span>}
+                    </div>
+                  )
+                })()}
 
                 {/* Communicating-rooms request — only shown when booking ≥2 rooms
                     AND the room type advertises that connecting pairs exist. */}
