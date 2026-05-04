@@ -1454,6 +1454,9 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
     monthly_min_nights:  28,
     weekly_discount_pct: 0,
     weekly_min_nights:   7,
+    // Bulk pool of physical unit numbers (raw string from textarea —
+    // parsed to TEXT[] on save). Comma OR newline separated.
+    unit_numbers_raw: '',
   })
   // Carry photo/video URLs from a source room when "Copy from..." is used.
   // Stored separately because handleSave's regular flow doesn't touch media.
@@ -1476,6 +1479,7 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
     monthly_min_nights:  28,
     weekly_discount_pct: 0,
     weekly_min_nights:   7,
+    unit_numbers_raw: '',
   })
 
   function openAdd() {
@@ -1520,6 +1524,8 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       monthly_min_nights:  src.monthly_min_nights || 28,
       weekly_discount_pct: src.weekly_discount_pct || 0,
       weekly_min_nights:   src.weekly_min_nights || 7,
+      // Unit numbers are physical identifiers — never copy across types.
+      unit_numbers_raw: '',
     })
     setCopiedMedia({
       photo_urls: [...(src.photo_urls || [])],
@@ -1547,6 +1553,7 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       monthly_min_nights:  room.monthly_min_nights || 28,
       weekly_discount_pct: room.weekly_discount_pct || 0,
       weekly_min_nights:   room.weekly_min_nights || 7,
+      unit_numbers_raw:    Array.isArray(room.unit_numbers) ? room.unit_numbers.join(', ') : '',
     })
     // Pre-populate linked packages from the decorated room (with qty + dates).
     const seed = {}
@@ -1647,6 +1654,15 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       monthly_min_nights:  Number(form.monthly_min_nights) || 28,
       weekly_discount_pct: Number(form.weekly_discount_pct) || 0,
       weekly_min_nights:   Number(form.weekly_min_nights) || 7,
+      // Parse the bulk textarea: split on commas OR newlines, trim, drop blanks,
+      // dedupe while preserving the order the hotelier typed them in.
+      unit_numbers: (() => {
+        const seen = new Set()
+        return (form.unit_numbers_raw || '')
+          .split(/[\n,]+/)
+          .map(s => s.trim())
+          .filter(s => s && !seen.has(s) && (seen.add(s), true))
+      })(),
     }
 
     let opError = null
@@ -1807,6 +1823,14 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
                   <span className="flex items-center gap-1"><Users size={14} /> {room.max_guests} guests</span>
                   <span className="flex items-center gap-1"><DollarSign size={14} /> ${Number(room.base_price).toFixed(0)}/night</span>
                   <span>x{room.quantity} {t('manage.available', 'available')}</span>
+                  {Array.isArray(room.unit_numbers) && room.unit_numbers.length > 0 && (
+                    <span className={`flex items-center gap-1 ${
+                      room.unit_numbers.length === room.quantity ? 'text-libre' : 'text-orange'
+                    }`}
+                      title={room.unit_numbers.join(', ')}>
+                      🔢 {room.unit_numbers.length}/{room.quantity} numbered
+                    </span>
+                  )}
                 </div>
                 {room.amenities && room.amenities.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
@@ -2129,6 +2153,60 @@ function RoomEditFormCard({
               </div>
             </label>
           )}
+        </div>
+
+        {/* ───── Bulk pool of physical unit numbers ───── */}
+        <div className="sm:col-span-2 p-4 rounded-xl bg-deep/5 border border-deep/15">
+          <h4 className="text-sm font-bold text-deep flex items-center gap-2 mb-1">
+            🔢 {t('manage.unit_numbers_title', 'Physical unit numbers')}
+            <span className="text-[11px] text-gray-400 font-normal ml-auto">
+              {t('manage.unit_numbers_hint', 'Optional. Receptionists pick from this pool when assigning bookings.')}
+            </span>
+          </h4>
+          <p className="text-[11px] text-gray-500 mb-2">
+            {t('manage.unit_numbers_desc',
+              'Paste all unit numbers separated by commas or new lines. e.g. t.03, t.04, t.12, t.32 — for a Junior Suite type with quantity 4.')}
+          </p>
+          {(() => {
+            // Live parse for the chip preview + count check
+            const parsed = (() => {
+              const seen = new Set()
+              return (form.unit_numbers_raw || '')
+                .split(/[\n,]+/)
+                .map(s => s.trim())
+                .filter(s => s && !seen.has(s) && (seen.add(s), true))
+            })()
+            const qty = Math.max(1, Number(form.quantity) || 1)
+            const mismatch = parsed.length > 0 && parsed.length !== qty
+            return (
+              <>
+                <textarea
+                  value={form.unit_numbers_raw}
+                  onChange={e => setForm(f => ({ ...f, unit_numbers_raw: e.target.value }))}
+                  placeholder={'t.03, t.04, t.12, t.32\nt.45, t.67…'}
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-deep/20"
+                />
+                <div className="flex items-center justify-between mt-1.5 text-[11px]">
+                  <span className={mismatch ? 'text-orange font-semibold' : 'text-gray-500'}>
+                    {parsed.length === 0
+                      ? 'No units entered yet — receptionist falls back to free-text.'
+                      : `${parsed.length} unit${parsed.length > 1 ? 's' : ''} parsed`}
+                    {mismatch && ` (quantity says ${qty} — please align)`}
+                  </span>
+                </div>
+                {parsed.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2 max-h-24 overflow-y-auto">
+                    {parsed.map((n, i) => (
+                      <span key={i} className="text-[11px] bg-deep/10 text-deep px-2 py-0.5 rounded font-mono">
+                        {n}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
+            )
+          })()}
         </div>
 
         {/* ───── Long-stay rates (monthly + weekly tiers) ───── */}
