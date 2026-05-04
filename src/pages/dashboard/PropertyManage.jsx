@@ -1771,30 +1771,23 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
                     })}
                   </div>
                 )}
-                {/* ── Linked packages — visible at a glance, click jumps to
-                    PackagesTab to manage. Empty = no package attached, with
-                    a hint linking to the Packages tab to attach one. */}
-                <div className="mt-2 flex flex-wrap gap-1 items-center">
-                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
-                    <PackageIcon size={11} /> Packages:
-                  </span>
-                  {(room._packages || []).length === 0 ? (
-                    <button onClick={() => onJumpToPackages?.()}
-                      className="text-[11px] text-gray-400 italic hover:text-libre underline">
-                      None — attach one in the Packages tab
-                    </button>
-                  ) : (
-                    <>
-                      {room._packages.map(p => (
-                        <button key={p.id} onClick={() => openEdit(room)}
-                          className="inline-flex items-center gap-1 text-xs bg-orange/10 text-orange px-2 py-0.5 rounded-full hover:bg-orange/20"
-                          title={`${p.name} × ${p._qty} — click to edit room links`}>
-                          ✨ {p.name}{p._qty > 1 && <span className="font-bold">×{p._qty}</span>}
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
+                {/* Linked packages — only render the row when at least one
+                    package is bundled with this room. Click jumps into the
+                    room edit form (where the link is managed). */}
+                {(room._packages || []).length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-1 items-center">
+                    <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                      <PackageIcon size={11} /> Packages:
+                    </span>
+                    {room._packages.map(p => (
+                      <button key={p.id} onClick={() => openEdit(room)}
+                        className="inline-flex items-center gap-1 text-xs bg-orange/10 text-orange px-2 py-0.5 rounded-full hover:bg-orange/20"
+                        title={`${p.name} × ${p._qty} — click to edit room links`}>
+                        ✨ {p.name}{p._qty > 1 && <span className="font-bold">×{p._qty}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button onClick={() => toggleActive(room)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600" title={room.is_active ? 'Deactivate' : 'Activate'}>
