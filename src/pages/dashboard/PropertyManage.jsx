@@ -3001,12 +3001,13 @@ function CalendarTab({ rooms }) {
               : priceBrut
             const netAfterPromo = priceAfterPromo * 0.9
 
+            const fullDateStr = dateStrFor(day)
             return (
               <button
                 key={day}
                 onClick={handleCellClick}
                 disabled={isPast || saving}
-                className={`relative aspect-square min-h-[96px] rounded-lg transition-all flex flex-col p-2 text-left ${
+                className={`group relative aspect-square min-h-[96px] rounded-lg transition-all flex flex-col p-2 text-left ${
                   isPast
                     ? 'text-gray-300 bg-gray-50 cursor-not-allowed border border-gray-100'
                     : isSelected
@@ -3016,6 +3017,111 @@ function CalendarTab({ rooms }) {
                         : 'bg-libre/5 border border-libre/10 hover:bg-libre/15 cursor-pointer'
                 }`}
               >
+                {/* ── Rich hover panel — opens on cell hover, fully detailed.
+                    pointer-events-none so it never intercepts the cell click.
+                    z-50 + absolute lifts it over neighbour cells. */}
+                {!isPast && (
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-72 max-w-[90vw] bg-white rounded-xl shadow-2xl border border-gray-200 p-3 text-left">
+                    {/* Pointer arrow */}
+                    <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200" />
+
+                    {/* Header — date + room name */}
+                    <div className="flex items-baseline justify-between gap-2 pb-2 mb-2 border-b border-gray-100">
+                      <div>
+                        <div className="text-xs font-bold uppercase tracking-wide text-gray-400">
+                          {new Date(fullDateStr + 'T00:00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                        </div>
+                        <div className="text-sm font-bold text-deep">{room.name}</div>
+                      </div>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                        isBlocked ? 'bg-sunset/15 text-sunset' :
+                        availableStock === 0 ? 'bg-sunset/15 text-sunset' :
+                        availableStock < totalStock ? 'bg-orange/15 text-orange' :
+                        'bg-libre/15 text-libre'
+                      }`}>
+                        {isBlocked ? 'BLOCKED' : `${availableStock}/${totalStock}`}
+                      </span>
+                    </div>
+
+                    {/* Room basics */}
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] text-gray-500 mb-2">
+                      <span><BedDouble size={10} className="inline mr-0.5" />{prettyLabel(room.bed_type)}</span>
+                      <span><Users size={10} className="inline mr-0.5" />{room.max_guests} guests</span>
+                      {room.pricing_unit === 'bed' && <span className="text-deep font-semibold">PER BED</span>}
+                    </div>
+
+                    {/* Pricing */}
+                    {!isBlocked && (
+                      <div className="bg-gray-50 rounded-lg px-2.5 py-1.5 mb-2">
+                        <div className="flex items-baseline justify-between">
+                          <span className="text-[11px] text-gray-500">Guest pays</span>
+                          <span className="text-base font-bold text-ocean">
+                            ${priceAfterPromo.toFixed(0)}
+                            {promoPct > 0 && <span className="ml-1 text-[10px] font-normal text-gray-400 line-through">${priceBrut.toFixed(0)}</span>}
+                            {hasOverride && <span className="ml-1 text-[10px] text-orange" title="Custom price for this day">★</span>}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline justify-between">
+                          <span className="text-[11px] text-gray-500">You receive (90%)</span>
+                          <span className="text-sm font-semibold text-libre">${netAfterPromo.toFixed(0)}</span>
+                        </div>
+                        {hasOverride && (
+                          <div className="text-[10px] text-orange mt-0.5 italic">
+                            Default base price: ${Number(room.base_price).toFixed(0)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Min stay */}
+                    {minStay > 1 && (
+                      <div className="flex items-center gap-1.5 text-[11px] text-deep mb-1">
+                        <span className="font-bold">🌙 Min stay:</span> {minStay} nights
+                      </div>
+                    )}
+
+                    {/* Promo */}
+                    {(promoLabel || promoPct > 0) && (
+                      <div className="flex items-start gap-1.5 text-[11px] text-orange mb-1">
+                        <span className="font-bold whitespace-nowrap">🏷️ Promo:</span>
+                        <span>{promoLabel || 'Discount'}{promoPct > 0 && ` (−${Number(promoPct).toFixed(0)}%)`}</span>
+                      </div>
+                    )}
+
+                    {/* Specials / rewards (full list, not just first 3) */}
+                    {visibleSpecials.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-libre mb-1">
+                          🎁 Rewards ({visibleSpecials.length})
+                        </div>
+                        <div className="space-y-1">
+                          {visibleSpecials.map((sp, i) => (
+                            <div key={i} className="text-[11px] leading-tight">
+                              <div className="font-semibold text-deep">{sp.label || `Reward ${i + 1}`}</div>
+                              {sp.perk && <div className="text-gray-500">{sp.perk}</div>}
+                              {sp.min_stay && <div className="text-gray-400 text-[10px]">Requires ≥ {sp.min_stay} nights</div>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Internal note */}
+                    {internalNote && (
+                      <div className="mt-2 pt-2 border-t border-gray-100">
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-electric mb-0.5">📝 Internal note</div>
+                        <div className="text-[11px] text-gray-600 italic">{internalNote}</div>
+                      </div>
+                    )}
+
+                    {/* Status hint when nothing else to show */}
+                    {!isBlocked && !minStay && !promoLabel && !promoPct && visibleSpecials.length === 0 && !internalNote && !hasOverride && (
+                      <div className="text-[11px] text-gray-400 italic text-center py-1">
+                        Default pricing, no specials
+                      </div>
+                    )}
+                  </div>
+                )}
                 {/* Top row: date (left) + stock (right) */}
                 <div className="flex items-start justify-between w-full mb-1">
                   <span className={`text-base font-bold ${isPast ? 'text-gray-300' : isBlocked ? 'text-sunset' : 'text-deep'}`}>
@@ -3036,37 +3142,36 @@ function CalendarTab({ rooms }) {
 
                 {/* Middle row — chips for ALL rewards (stackable) + discount + min stay + note.
                     Each reward shows as its own 🎁 chip; hover for label+perk. */}
+                {/* Compact chip row — full details live in the hover popup
+                    above; titles dropped to avoid double-tooltip */}
                 {!isPast && (visibleSpecials.length > 0 || promoPct || promoLabel || minStay || internalNote) && (
                   <div className="flex flex-wrap gap-1 mt-1 mb-1">
                     {visibleSpecials.slice(0, 3).map((sp, i) => (
-                      <span key={i}
-                        className="text-[9px] font-bold px-1 rounded bg-libre/15 text-libre"
-                        title={`${sp.label ? sp.label + ' — ' : ''}${sp.perk || ''}${sp.min_stay ? ` · min ${sp.min_stay} nights` : ''}`}>
+                      <span key={i} className="text-[9px] font-bold px-1 rounded bg-libre/15 text-libre">
                         🎁{visibleSpecials.length > 1 ? <sup className="ml-0.5 text-[7px]">{i + 1}</sup> : ''}
                       </span>
                     ))}
                     {visibleSpecials.length > 3 && (
-                      <span className="text-[9px] font-bold px-1 rounded bg-libre/10 text-libre/80"
-                        title={visibleSpecials.slice(3).map(s => s.label).join(' · ')}>
+                      <span className="text-[9px] font-bold px-1 rounded bg-libre/10 text-libre/80">
                         +{visibleSpecials.length - 3}
                       </span>
                     )}
                     {promoPct ? (
-                      <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange" title={promoLabel || 'Discount'}>
+                      <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange">
                         −{Number(promoPct).toFixed(0)}%
                       </span>
                     ) : (promoLabel && visibleSpecials.length === 0) ? (
-                      <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange" title={promoLabel}>
+                      <span className="text-[9px] font-bold px-1 rounded bg-orange/15 text-orange">
                         🏷️
                       </span>
                     ) : null}
                     {minStay && (
-                      <span className="text-[9px] font-bold px-1 rounded bg-deep/10 text-deep" title={`Minimum ${minStay} nights`}>
+                      <span className="text-[9px] font-bold px-1 rounded bg-deep/10 text-deep">
                         🌙{minStay}
                       </span>
                     )}
                     {internalNote && (
-                      <span className="text-[9px] font-bold px-1 rounded bg-electric/15 text-electric" title={internalNote}>
+                      <span className="text-[9px] font-bold px-1 rounded bg-electric/15 text-electric">
                         📝
                       </span>
                     )}
