@@ -19,9 +19,10 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
-  Plus, Pencil, Trash2, Save, X, Loader2, Ban, Check,
+  Plus, Pencil, Trash2, Save, X, Loader2, Ban, Check, Upload,
   Heart, Sparkles, Mountain, Users as UsersIcon, Utensils,
-  Briefcase, PartyPopper, TreePine, Package as PackageIcon
+  Briefcase, PartyPopper, TreePine, Music, Dumbbell, ImagePlus,
+  Package as PackageIcon
 } from 'lucide-react'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -33,6 +34,9 @@ const CATEGORIES = [
   { key: 'romance',     icon: Heart,        emoji: '💕', label: 'Romance / Honeymoon' },
   { key: 'wellness',    icon: Sparkles,     emoji: '🧘', label: 'Wellness / Spa' },
   { key: 'adventure',   icon: Mountain,     emoji: '🏔️', label: 'Adventure / Tours' },
+  { key: 'sport',       icon: Dumbbell,     emoji: '🥊', label: 'Sport (Muay Thai, Surf, Yoga…)' },
+  { key: 'party',       icon: PartyPopper,  emoji: '🌕', label: 'Party (Full Moon, Half Moon…)' },
+  { key: 'festival',    icon: Music,        emoji: '🎶', label: 'Festival (Songkran, NYE, Music…)' },
   { key: 'family',      icon: UsersIcon,    emoji: '👨‍👩‍👧', label: 'Family' },
   { key: 'dining',      icon: Utensils,     emoji: '🍽️', label: 'Dining / Culinary' },
   { key: 'business',    icon: Briefcase,    emoji: '💼', label: 'Business' },
@@ -81,6 +85,7 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
   const [form, setForm] = useState(EMPTY_FORM)
   const [linkedRoomIds, setLinkedRoomIds] = useState([])  // rooms attached to current package
   const [newInclusion, setNewInclusion] = useState('')
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
   // ── Fetch packages + their room links ─────────────────────────────────────
   async function fetchPackages() {
@@ -208,6 +213,43 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
     setLinkedRoomIds(prev =>
       prev.includes(roomId) ? prev.filter(id => id !== roomId) : [...prev, roomId]
     )
+  }
+
+  // ── Photo upload — same pattern as PhotosTab/VideosTab: drop the file
+  // into the existing 'property-photos' bucket under a packages/<propId>/
+  // sub-path. Public URL is then stored on the form state so handleSave
+  // persists it like a regular text field.
+  async function handlePhotoUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setError('Please pick an image (JPG, PNG, WebP).')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image too large (max 5 MB).')
+      return
+    }
+    setUploadingPhoto(true); setError(null)
+    try {
+      const ext = file.name.split('.').pop()
+      const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+      const path = `packages/${propertyId}/${filename}`
+      const { error: upErr } = await supabase.storage
+        .from('property-photos')
+        .upload(path, file, { contentType: file.type })
+      if (upErr) { setError(`Upload failed: ${upErr.message}`); return }
+      const { data } = supabase.storage.from('property-photos').getPublicUrl(path)
+      setForm(f => ({ ...f, photo_url: data.publicUrl }))
+    } finally {
+      setUploadingPhoto(false)
+      // Reset the input so the same file can be re-uploaded after removal
+      e.target.value = ''
+    }
+  }
+
+  function removePhoto() {
+    setForm(f => ({ ...f, photo_url: '' }))
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -436,13 +478,33 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
 
-            {/* Photo URL */}
+            {/* Photo — upload to Supabase storage, preview inline */}
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Photo URL (optional)</label>
-              <input type="url" value={form.photo_url}
-                onChange={e => setForm({ ...form, photo_url: e.target.value })}
-                placeholder="https://…"
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Cover photo (optional)</label>
+              {form.photo_url ? (
+                <div className="relative inline-block group">
+                  <img src={form.photo_url} alt="Package cover"
+                    className="h-32 w-48 object-cover rounded-lg border border-gray-200" />
+                  <button type="button" onClick={removePhoto}
+                    className="absolute top-1 right-1 p-1 rounded-full bg-white/90 text-sunset hover:bg-white shadow"
+                    title="Remove photo">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-32 w-full border-2 border-dashed border-gray-200 rounded-lg cursor-pointer hover:border-libre/50 hover:bg-libre/5 transition-colors">
+                  {uploadingPhoto ? (
+                    <Loader2 size={20} className="animate-spin text-libre" />
+                  ) : (
+                    <>
+                      <ImagePlus size={20} className="text-gray-400 mb-1" />
+                      <span className="text-xs text-gray-500">Click to upload (JPG, PNG, WebP — max 5 MB)</span>
+                    </>
+                  )}
+                  <input type="file" accept="image/*" className="hidden"
+                    onChange={handlePhotoUpload} disabled={uploadingPhoto} />
+                </label>
+              )}
             </div>
 
             {/* Room links */}

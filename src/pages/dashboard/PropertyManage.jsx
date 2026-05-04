@@ -136,13 +136,21 @@ export default function PropertyManage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true)
-    const [propRes, roomsRes, bookingsRes] = await Promise.all([
+    const [propRes, roomsRes, bookingsRes, pkgRes] = await Promise.all([
       supabase.from('properties').select('*').eq('id', propertyId).single(),
       supabase.from('rooms').select('*').eq('property_id', propertyId).order('created_at'),
       supabase.from('bookings').select('*').eq('property_id', propertyId).order('created_at', { ascending: false }),
+      supabase.from('packages').select('*, room_packages(room_id)').eq('property_id', propertyId),
     ])
     setProperty(propRes.data)
-    setRooms(roomsRes.data || [])
+    // Decorate each room with its linked packages so RoomsTab can display
+    // them inline (hotelier doesn't have to switch to PackagesTab to check).
+    const allPkgs = pkgRes.data || []
+    const decoratedRooms = (roomsRes.data || []).map(r => ({
+      ...r,
+      _packages: allPkgs.filter(p => (p.room_packages || []).some(rp => rp.room_id === r.id)),
+    }))
+    setRooms(decoratedRooms)
     setBookings(bookingsRes.data || [])
     setLoading(false)
   }, [propertyId])
@@ -256,7 +264,7 @@ export default function PropertyManage() {
       {/* Tab content */}
       {activeTab === 'photos' && <PhotosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'videos' && <VideosTab property={property} onRefresh={fetchData} />}
-      {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
+      {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} onJumpToPackages={() => setActiveTab('packages')} />}
       {activeTab === 'packages' && <PackagesTab propertyId={propertyId} rooms={rooms} />}
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
@@ -1411,7 +1419,7 @@ function prettyLabel(s) {
 // ============================================
 // ROOMS TAB
 // ============================================
-function RoomsTab({ propertyId, rooms, onRefresh }) {
+function RoomsTab({ propertyId, rooms, onRefresh, onJumpToPackages }) {
   const { t } = useTranslation()
   const [showForm, setShowForm] = useState(false)
   const [editingRoom, setEditingRoom] = useState(null)
@@ -1710,6 +1718,30 @@ function RoomsTab({ propertyId, rooms, onRefresh }) {
                     })}
                   </div>
                 )}
+                {/* ── Linked packages — visible at a glance, click jumps to
+                    PackagesTab to manage. Empty = no package attached, with
+                    a hint linking to the Packages tab to attach one. */}
+                <div className="mt-2 flex flex-wrap gap-1 items-center">
+                  <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                    <PackageIcon size={11} /> Packages:
+                  </span>
+                  {(room._packages || []).length === 0 ? (
+                    <button onClick={() => onJumpToPackages?.()}
+                      className="text-[11px] text-gray-400 italic hover:text-libre underline">
+                      None — attach one in the Packages tab
+                    </button>
+                  ) : (
+                    <>
+                      {room._packages.map(p => (
+                        <button key={p.id} onClick={() => onJumpToPackages?.()}
+                          className="inline-flex items-center gap-1 text-xs bg-orange/10 text-orange px-2 py-0.5 rounded-full hover:bg-orange/20"
+                          title={`${p.name} — click to manage in Packages tab`}>
+                          ✨ {p.name}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
                 <button onClick={() => toggleActive(room)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600" title={room.is_active ? 'Deactivate' : 'Activate'}>

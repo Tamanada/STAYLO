@@ -10,6 +10,7 @@ import {
 import { Button } from '../../components/ui/Button'
 import { supabase } from '../../lib/supabase'
 import { computeRoomPricing } from '../../lib/roomPricing'
+import { applyPackagePricing, formatPackageImpact } from '../../lib/packagePricing'
 import { getAmenityMeta } from '../../lib/amenityIcons'
 import GuestPicker from '../../components/ota/GuestPicker'
 
@@ -70,6 +71,9 @@ export default function PropertyDetail() {
   const [showAllPhotos, setShowAllPhotos] = useState(false)
   const [showAllAmenities, setShowAllAmenities] = useState(false)
   const [selectedRoom, setSelectedRoom] = useState(null)
+  const [selectedPackage, setSelectedPackage] = useState(null)  // package selected for the chosen room
+  const [allPackages, setAllPackages] = useState([])             // every active package of the property
+  const [roomPackageMap, setRoomPackageMap] = useState({})       // room_id → [package_id, ...]
   // Lightbox for room media — { photos: string[], videos: string[], idx: number, name: string } | null
   // Combines videos (first) + photos so prev/next navigates through the whole gallery.
   const [roomLightbox, setRoomLightbox] = useState(null)
@@ -102,9 +106,12 @@ export default function PropertyDetail() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true)
-      const [propRes, roomsRes] = await Promise.all([
+      const [propRes, roomsRes, pkgRes] = await Promise.all([
         supabase.from('properties').select('*').eq('id', id).single(),
         supabase.from('rooms').select('*, room_availability(*)').eq('property_id', id).eq('is_active', true).order('base_price'),
+        // Active packages + their room links — public read policy lets
+        // anonymous browsers fetch this directly. RLS guards write access.
+        supabase.from('packages').select('*, room_packages(room_id)').eq('property_id', id).eq('is_active', true),
       ])
       if (propRes.data) {
         setProperty({
@@ -118,6 +125,17 @@ export default function PropertyDetail() {
           rooms: [],
         })
         setRealRooms(roomsRes.data || [])
+        // Index packages by room for O(1) lookup in the room card
+        const pkgs = pkgRes.data || []
+        setAllPackages(pkgs)
+        const map = {}
+        for (const pkg of pkgs) {
+          for (const rp of (pkg.room_packages || [])) {
+            if (!map[rp.room_id]) map[rp.room_id] = []
+            map[rp.room_id].push(pkg.id)
+          }
+        }
+        setRoomPackageMap(map)
       }
       setLoading(false)
     }
@@ -716,7 +734,11 @@ export default function PropertyDetail() {
                               )}
 
                               <button
-                                onClick={() => pricing.minStayOK && setSelectedRoom(room.id)}
+                                onClick={() => {
+                                  if (!pricing.minStayOK) return
+                                  setSelectedRoom(room.id)
+                                  setSelectedPackage(null)  // reset on room change
+                                }}
                                 disabled={!pricing.minStayOK}
                                 className={`w-full sm:w-auto px-6 py-3 rounded-lg font-bold text-sm transition-all ${
                                   !pricing.minStayOK
@@ -733,6 +755,72 @@ export default function PropertyDetail() {
                               </button>
                             </div>
                           </div>
+
+                          {/* ── Package selector ─ visible only when this room
+                              is selected and at least one package targets it.
+                              Guests pick zero or one package; pricing math
+                              flows through applyPackagePricing(). */}
+                          {isSelected && (roomPackageMap[room.id] || []).length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <h4 className="text-sm font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                ✨ {t('booking.add_package', 'Add a package?')}
+                                <span className="text-xs font-normal text-gray-500">— optional</span>
+                              </h4>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {/* "None" option always first */}
+                                <button
+                                  onClick={() => setSelectedPackage(null)}
+                                  className={`text-left p-3 rounded-lg border-2 transition-all ${
+                                    !selectedPackage
+                                      ? 'border-libre bg-libre/5'
+                                      : 'border-gray-200 hover:border-gray-300'
+                                  }`}>
+                                  <div className="font-bold text-sm text-gray-900">Just the room</div>
+                                  <div className="text-xs text-gray-500">No package</div>
+                                </button>
+                                {(roomPackageMap[room.id] || []).map(pkgId => {
+                                  const pkg = allPackages.find(p => p.id === pkgId)
+                                  if (!pkg) return null
+                                  const guestCount = Number(adults) + Number(children)
+                                  const impact = formatPackageImpact(pkg, pricing.nights, guestCount)
+                                  const eligible = pricing.nights >= (pkg.min_nights || 1) && guestCount >= (pkg.min_guests || 1)
+                                  const picked = selectedPackage === pkg.id
+                                  return (
+                                    <button
+                                      key={pkg.id}
+                                      onClick={() => eligible && setSelectedPackage(pkg.id)}
+                                      disabled={!eligible}
+                                      className={`text-left p-3 rounded-lg border-2 transition-all ${
+                                        !eligible
+                                          ? 'border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed'
+                                          : picked
+                                            ? 'border-libre bg-libre/5'
+                                            : 'border-gray-200 hover:border-gray-300'
+                                      }`}>
+                                      <div className="font-bold text-sm text-gray-900 flex items-center gap-1">
+                                        {pkg.name}
+                                        <span className="ml-auto text-libre text-xs font-bold">{impact}</span>
+                                      </div>
+                                      {pkg.description && (
+                                        <div className="text-xs text-gray-500 line-clamp-1 mt-0.5">{pkg.description}</div>
+                                      )}
+                                      {pkg.inclusions?.length > 0 && (
+                                        <div className="text-[10px] text-gray-500 mt-1 line-clamp-2">
+                                          {pkg.inclusions.slice(0, 3).map(inc => `✓ ${inc}`).join('  ')}
+                                          {pkg.inclusions.length > 3 && ` +${pkg.inclusions.length - 3}`}
+                                        </div>
+                                      )}
+                                      {!eligible && (
+                                        <div className="text-[10px] text-sunset font-semibold mt-1">
+                                          Needs ≥{pkg.min_nights}n / ≥{pkg.min_guests}g
+                                        </div>
+                                      )}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )
@@ -1015,7 +1103,7 @@ export default function PropertyDetail() {
                   disabled={!selectedRoom || guestsExceedRoom || childrenNotAllowed}
                   onClick={() => {
                     if (!selectedRoom || guestsExceedRoom || childrenNotAllowed) return
-                    navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}${requestCommunicating ? '&communicating=1' : ''}`)
+                    navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}${requestCommunicating ? '&communicating=1' : ''}${selectedPackage ? `&package=${selectedPackage}` : ''}`)
                   }}
                   className={`w-full py-3.5 rounded-lg font-bold text-base transition-all ${
                     selectedRoom && !guestsExceedRoom && !childrenNotAllowed

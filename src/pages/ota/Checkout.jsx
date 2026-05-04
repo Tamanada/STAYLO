@@ -12,6 +12,7 @@ import LightningPaymentModal from '../../components/ota/LightningPaymentModal'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { computeRoomPricing } from '../../lib/roomPricing'
+import { applyPackagePricing, formatPackageImpact } from '../../lib/packagePricing'
 import PhoneInput from '../../components/ui/PhoneInput'
 
 const COMMISSION_RATE = 0.10 // 10% STAYLO commission (on room price, NOT total)
@@ -80,9 +81,11 @@ export default function Checkout() {
   const guests   = String(adults + children)        // total used by legacy code paths
   const roomsCount = Math.max(1, Number(searchParams.get('rooms')) || 1)
   const requestCommunicating = searchParams.get('communicating') === '1'
+  const packageId = searchParams.get('package') || null
 
   const [property, setProperty] = useState(null)
   const [room, setRoom] = useState(null)
+  const [pkg, setPkg] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -110,14 +113,18 @@ export default function Checkout() {
       }
       setLoading(true)
       try {
-        const [propRes, roomRes] = await Promise.all([
+        const [propRes, roomRes, pkgRes] = await Promise.all([
           supabase.from('properties').select('*').eq('id', propertyId).single(),
           supabase.from('rooms').select('*, room_availability(*)').eq('id', roomId).single(),
+          packageId
+            ? supabase.from('packages').select('*').eq('id', packageId).single()
+            : Promise.resolve({ data: null }),
         ])
         if (propRes.error) console.error('Checkout: property fetch failed', propRes.error)
         if (roomRes.error) console.error('Checkout: room fetch failed', roomRes.error)
         setProperty(propRes.data)
         setRoom(roomRes.data)
+        setPkg(pkgRes.data)
       } catch (err) {
         console.error('Checkout fetch error', err)
         setError(err.message || 'Failed to load booking details')
@@ -126,7 +133,7 @@ export default function Checkout() {
       }
     }
     fetchData()
-  }, [propertyId, roomId])
+  }, [propertyId, roomId, packageId])
 
   if (loading) {
     return <div className="py-20 text-center text-gray-400"><Loader2 className="animate-spin mx-auto" size={32} /></div>
@@ -188,10 +195,21 @@ export default function Checkout() {
   const extraBedPrice      = Number(room?.extra_bed_price) || 0
   const extraBedSubtotal   = extraBedsCount * extraBedPrice * nights
 
+  // ── Package pricing ───────────────────────────────────────────────────────
+  // Layered on top of the room math. 'addon' stacks; 'replace' overrides
+  // the room rate entirely (typical for all-inclusive retreats).
+  const guestCount    = adults + children
+  const pkgPricing    = applyPackagePricing(pricing, pkg, nights, guestCount)
+  const packageCost   = pkgPricing.packageCost || 0
+  const packageMode   = pkgPricing.packageMode
+  // If 'replace': the package fully replaces the room rate, so we ignore
+  // roomTotal in the chargeable subtotal. Otherwise it adds to it.
+  const effectiveRoomTotal = packageMode === 'replace' ? 0 : roomTotal
+
   // Pricing model: STAYLO commission comes OUT OF the room price (10%).
   // Extra-bed line is added INTO the chargeable subtotal so commission applies
   // to it too — STAYLO collects 10% on the full booking value.
-  const chargeableSubtotal = roomTotal + extraBedSubtotal
+  const chargeableSubtotal = effectiveRoomTotal + extraBedSubtotal + packageCost
   const commission       = chargeableSubtotal * COMMISSION_RATE          // 10% goes to STAYLO
   const hotelierNet      = chargeableSubtotal - commission                // 90% to hotelier
   const selectedMethod   = PAYMENT_METHODS.find(m => m.key === paymentMethod) || PAYMENT_METHODS[0]
@@ -264,6 +282,14 @@ export default function Checkout() {
           communicating_rooms_requested: requestCommunicating,
           extra_beds_count:   extraBedsCount,
           extra_bed_subtotal: Number(extraBedSubtotal.toFixed(2)),
+          // ── Package snapshot — kept on the booking so historical accuracy
+          //    survives even if the hotelier later edits/deletes the package.
+          package_id:             pkg ? pkg.id : null,
+          package_name_snapshot:  pkg ? pkg.name : null,
+          package_price_snapshot: pkg ? Number(pkg.price) : null,
+          package_pricing_type:   pkg ? pkg.pricing_type : null,
+          package_pricing_mode:   pkg ? pkg.pricing_mode : null,
+          package_total:          pkg ? Number(packageCost.toFixed(2)) : null,
           total_price: totalPrice,
           commission: commission,
           status: 'pending',
@@ -560,7 +586,20 @@ export default function Checkout() {
                 {(pricing.savings > 0) && (
                   <div className="flex justify-between font-medium pt-1 border-t border-gray-100">
                     <span className="text-deep">Room subtotal</span>
-                    <span className="text-deep">${roomTotal.toFixed(2)}</span>
+                    <span className={packageMode === 'replace' ? 'text-gray-400 line-through' : 'text-deep'}>
+                      ${roomTotal.toFixed(2)}
+                    </span>
+                  </div>
+                )}
+                {pkg && (
+                  <div className="flex justify-between text-libre font-medium pt-1 border-t border-gray-100">
+                    <span>
+                      ✨ {pkg.name}
+                      <span className="text-[10px] text-gray-400 ml-1">
+                        ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'} · {pkg.pricing_type.replace('_', ' ')})
+                      </span>
+                    </span>
+                    <span>{packageMode === 'replace' ? '' : '+'}${packageCost.toFixed(2)}</span>
                   </div>
                 )}
                 {extraBedsCount > 0 && (
