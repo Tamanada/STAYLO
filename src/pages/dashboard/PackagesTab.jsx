@@ -75,7 +75,7 @@ function categoryMeta(key) {
   return CATEGORIES.find(c => c.key === key) || CATEGORIES[CATEGORIES.length - 1]
 }
 
-export default function PackagesTab({ propertyId, rooms = [] }) {
+export default function PackagesTab({ propertyId, rooms = [], onRefresh }) {
   const { t } = useTranslation()
   const [packages, setPackages] = useState([])
   const [loading, setLoading] = useState(true)
@@ -177,20 +177,21 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
     setSaving(false)
     closeForm()
     fetchPackages()
+    onRefresh?.()                           // bubble up so room form sees fresh duration_days
   }
 
   async function handleDelete(pkg) {
     if (!confirm(`Delete package "${pkg.name}"?`)) return
     const { error: delErr } = await supabase.from('packages').delete().eq('id', pkg.id)
     if (delErr) setError(delErr.message)
-    else fetchPackages()
+    else { fetchPackages(); onRefresh?.() }
   }
 
   async function toggleActive(pkg) {
     const { error: upErr } = await supabase
       .from('packages').update({ is_active: !pkg.is_active }).eq('id', pkg.id)
     if (upErr) setError(upErr.message)
-    else fetchPackages()
+    else { fetchPackages(); onRefresh?.() }
   }
 
   function addInclusion() {
@@ -311,6 +312,9 @@ export default function PackagesTab({ propertyId, rooms = [] }) {
                     )}
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
                       <span>💰 ${Number(pkg.price).toFixed(0)} {PRICING_TYPES.find(p => p.key === pkg.pricing_type)?.label.toLowerCase()}</span>
+                      <span className={pkg.duration_days > 1 ? 'text-libre font-semibold' : ''}>
+                        ⏱️ {pkg.duration_days || 1} day{(pkg.duration_days || 1) > 1 ? 's' : ''}
+                      </span>
                       <span>📅 ≥{pkg.min_nights} night{pkg.min_nights > 1 ? 's' : ''}</span>
                       <span>👥 ≥{pkg.min_guests} guest{pkg.min_guests > 1 ? 's' : ''}</span>
                       <span>🛏️ {linkedRooms} {linkedRooms === 1 ? 'room' : 'rooms'} linked</span>

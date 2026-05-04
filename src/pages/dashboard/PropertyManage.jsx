@@ -275,7 +275,7 @@ export default function PropertyManage() {
       {activeTab === 'photos' && <PhotosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'videos' && <VideosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} packages={propertyPackages} onRefresh={fetchData} onJumpToPackages={() => setActiveTab('packages')} />}
-      {activeTab === 'packages' && <PackagesTab propertyId={propertyId} rooms={rooms} />}
+      {activeTab === 'packages' && <PackagesTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'team' && <TeamTab property={property} />}
@@ -2231,6 +2231,13 @@ function RoomEditFormCard({
                         <div className="text-sm font-semibold text-deep truncate">{pkg.name}</div>
                         <div className="text-[11px] text-gray-500">
                           ${unitPrice.toFixed(0)}/unit · {pkg.pricing_type?.replace('_', ' ')} · {pkg.pricing_mode}
+                          <span className={`ml-2 px-1.5 rounded ${
+                            (pkg.duration_days || 1) > 1
+                              ? 'bg-libre/15 text-libre font-bold'
+                              : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            ⏱️ {pkg.duration_days || 1}d
+                          </span>
                         </div>
                       </div>
                       {linked && (
