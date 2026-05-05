@@ -1632,12 +1632,32 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
   const extraBedPrice = Number(room.extra_bed_price) || 0
   const extraBedMaxAge = Number(room.extra_bed_max_age) || 10
 
+  // Hourly / day-use availability comes from the room config — only offer
+  // the modes the hotelier actually priced.
+  const hourlyRate    = Number(room.hourly_rate)    || 0
+  const hourlyMin     = Number(room.hourly_min_hours)  || 2
+  const hourlyMax     = Number(room.hourly_max_hours)  || 8
+  const dayUseRate    = Number(room.day_use_rate)   || 0
+  const dayUseMaxHrs  = Number(room.day_use_max_hours) || 6
+  const offersHourly  = hourlyRate > 0
+  const offersDayUse  = dayUseRate > 0
+
+  const nowHM = (() => {
+    const d = new Date()
+    const hh = String(d.getHours()).padStart(2, '0')
+    const mm = String(Math.ceil(d.getMinutes() / 15) * 15 % 60).padStart(2, '0')
+    return `${hh}:${mm === '00' ? '00' : mm}`
+  })()
+
   const [form, setForm] = useState({
     guest_name: '',
     guest_phone: '',
     guest_email: '',
+    booking_type: 'overnight',          // 'overnight' | 'hourly' | 'day_use'
     check_in:  today,
     check_out: tomorrow,
+    check_in_time: nowHM,                // HH:mm — used when not overnight
+    hours: hourlyMin,                    // hourly: editable; day_use: locked to dayUseMaxHrs
     adults: 1,
     children: 0,
     extra_beds: 0,
@@ -1713,9 +1733,43 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     const diff = Math.round((b - a) / 86400000)
     return diff > 0 ? diff : 0
   }, [form.check_in, form.check_out])
-  // Price breakdown: room nights + extra bed nights (kids only)
-  const roomSubtotal     = nights * (Number(form.rate) || 0)
-  const extraBedSubtotal = nights * (Number(form.extra_beds) || 0) * extraBedPrice
+
+  // Hours billed when booking_type ≠ overnight. Day-use is locked to the
+  // room's day_use_max_hours; hourly is whatever the receptionist enters.
+  const billedHours = form.booking_type === 'day_use'
+    ? dayUseMaxHrs
+    : Math.max(hourlyMin, Math.min(hourlyMax, Number(form.hours) || hourlyMin))
+
+  // Compute check_out_at as ISO timestamp (check_in date + check_in_time + N hours)
+  const checkInAtIso = (() => {
+    if (form.booking_type === 'overnight') return null
+    return `${form.check_in}T${form.check_in_time || '12:00'}:00`
+  })()
+  const checkOutAtIso = (() => {
+    if (!checkInAtIso) return null
+    const d = new Date(checkInAtIso)
+    d.setHours(d.getHours() + billedHours)
+    return d.toISOString()
+  })()
+
+  // Price breakdown
+  // - overnight: nights × rate (existing behaviour)
+  // - day_use:   flat day_use_rate (covers day_use_max_hours)
+  // - hourly:    hourly_rate × hours (BUT cap at day_use_rate when offered
+  //              and hours ≤ day_use_max_hours, so guests don't overpay)
+  const roomSubtotal = (() => {
+    if (form.booking_type === 'overnight') return nights * (Number(form.rate) || 0)
+    if (form.booking_type === 'day_use')   return dayUseRate
+    // hourly:
+    const hourlyTotal = billedHours * hourlyRate
+    if (offersDayUse && billedHours <= dayUseMaxHrs && dayUseRate > 0) {
+      return Math.min(hourlyTotal, dayUseRate)
+    }
+    return hourlyTotal
+  })()
+  const extraBedSubtotal = form.booking_type === 'overnight'
+    ? nights * (Number(form.extra_beds) || 0) * extraBedPrice
+    : 0     // extra beds priced per-night don't apply to short stays
   const totalPrice       = roomSubtotal + extraBedSubtotal
   const commission       = totalPrice * 0.10
 
@@ -1759,9 +1813,14 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
       setError(t('pms.err_name', 'At least the lead guest first name is required'))
       return
     }
-    if (nights <= 0) { setError(t('pms.err_dates', 'Check-out must be after check-in')); return }
-    if (!form.rate || Number(form.rate) <= 0) { setError(t('pms.err_rate', 'Rate must be > 0')); return }
-    if (conflict) { setError(t('pms.err_conflict', 'These dates overlap an existing booking')); return }
+    if (form.booking_type === 'overnight') {
+      if (nights <= 0) { setError(t('pms.err_dates', 'Check-out must be after check-in')); return }
+      if (!form.rate || Number(form.rate) <= 0) { setError(t('pms.err_rate', 'Rate must be > 0')); return }
+    } else {
+      if (billedHours <= 0) { setError('Duration must be > 0 hours'); return }
+      if (roomSubtotal <= 0) { setError('Hourly / day-use rate is missing on this room'); return }
+    }
+    if (form.booking_type === 'overnight' && conflict) { setError(t('pms.err_conflict', 'These dates overlap an existing booking')); return }
 
     setSaving(true)
     const payload = {
@@ -1769,8 +1828,15 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
       room_id:        room.id,
       guest_id:       null,                            // walk-in: no account
       booking_source: 'walk_in',
+      booking_type:   form.booking_type,
       check_in:       form.check_in,
-      check_out:      form.check_out,
+      // For hourly/day-use, set check_out date = same day (or rolled over if past midnight)
+      check_out:      form.booking_type === 'overnight'
+        ? form.check_out
+        : (checkOutAtIso ? checkOutAtIso.slice(0, 10) : form.check_in),
+      check_in_at:    checkInAtIso ? new Date(checkInAtIso).toISOString() : null,
+      check_out_at:   checkOutAtIso,
+      hours_billed:   form.booking_type === 'overnight' ? null : billedHours,
       guests:         Number(form.adults) + Number(form.children),
       adults:         Number(form.adults),
       children:       Number(form.children),
@@ -1875,16 +1941,83 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
             <option value="lightning">Lightning (BTC)</option>
           </select>
         </Field>
-        <Field label={t('pms.check_in_date', 'Check-in')}>
-          <input type="date" value={form.check_in} onChange={e => set('check_in', e.target.value)}
-            min={today}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-        </Field>
-        <Field label={t('pms.check_out_date', 'Check-out')}>
-          <input type="date" value={form.check_out} onChange={e => set('check_out', e.target.value)}
-            min={form.check_in}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-        </Field>
+        {/* ── Booking type toggle — only show options the room actually offers ── */}
+        {(offersHourly || offersDayUse) && (
+          <div className="col-span-full">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+              Booking type
+            </label>
+            <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-full sm:w-auto sm:inline-flex">
+              <button type="button" onClick={() => set('booking_type', 'overnight')}
+                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex-1 ${
+                  form.booking_type === 'overnight' ? 'bg-white text-deep shadow' : 'text-gray-500 hover:text-gray-700'
+                }`}>
+                🌙 Overnight
+              </button>
+              {offersHourly && (
+                <button type="button" onClick={() => set('booking_type', 'hourly')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex-1 ${
+                    form.booking_type === 'hourly' ? 'bg-white text-deep shadow' : 'text-gray-500 hover:text-gray-700'
+                  }`}>
+                  🕐 Hourly (${hourlyRate}/h)
+                </button>
+              )}
+              {offersDayUse && (
+                <button type="button" onClick={() => set('booking_type', 'day_use')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex-1 ${
+                    form.booking_type === 'day_use' ? 'bg-white text-deep shadow' : 'text-gray-500 hover:text-gray-700'
+                  }`}>
+                  ☀️ Day-use (${dayUseRate} / {dayUseMaxHrs}h)
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {form.booking_type === 'overnight' ? (
+          <>
+            <Field label={t('pms.check_in_date', 'Check-in')}>
+              <input type="date" value={form.check_in} onChange={e => set('check_in', e.target.value)}
+                min={today}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </Field>
+            <Field label={t('pms.check_out_date', 'Check-out')}>
+              <input type="date" value={form.check_out} onChange={e => set('check_out', e.target.value)}
+                min={form.check_in}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            </Field>
+          </>
+        ) : (
+          <>
+            <Field label="Check-in date">
+              <input type="date" value={form.check_in} onChange={e => set('check_in', e.target.value)}
+                min={today}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+            </Field>
+            <Field label="Start time">
+              <input type="time" value={form.check_in_time}
+                onChange={e => set('check_in_time', e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-electric/30" />
+            </Field>
+            <Field label={form.booking_type === 'day_use'
+              ? `Duration (locked to ${dayUseMaxHrs}h day-use block)`
+              : `Hours (${hourlyMin}–${hourlyMax})`
+            }>
+              <input type="number"
+                min={form.booking_type === 'day_use' ? dayUseMaxHrs : hourlyMin}
+                max={form.booking_type === 'day_use' ? dayUseMaxHrs : hourlyMax}
+                value={form.booking_type === 'day_use' ? dayUseMaxHrs : form.hours}
+                disabled={form.booking_type === 'day_use'}
+                onChange={e => set('hours', e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-500" />
+              {checkOutAtIso && (
+                <span className="text-[10px] text-gray-500 block mt-0.5">
+                  Ends at {new Date(checkOutAtIso).toLocaleString(undefined, { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })}
+                </span>
+              )}
+            </Field>
+          </>
+        )}
         <Field label={`${t('pms.adults', 'Adults')} (max ${maxAdults})`}>
           <input type="number" min={1} max={maxAdults} value={form.adults}
             onChange={e => {
@@ -1909,10 +2042,25 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
             </span>
           </Field>
         )}
-        <Field label={t('pms.rate_per_night', 'Rate per night (USD)')}>
-          <input type="number" min={1} step="0.01" value={form.rate} onChange={e => set('rate', e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-        </Field>
+        {form.booking_type === 'overnight' ? (
+          <Field label={t('pms.rate_per_night', 'Rate per night (USD)')}>
+            <input type="number" min={1} step="0.01" value={form.rate} onChange={e => set('rate', e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+          </Field>
+        ) : (
+          <Field label={form.booking_type === 'day_use' ? `Day-use total (${dayUseMaxHrs}h block)` : `Hourly rate ($/h × ${billedHours}h)`}>
+            <div className="px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-deep text-sm font-mono">
+              ${roomSubtotal.toFixed(2)}
+              <span className="text-[10px] text-gray-500 ml-2 font-sans">
+                {form.booking_type === 'day_use'
+                  ? '(flat day-use rate)'
+                  : (offersDayUse && billedHours <= dayUseMaxHrs && billedHours * hourlyRate > dayUseRate)
+                    ? `(capped at day-use $${dayUseRate})`
+                    : `(${billedHours}h × $${hourlyRate})`}
+              </span>
+            </div>
+          </Field>
+        )}
       </div>
 
       {/* ───────────────────────────────────────────────────────────────
