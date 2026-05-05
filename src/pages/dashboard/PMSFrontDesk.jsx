@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
@@ -39,7 +40,24 @@ export default function PMSFrontDesk() {
   const [today] = useState(new Date().toISOString().split('T')[0])
   const [openRoom, setOpenRoom] = useState(null)   // room object whose modal is open
   const [editingBooking, setEditingBooking] = useState(null)  // booking row being edited
+  const [hoveredBooking, setHoveredBooking] = useState(null)  // {booking, rect} for portal popup
   const [undo, setUndo] = useState(null)           // last reversible action (walk-in / etc.)
+  const hoverHideTimerRef = useRef(null)
+
+  // Hover handlers shared between every booking bar AND the popup itself,
+  // so the cursor can travel from bar → popup without losing the popup
+  // (200ms grace period; cancelled if the popup is hovered).
+  function showPopupFor(booking, e) {
+    if (hoverHideTimerRef.current) clearTimeout(hoverHideTimerRef.current)
+    setHoveredBooking({ booking, rect: e.currentTarget.getBoundingClientRect() })
+  }
+  function scheduleHidePopup() {
+    if (hoverHideTimerRef.current) clearTimeout(hoverHideTimerRef.current)
+    hoverHideTimerRef.current = setTimeout(() => setHoveredBooking(null), 200)
+  }
+  function cancelHidePopup() {
+    if (hoverHideTimerRef.current) clearTimeout(hoverHideTimerRef.current)
+  }
 
   async function fetchData() {
     setLoading(true)
@@ -501,56 +519,23 @@ export default function PMSFrontDesk() {
                     )
                   })}
                   {/* Guest-name overlay — one element per booking, spans all
-                      its cells via grid-column. Hover → rich popup with stay
-                      details. Click → editable modal. */}
-                  {rowBookings.map(({ booking, startCol, span }) => {
-                    const lastNight = (() => {
-                      const dt = new Date(booking.check_out + 'T00:00:00Z')
-                      dt.setUTCDate(dt.getUTCDate() - 1)
-                      return dt.toISOString().slice(0, 10)
-                    })()
-                    return (
+                      its cells via grid-column. Hover → portal popup (rendered
+                      at <body> level so no parent overflow can clip it).
+                      Click → editable modal. */}
+                  {rowBookings.map(({ booking, startCol, span }) => (
                     <div key={booking.id}
                       style={{ gridRow: 1, gridColumn: `${startCol} / span ${span}` }}
-                      className="group relative flex items-center justify-center text-[10px] font-bold text-deep/90 px-2 z-10 cursor-pointer hover:bg-white/30 hover:ring-1 hover:ring-deep/30 rounded"
+                      className="relative flex items-center justify-center text-[10px] font-bold text-deep/90 px-2 z-10 cursor-pointer hover:bg-white/30 hover:ring-1 hover:ring-deep/30 rounded"
+                      onMouseEnter={(e) => showPopupFor(booking, e)}
+                      onMouseLeave={scheduleHidePopup}
                       onClick={(e) => { e.stopPropagation(); setEditingBooking(booking) }}>
                       <span className="truncate">
                         {booking.guest_name?.split(' ')[0] || '?'}
                         {span >= 4 && booking.guest_name?.split(' ')[1]
                           ? ` ${booking.guest_name.split(' ')[1].charAt(0)}.` : ''}
                       </span>
-                      {/* Hover popup. Outer wrapper carries the hover-bridge
-                          (pb-2) so the cursor can travel from the bar to the
-                          popup without crossing a "dead" gap that kills the
-                          hover state. self-hover keeps it open while you read. */}
-                      <div className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity duration-150 absolute bottom-full left-1/2 -translate-x-1/2 z-50 pb-2">
-                        <div className="w-64 bg-white rounded-lg shadow-2xl border border-gray-200 p-2.5 text-left relative">
-                          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200" />
-                          <div className="text-xs font-bold text-deep mb-0.5">{booking.guest_name || 'no name'}</div>
-                          <div className="text-[10px] text-gray-500 font-mono mb-1">
-                            {booking.check_in} → {booking.check_out}
-                            {' · '}{Math.max(1, Math.round((new Date(booking.check_out) - new Date(booking.check_in)) / 86400000))}n
-                          </div>
-                          <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-gray-600">
-                            {booking.room_number && <span className="text-deep font-bold">#{booking.room_number}</span>}
-                            <span>👥 {(booking.adults || 1) + (booking.children || 0)}</span>
-                            {booking.guest_email && <span>📧 {booking.guest_email}</span>}
-                            {booking.guest_phone && <span>📞 {booking.guest_phone}</span>}
-                            {booking.booking_ref && <span className="font-mono text-deep/60">{booking.booking_ref}</span>}
-                          </div>
-                          {booking.special_requests && (
-                            <div className="mt-1 text-[10px] text-orange italic">✦ {booking.special_requests}</div>
-                          )}
-                          <button type="button"
-                            onClick={(e) => { e.stopPropagation(); setEditingBooking(booking) }}
-                            className="mt-1.5 pt-1.5 border-t border-gray-100 w-full text-left text-[11px] text-libre font-semibold hover:text-deep cursor-pointer">
-                            ✎ Click to edit ▸
-                          </button>
-                        </div>
-                      </div>
                     </div>
-                    )
-                  })}
+                  ))}
                 </div>
                 )
               })}
@@ -711,6 +696,15 @@ export default function PMSFrontDesk() {
         onUndoOffer={setUndo}
       />
 
+      {/* Hover popup — rendered via portal so no overflow:hidden / scroll
+          container can clip it. Anchored to the booking bar's bounding rect. */}
+      <BookingHoverPopup
+        info={hoveredBooking}
+        onMouseEnter={cancelHidePopup}
+        onMouseLeave={scheduleHidePopup}
+        onEdit={(b) => { setHoveredBooking(null); setEditingBooking(b) }}
+      />
+
       {/* Booking edit modal — opens when a booking bar is clicked in any view */}
       <BookingEditModal
         booking={editingBooking}
@@ -728,6 +722,60 @@ export default function PMSFrontDesk() {
 // ============================================================================
 // BookingEditModal — inline-edit a single booking from any calendar view
 // ============================================================================
+// ============================================================================
+// BookingHoverPopup — rendered into document.body via portal so the calendar's
+// overflow-x-auto scroll container can't clip it. Positioned over the bar's
+// bounding rect (from getBoundingClientRect). Cursor can travel from bar to
+// popup thanks to the parent's hover handlers + 200ms grace timeout.
+// ============================================================================
+function BookingHoverPopup({ info, onMouseEnter, onMouseLeave, onEdit }) {
+  if (!info?.booking || !info?.rect) return null
+  const { booking, rect } = info
+
+  const W = 256                                            // popup width (w-64)
+  const PAD = 8
+  const left = Math.max(PAD, Math.min(window.innerWidth - W - PAD, rect.left + rect.width / 2 - W / 2))
+  // Render above the bar; if not enough room above, fall back to below
+  const fitsAbove = rect.top > 200
+  const style = fitsAbove
+    ? { left, bottom: window.innerHeight - rect.top + 4 }
+    : { left, top: rect.bottom + 4 }
+
+  const nights = Math.max(1, Math.round((new Date(booking.check_out) - new Date(booking.check_in)) / 86400000))
+
+  return createPortal(
+    <div
+      className="fixed z-[9999] w-64"
+      style={style}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <div className="bg-white rounded-lg shadow-2xl border border-gray-200 p-2.5 text-left">
+        <div className="text-xs font-bold text-deep mb-0.5">{booking.guest_name || 'no name'}</div>
+        <div className="text-[10px] text-gray-500 font-mono mb-1">
+          {booking.check_in} → {booking.check_out} · {nights}n
+        </div>
+        <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-gray-600">
+          {booking.room_number && <span className="text-deep font-bold">#{booking.room_number}</span>}
+          <span>👥 {(booking.adults || 1) + (booking.children || 0)}</span>
+          {booking.guest_email && <span>📧 {booking.guest_email}</span>}
+          {booking.guest_phone && <span>📞 {booking.guest_phone}</span>}
+          {booking.booking_ref && <span className="font-mono text-deep/60">{booking.booking_ref}</span>}
+        </div>
+        {booking.special_requests && (
+          <div className="mt-1 text-[10px] text-orange italic">✦ {booking.special_requests}</div>
+        )}
+        <button type="button"
+          onClick={(e) => { e.stopPropagation(); onEdit(booking) }}
+          className="mt-1.5 pt-1.5 border-t border-gray-100 w-full text-left text-[11px] text-libre font-semibold hover:text-deep cursor-pointer">
+          ✎ Click to edit ▸
+        </button>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 function BookingEditModal({ booking, rooms, onClose, onSaved }) {
   const [form, setForm] = useState(null)
   const [saving, setSaving] = useState(false)
