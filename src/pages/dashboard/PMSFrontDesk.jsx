@@ -38,6 +38,7 @@ export default function PMSFrontDesk() {
   const [loading, setLoading] = useState(true)
   const [today] = useState(new Date().toISOString().split('T')[0])
   const [openRoom, setOpenRoom] = useState(null)   // room object whose modal is open
+  const [editingBooking, setEditingBooking] = useState(null)  // booking row being edited
   const [undo, setUndo] = useState(null)           // last reversible action (walk-in / etc.)
 
   async function fetchData() {
@@ -500,19 +501,49 @@ export default function PMSFrontDesk() {
                     )
                   })}
                   {/* Guest-name overlay — one element per booking, spans all
-                      its cells via grid-column. pointer-events-none so the
-                      click still goes to the underlying day cell. */}
-                  {rowBookings.map(({ booking, startCol, span }) => (
+                      its cells via grid-column. Hover → rich popup with stay
+                      details. Click → editable modal. */}
+                  {rowBookings.map(({ booking, startCol, span }) => {
+                    const lastNight = (() => {
+                      const dt = new Date(booking.check_out + 'T00:00:00Z')
+                      dt.setUTCDate(dt.getUTCDate() - 1)
+                      return dt.toISOString().slice(0, 10)
+                    })()
+                    return (
                     <div key={booking.id}
                       style={{ gridRow: 1, gridColumn: `${startCol} / span ${span}` }}
-                      className="pointer-events-none flex items-center justify-center text-[10px] font-bold text-deep/90 px-2 z-10">
+                      className="group relative flex items-center justify-center text-[10px] font-bold text-deep/90 px-2 z-10 cursor-pointer hover:bg-white/30 hover:ring-1 hover:ring-deep/30 rounded"
+                      onClick={(e) => { e.stopPropagation(); setEditingBooking(booking) }}>
                       <span className="truncate">
                         {booking.guest_name?.split(' ')[0] || '?'}
                         {span >= 4 && booking.guest_name?.split(' ')[1]
                           ? ` ${booking.guest_name.split(' ')[1].charAt(0)}.` : ''}
                       </span>
+                      {/* Hover popup — read-only summary, click the bar to edit */}
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-64 bg-white rounded-lg shadow-2xl border border-gray-200 p-2.5 text-left">
+                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200" />
+                        <div className="text-xs font-bold text-deep mb-0.5">{booking.guest_name || 'no name'}</div>
+                        <div className="text-[10px] text-gray-500 font-mono mb-1">
+                          {booking.check_in} → {booking.check_out}
+                          {' · '}{Math.max(1, Math.round((new Date(booking.check_out) - new Date(booking.check_in)) / 86400000))}n
+                        </div>
+                        <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-gray-600">
+                          {booking.room_number && <span className="text-deep font-bold">#{booking.room_number}</span>}
+                          <span>👥 {(booking.adults || 1) + (booking.children || 0)}</span>
+                          {booking.guest_email && <span>📧 {booking.guest_email}</span>}
+                          {booking.guest_phone && <span>📞 {booking.guest_phone}</span>}
+                          {booking.booking_ref && <span className="font-mono text-deep/60">{booking.booking_ref}</span>}
+                        </div>
+                        {booking.special_requests && (
+                          <div className="mt-1 text-[10px] text-orange italic">✦ {booking.special_requests}</div>
+                        )}
+                        <div className="mt-1.5 pt-1.5 border-t border-gray-100 text-[10px] text-libre font-semibold">
+                          ✎ Click to edit
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                    )
+                  })}
                 </div>
                 )
               })}
@@ -673,9 +704,174 @@ export default function PMSFrontDesk() {
         onUndoOffer={setUndo}
       />
 
+      {/* Booking edit modal — opens when a booking bar is clicked in any view */}
+      <BookingEditModal
+        booking={editingBooking}
+        rooms={propertyRooms}
+        onClose={() => setEditingBooking(null)}
+        onSaved={() => { fetchData(); setEditingBooking(null) }}
+      />
+
       {/* Undo toast — appears for 30s after any reversible action (walk-in, etc.) */}
       <UndoToast undo={undo} onClose={() => setUndo(null)} />
     </div>
+  )
+}
+
+// ============================================================================
+// BookingEditModal — inline-edit a single booking from any calendar view
+// ============================================================================
+function BookingEditModal({ booking, rooms, onClose, onSaved }) {
+  const [form, setForm] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (!booking) { setForm(null); return }
+    setForm({
+      guest_name:       booking.guest_name       || '',
+      guest_email:      booking.guest_email      || '',
+      guest_phone:      booking.guest_phone      || '',
+      room_number:      booking.room_number      || '',
+      check_in:         booking.check_in         || '',
+      check_out:        booking.check_out        || '',
+      adults:           booking.adults           ?? 1,
+      children:         booking.children         ?? 0,
+      special_requests: booking.special_requests || '',
+      status:           booking.status           || 'pending',
+    })
+    setError(null)
+  }, [booking])
+
+  if (!booking || !form) return null
+
+  // The room of THIS booking — used to surface the unit_numbers pool
+  // so room_number can be a constrained dropdown.
+  const room = rooms.find(r => r.id === booking.room_id)
+  const unitPool = Array.isArray(room?.unit_numbers) ? room.unit_numbers : []
+
+  async function handleSave() {
+    setSaving(true); setError(null)
+    const payload = {
+      guest_name:       form.guest_name.trim()       || null,
+      guest_email:      form.guest_email.trim()      || null,
+      guest_phone:      form.guest_phone.trim()      || null,
+      room_number:      form.room_number.trim()      || null,
+      check_in:         form.check_in,
+      check_out:        form.check_out,
+      adults:           Math.max(1, Number(form.adults) || 1),
+      children:         Math.max(0, Number(form.children) || 0),
+      special_requests: form.special_requests.trim() || null,
+      status:           form.status,
+    }
+    const { error: upErr } = await supabase.from('bookings').update(payload).eq('id', booking.id)
+    setSaving(false)
+    if (upErr) { setError(upErr.message); return }
+    onSaved()
+  }
+
+  return (
+    <Modal isOpen={!!booking} onClose={onClose} title={`Edit booking · ${booking.booking_ref || booking.id.slice(0, 8)}`}>
+      <div className="space-y-3">
+        {error && (
+          <div className="bg-sunset/10 border border-sunset/30 text-sunset text-sm rounded-lg px-3 py-2">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Guest name">
+            <input type="text" value={form.guest_name}
+              onChange={e => setForm(f => ({ ...f, guest_name: e.target.value }))}
+              className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
+          </Field>
+          <Field label="Status">
+            <select value={form.status}
+              onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
+              className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm">
+              <option value="pending">pending</option>
+              <option value="confirmed">confirmed</option>
+              <option value="checked_in">checked_in</option>
+              <option value="checked_out">checked_out</option>
+              <option value="cancelled">cancelled</option>
+            </select>
+          </Field>
+
+          <Field label="Email">
+            <input type="email" value={form.guest_email}
+              onChange={e => setForm(f => ({ ...f, guest_email: e.target.value }))}
+              className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
+          </Field>
+          <Field label="Phone">
+            <input type="tel" value={form.guest_phone}
+              onChange={e => setForm(f => ({ ...f, guest_phone: e.target.value }))}
+              className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
+          </Field>
+
+          <Field label="Check-in">
+            <input type="date" value={form.check_in}
+              onChange={e => setForm(f => ({ ...f, check_in: e.target.value }))}
+              className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
+          </Field>
+          <Field label="Check-out">
+            <input type="date" value={form.check_out}
+              onChange={e => setForm(f => ({ ...f, check_out: e.target.value }))}
+              min={form.check_in || undefined}
+              className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
+          </Field>
+
+          <Field label="Adults">
+            <input type="number" min="1" max="20" value={form.adults}
+              onChange={e => setForm(f => ({ ...f, adults: e.target.value }))}
+              className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
+          </Field>
+          <Field label="Children">
+            <input type="number" min="0" max="20" value={form.children}
+              onChange={e => setForm(f => ({ ...f, children: e.target.value }))}
+              className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
+          </Field>
+
+          <Field label={`Room # (${room?.name || 'unknown room type'})`}>
+            {unitPool.length > 0 ? (
+              <select value={form.room_number}
+                onChange={e => setForm(f => ({ ...f, room_number: e.target.value }))}
+                className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm font-mono">
+                <option value="">— unassigned —</option>
+                {unitPool.map(n => <option key={n} value={n}>{n}</option>)}
+                {form.room_number && !unitPool.includes(form.room_number) && (
+                  <option value={form.room_number}>{form.room_number} (off-pool)</option>
+                )}
+              </select>
+            ) : (
+              <input type="text" value={form.room_number}
+                onChange={e => setForm(f => ({ ...f, room_number: e.target.value }))}
+                placeholder="e.g. 101 / t.04 / Cabana 3"
+                className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm font-mono" />
+            )}
+          </Field>
+          <div />
+        </div>
+
+        <Field label="Special requests">
+          <textarea value={form.special_requests} rows={2}
+            onChange={e => setForm(f => ({ ...f, special_requests: e.target.value }))}
+            className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm resize-y" />
+        </Field>
+
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+          <span className="text-[11px] text-gray-400 font-mono">
+            Booking ID: {booking.id.slice(0, 8)}…
+          </span>
+          <div className="flex gap-2">
+            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button onClick={handleSave} disabled={saving} className="flex items-center gap-2">
+              {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+              Save changes
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Modal>
   )
 }
 
