@@ -519,26 +519,33 @@ export default function PMSFrontDesk() {
                         {span >= 4 && booking.guest_name?.split(' ')[1]
                           ? ` ${booking.guest_name.split(' ')[1].charAt(0)}.` : ''}
                       </span>
-                      {/* Hover popup — read-only summary, click the bar to edit */}
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-64 bg-white rounded-lg shadow-2xl border border-gray-200 p-2.5 text-left">
-                        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200" />
-                        <div className="text-xs font-bold text-deep mb-0.5">{booking.guest_name || 'no name'}</div>
-                        <div className="text-[10px] text-gray-500 font-mono mb-1">
-                          {booking.check_in} → {booking.check_out}
-                          {' · '}{Math.max(1, Math.round((new Date(booking.check_out) - new Date(booking.check_in)) / 86400000))}n
-                        </div>
-                        <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-gray-600">
-                          {booking.room_number && <span className="text-deep font-bold">#{booking.room_number}</span>}
-                          <span>👥 {(booking.adults || 1) + (booking.children || 0)}</span>
-                          {booking.guest_email && <span>📧 {booking.guest_email}</span>}
-                          {booking.guest_phone && <span>📞 {booking.guest_phone}</span>}
-                          {booking.booking_ref && <span className="font-mono text-deep/60">{booking.booking_ref}</span>}
-                        </div>
-                        {booking.special_requests && (
-                          <div className="mt-1 text-[10px] text-orange italic">✦ {booking.special_requests}</div>
-                        )}
-                        <div className="mt-1.5 pt-1.5 border-t border-gray-100 text-[10px] text-libre font-semibold">
-                          ✎ Click to edit
+                      {/* Hover popup. Outer wrapper carries the hover-bridge
+                          (pb-2) so the cursor can travel from the bar to the
+                          popup without crossing a "dead" gap that kills the
+                          hover state. self-hover keeps it open while you read. */}
+                      <div className="opacity-0 group-hover:opacity-100 hover:opacity-100 transition-opacity duration-150 absolute bottom-full left-1/2 -translate-x-1/2 z-50 pb-2">
+                        <div className="w-64 bg-white rounded-lg shadow-2xl border border-gray-200 p-2.5 text-left relative">
+                          <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200" />
+                          <div className="text-xs font-bold text-deep mb-0.5">{booking.guest_name || 'no name'}</div>
+                          <div className="text-[10px] text-gray-500 font-mono mb-1">
+                            {booking.check_in} → {booking.check_out}
+                            {' · '}{Math.max(1, Math.round((new Date(booking.check_out) - new Date(booking.check_in)) / 86400000))}n
+                          </div>
+                          <div className="flex flex-wrap gap-x-2 gap-y-0.5 text-[10px] text-gray-600">
+                            {booking.room_number && <span className="text-deep font-bold">#{booking.room_number}</span>}
+                            <span>👥 {(booking.adults || 1) + (booking.children || 0)}</span>
+                            {booking.guest_email && <span>📧 {booking.guest_email}</span>}
+                            {booking.guest_phone && <span>📞 {booking.guest_phone}</span>}
+                            {booking.booking_ref && <span className="font-mono text-deep/60">{booking.booking_ref}</span>}
+                          </div>
+                          {booking.special_requests && (
+                            <div className="mt-1 text-[10px] text-orange italic">✦ {booking.special_requests}</div>
+                          )}
+                          <button type="button"
+                            onClick={(e) => { e.stopPropagation(); setEditingBooking(booking) }}
+                            className="mt-1.5 pt-1.5 border-t border-gray-100 w-full text-left text-[11px] text-libre font-semibold hover:text-deep cursor-pointer">
+                            ✎ Click to edit ▸
+                          </button>
                         </div>
                       </div>
                     </div>
