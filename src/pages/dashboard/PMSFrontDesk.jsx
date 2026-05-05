@@ -444,10 +444,29 @@ export default function PMSFrontDesk() {
               </div>
 
               {/* Body — one row per unit */}
-              {unitRows.map(u => (
+              {unitRows.map(u => {
+                // Build the list of bookings present in this row's window,
+                // computing each one's first column + span. The overlay below
+                // renders the guest name centred across all the booking's
+                // cells (no more "name only on first day" trick).
+                const rowBookings = []
+                const seen = new Set()
+                windowDays.forEach((d, idx) => {
+                  const b = dailyAllocations[d]?.[u.key]
+                  if (!b || seen.has(b.id)) return
+                  seen.add(b.id)
+                  let span = 0
+                  for (let j = idx;
+                       j < windowDays.length && dailyAllocations[windowDays[j]]?.[u.key]?.id === b.id;
+                       j++) span++
+                  rowBookings.push({ booking: b, startCol: 2 + idx, span })
+                })
+
+                return (
                 <div key={u.key} className="grid border-b border-gray-100 hover:bg-gray-50/40"
                   style={{ gridTemplateColumns: `200px repeat(${CAL_DAYS}, minmax(72px, 1fr))` }}>
-                  <div className="px-3 py-1.5 text-xs sticky left-0 z-10 bg-white border-r border-gray-200">
+                  <div className="px-3 py-1.5 text-xs sticky left-0 z-10 bg-white border-r border-gray-200"
+                    style={{ gridRow: 1 }}>
                     <div className={`font-mono font-bold ${u.numbered ? 'text-deep' : 'text-gray-400 italic'}`}>
                       {u.unitLabel}
                     </div>
@@ -456,7 +475,6 @@ export default function PMSFrontDesk() {
                   {windowDays.map(d => {
                     const b = dailyAllocations[d]?.[u.key]
                     let bg = 'bg-emerald-50'   // free
-                    let txt = ''
                     let title = ''
                     if (b) {
                       const lastNight = (() => {
@@ -464,12 +482,9 @@ export default function PMSFrontDesk() {
                         dt.setUTCDate(dt.getUTCDate() - 1)
                         return dt.toISOString().slice(0, 10)
                       })()
-                      if (b.check_in === d)      { bg = 'bg-purple-200 text-purple-900'; }
-                      else if (lastNight === d)  { bg = 'bg-amber-200 text-amber-900'; }
-                      else                       { bg = 'bg-blue-200 text-blue-900'; }
-                      // Show guest name only on the FIRST day of the stay so it
-                      // doesn't repeat across cells (visually feels like a bar)
-                      if (b.check_in === d) txt = (b.guest_name || '?').split(' ')[0].slice(0, 8)
+                      if (b.check_in === d)      bg = 'bg-purple-200'
+                      else if (lastNight === d)  bg = 'bg-amber-200'
+                      else                       bg = 'bg-blue-200'
                       title = `${b.guest_name || 'no name'} · ${b.check_in} → ${b.check_out}`
                     }
                     const isToday = d === today
@@ -480,13 +495,27 @@ export default function PMSFrontDesk() {
                           const room = roomStatuses.find(r => r.id === u.roomTypeId)
                           if (room) setOpenRoom(room)
                         }}
-                        className={`relative h-9 border-l border-gray-100 text-[10px] font-bold flex items-center justify-center cursor-pointer ${bg} ${isToday ? 'ring-1 ring-inset ring-libre/40' : ''}`}>
-                        {txt}
-                      </div>
+                        style={{ gridRow: 1 }}
+                        className={`h-9 border-l border-gray-100 cursor-pointer ${bg} ${isToday ? 'ring-1 ring-inset ring-libre/40' : ''}`} />
                     )
                   })}
+                  {/* Guest-name overlay — one element per booking, spans all
+                      its cells via grid-column. pointer-events-none so the
+                      click still goes to the underlying day cell. */}
+                  {rowBookings.map(({ booking, startCol, span }) => (
+                    <div key={booking.id}
+                      style={{ gridRow: 1, gridColumn: `${startCol} / span ${span}` }}
+                      className="pointer-events-none flex items-center justify-center text-[10px] font-bold text-deep/90 px-2 z-10">
+                      <span className="truncate">
+                        {booking.guest_name?.split(' ')[0] || '?'}
+                        {span >= 4 && booking.guest_name?.split(' ')[1]
+                          ? ` ${booking.guest_name.split(' ')[1].charAt(0)}.` : ''}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
           {/* Mini-legend */}
