@@ -1454,6 +1454,12 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
     monthly_min_nights:  28,
     weekly_discount_pct: 0,
     weekly_min_nights:   7,
+    // Hourly / day-use rental — empty/null = not offered
+    hourly_rate:         '',
+    hourly_min_hours:    2,
+    hourly_max_hours:    8,
+    day_use_rate:        '',
+    day_use_max_hours:   6,
     // Bulk pool of physical unit numbers (raw string from textarea —
     // parsed to TEXT[] on save). Comma OR newline separated.
     unit_numbers_raw: '',
@@ -1524,6 +1530,11 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       monthly_min_nights:  src.monthly_min_nights || 28,
       weekly_discount_pct: src.weekly_discount_pct || 0,
       weekly_min_nights:   src.weekly_min_nights || 7,
+      hourly_rate:         src.hourly_rate ?? '',
+      hourly_min_hours:    src.hourly_min_hours || 2,
+      hourly_max_hours:    src.hourly_max_hours || 8,
+      day_use_rate:        src.day_use_rate ?? '',
+      day_use_max_hours:   src.day_use_max_hours || 6,
       // Unit numbers are physical identifiers — never copy across types.
       unit_numbers_raw: '',
     })
@@ -1553,6 +1564,11 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       monthly_min_nights:  room.monthly_min_nights || 28,
       weekly_discount_pct: room.weekly_discount_pct || 0,
       weekly_min_nights:   room.weekly_min_nights || 7,
+      hourly_rate:         room.hourly_rate ?? '',
+      hourly_min_hours:    room.hourly_min_hours || 2,
+      hourly_max_hours:    room.hourly_max_hours || 8,
+      day_use_rate:        room.day_use_rate ?? '',
+      day_use_max_hours:   room.day_use_max_hours || 6,
       unit_numbers_raw:    Array.isArray(room.unit_numbers) ? room.unit_numbers.join(', ') : '',
     })
     // Pre-populate linked packages from the decorated room (with qty + dates).
@@ -1652,6 +1668,11 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       communicating_with_room_id:    form.communicating_with_room_id || null,
       monthly_rate:        form.monthly_rate ? Number(form.monthly_rate) : null,
       monthly_min_nights:  Number(form.monthly_min_nights) || 28,
+      hourly_rate:         form.hourly_rate ? Number(form.hourly_rate) : null,
+      hourly_min_hours:    Number(form.hourly_min_hours) || 2,
+      hourly_max_hours:    Number(form.hourly_max_hours) || 8,
+      day_use_rate:        form.day_use_rate ? Number(form.day_use_rate) : null,
+      day_use_max_hours:   Number(form.day_use_max_hours) || 6,
       weekly_discount_pct: Number(form.weekly_discount_pct) || 0,
       weekly_min_nights:   Number(form.weekly_min_nights) || 7,
       // Parse the bulk textarea: split on commas OR newlines, trim, drop blanks,
@@ -1829,6 +1850,15 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
                     }`}
                       title={room.unit_numbers.join(', ')}>
                       🔢 {room.unit_numbers.length}/{room.quantity} numbered
+                    </span>
+                  )}
+                  {(room.hourly_rate || room.day_use_rate) && (
+                    <span className="flex items-center gap-1 text-electric"
+                      title={[
+                        room.hourly_rate  ? `$${room.hourly_rate}/h (min ${room.hourly_min_hours || 2}h)` : null,
+                        room.day_use_rate ? `Day-use $${room.day_use_rate} / ${room.day_use_max_hours || 6}h` : null,
+                      ].filter(Boolean).join(' · ')}>
+                      🕐 hourly{room.day_use_rate ? ' + day-use' : ''}
                     </span>
                   )}
                 </div>
@@ -2261,6 +2291,72 @@ function RoomEditFormCard({
             <p className="text-[11px] text-libre mt-2 italic">
               ✓ Monthly = ~${(Number(form.monthly_rate) / 30).toFixed(0)}/night
               ({Math.round((1 - (Number(form.monthly_rate) / 30) / Number(form.base_price)) * 100)}% off your daily rate of ${form.base_price})
+            </p>
+          )}
+        </div>
+
+        {/* ───── Hourly / day-use rental ───── */}
+        <div className="sm:col-span-2 p-4 rounded-xl bg-electric/5 border border-electric/15">
+          <h4 className="text-sm font-bold text-deep flex items-center gap-2 mb-1">
+            🕐 {t('manage.hourly_title', 'Hourly / day-use rental')}
+            <span className="text-[11px] text-gray-400 font-normal ml-auto">
+              {t('manage.hourly_hint', 'Optional. Day-use guests, layovers, short stays.')}
+            </span>
+          </h4>
+          <p className="text-[11px] text-gray-500 mb-3">
+            {t('manage.hourly_desc',
+              'Set a flat per-hour price (and/or a half-day block rate). When a guest books for fewer hours than your day-use cap, the cheaper of (hourly × hours) vs day_use_rate wins automatically.')}
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                {t('manage.hourly_rate', 'Hourly rate (USD)')}
+              </label>
+              <input type="number" min={0} step="0.01" value={form.hourly_rate}
+                onChange={e => setForm(f => ({ ...f, hourly_rate: e.target.value }))}
+                placeholder={t('manage.hourly_rate_eg', 'e.g. 8 ($/hour)')}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                  {t('manage.hourly_min', 'Min h')}
+                </label>
+                <input type="number" min={1} max={24} value={form.hourly_min_hours}
+                  onChange={e => setForm(f => ({ ...f, hourly_min_hours: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                  {t('manage.hourly_max', 'Max h')}
+                </label>
+                <input type="number" min={1} max={24} value={form.hourly_max_hours}
+                  onChange={e => setForm(f => ({ ...f, hourly_max_hours: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                {t('manage.day_use_rate', 'Day-use flat (USD)')}
+              </label>
+              <input type="number" min={0} step="0.01" value={form.day_use_rate}
+                onChange={e => setForm(f => ({ ...f, day_use_rate: e.target.value }))}
+                placeholder={t('manage.day_use_rate_eg', 'e.g. 35 (covers up to 6h)')}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
+                {t('manage.day_use_max_hours', 'Day-use covers (hours)')}
+              </label>
+              <input type="number" min={2} max={12} value={form.day_use_max_hours}
+                onChange={e => setForm(f => ({ ...f, day_use_max_hours: e.target.value }))}
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+            </div>
+          </div>
+          {(form.hourly_rate || form.day_use_rate) && (
+            <p className="text-[11px] text-electric mt-2 italic">
+              ✓ Available as hourly{form.hourly_rate ? ` from $${form.hourly_rate}/h (min ${form.hourly_min_hours}h)` : ''}
+              {form.day_use_rate ? ` · day-use $${form.day_use_rate} for ${form.day_use_max_hours}h` : ''}
             </p>
           )}
         </div>
