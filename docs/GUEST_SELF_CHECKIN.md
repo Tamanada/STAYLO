@@ -86,6 +86,7 @@ Each booking row in the receptionist's view gets:
 - Mobile-first responsive layout
 - Hero: "Welcome to [hotel name] · check-in for [lead booker]"
 - Required: First name, Last name, Nationality, DOB, Passport (auto-skip for kids)
+- Required: Take picture passport + immigration card or ID
 - Optional: TM30 immigration details (auto-prompted for non-Thai)
 - Two paths at the end:
   - "Just register" (anonymous to STAYLO, info only)
