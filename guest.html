@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+
+    <!-- Primary meta (guest-app focused, not marketing) -->
+    <title>STAYLO — Your stay, one app</title>
+    <meta name="description" content="Your STAYLO app. Book, check in, pay and discover everything your hotel offers — from one place. Travels with you across every STAYLO hotel." />
+    <link rel="canonical" href="https://app.staylo.app" />
+
+    <!-- Open Graph for share previews when someone forwards the install link -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://app.staylo.app" />
+    <meta property="og:title" content="STAYLO — Your stay, one app" />
+    <meta property="og:description" content="Book, check in, pay, discover. One app, every STAYLO hotel." />
+    <meta property="og:image" content="https://app.staylo.app/og-image.png" />
+    <meta property="og:site_name" content="STAYLO" />
+
+    <!-- PWA — installable on home screen on iOS / Android / Desktop -->
+    <link rel="manifest" href="/manifest-guest.json" />
+    <meta name="theme-color" content="#FF6B00" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="STAYLO" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Search engines: this is the app, not a content site — index sparingly -->
+    <meta name="robots" content="noindex, nofollow" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main-guest.jsx"></script>
+  </body>
+</html>

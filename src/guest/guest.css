@@ -1,0 +1,303 @@
+/* =====================================================================
+ * Guest app styles — mobile-first PWA
+ * =====================================================================
+ * Loaded via src/index.css (which is shared between both Vite entries).
+ * Classes prefixed `guest-` so they never collide with the hotelier
+ * dashboard's styles. STAYLO brand colors (orange→pink gradient,
+ * navy text) match the messenger for visual consistency across both
+ * apps.
+ * ===================================================================== */
+
+:root {
+  --staylo-orange: #FF6B00;
+  --staylo-pink:   #FF1F70;
+  --staylo-navy:   #1A1F2E;
+  --staylo-light:  #F8F6F0;
+  --staylo-teal:   #00B894;
+  --staylo-gray:   #909090;
+  --staylo-border: #E5E5E5;
+}
+
+/* Shell — fills the viewport, leaves room for the bottom nav. */
+.guest-shell {
+  min-height: 100vh;
+  background: var(--staylo-light);
+  display: flex;
+  flex-direction: column;
+  color: var(--staylo-navy);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.guest-main {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 80px;     /* breathing room above the .guest-rail */
+}
+
+/* Page-level wrappers — apply consistent padding + max-width on tablet */
+.guest-page {
+  padding: 20px 16px 24px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+.guest-page-centered { display: flex; flex-direction: column; align-items: center; }
+.guest-page-title {
+  font-size: 22px; font-weight: 800; color: var(--staylo-navy);
+  margin-bottom: 4px; letter-spacing: -0.01em;
+}
+.guest-page-sub {
+  font-size: 13px; color: var(--staylo-gray); font-weight: 500;
+  margin-bottom: 18px;
+}
+.guest-page-note {
+  font-size: 12px; color: var(--staylo-gray); line-height: 1.5;
+  margin-top: 18px; padding: 0 4px;
+}
+.guest-page-note a { color: var(--staylo-orange); font-weight: 700; text-decoration: none; }
+.guest-section-title {
+  font-size: 10px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--staylo-gray); margin: 18px 0 8px;
+}
+
+/* Hero card — the centrepiece of /  (Home).
+ * Gradient orange→pink, white text, rounded corners, slight lift. */
+.guest-hero {
+  background: linear-gradient(135deg, var(--staylo-orange), var(--staylo-pink));
+  color: #fff; border-radius: 18px; padding: 20px 18px;
+  box-shadow: 0 8px 24px rgba(255,107,0,.22);
+  margin-bottom: 16px;
+}
+.guest-hero-eyebrow {
+  font-size: 10px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1.4px; opacity: .85; margin-bottom: 6px;
+}
+.guest-hero-title {
+  font-size: 24px; font-weight: 900; line-height: 1.15; margin-bottom: 4px;
+}
+.guest-hero-sub { font-size: 13px; opacity: .92; margin-bottom: 16px; }
+.guest-hero-dates {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,.15); border-radius: 12px;
+  padding: 12px 14px; margin-bottom: 14px; backdrop-filter: blur(4px);
+}
+.guest-hero-dates-lbl {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1.2px; opacity: .8; margin-bottom: 2px;
+}
+.guest-hero-dates-val { font-size: 14px; font-weight: 800; }
+.guest-hero-dates-right { text-align: right; }
+.guest-hero-dates-nights {
+  font-size: 12px; font-weight: 700; padding: 4px 10px;
+  background: rgba(255,255,255,.25); border-radius: 999px;
+}
+.guest-hero-cta {
+  display: block; width: 100%; padding: 14px;
+  background: #fff; color: var(--staylo-orange);
+  font-size: 15px; font-weight: 900;
+  border-radius: 12px; text-align: center; text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+  transition: transform .15s ease;
+}
+.guest-hero-cta:active { transform: scale(.98); }
+
+/* Quick tiles — 2×2 grid of common actions on Home */
+.guest-tiles {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 16px;
+}
+.guest-tile {
+  background: #fff; border-radius: 14px; padding: 16px 14px;
+  text-decoration: none; color: var(--staylo-navy);
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.guest-tile:active { transform: scale(.97); box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.guest-tile-em { font-size: 26px; margin-bottom: 6px; }
+.guest-tile-lbl { font-size: 14px; font-weight: 800; line-height: 1.2; }
+.guest-tile-hint { font-size: 11px; color: var(--staylo-gray); margin-top: 2px; }
+
+/* Up-next strip — horizontal pill with icon + 2-line text */
+.guest-strip {
+  display: flex; align-items: center; gap: 12px;
+  background: #fff; border-radius: 14px; padding: 14px;
+  margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.guest-strip-icon {
+  width: 40px; height: 40px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,184,148,.12); color: var(--staylo-teal);
+  border-radius: 10px; font-size: 18px;
+}
+.guest-strip-text { flex: 1; min-width: 0; }
+.guest-strip-eyebrow {
+  font-size: 9px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--staylo-teal); margin-bottom: 1px;
+}
+.guest-strip-title { font-size: 14px; font-weight: 800; color: var(--staylo-navy); }
+.guest-strip-sub { font-size: 11px; color: var(--staylo-gray); }
+
+/* Loyalty teaser on Home */
+.guest-loyalty {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fff; border-radius: 14px; padding: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.guest-loyalty-bal { display: flex; align-items: baseline; gap: 4px; }
+.guest-loyalty-num { font-size: 28px; font-weight: 900; color: var(--staylo-orange); }
+.guest-loyalty-tok { font-size: 12px; font-weight: 800; color: var(--staylo-orange); }
+.guest-loyalty-link { font-size: 12px; font-weight: 800; color: var(--staylo-gray); text-decoration: none; }
+
+/* Generic cards used across Booking / History */
+.guest-card {
+  background: #fff; border-radius: 14px; padding: 14px 16px;
+  margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.guest-card-title {
+  font-size: 11px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--staylo-gray); margin-bottom: 8px;
+}
+.guest-card-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 8px 0; border-top: 1px solid var(--staylo-border);
+}
+.guest-card-row:first-child { border-top: 0; }
+.guest-card-lbl {
+  font-size: 11px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 1.2px; color: var(--staylo-gray);
+  padding-top: 2px; flex-shrink: 0; padding-right: 12px;
+}
+.guest-card-val { font-size: 14px; font-weight: 700; text-align: right; color: var(--staylo-navy); }
+.guest-card-val-big { font-size: 22px; font-weight: 900; color: var(--staylo-orange); }
+.guest-card-sub { font-size: 11px; font-weight: 500; color: var(--staylo-gray); }
+.guest-card-list { list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.6; }
+.guest-card-list li { color: var(--staylo-navy); }
+.guest-card-list-ordered { padding-left: 18px; font-size: 13px; line-height: 1.7; color: var(--staylo-navy); }
+.guest-card-foot { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--staylo-border); }
+.guest-card-foot-progress { display: flex; flex-direction: column; gap: 6px; font-size: 11px; color: var(--staylo-gray); }
+.guest-card-foot-bar { height: 6px; background: var(--staylo-border); border-radius: 3px; overflow: hidden; }
+.guest-card-foot-fill { height: 100%; background: linear-gradient(90deg, var(--staylo-orange), var(--staylo-pink)); border-radius: 3px; }
+
+/* Action buttons */
+.guest-actions { display: flex; flex-direction: column; gap: 8px; margin: 16px 0 8px; }
+.guest-btn-secondary, .guest-btn-ghost {
+  padding: 12px; border-radius: 10px; border: 0;
+  font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit;
+  transition: background .15s ease;
+}
+.guest-btn-secondary { background: #fff; color: var(--staylo-navy); border: 1px solid var(--staylo-border); }
+.guest-btn-secondary:hover { background: var(--staylo-light); }
+.guest-btn-ghost { background: transparent; color: var(--staylo-gray); }
+.guest-btn-ghost:hover { background: rgba(0,0,0,.04); }
+
+/* QR check-in screen */
+.guest-qr-card {
+  background: #fff; border-radius: 18px; padding: 24px 20px;
+  margin: 16px 0; text-align: center; width: 100%; max-width: 360px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+.guest-qr-frame {
+  background: #fff; border: 8px solid var(--staylo-orange);
+  border-radius: 14px; padding: 12px; margin: 0 auto 16px;
+  width: 100%; max-width: 260px; aspect-ratio: 1;
+}
+.guest-qr-svg { width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.guest-qr-meta { display: flex; flex-direction: column; gap: 4px; }
+.guest-qr-ref { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; color: var(--staylo-gray); text-transform: uppercase; }
+.guest-qr-name { font-size: 16px; font-weight: 800; color: var(--staylo-navy); }
+.guest-qr-hotel { font-size: 12px; color: var(--staylo-gray); }
+
+/* Services catalogue */
+.guest-cat { margin-bottom: 18px; }
+.guest-cat-title {
+  font-size: 14px; font-weight: 800; color: var(--staylo-navy);
+  margin-bottom: 8px; padding: 0 2px;
+}
+.guest-cat-list { display: flex; flex-direction: column; gap: 8px; }
+.guest-svc {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: #fff; border-radius: 14px; padding: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.guest-svc-em {
+  width: 44px; height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--staylo-light); border-radius: 10px; font-size: 22px;
+}
+.guest-svc-body { flex: 1; min-width: 0; }
+.guest-svc-name { font-size: 14px; font-weight: 800; color: var(--staylo-navy); margin-bottom: 2px; }
+.guest-svc-meta { font-size: 11px; font-weight: 600; color: var(--staylo-gray); margin-bottom: 4px; }
+.guest-svc-desc { font-size: 12px; color: var(--staylo-navy); line-height: 1.45; margin-bottom: 8px; }
+.guest-svc-foot { display: flex; justify-content: space-between; align-items: center; }
+.guest-svc-avail { font-size: 11px; font-weight: 700; color: var(--staylo-teal); }
+.guest-svc-cta {
+  padding: 7px 16px; border-radius: 999px; border: 0;
+  background: linear-gradient(135deg, var(--staylo-orange), var(--staylo-pink));
+  color: #fff; font-size: 12px; font-weight: 800; cursor: pointer;
+  font-family: inherit;
+}
+.guest-svc-cta:active { transform: scale(.96); }
+
+/* History — loyalty card + stay list */
+.guest-loyalty-card {
+  display: flex; gap: 14px; align-items: center;
+  background: linear-gradient(135deg, var(--staylo-navy), #2A3147);
+  color: #fff; border-radius: 16px; padding: 18px; margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(26,31,46,.18);
+}
+.guest-loyalty-tier {
+  text-align: center; padding: 8px 16px; border-right: 1px solid rgba(255,255,255,.18);
+}
+.guest-loyalty-tier-name { font-size: 22px; font-weight: 900; color: #C0C0C0; line-height: 1; }
+.guest-loyalty-tier-lbl { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.4px; opacity: .65; margin-top: 4px; }
+.guest-loyalty-stats { display: flex; flex: 1; justify-content: space-around; }
+.guest-loyalty-stat { text-align: center; }
+.guest-loyalty-stat-n { font-size: 18px; font-weight: 900; }
+.guest-loyalty-stat-l { font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; opacity: .65; margin-top: 2px; }
+.guest-stay-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.guest-stay {
+  display: flex; gap: 12px; align-items: center;
+  background: #fff; border-radius: 12px; padding: 12px 14px;
+}
+.guest-stay.upcoming { border: 2px solid var(--staylo-orange); }
+.guest-stay-em {
+  width: 36px; height: 36px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--staylo-light); border-radius: 8px; font-size: 18px;
+}
+.guest-stay-body { flex: 1; min-width: 0; }
+.guest-stay-name { font-size: 13px; font-weight: 800; color: var(--staylo-navy); display: flex; align-items: center; gap: 8px; }
+.guest-stay-pill { font-size: 9px; font-weight: 800; padding: 2px 6px; background: var(--staylo-orange); color: #fff; border-radius: 999px; text-transform: uppercase; letter-spacing: .8px; }
+.guest-stay-meta { font-size: 11px; color: var(--staylo-gray); }
+.guest-stay-right { text-align: right; }
+.guest-stay-total { font-size: 13px; font-weight: 800; color: var(--staylo-navy); }
+.guest-stay-earned { font-size: 10px; font-weight: 700; color: var(--staylo-orange); }
+
+/* Bottom nav — exact same treatment as messenger.html's .rail */
+.guest-rail {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; flex-direction: row;
+  background: linear-gradient(90deg, var(--staylo-orange), var(--staylo-pink));
+  color: #fff;
+  padding: 4px 0 calc(env(safe-area-inset-bottom, 0) + 4px);
+  border-top: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 -2px 12px rgba(255,107,0,.22);
+  z-index: 60;
+}
+.guest-rail-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; padding: 6px 4px; margin: 0 4px;
+  color: rgba(255,255,255,.78); border-radius: 14px;
+  background: transparent; border: 0; cursor: pointer;
+  text-decoration: none; font-family: inherit;
+  transition: color .15s ease, background .15s ease, transform .15s ease;
+  position: relative;
+}
+.guest-rail-btn:hover { color: #fff; background: rgba(255,255,255,.08); }
+.guest-rail-btn.active { color: #fff; background: rgba(255,255,255,.18); }
+.guest-rail-btn.active .guest-rail-icon { transform: scale(1.06); }
+.guest-rail-btn.active::before {
+  content: ''; position: absolute; top: -4px; left: 50%; transform: translateX(-50%);
+  width: 32px; height: 3px; background: #fff; border-radius: 0 0 2px 2px;
+  box-shadow: 0 2px 6px rgba(255,255,255,.4);
+}
+.guest-rail-icon { width: 22px; height: 22px; display: block; }
+.guest-rail-lbl { font-size: 10px; font-weight: 700; letter-spacing: .3px; }
