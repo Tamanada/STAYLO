@@ -141,31 +141,58 @@ input,textarea,select{font:inherit;color:inherit;outline:none;border:0;backgroun
   flex:1;display:flex;flex-direction:row;
   min-height:0;overflow:hidden;position:relative;
 }
+/* Bottom-bar uses the SAME orange→pink gradient as the top DEMO banner —
+ * single signature color across the app. White icons/labels for max
+ * contrast on the warm background. Active state: solid white text +
+ * a soft white pill that lifts the active button without fighting the
+ * gradient. Badge flips to navy so the alert count reads cleanly
+ * against the orange — red-on-orange would mush. */
 .rail{
-  display:flex;flex-direction:row;background:var(--navy);color:#fff;
+  display:flex;flex-direction:row;
+  background:linear-gradient(90deg,var(--orange),var(--pink));
+  color:#fff;
   padding:4px 0 calc(env(safe-area-inset-bottom,0) + 4px);
-  flex-shrink:0;border-top:1px solid rgba(255,255,255,.08);
+  flex-shrink:0;
+  border-top:1px solid rgba(255,255,255,.18);
+  box-shadow:0 -2px 12px rgba(255,107,0,.22);
   z-index:60;
 }
 .rail-btn{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
   gap:3px;padding:6px 4px;
-  color:rgba(255,255,255,.65);position:relative;
-  transition:color var(--t-fast);
-  background:transparent;border:0;cursor:pointer;
+  color:rgba(255,255,255,.78);position:relative;
+  transition:color var(--t-fast), background var(--t-fast), transform var(--t-fast);
+  background:transparent;border:0;cursor:pointer;border-radius:14px;
+  margin:0 4px;
 }
 .rail-btn .rail-em{font-size:22px;line-height:1}
+.rail-btn .rail-icon{
+  /* SVG icons: inherit color from rail-btn so active/inactive states just
+   * change `color` on the parent. stroke="currentColor" on the SVG paths. */
+  width:22px;height:22px;display:block;
+}
 .rail-btn .rail-lbl{font-size:10px;font-weight:700;letter-spacing:.3px}
-.rail-btn:hover{color:#fff;background:transparent}
-.rail-btn.active{color:var(--orange);background:transparent}
+.rail-btn:hover{color:#fff;background:rgba(255,255,255,.08)}
+.rail-btn.active{
+  color:#fff;
+  background:rgba(255,255,255,.18);
+}
+.rail-btn.active .rail-icon{transform:scale(1.06)}
 .rail-btn.active::before{
+  /* Top-edge accent bar — flipped from orange to white so it reads against
+   * the new orange background. Slightly thicker for better visibility. */
   content:'';position:absolute;top:-4px;left:50%;transform:translateX(-50%);
-  width:32px;height:3px;background:var(--orange);border-radius:0 0 2px 2px;
+  width:32px;height:3px;background:#fff;border-radius:0 0 2px 2px;
+  box-shadow:0 2px 6px rgba(255,255,255,.4);
 }
 .rail-btn .badge{
-  position:absolute;top:2px;right:calc(50% - 22px);background:var(--red);color:#fff;
-  font-size:10px;font-weight:700;min-width:16px;height:16px;
+  /* Navy badge with white text → high-contrast counter on the orange bg.
+   * Subtle white ring to lift it off the gradient. */
+  position:absolute;top:2px;right:calc(50% - 22px);
+  background:var(--navy);color:#fff;
+  font-size:10px;font-weight:800;min-width:16px;height:16px;
   padding:0 4px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px rgba(255,255,255,.85);
 }
 
 /* Hide channels-pane when active view is not Chat — the bottom bar is the
@@ -2975,19 +3002,47 @@ body.off-shift .quick-actions{display:none !important}
        Each label is tagged data-i18n so applyI18n() translates them on boot
        and on every setLanguage() switch. The English text in the span is
        the fallback if i18n hasn't loaded yet. -->
+  <!-- Bottom navigation rail.
+       Icons are inline SVG (Lucide line-style) so they:
+         · inherit color via stroke="currentColor" → CSS controls active/idle
+         · render identically across iOS/Android/Windows (no more Apple-vs-
+           Google-vs-Windows emoji inconsistency)
+         · stay crisp at any zoom level (vector)
+       Each <svg class="rail-icon"> mirrors the size set in CSS (22×22). -->
   <nav class="rail" id="bottom-nav">
     <button class="rail-btn active" data-pane="channels" data-i18n-title="app.shell.bottom.chat">
-      <span class="rail-em">💬</span><span class="rail-lbl" data-i18n="app.shell.bottom.chat">Chat</span>
+      <!-- MessageCircle (Lucide) -->
+      <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
+      </svg>
+      <span class="rail-lbl" data-i18n="app.shell.bottom.chat">Chat</span>
     </button>
     <button class="rail-btn" data-pane="team" id="rail-team" data-i18n-title="app.shell.bottom.team">
-      <span class="rail-em">👥</span><span class="rail-lbl" data-i18n="app.shell.bottom.team">Team</span>
+      <!-- Users (Lucide) -->
+      <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+      <span class="rail-lbl" data-i18n="app.shell.bottom.team">Team</span>
     </button>
     <button class="rail-btn" data-pane="alerts" data-i18n-title="app.shell.bottom.alerts">
-      <span class="rail-em">🔔</span><span class="rail-lbl" data-i18n="app.shell.bottom.alerts">Alerts</span>
+      <!-- Bell (Lucide) -->
+      <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+        <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+      </svg>
+      <span class="rail-lbl" data-i18n="app.shell.bottom.alerts">Alerts</span>
       <span class="badge" id="rail-alerts" style="display:none">0</span>
     </button>
     <button class="rail-btn" data-pane="me" data-i18n-title="app.shell.bottom.me">
-      <span class="rail-em">👤</span><span class="rail-lbl" data-i18n="app.shell.bottom.me">Me</span>
+      <!-- User (Lucide) -->
+      <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+      <span class="rail-lbl" data-i18n="app.shell.bottom.me">Me</span>
     </button>
   </nav>
 
