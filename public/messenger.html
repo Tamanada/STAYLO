@@ -15961,14 +15961,15 @@ function showShiftEditor(emp, day, shift){
         labelEls[weekDays[i]].classList.toggle('sel', cb.checked);
       }
     };
+    // Convenience helpers called by buildRepeatPicker's onChange when the
+    // user switches the repeat chip — implements the "minimum 1 week"
+    // rule: any chip other than "Aujourd'hui" auto-checks all 7 days.
+    const setAll          = () => setOffsets([0,1,2,3,4,5,6]);
+    const setOnlyCurrent  = () => setOffsets([]);
     const root = el('div',{class:'fld'},
       el('label',{},t('app.shift_editor.apply_label')),
-      el('div',{class:'wkday-presets'},
-        el('button',{class:'preset',type:'button',onclick:()=>setOffsets([0,1,2,3,4])}, t('app.shift_editor.preset_weekdays')),
-        el('button',{class:'preset',type:'button',onclick:()=>setOffsets([5,6])}, t('app.shift_editor.preset_weekend')),
-        el('button',{class:'preset',type:'button',onclick:()=>setOffsets([0,1,2,3,4,5,6])}, t('app.shift_editor.preset_all')),
-        el('button',{class:'preset',type:'button',onclick:()=>setOffsets([])}, t('app.shift_editor.preset_clear')),
-      ),
+      // Preset buttons (Sem./WE/Tous/Aucun) removed by design — the repeat
+      // chip below now drives day-selection (1 week = minimum pattern).
       el('div',{class:'wkdays'}, ...cells),
     );
     const getCheckedOffsets = () => {
@@ -15978,22 +15979,42 @@ function showShiftEditor(emp, day, shift){
       }
       return out;
     };
-    return { root, getCheckedOffsets, setOffsets };
+    return { root, getCheckedOffsets, setOffsets, setAll, setOnlyCurrent };
   };
 
-  const buildRepeatPicker = (boxId, defaultKey='1') => {
+  const buildRepeatPicker = (boxId, defaultKey='this_week', onChange) => {
+    // Chip order (left-to-right):
+    //   1. Jusqu'au [📅 date]  — custom horizon, exposes a date input
+    //   2. Aujourd'hui         — single day (the only sub-week option)
+    //   3. Cette semaine       — Mon→Sun of current week
+    //   4. Sem. suivante       — Mon→Sun of NEXT week ONLY (excl. current)
+    //   5. Deux semaines       — current + next (14 days)
+    //   6. Ce mois             — ~4 weeks from current Monday
+    //   7. 52 semaines         — 1 year
+    //   8. Jusqu'au contrat    — appended if emp has end_date
+    // Picking ANY chip other than 'today' fires onChange with the new key,
+    // which the caller wires to days.setAll() (the "min 1 week" rule).
     const opts = [
-      {key:'today', lbl:t('app.shift_editor.repeat_today')},
-      {key:'1',  lbl:t('app.shift_editor.repeat_this')},
-      {key:'2',  lbl:t('app.shift_editor.repeat_next')},
-      {key:'4',  lbl:t('app.shift_editor.repeat_month')},
-      {key:'52', lbl:t('app.shift_editor.repeat_year')},
+      {key:'until',     lbl:t('app.shift_editor.repeat_until_label',  {default:'Jusqu\'au :'})},
+      {key:'today',     lbl:t('app.shift_editor.repeat_today')},
+      {key:'this_week', lbl:t('app.shift_editor.repeat_this')},
+      {key:'next_week', lbl:t('app.shift_editor.repeat_next_week_only',{default:'Sem. suivante'})},
+      {key:'two_weeks', lbl:t('app.shift_editor.repeat_two_weeks',     {default:'Deux semaines'})},
+      {key:'month',     lbl:t('app.shift_editor.repeat_month')},
+      {key:'year',      lbl:t('app.shift_editor.repeat_year')},
     ];
     if(emp.end_date){
       const dt2 = new Date(emp.end_date+'T00:00:00Z');
       const ll = dt2.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
       opts.push({key:'contract', lbl:t('app.shift_editor.repeat_until_contract', {date: ll})});
     }
+    // Date input rendered next to the chips, hidden unless 'until' is active.
+    const untilInput = document.createElement('input');
+    untilInput.type = 'date';
+    untilInput.className = 'repeat-until-input';
+    untilInput.style.cssText = 'display:none;margin-left:6px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);font-size:11px;font-weight:600;font-family:inherit';
+    untilInput.min = day;     // can't backfill — must be ≥ current day
+    if(emp.end_date) untilInput.max = emp.end_date;
     const btnMap = {};
     const chipsEl = el('div',{class:'repeat-chips',id:`repeat-chips-${boxId}`});
     for(const o of opts){
@@ -16003,47 +16024,89 @@ function showShiftEditor(emp, day, shift){
       btn.addEventListener('click', () => {
         Object.values(btnMap).forEach(b => b.classList.remove('on'));
         btn.classList.add('on');
+        // Show the date input only when 'until' is selected
+        untilInput.style.display = (o.key === 'until') ? 'inline-block' : 'none';
+        if(o.key === 'until' && !untilInput.value){
+          // Sensible default: 2 weeks from current day, clamped to contract end
+          const def = addDaysISO(day, 14);
+          untilInput.value = (emp.end_date && def > emp.end_date) ? emp.end_date : def;
+        }
+        if(typeof onChange === 'function') onChange(o.key);
       });
       btnMap[o.key] = btn;
       chipsEl.appendChild(btn);
     }
+    chipsEl.appendChild(untilInput);
     const root = el('div',{class:'fld'},
       el('label',{}, t('app.shift_editor.repeat_label')),
       chipsEl,
     );
     const getKey = () => {
       const active = Object.values(btnMap).find(b => b.classList.contains('on'));
-      return active ? active.dataset.key : defaultKey;
+      if(!active) return defaultKey;
+      if(active.dataset.key === 'until') return 'until:' + (untilInput.value || day);
+      return active.dataset.key;
     };
     return { root, getKey };
   };
 
   // Resolve a (daysPicker, repeatPicker) pair to a flat list of ISO dates
-  // honouring the employee's contract end_date (no shifts past it).
+  // honouring the employee's contract end_date AND the user's chosen
+  // horizon. Keys handled:
+  //   today        → 1 day  (current day; checkboxes ignored)
+  //   this_week    → current week only (Mon→Sun, offset 0, 1 week)
+  //   next_week    → next week ONLY  (Mon→Sun, offset 1, 1 week)
+  //   two_weeks    → current + next  (offset 0, 2 weeks)
+  //   month        → ~4 weeks from current Monday
+  //   year         → 52 weeks
+  //   contract     → from current Monday until emp.end_date
+  //   until:YYYY-MM-DD → from current Monday until the user-typed date
+  //   (legacy)     → numeric strings still parsed as week counts, for
+  //                  backward compat with any serialized state
   const resolveScope = (daysPicker, repeatPicker) => {
     const repeatKey = repeatPicker.getKey();
-    // Special-case "today": just the single date being edited, no week loop.
-    // Day-checkboxes are ignored — "today" by definition means this exact
-    // date only. Honours contract end (skip if past).
     if(repeatKey === 'today'){
       if(emp.end_date && day > emp.end_date) return [];
       return [day];
     }
     const offsets = daysPicker.getCheckedOffsets();
     if(offsets.length === 0) return [];
-    let weeks = parseInt(repeatKey) || 1;
-    if(repeatKey === 'contract' && emp.end_date){
+    // Compute (startWeekOffset, weeks) — how many weeks to walk and where
+    // we start relative to the editing day's week.
+    let startWeekOffset = 0;
+    let weeks = 1;
+    let untilDate = null;
+    if(repeatKey === 'this_week'){ startWeekOffset = 0; weeks = 1; }
+    else if(repeatKey === 'next_week'){ startWeekOffset = 1; weeks = 1; }
+    else if(repeatKey === 'two_weeks'){ startWeekOffset = 0; weeks = 2; }
+    else if(repeatKey === 'month'){ startWeekOffset = 0; weeks = 4; }
+    else if(repeatKey === 'year'){  startWeekOffset = 0; weeks = 52; }
+    else if(repeatKey === 'contract' && emp.end_date){
+      startWeekOffset = 0;
       const end = new Date(emp.end_date+'T00:00:00Z');
       const start0 = new Date(weekStart+'T00:00:00Z');
       const diffDays = Math.ceil((end - start0) / 86400000);
       weeks = Math.max(1, Math.ceil(diffDays / 7));
+      untilDate = emp.end_date;
+    }
+    else if(repeatKey.indexOf('until:') === 0){
+      untilDate = repeatKey.slice(6);
+      const end = new Date(untilDate+'T00:00:00Z');
+      const start0 = new Date(weekStart+'T00:00:00Z');
+      const diffDays = Math.ceil((end - start0) / 86400000);
+      weeks = Math.max(1, Math.ceil(diffDays / 7));
+    }
+    else {
+      // Legacy numeric keys (older state): treat as week count
+      weeks = parseInt(repeatKey) || 1;
     }
     const dates = [];
     for(let w=0; w<weeks; w++){
-      const ws = addDaysISO(weekStart, w*7);
+      const ws = addDaysISO(weekStart, (startWeekOffset + w) * 7);
       for(const off of offsets){
         const d = addDaysISO(ws, off);
         if(emp.end_date && d > emp.end_date) continue;
+        if(untilDate && d > untilDate) continue;
         dates.push(d);
       }
     }
@@ -16160,18 +16223,34 @@ function showShiftEditor(emp, day, shift){
   //                across a whole week is a deliberate opt-in).
   // Helpers buildDaysPicker / buildRepeatPicker / resolveScope are
   // defined earlier in this same function and are accessible here.
-  const _timingScope = {
-    days:   buildDaysPicker('timing',   d => matchingDays.includes(d)),
-    repeat: buildRepeatPicker('timing', '1'),
-  };
-  const _briefingScope = {
-    days:   buildDaysPicker('briefing', () => false),
-    repeat: buildRepeatPicker('briefing', 'today'),
-  };
-  const _tasksScope = {
-    days:   buildDaysPicker('tasks',    () => false),
-    repeat: buildRepeatPicker('tasks',  'today'),
-  };
+  // The onChange callback implements the "minimum 1 week" rule: any repeat
+  // chip OTHER than 'today' auto-checks all 7 days, while 'today' resets
+  // to just the current day. The initial render keeps the presetSelected
+  // behavior (matchingDays for Timing series-detect, none for the others).
+  const _timingScope = (() => {
+    const days = buildDaysPicker('timing', d => matchingDays.includes(d));
+    const repeat = buildRepeatPicker('timing', 'this_week', (newKey) => {
+      if(newKey === 'today') days.setOnlyCurrent();
+      else days.setAll();
+    });
+    return { days, repeat };
+  })();
+  const _briefingScope = (() => {
+    const days = buildDaysPicker('briefing', () => false);
+    const repeat = buildRepeatPicker('briefing', 'today', (newKey) => {
+      if(newKey === 'today') days.setOnlyCurrent();
+      else days.setAll();
+    });
+    return { days, repeat };
+  })();
+  const _tasksScope = (() => {
+    const days = buildDaysPicker('tasks', () => false);
+    const repeat = buildRepeatPicker('tasks', 'today', (newKey) => {
+      if(newKey === 'today') days.setOnlyCurrent();
+      else days.setAll();
+    });
+    return { days, repeat };
+  })();
 
   // Reusable section-scope hint banner. Tells the manager exactly what
   // the picker below applies to, in plain language. Shown above the
