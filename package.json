@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "predev": "node scripts/sync-messenger-i18n.cjs",
     "build": "vite build",
+    "prebuild": "node scripts/sync-messenger-i18n.cjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sync:messenger-i18n": "node scripts/sync-messenger-i18n.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.3",

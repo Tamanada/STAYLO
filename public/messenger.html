@@ -3526,14 +3526,19 @@ async function loadLanguage(lang){
     console.warn('[i18n] Unknown language:', lang);
     return null;
   }
-  // Try multiple paths — depending on how the messenger is served (Python
-  // http.server from repo root vs. via Vite dev / vs. directly opened as
-  // file://), the relative path './src/i18n/...' may not resolve. We try
-  // each candidate in turn and stop at the first 200 OK.
+  // Try multiple paths — depending on how the messenger is served (Vercel
+  // static from /messenger.html alongside /i18n/* vs. legacy Python http.server
+  // from repo root vs. directly opened as file://), the relative path may
+  // resolve differently. We try each candidate in turn and stop at the first
+  // 200 OK. The canonical path is `/i18n/{lang}.json` (production layout
+  // under public/), legacy `./src/i18n/...` paths stay as fallback for
+  // people still serving the messenger from the repo root in dev.
   const candidates = [
-    `./src/i18n/${lang}.json`,
-    `src/i18n/${lang}.json`,
-    `/src/i18n/${lang}.json`,
+    `./i18n/${lang}.json`,           // public/ layout — when served as /messenger.html
+    `/i18n/${lang}.json`,            // absolute — works under any base path
+    `./src/i18n/${lang}.json`,       // legacy: messenger at repo root
+    `src/i18n/${lang}.json`,         // legacy: relative without leading dot
+    `/src/i18n/${lang}.json`,        // legacy: absolute repo-root variant
   ];
   let lastErr = null;
   for(const url of candidates){

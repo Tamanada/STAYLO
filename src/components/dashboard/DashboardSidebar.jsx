@@ -35,7 +35,8 @@ import {
   Luggage,
   Banknote,
   Shield,
-  PlusCircle
+  PlusCircle,
+  MessageSquare
 } from 'lucide-react'
 
 // ── Section definitions ─────────────────────────────────
@@ -201,6 +202,28 @@ export function DashboardSidebar() {
             </p>
           </div>
         )}
+
+        {/* Messenger — opens the static single-file app (public/messenger.html)
+            in a new tab. Visible to every signed-in user for now (matches the
+            demo flow); we can tighten visibility behind hasProperties later
+            once the messenger has real auth wired to Supabase. The path is
+            a static asset served by Vercel — bypasses the SPA router. */}
+        <div className="pt-4 pb-1 px-4">
+          <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-electric/60">
+            {t('dashboard.section_team_tools', 'Team tools')}
+          </p>
+        </div>
+        <a
+          href="/messenger.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => setMobileOpen(false)}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold no-underline transition-all duration-200 text-electric/80 hover:text-electric hover:bg-electric/10 border border-electric/20"
+        >
+          <MessageSquare size={18} />
+          <span>{t('dashboard.nav_messenger', 'Staff Messenger')}</span>
+          <span className="ml-auto text-[10px] uppercase font-bold opacity-60">Open ↗</span>
+        </a>
 
         {/* Admin shortcut — only visible to users with role='admin' (RLS-enforced server-side too) */}
         {profile?.role === 'admin' && (
