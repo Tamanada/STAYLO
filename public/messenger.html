@@ -16063,32 +16063,10 @@ function showShiftEditor(emp, day, shift){
     return true;
   };
 
-  const dayCheckboxes = weekDays.map((d,i)=>{
-    const isCurrent  = d===day;
-    const isMatching = matchingDays.includes(d);
-    const dayNum = new Date(d+'T00:00:00Z').getUTCDate();
-    const cb = document.createElement('input');
-    cb.type='checkbox'; cb.id='wd-'+d;
-    if(isCurrent){ cb.checked=true; cb.disabled=true; }
-    else if(isMatching){ cb.checked=true; }
-    const cls = 'wkday' + (isCurrent ? ' current sel' : isMatching ? ' sel' : '');
-    const lbl = el('label',{class:cls},
-      cb,
-      el('span',{class:'wd-name'}, dayLabels[i]),
-      el('span',{class:'wd-num'}, String(dayNum)),
-    );
-    cb.addEventListener('change',()=>lbl.classList.toggle('sel',cb.checked));
-    return lbl;
-  });
-  const setDays = (indices) => {
-    for(let i=0;i<7;i++){
-      if(weekDays[i]===day) continue;          // current day always on
-      const cb = $('#wd-'+weekDays[i]);
-      if(!cb) continue;
-      cb.checked = indices.includes(i);
-      cb.parentElement.classList.toggle('sel', cb.checked);
-    }
-  };
+  // (Removed: legacy `dayCheckboxes` array + global `setDays` helper —
+  // they backed the now-deleted "APPLIQUER À" section. The new per-section
+  // pickers built via buildDaysPicker(boxId, …) carry their own checkbox
+  // sets and preset helpers, so this code is dead.)
 
   // Type toggle: Work shift | Absence
   let currentKind = (shift?.kind === 'absence') ? 'absence' : 'work';
@@ -16188,6 +16166,11 @@ function showShiftEditor(emp, day, shift){
       el('div',{style:'font-size:10px;color:var(--gray);margin-top:2px;line-height:1.4'},
         `End auto = start + ${contractShiftHours.toFixed(2).replace(/\.?0+$/,'')}h work + break. Break starts at = start + 4h. ` +
         `Change Start → all 3 derived fields recompute. Override any after if needed.`),
+      // Embedded scope picker — controls which days the Save Timing button
+      // will write to. Series edits pre-select matching shifts in the week.
+      _scopeHint(t('app.shift_editor.scope_hint_timing', {default: 'Saving will apply Start / End / Break / Outlet to the days selected below.'})),
+      _timingScope.days.root,
+      _timingScope.repeat.root,
     ),
     // ── Section: Briefing (notes-yellow) ──
     // Personalised note the manager writes for THIS shift. Visible by the
@@ -16279,6 +16262,11 @@ function showShiftEditor(emp, day, shift){
             t('app.shift_editor.briefing_hint')),
           bankBtn,
         ),
+        // Embedded scope picker. Briefings default to today-only because
+        // they are 99% day-specific (VIP arrivals, group breakfast pack…)
+        _scopeHint(t('app.shift_editor.scope_hint_briefing', {default: 'Saving will write the briefing to the days selected below. Days without an existing shift are skipped.'})),
+        _briefingScope.days.root,
+        _briefingScope.repeat.root,
       );
     })(),
     // ── Plan the day: one-off tasks attached to THIS employee on THIS date ──
@@ -16350,10 +16338,33 @@ function showShiftEditor(emp, day, shift){
       }
       const addBtn = el('button',{type:'button', class:'shift-task-add'}, t('app.shift_editor.tasks_add'));
 
+      // Optional recipe attachment for the inline task being created.
+      // Previously the recipe selector existed ONLY in the full task editor
+      // (showTaskEditor), so adding a quick task from the shift editor could
+      // not link a fiche technique. Now there's a 4th input in the add row:
+      // a recipe select. Empty option = no attachment. Declared HERE (above
+      // the library-cards loop) so card click handlers can pre-fill it.
+      const _recipes = getRecipes();
+      const recipeIn = (() => {
+        const s = document.createElement('select');
+        s.className = 'shift-task-input shift-task-input-recipe';
+        s.title = t('app.shift_editor.tasks_recipe_attach', {default: 'Attach a recipe (fiche technique)'});
+        const noneOpt = document.createElement('option');
+        noneOpt.value = ''; noneOpt.textContent = '📔 —';
+        s.appendChild(noneOpt);
+        for(const r of _recipes){
+          const opt = document.createElement('option');
+          opt.value = r.id;
+          opt.textContent = '📔 ' + r.name + (r.pos_sku ? ` (${r.pos_sku})` : '');
+          s.appendChild(opt);
+        }
+        return s;
+      })();
+
       // Library cards — visual picker above the input row. Filtered to tasks
       // this employee is eligible for (role / dept / all / direct-employee).
       // Excludes one-off tasks already attached to this emp+day. Click a card
-      // → fills title + priority + time fields, ready to Add or adjust.
+      // → fills title + priority + time + recipe fields, ready to Add or adjust.
       const libraryCards = el('div',{class:'shift-task-cards'});
       const seenTitles = new Set();
       let cardCount = 0;
@@ -16395,6 +16406,9 @@ function showShiftEditor(emp, day, shift){
           titleIn.value  = t.title;
           timeIn.value   = t.due_time || '';
           prioSel.value  = t.priority || 'normal';
+          // Pre-fill the recipe selector if the library task carries one.
+          // Falls back to "— None —" (value='') when absent.
+          if(recipeIn) recipeIn.value = t.recipe_id || '';
           // Optional flash feedback so manager sees the form has been pre-filled
           titleIn.focus();
         });
@@ -16414,10 +16428,13 @@ function showShiftEditor(emp, day, shift){
           assign_kind:'employee', assign_value: emp.id,
           recurrence:'once', due_date: day,
           priority: prioSel.value, due_time: timeIn.value || '',
+          // NEW: persist optional recipe attachment from inline add row
+          recipe_id: recipeIn.value || '',
           active: true,
         });
         // Reset just the new-task inputs; leave the user's other fields alone.
         titleIn.value = ''; timeIn.value = ''; prioSel.value = 'normal';
+        recipeIn.value = '';
         renderList();
         titleIn.focus();   // ready for the next task
       };
@@ -16430,7 +16447,22 @@ function showShiftEditor(emp, day, shift){
         // matches this employee). Click a card → form below pre-fills.
         libraryHeader,
         cardCount > 0 ? libraryCards : null,
-        el('div',{class:'shift-task-add-row'}, titleIn, timeIn, prioSel, addBtn),
+        // Add row: title + time + priority + recipe + add. Recipe selector
+        // is hidden if the hotel has zero recipes (otherwise it's just an
+        // empty dropdown that takes space).
+        el('div',{class:'shift-task-add-row'},
+          titleIn,
+          timeIn,
+          prioSel,
+          _recipes.length > 0 ? recipeIn : null,
+          addBtn,
+        ),
+        // Embedded scope picker. Tasks default to today-only because cloning
+        // a task to a whole week is a deliberate opt-in (vs. quickly adding
+        // a one-off note for today's shift).
+        _scopeHint(t('app.shift_editor.scope_hint_tasks', {default: 'Saving will clone today\'s tasks to the days selected below. Tasks already present on a target day are not duplicated.'})),
+        _tasksScope.days.root,
+        _tasksScope.repeat.root,
       );
     })(),
   );
@@ -16529,6 +16561,41 @@ function showShiftEditor(emp, day, shift){
   // making the whole shift editor click silently do nothing).
   const _scopedSaves = {};
 
+  // ─── Per-section scope pickers ─────────────────────────────────────
+  // Each of Timing / Briefing / Tasks now owns its OWN days + repeat
+  // picker, embedded inside its section card. This replaces the single
+  // global "APPLIQUER À" section which forced the manager to mentally
+  // remember which scope applied to which save. Now the affordance is
+  // direct: the picker you see right above a Save button IS the scope
+  // for that save. Defaults:
+  //   - Timing:   preselects matching shifts in the week (series edit)
+  //                + repeat='1' (this week, multi-day pattern)
+  //   - Briefing: only the current day + repeat='today' (briefings are
+  //                day-specific 99% of the time)
+  //   - Tasks:    only the current day + repeat='today' (cloning tasks
+  //                to a whole week is rare, opt-in)
+  // The helpers buildDaysPicker / buildRepeatPicker / resolveScope were
+  // already defined earlier in this function for this exact purpose.
+  const _timingScope = {
+    days:   buildDaysPicker('timing',   d => matchingDays.includes(d)),
+    repeat: buildRepeatPicker('timing', '1'),
+  };
+  const _briefingScope = {
+    days:   buildDaysPicker('briefing', () => false),
+    repeat: buildRepeatPicker('briefing', 'today'),
+  };
+  const _tasksScope = {
+    days:   buildDaysPicker('tasks',    () => false),
+    repeat: buildRepeatPicker('tasks',  'today'),
+  };
+
+  // Reusable section-scope hint banner. Tells the manager exactly what
+  // the picker below applies to, in plain language. Shown above the
+  // days+repeat row in each section.
+  const _scopeHint = (text) => el('div',{
+    style:'font-size:11px;color:var(--gray);font-style:italic;margin:6px 0 4px;line-height:1.4',
+  }, text);
+
   const panel = el('div',{class:'shift-editor-panel'},
     el('h3',{}, isEdit ? t('app.shift_editor.title_edit') : t('app.shift_editor.title_add')),
     el('p',{class:'sub'}, `${emp.first_name} ${emp.last_name||''} · ${translateRole(emp.role)} · ${dayLbl}`),
@@ -16538,64 +16605,21 @@ function showShiftEditor(emp, day, shift){
     typeToggle,
     workFields,
     absFields,
-    // ── Section: Apply scope (purple) ──
-    el('section',{class:'se-section scope'},
-      el('div',{class:'se-section-title'}, t('app.shift_editor.section_apply')),
-      el('div',{class:'fld'},
-        el('label',{},t('app.shift_editor.apply_label')),
-        isEdit && matchingDays.length > 1 ? el('div',{style:'font-size:11px;color:var(--orange);font-weight:700;margin-bottom:6px'},
-          `💡 Series detected: ${matchingDays.length} matching shifts pre-selected. Save updates all of them, Delete removes all of them. Uncheck any to exclude.`
-        ) : null,
-        el('div',{class:'wkday-presets'},
-          el('button',{class:'preset',type:'button',onclick:()=>setDays([0,1,2,3,4])}, t('app.shift_editor.preset_weekdays')),
-          el('button',{class:'preset',type:'button',onclick:()=>setDays([5,6])}, t('app.shift_editor.preset_weekend')),
-          el('button',{class:'preset',type:'button',onclick:()=>setDays([0,1,2,3,4,5,6])}, t('app.shift_editor.preset_all')),
-          el('button',{class:'preset',type:'button',onclick:()=>setDays([])}, t('app.shift_editor.preset_clear')),
-        ),
-        el('div',{class:'wkdays'}, ...dayCheckboxes),
-      ),
-      // Repeat — recurring shifts. The day-pattern above is replicated week after
-      // week. Existing shifts on those future days get OVERWRITTEN. Days past the
-      // contract end date are skipped automatically.
-      (function buildRepeatPicker(){
-        const opts = [
-          {key:'today', lbl:t('app.shift_editor.repeat_today')},
-          {key:'1',  lbl:t('app.shift_editor.repeat_this')},
-          {key:'2',  lbl:t('app.shift_editor.repeat_next')},
-          {key:'4',  lbl:t('app.shift_editor.repeat_month')},
-          {key:'52', lbl:t('app.shift_editor.repeat_year')},
-        ];
-        if(emp.end_date){
-          const dt = new Date(emp.end_date+'T00:00:00Z');
-          const lbl = dt.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
-          opts.push({key:'contract', lbl:t('app.shift_editor.repeat_until_contract', {date: lbl})});
-        }
-        return el('div',{class:'fld'},
-          el('label',{}, t('app.shift_editor.repeat_label')),
-          el('div',{class:'repeat-chips',id:'repeat-chips'},
-            ...opts.map(o => {
-              const btn = document.createElement('button');
-              btn.type = 'button';
-              btn.dataset.key = o.key;
-              btn.textContent = o.lbl;
-              btn.className = 'repeat' + (o.key==='1' ? ' on' : '');
-              btn.addEventListener('click', () => {
-                $$('#repeat-chips .repeat').forEach(x => x.classList.remove('on'));
-                btn.classList.add('on');
-              });
-              return btn;
-            }),
-          ),
-        );
-      })(),
-    ),
+    // (Global "APPLIQUER À" section removed — each Timing / Briefing / Tasks
+    //  section now owns its embedded days+repeat picker. Series-detected
+    //  preselect for Timing still happens via _timingScope's presetSelected.)
+    isEdit && matchingDays.length > 1 ? el('div',{
+      style:'font-size:11px;color:var(--orange);font-weight:700;margin:6px 4px 0;line-height:1.4',
+    }, `💡 Series detected: ${matchingDays.length} matching shifts pre-selected in the Timing scope picker. Save Timing updates all of them, Delete removes all of them. Uncheck any to exclude.`) : null,
     el('div',{class:'row-actions'},
       isEdit ? el('button',{class:'btn-danger',onclick:()=>{
+        // Delete uses the TIMING scope picker (since delete is a timing
+        // concern — you're removing the shift's existence on those days).
         const idsToDelete = [];
         const dayLabelsList = [];
-        for(const wd of weekDays){
-          const cb = $('#wd-'+wd);
-          if(!cb || !cb.checked) continue;
+        const checkedOffsets = _timingScope.days.getCheckedOffsets();
+        const checkedDays = checkedOffsets.map(off => weekDays[off]);
+        for(const wd of checkedDays){
           const sh = getEmployeeShifts(emp.id, wd, wd)[0];
           if(sh){
             idsToDelete.push(sh.id);
@@ -16614,7 +16638,7 @@ function showShiftEditor(emp, day, shift){
         }
         const msg = idsToDelete.length === 1
           ? `Delete this entry?`
-          : `Delete ${idsToDelete.length} entries (${dayLabelsList.join(', ')})?\n\nUncheck days in the picker to exclude them.`;
+          : `Delete ${idsToDelete.length} entries (${dayLabelsList.join(', ')})?\n\nUncheck days in the Timing picker to exclude them.`;
         if(confirm(msg)){
           snapshotSchedule(`Delete ${idsToDelete.length} shift${idsToDelete.length>1?'s':''}`);
           saveSchedules(getSchedules().filter(s => !idsToDelete.includes(s.id)));
@@ -16634,63 +16658,20 @@ function showShiftEditor(emp, day, shift){
       // the row-actions bar at the bottom. They are now MOVED into their
       // respective sections (Horaires / Briefing / Tâches) after the panel
       // mounts — see the appendChild lines right after editor.appendChild.
-      // Each save button writes ONLY its concern's fields. They share the
-      // global APPLY days picker above (one calendar, three diffuse modes).
-      //   • Timing → full upsert (creates new or replaces existing shift)
-      //   • Briefing → merge {briefing} onto existing shifts only (skip days
-      //     without a shift, reported via toast)
+      // Each save button writes ONLY its concern's fields, AND reads the
+      // days+repeat picker of its OWN section (single source of truth per
+      // concern — no more global picker ambiguity).
+      //   • Timing → full upsert (uses _timingScope picker)
+      //   • Briefing → merge {briefing} onto existing shifts only (uses
+      //     _briefingScope picker; days without a shift are skipped)
       //   • Tasks → clone the current (emp, day) one-off tasks to other days
+      //     (uses _tasksScope picker)
       (() => {
-        // Shared scope resolver — reads the global Apply checkboxes + repeat
-        const resolveDates = () => {
-          const repeatKey = $('#repeat-chips .repeat.on')?.dataset.key || '1';
-          // Special-case "today": exact date being edited only — day-checkboxes
-          // are irrelevant in this mode. CRITICAL: callers destructure
-          // `{dates, checkedOffsets}` so we MUST return that shape, not a
-          // bare array (otherwise checkedOffsets.length throws TypeError and
-          // the save button silently does nothing).
-          if(repeatKey === 'today'){
-            if(emp.end_date && day > emp.end_date){
-              return {dates: [], checkedOffsets: [], weeksToApply: 0};
-            }
-            // checkedOffsets contains the offset of the editing day so the
-            // "select at least one day" guard passes — there IS a day.
-            const dayOffset = weekDays.indexOf(day);
-            return {
-              dates: [day],
-              checkedOffsets: dayOffset >= 0 ? [dayOffset] : [0],
-              weeksToApply: 1,
-            };
-          }
-          let weeksToApply = parseInt(repeatKey) || 1;
-          if(repeatKey === 'contract' && emp.end_date){
-            const end = new Date(emp.end_date+'T00:00:00Z');
-            const start0 = new Date(weekStart+'T00:00:00Z');
-            const diffDays = Math.ceil((end - start0) / 86400000);
-            weeksToApply = Math.max(1, Math.ceil(diffDays / 7));
-          }
-          const checkedOffsets = [];
-          for(let i=0;i<7;i++){
-            const cb = $('#wd-'+weekDays[i]);
-            if(cb && cb.checked) checkedOffsets.push(i);
-          }
-          const dates = [];
-          for(let w=0; w<weeksToApply; w++){
-            const ws = addDaysISO(weekStart, w*7);
-            for(const off of checkedOffsets){
-              const d = addDaysISO(ws, off);
-              if(emp.end_date && d > emp.end_date) continue;
-              dates.push(d);
-            }
-          }
-          return {dates, checkedOffsets, weeksToApply};
-        };
-
         const saveTimingBtn = el('button',{class:'btn-primary',title:'Save START / END / BREAK / OUTLET to the selected days. Briefing and Tasks on those days are NOT touched.'}, t('app.shift_editor.save_timing'));
         saveTimingBtn.addEventListener('click', () => {
           // ── Hard-wrap the whole save in try/catch so the user sees a clear
           // error toast instead of a silent no-op. Was failing without trace
-          // when something inside (resolveDates / upsertSchedule / re-render)
+          // when something inside (resolveScope / upsertSchedule / re-render)
           // threw — handler returned and editor stayed open with no feedback.
           try {
             console.log('[saveTimingBtn] click', {empId: emp.id, day, isEdit, currentKind});
@@ -16717,9 +16698,9 @@ function showShiftEditor(emp, day, shift){
                 outlet: ($('#se-outlet')?.value) || null,
               };
             }
-            const {dates, checkedOffsets} = resolveDates();
-            console.log('[saveTimingBtn] resolveDates →', {dates, checkedOffsets, payloadBase});
-            if(checkedOffsets.length === 0){ alert(t('app.dialogs.select_at_least_one_day')); return; }
+            const dates = resolveScope(_timingScope.days, _timingScope.repeat);
+            console.log('[saveTimingBtn] resolveScope(timing) →', {dates, payloadBase});
+            if(dates.length === 0){ alert(t('app.dialogs.select_at_least_one_day')); return; }
             snapshotSchedule(`${isEdit?'Edit':'Add'} timing (${dates.length})`);
             let applied = 0;
             for(const d of dates){
@@ -16743,8 +16724,8 @@ function showShiftEditor(emp, day, shift){
         const saveBriefingBtn = el('button',{class:'btn-primary',style:'background:linear-gradient(135deg,#FDCB6E,#E8B042)',title:'Save the BRIEFING to the selected days. Timing and Tasks on those days are NOT touched. Days without an existing shift are skipped.'}, t('app.shift_editor.save_briefing'));
         saveBriefingBtn.addEventListener('click', () => {
           const briefingTxt = ($('#se-briefing')?.value || '').trim() || null;
-          const {dates, checkedOffsets} = resolveDates();
-          if(checkedOffsets.length === 0){ alert(t('app.dialogs.select_at_least_one_day')); return; }
+          const dates = resolveScope(_briefingScope.days, _briefingScope.repeat);
+          if(dates.length === 0){ alert(t('app.dialogs.select_at_least_one_day')); return; }
           snapshotSchedule(`Briefing on ${dates.length} day${dates.length>1?'s':''}`);
           let applied = 0, skipped = 0;
           for(const d of dates){
@@ -16756,8 +16737,8 @@ function showShiftEditor(emp, day, shift){
             try {
               const TPLKEY = _hkey('staylo_briefing_tpls');
               const cur = (lsGet(TPLKEY, []) || []).filter(x => {
-                const t = (typeof x === 'string') ? x : (x && x.text);
-                return t !== briefingTxt;
+                const tt = (typeof x === 'string') ? x : (x && x.text);
+                return tt !== briefingTxt;
               });
               cur.unshift(briefingTxt);
               if(cur.length > 10) cur.length = 10;
@@ -16773,8 +16754,8 @@ function showShiftEditor(emp, day, shift){
 
         const saveTasksBtn = el('button',{class:'btn-primary',style:'background:linear-gradient(135deg,#00B894,#00A185)',title:'Clone today\'s tasks to the selected days. Timing and Briefing on those days are NOT touched. Tasks already present on a target day are not duplicated.'}, t('app.shift_editor.save_tasks'));
         saveTasksBtn.addEventListener('click', () => {
-          const {dates, checkedOffsets} = resolveDates();
-          if(checkedOffsets.length === 0){ alert(t('app.dialogs.select_at_least_one_day')); return; }
+          const dates = resolveScope(_tasksScope.days, _tasksScope.repeat);
+          if(dates.length === 0){ alert(t('app.dialogs.select_at_least_one_day')); return; }
           const sourceTasks = getTasks().filter(t =>
             t.assign_kind === 'employee' && t.assign_value === emp.id &&
             t.recurrence === 'once' && t.due_date === day);
@@ -16796,6 +16777,8 @@ function showShiftEditor(emp, day, shift){
                 assign_kind:'employee', assign_value: emp.id,
                 recurrence:'once', due_date: d,
                 priority: t.priority, due_time: t.due_time||'',
+                // Propagate the recipe attachment when cloning across days
+                recipe_id: t.recipe_id || '',
                 active: true,
               });
               applied++;
