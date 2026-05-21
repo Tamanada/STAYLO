@@ -34,6 +34,17 @@ export default function GuestHome() {
   const s = MOCK_STAY
   return (
     <div className="guest-page">
+      {/* Scale signal — tiny, ambient. Reminds the user every time
+          they open the app that they're inside a network, not a
+          single-hotel app. Numbers match /welcome's stat strip. */}
+      <div className="guest-scale-strip">
+        <span><b>1,247</b> hotels</span>
+        <span className="guest-scale-dot">·</span>
+        <span><b>86</b> cities</span>
+        <span className="guest-scale-dot">·</span>
+        <span><b>142K</b> guests on STAYLO</span>
+      </div>
+
       {/* Hero card — the centrepiece. Gradient + property name + dates */}
       <section className="guest-hero">
         <div className="guest-hero-eyebrow">Your current stay</div>

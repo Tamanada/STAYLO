@@ -18,7 +18,8 @@
 // The bottom-nav (.guest-rail) is the single source of navigation —
 // matches the messenger pattern but with guest-oriented icons + labels.
 
-import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, NavLink, useLocation, Navigate } from 'react-router-dom'
+import GuestWelcome  from './guest/routes/Welcome.jsx'
 import GuestHome     from './guest/routes/Home.jsx'
 import GuestBooking  from './guest/routes/Booking.jsx'
 import GuestCheckin  from './guest/routes/Checkin.jsx'
@@ -29,23 +30,46 @@ import GuestHistory  from './guest/routes/History.jsx'
 export default function GuestApp() {
   return (
     <BrowserRouter>
-      <div className="guest-shell">
-        <main className="guest-main">
-          <Routes>
-            <Route path="/"         element={<GuestHome />} />
-            <Route path="/booking"  element={<GuestBooking />} />
-            <Route path="/checkin"  element={<GuestCheckin />} />
-            <Route path="/chat"     element={<GuestChat />} />
-            <Route path="/services" element={<GuestServices />} />
-            <Route path="/history"  element={<GuestHistory />} />
-            {/* Catch-all: route unknown paths back to home so the PWA
-                deep-links never end on a 404 inside the app */}
-            <Route path="*"         element={<GuestHome />} />
-          </Routes>
-        </main>
-        <BottomNav />
-      </div>
+      <AppShell />
     </BrowserRouter>
+  )
+}
+
+// AppShell wraps the routes inside the BrowserRouter so it can use
+// useLocation (which only works inside the router context). The
+// shell hides the bottom nav on /welcome — a full-bleed first-open
+// screen wouldn't survive a navigation rail eating its bottom area.
+function AppShell() {
+  const loc = useLocation()
+  const hideRail = loc.pathname === '/welcome'
+
+  // First-open redirect: if the user has never seen /welcome AND
+  // they're landing on the root, push them to /welcome. After they
+  // tap the CTA, localStorage.staylo_welcomed is set and the redirect
+  // stops firing. We re-read on every render so the post-CTA navigate
+  // to / lands on the home, not back on /welcome (no stale state).
+  const welcomed = (() => {
+    try { return localStorage.getItem('staylo_welcomed') === '1' } catch { return true }
+  })()
+
+  return (
+    <div className={'guest-shell' + (hideRail ? ' no-rail' : '')}>
+      <main className="guest-main">
+        <Routes>
+          <Route path="/welcome"  element={<GuestWelcome />} />
+          <Route path="/"         element={welcomed ? <GuestHome /> : <Navigate to="/welcome" replace />} />
+          <Route path="/booking"  element={<GuestBooking />} />
+          <Route path="/checkin"  element={<GuestCheckin />} />
+          <Route path="/chat"     element={<GuestChat />} />
+          <Route path="/services" element={<GuestServices />} />
+          <Route path="/history"  element={<GuestHistory />} />
+          {/* Catch-all: route unknown paths back to home so the PWA
+              deep-links never end on a 404 inside the app */}
+          <Route path="*"         element={<GuestHome />} />
+        </Routes>
+      </main>
+      {!hideRail && <BottomNav />}
+    </div>
   )
 }
 
