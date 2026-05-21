@@ -2128,6 +2128,96 @@ body.view-profile .channels-pane{display:none}
 .add-shift{width:26px;height:26px;border-radius:50%;background:transparent;color:#bbb;font-size:15px;font-weight:700;border:1px dashed #ccc;cursor:pointer;transition:all var(--t-fast)}
 .add-shift:hover{background:#FFE9D6;color:var(--orange);border-color:var(--orange);border-style:solid}
 .off{color:#ccc;font-size:11px;font-weight:600}
+
+/* ===== Wheel date picker — used for EVERY <input type="date"> in the app
+ *
+ * 3 scrollable columns (Day / Month / Year), each row 44px tall, with the
+ * center row marked as the "selected" highlight band. CSS scroll-snap
+ * gives free momentum + snap-to-row behavior on touch devices, no JS
+ * inertia code required. Item visibility falls off (lighter color) for
+ * the rows above/below the center via the column's gradient mask.
+ *
+ * The :before pseudo on .dwp-wheels paints the center highlight band
+ * (two thin teal lines across all 3 columns).
+ */
+.dwp-backdrop{
+  position:fixed;inset:0;z-index:9700;background:rgba(20,20,30,.7);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeUp .2s ease-out;
+}
+.dwp-panel{
+  background:#fff;border-radius:14px;padding:14px 16px 16px;
+  width:100%;max-width:340px;box-shadow:var(--shadow-lg);
+}
+.dwp-title{
+  font-size:14px;font-weight:800;color:var(--navy);text-align:center;
+  padding-bottom:10px;border-bottom:1px solid var(--border);margin-bottom:10px;
+}
+.dwp-wheels{
+  position:relative;display:grid;grid-template-columns:1fr 1.4fr 1fr;
+  gap:6px;margin-bottom:14px;
+  /* Mask so items above/below the center band fade out — softens the wheel */
+  -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%);
+          mask-image:linear-gradient(to bottom, transparent 0%, #000 30%, #000 70%, transparent 100%);
+}
+.dwp-wheels::before{
+  /* Center highlight band — 44px tall, sits at item index 1 (between top
+     and bottom rows). Marks which row is the "selected" value. */
+  content:'';position:absolute;left:0;right:0;top:44px;height:44px;
+  border-top:1px solid var(--teal);border-bottom:1px solid var(--teal);
+  pointer-events:none;z-index:1;
+}
+.dwp-col{
+  height:132px;       /* exactly 3 rows × 44px */
+  overflow-y:scroll;
+  scroll-snap-type:y mandatory;
+  scrollbar-width:none;            /* Firefox */
+  -ms-overflow-style:none;         /* IE 10+ */
+  text-align:center;
+}
+.dwp-col::-webkit-scrollbar{ display:none }   /* WebKit */
+.dwp-col-inner{
+  /* Padding top/bottom = 44px so the first/last item can land at center */
+  padding:44px 0;
+}
+.dwp-item{
+  height:44px;display:flex;align-items:center;justify-content:center;
+  scroll-snap-align:center;
+  font-size:16px;font-weight:700;color:var(--navy);
+  user-select:none;cursor:pointer;
+}
+.dwp-item.disabled{ color:var(--gray);opacity:.45;cursor:default }
+.dwp-actions{
+  display:flex;gap:6px;justify-content:space-between;
+}
+.dwp-actions button{
+  flex:1;padding:9px 8px;border-radius:8px;border:0;
+  font-size:12px;font-weight:800;cursor:pointer;
+  background:var(--light);color:var(--navy);
+  transition:background var(--t-fast);
+}
+.dwp-actions button:hover{ background:#EAE6DC }
+.dwp-actions button.dwp-primary{
+  background:linear-gradient(135deg,var(--teal),#00A185);color:#fff;
+}
+.dwp-actions button.dwp-primary:hover{ background:#00A185 }
+.dwp-actions button.dwp-danger{
+  background:rgba(231,76,60,.12);color:var(--red);
+}
+
+/* Visible-state date input — replaces the native type="date" picker.
+   Looks like a button, holds the localized date in a span. */
+.date-display-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:9px 12px;border-radius:8px;border:2px solid var(--border);
+  background:#fff;color:var(--navy);font-size:14px;font-weight:600;
+  font-family:inherit;cursor:pointer;text-align:left;
+  transition:border-color var(--t-fast);width:100%;
+}
+.date-display-btn:hover{ border-color:var(--orange) }
+.date-display-btn:focus{ outline:none;border-color:var(--orange) }
+.date-display-btn.empty{ color:var(--gray);font-weight:500 }
+.date-display-btn::before{ content:'📅';font-size:14px }
+
 /* Inline shift editor */
 .shift-editor-bg{
   position:fixed;inset:0;z-index:9500;background:rgba(20,20,30,.7);backdrop-filter:blur(4px);
@@ -3515,6 +3605,267 @@ function _localeDate(d, opts){
   // extensions; fall back to undefined (browser default) on TypeError.
   try { return d.toLocaleDateString(loc, opts); }
   catch { return d.toLocaleDateString(undefined, opts); }
+}
+
+/* ============================================================================
+ * WHEEL DATE PICKER — Android-style 3-column picker (Day / Month / Year)
+ * ============================================================================
+ * Used by every `<input type="date">` in the app via the `dateInputWithWheel`
+ * helper. Replaces the browser-native picker (which varies wildly across iOS,
+ * Android, Chrome/Firefox/Safari desktop) with a single consistent UX.
+ *
+ * showDateWheelPicker(opts, onCommit, onClear?)
+ *   opts.initial   — 'YYYY-MM-DD' or null (defaults to today)
+ *   opts.min       — 'YYYY-MM-DD' lower bound (optional)
+ *   opts.max       — 'YYYY-MM-DD' upper bound (optional)
+ *   opts.allowClear — show the "Effacer" button (default: true)
+ *   onCommit(iso)  — fires when user clicks "Définir"
+ *   onClear()      — fires when user clicks "Effacer"
+ *
+ * Implementation notes:
+ *   • Each column uses CSS scroll-snap so the browser handles momentum +
+ *     snap-to-row for free (no manual inertia/touch code needed).
+ *   • Day count auto-recomputes when month/year change (handles Feb 28/29,
+ *     30-day months, etc.). Selected day is clamped to the new max.
+ *   • Buttons use teal for the primary "Définir" to match the highlight band.
+ * ============================================================================ */
+const DWP_ITEM_HEIGHT = 44;   // must match .dwp-item height in CSS
+
+function showDateWheelPicker(opts, onCommit, onClear){
+  opts = opts || {};
+  const today = new Date().toISOString().slice(0,10);
+  const startISO = (opts.initial && /^\d{4}-\d{2}-\d{2}$/.test(opts.initial)) ? opts.initial : today;
+  const [iYY, iMM, iDD] = startISO.split('-').map(s => parseInt(s));
+  const minISO = opts.min || null;
+  const maxISO = opts.max || null;
+  const allowClear = opts.allowClear !== false;
+
+  // Sensible default year range: ±100 of the initial year, clamped to bounds
+  const baseYearMin = minISO ? parseInt(minISO.slice(0,4)) : iYY - 100;
+  const baseYearMax = maxISO ? parseInt(maxISO.slice(0,4)) : iYY + 100;
+  const yearMin = Math.min(baseYearMin, iYY);
+  const yearMax = Math.max(baseYearMax, iYY);
+
+  // Locale month labels (short form: janv. / févr. / Jan / Feb / ม.ค. / ก.พ.)
+  const monthLabels = Array.from({length:12}, (_, i) => {
+    return _localeDate(new Date(Date.UTC(2000, i, 1)), {month:'short'});
+  });
+
+  // Day labels — just the number string. The column rebuilds when month/year
+  // changes (because day count differs).
+  const daysIn = (yy, mm) => new Date(Date.UTC(yy, mm, 0)).getUTCDate();
+
+  // Build one scrollable column. items = [{value, label, disabled}]
+  // initialValue is committed to scroll position after mount.
+  const buildCol = (items, initialValue) => {
+    const inner = el('div', {class:'dwp-col-inner'});
+    items.forEach(it => {
+      const cell = el('div', {
+        class:'dwp-item' + (it.disabled ? ' disabled' : ''),
+        'data-value': String(it.value),
+      }, it.label);
+      // Click on a cell scrolls it to center. Smooth-snap takes care of the rest.
+      cell.addEventListener('click', () => {
+        if(it.disabled) return;
+        const idx = items.indexOf(it);
+        col.scrollTo({top: idx * DWP_ITEM_HEIGHT, behavior:'smooth'});
+      });
+      inner.appendChild(cell);
+    });
+    const col = el('div', {class:'dwp-col'}, inner);
+    // Scroll to the initial value AFTER the column is in the DOM
+    // (otherwise scrollTop has no effect on a hidden element).
+    setTimeout(() => {
+      const idx = items.findIndex(x => x.value === initialValue);
+      col.scrollTop = Math.max(0, idx) * DWP_ITEM_HEIGHT;
+    }, 0);
+    return col;
+  };
+
+  // Read which item is currently centered in a column
+  const getColValue = (col, items) => {
+    const idx = Math.round(col.scrollTop / DWP_ITEM_HEIGHT);
+    const safe = Math.max(0, Math.min(items.length - 1, idx));
+    return items[safe].value;
+  };
+
+  // Month items: 1..12 with localized short labels
+  const monthItems = monthLabels.map((lbl, i) => ({value: i + 1, label: lbl}));
+  // Year items: yearMin..yearMax
+  const yearItems = [];
+  for(let y = yearMin; y <= yearMax; y++) yearItems.push({value: y, label: String(y)});
+
+  // Day items — recomputed when month/year change. The current month is
+  // tracked in `state` so day-column rebuild has fresh inputs.
+  const state = { yy: iYY, mm: iMM, dd: iDD };
+  const buildDayItems = (yy, mm) => {
+    const n = daysIn(yy, mm);
+    const arr = [];
+    for(let d = 1; d <= n; d++) arr.push({value: d, label: String(d).padStart(2,'0')});
+    return arr;
+  };
+
+  let dayItems = buildDayItems(state.yy, state.mm);
+  const dayColEl   = buildCol(dayItems,   state.dd);
+  const monthColEl = buildCol(monthItems, state.mm);
+  const yearColEl  = buildCol(yearItems,  state.yy);
+
+  // Rebuild the day column when month or year changes — needed for Feb
+  // (28 vs 29) and 30-day months. The currently-selected day is clamped
+  // to the new month's max.
+  const rebuildDayCol = () => {
+    const newYY = getColValue(yearColEl, yearItems);
+    const newMM = getColValue(monthColEl, monthItems);
+    const newDays = buildDayItems(newYY, newMM);
+    // Preserve selection (clamp to last available day)
+    let curDay = state.dd;
+    if(curDay > newDays.length) curDay = newDays.length;
+    state.yy = newYY; state.mm = newMM; state.dd = curDay;
+    dayItems = newDays;
+    // Replace inner + rebind clicks
+    const newInner = el('div', {class:'dwp-col-inner'});
+    newDays.forEach(it => {
+      const cell = el('div', {class:'dwp-item', 'data-value': String(it.value)}, it.label);
+      cell.addEventListener('click', () => {
+        const idx = newDays.indexOf(it);
+        dayColEl.scrollTo({top: idx * DWP_ITEM_HEIGHT, behavior:'smooth'});
+      });
+      newInner.appendChild(cell);
+    });
+    dayColEl.innerHTML = '';
+    dayColEl.appendChild(newInner);
+    setTimeout(() => { dayColEl.scrollTop = (curDay - 1) * DWP_ITEM_HEIGHT; }, 0);
+  };
+
+  // Debounced scroll-end handler — when scrolling stops, recompute selection
+  // (and rebuild day col if month/year changed).
+  let scrollTimer = null;
+  const onScrollEnd = (which) => () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      state.dd = getColValue(dayColEl, dayItems);
+      const newMM = getColValue(monthColEl, monthItems);
+      const newYY = getColValue(yearColEl, yearItems);
+      if(newMM !== state.mm || newYY !== state.yy) rebuildDayCol();
+      else { state.mm = newMM; state.yy = newYY; }
+    }, 120);
+  };
+  dayColEl  .addEventListener('scroll', onScrollEnd('day'));
+  monthColEl.addEventListener('scroll', onScrollEnd('month'));
+  yearColEl .addEventListener('scroll', onScrollEnd('year'));
+
+  // Build the modal
+  const backdropId = 'dwp-modal-' + Date.now();
+  const modal = el('div', {class:'dwp-backdrop', id: backdropId});
+  bindSafeBackdropClose(modal, backdropId);
+
+  const close = () => { modal.remove(); };
+
+  const commitBtn = el('button', {class:'dwp-primary'},
+    t('app.date_picker.define', {default:'Définir'}));
+  commitBtn.addEventListener('click', () => {
+    const yy = state.yy, mm = state.mm, dd = state.dd;
+    const iso = `${yy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+    if(minISO && iso < minISO){
+      alert(t('app.date_picker.too_early', {default:'Date trop ancienne (min: '+minISO+')'}));
+      return;
+    }
+    if(maxISO && iso > maxISO){
+      alert(t('app.date_picker.too_late', {default:'Date trop tardive (max: '+maxISO+')'}));
+      return;
+    }
+    if(typeof onCommit === 'function') onCommit(iso);
+    close();
+  });
+
+  const cancelBtn = el('button', {},
+    t('app.date_picker.cancel', {default:'Annuler'}));
+  cancelBtn.addEventListener('click', close);
+
+  const actionBtns = [cancelBtn];
+  if(allowClear){
+    const clearBtn = el('button', {class:'dwp-danger'},
+      t('app.date_picker.clear', {default:'Effacer'}));
+    clearBtn.addEventListener('click', () => {
+      if(typeof onClear === 'function') onClear();
+      close();
+    });
+    actionBtns.push(clearBtn);
+  }
+  actionBtns.push(commitBtn);
+
+  const panel = el('div', {class:'dwp-panel'},
+    el('div', {class:'dwp-title'}, t('app.date_picker.title', {default:'Définir la date'})),
+    el('div', {class:'dwp-wheels'}, dayColEl, monthColEl, yearColEl),
+    el('div', {class:'dwp-actions'}, ...actionBtns),
+  );
+  modal.appendChild(panel);
+  document.body.appendChild(modal);
+  return modal;
+}
+
+/* dateInputWithWheel — drop-in replacement for `<input type="date">`.
+ * Returns an `<input type="hidden">` (so `$('#emp-hire_date').value`
+ * still works for save handlers) PAIRED with a visible button that
+ * opens the wheel picker on click. Wrap them in a single container so
+ * form layout stays put.
+ *
+ *   const {wrap, input} = dateInputWithWheel({id:'emp-dob', value:'1990-05-12', min:'1900-01-01', max:'2030-12-31'});
+ *
+ * The visible button shows the localized date, e.g. "12 mai 1990",
+ * or the placeholder text if no value is set.
+ */
+function dateInputWithWheel(opts){
+  opts = opts || {};
+  const hidden = document.createElement('input');
+  hidden.type = 'hidden';
+  if(opts.id) hidden.id = opts.id;
+  if(opts.name) hidden.name = opts.name;
+  hidden.value = opts.value || '';
+
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'date-display-btn';
+  const placeholder = opts.placeholder || t('app.date_picker.placeholder', {default:'Choisir une date…'});
+  const refreshLabel = () => {
+    if(hidden.value && /^\d{4}-\d{2}-\d{2}$/.test(hidden.value)){
+      const d = new Date(hidden.value + 'T00:00:00Z');
+      btn.textContent = _localeDate(d, {day:'numeric', month:'long', year:'numeric'});
+      btn.classList.remove('empty');
+    } else {
+      btn.textContent = placeholder;
+      btn.classList.add('empty');
+    }
+  };
+  refreshLabel();
+  // Listen for external value changes (e.g. callers setting hidden.value
+  // directly then dispatching 'change' — like buildRepeatPicker's default
+  // 2-weeks fallback). Keeps the visible label in sync without coupling.
+  hidden.addEventListener('change', refreshLabel);
+
+  btn.addEventListener('click', () => {
+    showDateWheelPicker(
+      { initial: hidden.value || null, min: opts.min, max: opts.max, allowClear: opts.allowClear !== false },
+      (iso) => {
+        hidden.value = iso;
+        refreshLabel();
+        // Fire change event so any existing listeners (like the reactive
+        // shift banner on hours_per_week / days_per_week) react too.
+        hidden.dispatchEvent(new Event('change', {bubbles: true}));
+      },
+      () => {
+        hidden.value = '';
+        refreshLabel();
+        hidden.dispatchEvent(new Event('change', {bubbles: true}));
+      },
+    );
+  });
+
+  const wrap = document.createElement('span');
+  wrap.style.cssText = 'display:block;position:relative';
+  wrap.appendChild(btn);
+  wrap.appendChild(hidden);
+  return { wrap, input: hidden, btn };
 }
 
 /* Translate a role to the current UI language. The role's stored value (e.g.
@@ -11384,11 +11735,11 @@ function showPayslipEditor(emp, month){
           return s;
         })(),
         (() => {
-          const i = document.createElement('input');
-          i.id='pay-date'; i.type='date'; i.value = slip.payment_date||'';
-          i.style.cssText='padding:7px 10px;border-radius:8px;border:2px solid var(--border);font-size:13px';
-          i.title = 'Payment date';
-          return i;
+          // Wheel picker — payslip payment date. Wrapped so save handler
+          // can still find $('#pay-date').value via the hidden input.
+          const pair = dateInputWithWheel({ id:'pay-date', value: slip.payment_date || '' });
+          pair.btn.title = 'Payment date';
+          return pair.wrap;
         })(),
       );
       wrap.appendChild(methodRow);
@@ -11883,6 +12234,22 @@ function renderEmployeeForm(root,emp){
   const f = (label,key,opts={})=>{
     const id = 'emp-'+key;
     let inp;
+    if(opts.type==='date'){
+      // Wheel date picker — replaces the native <input type="date"> which
+      // renders very differently across iOS / Android / Chrome / Safari /
+      // Firefox. The wheel is consistent everywhere AND matches the
+      // Android-style 3-column UX (Day / Month / Year) the team chose
+      // as the canonical date input.
+      // Bounds: DOB caps the future at today (no born-tomorrow records);
+      // contract end_date should be ≥ hire_date when both are set.
+      const today = new Date().toISOString().slice(0,10);
+      const bounds = {};
+      if(key === 'date_of_birth') { bounds.min = '1920-01-01'; bounds.max = today; }
+      if(key === 'hire_date')      { bounds.min = '1990-01-01'; }
+      if(key === 'end_date')       { bounds.min = emp.hire_date || '1990-01-01'; }
+      const pair = dateInputWithWheel({ id, value: emp[key] || '', ...bounds });
+      return el('div',{class:'fld'}, el('label',{for:id},label), pair.wrap);
+    }
     if(opts.type==='textarea'){
       inp = document.createElement('textarea'); inp.value = emp[key]||'';
     } else if(opts.type==='select'){
@@ -15199,7 +15566,12 @@ function renderEventsModal(){
       el('div',{style:'display:grid;grid-template-columns:60px 1fr 140px;gap:8px;margin-bottom:8px'},
         (()=>{const i=document.createElement('input');i.id='ev-em';i.type='text';i.placeholder='🎵';i.maxLength=2;i.style.cssText='padding:8px;border-radius:8px;border:1px solid var(--border);text-align:center;font-size:18px';return i;})(),
         (()=>{const i=document.createElement('input');i.id='ev-name';i.type='text';i.placeholder='Event name (e.g. Sunset jazz night)';i.style.cssText='padding:8px 12px;border-radius:8px;border:1px solid var(--border)';return i;})(),
-        (()=>{const i=document.createElement('input');i.id='ev-date';i.type='date';i.style.cssText='padding:8px 12px;border-radius:8px;border:1px solid var(--border)';return i;})(),
+        (()=>{
+          // Wheel picker — custom event date. Hidden #ev-date keeps the
+          // ISO value the submit handler reads.
+          const pair = dateInputWithWheel({ id:'ev-date', value:'' });
+          return pair.wrap;
+        })(),
       ),
       el('button',{class:'btn-primary',style:'width:100%',onclick:()=>{
         const em = $('#ev-em').value || '📌';
@@ -15281,10 +15653,20 @@ function renderTasksTab(){
     el('div',{class:'date-picker'},
       el('span',{},t('app.tasks_tab.date_label')),
       (() => {
-        const i = document.createElement('input');
-        i.type='date'; i.value=_tasksDate;
-        i.addEventListener('change', e => { _tasksDate = e.target.value; renderTasksTab(); });
-        return i;
+        // Wheel picker — Tasks tab date filter. Changes _tasksDate and
+        // re-renders the tab on commit (same behavior as the native
+        // input's 'change' event).
+        const pair = dateInputWithWheel({
+          id:'tasks-date-filter',
+          value: _tasksDate || '',
+          allowClear: false,    // tab is keyed by date — must always have one
+        });
+        pair.input.addEventListener('change', e => {
+          if(!e.target.value) return;
+          _tasksDate = e.target.value;
+          renderTasksTab();
+        });
+        return pair.wrap;
       })(),
       el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksDate=new Date().toISOString().slice(0,10);renderTasksTab();}},t('app.tasks_tab.today')),
     ),
@@ -15461,7 +15843,12 @@ function showTaskEditor(task){
   const buildRecurFields = (rec) => {
     const wrap = document.createElement('div');
     if(rec === 'once'){
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Date'), inp('tk-due-date','date', t.due_date)));
+      // Wheel date picker — replaces the native <input type="date"> for
+      // consistency with the rest of the app. Hidden input keeps id
+      // `tk-due-date` so the save handler at the bottom of showTaskEditor
+      // can still read $('#tk-due-date').value unchanged.
+      const dpair = dateInputWithWheel({ id:'tk-due-date', value: t.due_date || '' });
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Date'), dpair.wrap));
     } else if(rec === 'weekly'){
       wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Day of week'),
         sel('tk-weekday', [
@@ -16008,13 +16395,21 @@ function showShiftEditor(emp, day, shift){
       const ll = dt2.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
       opts.push({key:'contract', lbl:t('app.shift_editor.repeat_until_contract', {date: ll})});
     }
-    // Date input rendered next to the chips, hidden unless 'until' is active.
-    const untilInput = document.createElement('input');
-    untilInput.type = 'date';
-    untilInput.className = 'repeat-until-input';
-    untilInput.style.cssText = 'display:none;margin-left:6px;padding:4px 8px;border-radius:6px;border:1px solid var(--border);font-size:11px;font-weight:600;font-family:inherit';
-    untilInput.min = day;     // can't backfill — must be ≥ current day
-    if(emp.end_date) untilInput.max = emp.end_date;
+    // Wheel-picker pair for the 'until' chip — hidden until that chip is
+    // selected, then appears as a button next to the chips that opens
+    // the wheel modal on click. The hidden input carries the YYYY-MM-DD
+    // value used by `getKey()` below.
+    const _untilPair = dateInputWithWheel({
+      id: `dwp-until-${boxId}`,
+      value: '',
+      min: day,
+      max: emp.end_date || undefined,
+      allowClear: false,
+    });
+    const untilInput = _untilPair.input;        // hidden ISO holder
+    const untilBtn   = _untilPair.btn;          // visible button → opens wheel
+    // Compact inline style so the button doesn't take a full row
+    untilBtn.style.cssText = 'display:none;width:auto;margin-left:6px;padding:4px 10px;font-size:11px;font-weight:700;border-width:1px;vertical-align:middle';
     const btnMap = {};
     const chipsEl = el('div',{class:'repeat-chips',id:`repeat-chips-${boxId}`});
     for(const o of opts){
@@ -16024,18 +16419,22 @@ function showShiftEditor(emp, day, shift){
       btn.addEventListener('click', () => {
         Object.values(btnMap).forEach(b => b.classList.remove('on'));
         btn.classList.add('on');
-        // Show the date input only when 'until' is selected
-        untilInput.style.display = (o.key === 'until') ? 'inline-block' : 'none';
+        // Show the inline date button only when 'until' is selected
+        untilBtn.style.display = (o.key === 'until') ? 'inline-flex' : 'none';
         if(o.key === 'until' && !untilInput.value){
           // Sensible default: 2 weeks from current day, clamped to contract end
           const def = addDaysISO(day, 14);
           untilInput.value = (emp.end_date && def > emp.end_date) ? emp.end_date : def;
+          // Trigger the visible-button label refresh (date-display-btn shows
+          // a localized date once a value is set).
+          untilInput.dispatchEvent(new Event('change', {bubbles: true}));
         }
         if(typeof onChange === 'function') onChange(o.key);
       });
       btnMap[o.key] = btn;
       chipsEl.appendChild(btn);
     }
+    chipsEl.appendChild(untilBtn);
     chipsEl.appendChild(untilInput);
     const root = el('div',{class:'fld'},
       el('label',{}, t('app.shift_editor.repeat_label')),

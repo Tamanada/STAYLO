@@ -2824,6 +2824,15 @@
       "emergency": "🚨 Emergency alert",
       "feedback": "⭐ Guest feedback"
     },
+    "date_picker": {
+      "title": "Set the date",
+      "cancel": "Cancel",
+      "clear": "Clear",
+      "define": "Set",
+      "placeholder": "Pick a date…",
+      "too_early": "Date is too early",
+      "too_late": "Date is too late"
+    },
     "common": {
       "cancel": "Cancel",
       "save": "Save",

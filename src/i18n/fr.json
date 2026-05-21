@@ -2991,6 +2991,15 @@
       "emergency": "🚨 Alerte urgence",
       "feedback": "⭐ Avis client"
     },
+    "date_picker": {
+      "title": "Définir la date",
+      "cancel": "Annuler",
+      "clear": "Effacer",
+      "define": "Définir",
+      "placeholder": "Choisir une date…",
+      "too_early": "Date trop ancienne",
+      "too_late": "Date trop tardive"
+    },
     "common": {
       "cancel": "Annuler",
       "save": "Enregistrer",
