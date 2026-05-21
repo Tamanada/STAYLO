@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "has": [{ "type": "host", "value": "app.staylo.app" }], "destination": "/guest.html" },
     { "source": "/(.*)", "destination": "/" }
   ],
   "headers": [
