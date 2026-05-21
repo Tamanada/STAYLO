@@ -16143,6 +16143,43 @@ function showShiftEditor(emp, day, shift){
   })() : null;
 
   const totalSpanHours = contractShiftHours + (defaultBreakMin/60);   // physical presence on clock
+
+  // ─── Per-section scope pickers ─────────────────────────────────────
+  // Declared HERE (before workFields, which embeds them inside its
+  // Timing / Briefing / Tasks sections). Putting them after workFields
+  // would TDZ-crash showShiftEditor on every cell click — the modal
+  // would silently never appear ("green boxes don't respond" bug).
+  // Each section now owns its OWN days + repeat picker; affordance is
+  // direct: the picker right above a Save button IS the scope for that
+  // save. Defaults:
+  //   - Timing:   preselects matching shifts in the week (series edit)
+  //                + repeat='1' (this week, multi-day pattern).
+  //   - Briefing: only the current day + repeat='today'  (briefings are
+  //                day-specific 99% of the time).
+  //   - Tasks:    only the current day + repeat='today'  (cloning tasks
+  //                across a whole week is a deliberate opt-in).
+  // Helpers buildDaysPicker / buildRepeatPicker / resolveScope are
+  // defined earlier in this same function and are accessible here.
+  const _timingScope = {
+    days:   buildDaysPicker('timing',   d => matchingDays.includes(d)),
+    repeat: buildRepeatPicker('timing', '1'),
+  };
+  const _briefingScope = {
+    days:   buildDaysPicker('briefing', () => false),
+    repeat: buildRepeatPicker('briefing', 'today'),
+  };
+  const _tasksScope = {
+    days:   buildDaysPicker('tasks',    () => false),
+    repeat: buildRepeatPicker('tasks',  'today'),
+  };
+
+  // Reusable section-scope hint banner. Tells the manager exactly what
+  // the picker below applies to, in plain language. Shown above the
+  // days+repeat row in each section.
+  const _scopeHint = (text) => el('div',{
+    style:'font-size:11px;color:var(--gray);font-style:italic;margin:6px 0 4px;line-height:1.4',
+  }, text);
+
   const workFields  = el('div',{id:'work-fields'},
     copySection,
     // Contract reminder banner — explains where defaults come from
@@ -16560,41 +16597,6 @@ function showShiftEditor(emp, day, shift){
   // (referencing `panel` mid-construction was throwing ReferenceError,
   // making the whole shift editor click silently do nothing).
   const _scopedSaves = {};
-
-  // ─── Per-section scope pickers ─────────────────────────────────────
-  // Each of Timing / Briefing / Tasks now owns its OWN days + repeat
-  // picker, embedded inside its section card. This replaces the single
-  // global "APPLIQUER À" section which forced the manager to mentally
-  // remember which scope applied to which save. Now the affordance is
-  // direct: the picker you see right above a Save button IS the scope
-  // for that save. Defaults:
-  //   - Timing:   preselects matching shifts in the week (series edit)
-  //                + repeat='1' (this week, multi-day pattern)
-  //   - Briefing: only the current day + repeat='today' (briefings are
-  //                day-specific 99% of the time)
-  //   - Tasks:    only the current day + repeat='today' (cloning tasks
-  //                to a whole week is rare, opt-in)
-  // The helpers buildDaysPicker / buildRepeatPicker / resolveScope were
-  // already defined earlier in this function for this exact purpose.
-  const _timingScope = {
-    days:   buildDaysPicker('timing',   d => matchingDays.includes(d)),
-    repeat: buildRepeatPicker('timing', '1'),
-  };
-  const _briefingScope = {
-    days:   buildDaysPicker('briefing', () => false),
-    repeat: buildRepeatPicker('briefing', 'today'),
-  };
-  const _tasksScope = {
-    days:   buildDaysPicker('tasks',    () => false),
-    repeat: buildRepeatPicker('tasks',  'today'),
-  };
-
-  // Reusable section-scope hint banner. Tells the manager exactly what
-  // the picker below applies to, in plain language. Shown above the
-  // days+repeat row in each section.
-  const _scopeHint = (text) => el('div',{
-    style:'font-size:11px;color:var(--gray);font-style:italic;margin:6px 0 4px;line-height:1.4',
-  }, text);
 
   const panel = el('div',{class:'shift-editor-panel'},
     el('h3',{}, isEdit ? t('app.shift_editor.title_edit') : t('app.shift_editor.title_add')),
