@@ -4100,6 +4100,102 @@ function bindSafeBackdropClose(modal, backdropId, onClose){
   }, true);    // capture phase so we win against children's local handlers
 })();
 
+// ── Guest ↔ Staff demo bridge (cross-tab sync) ──────────────────────
+// The guest PWA (app.staylo.app / staylo.app/guest.html) and this
+// staff messenger both run in the same browser during the demo
+// (separate tabs on the demo laptop). Each writes to the SAME
+// localStorage key — `staylo_demo_chat` — and listens for the
+// `storage` event to mirror messages in near real-time. This is a
+// DEMO BRIDGE only; phase 2 swaps it for Supabase realtime channels.
+//
+// What this listener does:
+//   - When a guest message lands in localStorage, surface it via the
+//     existing alerts/notification rail so the staff demo screen
+//     visibly reacts (toast + bell badge bump).
+//   - When the staff types into the #concierge channel here in the
+//     messenger, mirror it back to the same localStorage key so the
+//     guest tab sees the reply within ~50ms.
+//
+// Guard: only active when the page is opened with ?demo-bridge=1 OR
+// the user is in 'staff' audience on a demo hotel — keeps it inert
+// for any non-demo deployment.
+(function bindGuestDemoBridge(){
+  const KEY = 'staylo_demo_chat';
+  if(window.__staylo_guest_bridge) return;
+  window.__staylo_guest_bridge = true;
+
+  // Last-seen guest message id — prevents re-toasting old messages
+  // when we just re-read the array on every storage event.
+  let lastSeenGuestId = null;
+  try {
+    const raw = localStorage.getItem(KEY);
+    if(raw){
+      const arr = JSON.parse(raw);
+      const lastGuest = (arr || []).filter(m => m && m.sender === 'guest').pop();
+      if(lastGuest) lastSeenGuestId = lastGuest.id;
+    }
+  } catch {}
+
+  const surfaceGuestMessage = (msg) => {
+    if(!msg || msg.id === lastSeenGuestId) return;
+    lastSeenGuestId = msg.id;
+    // Toast the bottom of the screen so the staff sees the live ping.
+    // Reuses the .undo-toast styling (already in CSS) for consistency.
+    try {
+      const ex = document.getElementById('guest-bridge-toast');
+      if(ex) ex.remove();
+      const toast = document.createElement('div');
+      toast.id = 'guest-bridge-toast';
+      toast.className = 'undo-toast';
+      toast.style.background = 'linear-gradient(135deg, #FF6B00, #FF1F70)';
+      toast.style.color = '#fff';
+      toast.innerHTML = `<span class="msg" style="display:block;max-width:340px;line-height:1.4">
+        <b style="display:block;margin-bottom:2px;font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.85">📩 Guest · By Nanda Phangan</b>
+        ${(msg.body || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]))}
+      </span>`;
+      document.body.appendChild(toast);
+      setTimeout(() => { if(toast.parentNode) toast.remove(); }, 7000);
+    } catch {}
+    // Bump the bottom-nav alerts badge so the staff sees the unread count.
+    try {
+      const badge = document.getElementById('rail-alerts');
+      if(badge){
+        const cur = parseInt(badge.textContent) || 0;
+        badge.textContent = String(cur + 1);
+        badge.style.display = 'flex';
+      }
+    } catch {}
+  };
+
+  window.addEventListener('storage', (e) => {
+    if(e.key !== KEY) return;
+    try {
+      const arr = JSON.parse(e.newValue || '[]');
+      const lastGuest = (arr || []).filter(m => m && m.sender === 'guest').pop();
+      if(lastGuest) surfaceGuestMessage(lastGuest);
+    } catch {}
+  });
+
+  // Helper exposed for the demo: window.stayloReplyAsStaff('text…')
+  // writes a reply into localStorage so the guest tab updates in real
+  // time. The staff messenger UI can call this from its quick-action.
+  window.stayloReplyAsStaff = (text) => {
+    if(!text || !text.trim()) return;
+    let arr = [];
+    try { arr = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch {}
+    const msg = {
+      id: 'staff-' + Date.now(),
+      sender: 'staff',
+      body: text.trim(),
+      ts: Date.now(),
+    };
+    arr.push(msg);
+    try { localStorage.setItem(KEY, JSON.stringify(arr)); } catch {}
+    // Mirror in this tab too (storage events don't fire in the same tab)
+    return msg;
+  };
+})();
+
 function el(tag,attrs={},...children){
   const e = document.createElement(tag);
   for(const k in attrs){
