@@ -1092,5 +1092,2351 @@
     "review3_quote": "J'étais sceptique au début, mais le modèle de gouvernance est réel. Un établissement, un vote. Nous décidons vraiment de l'avenir de la plateforme.",
     "review3_name": "Kenji M.",
     "review3_role": "Propriétaire, Zen Garden Villa"
+  },
+  "app": {
+    "roster": {
+      "scope_label_full": "{count} employés · {hotel}",
+      "scope_label_filtered": "{count} / {total} employés · {hotel}",
+      "scope_label_dept": "{count} dans {dept}",
+      "dept_filter_all": "Tous les services ({count})",
+      "dept_filter_item": "{dept} ({count})",
+      "new_employee_btn": "+ Nouvel employé",
+      "empty_state": "Aucun employé. Clique « + Nouvel employé » pour commencer à constituer ton équipe.",
+      "empty_state_filtered": "Aucun employé dans {dept}. Change le filtre pour voir d'autres services.",
+      "row_subtitle": "{role} · {dept}{outletStr} · {nationality}",
+      "row_outlet_chip": " · {outlet}",
+      "chip_onboarded": "Onboardé",
+      "chip_pending": "Invitation en attente"
+    },
+    "employee_form": {
+      "back_to_roster": "← Retour à la liste",
+      "title_new": "Nouvel employé",
+      "title_existing": "{first_name} {last_name}",
+      "section": {
+        "identity": "Identité",
+        "contact": "Contact",
+        "job": "Poste",
+        "documents": "Documents au dossier",
+        "uniform": "Uniforme",
+        "meals": "Repas (cantine du personnel)",
+        "housing": "Logement (hébergement du personnel)"
+      },
+      "label": {
+        "first_name": "Prénom",
+        "last_name": "Nom",
+        "nationality": "Nat.",
+        "date_of_birth": "Date de naissance",
+        "id_type": "Type de pièce",
+        "national_id": "N° de pièce / passeport",
+        "email": "Email",
+        "phone_cc": "+ Indicatif",
+        "phone_number": "Numéro de téléphone",
+        "address": "Adresse",
+        "role": "Rôle",
+        "contract_type": "Type de contrat",
+        "reports_to": "Supérieur direct",
+        "hire_date": "Date d'embauche",
+        "end_date": "Fin de contrat",
+        "salary": "Salaire ({currency} / mois)",
+        "hours_per_week": "h/sem",
+        "days_per_week": "j/sem",
+        "outlet": "Restaurant / point de vente",
+        "contract_language": "Langue du contrat",
+        "pool_points_default": "Pts pool (défaut)",
+        "pool_points_override": "Pts pool (override)",
+        "id_doc_copy": "Copie passeport / carte d'identité",
+        "work_permit_required": "Permis de travail requis",
+        "work_permit_copy": "Copie du permis de travail",
+        "uniform_provided": "Uniforme fourni",
+        "uniform_responsibility": "Entretien à la charge de",
+        "meal_benefit": "Avantage repas",
+        "meals_per_day": "Repas / jour",
+        "meal_price": "Prix / repas ({currency})",
+        "housing_provided": "Logement fourni",
+        "housing_type": "Type",
+        "housing_max_occupants": "Occ. max.",
+        "housing_rent": "Loyer / mois ({currency})",
+        "housing_description": "Description (localisation, équipements, règles)"
+      },
+      "placeholder": {
+        "nationality": "TH",
+        "national_id": "A12345678",
+        "email": "nom@example.com",
+        "phone_number": "81 234 5678",
+        "days_per_week": "6",
+        "meals_per_day": "3",
+        "meal_price": "0 = gratuit",
+        "housing_max_occupants": "2",
+        "housing_rent": "0 = gratuit",
+        "housing_description": "ex. Chambre 18m² avec salle de bain privée, clim, wifi, derrière le bâtiment du personnel. Tabac uniquement à l'extérieur."
+      },
+      "id_type": {
+        "passport": "Passeport",
+        "national_id": "Carte nationale d'identité",
+        "driver_license": "Permis de conduire",
+        "other": "Autre"
+      },
+      "role_custom_suffix": "(personnalisé)",
+      "btn": {
+        "add_custom_role": "+ Ajouter un nouveau poste au catalogue",
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "contract_qr": "Contrat + QR"
+      },
+      "contract_type": {
+        "full_time": "Temps plein",
+        "part_time": "Temps partiel",
+        "seasonal": "Saisonnier",
+        "probation": "Période d'essai (3 mois)"
+      },
+      "reports_to": {
+        "none": "— Aucun —",
+        "option": "{first_name} {last_name} · {role}"
+      },
+      "hint": {
+        "auto_shift_label": "Shift auto : ",
+        "auto_shift_detail": " travaillé + pause ({hours}h/sem ÷ {days}j/sem) — pré-remplit l'heure de fin lors de l'édition des shifts."
+      },
+      "outlet": {
+        "hotel_wide": "— Tout l'hôtel —",
+        "empty_hint": "Aucun point de vente configuré.",
+        "configure_btn": "Configurer dans les réglages de l'hôtel"
+      },
+      "contract_language": {
+        "bilingual": "Bilingue EN + TH",
+        "en": "Anglais uniquement",
+        "th": "Thaï uniquement"
+      },
+      "pool_points": {
+        "default_option": "Défaut ({pts}pt)",
+        "override_option": "Override : {pts}pt",
+        "override_zero_suffix": " (exclu)"
+      },
+      "doc": {
+        "not_yet": "Pas encore",
+        "on_file": "Disponible",
+        "na_or_not_yet": "N/A ou pas encore",
+        "permit_no": "Non (thaïlandais)",
+        "permit_yes": "Oui (étranger)"
+      },
+      "uniform": {
+        "yes": "Oui — fourni",
+        "no": "Pas d'uniforme"
+      },
+      "uniform_resp": {
+        "employer": "Hôtel assure le lavage",
+        "employee": "Employé en charge"
+      },
+      "meal_benefit": {
+        "free": "Repas gratuits",
+        "paid": "Repas à la charge du personnel",
+        "none": "Aucun avantage"
+      },
+      "housing_provided": {
+        "no": "Non — logement personnel",
+        "yes": "Oui"
+      },
+      "housing_type": {
+        "shared_room": "Chambre partagée (dortoir)",
+        "private_room": "Chambre individuelle",
+        "studio": "Studio",
+        "apartment": "Appartement",
+        "house": "Maison",
+        "other": "Autre"
+      },
+      "confirm": {
+        "delete": "Supprimer la fiche de cet employé ? Cette action est irréversible."
+      },
+      "alert": {
+        "first_name_required": "Le prénom est obligatoire."
+      },
+      "add_role_modal": {
+        "title": "Ajouter un poste personnalisé",
+        "desc": "Crée un intitulé de poste absent du catalogue intégré. Le poste hérite des canaux et du niveau d'accès du service.",
+        "label": {
+          "name": "Nom du poste",
+          "icon": "Icône",
+          "department": "Service"
+        },
+        "placeholder": {
+          "name": "ex. Sommelier, Réceptionniste Spa, Capitaine de bateau"
+        },
+        "btn": {
+          "cancel": "Annuler",
+          "add": "+ Ajouter le poste"
+        },
+        "alert": {
+          "name_required": "Le nom du poste est obligatoire.",
+          "duplicate_name": "Un poste avec ce nom existe déjà."
+        }
+      }
+    },
+    "schedule": {
+      "team_member": "Membre de l'équipe",
+      "team_member_caps": "MEMBRE DE L'ÉQUIPE",
+      "total_caps": "TOTAL",
+      "coverage": "COUVERTURE",
+      "peak": "pic {n}",
+      "view": {
+        "day": "Jour",
+        "week": "Semaine",
+        "fortnight": "2 semaines",
+        "month": "Mois"
+      },
+      "period_noun": {
+        "day": "jour",
+        "week": "semaine",
+        "fortnight": "2 semaines",
+        "month": "mois"
+      },
+      "period_total": {
+        "week": "semaine",
+        "fortnight": "période de 2 semaines",
+        "month": "mois"
+      },
+      "dashboard_period": {
+        "day": "aujourd'hui",
+        "week": "cette semaine",
+        "fortnight": "ces 2 semaines",
+        "month": "ce mois"
+      },
+      "nav": {
+        "previous": "← {period} précédent",
+        "this": "Cette {period}",
+        "next": "{period} suivant →",
+        "events": "📅 Événements",
+        "events_tooltip": "Gérer jours fériés, festivals, full moon parties…",
+        "print": "🖨️ Imprimer",
+        "undo": "↶ Annuler ({n})",
+        "undo_tooltip": "Annuler : {label} · {n} modification{plural} réversible{plural}",
+        "skip_break_pending": "🚫 {n} demande{plural} de suppression de pause",
+        "skip_break_pending_tooltip": "{n} membre{plural} du personnel a demandé à supprimer sa pause — validation requise"
+      },
+      "dept_filter": {
+        "all_depts": "📁 Tous les services ({n})",
+        "dept_label": "📁 Service {dept}",
+        "all_outlets": "📁 {dept} · tous les points de vente ({n})",
+        "outlet": "{dept} · {outlet} ({n})"
+      },
+      "outlet_filter": {
+        "all": "🥂 Tous les points de vente"
+      },
+      "readonly_hint": "🔒 Vue lecture seule — seul le responsable de ton service peut modifier les shifts.",
+      "empty": {
+        "dept_no_employees": "Aucun employé dans le service {dept} pour le moment.",
+        "add_in_roster": "Aucun employé pour le moment. Ajoute des membres d'équipe dans l'onglet Effectif en premier.",
+        "ask_hr": "Aucun membre dans ton service pour le moment. Demande aux RH / GM de les ajouter."
+      },
+      "day_header": {
+        "click_to_open": "Clique pour ouvrir cette journée en détail (vue Gantt horaire)"
+      },
+      "cell": {
+        "add_shift_tooltip": "Ajouter un shift — ou déposer un shift d'un autre jour",
+        "add_shift_row_tooltip": "Ajouter un shift — ou déposer un shift d'une autre ligne",
+        "locked_tooltip": "🔒 Verrouillé — la fiche de paie de ce mois est déjà réglée",
+        "locked_short": "🔒 verrouillé (fiche de paie réglée)",
+        "locked_long": "🔒 Verrouillé — la fiche de paie de ce mois a été réglée",
+        "readonly": "Lecture seule",
+        "empty": "—",
+        "click_edit_drag_move": "Cliquer pour modifier ou supprimer · glisser vers un autre jour pour déplacer (Ctrl+glisser = copier)",
+        "click_edit_remove_drag": "Cliquer pour modifier ou supprimer · glisser vers un autre jour pour déplacer · ",
+        "overnight_suffix": " · nuit (se termine le lendemain à {time})",
+        "overnight_marker": " +1j",
+        "break_minutes_short": "{n}min pause",
+        "break_skip_pending": "⏳ suppression?",
+        "break_skip_pending_tooltip": "⏳ Suppression de pause en attente de validation",
+        "break_skipped": "🚫 sans pause",
+        "break_skipped_tooltip": "✓ Pause officiellement supprimée (approuvée). Temps travaillé = shift complet, sans déduction de pause.",
+        "actual_worked_tooltip": "{duration} réellement travaillé (pointage entrée/sortie)",
+        "actual_check": "✓ {duration}",
+        "tasks_count": "📋 {n}",
+        "tasks_tooltip": "{n} tâche{plural} :\n{list}\n\nCliquer pour ouvrir"
+      },
+      "row": {
+        "open_fiche_tooltip": "Cliquer pour ouvrir la fiche du personnel",
+        "unknown_employee": "(inconnu)"
+      },
+      "totals": {
+        "planned_period": "Total d'heures planifiées cette {period}",
+        "actual_period": "Réellement travaillé cette {period}"
+      },
+      "day_view": {
+        "event_tooltip": "{name}",
+        "now_label": "maintenant",
+        "hour_format": "{hh}h",
+        "continued_overnight_tooltip": "Depuis le shift de nuit d'hier ({start}–{end})",
+        "continued_overnight_label": "→ {time}",
+        "bar_tooltip_editable": "{start}–{end}{overnight} · pause {min}min{at_clause} · cliquer pour modifier · glisser pour réaffecter (Ctrl=copier)",
+        "bar_break_at": " à {time}",
+        "break_notch_tooltip": "🍱 Pause {time} ({min}min)",
+        "coverage_hour_tooltip": "{n} {label} en service à {hh}:00{gap}",
+        "coverage_one": "personne",
+        "coverage_many": "personnes",
+        "coverage_gap_suffix": " — manque de couverture !"
+      },
+      "dashboard": {
+        "at_work_now": "Au travail{scope}",
+        "at_work_now_tooltip": "{clocked} pointé(s) · {scheduled} prévu(s) en service actuellement ({total} en scope)",
+        "today_worked_planned": "Aujourd'hui · travaillé / planifié ({n} pers.){scope}",
+        "today_worked_planned_tooltip": "Aujourd'hui seulement — ne change pas si tu modifies un shift sur un autre jour",
+        "planned_period": "Planifié {period}{scope}",
+        "planned_period_tooltip": "Somme de toutes les heures planifiées sur la période visible — se met à jour à chaque ajout/modification/suppression de shift dans cette vue",
+        "absences_period": "Absences {period}{scope}",
+        "absences_period_tooltip_clickable": "Cliquer pour le détail par type, employé et date",
+        "absences_period_tooltip_empty": "Aucune absence sur la période visible"
+      },
+      "absence_breakdown": {
+        "eyebrow": "🤒 Détail des absences",
+        "heading": "{n} jour{plural} {period}{scope}",
+        "summary": "{paid} payé{plural} · {unpaid} non payé{plural} · {types} type{plural}",
+        "row_count": "{n}j",
+        "row_paid_unpaid": " ({paid} payé · {unpaid} non payé)",
+        "row_paid": "payé",
+        "row_unpaid": "non payé",
+        "row_tooltip": "Cliquer pour ouvrir ce jour en détail",
+        "footer_hint": "Cliquer sur une ligne pour accéder à ce jour dans la vue Jour."
+      },
+      "events": {
+        "title": "📅 Événements et jours fériés",
+        "tab_catalog": "📚 Catalogue ({n})",
+        "tab_custom": "✏️ Personnalisé ({n})",
+        "catalog_intro": "Événements pour {flag} {country}. Active ou désactive chacun — ils apparaîtront dans les entêtes du planning.",
+        "lunar_dates": "lunaire — {n} dates cette année",
+        "custom_empty": "Aucun événement personnalisé. Ajoute les événements propres à l'hôtel ci-dessous (dîners à thème, anniversaire, festivals locaux…).",
+        "add_section_title": "Ajouter un événement personnalisé",
+        "placeholder": {
+          "emoji": "🎵",
+          "name": "Nom de l'événement (ex. Soirée jazz au coucher du soleil)"
+        },
+        "add_button": "+ Ajouter un événement",
+        "confirm_delete_custom": "Supprimer cet événement personnalisé ?",
+        "required_alert": "Le nom et la date sont obligatoires.",
+        "done": "Terminer"
+      }
+    },
+    "shift_editor": {
+      "title": {
+        "edit": "Modifier l'entrée",
+        "add": "Ajouter une entrée"
+      },
+      "subtitle": "{first_name} {last_name} · {day_label}",
+      "type_toggle": {
+        "work": "💼 Shift de travail",
+        "absence": "🤒 Absence"
+      },
+      "copy_from_colleague": "📋 Copier depuis un collègue",
+      "copy_from_colleague_hint": "Appuie pour pré-remplir le formulaire avec le schéma de shift d'un autre {role_or_team}.",
+      "copy_chip_tooltip": "Utilisé {n} fois par {name}{role_suffix}",
+      "contract_label": "⏱️ Contrat : ",
+      "contract_breakdown": "{hours_per_week}h/sem ÷ {days_per_week}j/sem = ",
+      "contract_worked": "{hours}h travaillées",
+      "contract_per_shift": " par shift + {break}min pause = ",
+      "contract_total_clock": "{hours}h sur le pointage",
+      "contract_end_note": ". L'heure de fin est calculée automatiquement.",
+      "label": {
+        "start_time": "Heure de début (à définir)",
+        "end_time_auto": "Heure de fin (auto = début + {hours}h travail + pause, modifiable)",
+        "break_minutes": "Pause (minutes — auto)",
+        "break_starts_at": "Début de pause (auto = début + 4h)",
+        "absence_type": "Type d'absence",
+        "absence_notes": "Notes (optionnel)",
+        "apply_days": "Appliquer à quels jours cette semaine ?",
+        "repeat": "Répéter ?"
+      },
+      "worked_hours_hint": "Heures travaillées = fin − début − pause. Quand tu changes l'heure de début, les 3 champs dérivés se recalculent automatiquement. Tu peux les ajuster ensuite si besoin.",
+      "absence_type_option": "{em} {label} ({paid_state}) — {local}",
+      "absence_paid": "payé",
+      "absence_unpaid": "non payé",
+      "absence_notes_placeholder": "ex. certificat médical disponible",
+      "reference_label": "📜 Référence : {ref}",
+      "series_detected": "💡 Série détectée : {n} shifts correspondants présélectionnés. Enregistrer met à jour tous, Supprimer supprime tous. Décoche ceux à exclure.",
+      "preset": {
+        "weekdays": "Lun–Ven",
+        "weekend": "Week-end",
+        "all_days": "Tous les jours",
+        "clear": "Effacer"
+      },
+      "day": {
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mer",
+        "thu": "Jeu",
+        "fri": "Ven",
+        "sat": "Sam",
+        "sun": "Dim"
+      },
+      "repeat": {
+        "this_week": "Cette semaine uniquement",
+        "next_week": "+ Semaine suivante",
+        "month": "+ Mois entier (4 sem.)",
+        "year": "+ Année entière (52 sem.)",
+        "until_contract": "Jusqu'à la fin du contrat ({date})"
+      },
+      "btn": {
+        "delete": "Supprimer",
+        "clear": "🗑️ Effacer…",
+        "cancel": "Annuler",
+        "save": "Enregistrer"
+      },
+      "confirm": {
+        "delete_one": "Supprimer cette entrée ?",
+        "delete_many": "Supprimer {n} entrées ({days}) ?\n\nDécoche les jours dans le sélecteur pour les exclure."
+      },
+      "alert": {
+        "set_times": "Définis les heures de début et de fin.",
+        "select_day": "Sélectionne au moins un jour."
+      },
+      "toast": {
+        "deleted": "✓ {n} shift{plural} supprimé{plural}",
+        "applied": "✓ Appliqué à {n} shift{plural}",
+        "applied_skipped": " ({n} ignoré{plural} au-delà de la fin de contrat)"
+      },
+      "snapshot": {
+        "delete": "Supprimer {n} shift{plural}",
+        "add_or_edit": "{action} shift{plural} ({n})",
+        "action_add": "Ajouter",
+        "action_edit": "Modifier"
+      },
+      "title_add": "Ajouter un shift",
+      "title_edit": "Modifier le shift",
+      "type_work": "Travail",
+      "type_absence": "Absence",
+      "section_timing": "⏱️ Horaires",
+      "section_briefing": "📝 Briefing",
+      "section_tasks": "📋 Tâches",
+      "section_apply": "Appliquer à",
+      "apply_label": "Jours",
+      "preset_weekdays": "Sem.",
+      "preset_weekend": "WE",
+      "preset_all": "Tous",
+      "preset_clear": "Aucun",
+      "repeat_label": "Répéter",
+      "repeat_today": "Juste aujourd'hui",
+      "repeat_this": "Cette semaine",
+      "repeat_next": "Sem. suivante",
+      "repeat_month": "Ce mois",
+      "repeat_year": "Cette année",
+      "repeat_until_contract": "Jusqu'à fin de contrat",
+      "timing_start": "Début",
+      "timing_end": "Fin",
+      "timing_break": "Pause (min)",
+      "timing_break_starts": "Pause à",
+      "outlet_label": "Lieu / Zone",
+      "outlet_default_hint": "Par défaut : zone principale du rôle",
+      "outlet_no_specific": "— Pas de zone spécifique —",
+      "save_timing": "Enregistrer horaires",
+      "save_briefing": "Enregistrer briefing",
+      "save_tasks": "Enregistrer tâches",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "clear": "Effacer",
+      "briefing_placeholder": "ex. VIP en chambre 402 — anniversaire de mariage. Préparer fleurs + champagne.",
+      "briefing_bank": "🏦 Banque de briefings",
+      "briefing_bank_saved": "Sauvegardé dans la banque",
+      "briefing_too_short": "Trop court pour sauvegarder (min. 20 caractères)",
+      "briefing_hint": "Conseil : décris ce que ce shift doit accomplir, qui rencontrer, quoi vérifier.",
+      "briefing_reuse_label": "📚 Réutiliser un briefing :",
+      "tasks_empty": "Aucune tâche prévue pour ce shift.",
+      "tasks_library_label": "📔 Bibliothèque",
+      "tasks_library_count": "{n} tâches dispo",
+      "tasks_add": "+ Ajouter",
+      "tasks_placeholder": "Saisir une nouvelle tâche…",
+      "tasks_prio_normal": "· Normale",
+      "tasks_prio_high": "⚡ Élevée",
+      "tasks_prio_urgent": "🚨 Urgente",
+      "copy_colleague_label": "📋 Copier d'un collègue",
+      "copy_colleague_hint": "Tape pour pré-remplir le formulaire avec le pattern de shift d'un autre {who}.",
+      "no_employees": "Aucun employé. Ajoute des membres dans l'onglet Liste d'abord.",
+      "readonly_hint": "🔒 Vue lecture seule — seul le chef de ton service peut modifier les shifts."
+    },
+    "clear_scope": {
+      "title": "🗑️ Effacer les shifts",
+      "subtitle": "{first_name} {last_name} — choisis une portée. Toutes les opérations sont annulables pendant 12 secondes.",
+      "scope": {
+        "week": "Cette semaine",
+        "month": "Ce mois",
+        "future": "Tous les shifts à venir (aujourd'hui et après)",
+        "all": "TOUT (historique complet)"
+      },
+      "shift_count": "{n} shift{plural}",
+      "confirm": "Effacer {n} shift{plural} pour {first_name} {last_name} ?\n\nPortée : {scope}{strong}\n\nAnnulable pendant 12s.",
+      "confirm_strong_all": "\n\n⚠️ Cela supprime TOUS les shifts jamais planifiés pour {first_name}.",
+      "toast_cleared": "✓ {n} shift{plural} effacé{plural} ({scope})",
+      "snapshot": "Effacer {scope} pour {first_name}",
+      "btn": {
+        "cancel": "Annuler"
+      }
+    },
+    "skip_break": {
+      "staff_btn_tooltip": "Supprimer ta pause aujourd'hui (validation du responsable requise)",
+      "modal_title": "🚫 Suppression de pause — demande de validation",
+      "warning_label": "⚠️ Important : ",
+      "warning_body_1": "La suppression de pause nécessite l'accord du responsable. Une fois approuvée, le temps de pause sera ",
+      "warning_body_paid": "rémunéré comme temps travaillé",
+      "warning_body_2": " (tu perçois tes heures complètes). À utiliser uniquement lorsqu'une raison opérationnelle réelle t'empêche de prendre ta pause (rush, sous-effectif, urgence).",
+      "reason_label": "Motif (obligatoire — visible par le responsable)",
+      "reason_placeholder": "ex. Sous-effectif aujourd'hui — bar complet de 18h à 23h, impossible de s'absenter",
+      "btn": {
+        "cancel": "Annuler",
+        "send": "📨 Envoyer la demande"
+      },
+      "alert": {
+        "reason_required": "Explique pourquoi tu ne peux pas prendre ta pause. Ton responsable a besoin de contexte pour approuver."
+      },
+      "confirm": {
+        "submit": "Soumettre la demande de suppression de pause ?\n\nTon responsable sera notifié. Jusqu'à approbation, ton shift continue normalement."
+      },
+      "staff_pill_approved": "✓ Pause supprimée (approuvée)",
+      "staff_pill_approved_tooltip": "Le responsable a approuvé ta demande. Le temps de pause est rémunéré comme temps travaillé.",
+      "staff_pill_pending": "⏳ Suppression pause — en attente",
+      "staff_pill_pending_tooltip": "En attente d'approbation. Une fois approuvée, ton temps de pause sera rémunéré comme temps travaillé.",
+      "review": {
+        "eyebrow": "🚫 Demandes de suppression de pause",
+        "heading": "{n} en attente",
+        "empty": "✓ Aucune demande en attente.",
+        "shift_line": "📅 {date} · shift {start}–{end} · pause {break}min",
+        "requested_at": "Demandé le {date}",
+        "no_reason": "(aucun motif indiqué)",
+        "btn_deny": "✗ Refuser",
+        "btn_approve": "✓ Approuver",
+        "btn_close": "Fermer",
+        "deny_prompt": "Optionnel : motif du refus (le personnel verra ce message) :",
+        "approve_confirm": "Approuver la suppression de pause pour {first_name} le {date} ?\n\nLes {break} min de pause seront rémunérées comme temps travaillé sur ce shift."
+      }
+    },
+    "absence": {
+      "sick": "Congé maladie",
+      "vacation": "Congés payés",
+      "annual_leave": "Congé annuel",
+      "pto": "RTT / repos compensateur",
+      "work_accident": "Accident du travail",
+      "work_injury": "Blessure au travail",
+      "workers_comp": "Indemnisation accidents du travail",
+      "maternity": "Congé maternité",
+      "maternity_fmla": "Congé maternité (FMLA)",
+      "paternity": "Congé paternité",
+      "personal": "Congé personnel",
+      "bereavement": "Congé de deuil",
+      "public_holiday": "Jour férié",
+      "bank_holiday": "Jour férié bancaire",
+      "federal_holiday": "Jour férié fédéral",
+      "rtt": "RTT",
+      "jury_duty": "Obligation de jury"
+    },
+    "payroll": {
+      "access_denied": "🔒 L'accès à la paie est réservé aux RH / GM et aux responsables de service.",
+      "prev_month": "← Mois précédent",
+      "next_month": "Mois suivant →",
+      "dept_filter": {
+        "all": "📁 Tous les services ({count})",
+        "dept_option": "{department} ({count})"
+      },
+      "scope_note": {
+        "dept_only": " · service {department} uniquement",
+        "filter_only": " · {department} uniquement"
+      },
+      "subtitle": "{count} employés{scope} · clique sur une ligne pour ouvrir la fiche de paie",
+      "summary": {
+        "hotel_total": "🏨 Total hôtel",
+        "dept_total": "🧑‍🍳 Total service {department}",
+        "month_employees": "{month} · {count} employés",
+        "grand_total": "Total masse salariale"
+      },
+      "pool": {
+        "locked_label": "🔒 Bloqué jusqu'au TGE M07 + audit légal wallet de garde",
+        "distributed_label": "✓ Distribué : {amount} {currency} sur {count} membres du personnel",
+        "draft_label": "⏳ Brouillon : {amount} {currency} — pas encore distribué",
+        "not_configured_label": "— Non configuré pour cette période —",
+        "strip_title": "💰 {pool_name} · {period}",
+        "btn_edit": "✎ Modifier",
+        "btn_set_up": "+ Configurer"
+      },
+      "row": {
+        "total_label": "🏨 TOTAL",
+        "total_status_short": "{paid}P·{approved}A·{draft}B"
+      },
+      "col": {
+        "employee": "Employé",
+        "planned": "Planifié",
+        "worked": "Travaillé",
+        "ot": "HS",
+        "absences": "Absences",
+        "base_salary": "Salaire de base",
+        "ot_pay": "+ Paiement HS",
+        "pool_fiat": "+ Pool {currency}",
+        "pool_stay": "+ Pool $STAY",
+        "status": "Statut",
+        "tooltip_sort": "Cliquer pour trier par {label}",
+        "tooltip_sort_active": "Cliquer pour trier par {label} (bascule la direction)"
+      },
+      "cell": {
+        "pool_fiat_tooltip": "Somme de tous les pools en monnaie fiduciaire sur ce mois — voir la fiche de paie pour le détail",
+        "pool_fiat_empty_tooltip": "Aucun pool en monnaie fiduciaire distribué pour ce mois",
+        "pool_stay_tooltip": "Somme des pools $STAY sur ce mois",
+        "pool_stay_empty_tooltip": "Aucun pool $STAY distribué pour ce mois"
+      },
+      "chip": {
+        "paid": "✓ Réglé",
+        "approved": "✓ Approuvé",
+        "draft_saved": "Brouillon enregistré"
+      },
+      "empty": {
+        "not_opened": "— Non ouvert —"
+      },
+      "alert": {
+        "editor_failed": "Impossible d'ouvrir la fiche de paie :\n\n{error}"
+      },
+      "team_mgmt_title": "Gestion d'équipe",
+      "tab_roster": "👥 Liste",
+      "tab_my_team": "👥 Mon équipe",
+      "tab_schedule": "📅 Planning",
+      "tab_tasks": "📋 Tâches",
+      "tab_recipes": "📔 Recettes",
+      "tab_payroll": "💶 Paie",
+      "row_count_hint": "{n} employés · clique une ligne pour ouvrir la fiche de paie",
+      "row_count_hint_scoped": "{n} employés · {dept} uniquement · clique une ligne pour ouvrir la fiche de paie",
+      "summary_hotel_total": "🏨 Total hôtel",
+      "summary_dept_total": "🧑‍🍳 Total {dept}",
+      "summary_subtitle": "{month} · {n} employés",
+      "grand_total": "Total paie général",
+      "pool_locked": "🔒 Verrouillé jusqu'au TGE M07 + audit légal du portefeuille de garde",
+      "pool_distributed": "✓ Distribué : {amt} {cur} entre {n} employés",
+      "pool_draft": "⏳ Brouillon : {amt} {cur} — pas encore distribué",
+      "pool_not_set": "— Non configuré pour cette période —",
+      "btn_pool_edit": "✎ Modifier",
+      "btn_pool_setup": "+ Configurer",
+      "row_total": "🏨 TOTAL",
+      "col_employee": "Employé",
+      "col_planned": "Prévu",
+      "col_worked": "Effectué",
+      "col_ot": "HS",
+      "col_absences": "Absences",
+      "col_base_salary": "Salaire de base",
+      "col_ot_pay": "+ HS payées",
+      "col_pool_fiat": "+ Pool {cur}",
+      "col_pool_stay": "+ Pool $STAY",
+      "col_status": "Statut",
+      "status_paid": "✓ Payé",
+      "status_approved": "✓ Approuvé",
+      "status_draft": "Brouillon enregistré",
+      "status_not_opened": "— Non ouvert —",
+      "sort_tooltip": "Cliquer pour trier par {field}",
+      "sort_tooltip_active": "Cliquer pour trier par {field} (inverse le sens)",
+      "open_payslip_failed": "Impossible d'ouvrir la fiche de paie :\n\n{err}",
+      "tooltip_pool_fiat_yes": "Somme de tous les pools fiat échus ce mois — voir détail dans la fiche",
+      "tooltip_pool_fiat_no": "Aucun pool fiat distribué ce mois",
+      "tooltip_pool_stay_yes": "Somme des pools $STAY échus ce mois",
+      "tooltip_pool_stay_no": "Aucun pool $STAY distribué ce mois"
+    },
+    "payslip": {
+      "access_denied": "🔒 Tu ne peux ouvrir que les fiches de paie de ton propre service.",
+      "header": {
+        "eyebrow": "💶 Fiche de paie · {month}",
+        "contract_subtitle": "{role} · {department} · {contract_type}"
+      },
+      "lock": {
+        "title": "🔒 VERROUILLÉ — Fiche de paie marquée comme RÉGLÉE",
+        "description": "Tous les champs sont en lecture seule. Le planning de ce mois est également verrouillé. Clique sur \"Rouvrir\" pour repasser au statut Approuvé et modifier à nouveau.",
+        "reopen_btn": "🔓 Rouvrir",
+        "reopen_confirm": "Rouvrir cette fiche de paie ?\n\nLe statut repassera à \"Approuvé\", les modifications du planning redeviennent possibles et tu pourras modifier les montants. L'horodatage \"Réglé\" d'origine est conservé dans le journal d'audit."
+      },
+      "hours": {
+        "planned": "Planifié",
+        "worked": "Travaillé",
+        "ot": "HS",
+        "work_days": "Jours travaillés"
+      },
+      "absence_chip": {
+        "unpaid_suffix": "({count} non payé{plural})",
+        "paid_suffix": "(payé)"
+      },
+      "label": {
+        "base_salary": "Salaire de base ({currency} / mois)",
+        "base_override": "⚠️ override · contrat = {amount} {currency}",
+        "base_from_contract": "✓ issu du contrat",
+        "ot_multiplier": "Coefficient HS",
+        "gross": "BRUT",
+        "total_charges": "TOTAL CHARGES",
+        "net_to_pay": "NET À PAYER"
+      },
+      "btn": {
+        "reset_to_contract": "🔄 Rétablir la valeur du contrat ({amount} {currency})",
+        "delete_saved": "Supprimer l'enregistrement",
+        "cancel": "Annuler",
+        "print": "🖨️ Imprimer la fiche de paie",
+        "save": "💾 Enregistrer la fiche de paie"
+      },
+      "section": {
+        "bonuses": "➕ Primes",
+        "manual_deductions": "➖ Déductions manuelles",
+        "pay_summary": "📊 Récapitulatif de paie",
+        "earnings": "💵 Rémunérations",
+        "charges": "📤 Charges — répartition des coûts",
+        "payment": "💳 Paiement"
+      },
+      "manual_deductions_hint": "Les déductions automatiques (logement, repas payants, absences non rémunérées) sont ajoutées ci-dessous depuis le contrat — inutile de les répéter ici.",
+      "bonus": {
+        "label_placeholder": "ex. Pool de service, prime de performance",
+        "add_btn": "+ Ajouter une prime",
+        "locked_empty": "Aucune prime sur cette fiche de paie réglée."
+      },
+      "deduction": {
+        "label_placeholder": "ex. Avance sur salaire, dommage sur uniforme",
+        "add_btn": "+ Ajouter une déduction",
+        "locked_empty": "Aucune déduction manuelle sur cette fiche de paie réglée."
+      },
+      "hourly_rate": {
+        "title": "⏱️ Taux horaire",
+        "formula": "{base} {currency} ÷ ({hours_per_week}h/sem × 4,333 semaines) = {rate} {currency}/h",
+        "value_suffix": "{currency}/h"
+      },
+      "line": {
+        "base_salary": "Salaire de base",
+        "base_salary_subtitle": "Mois complet — contrat",
+        "overtime": "Heures supplémentaires",
+        "overtime_subtitle": "{hours}h × {rate} {currency}/h × coefficient {multiplier}×",
+        "bonus_default_label": "Prime",
+        "bonus_prefix": "+ {label}",
+        "housing_rent": "− Loyer logement",
+        "housing_rent_subtitle": "{housing_type} — facturé mensuellement selon le contrat",
+        "staff_meals": "− Repas du personnel (payants)",
+        "staff_meals_subtitle": "{work_days} jours travaillés × {meals} repas/jour × {price} {currency}/repas",
+        "unpaid_absence": "− Absence non rémunérée",
+        "unpaid_absence_subtitle": "{days} jour(s) × {amount} {currency}/jour (base ÷ 30)",
+        "hours_short": "− Heures manquantes",
+        "hours_short_subtitle": "{hours}h × {rate} {currency}/h (tolérance de {tolerance}h appliquée)",
+        "deduction_default_label": "Déduction",
+        "deduction_prefix": "− {label}"
+      },
+      "pool": {
+        "line_label": "💰 {pool_name}",
+        "subtitle_pts_hours": "{points} pts × {hours}h = {pct}% du poids du pool",
+        "subtitle_pts_hours_full": "{points} pts × {hours}h = {pct}% de {total} {currency} au total",
+        "subtitle_share_only": "{pct}% de {total} {currency} au total · {period}"
+      },
+      "stay": {
+        "title": "💎 Prime en $STAY (token — hors salaire)",
+        "line_subtitle": "{pct}% de {total} $STAY · {period}",
+        "disclaimer": "Distribué sur ton wallet de garde staylo.app au TGE M07. Ne fait pas partie de ton salaire NET mensuel."
+      },
+      "shortfall": {
+        "heading": "⏱️ Heures manquantes — {status}",
+        "within_tolerance": "✓ Dans la tolérance",
+        "exceeds_tolerate": "⚠️ Dépasse la tolérance — mais la politique est \"tolérer\"",
+        "deducted": "➖ Heures déduites",
+        "flagged": "🚩 Signalé pour examen par le responsable",
+        "body_within_tolerate": "{hours}h non travaillées (planifié − réel). La tolérance est de {tolerance}h/mois — aucune déduction appliquée.",
+        "body_exceeds_tolerate": "{hours}h non travaillées (vs tolérance de {tolerance}h). La politique actuelle ne déduit pas — change en \"déduire\" dans les réglages hôtel si tu veux les facturer.",
+        "body_within_deduct": "{hours}h non travaillées, dans la tolérance de {tolerance}h — aucune déduction.",
+        "body_deducted": "{hours}h non travaillées. {tolerance}h sont tolérées ; les {beyond}h restantes sont déduites au taux horaire (voir Charges ci-dessus).",
+        "body_within_flag": "{hours}h non travaillées, dans la tolérance de {tolerance}h.",
+        "body_flagged": "{hours}h non travaillées (au-delà de la tolérance de {tolerance}h). Décide manuellement : déduire via \"Ajouter une déduction\", demander un rattrapage ou accepter."
+      },
+      "bik": {
+        "title": "🎁 Avantages en nature",
+        "subtitle": "Fournis en complément du salaire en espèces — valeur économique, NON déduite du net.",
+        "meals_line": "🍽️ Repas gratuits — {days}j × {meals_per_day}/j × 80 {currency}",
+        "housing_line": "🏠 Logement gratuit — {housing_type} (valeur estimée)",
+        "total": "Total avantages en nature",
+        "package_total": "Package total de rémunération : {amount} {currency} (espèces + en nature)"
+      },
+      "payment": {
+        "method": {
+          "placeholder": "— Choisir un mode —",
+          "bank": "🏦 Virement bancaire",
+          "crypto": "🪙 Crypto",
+          "cash": "💵 Espèces"
+        },
+        "date_tooltip": "Date de paiement",
+        "bank_name_label": "Nom de la banque",
+        "bank_name_placeholder": "ex. Bangkok Bank, Kasikorn, BNP Paribas",
+        "tx_ref_label": "Référence de transaction",
+        "tx_ref_placeholder": "ex. TX12345 ou numéro de confirmation de virement",
+        "chain_label": "Chaîne / actif",
+        "chain_placeholder": "— Choisir une chaîne —",
+        "chain_other": "Autre",
+        "tx_hash_label": "Hash Tx / adresse",
+        "tx_hash_placeholder": "0x... ou T...",
+        "cash_warning_lead": "⚠️ Paiement en espèces — ",
+        "cash_warning_body": "la fiche de paie imprimée produira DEUX exemplaires sur une page A4. Les deux doivent être signés par l'employé ET le responsable. Un reste à l'hôtel, l'autre est remis à l'employé."
+      },
+      "notes_label": "Notes internes (non imprimées sur la fiche de paie)",
+      "status_label": "Statut :",
+      "status": {
+        "draft": "Brouillon",
+        "approved": "✓ Approuvé",
+        "paid": "💸 Réglé"
+      },
+      "confirm": {
+        "delete": "Supprimer cette fiche de paie enregistrée ? Les valeurs calculées automatiquement réapparaîtront à la prochaine ouverture."
+      }
+    },
+    "payslip_print": {
+      "alert": {
+        "popup_blocked": "Pop-up bloqué. Autorise les pop-ups pour cette page afin d'imprimer les fiches de paie."
+      },
+      "window_title": "Fiche de paie — {first_name} {last_name} · {month}",
+      "title": "FICHE DE PAIE / PAYSLIP",
+      "label": {
+        "period": "Période",
+        "issued": "Émis le",
+        "employee": "Employé",
+        "role": "Poste",
+        "department": "Service",
+        "hire_date": "Date d'embauche",
+        "national_id": "N° ID national",
+        "contract": "Contrat",
+        "gross": "BRUT",
+        "total_charges": "TOTAL CHARGES",
+        "net_to_pay": "NET À PAYER",
+        "employee_sig": "Signature de l'employé",
+        "manager_sig": "Signature du directeur d'hôtel",
+        "manager_fallback": "__________"
+      },
+      "hotel_fallback": "Hôtel · {hotel_code}",
+      "hourly_rate_label": "⏱️ Taux horaire :",
+      "hourly_rate_value": "{rate} {currency}/h",
+      "hourly_rate_formula": "({base} {currency} ÷ {hours_per_week}h/sem × 4,333 sem.)",
+      "hours": {
+        "planned": "Planifié :",
+        "worked": "Travaillé :",
+        "ot": "HS :",
+        "work_days": "Jours travaillés :",
+        "absences": "Absences :"
+      },
+      "section": {
+        "earnings": "💵 Rémunérations",
+        "charges": "📤 Charges — répartition des coûts"
+      },
+      "line": {
+        "base_salary": "Salaire de base (mois complet)",
+        "overtime": "Heures supplémentaires — {hours}h × {rate} {currency}/h × {multiplier}×",
+        "bonus_default": "Prime",
+        "bonus_prefix": "+ {label}",
+        "pool_with_pts": "💰 {pool_name} — {points} pts × {hours}h — {pct}% de {total} {currency}",
+        "pool_share_only": "💰 {pool_name} — {pct}% de {total} {currency}",
+        "housing_rent": "Loyer logement ({housing_type})",
+        "staff_meals": "Repas du personnel — {days}j × {meals_per_day}/j × {price}{currency}",
+        "unpaid_absence": "Absence non rémunérée — {days}j × {amount}{currency}/jour",
+        "deduction_default": "Déduction",
+        "deduction_prefix": "− {label}"
+      },
+      "bik": {
+        "title": "🎁 Avantages en nature",
+        "subtitle": "Fournis en complément du salaire en espèces — valeur économique, NON incluse dans le net à payer.",
+        "meals_line": "🍽️ Repas gratuits ({days}j × {meals_per_day}/j × 80{currency})",
+        "housing_line": "🏠 Logement gratuit ({housing_type})",
+        "total_label": "Total avantages en nature",
+        "package_total": "Package total de rémunération : {amount} {currency} (espèces + en nature)"
+      },
+      "stay": {
+        "title": "💎 Prime en $STAY (token — hors salaire)",
+        "subtitle": "Distribué sur le wallet de garde de l'employé sur staylo.app post-TGE. NON inclus dans le net à payer — prime token séparée.",
+        "line": "{pool_name} — {pct}% de {total} $STAY",
+        "total_label": "Total $STAY cette période"
+      },
+      "payment": {
+        "bank_label": "🏦 Réglé par virement bancaire",
+        "bank_line": "{bank} · Réf. : {ref}",
+        "bank_fallback": "(banque)",
+        "crypto_label": "🪙 Réglé en crypto",
+        "crypto_line": "{chain} · Tx : {ref}",
+        "crypto_fallback": "(chaîne)",
+        "cash_label": "💵 Réglé en espèces",
+        "cash_note": "Cette fiche de paie est établie en deux exemplaires, l'un pour l'hôtel et l'autre pour l'employé.",
+        "date_label": "Date de paiement :",
+        "ref_placeholder": "__________",
+        "not_recorded": "Mode de paiement non encore enregistré."
+      },
+      "stamp": {
+        "hotel_copy": "🏨 EXEMPLAIRE HÔTEL",
+        "employee_copy": "👤 EXEMPLAIRE EMPLOYÉ"
+      }
+    },
+    "settings": {
+      "title": "⚙️ Réglages de l'hôtel",
+      "subtitle": {
+        "editable": "{hotel} · Tu peux modifier ces réglages.",
+        "readonly": "{hotel} · Lecture seule — les responsables peuvent modifier."
+      },
+      "readonly_hint": "🔒 Seuls le Directeur Général / Directeur adjoint / Directeur des opérations / responsables de service peuvent modifier ces réglages.",
+      "section": {
+        "locale": "🌍 Localisation",
+        "identity": "🏨 Identité et image de marque",
+        "emergency": "🚨 Urgences",
+        "fb_canteen": "🍽️ F&B et Cantine",
+        "payroll": "💶 Politique de paie",
+        "pools": "💰 Pools — primes et redistribution",
+        "timeclock": "⏱️ Pointage et géofence",
+        "biometric": "🔒 Connexion biométrique (production uniquement)",
+        "demo_live": "🎭 Mode Démo / LIVE"
+      },
+      "label": {
+        "country": "🌍 Pays (régit le catalogue de droit du travail)",
+        "currency": "💱 Devise d'affichage",
+        "hotel_name": "Nom de l'hôtel (raison sociale complète)",
+        "hotel_address": "Adresse (complète)",
+        "hotel_legal": "Informations légales (N° fiscal / TVA / N° d'entreprise — multiligne)",
+        "hotel_logo": "Logo (PNG / JPG / SVG, max 500Ko)",
+        "assembly": "Point de rassemblement en cas d'urgence",
+        "evacuation": "Procédure d'évacuation",
+        "contact_fire": "Pompiers",
+        "contact_police": "Police",
+        "contact_medical": "Médical",
+        "contact_manager": "Responsable d'astreinte",
+        "first_aid": "Emplacement(s) de la trousse de premiers secours",
+        "canteen_hours": "🍽️ Horaires de la cantine du personnel",
+        "outlets": "🥂 Points de vente F&B / espaces",
+        "shortfall_policy": "Politique de déficit d'heures",
+        "shortfall_tolerance": "Tolérance (heures / mois)",
+        "geofence_lat": "Latitude de l'hôtel",
+        "geofence_lng": "Longitude de l'hôtel",
+        "geofence_radius": "Rayon de géofence (mètres)"
+      },
+      "country_option": "{flag} {name} — absences et refs en {local_name}",
+      "currency_option": "{symbol}  {code} — {name}",
+      "identity": {
+        "sub": "Apparaît sur chaque fiche de paie et contrat imprimé. À renseigner une seule fois."
+      },
+      "placeholder": {
+        "hotel_name": "ex. Sunset Beach Resort & Spa Co. Ltd.",
+        "hotel_address": "12/34 Moo 5, Haad Rin\nKoh Phangan, Surat Thani 84280\nThailande",
+        "hotel_legal": "N° fiscal : 0123456789012\nN° entreprise : 0105561234567\nTVA : TH 1234567890123",
+        "assembly": "ex. Bord de piscine — pelouse principale",
+        "evacuation": "Sortez calmement… n'utilisez pas les ascenseurs… aidez les personnes à mobilité réduite…",
+        "contact_fire": "199",
+        "contact_police": "191",
+        "contact_medical": "1669",
+        "contact_manager": "+66 8…",
+        "canteen_hours": "06:00-09:00, 12:00-14:00, 18:00-21:00",
+        "outlets": "Restaurant principal, Bar Sunset, Café piscine, Salle de banquet",
+        "shortfall_tolerance": "2",
+        "geofence_lat": "9.7563",
+        "geofence_lng": "100.0309",
+        "geofence_radius": "200"
+      },
+      "logo": {
+        "no_logo": "Pas de logo",
+        "btn": {
+          "replace": "🔄 Remplacer le logo",
+          "upload": "📁 Importer un logo",
+          "remove": "× Supprimer"
+        },
+        "too_large": "\"{name}\" est trop volumineux ({size}Ko > limite 500Ko). Réduis-le d'abord ou utilise le format SVG."
+      },
+      "outlets": {
+        "hint": "Séparés par des virgules. Obligatoire si l'hôtel a plusieurs restaurants/bars — permet au chef de filtrer le planning par espace."
+      },
+      "payroll": {
+        "sub": "Quand un employé travaille moins d'heures que prévu (ex. pointé sa sortie tôt), que doit faire la fiche de paie ?",
+        "tolerance_hint": "La tolérance absorbe les petits écarts mensuels (longue pause déjeuner, retard de trafic, nettoyage en fin de service). En dessous de ce seuil, aucune déduction ne s'applique quelle que soit la politique."
+      },
+      "shortfall": {
+        "tolerate": "✓ Tolérer (défaut — pas de déduction)",
+        "deduct": "➖ Déduire au-delà de la tolérance (au taux horaire)",
+        "flag": "🚩 Signaler au responsable (pas de déduction automatique)"
+      },
+      "pools": {
+        "sub": "Un hôtel peut gérer plusieurs pools simultanément : pool de service F&B mensuel, prime annuelle sur % de CA, prime ponctuelle de performance, pool $STAY equity (post-TGE)… Chaque pool est configuré par sa source, sa fréquence et sa méthode de distribution. Les points par rôle et les overrides par employé sont partagés entre tous les pools.",
+        "list": {
+          "empty_state": "Aucun pool configuré. Clique sur \"+ Ajouter un pool\" ci-dessous pour en créer un."
+        },
+        "locked_badge": "🔒 Disponible au TGE M07",
+        "stay_badge": "$STAY",
+        "enabled_badge": "✓ ACTIF",
+        "disabled_badge": "✗ INACTIF",
+        "btn": {
+          "edit": "✎ Modifier",
+          "disable": "○ Désactiver",
+          "enable": "● Activer",
+          "delete": "🗑",
+          "add": "+ Ajouter un pool"
+        },
+        "confirm_delete": "Supprimer le pool \"{name}\" ?\n\nCela supprime également tous les enregistrements de distribution associés. Irréversible.",
+        "role_points": {
+          "label": "⭐ Points par rôle — barème 1 (entrée) → 7 (direction)",
+          "hint": "Utilisé par tous les pools distribuant \"par points\" ou \"par points × heures\". 0 = exclu de ces pools. Override possible sur chaque fiche du personnel."
+        }
+      },
+      "timeclock": {
+        "sub": "Le personnel ne peut pointer qu'à moins de X mètres de ces coordonnées GPS. Empêche les fraudes au pointage (ex. depuis chez soi)."
+      },
+      "btn": {
+        "use_my_location": "📍 Utiliser ma position actuelle",
+        "getting_location": "📡 Localisation en cours…",
+        "location_filled": "✓ GPS actuel renseigné",
+        "reseed_demo": "🔄 Régénérer les données de démo",
+        "seed_big_hotel": "🏰 Charger un GRAND hôtel (~140 employés)",
+        "switch_live": "🚀 Passer en mode LIVE",
+        "close": "Fermer",
+        "save": "Enregistrer les réglages"
+      },
+      "geolocation": {
+        "unavailable": "API de géolocalisation non disponible sur cet appareil.",
+        "error": "Impossible d'obtenir la position : {message}"
+      },
+      "geofence": {
+        "strict_label": "Mode strict : BLOQUER le pointage hors de la géofence (au lieu d'avertir et signaler)"
+      },
+      "biometric": {
+        "sub": "Quand activé, le personnel doit déverrouiller l'app avec son empreinte ou Face ID à chaque ouverture. Son téléphone est lié à son compte en base. Requiert un déploiement HTTPS — ne fonctionne pas en local.",
+        "toggle_label": "Exiger l'authentification biométrique à l'ouverture de l'app",
+        "unsupported": "⚠️ Ce navigateur ne prend pas en charge WebAuthn (API biométrique). Le bouton n'a aucun effet ici."
+      },
+      "demo_live": {
+        "sub": "Quand tu démarres un nouvel hôtel, Staylo charge automatiquement des employés, recettes et tâches d'exemple pour que tu puisses explorer l'interface. Quand tu es prêt à l'utiliser pour de vrai, passe en mode LIVE — toutes les données de démo sont effacées et seuls tes vrais enregistrements subsistent."
+      },
+      "live": {
+        "banner": "🚀 Mode LIVE actif.",
+        "banner_detail": "Aucune donnée de démo chargée. Tous les employés, recettes et tâches sont réels."
+      },
+      "demo": {
+        "banner": "🎭 Mode démo actif. Actuellement chargé : {employees} employés démo · {recipes} recettes · {tasks} tâches. Tu peux en supprimer individuellement au fur et à mesure que tu les remplaces par de vraies données."
+      },
+      "reseed": {
+        "confirm": "Régénérer le jeu de données de démo ? Cela réintègre l'équipe d'exemple (ne touche PAS à tes vrais enregistrements déjà enregistrés).",
+        "success": "✓ Données de démo régénérées (planning 90 jours + feuille de temps 75 jours — prêt pour la gestion mensuelle de paie)."
+      },
+      "seed_big": {
+        "tooltip": "Charger ~140 employés couvrant TOUS les postes des 9 services — utile pour voir l'organigramme complet",
+        "confirm": "🏰 Charger l'équipe du GRAND hôtel ?\n\nCela charge ~140 employés couvrant LES 9 SERVICES + TOUS les postes du catalogue :\n  • Direction · Front Office · Étage · F&B\n  • Maintenance · Spa & Bien-être · Sécurité\n  • Admin & Finance · Ventes & Événements\n\nEfface d'abord les employés démo existants (ton propre enregistrement de manager lié automatiquement reste). Le planning + la feuille de temps sont également régénérés pour la nouvelle équipe. Continuer ?",
+        "success": "🏰 {count} employés chargés sur 9 services. Planning 90 jours + événements de pointage 75 jours générés. Ouvre l'onglet Effectif et utilise le filtre de service pour naviguer."
+      },
+      "switch_live": {
+        "confirm": {
+          "heading": "🚀 Passer cet hôtel en mode LIVE ?",
+          "delete_heading": "❌ SUPPRIMER :",
+          "delete_employees": "  • {count} employés démo",
+          "delete_recipes": "  • {count} recettes démo",
+          "delete_tasks": "  • {count} tâches démo",
+          "delete_attached": "  • Tous les plannings / événements de pointage / fiches de paie liés au personnel démo",
+          "keep_heading": "✅ CONSERVER (tes vrais enregistrements — jamais effacés) :",
+          "keep_self": "  • 👤 {first_name} {last_name} — toi ({role})",
+          "keep_self_missing": "  • (aucun enregistrement de manager lié automatiquement trouvé)",
+          "keep_others": "  • {count} autre(s) employé(s) créé(s) par toi",
+          "keep_recipes": "  • {count} recette(s) créée(s) par toi",
+          "keep_tasks": "  • {count} tâche(s) créée(s) par toi",
+          "keep_settings": "  • Tous les réglages hôtel + pools + événements de pointage pour le personnel conservé",
+          "footer": "Après cela, la démo ne se chargera plus au prochain démarrage. Continuer ?"
+        },
+        "success": "🚀 Passage en mode LIVE effectué. Données démo supprimées — tes enregistrements conservés."
+      },
+      "system_message": {
+        "updated": "⚙️ Réglages hôtel mis à jour par {user}"
+      },
+      "sub_editable": "{code} · Tu peux les modifier.",
+      "sub_readonly": "{code} · Lecture seule — les managers peuvent modifier.",
+      "sec_locale": "🌍 Locale",
+      "sec_identity": "🏨 Identité & branding",
+      "sec_identity_sub": "Apparaît sur chaque fiche de paie et contrat imprimé. À remplir une fois.",
+      "sec_emergency": "🚨 Urgence",
+      "sec_fnb": "🍽️ F&B & Cantine",
+      "sec_payroll": "💶 Politique de paie",
+      "sec_pools": "💰 Pools — primes & redistribution",
+      "sec_clock": "⏱️ Pointage & geofence",
+      "sec_biometric": "🔒 Connexion biométrique (production uniquement)",
+      "sec_demo_live": "🎭 Mode Demo / LIVE",
+      "lbl_country": "🌍 Pays (régit le catalogue de droit du travail)",
+      "lbl_currency": "💱 Devise d'affichage",
+      "lbl_hotel_name": "Nom de l'hôtel (raison sociale complète)",
+      "lbl_hotel_address": "Adresse (complète)",
+      "lbl_hotel_legal": "Infos légales (N° fiscal / TVA / N° société — multi-ligne)",
+      "lbl_hotel_logo": "Logo (PNG / JPG / SVG, max 500KB)"
+    },
+    "pool_editor": {
+      "eyebrow": "💰 Configuration du pool",
+      "title": {
+        "new": "Nouveau pool",
+        "edit": "Modifier le pool"
+      },
+      "label": {
+        "pool_name": "Nom du pool",
+        "source_type": "Source / type",
+        "frequency": "Fréquence",
+        "distribution_method": "Mode de distribution",
+        "percentage": "Pourcentage (%)",
+        "fixed_amount": "Montant fixe par période ({currency})",
+        "min_tenure": "Ancienneté min. (mois)",
+        "require_points": " Exiger des points > 0 pour être éligible",
+        "enabled": " Pool actif — apparaît dans la paie et est distribué"
+      },
+      "type_option_locked_suffix": " — 🔒 Disponible au TGE M07",
+      "placeholder": {
+        "percentage": "10",
+        "fixed_amount": "50000"
+      },
+      "percentage": {
+        "hint": "Informatif uniquement. Le responsable saisit le montant réel par période dans le Gestionnaire de pool."
+      },
+      "fixed": {
+        "hint": "Budget défini par le responsable. Même montant chaque période jusqu'à modification."
+      },
+      "tenure": {
+        "hint": "Le personnel embauché depuis moins de X mois est exclu. 0 = pas de filtre."
+      },
+      "require_points": {
+        "hint": "Si coché, seul le personnel avec points de rôle > 0 (ou override) participe. Décoche pour les pools \"à égalité pour tous\"."
+      },
+      "stay_warn": {
+        "title": "💎 Pool $STAY Equity — bloqué jusqu'au TGE M07. ",
+        "body": "Ce type de pool sera activé post-Token Generation Event + audit légal wallet de garde. Pour le moment, tu peux le configurer mais les distributions sont bloquées."
+      },
+      "btn": {
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "save": "💾 Enregistrer"
+      },
+      "delete": {
+        "confirm": "Supprimer le pool \"{name}\" ?\n\nCela supprime également tous les enregistrements de distribution associés."
+      },
+      "alert": {
+        "name_required": "Le nom du pool est obligatoire."
+      }
+    },
+    "pool_manager": {
+      "not_found": "Pool introuvable.",
+      "eyebrow": "💰 {name} · {period}",
+      "title": {
+        "locked": "🔒 Pool verrouillé (TGE M07)",
+        "distributed": "✓ Distribué",
+        "draft": "Brouillon — pas encore distribué",
+        "new": "Nouvel enregistrement"
+      },
+      "locked_banner": {
+        "title": "💎 Pool $STAY Equity — bloqué jusqu'au TGE M07. ",
+        "body": "La configuration est modifiable, mais les distributions sont bloquées jusqu'au feu vert du Token Generation Event + audit légal wallet de garde."
+      },
+      "distributed_banner": {
+        "title": "✓ Ce pool a été distribué.",
+        "body": " Chaque membre du personnel éligible voit le montant ajouté aux revenus de sa fiche de paie. Pour redistribuer, supprime cet enregistrement et crées-en un nouveau."
+      },
+      "label": {
+        "total": "Montant total du pool ({currency})"
+      },
+      "placeholder": {
+        "total_stay": "Total $STAY alloué à ce pool",
+        "total_fiat": "Total {currency} pour cette période"
+      },
+      "preview_heading": "📊 Aperçu de la distribution",
+      "empty_total": "Saisis le montant total du pool ci-dessus pour voir l'aperçu de la distribution.",
+      "empty_eligible": "⚠️ Aucun personnel éligible pour cette période. Vérifie les réglages → Points par rôle (si \"par points\"), ou les données de pointage (si pondéré par les heures), ou assouplis les filtres d'ancienneté / service.",
+      "summary": {
+        "eligible_count": "{count} membre(s) éligible(s)"
+      },
+      "col": {
+        "employee": "Employé",
+        "points": "Pts",
+        "hours": "Heures",
+        "share_pct": "Part %",
+        "amount": "Montant"
+      },
+      "hint": {
+        "fb_service": "Astuce : {pct}% de ton CA F&B de cette période est le pool habituel. Calcule-le depuis tes rapports POS.",
+        "revenue_pct": "Astuce : {pct}% de ton CA hôtel de cette période.",
+        "profit_pct": "Astuce : {pct}% de ton bénéfice net de cette période.",
+        "fixed": "Budget par défaut : {amount} {currency}/période (à modifier ici si besoin).",
+        "stay_token": "🔒 Pool $STAY — distribution bloquée jusqu'au TGE M07."
+      },
+      "btn": {
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "save_draft": "💾 Enregistrer en brouillon",
+        "approve": "✓ Approuver et distribuer"
+      },
+      "delete": {
+        "confirm": "Supprimer cet enregistrement de pool ? Les montants distribués seront retirés des revenus de la fiche de paie de chaque membre du personnel."
+      },
+      "alert": {
+        "amount_required": "Saisis d'abord un montant total.",
+        "no_eligible_staff": "Aucun personnel éligible à qui distribuer."
+      },
+      "distribute": {
+        "confirm": "Distribuer {amount} {currency} sur {count} membres du personnel pour {period} ?\n\nUne ligne \"{name}\" sera ajoutée automatiquement aux revenus de la fiche de paie de chaque membre. Tu pourras toujours supprimer cet enregistrement plus tard si tu dois le refaire."
+      },
+      "legacy": {
+        "no_pool": "Aucun pool configuré. Ouvre Réglages → Pools pour en ajouter un."
+      }
+    },
+    "pool_types": {
+      "fb_service": {
+        "label": "🥂 Pool de service F&B",
+        "desc": "10% (ou %) du CA F&B, redistribué au personnel"
+      },
+      "revenue_pct": {
+        "label": "📈 % du CA total",
+        "desc": "X% du CA mensuel hôtel → pool de primes personnel"
+      },
+      "profit_pct": {
+        "label": "💼 % du bénéfice net",
+        "desc": "Participation aux bénéfices — X% du bénéfice après impôt"
+      },
+      "fixed": {
+        "label": "🎯 Montant fixe",
+        "desc": "Le responsable définit un budget fixe par période"
+      },
+      "stay_token": {
+        "label": "💎 Pool $STAY Equity",
+        "desc": "Distribue des tokens $STAY depuis la trésorerie hôtel — Disponible au TGE (M07)"
+      }
+    },
+    "pool_frequencies": {
+      "monthly": "📅 Mensuel",
+      "quarterly": "📊 Trimestriel",
+      "biannual": "📈 Semestriel",
+      "annual": "🎄 Annuel",
+      "one_shot": "⚡ Ponctuel"
+    },
+    "pool_distributions": {
+      "equal": "⚖️ Parts égales — chaque membre éligible reçoit la même somme",
+      "by_points": "⭐ Par points — part ∝ barème de rôle (1-7)",
+      "by_hours": "⏱️ Par heures travaillées",
+      "by_points_hours": "🎯 Par points × heures (défaut — récompense à la fois le rang et la présence)"
+    },
+    "clock": {
+      "btn": {
+        "clock_in": "Pointer l'arrivée",
+        "clock_out": "Appuyer pour pointer la sortie",
+        "clock_in_now": "⏱️ Pointer maintenant"
+      },
+      "shift_window": "Pointage ({start}–{end})",
+      "tooltip": {
+        "gps_off": "GPS vérifié à l'hôtel uniquement",
+        "gps_on": "Appuyer pour pointer la sortie (GPS vérifié)",
+        "tap_back": "Appuyer quand tu es de retour à ton poste",
+        "start_break": "Démarrer la pause ({minutes}min)",
+        "skip_break": "Supprimer ta pause aujourd'hui (validation du responsable requise)",
+        "skip_approved": "Le responsable a approuvé ta demande. Le temps de pause est rémunéré comme temps travaillé.",
+        "skip_pending": "En attente d'approbation. Une fois approuvée, ton temps de pause sera rémunéré comme temps travaillé."
+      },
+      "status": {
+        "on_shift": "En service · {hours}",
+        "on_shift_with_ot": "En service · {hours} · HS {ot}",
+        "on_break": "En pause · {minutes}min restantes",
+        "break_over": "🔔 Pause TERMINÉE — reprends ton poste",
+        "tap_back_to_work": "Appuyer → reprendre le travail",
+        "skip_approved": "✓ Pause supprimée (approuvée)",
+        "skip_pending": "⏳ Suppression pause — en attente"
+      },
+      "confirm": {
+        "start_break": "Démarrer ta pause maintenant ?\n\nL'app te rappellera 5 minutes avant la fin et quand il est temps de reprendre ({minutes}min au total)."
+      },
+      "banner": {
+        "next_shift_today": "Prochain shift aujourd'hui : <b>{start}–{end}</b> (dans {minutes}min tu pourras pointer)",
+        "todays_shift": "Shift du jour : <b>{start}–{end}</b>",
+        "shift_ended": "Le shift du jour s'est terminé à {end}. Prochain : {next}",
+        "no_shift_today": "Pas de shift prévu aujourd'hui.",
+        "no_shift": "Pas de shift prévu.",
+        "no_upcoming": "Aucun shift à venir prévu.",
+        "next_shift": "Prochain shift : <b>{date} à {time}</b>"
+      },
+      "reminder": {
+        "soon": "⏰ Le shift commence dans {minutes} min",
+        "now": "⏰ Ton shift commence MAINTENANT",
+        "late": "⚠️ {minutes} min de retard — pointe !",
+        "cta": "Appuyer pour pointer →"
+      }
+    },
+    "tasks": {
+      "title": "Tâches",
+      "btn": {
+        "new": "+ Nouvelle tâche",
+        "today": "Aujourd'hui",
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "create": "+ Créer une tâche"
+      },
+      "head": {
+        "label": "📅 Tâches pour"
+      },
+      "empty": {
+        "manager": "Aucune tâche planifiée pour cette date. Clique sur \"+ Nouvelle tâche\" pour en créer une (avec récurrence optionnelle).",
+        "staff": "Aucune tâche assignée pour cette date. Bonne journée ! 🎉"
+      },
+      "assignee": {
+        "all": "🌐 Tout le personnel",
+        "dept": "📁 {dept}",
+        "role": "🛎️ {role}",
+        "employee": "👤 {name}",
+        "unknown": "👤 Inconnu"
+      },
+      "recurrence": {
+        "once": "unique",
+        "daily": "quotidien",
+        "weekly": "hebdomadaire",
+        "monthly": "mensuel",
+        "per_shift": "par shift"
+      },
+      "tooltip": {
+        "mark_done": "Marquer comme fait",
+        "mark_not_done": "Marquer comme non fait",
+        "edit": "Modifier",
+        "delete": "Supprimer"
+      },
+      "completed_by": "✓ fait par {name}",
+      "confirm": {
+        "delete_one": "Supprimer cette tâche ?",
+        "delete_recurring": "Supprimer cette tâche (et toutes ses récurrences futures) ?"
+      },
+      "editor": {
+        "title": {
+          "new": "+ Nouvelle tâche",
+          "edit": "✎ Modifier la tâche"
+        }
+      },
+      "label": {
+        "title": "Titre",
+        "title_placeholder": "ex. Vérifier la température du réfrigérateur",
+        "description": "Description (optionnel)",
+        "description_placeholder": "Instructions détaillées, localisation…",
+        "assign_to": "Assigner à",
+        "employee": "Employé",
+        "role": "Poste",
+        "department": "Service",
+        "date": "Date",
+        "day_of_week": "Jour de la semaine",
+        "day_of_month": "Jour du mois (1-31)",
+        "how_often": "Fréquence ?",
+        "due_time": "Heure limite (optionnel)",
+        "priority": "Priorité",
+        "linked_recipe": "📔 Recette liée (fiche technique)"
+      },
+      "assign": {
+        "employee": "Un employé spécifique",
+        "role": "Tous ceux qui ont ce poste",
+        "dept": "Tout un service",
+        "all": "Tout le personnel",
+        "pick_employee": "— Choisir un employé —",
+        "pick_role": "— Choisir un poste —",
+        "pick_department": "— Choisir un service —"
+      },
+      "recur_opt": {
+        "once": "Unique (date spécifique)",
+        "daily": "Quotidien",
+        "weekly": "Hebdomadaire (jour spécifique)",
+        "monthly": "Mensuel (jour spécifique)",
+        "per_shift": "À chaque shift"
+      },
+      "recur_hint": {
+        "daily": "🗓️ Se déclenche chaque jour",
+        "per_shift": "⏱️ Se déclenche à chaque début de shift de l'assigné"
+      },
+      "weekday": {
+        "monday": "Lundi",
+        "tuesday": "Mardi",
+        "wednesday": "Mercredi",
+        "thursday": "Jeudi",
+        "friday": "Vendredi",
+        "saturday": "Samedi",
+        "sunday": "Dimanche"
+      },
+      "priority": {
+        "low": "🟢 Faible",
+        "normal": "⚪ Normale",
+        "high": "🟠 Haute",
+        "urgent": "🔴 Urgente"
+      },
+      "recipe": {
+        "none": "— Aucune —"
+      },
+      "alert": {
+        "title_required": "Le titre est obligatoire.",
+        "assignee_required": "Choisis un assigné."
+      }
+    },
+    "recipes": {
+      "title": "Recettes",
+      "btn": {
+        "new": "+ Nouvelle recette",
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "edit": "✎ Modifier",
+        "close": "Fermer"
+      },
+      "head": {
+        "count": "{n} recettes (fiches techniques)"
+      },
+      "empty": {
+        "manager": "Aucune recette pour le moment. Construis des recettes standardisées avec détail des coûts — prêt pour le POS.",
+        "staff": "Aucune recette disponible. Demande au chef d'en ajouter."
+      },
+      "untitled": "(sans titre)",
+      "label": {
+        "yield": "Rendement",
+        "yield_short": "Rendement (portions)",
+        "cost_per_portion": "Coût / portion",
+        "sell_price": "Prix de vente",
+        "sell_price_with_unit": "Prix de vente {currency}",
+        "cost_per_portion_short": "Coût/p",
+        "sell": "Vente",
+        "margin": "Marge",
+        "total_cost": "Coût total",
+        "food_cost": "Food cost",
+        "prep": "⏱️ Prép.",
+        "cook": "🔥 Cuisson",
+        "rest": "🧊 Repos",
+        "total": "⌛ Total",
+        "prep_min": "⏱️ Prép. (min)",
+        "cook_min": "🔥 Cuisson (min)",
+        "rest_min": "🧊 Repos (min)",
+        "recipe_name": "Nom de la recette",
+        "recipe_name_placeholder": "ex. Pad Thai aux crevettes",
+        "category": "Catégorie",
+        "pos_sku": "SKU POS",
+        "pos_sku_placeholder": "ex. PT-001",
+        "video_url": "🎥 URL vidéo (embed YouTube, lien .mp4, etc.)",
+        "allergens": "⚠️ Allergènes (optionnel)",
+        "allergens_placeholder": "ex. cacahuète, crustacés, gluten",
+        "notes": "Notes du chef (optionnel)",
+        "notes_placeholder": "Conseils de dressage, accords mets-vins, variantes…"
+      },
+      "margin_summary": "Food cost {foodCost}% · Marge {margin}%",
+      "section": {
+        "equipment": "🍳 Matériel / équipement",
+        "equipment_hint": "Ce dont le cuisinier a besoin avant de commencer (wok, mandoline, thermomix…).",
+        "ingredients": "Ingrédients",
+        "preparation": "Préparation",
+        "preparation_steps": "Étapes de préparation",
+        "photos_video": "📸 Photos et vidéo",
+        "photos_hint": "Importe plusieurs photos : ingrédients, étapes techniques, dressage final, etc."
+      },
+      "allergens_prefix": "⚠️ Allergènes : ",
+      "video": {
+        "open_link": "🎥 Ouvrir le lien vidéo →"
+      },
+      "equipment": {
+        "placeholder": "ex. Wok, mandoline, thermomix",
+        "qty_tooltip": "Quantité (défaut 1)",
+        "add": "+ Ajouter du matériel"
+      },
+      "ingredients": {
+        "add": "+ Ajouter un ingrédient",
+        "col": {
+          "ingredient": "Ingrédient",
+          "qty": "Qté",
+          "unit": "Unité",
+          "price": "Prix {currency}",
+          "per_unit": "/ Unité",
+          "cost": "= Coût"
+        },
+        "cost_tooltip": "Auto = Qté × (prix ÷ conversion d'unité)"
+      },
+      "steps": {
+        "add": "+ Ajouter une étape"
+      },
+      "photos": {
+        "add": "Ajouter",
+        "too_large": "\"{name}\" trop volumineuse (max 500Ko par photo pour la démo). Réduis-la d'abord."
+      },
+      "cat": {
+        "starter": "🥗 Entrée",
+        "main": "🍽️ Plat",
+        "dessert": "🍰 Dessert",
+        "cocktail": "🍹 Cocktail",
+        "wine": "🍷 Vin",
+        "beer": "🍺 Bière",
+        "soft": "🥤 Boisson sans alcool",
+        "side": "🍚 Accompagnement"
+      },
+      "editor": {
+        "title": {
+          "new": "+ Nouvelle recette",
+          "edit": "✎ Modifier la recette"
+        }
+      },
+      "confirm": {
+        "delete": "Supprimer cette recette ?"
+      },
+      "portion_singular": "portion",
+      "portion_plural": "portions",
+      "header_count": "{n} recettes (fiches techniques)",
+      "btn_new": "+ Nouvelle recette",
+      "math_info_title": "Comment sont calculés ces chiffres ?",
+      "math_info_btn_tooltip": "Voir les calculs",
+      "math_total_cost_title": "Coût total",
+      "math_total_cost_formula": "Somme du coût de chaque ingrédient (quantité × prix unitaire, avec conversion d'unité).",
+      "math_total_cost_example": "{cost} {cur} = total de tous les ingrédients de cette recette",
+      "math_cost_portion_title": "Coût par portion",
+      "math_cost_portion_formula": "Coût total ÷ nombre de portions.",
+      "math_cost_portion_example": "{total} {cur} ÷ {portions} portion(s) = {result} {cur} par portion",
+      "math_margin_title": "Marge brute",
+      "math_margin_formula": "(Prix de vente − coût par portion) ÷ prix de vente × 100",
+      "math_margin_example": "({sell} − {cost}) ÷ {sell} × 100 = {result}%",
+      "math_margin_no_sell": "Définis un prix de vente pour voir la marge.",
+      "math_food_cost_title": "Ratio food cost",
+      "math_food_cost_formula": "Coût par portion ÷ prix de vente × 100",
+      "math_food_cost_example": "{cost} ÷ {sell} × 100 = {result}%",
+      "math_food_cost_no_sell": "Définis un prix de vente pour voir le food cost.",
+      "math_benchmark_title": "Référence métier (resort 5★ Thaï)",
+      "math_benchmark_text": "🟢 Food cost ≤ 28% — excellent\n🟡 Food cost 28-35% — acceptable, surveille les portions\n🔴 Food cost > 35% — re-coûter ou augmenter le prix de vente",
+      "math_close": "Compris",
+      "tot_total_cost": "Coût total",
+      "tot_cost_portion": "Coût / portion",
+      "tot_margin": "Marge",
+      "tot_food_cost": "Food cost",
+      "empty_mgr": "Pas encore de recettes. Construis des recettes standardisées avec décomposition de coût — prêtes pour le POS.",
+      "empty_staff": "Aucune recette disponible. Demande au chef d'en ajouter.",
+      "lbl_yield": "Rendement",
+      "yield_portions_one": "{n} portion",
+      "yield_portions_many": "{n} portions",
+      "lbl_cost_per_portion": "Coût / portion",
+      "lbl_sell_price": "Prix de vente",
+      "lbl_food_cost_pct": "Food cost {pct}% · Marge {margin}%",
+      "lbl_pos_marker": " · POS ✓"
+    },
+    "onboarding": {
+      "tagline": "Ton hôtel. Connecté.",
+      "step1": {
+        "title": "Tu es ici en tant que ?",
+        "hint": "Chaque profil ouvre une expérience Staylo différente."
+      },
+      "step2": {
+        "title": "Quel est ton prénom ?",
+        "hint": "C'est ainsi que les autres te verront.",
+        "placeholder": "ex. Malee Suwan"
+      },
+      "step3": {
+        "title": {
+          "staff": "Code hôtel",
+          "ambassador": "Code ambassadeur",
+          "guest": "Code réservation ou code hôtel"
+        },
+        "hint": {
+          "staff": "Demande ce code à ton responsable (ex. KP001 pour la propriété n°1 de Koh Phangan).",
+          "ambassador": "Ton identifiant personnel d'ambassadeur Staylo (ex. AMB-7421).",
+          "guest": "Depuis ta confirmation de réservation, ou simplement le code hôtel si tu es curieux."
+        },
+        "placeholder": {
+          "staff": "KP001",
+          "ambassador": "AMB-0001",
+          "guest": "KP001 ou BK-9F2A"
+        }
+      },
+      "step4": {
+        "title": "Ton rôle",
+        "hint": "Choisis celui qui correspond à ton quotidien."
+      },
+      "btn": {
+        "continue": "Continuer",
+        "back": "← Retour",
+        "finish": "Accéder à Staylo →"
+      },
+      "audience": {
+        "staff": {
+          "title": "Personnel hôtelier",
+          "desc": "Équipe interne — réception, étage, cuisine, maintenance, direction."
+        },
+        "ambassador": {
+          "title": "Ambassadeur réseau",
+          "desc": "Recommande des hôtels à Staylo et gagne des commissions."
+        },
+        "guest": {
+          "title": "Client",
+          "desc": "Je séjourne dans un hôtel Staylo."
+        }
+      },
+      "dept": {
+        "management": "Direction",
+        "front_office": "Front Office",
+        "housekeeping": "Étage",
+        "fnb": "Food & Beverage",
+        "maintenance": "Maintenance",
+        "spa": "Spa & Bien-être",
+        "security": "Sécurité",
+        "admin": "Admin & Finance",
+        "sales": "Ventes & Événements"
+      },
+      "step_audience_title": "En tant que qui ?",
+      "step_audience_hint": "Chaque parcours ouvre une expérience Staylo différente.",
+      "step_name_title": "Quel est ton nom ?",
+      "step_name_hint": "C'est comme ça que les autres te verront.",
+      "step_name_placeholder": "ex. Malee Suwan",
+      "step_role_title": "Ton rôle",
+      "step_role_hint": "Choisis celui qui correspond à ton quotidien.",
+      "btn_continue": "Continuer",
+      "btn_back": "← Retour",
+      "btn_finish": "Entrer dans Staylo →",
+      "audience_staff_title": "Personnel hôtelier",
+      "audience_staff_desc": "Équipe interne — réception, ménage, cuisine, maintenance, management.",
+      "audience_ambassador_title": "Ambassadeur réseau",
+      "audience_ambassador_desc": "Réfère des hôtels à Staylo et gagne des commissions.",
+      "audience_guest_title": "Client",
+      "audience_guest_desc": "Je séjourne dans un hôtel Staylo.",
+      "code_staff_title": "Code hôtel",
+      "code_staff_hint": "Demande à ton manager (ex. KP001 pour la propriété #1 à Koh Phangan).",
+      "code_staff_placeholder": "KP001",
+      "code_ambassador_title": "Code ambassadeur",
+      "code_ambassador_hint": "Ton ID Ambassadeur Staylo personnel (ex. AMB-7421).",
+      "code_ambassador_placeholder": "AMB-0001",
+      "code_guest_title": "Code de réservation ou code hôtel",
+      "code_guest_hint": "Depuis ta confirmation de réservation, ou simplement le code hôtel par curiosité.",
+      "code_guest_placeholder": "KP001 ou BK-9F2A"
+    },
+    "shell": {
+      "hotel_default": "Hôtel Staylo",
+      "search_channels": "Rechercher des canaux…",
+      "online_count": "{n} en ligne",
+      "signout": "Se déconnecter ↪",
+      "signout_tooltip": "Cliquer pour se déconnecter",
+      "section": {
+        "all_staff": "TOUT LE PERSONNEL",
+        "departments": "SERVICES",
+        "operations": "OPÉRATIONS",
+        "management": "DIRECTION",
+        "guest_pulse": "RETOURS CLIENTS",
+        "my_network": "MON RÉSEAU",
+        "my_stay": "MON SÉJOUR"
+      },
+      "composer_placeholder": "Message #{channel}…",
+      "rail": {
+        "channels": "Canaux",
+        "search": "Rechercher",
+        "tasks": "Tâches (bientôt)",
+        "alerts": "Alertes",
+        "team": "Équipe (RH + Planning)",
+        "timesheet": "Ma feuille de temps",
+        "settings": "Réglages hôtel",
+        "profile": "Profil"
+      },
+      "date": {
+        "today": "Aujourd'hui · {date}",
+        "yesterday": "Hier · {date}"
+      },
+      "time": {
+        "now": "maintenant"
+      },
+      "seed_splash_team": "Configuration de l'équipe…",
+      "seed_splash_schedules": "Génération des plannings 90 jours…",
+      "seed_splash_timesheets": "Génération des pointages…",
+      "seed_splash_finance": "Données comptables mensuelles…",
+      "seed_splash_recipes": "Bibliothèque de recettes…",
+      "seed_splash_tasks": "Modèles de tâches…",
+      "seed_splash_done": "Presque terminé…",
+      "members_count": "{n} membres",
+      "message_placeholder": "Message #{channel}…",
+      "time_now": "maintenant",
+      "clock_in": "Pointer",
+      "clock_in_with_window": "Pointer ({start}–{end})",
+      "clock_break_over": "🔔 Pause TERMINÉE — retour maintenant",
+      "clock_on_break": "En pause · {n}min restantes",
+      "clock_back_title": "Tape quand tu es de retour à ton poste",
+      "clock_back_tap": "Taper → retour au travail",
+      "clock_out_title": "Tape pour pointer la sortie (GPS vérifié)",
+      "clock_on_shift": "En service · {dur}",
+      "clock_on_shift_ot": "En service · {dur} · HS {ot}",
+      "clock_out_tap": "Taper pour pointer sortie",
+      "clock_in_title": "GPS vérifié à l'hôtel uniquement",
+      "break_skipped_approved": "✓ Pause sautée (approuvée)",
+      "break_skipped_approved_title": "Le manager a approuvé ta demande de non-pause. Le temps de pause est payé comme du temps travaillé.",
+      "break_skip_pending": "⏳ Sauter pause — en attente d'approbation",
+      "break_skip_pending_title": "En attente de l'approbation du manager. Une fois approuvée, ton temps de pause sera payé comme du temps travaillé.",
+      "break_start_title": "Commencer la pause ({n}min)",
+      "break_start_confirm": "Commencer ta pause maintenant ?\n\nL'app te rappellera 5 minutes avant la fin et quand il faut revenir ({n}min au total).",
+      "break_skip_title": "Sauter ta pause aujourd'hui (nécessite approbation manager)",
+      "bottom": {
+        "chat": "Chat",
+        "team": "Équipe",
+        "alerts": "Alertes",
+        "me": "Moi"
+      }
+    },
+    "channels": {
+      "group_all_staff": "TOUT LE PERSONNEL",
+      "group_departments": "SERVICES",
+      "group_operations": "OPÉRATIONS",
+      "group_management": "MANAGEMENT",
+      "group_guest_pulse": "PULSE CLIENT",
+      "group_my_network": "MON RÉSEAU",
+      "group_my_stay": "MON SÉJOUR",
+      "general": "général",
+      "general_d": "Tout le personnel",
+      "announcements": "annonces",
+      "announcements_d": "Annonces officielles de la direction",
+      "emergency": "urgence",
+      "emergency_d": "Notifications critiques uniquement",
+      "reception": "réception",
+      "housekeeping": "ménage",
+      "kitchen": "cuisine",
+      "maintenance": "maintenance",
+      "security": "sécurité",
+      "spa": "spa",
+      "finance": "finance",
+      "sales": "ventes",
+      "room_status": "statut-chambres",
+      "room_status_d": "Mises à jour temps réel des chambres",
+      "orders": "commandes",
+      "orders_d": "Bons de cuisine",
+      "maintenance_requests": "demandes-maintenance",
+      "maintenance_requests_d": "Tickets de maintenance",
+      "valet_desk": "voiturier",
+      "valet_desk_d": "Demandes voiturier / parking",
+      "lost_found": "objets-trouvés",
+      "lost_found_d": "Objets oubliés par les clients",
+      "managers": "managers",
+      "managers_d": "Discussion management uniquement",
+      "daily_briefing": "briefing-quotidien",
+      "revenue": "revenue",
+      "guest_feedback": "avis-clients",
+      "guest_feedback_d": "Avis et plaintes clients",
+      "ambassadors": "ambassadeurs",
+      "ambassadors_d": "Réseau ambassadeurs Staylo",
+      "commissions": "commissions",
+      "commissions_d": "Tes commissions et paiements",
+      "staylo_hq": "staylo-hq",
+      "staylo_hq_d": "Annonces officielles Staylo",
+      "concierge": "conciergerie",
+      "concierge_d": "Demandes spéciales et conciergerie",
+      "room_service": "room-service",
+      "room_service_d": "Commandes en chambre",
+      "staylo_news": "staylo-news",
+      "staylo_news_d": "Activités locales et événements"
+    },
+    "depts": {
+      "management": "Direction",
+      "front_office": "Front office",
+      "housekeeping": "Ménage",
+      "f_b": "F&B",
+      "maintenance": "Maintenance",
+      "spa": "Spa",
+      "security": "Sécurité",
+      "admin": "Admin & Finance",
+      "sales": "Ventes & Événements"
+    },
+    "roles": {
+      "general_manager": "Directeur Général",
+      "deputy_general_manager": "Directeur Général Adjoint",
+      "operations_manager": "Resp. opérations",
+      "revenue_manager": "Revenue Manager",
+      "front_office_manager": "Resp. front office",
+      "night_auditor": "Night Auditor",
+      "senior_receptionist": "Réceptionniste sénior",
+      "receptionist": "Réceptionniste",
+      "trainee_receptionist": "Stagiaire réception",
+      "concierge": "Concierge",
+      "doorman": "Portier",
+      "bellman_porter": "Bagagiste",
+      "valet_driver": "Voiturier",
+      "guest_relations_officer": "Resp. relations clients",
+      "executive_housekeeper": "Gouvernante générale",
+      "floor_supervisor": "Resp. d'étage",
+      "senior_room_attendant": "Femme de chambre senior",
+      "room_attendant": "Femme/Valet de chambre",
+      "turndown_attendant": "Préposé(e) à la couverture",
+      "laundry_manager": "Resp. lingerie",
+      "laundry_attendant": "Préposé(e) lingerie",
+      "public_areas_attendant": "Préposé(e) parties communes",
+      "f_b_manager": "Resp. F&B",
+      "executive_chef": "Chef exécutif",
+      "sous_chef": "Sous-chef",
+      "chef_de_partie": "Chef de partie",
+      "commis_chef": "Commis de cuisine",
+      "pastry_chef": "Chef pâtissier",
+      "pastry_cook": "Pâtissier",
+      "kitchen_steward": "Plongeur",
+      "restaurant_manager": "Resp. restaurant",
+      "maitre_d_hotel": "Maître d'hôtel",
+      "senior_waiter": "Serveur sénior",
+      "waiter_server": "Serveur",
+      "trainee_waiter": "Stagiaire serveur",
+      "head_bartender": "Chef barman",
+      "bartender": "Barman",
+      "barista": "Barista",
+      "room_service_server": "Serveur room service",
+      "banquet_captain": "Capitaine banquet",
+      "banquet_server": "Serveur banquet",
+      "chief_engineer": "Chef de la maintenance",
+      "maintenance_supervisor": "Resp. maintenance",
+      "electrician": "Électricien",
+      "plumber": "Plombier",
+      "hvac_technician": "Technicien CVC",
+      "carpenter": "Menuisier",
+      "painter": "Peintre",
+      "gardener": "Jardinier",
+      "pool_technician": "Technicien piscine",
+      "it_support": "Support informatique",
+      "spa_manager": "Resp. spa",
+      "senior_therapist": "Thérapeute senior",
+      "therapist": "Thérapeute",
+      "beauty_therapist": "Esthéticienne",
+      "fitness_manager": "Resp. fitness",
+      "fitness_coach": "Coach fitness",
+      "yoga_instructor": "Prof. de yoga",
+      "security_manager": "Resp. sécurité",
+      "security_supervisor": "Superviseur sécurité",
+      "security_officer": "Agent de sécurité",
+      "night_security": "Sécurité de nuit",
+      "financial_controller": "Contrôleur financier",
+      "accountant": "Comptable",
+      "hr_manager": "Resp. RH",
+      "hr_payroll_officer": "Agent RH / Paie",
+      "purchasing_manager": "Resp. achats",
+      "purchaser": "Acheteur",
+      "director_of_sales": "Directeur des ventes",
+      "sales_manager": "Resp. ventes",
+      "marketing_manager": "Resp. marketing",
+      "event_manager": "Resp. événements",
+      "wedding_coordinator": "Coordinatrice mariages"
+    },
+    "team": {
+      "title": "Équipe",
+      "subtitle": "Gestion de ton équipe et de tes shifts.",
+      "tile": {
+        "roster_t": "Liste",
+        "roster_d": "Fiches employés, contrats, photos.",
+        "schedule_t": "Planning",
+        "schedule_d": "Voir et éditer les shifts.",
+        "tasks_t": "Tâches",
+        "tasks_d": "Briefings, todo, récurrences.",
+        "recipes_t": "Recettes",
+        "recipes_d": "Standardisation cuisine & coûts.",
+        "payroll_t": "Paie",
+        "payroll_d": "Fiches de paie, OT, absences, pools."
+      },
+      "tab": {
+        "roster": "👥 Liste",
+        "schedule": "📅 Planning",
+        "tasks": "📋 Tâches",
+        "recipes": "📔 Recettes",
+        "payroll": "💶 Paie"
+      },
+      "head_title_roster": "Liste du personnel",
+      "head_title_schedule": "Planning",
+      "head_title_tasks": "Tâches",
+      "head_title_recipes": "Recettes",
+      "head_title_payroll": "Paie"
+    },
+    "me": {
+      "title": "Moi",
+      "tile": {
+        "profile_t": "Profil",
+        "profile_d": "Mes infos, mon contrat, mon historique.",
+        "timesheet_t": "Mon pointage",
+        "timesheet_d": "Mes heures travaillées, pauses, OT.",
+        "charges_t": "Charges",
+        "charges_d": "Vue d'ensemble des dépenses et revenus.",
+        "settings_t": "Paramètres hôtel",
+        "settings_d": "Configuration générale (managers).",
+        "inventory_t": "Inventaire",
+        "inventory_d": "Stock & fournitures",
+        "reports_t": "Rapports",
+        "reports_d": "Analytique & exports",
+        "signout_t": "Déconnexion",
+        "signout_d": "Changer d'utilisateur / effacer la session",
+        "soon": "bientôt"
+      },
+      "tab": {
+        "profile": "👤 Profil",
+        "timesheet": "⏱️ Pointage",
+        "finance": "💶 Charges",
+        "settings": "⚙️ Paramètres"
+      },
+      "head_title_profile": "Mon profil",
+      "head_title_timesheet": "Mon pointage",
+      "head_title_settings": "Paramètres"
+    },
+    "alerts_view": {
+      "title": "Alertes",
+      "subtitle": "Tes canaux avec messages non lus.",
+      "empty": "🎉 Tout à jour ! Aucun message non lu."
+    },
+    "context": {
+      "last_shift": "🕒 Dernier shift : {date} ({hours}h)",
+      "no_recent_shift": "🕒 Pas de shift récent",
+      "week_planned": "📅 Cette semaine : {hours}h prévues",
+      "month_absences": "🏖️ Ce mois : {n} jours d'absence",
+      "month_absences_none": "🏖️ Aucune absence ce mois",
+      "home_venue": "📍 Zone principale : {venue}",
+      "contract_lang": "📄 Langue contrat : {lang}",
+      "tooltip": "Ton contexte personnel — connecté en tant que {name}"
+    },
+    "tasks_tab": {
+      "date_label": "📅 Tâches du",
+      "today": "Aujourd'hui",
+      "new_task": "+ Nouvelle tâche",
+      "empty_mgr": "Aucune tâche pour cette date. Clique « + Nouvelle tâche » pour en créer une (avec récurrence optionnelle).",
+      "empty_staff": "Aucune tâche assignée à toi pour cette date. Profites-en ! 🎉",
+      "assignee_all": "🌐 Tout le personnel",
+      "assignee_unknown": "👤 Inconnu",
+      "recur_once": "unique",
+      "recur_daily": "quotidien",
+      "recur_weekly": "hebdo",
+      "recur_monthly": "mensuel",
+      "recur_per_shift": "à chaque shift",
+      "mark_done": "Marquer comme fait",
+      "mark_undone": "Marquer comme non fait",
+      "prio_urgent": "URGENT",
+      "prio_high": "ÉLEVÉE",
+      "prio_normal": "NORMALE",
+      "prio_low": "BASSE",
+      "service_count": "{n} tâche{s}",
+      "done_by": "✓ fait par {name}",
+      "delete_confirm_simple": "Supprimer cette tâche ?",
+      "delete_confirm_recur": "Supprimer cette tâche (et toutes ses récurrences futures) ?",
+      "edit_tooltip": "Modifier",
+      "delete_tooltip": "Supprimer",
+      "service_cross_dept": "Inter-services",
+      "service_other": "Autre"
+    },
+    "msg_preview": {
+      "room_status": "🛏️ Mise à jour statut chambre",
+      "order": "🍽️ Bon de commande",
+      "maintenance": "🔧 Demande de maintenance",
+      "valet": "🚗 Demande voiturier",
+      "commission": "💰 Alerte commission",
+      "briefing": "📊 Briefing quotidien",
+      "emergency": "🚨 Alerte urgence",
+      "feedback": "⭐ Avis client"
+    },
+    "common": {
+      "cancel": "Annuler",
+      "save": "Enregistrer",
+      "delete": "Supprimer",
+      "close": "Fermer",
+      "confirm": "Confirmer",
+      "dismiss": "Fermer",
+      "edit": "Modifier",
+      "view": "Voir",
+      "add": "Ajouter",
+      "remove": "Retirer",
+      "next": "Suivant →",
+      "back": "← Retour",
+      "loading": "Chargement…",
+      "yes": "Oui",
+      "no": "Non",
+      "guest": "Client",
+      "view_not_implemented": "Vue pas encore implémentée.",
+      "status_live": "En direct",
+      "status_suggested": "Suggéré",
+      "status_confirmed": "Confirmé"
+    },
+    "cards": {
+      "room": "Chambre {n}",
+      "floor": "Étage {n}",
+      "no_room": "Chambre —",
+      "table": "Table",
+      "elapsed_min": "{n} min écoulées",
+      "elapsed_delayed": "{n} min écoulées · ⚠️ retard",
+      "checked": "✓ Vérifié",
+      "btn_confirm": "Confirmer",
+      "btn_next": "Suivant →",
+      "btn_advance": "Avancer →",
+      "lbl_status": "Statut",
+      "lbl_assigned": "Assigné à",
+      "lbl_resolution": "Résolution",
+      "lbl_response": "Délai",
+      "lbl_type": "Type",
+      "lbl_eta": "ETA",
+      "valet_default_type": "Récupérer voiture",
+      "valet_default_status": "DEMANDÉ",
+      "commission_default_hotel": "Hôtel partenaire",
+      "commission_subtitle": "Nouvelle réservation confirmée",
+      "commission_label": "Commission",
+      "commission_booking_amt": "Réservation {n}$",
+      "commission_view_earnings": "Voir mes gains →",
+      "briefing_title": "Briefing quotidien",
+      "briefing_lbl_occupancy": "Occupation",
+      "briefing_lbl_arrivals": "Arrivées",
+      "briefing_lbl_departures": "Départs",
+      "briefing_lbl_vips": "VIPs du jour",
+      "briefing_lbl_open_items": "À traiter",
+      "emergency_badge": "URGENCE",
+      "emergency_alert_default": "ALERTE",
+      "emergency_default_instructions": "Suivre le protocole",
+      "emergency_ack_count": "{n} / {total} confirmés",
+      "emergency_btn_ack": "Confirmer",
+      "feedback_default_category": "Avis général",
+      "feedback_rating": "Note : {n}/5",
+      "feedback_btn_followup": "Faire suivre →",
+      "no_quick_actions": "Aucune action rapide disponible pour ton rôle."
+    },
+    "score": {
+      "tile_title": "🏆 Score",
+      "tile_desc": "Ton hôtel vs le réseau · benchmark live · classement entre pairs",
+      "tab_label": "🏆 Score",
+      "head_title": "Performance Score",
+      "head_subtitle": "Ton hôtel comparé à {n} propriétés Staylo anonymisées — en live.",
+      "tagline": "Tu n'es pas seul. Tu es le meilleur du réseau.",
+      "arc_score_label": "Score réseau",
+      "arc_score_caption": "Top {pct}% du réseau",
+      "arc_grade_S": "Élite",
+      "arc_grade_A": "Solide",
+      "arc_grade_B": "Bon",
+      "arc_grade_C": "À la traîne",
+      "sec_radar": "📡 Benchmark — comparaison 5 axes",
+      "sec_radar_sub": "Là où tu domines vs là où tu perds du terrain. Moyenne réseau anonymisée, mise à jour toutes les 6h.",
+      "radar_legend_you": "Ton hôtel",
+      "radar_legend_network": "Moyenne réseau",
+      "axis_occupancy": "Occupation",
+      "axis_revpar": "RevPAR",
+      "axis_staff_eff": "Efficacité staff",
+      "axis_fnb_margin": "Marge F&B",
+      "axis_guest_return": "Retour client",
+      "sec_kpis": "📊 Détail des KPIs",
+      "sec_kpis_sub": "Chaque KPI avec ta valeur, moyenne réseau, ton percentile, et tendance 30j.",
+      "kpi_you_label": "Toi",
+      "kpi_network_label": "Réseau",
+      "kpi_rank_label": "Rang",
+      "kpi_trend_label": "Tendance 30j",
+      "kpi_top_pct": "Top {pct}%",
+      "kpi_unit_pct": "%",
+      "kpi_unit_thb": "฿",
+      "kpi_help_occupancy": "Chambres vendues ÷ chambres disponibles × 100",
+      "kpi_help_revpar": "Revenu par chambre disponible (CA chambres ÷ chambres dispo)",
+      "kpi_help_staff_eff": "CA total ÷ équivalent temps plein",
+      "kpi_help_fnb_margin": "Marge brute F&B ÷ CA F&B × 100",
+      "kpi_help_guest_return": "% de clients qui re-bookent dans 12 mois",
+      "sec_rank": "🏅 Classement réseau live",
+      "sec_rank_sub": "Hôtels pairs anonymisés par score. Les positions bougent toutes les quelques secondes — ton réseau est vivant.",
+      "rank_you": "Toi",
+      "rank_anon_hotel": "Hôtel #{code}",
+      "rank_movement_up": "▲ {n}",
+      "rank_movement_down": "▼ {n}",
+      "rank_movement_same": "—",
+      "sec_insight": "💡 Ce que ça débloque",
+      "insight_1_t": "Négocier les fournisseurs depuis la data",
+      "insight_1_d": "Marge F&B 14% au-dessus de la moyenne réseau → renégocie tes contrats avec des preuves.",
+      "insight_2_t": "Justifier le prochain investissement",
+      "insight_2_d": "Efficacité staff sous la moyenne → ajoute des outils d'auto, réutilise les modules Staylo pour rattraper.",
+      "insight_3_t": "Montrer à la coop sa valeur",
+      "insight_3_d": "La comparaison anonymisée donne à chaque hôtelier-propriétaire l'envie de s'améliorer, sans exposer ses données privées.",
+      "insight_4_t": "Dashboard prêt-investisseur",
+      "insight_4_d": "La position dans le réseau est une vanity metric que seuls les investisseurs adorent. Maintenant tu l'as sur ton téléphone.",
+      "demo_note": "🎭 Mode démo — les chiffres benchmark sont simulés. En prod, lecture des agrégats anonymisés depuis le data lake de la coopérative."
+    },
+    "stock": {
+      "tile_title": "📦 Stock",
+      "tile_desc": "Inventaire prédictif · déduction auto via recettes · alertes rupture",
+      "tab_label": "📦 Stock",
+      "head_title": "Stock Intelligence",
+      "head_subtitle": "Inventaire prédictif câblé à tes fiches techniques. Chaque commande déduit les ingrédients, chaque rupture est anticipée avant qu'elle morde.",
+      "tagline": "Sais ce qui va manquer — avant que ça manque.",
+      "hero_lbl_tracked": "Ingrédients suivis",
+      "hero_lbl_at_risk": "À risque maintenant",
+      "hero_lbl_predicted": "Ruptures prédites avant minuit",
+      "hero_lbl_velocity": "Articles consommés dans la dernière heure",
+      "sec_critical": "🚨 Critique — agir maintenant",
+      "sec_critical_sub": "Ruptures prédites dans moins de 4h au rythme de consommation actuel.",
+      "sec_critical_empty": "✓ Aucune rupture critique prédite. Nickel.",
+      "critical_remaining": "{n}{unit} restants · {pct}% du seuil",
+      "critical_velocity": "Consomme {n}{unit}/h",
+      "critical_stockout_in": "Rupture dans {h}h {m}m ({time})",
+      "critical_stockout_now": "🛑 EN RUPTURE",
+      "critical_used_in": "Utilisé dans : {dishes}",
+      "critical_covers_at_risk": "{n} couverts/h en risque sans action",
+      "critical_btn_reorder": "🛒 Réappro auto {amt}{unit} chez {supplier}",
+      "critical_btn_acknowledged": "✓ Commande passée",
+      "sec_all_stock": "📊 Tous les ingrédients",
+      "sec_all_stock_sub": "Trié par urgence. Clique sur un item pour voir les plats liés + l'historique.",
+      "stock_lbl_qty": "Qté",
+      "stock_lbl_par": "Seuil",
+      "stock_lbl_velocity": "Conso/h",
+      "stock_lbl_eta": "ETA rupture",
+      "stock_eta_safe": "OK",
+      "stock_eta_idle": "Inactif",
+      "stock_eta_today": "Aujourd'hui {time}",
+      "stock_eta_tomorrow": "Demain",
+      "stock_eta_days": "+{n}j",
+      "stock_search": "Rechercher un ingrédient…",
+      "sec_deductions": "📥 Déductions du jour",
+      "sec_deductions_sub": "Chaque commande Pulse déduit auto via la recette liée. Flux live.",
+      "sec_deductions_empty": "Pas encore de déductions — Pulse n'a sonné aucune commande.",
+      "deduction_line": "{order} · {qty}{unit} de {ing} (via {recipe})",
+      "sec_restock": "🛒 Calendrier de réappro",
+      "sec_restock_sub": "Livraisons planifiées chez tes fournisseurs. Des suggestions auto apparaissent quand le stock est bas.",
+      "restock_supplier": "{name}",
+      "restock_eta": "{day} à {time}",
+      "restock_items": "{n} articles",
+      "restock_btn_view": "Voir la commande",
+      "stream_play": "▶ Lancer simulation",
+      "stream_pause": "⏸ Pause",
+      "demo_note": "🎭 Mode démo — les niveaux de stock et taux de consommation sont simulés. Connecte-toi à ton inventaire réel pour voir des données live."
+    },
+    "pulse": {
+      "tile_title": "💰 Pulse",
+      "tile_desc": "Connecte chaque POS · revenus live · distribution pool auto",
+      "tab_label": "💰 Pulse",
+      "head_title": "Staylo Pulse",
+      "head_subtitle": "Le système nerveux au-dessus de chaque POS — connecter, voir, distribuer.",
+      "tagline": "Pas un POS. L'orchestrateur au-dessus de TOUS les POS.",
+      "sec_connectors": "🔌 Connecteurs POS",
+      "sec_connectors_sub": "Branche Staylo sur ton système existant. Change de POS plus tard — Staylo garde l'historique.",
+      "connector_status_connected": "✓ Connecté",
+      "connector_status_available": "Disponible",
+      "connector_status_soon": "Bientôt",
+      "connector_btn_connect": "Connecter",
+      "connector_btn_configure": "Configurer",
+      "connector_stores_count": "{n} boutique{s}",
+      "sec_live_stream": "⚡ Flux des commandes en live",
+      "sec_live_stream_sub": "Chaque sonnage arrive ici en <300ms via webhook. Chaque commande taggée + routée.",
+      "stream_paused": "Flux en pause — clique pour reprendre",
+      "stream_play": "▶ Lancer",
+      "stream_pause": "⏸ Pause",
+      "order_table": "Table {n}",
+      "order_room": "Chambre {n}",
+      "order_pool_credit": "+{amt} {cur} → pool de {name}",
+      "order_ambassador_credit": "+{amt} {cur} → {name} (ambassadeur)",
+      "order_total": "Total",
+      "sec_pool_live": "💧 Distribution Pool en live",
+      "sec_pool_live_sub": "Vois la cagnotte de chaque serveur se remplir en temps réel. Fini l'enfer du calcul de fin de mois.",
+      "pool_today_distributed": "Distribué aujourd'hui",
+      "pool_per_pt": "{amt} {cur} / pt",
+      "pool_pts": "{n} pts",
+      "pool_top_earner": "Meilleur du jour",
+      "sec_revenue_pulse": "🌐 Pulse Revenus · Multi-devise",
+      "sec_revenue_pulse_sub": "Les revenus du jour se mettent à jour à chaque transaction, en 5 devises live.",
+      "rev_lbl_today": "Aujourd'hui",
+      "rev_lbl_yesterday": "vs hier",
+      "rev_rate_updated": "Taux mis à jour il y a {n}s",
+      "rev_rate_source": "Source : CoinGecko + BCE + BoT",
+      "sec_features": "✨ Ce que ça débloque",
+      "feat_realtime_pool_t": "Pool crédité en temps réel",
+      "feat_realtime_pool_d": "Les serveurs voient leur cagnotte se remplir au fur et à mesure. Distribué en fiat OU $STAY.",
+      "feat_recipe_stock_t": "Stock piloté par recette",
+      "feat_recipe_stock_d": "Chaque sonnage déduit les ingrédients. Anticipe les ruptures avant qu'elles arrivent.",
+      "feat_cross_venue_t": "Folio multi-lieux",
+      "feat_cross_venue_d": "Le bracelet du client paie au bar + spa + F&B → check-out unifié dans n'importe quelle devise.",
+      "feat_ambassador_t": "Suivi ambassadeur jusqu'à la table",
+      "feat_ambassador_d": "Client référé qui dépense → 10% de commission crédités automatiquement à l'ambassadeur.",
+      "feat_compliance_t": "Compliance-as-code",
+      "feat_compliance_d": "e-Tax Invoice TH, NF525 FR, fiscal EU — auto-générés selon le pays.",
+      "feat_offline_t": "Offline-first",
+      "feat_offline_d": "Coupure de courant sur l'île ? Les commandes sonnent en local, sync au retour du réseau.",
+      "feat_nft_t": "Reçus NFT (optionnel)",
+      "feat_nft_d": "Chaque réservation + repas peut générer un NFT. Loyalty cross-hôtel, on-chain.",
+      "feat_coop_t": "Profit-share coopératif",
+      "feat_coop_d": "Chaque transaction du réseau redistribue un % à tous les hôteliers-propriétaires. Built-in.",
+      "sec_compliance": "🛡️ Statut compliance",
+      "compl_th_etax": "🇹🇭 e-Tax Invoice (Thaïlande)",
+      "compl_th_etax_status": "Actif · {n} reçus signés aujourd'hui",
+      "compl_vat": "TVA 7% · auto",
+      "sec_demo_note": "🎭 Mode démo — les commandes ci-dessous sont simulées. Connecte un POS réel pour voir des données live.",
+      "btn_connect_now": "🔌 Connecter mon POS",
+      "btn_view_roadmap": "🗺️ Vision & roadmap"
+    },
+    "dialogs": {
+      "access_denied_post": "Accès refusé : tu ne peux pas poster dans ce canal.",
+      "team_staff_only": "Le module Équipe est réservé au personnel.",
+      "signout_reset": "Se déconnecter et réinitialiser la session ?",
+      "delete_evaluation": "Supprimer cette évaluation ?",
+      "pick_skill_to_evaluate": "Choisis un skill / recette / tâche à évaluer.",
+      "role_name_required": "Le nom du rôle est obligatoire.",
+      "role_already_exists": "Un rôle avec ce nom existe déjà.",
+      "pool_name_required": "Le nom du pool est obligatoire.",
+      "pool_not_found": "Pool introuvable.",
+      "enter_total_first": "Entre d'abord un montant total.",
+      "no_eligible_staff": "Aucun employé éligible à la distribution.",
+      "no_pool_configured": "Aucun pool configuré. Ouvre Paramètres → Pools pour en ajouter un.",
+      "popup_blocked": "Pop-up bloquée. Autorise les pop-ups sur cette page pour imprimer les fiches de paie.",
+      "invite_link_copied": "Lien d'invitation copié dans le presse-papiers.\n\nColle-le dans un nouvel onglet pour tester en tant que cet employé, ou envoie-le par e-mail.",
+      "recipe_name_required": "Le nom de la recette est obligatoire.",
+      "name_and_date_required": "Nom et date obligatoires.",
+      "title_required": "Le titre est obligatoire.",
+      "pick_assignee": "Choisis un assigné.",
+      "set_start_end_times": "Indique les heures de début et fin.",
+      "select_at_least_one_day": "Sélectionne au moins un jour.",
+      "no_oneoff_to_clone": "Aucune tâche unique attachée à ce jour à cloner ailleurs. Ajoute d'abord des tâches via la section Tâches.",
+      "explain_break_skip": "Explique pourquoi tu ne peux pas prendre ta pause. Ton manager a besoin du contexte pour approuver.",
+      "geolocation_unavailable": "API de géolocalisation non disponible sur cet appareil.",
+      "could_not_get_location": "Impossible d'obtenir la localisation : {err}",
+      "language_load_failed": "Échec du chargement de la langue : {lang}",
+      "invite_declined": "Cette invitation a été refusée précédemment. Demande à ton manager de la réémettre si tu veux la rejoindre.",
+      "invite_unrecognized": "Lien d'invitation non reconnu pour l'hôtel {hotel}. Demande un nouveau QR à ton manager.",
+      "delete_pool_record": "Supprimer ce pool ? Les montants distribués seront retirés des gains de chaque employé.",
+      "reopen_payslip": "Rouvrir cette fiche de paie ?\n\nLe statut repassera à « Approuvée », l'édition du planning redevient possible et tu peux modifier les montants. La date de paiement originale est tracée dans l'audit.",
+      "delete_payslip": "Supprimer cette fiche de paie ? Les valeurs auto-calculées réapparaîtront au prochain ouvert.",
+      "delete_recipe": "Supprimer cette recette ?",
+      "delete_event": "Supprimer cet événement personnalisé ?",
+      "delete_task": "Supprimer cette tâche ?",
+      "delete_entry": "Supprimer cette entrée ?",
+      "submit_skip_break": "Envoyer la demande de saut de pause ?\n\nTon manager sera notifié. Tant qu'elle n'est pas approuvée, ton shift continue normalement.",
+      "reseed_demo": "Re-seeder le dataset démo ? Ça ré-ajoute l'équipe d'exemple (sans toucher tes données réelles déjà sauvegardées)."
+    },
+    "assembly": {
+      "title": "Point de rassemblement",
+      "go_here_now": "Rejoindre MAINTENANT",
+      "btn_dismiss": "Fermer"
+    },
+    "skills": {
+      "lbl_evaluations": "Évaluations",
+      "lbl_average": "Moyenne",
+      "lbl_trend_3": "Tendance (3 dernières)",
+      "section_by_skill": "Par skill",
+      "section_history": "Historique"
+    },
+    "roster_fiche": {
+      "back": "← Retour à la liste",
+      "new_employee": "Nouvel employé",
+      "sec_identity": "Identité",
+      "sec_contact": "Contact",
+      "sec_job": "Poste",
+      "sec_documents": "Documents au dossier",
+      "sec_uniform": "Uniforme",
+      "sec_meals": "Repas (cantine du personnel)",
+      "sec_housing": "Logement (hébergement du personnel)",
+      "sec_device_security": "🔐 Sécurité de l'appareil",
+      "lbl_first_name": "Prénom",
+      "lbl_last_name": "Nom",
+      "lbl_nationality": "Nat.",
+      "lbl_dob": "Date de naissance",
+      "lbl_id_type": "Type de pièce",
+      "lbl_id_number": "N° de pièce / passeport",
+      "id_passport": "📕 Passeport",
+      "id_national_id": "🪪 Carte d'identité",
+      "id_driver_license": "🚗 Permis de conduire",
+      "id_other": "❓ Autre",
+      "lbl_email": "E-mail",
+      "lbl_phone_cc": "+ Code",
+      "lbl_phone_number": "Numéro de téléphone",
+      "lbl_address": "Adresse",
+      "lbl_role": "Rôle",
+      "add_custom_role": "➕ Ajouter un nouveau rôle au catalogue",
+      "lbl_contract_type": "Type de contrat",
+      "ct_full_time": "Temps plein",
+      "ct_part_time": "Temps partiel",
+      "ct_seasonal": "Saisonnier",
+      "ct_probation": "Période d'essai (3m)",
+      "lbl_reports_to": "👔 Supérieur direct",
+      "supervisor_none": "— Aucun —",
+      "lbl_hire_date": "Date d'embauche",
+      "lbl_contract_end": "Fin de contrat",
+      "lbl_salary_per_month": "Salaire ({cur} / mois)",
+      "lbl_hours_per_week": "h/sem",
+      "lbl_days_per_week": "j/sem",
+      "auto_shift_prefix": "⏱️ Shift auto : ",
+      "auto_shift_suffix": " travaillé + pause ({h}h/sem ÷ {d}j/sem) — pré-remplit l'heure de fin lors de l'édition des shifts.",
+      "warn_shift_illegal": "⛔ Hors la loi : {dur}h/shift dépasse le maximum légal de {max}h ({country}).",
+      "warn_shift_overtime": "⚠️ Heures supplémentaires : {dur}h/shift > {normal}h normal ({country}).",
+      "warn_weekly_illegal": "⛔ Hebdo hors la loi : {h}h/sem dépasse le plafond légal de {max}h ({country}).",
+      "warn_weekly_overtime": "⚠️ Au-dessus du seuil normal : {h}h/sem > {normal}h normal ({country}).",
+      "warn_no_rest": "⛔ Repos insuffisant : minimum {min} jour(s) de repos par semaine requis ({country}).",
+      "lbl_venue": "📍 Lieu / Zone",
+      "venue_none": "— Hôtel entier / pas de zone spécifique —",
+      "venue_empty_msg": "Aucun lieu configuré (Spa, restaurants, salon, boutique…).",
+      "venue_configure_btn": "⚙️ Configurer dans Paramètres hôtel",
+      "venue_add_inline": "+ Nouvelle zone",
+      "venue_add_prompt": "Nom de la nouvelle zone (Spa, Sunset Bar, Beach Pavilion, Pastry Kitchen…)",
+      "venue_added_toast": "✓ Zone « {name} » ajoutée — assignée à cet employé",
+      "lbl_contract_language": "Langue du contrat",
+      "cl_bilingual": "Bilingue EN + TH",
+      "cl_en": "Anglais uniquement",
+      "cl_th": "Thaï uniquement",
+      "lbl_pool_points": "💰 Pts pool {mode}",
+      "pool_default_mode": "(défaut)",
+      "pool_override_mode": "(personnalisé)",
+      "pool_default_opt": "💰 Défaut ({n}pt)",
+      "pool_override_opt": "Personnalisé : {n}pt",
+      "pool_override_out": " (exclu)",
+      "lbl_id_doc": "Copie passeport / pièce",
+      "doc_not_yet": "Pas encore",
+      "doc_on_file": "✓ Au dossier",
+      "lbl_work_permit_required": "Permis de travail requis",
+      "wp_no_thai": "Non (Thaï)",
+      "wp_yes_foreign": "Oui (étranger)",
+      "lbl_work_permit_copy": "Copie permis de travail",
+      "doc_na_or_not_yet": "N/A ou pas encore",
+      "lbl_uniform_provided": "Uniforme fourni",
+      "uniform_yes": "Oui — fourni",
+      "uniform_no": "Pas d'uniforme",
+      "lbl_uniform_responsibility": "Responsabilité d'entretien",
+      "uniform_employer": "L'hôtel lave (pressing)",
+      "uniform_employee": "L'employé entretient",
+      "lbl_meal_benefit": "Avantage repas",
+      "meal_free": "✓ Repas gratuits",
+      "meal_paid": "Le personnel paie",
+      "meal_none": "Aucun avantage",
+      "lbl_meals_per_day": "Repas / jour",
+      "lbl_meal_price": "Prix / repas ({cur})",
+      "ph_zero_free": "0 = gratuit",
+      "lbl_housing_provided": "Fourni",
+      "housing_no_own": "Non — propre logement",
+      "housing_yes": "✓ Oui",
+      "lbl_housing_type": "Type",
+      "ht_shared_room": "Chambre partagée (dortoir)",
+      "ht_private_room": "Chambre individuelle",
+      "ht_studio": "Studio",
+      "ht_apartment": "Appartement",
+      "ht_house": "Maison",
+      "ht_other": "Autre",
+      "lbl_housing_max": "Occ. max",
+      "lbl_housing_rent": "Loyer / mois ({cur})",
+      "lbl_housing_description": "Description (lieu, équipements, règles)",
+      "ph_housing_description": "ex. chambre 18m² avec salle de bain privée, clim, wifi, derrière le bâtiment du personnel. Fumer dehors uniquement.",
+      "tpl_reuse": "📋 Réutiliser :",
+      "btn_delete": "Supprimer",
+      "btn_cancel": "Annuler",
+      "btn_save": "💾 Enregistrer",
+      "btn_contract_qr": "📄 Contrat + QR",
+      "confirm_delete": "Supprimer ce dossier employé ? Cette action est irréversible.",
+      "alert_first_name_required": "Le prénom est obligatoire."
+    },
+    "schedule_nav": {
+      "prev": "← Préc.",
+      "this": "Aujourd'hui",
+      "next": "Suiv. →",
+      "view_day": "Jour",
+      "view_week": "Semaine",
+      "view_fortnight": "2 semaines",
+      "view_month": "Mois",
+      "period_today": "aujourd'hui",
+      "period_week": "cette semaine",
+      "period_fortnight": "ces 2 semaines",
+      "period_month": "ce mois",
+      "period_noun_day": "jour",
+      "period_noun_week": "semaine",
+      "period_noun_fortnight": "2 semaines",
+      "period_noun_month": "mois",
+      "all_depts": "📁 Tous les services ({n})",
+      "all_venues": "📍 Toutes les zones",
+      "events_btn": "📅 Événements",
+      "print_btn": "🖨️ Imprimer",
+      "dash_toggle_tooltip": "Afficher ou masquer les 4 stats (Au travail / Effectué / Prévu / Absences).",
+      "dash_at_work_now_tip": "{in} pointés · {sched} censés travailler maintenant ({total} dans le scope)",
+      "dash_today_only_tip": "Aujourd'hui uniquement — ne change pas si tu modifies un shift d'un autre jour",
+      "dash_planned_tip": "Somme des heures prévues sur la période visible — se met à jour à chaque ajout/édition/suppression de shift",
+      "dash_absences_tip_yes": "Clique pour le détail par type, employé et date",
+      "dash_absences_tip_no": "Aucune absence sur la période visible",
+      "dash_at_work_now": "Au travail maintenant",
+      "dash_today_worked_planned": "Aujourd'hui · faites / prévues ({n} pers.)",
+      "dash_planned": "Planifié {period}",
+      "dash_absences": "Absences {period}"
+    },
+    "charges": {
+      "title": "Charges & P&L",
+      "tile_desc": "Vue d'ensemble des dépenses, revenus et marge nette.",
+      "subtitle": "Aperçu mensuel — éditable en temps réel.",
+      "total_expenses": "Total des dépenses",
+      "total_revenues": "Total des revenus",
+      "net_profit": "Bénéfice net",
+      "net_loss": "Perte nette",
+      "section": {
+        "fixed": "Dépenses fixes",
+        "payroll": "Paie (mensuelle)",
+        "hotel": "Revenus hôtel / hébergement",
+        "fnb": "Revenus F&B",
+        "ancillary": "Revenus annexes",
+        "shop": "Revenus boutique (hors F&B)"
+      },
+      "placeholder": {
+        "fixed": "ex. Loyer, électricité, eau…",
+        "hotel": "ex. Nuitées, forfaits…",
+        "fnb": "ex. Restaurant, bar, room service…",
+        "ancillary": "ex. Excursions, location véhicules, plongée…",
+        "shop": "ex. Boutique, bijouterie, art…"
+      },
+      "add_line": "+ Ajouter une ligne",
+      "delete_line": "Supprimer cette ligne ?",
+      "empty_state": "Aucune donnée pour ce mois. Ajoute des lignes ci-dessus.",
+      "payroll_info": "Le payroll total ({n} employés) s'ajoute automatiquement aux dépenses.",
+      "this_month": "Ce mois",
+      "this_month_title": "Ce mois",
+      "prev_month": "← Mois précédent",
+      "next_month": "Mois suivant →",
+      "copy_from": "📋 Copier depuis…",
+      "copy_tooltip": "Copier toutes les lignes d'un mois précédent",
+      "copy_confirm": "Copier toutes les lignes de {month} vers {target} ? Les lignes existantes seront fusionnées (par catégorie).",
+      "export_csv": "📥 Export CSV",
+      "export_tooltip": "Exporter le mois courant + snapshot payroll"
+    }
   }
 }

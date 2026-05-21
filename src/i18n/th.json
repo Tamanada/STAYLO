@@ -1089,5 +1089,2367 @@
     "review3_quote": "ตอนแรกผมสงสัย แต่โมเดลธรรมาภิบาลเป็นจริง หนึ่งที่พัก หนึ่งโหวต เราตัดสินใจอนาคตของแพลตฟอร์มจริงๆ",
     "review3_name": "Kenji M.",
     "review3_role": "เจ้าของ, Zen Garden Villa"
+  },
+  "app": {
+    "roster": {
+      "scope_label_full": "พนักงาน {count} คน · {hotel}",
+      "scope_label_filtered": "พนักงาน {count} / {total} คน · {hotel}",
+      "scope_label_dept": "{count} คนในแผนก {dept}",
+      "dept_filter_all": "ทุกแผนก ({count})",
+      "dept_filter_item": "{dept} ({count})",
+      "new_employee_btn": "+ เพิ่มพนักงานใหม่",
+      "empty_state": "ยังไม่มีพนักงาน คลิก \"+ เพิ่มพนักงานใหม่\" เพื่อเริ่มสร้างทีมของคุณ",
+      "empty_state_filtered": "ไม่มีพนักงานในแผนก {dept} เปลี่ยนตัวกรองเพื่อดูแผนกอื่น",
+      "row_subtitle": "{role} · {dept}{outletStr} · {nationality}",
+      "row_outlet_chip": " · {outlet}",
+      "chip_onboarded": "เริ่มงานแล้ว",
+      "chip_pending": "รอตอบรับคำเชิญ"
+    },
+    "employee_form": {
+      "back_to_roster": "← กลับไปหน้ารายชื่อพนักงาน",
+      "title_new": "พนักงานใหม่",
+      "title_existing": "{first_name} {last_name}",
+      "section": {
+        "identity": "ข้อมูลส่วนตัว",
+        "contact": "ติดต่อ",
+        "job": "ตำแหน่งงาน",
+        "documents": "เอกสารที่บันทึกไว้",
+        "uniform": "ยูนิฟอร์ม",
+        "meals": "อาหาร (โรงอาหารพนักงาน)",
+        "housing": "ที่พัก (หอพักพนักงาน)"
+      },
+      "label": {
+        "first_name": "ชื่อ",
+        "last_name": "นามสกุล",
+        "nationality": "สัญชาติ",
+        "date_of_birth": "วันเกิด",
+        "id_type": "ประเภทบัตร",
+        "national_id": "เลขบัตรประชาชน / พาสปอร์ต",
+        "email": "อีเมล",
+        "phone_cc": "+ รหัส",
+        "phone_number": "เบอร์โทรศัพท์",
+        "address": "ที่อยู่",
+        "role": "ตำแหน่ง",
+        "contract_type": "ประเภทสัญญา",
+        "reports_to": "ขึ้นตรงต่อ",
+        "hire_date": "วันที่เริ่มงาน",
+        "end_date": "วันสิ้นสุดสัญญา",
+        "salary": "เงินเดือน ({currency} / เดือน)",
+        "hours_per_week": "ชม./สัปดาห์",
+        "days_per_week": "วัน/สัปดาห์",
+        "outlet": "ร้านอาหาร / เอาท์เลต",
+        "contract_language": "ภาษาในสัญญา",
+        "pool_points_default": "คะแนน Pool (ค่าเริ่มต้น)",
+        "pool_points_override": "คะแนน Pool (กำหนดเอง)",
+        "id_doc_copy": "สำเนาพาสปอร์ต / บัตรประชาชน",
+        "work_permit_required": "ต้องมีใบอนุญาตทำงาน",
+        "work_permit_copy": "สำเนาใบอนุญาตทำงาน",
+        "uniform_provided": "มียูนิฟอร์มให้",
+        "uniform_responsibility": "ความรับผิดชอบในการดูแล",
+        "meal_benefit": "สวัสดิการอาหาร",
+        "meals_per_day": "มื้อ / วัน",
+        "meal_price": "ราคา / มื้อ ({currency})",
+        "housing_provided": "มีที่พักให้",
+        "housing_type": "ประเภท",
+        "housing_max_occupants": "จำนวนผู้พักสูงสุด",
+        "housing_rent": "ค่าเช่า / เดือน ({currency})",
+        "housing_description": "รายละเอียด (ที่ตั้ง สิ่งอำนวยความสะดวก กฎ)"
+      },
+      "placeholder": {
+        "nationality": "TH",
+        "national_id": "A12345678",
+        "email": "name@example.com",
+        "phone_number": "81 234 5678",
+        "days_per_week": "6",
+        "meals_per_day": "3",
+        "meal_price": "0 = ฟรี",
+        "housing_max_occupants": "2",
+        "housing_rent": "0 = ฟรี",
+        "housing_description": "เช่น ห้องขนาด 18 ตร.ม. มีห้องน้ำในตัว แอร์ ไวไฟ หลังตึกพนักงาน สูบบุหรี่นอกห้องเท่านั้น"
+      },
+      "id_type": {
+        "passport": "พาสปอร์ต",
+        "national_id": "บัตรประชาชน",
+        "driver_license": "ใบขับขี่",
+        "other": "อื่นๆ"
+      },
+      "role_custom_suffix": "(กำหนดเอง)",
+      "btn": {
+        "add_custom_role": "+ เพิ่มตำแหน่งใหม่ในรายการ",
+        "delete": "ลบ",
+        "cancel": "ยกเลิก",
+        "save": "บันทึก",
+        "contract_qr": "สัญญา + QR"
+      },
+      "contract_type": {
+        "full_time": "เต็มเวลา",
+        "part_time": "พาร์ทไทม์",
+        "seasonal": "ตามฤดูกาล",
+        "probation": "ทดลองงาน (3 เดือน)"
+      },
+      "reports_to": {
+        "none": "— ไม่มี —",
+        "option": "{first_name} {last_name} · {role}"
+      },
+      "hint": {
+        "auto_shift_label": "กะอัตโนมัติ: ",
+        "auto_shift_detail": " เวลาทำงาน + เบรก ({hours} ชม./สัปดาห์ ÷ {days} วัน/สัปดาห์) — เติมเวลาเลิกกะอัตโนมัติเมื่อแก้ไขกะ"
+      },
+      "outlet": {
+        "hotel_wide": "— ทั่วทั้งโรงแรม —",
+        "empty_hint": "ยังไม่มีเอาท์เลต",
+        "configure_btn": "ตั้งค่าในหน้าตั้งค่าโรงแรม"
+      },
+      "contract_language": {
+        "bilingual": "สองภาษา EN + TH",
+        "en": "อังกฤษเท่านั้น",
+        "th": "ไทยเท่านั้น"
+      },
+      "pool_points": {
+        "default_option": "ค่าเริ่มต้น ({pts} คะแนน)",
+        "override_option": "กำหนดเอง: {pts} คะแนน",
+        "override_zero_suffix": " (ไม่เข้าร่วม)"
+      },
+      "doc": {
+        "not_yet": "ยังไม่มี",
+        "on_file": "บันทึกแล้ว",
+        "na_or_not_yet": "ไม่มี หรือยังไม่ส่ง",
+        "permit_no": "ไม่ต้อง (คนไทย)",
+        "permit_yes": "ต้อง (ต่างชาติ)"
+      },
+      "uniform": {
+        "yes": "มี — ทางโรงแรมจัดหาให้",
+        "no": "ไม่มียูนิฟอร์ม"
+      },
+      "uniform_resp": {
+        "employer": "โรงแรมซัก (laundry)",
+        "employee": "พนักงานดูแลเอง"
+      },
+      "meal_benefit": {
+        "free": "อาหารฟรี",
+        "paid": "พนักงานจ่ายเอง",
+        "none": "ไม่มีสวัสดิการ"
+      },
+      "housing_provided": {
+        "no": "ไม่มี — พักเอง",
+        "yes": "มี"
+      },
+      "housing_type": {
+        "shared_room": "ห้องรวม (หอพัก)",
+        "private_room": "ห้องส่วนตัว",
+        "studio": "สตูดิโอ",
+        "apartment": "อพาร์ตเมนต์",
+        "house": "บ้าน",
+        "other": "อื่นๆ"
+      },
+      "confirm": {
+        "delete": "ลบประวัติพนักงานคนนี้? การลบไม่สามารถย้อนกลับได้"
+      },
+      "alert": {
+        "first_name_required": "กรุณากรอกชื่อ"
+      },
+      "add_role_modal": {
+        "title": "เพิ่มตำแหน่งกำหนดเอง",
+        "desc": "สร้างชื่อตำแหน่งที่ไม่มีในรายการมาตรฐาน ตำแหน่งใหม่จะใช้ช่องและระดับการเข้าถึงของแผนกนั้น",
+        "label": {
+          "name": "ชื่อตำแหน่ง",
+          "icon": "ไอคอน",
+          "department": "แผนก"
+        },
+        "placeholder": {
+          "name": "เช่น ซอมเมอลิเย่ พนักงานต้อนรับสปา กัปตันเรือ"
+        },
+        "btn": {
+          "cancel": "ยกเลิก",
+          "add": "+ เพิ่มตำแหน่ง"
+        },
+        "alert": {
+          "name_required": "กรุณากรอกชื่อตำแหน่ง",
+          "duplicate_name": "มีตำแหน่งชื่อนี้อยู่แล้ว"
+        }
+      }
+    },
+    "schedule": {
+      "team_member": "สมาชิกทีม",
+      "team_member_caps": "สมาชิกทีม",
+      "total_caps": "รวม",
+      "coverage": "การครอบคลุม",
+      "peak": "สูงสุด {n}",
+      "view": {
+        "day": "วัน",
+        "week": "สัปดาห์",
+        "fortnight": "2 สัปดาห์",
+        "month": "เดือน"
+      },
+      "period_noun": {
+        "day": "วัน",
+        "week": "สัปดาห์",
+        "fortnight": "2 สัปดาห์",
+        "month": "เดือน"
+      },
+      "period_total": {
+        "week": "สัปดาห์",
+        "fortnight": "ช่วง 2 สัปดาห์",
+        "month": "เดือน"
+      },
+      "dashboard_period": {
+        "day": "วันนี้",
+        "week": "สัปดาห์นี้",
+        "fortnight": "2 สัปดาห์นี้",
+        "month": "เดือนนี้"
+      },
+      "nav": {
+        "previous": "← {period}ก่อนหน้า",
+        "this": "{period}นี้",
+        "next": "{period}ถัดไป →",
+        "events": "📅 อีเวนต์",
+        "events_tooltip": "จัดการวันหยุด เทศกาล งานฟูลมูนปาร์ตี้…",
+        "print": "🖨️ พิมพ์",
+        "undo": "↶ เลิกทำ ({n})",
+        "undo_tooltip": "เลิกทำ: {label} · {n} การเปลี่ยนแปลง{plural} ย้อนกลับได้",
+        "skip_break_pending": "🚫 มี {n} คำขอข้ามเบรกค้างอยู่",
+        "skip_break_pending_tooltip": "พนักงาน {n} คน{plural} ขอข้ามเบรก — รอการอนุมัติของคุณ"
+      },
+      "dept_filter": {
+        "all_depts": "📁 ทุกแผนก ({n})",
+        "dept_label": "📁 แผนก {dept}",
+        "all_outlets": "📁 {dept} · ทุกเอาท์เลต ({n})",
+        "outlet": "{dept} · {outlet} ({n})"
+      },
+      "outlet_filter": {
+        "all": "🥂 ทุกเอาท์เลต"
+      },
+      "readonly_hint": "🔒 มุมมองอ่านอย่างเดียว — เฉพาะผู้จัดการแผนกของคุณเท่านั้นที่แก้ไขกะได้",
+      "empty": {
+        "dept_no_employees": "ยังไม่มีพนักงานในแผนก {dept}",
+        "add_in_roster": "ยังไม่มีพนักงาน เพิ่มสมาชิกทีมในแท็บรายชื่อพนักงานก่อน",
+        "ask_hr": "ยังไม่มีสมาชิกทีมในแผนกของคุณ ขอให้ HR/GM เพิ่มให้"
+      },
+      "day_header": {
+        "click_to_open": "คลิกเพื่อเปิดดูรายละเอียดของวันนี้ (มุมมอง Gantt รายชั่วโมง)"
+      },
+      "cell": {
+        "add_shift_tooltip": "เพิ่มกะ — หรือลากกะจากวันอื่นมาวาง",
+        "add_shift_row_tooltip": "เพิ่มกะ — หรือลากกะจากแถวอื่นมาวาง",
+        "locked_tooltip": "🔒 ล็อก — สลิปเงินเดือนเดือนนี้จ่ายแล้ว",
+        "locked_short": "🔒 ล็อก (จ่ายสลิปแล้ว)",
+        "locked_long": "🔒 ล็อก — สลิปเงินเดือนของเดือนนี้จ่ายแล้ว",
+        "readonly": "อ่านอย่างเดียว",
+        "empty": "—",
+        "click_edit_drag_move": "คลิกเพื่อแก้ไขหรือลบ · ลากไปวันอื่นเพื่อย้าย (Ctrl+ลาก = คัดลอก)",
+        "click_edit_remove_drag": "คลิกเพื่อแก้ไขหรือลบ · ลากไปวันอื่นเพื่อย้าย · ",
+        "overnight_suffix": " · ข้ามคืน (สิ้นสุดวันถัดไป {time})",
+        "overnight_marker": " +1 วัน",
+        "break_minutes_short": "เบรก {n} นาที",
+        "break_skip_pending": "⏳ ข้าม?",
+        "break_skip_pending_tooltip": "⏳ ข้ามเบรก รอผู้จัดการอนุมัติ",
+        "break_skipped": "🚫 ไม่เบรก",
+        "break_skipped_tooltip": "✓ ข้ามเบรกอย่างเป็นทางการ (อนุมัติแล้ว) เวลาทำงาน = เต็มกะ ไม่หักเวลาเบรก",
+        "actual_worked_tooltip": "ทำงานจริง {duration} (ลงเวลาเข้า/ออก)",
+        "actual_check": "✓ {duration}",
+        "tasks_count": "📋 {n}",
+        "tasks_tooltip": "{n} งาน{plural}:\n{list}\n\nคลิกเพื่อเปิด"
+      },
+      "row": {
+        "open_fiche_tooltip": "คลิกเพื่อเปิดดูข้อมูลพนักงานคนนี้",
+        "unknown_employee": "(ไม่ทราบชื่อ)"
+      },
+      "totals": {
+        "planned_period": "ชั่วโมงที่วางแผนไว้รวม{period}นี้",
+        "actual_period": "ทำงานจริง{period}นี้"
+      },
+      "day_view": {
+        "event_tooltip": "{name}",
+        "now_label": "ตอนนี้",
+        "hour_format": "{hh} น.",
+        "continued_overnight_tooltip": "ต่อจากกะข้ามคืนของเมื่อวาน ({start}–{end})",
+        "continued_overnight_label": "→ {time}",
+        "bar_tooltip_editable": "{start}–{end}{overnight} · เบรก {min} นาที{at_clause} · คลิกเพื่อแก้ไข · ลากเพื่อย้าย (Ctrl=คัดลอก)",
+        "bar_break_at": " เวลา {time}",
+        "break_notch_tooltip": "🍱 เบรก {time} ({min} นาที)",
+        "coverage_hour_tooltip": "{n} {label} ทำงานเวลา {hh}:00{gap}",
+        "coverage_one": "คน",
+        "coverage_many": "คน",
+        "coverage_gap_suffix": " — กำลังคนไม่พอ!"
+      },
+      "dashboard": {
+        "at_work_now": "กำลังทำงานอยู่{scope}",
+        "at_work_now_tooltip": "ลงเวลาแล้ว {clocked} · ตามตารางจะต้องทำงานตอนนี้ {scheduled} (รวม {total} คนในขอบเขต)",
+        "today_worked_planned": "วันนี้ · ทำจริง / วางแผน ({n} คน){scope}",
+        "today_worked_planned_tooltip": "เฉพาะวันนี้ — ไม่เปลี่ยนแปลงหากแก้ไขกะวันอื่น",
+        "planned_period": "วางแผน{period}{scope}",
+        "planned_period_tooltip": "รวมชั่วโมงที่วางแผนทั้งหมดในช่วงเวลาที่แสดง — อัปเดตทุกครั้งที่เพิ่ม/แก้ไข/ลบกะ",
+        "absences_period": "การขาดงาน{period}{scope}",
+        "absences_period_tooltip_clickable": "คลิกเพื่อดูรายละเอียดทั้งหมดตามประเภท พนักงาน และวันที่",
+        "absences_period_tooltip_empty": "ไม่มีการขาดงานในช่วงเวลาที่แสดง"
+      },
+      "absence_breakdown": {
+        "eyebrow": "🤒 รายละเอียดการขาดงาน",
+        "heading": "{n} วัน{plural} {period}{scope}",
+        "summary": "{paid} จ่าย · {unpaid} ไม่จ่าย · {types} ประเภท{plural}",
+        "row_count": "{n} วัน",
+        "row_paid_unpaid": " ({paid} จ่าย · {unpaid} ไม่จ่าย)",
+        "row_paid": "จ่าย",
+        "row_unpaid": "ไม่จ่าย",
+        "row_tooltip": "คลิกเพื่อเปิดดูวันนี้แบบละเอียด",
+        "footer_hint": "คลิกแถวใดก็ได้เพื่อข้ามไปยังวันนั้นในมุมมองรายวัน"
+      },
+      "events": {
+        "title": "📅 อีเวนต์และวันหยุด",
+        "tab_catalog": "📚 รายการ ({n})",
+        "tab_custom": "✏️ กำหนดเอง ({n})",
+        "catalog_intro": "อีเวนต์สำหรับ {flag} {country} เปิด/ปิดแต่ละรายการ — จะปรากฏในหัวตารางวัน",
+        "lunar_dates": "ตามจันทรคติ — {n} วันในปีนี้",
+        "custom_empty": "ยังไม่มีอีเวนต์กำหนดเอง เพิ่มอีเวนต์เฉพาะของโรงแรมด้านล่าง (ดินเนอร์ธีม วันครบรอบ เทศกาลท้องถิ่น…)",
+        "add_section_title": "เพิ่มอีเวนต์กำหนดเอง",
+        "placeholder": {
+          "emoji": "🎵",
+          "name": "ชื่ออีเวนต์ (เช่น คืนแจ๊สชมพระอาทิตย์ตก)"
+        },
+        "add_button": "+ เพิ่มอีเวนต์",
+        "confirm_delete_custom": "ลบอีเวนต์กำหนดเองนี้?",
+        "required_alert": "ต้องระบุชื่อและวันที่",
+        "done": "เสร็จสิ้น"
+      }
+    },
+    "shift_editor": {
+      "title": {
+        "edit": "แก้ไขรายการ",
+        "add": "เพิ่มรายการ"
+      },
+      "subtitle": "{first_name} {last_name} · {day_label}",
+      "type_toggle": {
+        "work": "💼 กะทำงาน",
+        "absence": "🤒 ขาดงาน"
+      },
+      "copy_from_colleague": "📋 คัดลอกจากเพื่อนร่วมงาน",
+      "copy_from_colleague_hint": "แตะเพื่อกรอกฟอร์มอัตโนมัติด้วยรูปแบบกะของ{role_or_team}คนอื่น",
+      "copy_chip_tooltip": "ใช้ {n} ครั้ง{plural} โดย {name}{role_suffix}",
+      "contract_label": "⏱️ สัญญา: ",
+      "contract_breakdown": "{hours_per_week} ชม./สัปดาห์ ÷ {days_per_week} วัน/สัปดาห์ = ",
+      "contract_worked": "ทำงาน {hours} ชม.",
+      "contract_per_shift": " ต่อกะ + เบรก {break} นาที = ",
+      "contract_total_clock": "{hours} ชม.บนนาฬิกา",
+      "contract_end_note": ". เวลาเลิกกะจะกรอกอัตโนมัติตามนี้",
+      "label": {
+        "start_time": "เวลาเริ่ม (คุณตั้งเอง)",
+        "end_time_auto": "เวลาเลิก (อัตโนมัติ = เริ่ม + ทำงาน {hours} ชม. + เบรก แก้ไขได้)",
+        "break_minutes": "เบรก (นาที — อัตโนมัติ)",
+        "break_starts_at": "เบรกเริ่มเวลา (อัตโนมัติ = เริ่ม + 4 ชม.)",
+        "absence_type": "ประเภทการขาดงาน",
+        "absence_notes": "หมายเหตุ (ถ้ามี)",
+        "apply_days": "ใช้กับวันใดในสัปดาห์นี้?",
+        "repeat": "ทำซ้ำ?"
+      },
+      "worked_hours_hint": "ชั่วโมงทำงาน = เลิก − เริ่ม − เบรก เมื่อคุณเปลี่ยนเวลาเริ่ม ทั้ง 3 ฟิลด์ที่คำนวณจะอัปเดตอัตโนมัติ คุณยังแก้ไขได้ภายหลัง",
+      "absence_type_option": "{em} {label} ({paid_state}) — {local}",
+      "absence_paid": "จ่าย",
+      "absence_unpaid": "ไม่จ่าย",
+      "absence_notes_placeholder": "เช่น มีใบรับรองแพทย์",
+      "reference_label": "📜 อ้างอิง: {ref}",
+      "series_detected": "💡 ตรวจพบชุดกะ: เลือกกะที่ตรงกัน {n} กะไว้ล่วงหน้า บันทึกจะอัปเดตทั้งหมด ลบจะลบทั้งหมด ยกเลิกการเลือกเพื่อข้ามได้",
+      "preset": {
+        "weekdays": "จันทร์–ศุกร์",
+        "weekend": "เสาร์–อาทิตย์",
+        "all_days": "ทุกวัน",
+        "clear": "ล้าง"
+      },
+      "day": {
+        "mon": "จ.",
+        "tue": "อ.",
+        "wed": "พ.",
+        "thu": "พฤ.",
+        "fri": "ศ.",
+        "sat": "ส.",
+        "sun": "อา."
+      },
+      "repeat": {
+        "this_week": "เฉพาะสัปดาห์นี้",
+        "next_week": "+ สัปดาห์หน้า",
+        "month": "+ ทั้งเดือน (4 สัปดาห์)",
+        "year": "+ ทั้งปี (52 สัปดาห์)",
+        "until_contract": "จนกว่าสัญญาสิ้นสุด ({date})"
+      },
+      "btn": {
+        "delete": "ลบ",
+        "clear": "🗑️ ล้าง…",
+        "cancel": "ยกเลิก",
+        "save": "บันทึก"
+      },
+      "confirm": {
+        "delete_one": "ลบรายการนี้?",
+        "delete_many": "ลบ {n} รายการ ({days})?\n\nยกเลิกการเลือกวันในตัวเลือกเพื่อข้ามได้"
+      },
+      "alert": {
+        "set_times": "กรุณาตั้งเวลาเริ่มและเวลาเลิก",
+        "select_day": "เลือกอย่างน้อยหนึ่งวัน"
+      },
+      "toast": {
+        "deleted": "✓ ลบ {n} กะ{plural} แล้ว",
+        "applied": "✓ ใช้กับ {n} กะ{plural} แล้ว",
+        "applied_skipped": " (ข้ามไป {n} กะที่เกินวันสิ้นสุดสัญญา)"
+      },
+      "snapshot": {
+        "delete": "ลบ {n} กะ{plural}",
+        "add_or_edit": "{action} {n} กะ{plural}",
+        "action_add": "เพิ่ม",
+        "action_edit": "แก้ไข"
+      }
+    },
+    "clear_scope": {
+      "title": "🗑️ ล้างกะ",
+      "subtitle": "{first_name} {last_name} — เลือกขอบเขต ทุกการดำเนินการย้อนกลับได้ภายใน 12 วินาที",
+      "scope": {
+        "week": "สัปดาห์นี้",
+        "month": "เดือนนี้",
+        "future": "กะในอนาคตทั้งหมด (ตั้งแต่วันนี้เป็นต้นไป)",
+        "all": "ทั้งหมด (ประวัติทั้งหมด)"
+      },
+      "shift_count": "{n} กะ{plural}",
+      "confirm": "ล้าง {n} กะ{plural} ของ {first_name} {last_name}?\n\nขอบเขต: {scope}{strong}\n\nย้อนกลับได้ภายใน 12 วินาที",
+      "confirm_strong_all": "\n\n⚠️ การกระทำนี้จะลบทุกกะที่เคยกำหนดไว้สำหรับ {first_name}",
+      "toast_cleared": "✓ ล้าง {n} กะ{plural} แล้ว ({scope})",
+      "snapshot": "ล้าง{scope}สำหรับ {first_name}",
+      "btn": {
+        "cancel": "ยกเลิก"
+      }
+    },
+    "skip_break": {
+      "staff_btn_tooltip": "ข้ามเบรกวันนี้ (ต้องได้รับการอนุมัติจากผู้จัดการ)",
+      "modal_title": "🚫 ข้ามเบรก — ขออนุมัติ",
+      "warning_label": "⚠️ สำคัญ: ",
+      "warning_body_1": "การข้ามเบรกต้องได้รับอนุมัติจากผู้จัดการ เมื่ออนุมัติแล้ว เวลาเบรกจะถูก",
+      "warning_body_paid": "จ่ายเป็นเวลาทำงาน",
+      "warning_body_2": " (คุณได้รับชั่วโมงเต็ม) ใช้เฉพาะเมื่อมีเหตุผลทางปฏิบัติงานจริงๆ ที่ทำให้เบรกไม่ได้ (ลูกค้าแน่น คนน้อย เหตุฉุกเฉิน)",
+      "reason_label": "เหตุผล (จำเป็น — ผู้จัดการจะเห็น)",
+      "reason_placeholder": "เช่น คนน้อยวันนี้ — บาร์จองเต็มตั้งแต่ 18.00 ถึง 23.00 ไม่มีเวลาพัก",
+      "btn": {
+        "cancel": "ยกเลิก",
+        "send": "📨 ส่งคำขอ"
+      },
+      "alert": {
+        "reason_required": "กรุณาอธิบายว่าทำไมจึงเบรกไม่ได้ ผู้จัดการต้องการบริบทเพื่ออนุมัติ"
+      },
+      "confirm": {
+        "submit": "ส่งคำขอข้ามเบรก?\n\nผู้จัดการจะได้รับแจ้งเตือน จนกว่าจะอนุมัติ กะของคุณจะดำเนินตามปกติ"
+      },
+      "staff_pill_approved": "✓ ข้ามเบรกแล้ว (อนุมัติ)",
+      "staff_pill_approved_tooltip": "ผู้จัดการอนุมัติคำขอไม่เบรกของคุณ เวลาเบรกถูกจ่ายเป็นเวลาทำงาน",
+      "staff_pill_pending": "⏳ ข้ามเบรก — รออนุมัติ",
+      "staff_pill_pending_tooltip": "รอผู้จัดการอนุมัติ เมื่ออนุมัติแล้ว เวลาเบรกจะถูกจ่ายเป็นเวลาทำงาน",
+      "review": {
+        "eyebrow": "🚫 คำขอข้ามเบรก",
+        "heading": "{n} รออนุมัติ",
+        "empty": "✓ ไม่มีคำขอข้ามเบรกค้างอยู่",
+        "shift_line": "📅 {date} · กะ {start}–{end} · เบรก {break} นาที",
+        "requested_at": "ขอเมื่อ {date}",
+        "no_reason": "(ไม่ได้ระบุเหตุผล)",
+        "btn_deny": "✗ ปฏิเสธ",
+        "btn_approve": "✓ อนุมัติ",
+        "btn_close": "ปิด",
+        "deny_prompt": "ระบุเหตุผลในการปฏิเสธ (พนักงานจะเห็น):",
+        "approve_confirm": "อนุมัติการข้ามเบรกของ {first_name} วันที่ {date}?\n\nเวลาเบรก {break} นาที จะถูกจ่ายเป็นเวลาทำงานในกะนี้"
+      }
+    },
+    "absence": {
+      "sick": "ลาป่วย",
+      "vacation": "ลาพักร้อน",
+      "annual_leave": "ลาพักร้อนประจำปี",
+      "pto": "PTO",
+      "work_accident": "อุบัติเหตุจากการทำงาน",
+      "work_injury": "บาดเจ็บจากการทำงาน",
+      "workers_comp": "ประกันแรงงาน",
+      "maternity": "ลาคลอด",
+      "maternity_fmla": "ลาคลอด (FMLA)",
+      "paternity": "ลาเพื่อภรรยาคลอด",
+      "personal": "ลากิจ",
+      "bereavement": "ลาฌาปนกิจ",
+      "public_holiday": "วันหยุดราชการ",
+      "bank_holiday": "วันหยุดธนาคาร",
+      "federal_holiday": "วันหยุดรัฐบาลกลาง",
+      "rtt": "RTT",
+      "jury_duty": "ลาเป็นลูกขุน"
+    },
+    "payroll": {
+      "access_denied": "🔒 การเข้าถึงเงินเดือนสงวนไว้สำหรับ HR / GM และผู้จัดการแผนก",
+      "prev_month": "← เดือนก่อน",
+      "next_month": "เดือนถัดไป →",
+      "dept_filter": {
+        "all": "📁 ทุกแผนก ({count})",
+        "dept_option": "{department} ({count})"
+      },
+      "scope_note": {
+        "dept_only": " · เฉพาะแผนก {department}",
+        "filter_only": " · เฉพาะ {department}"
+      },
+      "subtitle": "พนักงาน {count} คน{scope} · คลิกแถวเพื่อเปิดสลิปเงินเดือน",
+      "summary": {
+        "hotel_total": "🏨 รวมทั้งโรงแรม",
+        "dept_total": "🧑‍🍳 รวมแผนก {department}",
+        "month_employees": "{month} · พนักงาน {count} คน",
+        "grand_total": "รวมเงินเดือนทั้งหมด"
+      },
+      "pool": {
+        "locked_label": "🔒 ล็อกจนถึง TGE M07 + การตรวจสอบกฎหมายของกระเป๋ารับฝาก",
+        "distributed_label": "✓ แจกจ่ายแล้ว: {amount} {currency} ให้พนักงาน {count} คน",
+        "draft_label": "⏳ ฉบับร่าง: {amount} {currency} — ยังไม่ได้แจกจ่าย",
+        "not_configured_label": "— ยังไม่ได้ตั้งค่าสำหรับงวดนี้ —",
+        "strip_title": "💰 {pool_name} · {period}",
+        "btn_edit": "✎ แก้ไข",
+        "btn_set_up": "+ ตั้งค่า"
+      },
+      "row": {
+        "total_label": "🏨 รวม",
+        "total_status_short": "{paid}จ·{approved}อ·{draft}ร"
+      },
+      "col": {
+        "employee": "พนักงาน",
+        "planned": "วางแผน",
+        "worked": "ทำจริง",
+        "ot": "โอที",
+        "absences": "ขาดงาน",
+        "base_salary": "เงินเดือนฐาน",
+        "ot_pay": "+ ค่าโอที",
+        "pool_fiat": "+ Pool {currency}",
+        "pool_stay": "+ Pool $STAY",
+        "status": "สถานะ",
+        "tooltip_sort": "คลิกเพื่อเรียงตาม {label}",
+        "tooltip_sort_active": "คลิกเพื่อเรียงตาม {label} (สลับทิศทาง)"
+      },
+      "cell": {
+        "pool_fiat_tooltip": "ผลรวม Pool เงินสดทั้งหมดที่ลงในเดือนนี้ — ดูสลิปเพื่อรายละเอียด",
+        "pool_fiat_empty_tooltip": "ไม่มี Pool เงินสดแจกจ่ายในเดือนนี้",
+        "pool_stay_tooltip": "ผลรวม Pool $STAY ที่ลงในเดือนนี้",
+        "pool_stay_empty_tooltip": "ไม่มี Pool $STAY แจกจ่ายในเดือนนี้"
+      },
+      "chip": {
+        "paid": "✓ จ่ายแล้ว",
+        "approved": "✓ อนุมัติแล้ว",
+        "draft_saved": "บันทึกฉบับร่าง"
+      },
+      "empty": {
+        "not_opened": "— ยังไม่ได้เปิด —"
+      },
+      "alert": {
+        "editor_failed": "ไม่สามารถเปิดสลิปเงินเดือน:\n\n{error}"
+      }
+    },
+    "payslip": {
+      "access_denied": "🔒 คุณเปิดสลิปเงินเดือนได้เฉพาะของแผนกตัวเองเท่านั้น",
+      "header": {
+        "eyebrow": "💶 สลิปเงินเดือน · {month}",
+        "contract_subtitle": "{role} · {department} · {contract_type}"
+      },
+      "lock": {
+        "title": "🔒 ล็อก — สลิปเงินเดือนระบุว่าจ่ายแล้ว",
+        "description": "ทุกฟิลด์อ่านอย่างเดียว ตารางของเดือนนี้ก็ถูกล็อกด้วย คลิก \"เปิดใหม่\" เพื่อเปลี่ยนสถานะกลับเป็นอนุมัติและแก้ไขอีกครั้ง",
+        "reopen_btn": "🔓 เปิดใหม่",
+        "reopen_confirm": "เปิดสลิปเงินเดือนนี้ใหม่?\n\nสถานะจะเปลี่ยนกลับเป็น \"อนุมัติแล้ว\" สามารถแก้ไขตารางได้อีกครั้ง และคุณสามารถปรับยอดได้ ตราเวลา \"จ่ายแล้ว\" เดิมจะถูกบันทึกในประวัติการตรวจสอบ"
+      },
+      "hours": {
+        "planned": "วางแผน",
+        "worked": "ทำจริง",
+        "ot": "โอที",
+        "work_days": "วันทำงาน"
+      },
+      "absence_chip": {
+        "unpaid_suffix": "({count} ไม่จ่าย)",
+        "paid_suffix": "(จ่าย)"
+      },
+      "label": {
+        "base_salary": "เงินเดือนฐาน ({currency} / เดือน)",
+        "base_override": "⚠️ แก้ไข · สัญญา = {amount} {currency}",
+        "base_from_contract": "✓ จากสัญญา",
+        "ot_multiplier": "ตัวคูณโอที",
+        "gross": "รวมก่อนหัก",
+        "total_charges": "รวมรายการหัก",
+        "net_to_pay": "ยอดสุทธิที่ต้องจ่าย"
+      },
+      "btn": {
+        "reset_to_contract": "🔄 รีเซ็ตเป็นค่าตามสัญญา ({amount} {currency})",
+        "delete_saved": "ลบที่บันทึกไว้",
+        "cancel": "ยกเลิก",
+        "print": "🖨️ พิมพ์สลิปเงินเดือน",
+        "save": "💾 บันทึกสลิปเงินเดือน"
+      },
+      "section": {
+        "bonuses": "➕ โบนัส",
+        "manual_deductions": "➖ รายการหักด้วยตนเอง",
+        "pay_summary": "📊 สรุปการจ่าย",
+        "earnings": "💵 รายได้",
+        "charges": "📤 รายการหัก — เงินไปไหนบ้าง",
+        "payment": "💳 การชำระเงิน"
+      },
+      "manual_deductions_hint": "รายการหักอัตโนมัติ (ที่พัก ค่าอาหารที่จ่าย ขาดงานไม่จ่าย) จะถูกเพิ่มด้านล่างจากสัญญา — ไม่ต้องใส่ซ้ำที่นี่",
+      "bonus": {
+        "label_placeholder": "เช่น เซอร์วิสชาร์จ โบนัสตามผลงาน",
+        "add_btn": "+ เพิ่มโบนัส",
+        "locked_empty": "ไม่มีโบนัสในสลิปที่จ่ายแล้วนี้"
+      },
+      "deduction": {
+        "label_placeholder": "เช่น เบิกเงินล่วงหน้า ความเสียหายของยูนิฟอร์ม",
+        "add_btn": "+ เพิ่มรายการหัก",
+        "locked_empty": "ไม่มีรายการหักด้วยตนเองในสลิปที่จ่ายแล้วนี้"
+      },
+      "hourly_rate": {
+        "title": "⏱️ อัตราต่อชั่วโมง",
+        "formula": "{base} {currency} ÷ ({hours_per_week} ชม./สัปดาห์ × 4.333 สัปดาห์) = {rate} {currency}/ชม.",
+        "value_suffix": "{currency}/ชม."
+      },
+      "line": {
+        "base_salary": "เงินเดือนฐาน",
+        "base_salary_subtitle": "เต็มเดือน — ตามสัญญา",
+        "overtime": "โอที",
+        "overtime_subtitle": "{hours} ชม. × {rate} {currency}/ชม. × ตัวคูณ {multiplier}×",
+        "bonus_default_label": "โบนัส",
+        "bonus_prefix": "+ {label}",
+        "housing_rent": "− ค่าเช่าที่พัก",
+        "housing_rent_subtitle": "{housing_type} — เก็บรายเดือนตามสัญญา",
+        "staff_meals": "− ค่าอาหารพนักงาน (จ่าย)",
+        "staff_meals_subtitle": "{work_days} วันทำงาน × {meals} มื้อ/วัน × {price} {currency}/มื้อ",
+        "unpaid_absence": "− ขาดงานไม่จ่าย",
+        "unpaid_absence_subtitle": "{days} วัน × {amount} {currency}/วัน (ฐาน ÷ 30)",
+        "hours_short": "− ชั่วโมงขาด",
+        "hours_short_subtitle": "{hours} ชม. × {rate} {currency}/ชม. (ใช้ความผ่อนปรน {tolerance} ชม.)",
+        "deduction_default_label": "รายการหัก",
+        "deduction_prefix": "− {label}"
+      },
+      "pool": {
+        "line_label": "💰 {pool_name}",
+        "subtitle_pts_hours": "{points} คะแนน × {hours} ชม. = {pct}% ของน้ำหนัก Pool",
+        "subtitle_pts_hours_full": "{points} คะแนน × {hours} ชม. = {pct}% ของ {total} {currency} รวม",
+        "subtitle_share_only": "{pct}% ของ {total} {currency} รวม · {period}"
+      },
+      "stay": {
+        "title": "💎 โบนัสหุ้น $STAY (โทเค็น ไม่ใช่เงินสด)",
+        "line_subtitle": "{pct}% ของ {total} $STAY · {period}",
+        "disclaimer": "แจกเข้ากระเป๋ารับฝากของคุณบน staylo.app เมื่อถึง TGE M07 ไม่ได้นับรวมในเงินสุทธิรายเดือน"
+      },
+      "shortfall": {
+        "heading": "⏱️ ชั่วโมงขาด — {status}",
+        "within_tolerance": "✓ อยู่ในขอบเขตผ่อนปรน",
+        "exceeds_tolerate": "⚠️ เกินขอบเขตผ่อนปรน — แต่นโยบายคือ \"ผ่อนปรน\"",
+        "deducted": "➖ หักชั่วโมงแล้ว",
+        "flagged": "🚩 ถูกแจ้งเพื่อให้ผู้จัดการตรวจสอบ",
+        "body_within_tolerate": "ไม่ได้ทำงาน {hours} ชม. (วางแผน − จริง) ความผ่อนปรนคือ {tolerance} ชม./เดือน — ไม่หัก",
+        "body_exceeds_tolerate": "ไม่ได้ทำงาน {hours} ชม. (เทียบกับความผ่อนปรน {tolerance} ชม.) นโยบายปัจจุบันไม่หัก — เปลี่ยนเป็น \"หัก\" ในการตั้งค่าโรงแรมหากต้องการเรียกเก็บ",
+        "body_within_deduct": "ไม่ได้ทำงาน {hours} ชม. ภายในความผ่อนปรน {tolerance} ชม. — ไม่หัก",
+        "body_deducted": "ไม่ได้ทำงาน {hours} ชม. ผ่อนปรน {tolerance} ชม.; ส่วนที่เหลือ {beyond} ชม. ถูกหักตามอัตราต่อชั่วโมง (ดูรายการหักด้านบน)",
+        "body_within_flag": "ไม่ได้ทำงาน {hours} ชม. ภายในความผ่อนปรน {tolerance} ชม.",
+        "body_flagged": "ไม่ได้ทำงาน {hours} ชม. (เกินความผ่อนปรน {tolerance} ชม.) ตัดสินใจด้วยตนเอง: หักผ่าน \"เพิ่มรายการหัก\" ขอชดเชย หรือยอมรับ"
+      },
+      "bik": {
+        "title": "🎁 ผลประโยชน์ที่ไม่ใช่ตัวเงิน (avantages en nature)",
+        "subtitle": "ให้เพิ่มเติมจากเงินสด — มูลค่าทางเศรษฐกิจ ไม่ได้หักจากยอดสุทธิ",
+        "meals_line": "🍽️ อาหารฟรี — {days} วัน × {meals_per_day}/วัน × 80 {currency}",
+        "housing_line": "🏠 ที่พักฟรี — {housing_type} (มูลค่าประมาณ)",
+        "total": "ผลประโยชน์ที่ไม่ใช่ตัวเงินรวม",
+        "package_total": "แพคเกจค่าตอบแทนรวม: {amount} {currency} (เงินสด + ที่ไม่ใช่ตัวเงิน)"
+      },
+      "payment": {
+        "method": {
+          "placeholder": "— เลือกวิธีการ —",
+          "bank": "🏦 โอนผ่านธนาคาร",
+          "crypto": "🪙 คริปโต",
+          "cash": "💵 เงินสด"
+        },
+        "date_tooltip": "วันที่ชำระ",
+        "bank_name_label": "ชื่อธนาคาร",
+        "bank_name_placeholder": "เช่น ธนาคารกรุงเทพ กสิกร BNP Paribas",
+        "tx_ref_label": "เลขอ้างอิงธุรกรรม",
+        "tx_ref_placeholder": "เช่น TX12345 หรือเลขยืนยันการโอน",
+        "chain_label": "เชน / สินทรัพย์",
+        "chain_placeholder": "— เลือกเชน —",
+        "chain_other": "อื่นๆ",
+        "tx_hash_label": "Tx hash / address",
+        "tx_hash_placeholder": "0x... หรือ T...",
+        "cash_warning_lead": "⚠️ จ่ายเงินสด — ",
+        "cash_warning_body": "สลิปที่พิมพ์จะออกเป็น 2 ฉบับบนกระดาษ A4 หนึ่งแผ่น ทั้งสองฉบับต้องเซ็นโดยพนักงานและผู้จัดการ ฉบับหนึ่งเก็บที่โรงแรม อีกฉบับมอบให้พนักงาน"
+      },
+      "notes_label": "หมายเหตุภายใน (ไม่พิมพ์บนสลิป)",
+      "status_label": "สถานะ:",
+      "status": {
+        "draft": "ฉบับร่าง",
+        "approved": "✓ อนุมัติแล้ว",
+        "paid": "💸 จ่ายแล้ว"
+      },
+      "confirm": {
+        "delete": "ลบสลิปเงินเดือนที่บันทึกไว้นี้? ค่าที่คำนวณอัตโนมัติจะปรากฏใหม่ครั้งหน้าที่เปิด"
+      }
+    },
+    "payslip_print": {
+      "alert": {
+        "popup_blocked": "ป๊อปอัปถูกบล็อก กรุณาอนุญาตป๊อปอัปสำหรับหน้านี้เพื่อพิมพ์สลิป"
+      },
+      "window_title": "สลิปเงินเดือน — {first_name} {last_name} · {month}",
+      "title": "FICHE DE PAIE / สลิปเงินเดือน",
+      "label": {
+        "period": "งวด",
+        "issued": "ออกเมื่อ",
+        "employee": "พนักงาน",
+        "role": "ตำแหน่ง",
+        "department": "แผนก",
+        "hire_date": "วันที่เริ่มงาน",
+        "national_id": "เลขบัตรประชาชน",
+        "contract": "สัญญา",
+        "gross": "รวมก่อนหัก",
+        "total_charges": "รวมรายการหัก",
+        "net_to_pay": "ยอดสุทธิที่ต้องจ่าย",
+        "employee_sig": "ลายเซ็นพนักงาน",
+        "manager_sig": "ลายเซ็นผู้จัดการโรงแรม",
+        "manager_fallback": "__________"
+      },
+      "hotel_fallback": "โรงแรม · {hotel_code}",
+      "hourly_rate_label": "⏱️ อัตราต่อชั่วโมง:",
+      "hourly_rate_value": "{rate} {currency}/ชม.",
+      "hourly_rate_formula": "({base} {currency} ÷ {hours_per_week} ชม./สัปดาห์ × 4.333 สัปดาห์)",
+      "hours": {
+        "planned": "วางแผน:",
+        "worked": "ทำจริง:",
+        "ot": "โอที:",
+        "work_days": "วันทำงาน:",
+        "absences": "ขาดงาน:"
+      },
+      "section": {
+        "earnings": "💵 รายได้",
+        "charges": "📤 รายการหัก — เงินไปไหนบ้าง"
+      },
+      "line": {
+        "base_salary": "เงินเดือนฐาน (เต็มเดือน)",
+        "overtime": "โอที — {hours} ชม. × {rate} {currency}/ชม. × {multiplier}×",
+        "bonus_default": "โบนัส",
+        "bonus_prefix": "+ {label}",
+        "pool_with_pts": "💰 {pool_name} — {points} คะแนน × {hours} ชม. — {pct}% ของ {total} {currency}",
+        "pool_share_only": "💰 {pool_name} — {pct}% ของ {total} {currency}",
+        "housing_rent": "ค่าเช่าที่พัก ({housing_type})",
+        "staff_meals": "ค่าอาหารพนักงาน — {days} วัน × {meals_per_day}/วัน × {price}{currency}",
+        "unpaid_absence": "ขาดงานไม่จ่าย — {days} วัน × {amount}{currency}/วัน",
+        "deduction_default": "รายการหัก",
+        "deduction_prefix": "− {label}"
+      },
+      "bik": {
+        "title": "🎁 ผลประโยชน์ที่ไม่ใช่ตัวเงิน (avantages en nature)",
+        "subtitle": "ให้เพิ่มเติมจากเงินสด — มูลค่าทางเศรษฐกิจ ไม่นับรวมในยอดสุทธิ",
+        "meals_line": "🍽️ อาหารฟรี ({days} วัน × {meals_per_day}/วัน × 80{currency})",
+        "housing_line": "🏠 ที่พักฟรี ({housing_type})",
+        "total_label": "ผลประโยชน์ที่ไม่ใช่ตัวเงินรวม",
+        "package_total": "แพคเกจค่าตอบแทนรวม: {amount} {currency} (เงินสด + ที่ไม่ใช่ตัวเงิน)"
+      },
+      "stay": {
+        "title": "💎 โบนัสหุ้น $STAY (โทเค็น ไม่ใช่เงินสด)",
+        "subtitle": "แจกเข้ากระเป๋ารับฝากของพนักงานบน staylo.app หลัง TGE ไม่นับรวมในยอดสุทธิ — โบนัสโทเค็นแยกต่างหาก",
+        "line": "{pool_name} — {pct}% ของ {total} $STAY",
+        "total_label": "รวม $STAY งวดนี้"
+      },
+      "payment": {
+        "bank_label": "🏦 จ่ายผ่านการโอนธนาคาร",
+        "bank_line": "{bank} · อ้างอิง: {ref}",
+        "bank_fallback": "(ธนาคาร)",
+        "crypto_label": "🪙 จ่ายเป็นคริปโต",
+        "crypto_line": "{chain} · Tx: {ref}",
+        "crypto_fallback": "(เชน)",
+        "cash_label": "💵 จ่ายเป็นเงินสด",
+        "cash_note": "สลิปนี้ออกเป็น 2 ฉบับ ฉบับหนึ่งสำหรับโรงแรมและอีกฉบับสำหรับพนักงาน",
+        "date_label": "วันที่ชำระ:",
+        "ref_placeholder": "__________",
+        "not_recorded": "ยังไม่ได้บันทึกวิธีการชำระ"
+      },
+      "stamp": {
+        "hotel_copy": "🏨 ฉบับโรงแรม",
+        "employee_copy": "👤 ฉบับพนักงาน"
+      }
+    },
+    "settings": {
+      "title": "⚙️ ตั้งค่าโรงแรม",
+      "subtitle": {
+        "editable": "{hotel} · คุณสามารถแก้ไขสิ่งเหล่านี้ได้",
+        "readonly": "{hotel} · อ่านอย่างเดียว — ผู้จัดการแก้ไขได้"
+      },
+      "readonly_hint": "🔒 เฉพาะผู้จัดการทั่วไป / รองผู้จัดการ / ผู้จัดการฝ่ายปฏิบัติการ / ผู้จัดการแผนกเท่านั้นที่เปลี่ยนการตั้งค่าเหล่านี้ได้",
+      "section": {
+        "locale": "🌍 ภาษาและภูมิภาค",
+        "identity": "🏨 ข้อมูลและแบรนด์",
+        "emergency": "🚨 ฉุกเฉิน",
+        "fb_canteen": "🍽️ F&B และโรงอาหาร",
+        "payroll": "💶 นโยบายเงินเดือน",
+        "pools": "💰 Pools — โบนัสและการแบ่งปัน",
+        "timeclock": "⏱️ นาฬิกาลงเวลาและ Geofence",
+        "biometric": "🔒 ล็อกอินด้วยไบโอเมตริก (โหมดใช้งานจริงเท่านั้น)",
+        "demo_live": "🎭 โหมดทดลอง / LIVE"
+      },
+      "label": {
+        "country": "🌍 ประเทศ (ใช้กฎหมายแรงงานของประเทศนั้น)",
+        "currency": "💱 สกุลเงินที่แสดง",
+        "hotel_name": "ชื่อโรงแรม (ตามกฎหมายเต็ม)",
+        "hotel_address": "ที่อยู่ (เต็ม)",
+        "hotel_legal": "ข้อมูลทางกฎหมาย (Tax ID / VAT / เลขทะเบียนบริษัท — หลายบรรทัด)",
+        "hotel_logo": "โลโก้ (PNG / JPG / SVG, สูงสุด 500KB)",
+        "assembly": "จุดรวมพลกรณีฉุกเฉิน",
+        "evacuation": "ขั้นตอนการอพยพ",
+        "contact_fire": "ดับเพลิง",
+        "contact_police": "ตำรวจ",
+        "contact_medical": "การแพทย์",
+        "contact_manager": "ผู้จัดการเวรประจำ",
+        "first_aid": "ที่ตั้งกล่องปฐมพยาบาล",
+        "canteen_hours": "🍽️ เวลาเปิดโรงอาหารพนักงาน",
+        "outlets": "🥂 เอาท์เลต / สถานที่ F&B",
+        "shortfall_policy": "นโยบายชั่วโมงขาด",
+        "shortfall_tolerance": "ความผ่อนปรน (ชั่วโมง / เดือน)",
+        "geofence_lat": "ละติจูดของโรงแรม",
+        "geofence_lng": "ลองจิจูดของโรงแรม",
+        "geofence_radius": "รัศมี Geofence (เมตร)"
+      },
+      "country_option": "{flag} {name} — การขาดงานและการอ้างอิงเป็น {local_name}",
+      "currency_option": "{symbol}  {code} — {name}",
+      "identity": {
+        "sub": "ปรากฏบนสลิปและสัญญาที่พิมพ์ทุกใบ กรอกครั้งเดียว"
+      },
+      "placeholder": {
+        "hotel_name": "เช่น Sunset Beach Resort & Spa Co. Ltd.",
+        "hotel_address": "12/34 หมู่ 5 หาดริ้น\nเกาะพะงัน สุราษฎร์ธานี 84280\nประเทศไทย",
+        "hotel_legal": "Tax ID: 0123456789012\nเลขทะเบียนบริษัท: 0105561234567\nVAT: TH 1234567890123",
+        "assembly": "เช่น ชายสระว่ายน้ำ — สนามหญ้าหลัก",
+        "evacuation": "เดินอย่างสงบ… ห้ามใช้ลิฟต์… ช่วยแขกที่เคลื่อนไหวลำบาก…",
+        "contact_fire": "199",
+        "contact_police": "191",
+        "contact_medical": "1669",
+        "contact_manager": "+66 8…",
+        "canteen_hours": "06:00-09:00, 12:00-14:00, 18:00-21:00",
+        "outlets": "ห้องอาหารหลัก, Sunset Bar, Pool Cafe, ห้องจัดเลี้ยง",
+        "shortfall_tolerance": "2",
+        "geofence_lat": "9.7563",
+        "geofence_lng": "100.0309",
+        "geofence_radius": "200"
+      },
+      "logo": {
+        "no_logo": "ไม่มีโลโก้",
+        "btn": {
+          "replace": "🔄 เปลี่ยนโลโก้",
+          "upload": "📁 อัปโหลดโลโก้",
+          "remove": "× ลบ"
+        },
+        "too_large": "\"{name}\" ใหญ่เกินไป ({size}KB > จำกัด 500KB) ปรับขนาดก่อนหรือใช้ SVG"
+      },
+      "outlets": {
+        "hint": "คั่นด้วยจุลภาค จำเป็นหากโรงแรมมีหลายร้านอาหาร/บาร์ — เพื่อให้เชฟกรองตารางตามสถานที่ได้"
+      },
+      "payroll": {
+        "sub": "เมื่อพนักงานทำงานน้อยกว่าที่วางแผนไว้ (เช่น ลงเวลาออกเร็ว) สลิปเงินเดือนควรทำอย่างไร?",
+        "tolerance_hint": "ความผ่อนปรนรองรับความแปรปรวนเล็กน้อยในแต่ละเดือน (พักกลางวันนาน รถติด งานปิดกะที่ยืดออก) ต่ำกว่าเกณฑ์นี้ จะไม่หักไม่ว่านโยบายจะเป็นอย่างไร"
+      },
+      "shortfall": {
+        "tolerate": "✓ ผ่อนปรน (ค่าเริ่มต้น — ไม่หัก)",
+        "deduct": "➖ หักหากเกินความผ่อนปรน (ตามอัตราต่อชั่วโมง)",
+        "flag": "🚩 แจ้งให้ผู้จัดการตรวจสอบ (ไม่หักอัตโนมัติ)"
+      },
+      "pools": {
+        "sub": "โรงแรมสามารถมี Pool พร้อมกันได้กี่อันก็ได้: เซอร์วิสชาร์จ F&B รายเดือน โบนัสรายปีจาก % ของรายได้ การจ่ายตามผลงานครั้งเดียว หุ้น $STAY (หลัง TGE)… แต่ละ Pool ตั้งค่าตามแหล่งที่มา ความถี่ และวิธีการแบ่งปัน คะแนนต่อตำแหน่งและการกำหนดเองต่อพนักงานใช้ร่วมกันทุก Pool",
+        "list": {
+          "empty_state": "ยังไม่มี Pool คลิก \"+ เพิ่ม Pool\" ด้านล่างเพื่อสร้าง"
+        },
+        "locked_badge": "🔒 มาถึงที่ TGE M07",
+        "stay_badge": "$STAY",
+        "enabled_badge": "✓ เปิดใช้งาน",
+        "disabled_badge": "✗ ปิดใช้งาน",
+        "btn": {
+          "edit": "✎ แก้ไข",
+          "disable": "○ ปิดใช้งาน",
+          "enable": "● เปิดใช้งาน",
+          "delete": "🗑",
+          "add": "+ เพิ่ม Pool"
+        },
+        "confirm_delete": "ลบ Pool \"{name}\"?\n\nการดำเนินการนี้จะลบบันทึกการแบ่งปันที่เกี่ยวข้องด้วย ไม่สามารถย้อนกลับได้",
+        "role_points": {
+          "label": "⭐ คะแนนต่อตำแหน่ง — บาเรม 1 (เริ่มต้น) → 7 (ผู้บริหารสูงสุด)",
+          "hint": "ใช้โดย Pool ทุกอันที่แบ่งปัน \"ตามคะแนน\" หรือ \"ตามคะแนน × ชั่วโมง\" 0 = ไม่เข้าร่วม Pool เหล่านั้น สามารถกำหนดเองต่อพนักงานในประวัติพนักงาน"
+        }
+      },
+      "timeclock": {
+        "sub": "พนักงานสามารถลงเวลาเข้า/ออกได้ภายในรัศมี X เมตรจากพิกัด GPS นี้เท่านั้น ป้องกันการลงเวลาแบบทุจริต (เช่น จากบ้าน)"
+      },
+      "btn": {
+        "use_my_location": "📍 ใช้ตำแหน่งปัจจุบันของฉัน",
+        "getting_location": "📡 กำลังหาตำแหน่ง…",
+        "location_filled": "✓ กรอกด้วย GPS ปัจจุบันแล้ว",
+        "reseed_demo": "🔄 ติดตั้งข้อมูลทดลองใหม่",
+        "seed_big_hotel": "🏰 ติดตั้งโรงแรม BIG (~140 คน)",
+        "switch_live": "🚀 สลับเป็นโหมด LIVE",
+        "close": "ปิด",
+        "save": "บันทึกการตั้งค่า"
+      },
+      "geolocation": {
+        "unavailable": "Geolocation API ไม่พร้อมใช้งานบนอุปกรณ์นี้",
+        "error": "ไม่สามารถหาตำแหน่งได้: {message}"
+      },
+      "geofence": {
+        "strict_label": "โหมดเข้มงวด: บล็อกการลงเวลานอก Geofence (เทียบกับเตือนและแจ้ง)"
+      },
+      "biometric": {
+        "sub": "เมื่อเปิดใช้งาน พนักงานต้องปลดล็อกแอปด้วยลายนิ้วมือหรือ Face ID ทุกครั้งที่เปิด โทรศัพท์จะผูกกับบัญชีในฐานข้อมูล ต้องใช้กับการ deploy แบบ HTTPS — ใช้ในเครื่องไม่ได้",
+        "toggle_label": "ต้องใช้ไบโอเมตริกในการเปิดแอป",
+        "unsupported": "⚠️ เบราว์เซอร์นี้ไม่รองรับ WebAuthn (API ไบโอเมตริก) สวิตช์นี้ไม่มีผลที่นี่"
+      },
+      "demo_live": {
+        "sub": "เมื่อคุณเริ่มโรงแรมใหม่ Staylo จะโหลดพนักงาน สูตรอาหาร และงานตัวอย่างเพื่อให้คุณสำรวจ UI ได้ เมื่อพร้อมใช้งานจริง ให้สลับเป็นโหมด LIVE — ข้อมูลทดลองทั้งหมดจะถูกล้าง เหลือเฉพาะข้อมูลจริงของคุณ"
+      },
+      "live": {
+        "banner": "🚀 โหมด LIVE เปิดใช้งาน",
+        "banner_detail": "ไม่มีข้อมูลทดลองโหลดอยู่ พนักงาน สูตรอาหาร และงานทั้งหมดเป็นของจริง"
+      },
+      "demo": {
+        "banner": "🎭 โหมดทดลองเปิดใช้งาน ข้อมูลที่โหลดอยู่: พนักงานทดลอง {employees} คน · สูตร {recipes} · งาน {tasks} คุณสามารถลบรายการใดก็ได้เมื่อแทนที่ด้วยรายการจริง"
+      },
+      "reseed": {
+        "confirm": "ติดตั้งชุดข้อมูลทดลองใหม่? การกระทำนี้จะเพิ่มทีมตัวอย่างกลับเข้ามา (ไม่กระทบข้อมูลจริงที่บันทึกไว้)",
+        "success": "✓ ติดตั้งชุดข้อมูลทดลองใหม่แล้ว (ตาราง 90 วัน + ข้อมูลลงเวลา 75 วัน — พร้อมแก้ไขเงินเดือนรายเดือน)"
+      },
+      "seed_big": {
+        "tooltip": "ติดตั้งพนักงานประมาณ 140 คนครอบคลุมทุกตำแหน่งใน 9 แผนก — เหมาะสำหรับดู org tree เต็ม",
+        "confirm": "🏰 ติดตั้งทีมโรงแรม BIG?\n\nนี่จะโหลดพนักงานประมาณ 140 คนครอบคลุมทั้ง 9 แผนก + ทุกตำแหน่งในรายการ:\n  • บริหาร · ฟร้อนท์ออฟฟิศ · แม่บ้าน · F&B\n  • ช่างซ่อม · สปาและเวลเนส · รักษาความปลอดภัย\n  • ธุรการและการเงิน · ขายและอีเวนต์\n\nจะลบพนักงานทดลองที่มีอยู่ก่อน (ประวัติผู้จัดการที่ผูกกับคุณยังอยู่) ตารางและการลงเวลาก็จะสร้างใหม่สำหรับทีมใหม่ด้วย ดำเนินการต่อ?",
+        "success": "🏰 ติดตั้งพนักงาน {count} คนใน 9 แผนกแล้ว สร้างตาราง 90 วัน + ข้อมูลลงเวลา 75 วัน เปิดแท็บรายชื่อพนักงานแล้วใช้ตัวกรองแผนกเพื่อนำทาง"
+      },
+      "switch_live": {
+        "confirm": {
+          "heading": "🚀 สลับโรงแรมนี้เป็นโหมด LIVE?",
+          "delete_heading": "❌ ลบ:",
+          "delete_employees": "  • พนักงานทดลอง {count} คน",
+          "delete_recipes": "  • สูตรทดลอง {count} สูตร",
+          "delete_tasks": "  • งานทดลอง {count} งาน",
+          "delete_attached": "  • ตาราง / การลงเวลา / สลิปเงินเดือนทั้งหมดที่ผูกกับพนักงานทดลอง",
+          "keep_heading": "✅ เก็บไว้ (ข้อมูลจริงของคุณ — ไม่เคยถูกล้าง):",
+          "keep_self": "  • 👤 {first_name} {last_name} — คุณ ({role})",
+          "keep_self_missing": "  • (ไม่พบประวัติผู้จัดการที่ผูกอัตโนมัติ)",
+          "keep_others": "  • พนักงานอื่นๆ ที่คุณสร้าง {count} คน",
+          "keep_recipes": "  • สูตร {count} ที่คุณสร้าง",
+          "keep_tasks": "  • งาน {count} ที่คุณสร้าง",
+          "keep_settings": "  • การตั้งค่าโรงแรม + Pools + ข้อมูลลงเวลาของพนักงานที่เก็บไว้",
+          "footer": "หลังจากนี้ ข้อมูลทดลองจะไม่โหลดอัตโนมัติเมื่อบูตครั้งถัดไป ดำเนินการต่อ?"
+        },
+        "success": "🚀 สลับเป็นโหมด LIVE แล้ว ข้อมูลทดลองถูกลบ — ข้อมูลของคุณยังอยู่"
+      },
+      "system_message": {
+        "updated": "⚙️ ตั้งค่าโรงแรมอัปเดตโดย {user}"
+      }
+    },
+    "pool_editor": {
+      "eyebrow": "💰 ตั้งค่า Pool",
+      "title": {
+        "new": "Pool ใหม่",
+        "edit": "แก้ไข Pool"
+      },
+      "label": {
+        "pool_name": "ชื่อ Pool",
+        "source_type": "แหล่งที่มา / ประเภท",
+        "frequency": "ความถี่",
+        "distribution_method": "วิธีการแบ่งปัน",
+        "percentage": "เปอร์เซ็นต์ (%)",
+        "fixed_amount": "ยอดคงที่ต่องวด ({currency})",
+        "min_tenure": "อายุงานขั้นต่ำ (เดือน)",
+        "require_points": " ต้องมีคะแนน > 0 จึงจะมีสิทธิ์",
+        "enabled": " เปิดใช้งาน Pool — ปรากฏในเงินเดือนและจะถูกแบ่งปัน"
+      },
+      "type_option_locked_suffix": " — 🔒 มาถึงที่ TGE M07",
+      "placeholder": {
+        "percentage": "10",
+        "fixed_amount": "50000"
+      },
+      "percentage": {
+        "hint": "เพื่อข้อมูลเท่านั้น ผู้จัดการกรอกยอดจริงต่องวดในตัวจัดการ Pool"
+      },
+      "fixed": {
+        "hint": "งบที่ผู้จัดการกำหนด ยอดเท่ากันทุกงวดจนกว่าจะเปลี่ยน"
+      },
+      "tenure": {
+        "hint": "พนักงานที่จ้างน้อยกว่า X เดือนจะถูกยกเว้น 0 = ไม่มีตัวกรอง"
+      },
+      "require_points": {
+        "hint": "หากเลือก เฉพาะพนักงานที่มีคะแนนตำแหน่ง > 0 (หรือกำหนดเอง) เท่านั้นที่เข้าร่วม ยกเลิกการเลือกสำหรับ Pool แบบ \"พนักงานทุกคนเท่ากัน\""
+      },
+      "stay_warn": {
+        "title": "💎 Pool หุ้น $STAY — ล็อกจนถึง TGE M07 ",
+        "body": "Pool ประเภทนี้จะถูกเปิดใช้งานหลัง Token Generation Event + การตรวจสอบกฎหมายของกระเป๋ารับฝาก ตอนนี้คุณตั้งค่าได้แต่การแบ่งปันถูกบล็อก"
+      },
+      "btn": {
+        "delete": "ลบ",
+        "cancel": "ยกเลิก",
+        "save": "💾 บันทึก"
+      },
+      "delete": {
+        "confirm": "ลบ Pool \"{name}\"?\n\nการดำเนินการนี้จะลบบันทึกการแบ่งปันที่เกี่ยวข้องด้วย"
+      },
+      "alert": {
+        "name_required": "กรุณากรอกชื่อ Pool"
+      }
+    },
+    "pool_manager": {
+      "not_found": "ไม่พบ Pool",
+      "eyebrow": "💰 {name} · {period}",
+      "title": {
+        "locked": "🔒 Pool ล็อก (TGE M07)",
+        "distributed": "✓ แบ่งปันแล้ว",
+        "draft": "ฉบับร่าง — ยังไม่ได้แบ่งปัน",
+        "new": "บันทึกใหม่"
+      },
+      "locked_banner": {
+        "title": "💎 Pool หุ้น $STAY — ล็อกจนถึง TGE M07 ",
+        "body": "ตั้งค่าได้ แต่การแบ่งปันถูกบล็อกจนกว่า Token Generation Event + การตรวจสอบกฎหมายของกระเป๋ารับฝากจะอนุมัติ"
+      },
+      "distributed_banner": {
+        "title": "✓ Pool นี้ถูกแบ่งปันแล้ว",
+        "body": " พนักงานที่มีสิทธิ์แต่ละคนจะเห็นยอดเพิ่มในรายได้ของสลิปเงินเดือน หากต้องการแบ่งปันใหม่ ให้ลบบันทึกนี้และสร้างใหม่"
+      },
+      "label": {
+        "total": "ยอดรวม Pool ({currency})"
+      },
+      "placeholder": {
+        "total_stay": "$STAY ทั้งหมดที่จัดสรรให้ Pool นี้",
+        "total_fiat": "{currency} ทั้งหมดสำหรับงวดนี้"
+      },
+      "preview_heading": "📊 ตัวอย่างการแบ่งปัน",
+      "empty_total": "กรอกยอดรวม Pool ด้านบนเพื่อดูตัวอย่างการแบ่งปัน",
+      "empty_eligible": "⚠️ ไม่มีพนักงานที่มีสิทธิ์ในงวดนี้ ตรวจสอบการตั้งค่า → คะแนนตำแหน่งของ Pool (หากเป็น \"ตามคะแนน\") หรือยืนยันข้อมูลการลงเวลา (หากถ่วงน้ำหนักด้วยชั่วโมง) หรือลดเงื่อนไขอายุงาน / แผนก",
+      "summary": {
+        "eligible_count": "พนักงานมีสิทธิ์ {count} คน"
+      },
+      "col": {
+        "employee": "พนักงาน",
+        "points": "คะแนน",
+        "hours": "ชั่วโมง",
+        "share_pct": "ส่วนแบ่ง %",
+        "amount": "ยอด"
+      },
+      "hint": {
+        "fb_service": "เคล็ดลับ: {pct}% ของรายได้ F&B งวดนี้คือ Pool ทั่วไป คำนวณจากรายงาน POS",
+        "revenue_pct": "เคล็ดลับ: {pct}% ของรายได้โรงแรมงวดนี้",
+        "profit_pct": "เคล็ดลับ: {pct}% ของกำไรสุทธิงวดนี้",
+        "fixed": "งบเริ่มต้น: {amount} {currency}/งวด (แก้ไขที่นี่ได้หากจำเป็น)",
+        "stay_token": "🔒 Pool $STAY — การแบ่งปันถูกบล็อกจนถึง TGE M07"
+      },
+      "btn": {
+        "delete": "ลบ",
+        "cancel": "ยกเลิก",
+        "save_draft": "💾 บันทึกเป็นฉบับร่าง",
+        "approve": "✓ อนุมัติและแบ่งปัน"
+      },
+      "delete": {
+        "confirm": "ลบบันทึก Pool นี้? ยอดที่แบ่งปันแล้วจะถูกลบออกจากรายได้สลิปของพนักงานแต่ละคน"
+      },
+      "alert": {
+        "amount_required": "กรอกยอดรวมก่อน",
+        "no_eligible_staff": "ไม่มีพนักงานที่มีสิทธิ์ให้แบ่งปัน"
+      },
+      "distribute": {
+        "confirm": "แบ่งปัน {amount} {currency} ให้พนักงาน {count} คนในงวด {period}?\n\nรายได้ของสลิปเงินเดือนพนักงานแต่ละคนจะมีบรรทัด \"{name}\" เพิ่มอัตโนมัติ คุณยังลบบันทึกนี้ภายหลังได้หากต้องการทำใหม่"
+      },
+      "legacy": {
+        "no_pool": "ยังไม่ได้ตั้งค่า Pool เปิดการตั้งค่า → Pools เพื่อเพิ่ม"
+      }
+    },
+    "pool_types": {
+      "fb_service": {
+        "label": "🥂 เซอร์วิสชาร์จ F&B",
+        "desc": "10% (หรือ %) ของรายได้ F&B แบ่งปันให้พนักงาน"
+      },
+      "revenue_pct": {
+        "label": "📈 % ของรายได้รวม",
+        "desc": "X% ของรายได้โรงแรมรายเดือน → Pool โบนัสพนักงาน"
+      },
+      "profit_pct": {
+        "label": "💼 % ของกำไรสุทธิ",
+        "desc": "แบ่งปันกำไร — X% ของกำไรหลังหักภาษี"
+      },
+      "fixed": {
+        "label": "🎯 ยอดคงที่",
+        "desc": "ผู้จัดการกำหนดงบคงที่ต่องวด"
+      },
+      "stay_token": {
+        "label": "💎 Pool หุ้น $STAY",
+        "desc": "แจกโทเค็น $STAY จากคลังโรงแรม — มาถึงที่ TGE (M07)"
+      }
+    },
+    "pool_frequencies": {
+      "monthly": "📅 รายเดือน",
+      "quarterly": "📊 รายไตรมาส",
+      "biannual": "📈 ครึ่งปี",
+      "annual": "🎄 รายปี",
+      "one_shot": "⚡ ครั้งเดียว"
+    },
+    "pool_distributions": {
+      "equal": "⚖️ แบ่งเท่าๆ กัน — พนักงานทุกคนที่มีสิทธิ์ได้เท่ากัน",
+      "by_points": "⭐ ตามคะแนน — ส่วนแบ่ง ∝ บาเรมตำแหน่ง (1-7)",
+      "by_hours": "⏱️ ตามชั่วโมงทำงาน",
+      "by_points_hours": "🎯 ตามคะแนน × ชั่วโมง (ค่าเริ่มต้น — ให้รางวัลทั้งระดับและการมาทำงาน)"
+    },
+    "clock": {
+      "btn": {
+        "clock_in": "ลงเวลาเข้า",
+        "clock_out": "แตะเพื่อลงเวลาออก",
+        "clock_in_now": "⏱️ ลงเวลาเข้าตอนนี้"
+      },
+      "shift_window": "ลงเวลาเข้า ({start}–{end})",
+      "tooltip": {
+        "gps_off": "ตรวจสอบ GPS ที่โรงแรมเท่านั้น",
+        "gps_on": "แตะเพื่อลงเวลาออก (ตรวจสอบ GPS แล้ว)",
+        "tap_back": "แตะเมื่อกลับมาที่ตำแหน่งของคุณ",
+        "start_break": "เริ่มเบรก ({minutes} นาที)",
+        "skip_break": "ข้ามเบรกวันนี้ (ต้องได้รับการอนุมัติจากผู้จัดการ)",
+        "skip_approved": "ผู้จัดการอนุมัติคำขอไม่เบรกของคุณ เวลาเบรกถูกจ่ายเป็นเวลาทำงาน",
+        "skip_pending": "รอผู้จัดการอนุมัติ เมื่ออนุมัติแล้ว เวลาเบรกจะถูกจ่ายเป็นเวลาทำงาน"
+      },
+      "status": {
+        "on_shift": "อยู่ในกะ · {hours}",
+        "on_shift_with_ot": "อยู่ในกะ · {hours} · โอที {ot}",
+        "on_break": "พักเบรก · เหลือ {minutes} นาที",
+        "break_over": "🔔 หมดเวลาเบรก — กลับเลย",
+        "tap_back_to_work": "แตะ → กลับไปทำงาน",
+        "skip_approved": "✓ ข้ามเบรกแล้ว (อนุมัติ)",
+        "skip_pending": "⏳ ข้ามเบรก — รออนุมัติ"
+      },
+      "confirm": {
+        "start_break": "เริ่มเบรกตอนนี้?\n\nแอปจะเตือน 5 นาทีก่อนหมดเวลาและเมื่อถึงเวลากลับ (รวม {minutes} นาที)"
+      },
+      "banner": {
+        "next_shift_today": "กะถัดไปวันนี้: <b>{start}–{end}</b> (อีก {minutes} นาทีถึงเวลาลงเวลาเข้า)",
+        "todays_shift": "กะวันนี้: <b>{start}–{end}</b>",
+        "shift_ended": "กะวันนี้สิ้นสุดเมื่อ {end} ถัดไป: {next}",
+        "no_shift_today": "ไม่มีกะวันนี้",
+        "no_shift": "ไม่มีกะ",
+        "no_upcoming": "ไม่มีกะที่จะถึง",
+        "next_shift": "กะถัดไป: <b>{date} เวลา {time}</b>"
+      },
+      "reminder": {
+        "soon": "⏰ กะเริ่มในอีก {minutes} นาที",
+        "now": "⏰ กะของคุณเริ่มแล้วตอนนี้",
+        "late": "⚠️ สาย {minutes} นาที — ลงเวลาเข้า!",
+        "cta": "แตะเพื่อลงเวลาเข้า →"
+      }
+    },
+    "tasks": {
+      "title": "งาน",
+      "btn": {
+        "new": "+ งานใหม่",
+        "today": "วันนี้",
+        "delete": "ลบ",
+        "cancel": "ยกเลิก",
+        "save": "บันทึก",
+        "create": "+ สร้างงาน"
+      },
+      "head": {
+        "label": "📅 งานสำหรับ"
+      },
+      "empty": {
+        "manager": "ไม่มีงานที่จัดไว้สำหรับวันนี้ คลิก \"+ งานใหม่\" เพื่อสร้าง (มีตัวเลือกทำซ้ำ)",
+        "staff": "ไม่มีงานที่มอบหมายให้คุณในวันนี้ พักผ่อนเลย! 🎉"
+      },
+      "assignee": {
+        "all": "🌐 พนักงานทุกคน",
+        "dept": "📁 {dept}",
+        "role": "🛎️ {role}",
+        "employee": "👤 {name}",
+        "unknown": "👤 ไม่ทราบ"
+      },
+      "recurrence": {
+        "once": "ครั้งเดียว",
+        "daily": "รายวัน",
+        "weekly": "รายสัปดาห์",
+        "monthly": "รายเดือน",
+        "per_shift": "ทุกกะ"
+      },
+      "tooltip": {
+        "mark_done": "ทำเครื่องหมายว่าเสร็จ",
+        "mark_not_done": "ทำเครื่องหมายว่ายังไม่เสร็จ",
+        "edit": "แก้ไข",
+        "delete": "ลบ"
+      },
+      "completed_by": "✓ เสร็จโดย {name}",
+      "confirm": {
+        "delete_one": "ลบงานนี้?",
+        "delete_recurring": "ลบงานนี้ (และการทำซ้ำในอนาคตทั้งหมด)?"
+      },
+      "editor": {
+        "title": {
+          "new": "+ งานใหม่",
+          "edit": "✎ แก้ไขงาน"
+        }
+      },
+      "label": {
+        "title": "ชื่องาน",
+        "title_placeholder": "เช่น ตรวจอุณหภูมิตู้เย็น",
+        "description": "รายละเอียด (ถ้ามี)",
+        "description_placeholder": "คำสั่งโดยละเอียด ที่ตั้ง…",
+        "assign_to": "มอบหมายให้",
+        "employee": "พนักงาน",
+        "role": "ตำแหน่ง",
+        "department": "แผนก",
+        "date": "วันที่",
+        "day_of_week": "วันในสัปดาห์",
+        "day_of_month": "วันในเดือน (1-31)",
+        "how_often": "ทำบ่อยแค่ไหน?",
+        "due_time": "เวลาที่ต้องเสร็จ (ถ้ามี)",
+        "priority": "ลำดับความสำคัญ",
+        "linked_recipe": "📔 สูตรที่เชื่อมโยง (fiche technique)"
+      },
+      "assign": {
+        "employee": "พนักงานเฉพาะคน",
+        "role": "ทุกคนที่ดำรงตำแหน่ง",
+        "dept": "ทั้งแผนก",
+        "all": "พนักงานทุกคน",
+        "pick_employee": "— เลือกพนักงาน —",
+        "pick_role": "— เลือกตำแหน่ง —",
+        "pick_department": "— เลือกแผนก —"
+      },
+      "recur_opt": {
+        "once": "ครั้งเดียว (วันที่เฉพาะ)",
+        "daily": "รายวัน",
+        "weekly": "รายสัปดาห์ (วันเฉพาะ)",
+        "monthly": "รายเดือน (วันเฉพาะ)",
+        "per_shift": "ทุกกะ"
+      },
+      "recur_hint": {
+        "daily": "🗓️ ทำงานทุกวัน",
+        "per_shift": "⏱️ ทำงานทุกครั้งที่ผู้รับมอบหมายเริ่มกะ"
+      },
+      "weekday": {
+        "monday": "จันทร์",
+        "tuesday": "อังคาร",
+        "wednesday": "พุธ",
+        "thursday": "พฤหัสบดี",
+        "friday": "ศุกร์",
+        "saturday": "เสาร์",
+        "sunday": "อาทิตย์"
+      },
+      "priority": {
+        "low": "🟢 ต่ำ",
+        "normal": "⚪ ปกติ",
+        "high": "🟠 สูง",
+        "urgent": "🔴 ด่วน"
+      },
+      "recipe": {
+        "none": "— ไม่มี —"
+      },
+      "alert": {
+        "title_required": "กรุณากรอกชื่องาน",
+        "assignee_required": "เลือกผู้รับมอบหมาย"
+      }
+    },
+    "recipes": {
+      "title": "สูตรอาหาร",
+      "btn": {
+        "new": "+ สูตรใหม่",
+        "delete": "ลบ",
+        "cancel": "ยกเลิก",
+        "edit": "✎ แก้ไข",
+        "close": "ปิด"
+      },
+      "head": {
+        "count": "{n} สูตร (fiches techniques)"
+      },
+      "empty": {
+        "manager": "ยังไม่มีสูตร สร้างสูตรมาตรฐานพร้อมรายละเอียดต้นทุน — พร้อมใช้กับ POS",
+        "staff": "ไม่มีสูตร ขอให้เชฟเพิ่ม"
+      },
+      "untitled": "(ไม่มีชื่อ)",
+      "label": {
+        "yield": "ปริมาณ",
+        "yield_short": "ปริมาณ (ที่)",
+        "cost_per_portion": "ต้นทุน / ที่",
+        "sell_price": "ราคาขาย",
+        "sell_price_with_unit": "ราคาขาย {currency}",
+        "cost_per_portion_short": "ต้นทุน/ที่",
+        "sell": "ขาย",
+        "margin": "กำไร",
+        "total_cost": "ต้นทุนรวม",
+        "food_cost": "ต้นทุนอาหาร",
+        "prep": "⏱️ เตรียม",
+        "cook": "🔥 ทำ",
+        "rest": "🧊 พัก",
+        "total": "⌛ รวม",
+        "prep_min": "⏱️ เตรียม (นาที)",
+        "cook_min": "🔥 ทำ (นาที)",
+        "rest_min": "🧊 พัก (นาที)",
+        "recipe_name": "ชื่อสูตร",
+        "recipe_name_placeholder": "เช่น ผัดไทยกุ้ง",
+        "category": "หมวดหมู่",
+        "pos_sku": "POS SKU",
+        "pos_sku_placeholder": "เช่น PT-001",
+        "video_url": "🎥 URL วิดีโอ (YouTube embed, ลิงก์ .mp4 ฯลฯ)",
+        "allergens": "⚠️ สารก่อภูมิแพ้ (ถ้ามี)",
+        "allergens_placeholder": "เช่น ถั่ว หอย กลูเตน",
+        "notes": "หมายเหตุของเชฟ (ถ้ามี)",
+        "notes_placeholder": "เคล็ดลับการจัดจาน การจับคู่ไวน์ การปรับเปลี่ยน…"
+      },
+      "margin_summary": "ต้นทุนอาหาร {foodCost}% · กำไร {margin}%",
+      "section": {
+        "equipment": "🍳 อุปกรณ์ / matériel",
+        "equipment_hint": "สิ่งที่ครัวต้องเตรียมก่อนเริ่ม (กระทะ มีดสไลซ์ thermomix…)",
+        "ingredients": "วัตถุดิบ",
+        "preparation": "การเตรียม",
+        "preparation_steps": "ขั้นตอนการเตรียม",
+        "photos_video": "📸 รูปและวิดีโอ",
+        "photos_hint": "อัปโหลดหลายรูป: รูปวัตถุดิบ ขั้นตอนเทคนิค การจัดจานสุดท้าย ฯลฯ"
+      },
+      "allergens_prefix": "⚠️ สารก่อภูมิแพ้: ",
+      "video": {
+        "open_link": "🎥 เปิดลิงก์วิดีโอ →"
+      },
+      "equipment": {
+        "placeholder": "เช่น กระทะ มีดสไลซ์ thermomix",
+        "qty_tooltip": "จำนวน (ค่าเริ่มต้น 1)",
+        "add": "+ เพิ่มอุปกรณ์"
+      },
+      "ingredients": {
+        "add": "+ เพิ่มวัตถุดิบ",
+        "col": {
+          "ingredient": "วัตถุดิบ",
+          "qty": "จำนวน",
+          "unit": "หน่วย",
+          "price": "ราคา {currency}",
+          "per_unit": "/ หน่วย",
+          "cost": "= ต้นทุน"
+        },
+        "cost_tooltip": "อัตโนมัติ = จำนวน × (ราคา ÷ การแปลงหน่วย)"
+      },
+      "steps": {
+        "add": "+ เพิ่มขั้นตอน"
+      },
+      "photos": {
+        "add": "เพิ่ม",
+        "too_large": "\"{name}\" ใหญ่เกินไป (สูงสุด 500KB ต่อรูปเพื่อให้พอดีพื้นที่จัดเก็บทดลอง) ปรับขนาดก่อน"
+      },
+      "cat": {
+        "starter": "🥗 เรียกน้ำย่อย",
+        "main": "🍽️ จานหลัก",
+        "dessert": "🍰 ของหวาน",
+        "cocktail": "🍹 ค็อกเทล",
+        "wine": "🍷 ไวน์",
+        "beer": "🍺 เบียร์",
+        "soft": "🥤 เครื่องดื่มไม่มีแอลกอฮอล์",
+        "side": "🍚 เครื่องเคียง"
+      },
+      "editor": {
+        "title": {
+          "new": "+ สูตรใหม่",
+          "edit": "✎ แก้ไขสูตร"
+        }
+      },
+      "confirm": {
+        "delete": "ลบสูตรนี้?"
+      },
+      "portion_singular": "ที่",
+      "portion_plural": "ที่"
+    },
+    "onboarding": {
+      "tagline": "โรงแรมของคุณ เชื่อมต่อกัน",
+      "step1": {
+        "title": "คุณมาที่นี่ในฐานะใคร?",
+        "hint": "แต่ละเส้นทางเปิดประสบการณ์ Staylo ที่แตกต่างกัน"
+      },
+      "step2": {
+        "title": "คุณชื่ออะไร?",
+        "hint": "นี่คือสิ่งที่คนอื่นจะเห็น",
+        "placeholder": "เช่น มาลี สุวรรณ"
+      },
+      "step3": {
+        "title": {
+          "staff": "รหัสโรงแรม",
+          "ambassador": "รหัสแอมบาสเดอร์",
+          "guest": "รหัสการจองหรือโรงแรม"
+        },
+        "hint": {
+          "staff": "ขอจากผู้จัดการของคุณ (เช่น KP001 สำหรับสาขาเกาะพะงัน #1)",
+          "ambassador": "Staylo Ambassador ID ส่วนตัวของคุณ (เช่น AMB-7421)",
+          "guest": "จากใบยืนยันการจอง หรือเพียงรหัสโรงแรมหากแค่อยากรู้จัก"
+        },
+        "placeholder": {
+          "staff": "KP001",
+          "ambassador": "AMB-0001",
+          "guest": "KP001 หรือ BK-9F2A"
+        }
+      },
+      "step4": {
+        "title": "บทบาทของคุณ",
+        "hint": "เลือกที่ตรงกับงานประจำวันของคุณ"
+      },
+      "btn": {
+        "continue": "ต่อไป",
+        "back": "← กลับ",
+        "finish": "เข้าสู่ Staylo →"
+      },
+      "audience": {
+        "staff": {
+          "title": "พนักงานโรงแรม",
+          "desc": "ทีมภายใน — แผนกต้อนรับ แม่บ้าน ครัว ช่างซ่อม ผู้บริหาร"
+        },
+        "ambassador": {
+          "title": "แอมบาสเดอร์เครือข่าย",
+          "desc": "แนะนำโรงแรมให้ Staylo และรับค่าคอมมิชชั่น"
+        },
+        "guest": {
+          "title": "แขก",
+          "desc": "ฉันพักที่โรงแรม Staylo"
+        }
+      },
+      "dept": {
+        "management": "บริหาร",
+        "front_office": "ฟร้อนท์ออฟฟิศ",
+        "housekeeping": "แม่บ้าน",
+        "fnb": "อาหารและเครื่องดื่ม",
+        "maintenance": "ช่างซ่อม",
+        "spa": "สปาและเวลเนส",
+        "security": "รักษาความปลอดภัย",
+        "admin": "ธุรการและการเงิน",
+        "sales": "ขายและอีเวนต์"
+      }
+    },
+    "channels": {
+      "group_all_staff": "พนักงานทั้งหมด",
+      "group_departments": "แผนกต่าง ๆ",
+      "group_operations": "ปฏิบัติการ",
+      "group_management": "ฝ่ายบริหาร",
+      "group_guest_pulse": "เสียงของแขก",
+      "group_my_network": "เครือข่ายของฉัน",
+      "group_my_stay": "การเข้าพักของฉัน",
+      "general": "ทั่วไป",
+      "general_d": "พนักงานทุกคน",
+      "announcements": "ประกาศ",
+      "announcements_d": "เฉพาะฝ่ายบริหารโพสต์ได้",
+      "emergency": "เหตุฉุกเฉิน",
+      "emergency_d": "🚨 การแจ้งเตือนด่วน",
+      "reception": "แผนกต้อนรับ",
+      "housekeeping": "แม่บ้าน",
+      "kitchen": "ครัว",
+      "maintenance": "ซ่อมบำรุง",
+      "security": "รักษาความปลอดภัย",
+      "spa": "สปา",
+      "finance": "การเงิน",
+      "sales": "ฝ่ายขาย",
+      "room_status": "สถานะห้องพัก",
+      "room_status_d": "แม่บ้าน ↔ แผนกต้อนรับ",
+      "orders": "ออเดอร์",
+      "orders_d": "ครัว ↔ พื้นที่อาหาร",
+      "maintenance_requests": "คำขอซ่อม",
+      "maintenance_requests_d": "ปัญหาและการซ่อมแซม",
+      "valet_desk": "เคาน์เตอร์รถ",
+      "valet_desk_d": "ที่จอดรถและการเดินทาง",
+      "lost_found": "ของหาย",
+      "lost_found_d": "ทรัพย์สินสูญหาย",
+      "managers": "ผู้จัดการ",
+      "managers_d": "เฉพาะฝ่ายบริหาร",
+      "daily_briefing": "บรีฟประจำวัน",
+      "revenue": "รายได้",
+      "guest_feedback": "ความเห็นแขก",
+      "guest_feedback_d": "รีวิวและการติดตาม",
+      "ambassadors": "แอมบาสเดอร์",
+      "ambassadors_d": "ชุมชนแอมบาสเดอร์",
+      "commissions": "ค่าคอมมิชชัน",
+      "commissions_d": "รายได้ของคุณ",
+      "staylo_hq": "Staylo HQ",
+      "staylo_hq_d": "อัปเดตแพลตฟอร์ม",
+      "concierge": "คอนเซียร์จ",
+      "concierge_d": "สายตรงถึงแผนกต้อนรับ",
+      "room_service": "รูมเซอร์วิส",
+      "room_service_d": "สั่งถึงห้องพัก",
+      "staylo_news": "ข่าวสาร Staylo",
+      "staylo_news_d": "เคล็ดลับและที่เที่ยวท้องถิ่น"
+    },
+    "depts": {
+      "management": "ฝ่ายบริหาร",
+      "front_office": "แผนกต้อนรับ",
+      "housekeeping": "แม่บ้าน",
+      "f_b": "อาหารและเครื่องดื่ม",
+      "maintenance": "ซ่อมบำรุง",
+      "spa": "สปา",
+      "security": "รักษาความปลอดภัย",
+      "admin": "ธุรการ",
+      "sales": "ฝ่ายขาย"
+    },
+    "roles": {
+      "general_manager": "ผู้จัดการทั่วไป",
+      "deputy_general_manager": "รองผู้จัดการทั่วไป",
+      "operations_manager": "ผู้จัดการฝ่ายปฏิบัติการ",
+      "revenue_manager": "ผู้จัดการฝ่ายรายได้",
+      "front_office_manager": "ผู้จัดการแผนกต้อนรับ",
+      "night_auditor": "พนักงานตรวจสอบกลางคืน",
+      "senior_receptionist": "พนักงานต้อนรับอาวุโส",
+      "receptionist": "พนักงานต้อนรับ",
+      "trainee_receptionist": "พนักงานต้อนรับฝึกงาน",
+      "concierge": "คอนเซียร์จ",
+      "doorman": "พนักงานเปิดประตู",
+      "bellman_porter": "เบลล์แมน / พนักงานยกกระเป๋า",
+      "valet_driver": "พนักงานจอดรถ / พนักงานขับรถ",
+      "guest_relations_officer": "เจ้าหน้าที่ดูแลลูกค้า",
+      "executive_housekeeper": "หัวหน้าแม่บ้านบริหาร",
+      "floor_supervisor": "หัวหน้าชั้น",
+      "senior_room_attendant": "พนักงานทำห้องอาวุโส",
+      "room_attendant": "พนักงานทำห้อง",
+      "turndown_attendant": "พนักงานจัดเตียงค่ำ",
+      "laundry_manager": "ผู้จัดการซักรีด",
+      "laundry_attendant": "พนักงานซักรีด",
+      "public_areas_attendant": "พนักงานทำความสะอาดพื้นที่ส่วนกลาง",
+      "f_b_manager": "ผู้จัดการอาหารและเครื่องดื่ม",
+      "executive_chef": "เชฟใหญ่",
+      "sous_chef": "เชฟรอง",
+      "chef_de_partie": "เชฟแผนก",
+      "commis_chef": "เชฟผู้ช่วย",
+      "pastry_chef": "เชฟขนมอบ",
+      "pastry_cook": "พนักงานขนมอบ",
+      "kitchen_steward": "พนักงานสจ๊วตครัว",
+      "restaurant_manager": "ผู้จัดการร้านอาหาร",
+      "maitre_d_hotel": "หัวหน้าบริกร",
+      "senior_waiter": "บริกรอาวุโส",
+      "waiter_server": "บริกร / พนักงานเสิร์ฟ",
+      "trainee_waiter": "บริกรฝึกงาน",
+      "head_bartender": "หัวหน้าบาร์เทนเดอร์",
+      "bartender": "บาร์เทนเดอร์",
+      "barista": "บาริสต้า",
+      "room_service_server": "พนักงานรูมเซอร์วิส",
+      "banquet_captain": "หัวหน้าจัดเลี้ยง",
+      "banquet_server": "พนักงานจัดเลี้ยง",
+      "chief_engineer": "หัวหน้าวิศวกร",
+      "maintenance_supervisor": "หัวหน้าซ่อมบำรุง",
+      "electrician": "ช่างไฟฟ้า",
+      "plumber": "ช่างประปา",
+      "hvac_technician": "ช่างปรับอากาศ",
+      "carpenter": "ช่างไม้",
+      "painter": "ช่างทาสี",
+      "gardener": "คนสวน",
+      "pool_technician": "ช่างสระว่ายน้ำ",
+      "it_support": "ฝ่ายไอที",
+      "spa_manager": "ผู้จัดการสปา",
+      "senior_therapist": "นักบำบัดอาวุโส",
+      "therapist": "นักบำบัด",
+      "beauty_therapist": "นักเสริมสวย",
+      "fitness_manager": "ผู้จัดการฟิตเนส",
+      "fitness_coach": "ครูฟิตเนส",
+      "yoga_instructor": "ครูโยคะ",
+      "security_manager": "หัวหน้ารักษาความปลอดภัย",
+      "security_supervisor": "ผู้คุมงานรักษาความปลอดภัย",
+      "security_officer": "เจ้าหน้าที่รักษาความปลอดภัย",
+      "night_security": "ยามกลางคืน",
+      "financial_controller": "ผู้ควบคุมการเงิน",
+      "accountant": "นักบัญชี",
+      "hr_manager": "ผู้จัดการฝ่ายบุคคล",
+      "hr_payroll_officer": "เจ้าหน้าที่บุคคล / เงินเดือน",
+      "purchasing_manager": "ผู้จัดการฝ่ายจัดซื้อ",
+      "purchaser": "พนักงานจัดซื้อ",
+      "director_of_sales": "ผู้อำนวยการฝ่ายขาย",
+      "sales_manager": "ผู้จัดการฝ่ายขาย",
+      "marketing_manager": "ผู้จัดการการตลาด",
+      "event_manager": "ผู้จัดการอีเวนต์",
+      "wedding_coordinator": "ผู้ประสานงานงานแต่งงาน"
+    },
+    "team": {
+      "title": "ทีม",
+      "subtitle": "พนักงาน {count} คน · {hotel}",
+      "tile": {
+        "roster_t": "รายชื่อพนักงาน",
+        "roster_d": "พนักงาน สัญญา การรับเข้าทำงาน",
+        "schedule_t": "ตารางเวร",
+        "schedule_d": "กะ สัปดาห์ มุมมองรายวัน",
+        "tasks_t": "งาน",
+        "tasks_d": "งานประจำวันและการมอบหมาย",
+        "recipes_t": "สูตรอาหาร",
+        "recipes_d": "สูตรมาตรฐานและต้นทุน",
+        "payroll_t": "เงินเดือน",
+        "payroll_d": "ชั่วโมง โอที สลิปเงินเดือน"
+      },
+      "tab": {
+        "roster": "👥 รายชื่อ",
+        "schedule": "📅 ตารางเวร",
+        "tasks": "📋 งาน",
+        "recipes": "📔 สูตรอาหาร",
+        "payroll": "💶 เงินเดือน"
+      },
+      "head_title_roster": "👥 รายชื่อพนักงาน",
+      "head_title_schedule": "📅 ตารางเวร",
+      "head_title_tasks": "📋 งาน",
+      "head_title_recipes": "📔 สูตรอาหาร",
+      "head_title_payroll": "💶 เงินเดือน"
+    },
+    "me": {
+      "title": "ฉัน",
+      "tile": {
+        "profile_t": "โปรไฟล์",
+        "profile_d": "บัญชีและตำแหน่งของคุณ",
+        "timesheet_t": "ตารางเวลาของฉัน",
+        "timesheet_d": "ชั่วโมงทำงาน เข้า/ออกงาน",
+        "charges_t": "ค่าใช้จ่าย",
+        "charges_d": "รายจ่าย เงินเดือน รายได้ กำไรขาดทุน",
+        "settings_t": "ตั้งค่าโรงแรม",
+        "settings_d": "การตั้งค่าทั่วทั้งโรงแรม",
+        "inventory_t": "สินค้าคงคลัง",
+        "inventory_d": "สต็อกและของใช้",
+        "reports_t": "รายงาน",
+        "reports_d": "การวิเคราะห์และการส่งออก",
+        "signout_t": "ออกจากระบบ",
+        "signout_d": "เปลี่ยนผู้ใช้ / ล้างเซสชัน",
+        "soon": "เร็ว ๆ นี้"
+      },
+      "tab": {
+        "profile": "👤 โปรไฟล์",
+        "timesheet": "⏱️ ตารางเวลา",
+        "finance": "💶 ค่าใช้จ่าย",
+        "settings": "⚙️ ตั้งค่า"
+      },
+      "head_title_profile": "👤 โปรไฟล์",
+      "head_title_timesheet": "⏱️ ตารางเวลาของฉัน",
+      "head_title_settings": "⚙️ ตั้งค่าโรงแรม"
+    },
+    "alerts_view": {
+      "title": "🔔 การแจ้งเตือน",
+      "subtitle": "ช่องที่มีข้อความที่ยังไม่ได้อ่าน",
+      "empty": "✓ ทุกอย่างอ่านแล้ว — ไม่มีข้อความใหม่"
+    },
+    "context": {
+      "last_shift": "กะล่าสุด: {date}",
+      "no_recent_shift": "ไม่มีกะล่าสุด",
+      "week_planned": "วางแผนสัปดาห์นี้: {hours}",
+      "month_absences": "การลาเดือนนี้: {parts}",
+      "month_absences_none": "การลาเดือนนี้: ไม่มี",
+      "home_venue": "พื้นที่ประจำ: 🥂 {outlet}",
+      "contract_lang": "ภาษาสัญญา: {lang}",
+      "tooltip": "กิจกรรมและบริบทล่าสุดของพนักงานนี้ — ช่วยให้ผู้จัดการวางแผนการบรีฟได้แม่นยำขึ้น"
+    },
+    "shift_editor": {
+      "title_add": "เพิ่มรายการ",
+      "title_edit": "แก้ไขรายการ",
+      "type_work": "💼 กะทำงาน",
+      "type_absence": "🤒 การลา",
+      "section_timing": "⏱️ เวลากะ",
+      "section_briefing": "📝 บรีฟสำหรับกะนี้",
+      "section_tasks": "📋 งานสำหรับวันนี้",
+      "section_apply": "📅 นำไปใช้",
+      "apply_label": "ใช้กับวันใดในสัปดาห์นี้?",
+      "preset_weekdays": "จ.–ศ.",
+      "preset_weekend": "เสาร์–อาทิตย์",
+      "preset_all": "ทุกวัน",
+      "preset_clear": "ล้าง",
+      "repeat_label": "ทำซ้ำ?",
+      "repeat_today": "เฉพาะวันนี้",
+      "repeat_this": "เฉพาะสัปดาห์นี้",
+      "repeat_next": "+ สัปดาห์หน้า",
+      "repeat_month": "+ ทั้งเดือน (4 สัปดาห์)",
+      "repeat_year": "+ ทั้งปี (52 สัปดาห์)",
+      "repeat_until_contract": "จนสิ้นสุดสัญญา ({date})",
+      "timing_start": "เวลาเริ่ม",
+      "timing_end": "เวลาเลิก",
+      "timing_break": "พัก (นาที)",
+      "timing_break_starts": "เริ่มพักเวลา",
+      "outlet_label": "พื้นที่ทำงาน (ต่อกะ — ผลใช้กับอนาคตเท่านั้น)",
+      "outlet_default_hint": "ค่าเริ่มต้น: {outlet} การเปลี่ยนตรงนี้จะมีผลกับวันที่เลือก กะที่ผ่านมายังคงพื้นที่เดิม",
+      "outlet_no_specific": "— ไม่ระบุพื้นที่ —",
+      "save_timing": "💾 เวลา",
+      "save_briefing": "📝 บรีฟ",
+      "save_tasks": "📋 งาน",
+      "cancel": "ยกเลิก",
+      "delete": "ลบ",
+      "clear": "🗑️ ล้าง…",
+      "briefing_placeholder": "เช่น \"VIP คุณทานากะมาถึง 14:00 — เตรียม welcome amenity, ซาร่าหยุด คุณดูแลล็อบบี้ กรุ๊ปอาหารเช้า 10:00 ความสำคัญสูงสุด\"",
+      "briefing_bank": "💾 บันทึกเป็นเทมเพลต",
+      "briefing_bank_saved": "✓ บันทึกเทมเพลตแล้ว",
+      "briefing_too_short": "ข้อความบรีฟสั้นเกินไปสำหรับเทมเพลต",
+      "briefing_hint": "💡 บันทึกร่างอัตโนมัติขณะพิมพ์ — ไม่หายแม้กดยกเลิก",
+      "briefing_reuse_label": "📚 ใช้ซ้ำ:",
+      "tasks_empty": "ยังไม่มีงานวางแผนสำหรับวันนี้ ใช้ช่องด้านล่างเพื่อเพิ่ม",
+      "tasks_library_label": "📚 เลือกจากคลัง:",
+      "tasks_library_count": "มี {n} รายการ",
+      "tasks_add": "+ เพิ่ม",
+      "tasks_placeholder": "พิมพ์งานใหม่…",
+      "tasks_prio_normal": "· ปกติ",
+      "tasks_prio_high": "⚡ สูง",
+      "tasks_prio_urgent": "🚨 ด่วน",
+      "copy_colleague_label": "📋 คัดลอกจากเพื่อนร่วมงาน",
+      "copy_colleague_hint": "แตะเพื่อกรอกฟอร์มด้วยแบบกะของ{who}คนอื่น",
+      "no_employees": "ยังไม่มีพนักงาน เพิ่มสมาชิกทีมที่แท็บรายชื่อก่อน",
+      "readonly_hint": "🔒 มุมมองอ่านอย่างเดียว — เฉพาะหัวหน้าแผนกเท่านั้นที่แก้ไขกะได้"
+    },
+    "tasks_tab": {
+      "date_label": "📅 งานของวันที่",
+      "today": "วันนี้",
+      "new_task": "+ งานใหม่",
+      "empty_mgr": "ไม่มีงานที่กำหนดสำหรับวันนี้ คลิก \"+ งานใหม่\" เพื่อสร้าง (กำหนดทำซ้ำได้)",
+      "empty_staff": "ไม่มีงานที่ได้รับมอบหมายในวันนี้ พักผ่อนเลย! 🎉",
+      "assignee_all": "🌐 พนักงานทุกคน",
+      "assignee_unknown": "👤 ไม่ทราบ",
+      "recur_once": "ครั้งเดียว",
+      "recur_daily": "ทุกวัน",
+      "recur_weekly": "ทุกสัปดาห์",
+      "recur_monthly": "ทุกเดือน",
+      "recur_per_shift": "ทุกกะ",
+      "mark_done": "ทำเครื่องหมายว่าเสร็จ",
+      "mark_undone": "ยกเลิกเครื่องหมายเสร็จ",
+      "prio_urgent": "ด่วน",
+      "prio_high": "สูง",
+      "prio_normal": "ปกติ",
+      "prio_low": "ต่ำ",
+      "service_count": "{n} งาน",
+      "done_by": "✓ เสร็จโดย {name}",
+      "delete_confirm_simple": "ลบงานนี้?",
+      "delete_confirm_recur": "ลบงานนี้ (รวมทั้งการทำซ้ำในอนาคต)?",
+      "edit_tooltip": "แก้ไข",
+      "delete_tooltip": "ลบ",
+      "service_cross_dept": "ข้ามแผนก",
+      "service_other": "อื่นๆ"
+    },
+    "settings": {
+      "title": "⚙️ ตั้งค่าโรงแรม",
+      "sub_editable": "{code} · คุณสามารถแก้ไขได้",
+      "sub_readonly": "{code} · อ่านอย่างเดียว — ผู้จัดการแก้ไขได้",
+      "readonly_hint": "🔒 เฉพาะ General Manager / Deputy / Operations Manager / หัวหน้าแผนกเท่านั้นที่เปลี่ยนการตั้งค่าได้",
+      "sec_locale": "🌍 ภาษาและภูมิภาค",
+      "sec_identity": "🏨 ข้อมูลโรงแรมและแบรนด์",
+      "sec_identity_sub": "แสดงในสลิปเงินเดือนและสัญญาทุกฉบับ กรอกครั้งเดียว",
+      "sec_emergency": "🚨 ฉุกเฉิน",
+      "sec_fnb": "🍽️ F&B และโรงอาหาร",
+      "sec_payroll": "💶 นโยบายเงินเดือน",
+      "sec_pools": "💰 พูล — โบนัสและการแบ่งปัน",
+      "sec_clock": "⏱️ การตอกบัตรและ geofence",
+      "sec_biometric": "🔒 ล็อกอินด้วยข้อมูลชีวภาพ (เฉพาะ production)",
+      "sec_demo_live": "🎭 โหมด Demo / LIVE",
+      "lbl_country": "🌍 ประเทศ (กำหนดกฎหมายแรงงาน)",
+      "lbl_currency": "💱 สกุลเงินที่แสดง",
+      "lbl_hotel_name": "ชื่อโรงแรม (ตามกฎหมาย)",
+      "lbl_hotel_address": "ที่อยู่ (เต็ม)",
+      "lbl_hotel_legal": "ข้อมูลทางกฎหมาย (Tax ID / VAT / เลขทะเบียน — หลายบรรทัด)",
+      "lbl_hotel_logo": "โลโก้ (PNG / JPG / SVG สูงสุด 500KB)"
+    },
+    "msg_preview": {
+      "room_status": "🛏️ อัพเดทสถานะห้อง",
+      "order": "🍽️ ออเดอร์อาหาร",
+      "maintenance": "🔧 คำขอซ่อมบำรุง",
+      "valet": "🚗 คำขอวาเลต์",
+      "commission": "💰 แจ้งเตือนค่าคอม",
+      "briefing": "📊 บรีฟประจำวัน",
+      "emergency": "🚨 แจ้งเตือนฉุกเฉิน",
+      "feedback": "⭐ คอมเมนต์จากแขก"
+    },
+    "common": {
+      "cancel": "ยกเลิก",
+      "save": "บันทึก",
+      "delete": "ลบ",
+      "close": "ปิด",
+      "confirm": "ยืนยัน",
+      "dismiss": "ปิด",
+      "edit": "แก้ไข",
+      "view": "ดู",
+      "add": "เพิ่ม",
+      "remove": "ลบออก",
+      "next": "ถัดไป →",
+      "back": "← ย้อนกลับ",
+      "loading": "กำลังโหลด…",
+      "yes": "ใช่",
+      "no": "ไม่",
+      "guest": "แขก",
+      "view_not_implemented": "ยังไม่ได้พัฒนาหน้านี้",
+      "status_live": "ถ่ายทอดสด",
+      "status_suggested": "แนะนำ",
+      "status_confirmed": "ยืนยันแล้ว"
+    },
+    "cards": {
+      "room": "ห้อง {n}",
+      "floor": "ชั้น {n}",
+      "no_room": "ห้อง —",
+      "table": "โต๊ะ",
+      "elapsed_min": "ผ่านไป {n} นาที",
+      "elapsed_delayed": "ผ่านไป {n} นาที · ⚠️ ล่าช้า",
+      "checked": "✓ ตรวจแล้ว",
+      "btn_confirm": "ยืนยัน",
+      "btn_next": "ถัดไป →",
+      "btn_advance": "ดำเนินการต่อ →",
+      "lbl_status": "สถานะ",
+      "lbl_assigned": "ผู้รับผิดชอบ",
+      "lbl_resolution": "วิธีแก้ไข",
+      "lbl_response": "เวลาตอบสนอง",
+      "lbl_type": "ประเภท",
+      "lbl_eta": "ETA",
+      "valet_default_type": "นำรถมาส่ง",
+      "valet_default_status": "ขอแล้ว",
+      "commission_default_hotel": "โรงแรมพันธมิตร",
+      "commission_subtitle": "ยืนยันการจองใหม่",
+      "commission_label": "คอมมิชชั่น",
+      "commission_booking_amt": "การจอง {n}$",
+      "commission_view_earnings": "ดูรายได้ของฉัน →",
+      "briefing_title": "บรีฟประจำวัน",
+      "briefing_lbl_occupancy": "อัตราเข้าพัก",
+      "briefing_lbl_arrivals": "เช็คอิน",
+      "briefing_lbl_departures": "เช็คเอาท์",
+      "briefing_lbl_vips": "VIP วันนี้",
+      "briefing_lbl_open_items": "งานค้าง",
+      "emergency_badge": "ฉุกเฉิน",
+      "emergency_alert_default": "แจ้งเตือน",
+      "emergency_default_instructions": "ปฏิบัติตามขั้นตอน",
+      "emergency_ack_count": "ยืนยันแล้ว {n} / {total} คน",
+      "emergency_btn_ack": "รับทราบ",
+      "feedback_default_category": "คอมเมนต์ทั่วไป",
+      "feedback_rating": "คะแนน: {n}/5",
+      "feedback_btn_followup": "ติดตาม →",
+      "no_quick_actions": "ยังไม่มีการดำเนินการด่วนสำหรับบทบาทของคุณ"
+    },
+    "score": {
+      "tile_title": "🏆 คะแนน",
+      "tile_desc": "โรงแรมของคุณเทียบกับเครือข่าย · benchmark สด · อันดับเทียบเพื่อน",
+      "tab_label": "🏆 คะแนน",
+      "head_title": "Performance Score",
+      "head_subtitle": "โรงแรมของคุณเทียบกับโรงแรม Staylo {n} แห่งที่ไม่ระบุตัวตน — แบบสด",
+      "tagline": "คุณไม่ได้อยู่คนเดียว คุณคือที่หนึ่งในเครือข่าย",
+      "arc_score_label": "คะแนนเครือข่าย",
+      "arc_score_caption": "Top {pct}% ของเครือข่าย",
+      "arc_grade_S": "ระดับสูงสุด",
+      "arc_grade_A": "แข็งแกร่ง",
+      "arc_grade_B": "ดี",
+      "arc_grade_C": "ตามหลัง",
+      "sec_radar": "📡 Benchmark — เปรียบเทียบ 5 แกน",
+      "sec_radar_sub": "ที่ๆ คุณนำหน้าและที่ๆ คุณตามหลัง ค่าเฉลี่ยเครือข่ายไม่ระบุตัวตน อัพเดททุก 6 ชม.",
+      "radar_legend_you": "โรงแรมคุณ",
+      "radar_legend_network": "ค่าเฉลี่ยเครือข่าย",
+      "axis_occupancy": "อัตราเข้าพัก",
+      "axis_revpar": "RevPAR",
+      "axis_staff_eff": "ประสิทธิภาพพนักงาน",
+      "axis_fnb_margin": "กำไร F&B",
+      "axis_guest_return": "แขกกลับมา",
+      "sec_kpis": "📊 รายละเอียด KPI",
+      "sec_kpis_sub": "แต่ละ KPI พร้อมค่าของคุณ ค่าเฉลี่ยเครือข่าย percentile ของคุณ และเทรนด์ 30 วัน",
+      "kpi_you_label": "คุณ",
+      "kpi_network_label": "เครือข่าย",
+      "kpi_rank_label": "อันดับ",
+      "kpi_trend_label": "เทรนด์ 30 วัน",
+      "kpi_top_pct": "Top {pct}%",
+      "kpi_unit_pct": "%",
+      "kpi_unit_thb": "฿",
+      "kpi_help_occupancy": "ห้องที่ขาย ÷ ห้องที่มี × 100",
+      "kpi_help_revpar": "รายได้ต่อห้องที่มี (รายได้ห้อง ÷ ห้องที่มี)",
+      "kpi_help_staff_eff": "รายได้รวม ÷ จำนวนพนักงาน FTE",
+      "kpi_help_fnb_margin": "กำไรขั้นต้น F&B ÷ รายได้ F&B × 100",
+      "kpi_help_guest_return": "% ของแขกที่กลับมาจองใน 12 เดือน",
+      "sec_rank": "🏅 อันดับเครือข่ายสด",
+      "sec_rank_sub": "โรงแรมเพื่อนที่ไม่ระบุตัวตน เรียงตามคะแนน อันดับเปลี่ยนทุกไม่กี่วินาที — เครือข่ายของคุณมีชีวิต",
+      "rank_you": "คุณ",
+      "rank_anon_hotel": "โรงแรม #{code}",
+      "rank_movement_up": "▲ {n}",
+      "rank_movement_down": "▼ {n}",
+      "rank_movement_same": "—",
+      "sec_insight": "💡 สิ่งที่ปลดล็อค",
+      "insight_1_t": "ต่อรองกับซัพพลายเออร์ด้วยข้อมูล",
+      "insight_1_d": "กำไร F&B สูงกว่าค่าเฉลี่ยเครือข่าย 14% → ต่อรองสัญญาด้วยหลักฐาน",
+      "insight_2_t": "อ้างเหตุผลการลงทุนครั้งต่อไป",
+      "insight_2_d": "ประสิทธิภาพพนักงานต่ำกว่าค่าเฉลี่ย → เพิ่มเครื่องมืออัตโนมัติ ใช้โมดูล Staylo ตามให้ทัน",
+      "insight_3_t": "แสดงคุณค่าให้สหกรณ์เห็น",
+      "insight_3_d": "การเปรียบเทียบไม่ระบุตัวตนสร้างแรงผลักดันให้เจ้าของโรงแรมทุกคนพัฒนา โดยไม่เปิดเผยข้อมูลส่วนตัว",
+      "insight_4_t": "Dashboard พร้อมนำเสนอนักลงทุน",
+      "insight_4_d": "ตำแหน่งในเครือข่ายเป็น vanity metric ที่นักลงทุนชอบ ตอนนี้คุณมีบนหน้าจอมือถือ",
+      "demo_note": "🎭 โหมดเดโม — ตัวเลข benchmark เป็นการจำลอง ใน production อ่านข้อมูลรวมที่ไม่ระบุตัวตนจาก data lake ของสหกรณ์"
+    },
+    "stock": {
+      "tile_title": "📦 สต๊อก",
+      "tile_desc": "สต๊อกแบบทำนาย · หักวัตถุดิบอัตโนมัติจากสูตร · เตือนของหมด",
+      "tab_label": "📦 สต๊อก",
+      "head_title": "Stock Intelligence",
+      "head_subtitle": "สต๊อกอัจฉริยะเชื่อมต่อกับสูตรอาหาร ทุกออเดอร์หักวัตถุดิบอัตโนมัติ ทุกการหมดถูกทำนายก่อนเกิดจริง",
+      "tagline": "รู้ว่าอะไรจะหมด — ก่อนที่มันจะหมด",
+      "hero_lbl_tracked": "วัตถุดิบที่ติดตาม",
+      "hero_lbl_at_risk": "เสี่ยงตอนนี้",
+      "hero_lbl_predicted": "ทำนายของหมดก่อนเที่ยงคืน",
+      "hero_lbl_velocity": "ใช้ในชั่วโมงที่ผ่านมา",
+      "sec_critical": "🚨 วิกฤต — ต้องดำเนินการ",
+      "sec_critical_sub": "ทำนายของหมดในไม่ถึง 4 ชั่วโมงตามอัตราการใช้ปัจจุบัน",
+      "sec_critical_empty": "✓ ไม่มีของหมดวิกฤต เยี่ยม",
+      "critical_remaining": "เหลือ {n}{unit} · {pct}% ของระดับมาตรฐาน",
+      "critical_velocity": "ใช้ {n}{unit}/ชม",
+      "critical_stockout_in": "จะหมดใน {h}ชม {m}น ({time})",
+      "critical_stockout_now": "🛑 หมดแล้ว",
+      "critical_used_in": "ใช้ใน: {dishes}",
+      "critical_covers_at_risk": "{n} ที่/ชม เสี่ยงถ้าไม่ดำเนินการ",
+      "critical_btn_reorder": "🛒 สั่งซื้ออัตโนมัติ {amt}{unit} จาก {supplier}",
+      "critical_btn_acknowledged": "✓ สั่งแล้ว",
+      "sec_all_stock": "📊 วัตถุดิบทั้งหมด",
+      "sec_all_stock_sub": "เรียงตามความเร่งด่วน คลิกที่รายการเพื่อดูเมนูที่ใช้ + ประวัติ",
+      "stock_lbl_qty": "ปริมาณ",
+      "stock_lbl_par": "ระดับมาตรฐาน",
+      "stock_lbl_velocity": "ใช้/ชม",
+      "stock_lbl_eta": "ETA หมด",
+      "stock_eta_safe": "ปลอดภัย",
+      "stock_eta_idle": "ไม่ได้ใช้",
+      "stock_eta_today": "วันนี้ {time}",
+      "stock_eta_tomorrow": "พรุ่งนี้",
+      "stock_eta_days": "+{n}วัน",
+      "stock_search": "ค้นหาวัตถุดิบ…",
+      "sec_deductions": "📥 การหักวันนี้",
+      "sec_deductions_sub": "ทุกออเดอร์ Pulse หักอัตโนมัติผ่านสูตรที่เชื่อม Live feed",
+      "sec_deductions_empty": "ยังไม่มีการหัก — Pulse ยังไม่ได้สั่งออเดอร์",
+      "deduction_line": "{order} · {qty}{unit} ของ {ing} (จาก {recipe})",
+      "sec_restock": "🛒 ปฏิทินสั่งซื้อ",
+      "sec_restock_sub": "การส่งจากซัพพลายเออร์ของคุณ ข้อเสนอแนะอัตโนมัติเมื่อสต๊อกต่ำ",
+      "restock_supplier": "{name}",
+      "restock_eta": "{day} เวลา {time}",
+      "restock_items": "{n} รายการ",
+      "restock_btn_view": "ดูออเดอร์",
+      "stream_play": "▶ จำลอง",
+      "stream_pause": "⏸ หยุด",
+      "demo_note": "🎭 โหมดเดโม — ระดับสต๊อกและอัตราการใช้เป็นการจำลอง เชื่อมต่อสต๊อกจริงเพื่อดูข้อมูลสด"
+    },
+    "pulse": {
+      "tile_title": "💰 Pulse",
+      "tile_desc": "เชื่อมต่อ POS ทุกตัว · รายได้แบบสด · กระจายพูลอัตโนมัติ",
+      "tab_label": "💰 Pulse",
+      "head_title": "Staylo Pulse",
+      "head_subtitle": "ระบบประสาทเหนือ POS ทุกตัว — เชื่อมต่อ ดู กระจาย",
+      "tagline": "ไม่ใช่ POS แต่เป็นผู้ควบคุมเหนือ POS ทั้งหมด",
+      "sec_connectors": "🔌 ตัวเชื่อมต่อ POS",
+      "sec_connectors_sub": "เสียบ Staylo บนระบบที่มีอยู่ของคุณ เปลี่ยน POS ทีหลังก็ได้ — Staylo เก็บประวัติไว้",
+      "connector_status_connected": "✓ เชื่อมต่อแล้ว",
+      "connector_status_available": "ใช้ได้",
+      "connector_status_soon": "เร็วๆ นี้",
+      "connector_btn_connect": "เชื่อมต่อ",
+      "connector_btn_configure": "ตั้งค่า",
+      "connector_stores_count": "{n} สาขา",
+      "sec_live_stream": "⚡ Live Order Stream",
+      "sec_live_stream_sub": "ทุกคำสั่งเข้าที่นี่ใน <300ms ผ่าน webhook ทุกออเดอร์ถูกแท็กและส่งต่อ",
+      "stream_paused": "หยุดชั่วคราว — คลิกเพื่อดำเนินต่อ",
+      "stream_play": "▶ เล่น",
+      "stream_pause": "⏸ หยุด",
+      "order_table": "โต๊ะ {n}",
+      "order_room": "ห้อง {n}",
+      "order_pool_credit": "+{amt} {cur} → พูลของ {name}",
+      "order_ambassador_credit": "+{amt} {cur} → {name} (แอมบาสเดอร์)",
+      "order_total": "รวม",
+      "sec_pool_live": "💧 กระจายพูลแบบสด",
+      "sec_pool_live_sub": "ดูคะแนนทิปของพนักงานเสิร์ฟแต่ละคนเติมแบบสด ไม่ต้องคำนวณตอนสิ้นเดือนอีกต่อไป",
+      "pool_today_distributed": "กระจายวันนี้",
+      "pool_per_pt": "{amt} {cur} / คะแนน",
+      "pool_pts": "{n} คะแนน",
+      "pool_top_earner": "ผู้นำวันนี้",
+      "sec_revenue_pulse": "🌐 Pulse รายได้ · หลายสกุลเงิน",
+      "sec_revenue_pulse_sub": "รายได้วันนี้อัพเดททุกธุรกรรม ใน 5 สกุลเงินแบบสด",
+      "rev_lbl_today": "วันนี้",
+      "rev_lbl_yesterday": "เทียบกับเมื่อวาน",
+      "rev_rate_updated": "อัตราอัพเดทเมื่อ {n} วินาทีที่แล้ว",
+      "rev_rate_source": "แหล่ง: CoinGecko + ECB + BoT",
+      "sec_features": "✨ สิ่งที่ปลดล็อค",
+      "feat_realtime_pool_t": "พูลเครดิตแบบสด",
+      "feat_realtime_pool_d": "พนักงานเสิร์ฟเห็นคะแนนทิปเติมตามคำสั่ง กระจายเป็นเงินสดหรือ $STAY ก็ได้",
+      "feat_recipe_stock_t": "สต๊อกตามสูตร",
+      "feat_recipe_stock_d": "ทุกคำสั่งหักวัตถุดิบอัตโนมัติ ทำนายของหมดก่อนหมดจริง",
+      "feat_cross_venue_t": "Folio ข้ามสาขา",
+      "feat_cross_venue_d": "สายรัดข้อมือแขกชาร์จที่บาร์ + สปา + F&B → เช็คเอาท์รวมในสกุลเงินใดก็ได้",
+      "feat_ambassador_t": "ติดตามแอมบาสเดอร์ถึงโต๊ะ",
+      "feat_ambassador_d": "แขกที่ถูกแนะนำใช้จ่าย → ค่าคอม 10% เครดิตให้แอมบาสเดอร์อัตโนมัติ",
+      "feat_compliance_t": "Compliance-as-code",
+      "feat_compliance_d": "e-Tax Invoice ไทย, NF525 ฝรั่งเศส, ภาษียุโรป — สร้างอัตโนมัติตามประเทศ",
+      "feat_offline_t": "ทำงานออฟไลน์ก่อน",
+      "feat_offline_d": "ไฟดับบนเกาะ? ออเดอร์เข้าในเครื่อง sync เมื่อเน็ตกลับมา",
+      "feat_nft_t": "ใบเสร็จ NFT (ทางเลือก)",
+      "feat_nft_d": "ทุกการจอง + อาหารสร้าง NFT ทางเลือก ลอยัลตี้ข้ามโรงแรม on-chain",
+      "feat_coop_t": "แบ่งกำไรแบบสหกรณ์",
+      "feat_coop_d": "ทุกธุรกรรมในเครือข่ายแบ่ง % เล็กๆ ให้เจ้าของโรงแรมทุกคน built-in",
+      "sec_compliance": "🛡️ สถานะ compliance",
+      "compl_th_etax": "🇹🇭 e-Tax Invoice (ไทย)",
+      "compl_th_etax_status": "ใช้งานอยู่ · ลงนามแล้ว {n} ใบวันนี้",
+      "compl_vat": "VAT 7% · อัตโนมัติ",
+      "sec_demo_note": "🎭 โหมดเดโม — ออเดอร์ด้านล่างเป็นการจำลอง เชื่อมต่อ POS จริงเพื่อดูข้อมูลสด",
+      "btn_connect_now": "🔌 เชื่อมต่อ POS ของฉัน",
+      "btn_view_roadmap": "🗺️ วิสัยทัศน์ & roadmap"
+    },
+    "dialogs": {
+      "access_denied_post": "ปฏิเสธการเข้าถึง: คุณโพสต์ในช่องนี้ไม่ได้",
+      "team_staff_only": "โมดูลทีมสำหรับพนักงานเท่านั้น",
+      "signout_reset": "ออกจากระบบและรีเซ็ตเซสชัน?",
+      "delete_evaluation": "ลบการประเมินนี้?",
+      "pick_skill_to_evaluate": "เลือก skill / สูตรอาหาร / งานที่จะประเมิน",
+      "role_name_required": "กรุณากรอกชื่อบทบาท",
+      "role_already_exists": "มีบทบาทชื่อนี้อยู่แล้ว",
+      "pool_name_required": "กรุณากรอกชื่อพูล",
+      "pool_not_found": "ไม่พบพูล",
+      "enter_total_first": "กรุณากรอกจำนวนเงินรวมก่อน",
+      "no_eligible_staff": "ไม่มีพนักงานที่มีสิทธิ์รับการแบ่งปัน",
+      "no_pool_configured": "ยังไม่ได้ตั้งค่าพูล เปิด ตั้งค่า → พูล เพื่อเพิ่ม",
+      "popup_blocked": "Pop-up ถูกบล็อก อนุญาต pop-up บนหน้านี้เพื่อพิมพ์สลิปเงินเดือน",
+      "invite_link_copied": "คัดลอกลิงก์เชิญแล้ว\n\nวางในแท็บใหม่เพื่อทดสอบในฐานะพนักงานคนนี้ หรือส่งให้พวกเขาทางอีเมล",
+      "recipe_name_required": "กรุณากรอกชื่อสูตร",
+      "name_and_date_required": "กรุณากรอกชื่อและวันที่",
+      "title_required": "กรุณากรอกหัวข้อ",
+      "pick_assignee": "กรุณาเลือกผู้รับผิดชอบ",
+      "set_start_end_times": "กรุณากำหนดเวลาเริ่มและสิ้นสุด",
+      "select_at_least_one_day": "เลือกอย่างน้อย 1 วัน",
+      "no_oneoff_to_clone": "ไม่มีงานครั้งเดียวในวันนี้ให้คัดลอกไปที่อื่น เพิ่มงานก่อนผ่านส่วนงาน",
+      "explain_break_skip": "กรุณาอธิบายว่าทำไมพักไม่ได้ ผู้จัดการต้องการเหตุผลเพื่ออนุมัติ",
+      "geolocation_unavailable": "อุปกรณ์นี้ไม่มี API ระบุตำแหน่ง",
+      "could_not_get_location": "ระบุตำแหน่งไม่ได้: {err}",
+      "language_load_failed": "โหลดภาษาไม่สำเร็จ: {lang}",
+      "invite_declined": "คำเชิญนี้ถูกปฏิเสธไปแล้ว ขอผู้จัดการออกใหม่ถ้าต้องการเข้าร่วม",
+      "invite_unrecognized": "ลิงก์เชิญไม่รู้จักสำหรับโรงแรม {hotel} ขอ QR ใหม่จากผู้จัดการ",
+      "delete_pool_record": "ลบพูลนี้? จำนวนเงินที่แจกแล้วจะถูกหักจากรายได้ของพนักงานแต่ละคน",
+      "reopen_payslip": "เปิดสลิปเงินเดือนนี้ใหม่?\n\nสถานะจะกลับเป็น \"อนุมัติ\" สามารถแก้ไขตารางและจำนวนเงินได้อีกครั้ง วันที่จ่ายเดิมถูกบันทึกไว้ใน audit",
+      "delete_payslip": "ลบสลิปเงินเดือนที่บันทึกไว้นี้? ค่าที่คำนวณอัตโนมัติจะกลับมาเมื่อเปิดครั้งถัดไป",
+      "delete_recipe": "ลบสูตรนี้?",
+      "delete_event": "ลบกิจกรรมที่กำหนดเองนี้?",
+      "delete_task": "ลบงานนี้?",
+      "delete_entry": "ลบรายการนี้?",
+      "submit_skip_break": "ส่งคำขอไม่พัก?\n\nผู้จัดการจะได้รับแจ้ง จนกว่าจะอนุมัติ กะของคุณดำเนินการต่อตามปกติ",
+      "reseed_demo": "Re-seed ข้อมูล demo? จะเพิ่มทีมตัวอย่างกลับมา (ไม่กระทบข้อมูลจริงที่บันทึกไว้)"
+    },
+    "assembly": {
+      "title": "จุดรวมพล",
+      "go_here_now": "ไปที่นี่ทันที",
+      "btn_dismiss": "ปิด"
+    },
+    "skills": {
+      "lbl_evaluations": "การประเมิน",
+      "lbl_average": "เฉลี่ย",
+      "lbl_trend_3": "แนวโน้ม (3 ครั้งล่าสุด)",
+      "section_by_skill": "ตาม skill",
+      "section_history": "ประวัติ"
+    },
+    "recipes": {
+      "header_count": "สูตรอาหาร {n} รายการ (fiche technique)",
+      "btn_new": "+ สูตรใหม่",
+      "math_info_title": "ตัวเลขเหล่านี้คำนวณอย่างไร?",
+      "math_info_btn_tooltip": "ดูการคำนวณ",
+      "math_total_cost_title": "ต้นทุนรวม",
+      "math_total_cost_formula": "ผลรวมของต้นทุนแต่ละวัตถุดิบ (จำนวน × ราคาต่อหน่วย พร้อมการแปลงหน่วย)",
+      "math_total_cost_example": "{cost} {cur} = รวมวัตถุดิบทั้งหมดในสูตรนี้",
+      "math_cost_portion_title": "ต้นทุนต่อที่",
+      "math_cost_portion_formula": "ต้นทุนรวม ÷ จำนวนที่",
+      "math_cost_portion_example": "{total} {cur} ÷ {portions} ที่ = {result} {cur} ต่อที่",
+      "math_margin_title": "กำไรขั้นต้น",
+      "math_margin_formula": "(ราคาขาย − ต้นทุนต่อที่) ÷ ราคาขาย × 100",
+      "math_margin_example": "({sell} − {cost}) ÷ {sell} × 100 = {result}%",
+      "math_margin_no_sell": "กรุณาระบุราคาขายเพื่อดูกำไร",
+      "math_food_cost_title": "อัตราส่วน food cost",
+      "math_food_cost_formula": "ต้นทุนต่อที่ ÷ ราคาขาย × 100",
+      "math_food_cost_example": "{cost} ÷ {sell} × 100 = {result}%",
+      "math_food_cost_no_sell": "กรุณาระบุราคาขายเพื่อดู food cost",
+      "math_benchmark_title": "มาตรฐานอุตสาหกรรม (รีสอร์ท 5 ดาวไทย)",
+      "math_benchmark_text": "🟢 Food cost ≤ 28% — ดีเยี่ยม\n🟡 Food cost 28-35% — ยอมรับได้ ระวังขนาดที่\n🔴 Food cost > 35% — คำนวณใหม่หรือเพิ่มราคาขาย",
+      "math_close": "เข้าใจแล้ว",
+      "tot_total_cost": "ต้นทุนรวม",
+      "tot_cost_portion": "ต้นทุน / ที่",
+      "tot_margin": "กำไร",
+      "tot_food_cost": "Food cost",
+      "empty_mgr": "ยังไม่มีสูตรอาหาร สร้างสูตรมาตรฐานพร้อมรายละเอียดต้นทุน — พร้อมใช้กับ POS",
+      "empty_staff": "ยังไม่มีสูตรอาหาร ขอเชฟเพิ่มได้",
+      "lbl_yield": "ปริมาณ",
+      "yield_portions_one": "{n} ที่",
+      "yield_portions_many": "{n} ที่",
+      "lbl_cost_per_portion": "ต้นทุน / ที่",
+      "lbl_sell_price": "ราคาขาย",
+      "lbl_food_cost_pct": "ต้นทุนอาหาร {pct}% · กำไร {margin}%",
+      "lbl_pos_marker": " · POS ✓"
+    },
+    "payroll": {
+      "team_mgmt_title": "การจัดการทีม",
+      "tab_roster": "👥 รายชื่อ",
+      "tab_my_team": "👥 ทีมของฉัน",
+      "tab_schedule": "📅 ตารางเวร",
+      "tab_tasks": "📋 งาน",
+      "tab_recipes": "📔 สูตรอาหาร",
+      "tab_payroll": "💶 เงินเดือน",
+      "access_denied": "🔒 เฉพาะ HR/GM และหัวหน้าแผนกเท่านั้นที่เข้าถึงเงินเดือนได้",
+      "prev_month": "← เดือนก่อน",
+      "next_month": "เดือนถัดไป →",
+      "row_count_hint": "พนักงาน {n} คน · คลิกแถวเพื่อเปิดสลิปเงินเดือน",
+      "row_count_hint_scoped": "พนักงาน {n} คน · เฉพาะ{dept} · คลิกแถวเพื่อเปิดสลิปเงินเดือน",
+      "summary_hotel_total": "🏨 รวมทั้งโรงแรม",
+      "summary_dept_total": "🧑‍🍳 รวม{dept}",
+      "summary_subtitle": "{month} · พนักงาน {n} คน",
+      "grand_total": "เงินเดือนรวมทั้งหมด",
+      "pool_locked": "🔒 ล็อคจนถึง TGE M07 + ตรวจสอบกระเป๋าเงินตามกฎหมาย",
+      "pool_distributed": "✓ จ่ายแล้ว: {amt} {cur} ให้พนักงาน {n} คน",
+      "pool_draft": "⏳ ร่าง: {amt} {cur} — ยังไม่ได้จ่าย",
+      "pool_not_set": "— ยังไม่ได้ตั้งค่าสำหรับงวดนี้ —",
+      "btn_pool_edit": "✎ แก้ไข",
+      "btn_pool_setup": "+ ตั้งค่า",
+      "row_total": "🏨 รวม",
+      "col_employee": "พนักงาน",
+      "col_planned": "ตามแผน",
+      "col_worked": "ทำจริง",
+      "col_ot": "OT",
+      "col_absences": "ขาดงาน",
+      "col_base_salary": "เงินเดือนฐาน",
+      "col_ot_pay": "+ ค่า OT",
+      "col_pool_fiat": "+ พูล {cur}",
+      "col_pool_stay": "+ พูล $STAY",
+      "col_status": "สถานะ",
+      "status_paid": "✓ จ่ายแล้ว",
+      "status_approved": "✓ อนุมัติแล้ว",
+      "status_draft": "บันทึกร่าง",
+      "status_not_opened": "— ยังไม่ได้เปิด —",
+      "sort_tooltip": "คลิกเพื่อเรียงตาม {field}",
+      "sort_tooltip_active": "คลิกเพื่อเรียงตาม {field} (สลับทิศทาง)",
+      "open_payslip_failed": "ไม่สามารถเปิดสลิปเงินเดือนได้:\n\n{err}",
+      "tooltip_pool_fiat_yes": "รวมพูลเงินสดทั้งหมดที่ตกในเดือนนี้ — ดูรายละเอียดในสลิป",
+      "tooltip_pool_fiat_no": "ไม่มีพูลเงินสดที่จ่ายในเดือนนี้",
+      "tooltip_pool_stay_yes": "รวมพูล $STAY ที่ตกในเดือนนี้",
+      "tooltip_pool_stay_no": "ไม่มีพูล $STAY ที่จ่ายในเดือนนี้"
+    },
+    "roster_fiche": {
+      "back": "← กลับไปรายชื่อ",
+      "new_employee": "พนักงานใหม่",
+      "sec_identity": "ข้อมูลส่วนตัว",
+      "sec_contact": "ติดต่อ",
+      "sec_job": "งาน",
+      "sec_documents": "เอกสารในแฟ้ม",
+      "sec_uniform": "ชุดยูนิฟอร์ม",
+      "sec_meals": "อาหาร (โรงอาหารพนักงาน)",
+      "sec_housing": "ที่พัก (หอพักพนักงาน)",
+      "sec_device_security": "🔐 ความปลอดภัยอุปกรณ์",
+      "lbl_first_name": "ชื่อ",
+      "lbl_last_name": "นามสกุล",
+      "lbl_nationality": "สัญชาติ",
+      "lbl_dob": "วันเกิด",
+      "lbl_id_type": "ประเภทเอกสาร",
+      "lbl_id_number": "เลขที่บัตร / พาสปอร์ต",
+      "id_passport": "📕 พาสปอร์ต",
+      "id_national_id": "🪪 บัตรประชาชน",
+      "id_driver_license": "🚗 ใบขับขี่",
+      "id_other": "❓ อื่นๆ",
+      "lbl_email": "อีเมล",
+      "lbl_phone_cc": "+ รหัส",
+      "lbl_phone_number": "หมายเลขโทรศัพท์",
+      "lbl_address": "ที่อยู่",
+      "lbl_role": "ตำแหน่ง",
+      "add_custom_role": "➕ เพิ่มตำแหน่งใหม่ในรายการ",
+      "lbl_contract_type": "ประเภทสัญญา",
+      "ct_full_time": "เต็มเวลา",
+      "ct_part_time": "พาร์ทไทม์",
+      "ct_seasonal": "ตามฤดูกาล",
+      "ct_probation": "ทดลองงาน (3 เดือน)",
+      "lbl_reports_to": "👔 รายงานต่อ",
+      "supervisor_none": "— ไม่มี —",
+      "lbl_hire_date": "วันที่เริ่มงาน",
+      "lbl_contract_end": "สิ้นสุดสัญญา",
+      "lbl_salary_per_month": "เงินเดือน ({cur} / เดือน)",
+      "lbl_hours_per_week": "ชม./สัปดาห์",
+      "lbl_days_per_week": "วัน/สัปดาห์",
+      "auto_shift_prefix": "⏱️ กะอัตโนมัติ: ",
+      "auto_shift_suffix": " ทำงาน + พัก ({h}ชม./สัปดาห์ ÷ {d}วัน/สัปดาห์) — กรอกเวลาเลิกงานอัตโนมัติเมื่อแก้ไขกะ",
+      "warn_shift_illegal": "⛔ เกินกฎหมาย: กะ {dur} ชม. เกินสูงสุด {max} ชม. ({country})",
+      "warn_shift_overtime": "⚠️ ล่วงเวลา: กะ {dur} ชม. > ปกติ {normal} ชม. ({country})",
+      "warn_weekly_illegal": "⛔ เกินกฎหมายรายสัปดาห์: {h} ชม./สัปดาห์ เกินสูงสุด {max} ชม. ({country})",
+      "warn_weekly_overtime": "⚠️ เกินชั่วโมงปกติรายสัปดาห์: {h} ชม./สัปดาห์ > ปกติ {normal} ชม. ({country})",
+      "warn_no_rest": "⛔ พักไม่พอ: ต้องมีอย่างน้อย {min} วันหยุดต่อสัปดาห์ ({country})",
+      "lbl_venue": "📍 พื้นที่ / โซน",
+      "venue_none": "— ทั่วทั้งโรงแรม / ไม่ระบุโซน —",
+      "venue_empty_msg": "ยังไม่ได้ตั้งค่าพื้นที่ (สปา ร้านอาหาร ร้านเสริมสวย บูติก…)",
+      "venue_configure_btn": "⚙️ ตั้งค่าในการตั้งค่าโรงแรม",
+      "venue_add_inline": "+ พื้นที่ใหม่",
+      "venue_add_prompt": "ชื่อพื้นที่ใหม่ (สปา, Sunset Bar, Beach Pavilion, ครัวขนม…)",
+      "venue_added_toast": "✓ เพิ่มพื้นที่ \"{name}\" — กำหนดให้พนักงานคนนี้แล้ว",
+      "lbl_contract_language": "ภาษาสัญญา",
+      "cl_bilingual": "สองภาษา EN + TH",
+      "cl_en": "อังกฤษเท่านั้น",
+      "cl_th": "ไทยเท่านั้น",
+      "lbl_pool_points": "💰 คะแนนพูล {mode}",
+      "pool_default_mode": "(ค่าเริ่มต้น)",
+      "pool_override_mode": "(แทนที่)",
+      "pool_default_opt": "💰 ค่าเริ่มต้น ({n}คะแนน)",
+      "pool_override_opt": "แทนที่: {n}คะแนน",
+      "pool_override_out": " (ไม่นับ)",
+      "lbl_id_doc": "สำเนาพาสปอร์ต/บัตร",
+      "doc_not_yet": "ยังไม่มี",
+      "doc_on_file": "✓ มีในแฟ้ม",
+      "lbl_work_permit_required": "ต้องมีใบอนุญาตทำงาน",
+      "wp_no_thai": "ไม่ (คนไทย)",
+      "wp_yes_foreign": "ใช่ (ต่างชาติ)",
+      "lbl_work_permit_copy": "สำเนาใบอนุญาตทำงาน",
+      "doc_na_or_not_yet": "ไม่เกี่ยวข้อง หรือยังไม่มี",
+      "lbl_uniform_provided": "ชุดยูนิฟอร์ม",
+      "uniform_yes": "ใช่ — จัดให้",
+      "uniform_no": "ไม่มียูนิฟอร์ม",
+      "lbl_uniform_responsibility": "ความรับผิดชอบในการดูแล",
+      "uniform_employer": "โรงแรมซัก (ส่งซักรีด)",
+      "uniform_employee": "พนักงานดูแลเอง",
+      "lbl_meal_benefit": "สวัสดิการอาหาร",
+      "meal_free": "✓ อาหารฟรี",
+      "meal_paid": "พนักงานจ่ายเอง",
+      "meal_none": "ไม่มีสวัสดิการ",
+      "lbl_meals_per_day": "มื้อ / วัน",
+      "lbl_meal_price": "ราคา / มื้อ ({cur})",
+      "ph_zero_free": "0 = ฟรี",
+      "lbl_housing_provided": "จัดให้",
+      "housing_no_own": "ไม่ — มีเอง",
+      "housing_yes": "✓ ใช่",
+      "lbl_housing_type": "ประเภท",
+      "ht_shared_room": "ห้องรวม (หอพัก)",
+      "ht_private_room": "ห้องส่วนตัว",
+      "ht_studio": "สตูดิโอ",
+      "ht_apartment": "อพาร์ตเมนต์",
+      "ht_house": "บ้าน",
+      "ht_other": "อื่นๆ",
+      "lbl_housing_max": "จำนวนสูงสุด",
+      "lbl_housing_rent": "ค่าเช่า / เดือน ({cur})",
+      "lbl_housing_description": "รายละเอียด (สถานที่ สิ่งอำนวยความสะดวก กฎ)",
+      "ph_housing_description": "เช่น ห้อง 18ตร.ม. มีห้องน้ำส่วนตัว แอร์ ไวไฟ หลังตึกพนักงาน สูบบุหรี่ข้างนอกเท่านั้น",
+      "tpl_reuse": "📋 ใช้ซ้ำ:",
+      "btn_delete": "ลบ",
+      "btn_cancel": "ยกเลิก",
+      "btn_save": "💾 บันทึก",
+      "btn_contract_qr": "📄 สัญญา + QR",
+      "confirm_delete": "ลบประวัติพนักงานคนนี้? การกระทำนี้ไม่สามารถย้อนกลับได้",
+      "alert_first_name_required": "กรุณากรอกชื่อ"
+    },
+    "onboarding": {
+      "tagline": "โรงแรมของคุณ เชื่อมต่อกัน",
+      "step_audience_title": "คุณเข้ามาในฐานะใคร?",
+      "step_audience_hint": "แต่ละเส้นทางจะเปิดประสบการณ์ Staylo ที่แตกต่างกัน",
+      "step_name_title": "ชื่อของคุณคืออะไร?",
+      "step_name_hint": "นี่คือชื่อที่คนอื่นจะเห็น",
+      "step_name_placeholder": "เช่น มาลี สุวรรณ",
+      "step_role_title": "บทบาทของคุณ",
+      "step_role_hint": "เลือกตำแหน่งที่ตรงกับงานประจำวันของคุณ",
+      "btn_continue": "ดำเนินการต่อ",
+      "btn_back": "← ย้อนกลับ",
+      "btn_finish": "เข้าสู่ Staylo →",
+      "audience_staff_title": "พนักงานโรงแรม",
+      "audience_staff_desc": "ทีมงานภายใน — แผนกต้อนรับ แม่บ้าน ครัว ช่างซ่อมบำรุง ฝ่ายบริหาร",
+      "audience_ambassador_title": "แอมบาสเดอร์เครือข่าย",
+      "audience_ambassador_desc": "แนะนำโรงแรมให้ Staylo และรับค่าคอมมิชชั่น",
+      "audience_guest_title": "แขกผู้เข้าพัก",
+      "audience_guest_desc": "ฉันกำลังพักอยู่ที่โรงแรม Staylo",
+      "code_staff_title": "รหัสโรงแรม",
+      "code_staff_hint": "ขอจากผู้จัดการของคุณ (เช่น KP001 สำหรับโรงแรมเกาะพะงันที่ 1)",
+      "code_staff_placeholder": "KP001",
+      "code_ambassador_title": "รหัสแอมบาสเดอร์",
+      "code_ambassador_hint": "รหัสแอมบาสเดอร์ Staylo ส่วนตัวของคุณ (เช่น AMB-7421)",
+      "code_ambassador_placeholder": "AMB-0001",
+      "code_guest_title": "รหัสการจองหรือรหัสโรงแรม",
+      "code_guest_hint": "จากใบยืนยันการจองของคุณ หรือเพียงแค่รหัสโรงแรมหากคุณสนใจ",
+      "code_guest_placeholder": "KP001 หรือ BK-9F2A"
+    },
+    "schedule_nav": {
+      "prev": "← ก่อน",
+      "this": "วันนี้",
+      "next": "ถัดไป →",
+      "view_day": "วัน",
+      "view_week": "สัปดาห์",
+      "view_fortnight": "2 สัปดาห์",
+      "view_month": "เดือน",
+      "period_today": "วันนี้",
+      "period_week": "สัปดาห์นี้",
+      "period_fortnight": "2 สัปดาห์นี้",
+      "period_month": "เดือนนี้",
+      "period_noun_day": "วัน",
+      "period_noun_week": "สัปดาห์",
+      "period_noun_fortnight": "2 สัปดาห์",
+      "period_noun_month": "เดือน",
+      "all_depts": "📁 ทุกแผนก ({n})",
+      "all_venues": "📍 ทุกพื้นที่",
+      "events_btn": "📅 กิจกรรม",
+      "print_btn": "🖨️ พิมพ์",
+      "dash_toggle_tooltip": "แสดงหรือซ่อนสถิติ 4 อัน (ทำงานตอนนี้ / ทำแล้ว / วางแผน / ขาดงาน)",
+      "dash_at_work_now_tip": "ตอกบัตรแล้ว {in} คน · กำหนดทำงานตอนนี้ {sched} คน (อยู่ในขอบเขต {total} คน)",
+      "dash_today_only_tip": "เฉพาะวันนี้ — ไม่เปลี่ยนถ้าคุณแก้ไขกะวันอื่น",
+      "dash_planned_tip": "รวมชั่วโมงที่วางแผนในช่วงที่แสดง — อัพเดททุกครั้งที่เพิ่ม/แก้ไข/ลบกะ",
+      "dash_absences_tip_yes": "คลิกเพื่อดูรายละเอียดตามประเภท พนักงาน และวันที่",
+      "dash_absences_tip_no": "ไม่มีการขาดงานในช่วงที่แสดง",
+      "dash_at_work_now": "กำลังทำงานตอนนี้",
+      "dash_today_worked_planned": "วันนี้ · ทำงานแล้ว / วางแผน ({n} คน)",
+      "dash_planned": "วางแผน{period}",
+      "dash_absences": "การลา{period}"
+    },
+    "charges": {
+      "title": "ค่าใช้จ่าย",
+      "tile_desc": "รายจ่าย เงินเดือน รายได้ กำไรขาดทุน",
+      "subtitle": "{hotelCode} · กำไรขาดทุนรายเดือน",
+      "total_expenses": "รายจ่ายรวม",
+      "total_revenues": "รายได้รวม",
+      "net_profit": "กำไรสุทธิ",
+      "net_loss": "ขาดทุนสุทธิ",
+      "section": {
+        "fixed": "ค่าใช้จ่ายคงที่",
+        "payroll": "เงินเดือน (รายเดือน)",
+        "hotel": "รายได้ที่พัก",
+        "fnb": "รายได้อาหารและเครื่องดื่ม",
+        "ancillary": "รายได้บริการเสริม",
+        "shop": "รายได้ร้านค้า (ไม่ใช่อาหาร)"
+      },
+      "placeholder": {
+        "fixed": "เช่น ค่าเช่า ไฟฟ้า น้ำ…",
+        "hotel": "เช่น คืนพัก แพ็กเกจ…",
+        "fnb": "เช่น ร้านอาหาร บาร์ รูมเซอร์วิส…",
+        "ancillary": "เช่น ทัวร์ เช่ารถ ดำน้ำ…",
+        "shop": "เช่น บูทีค เครื่องประดับ ศิลปะ…"
+      },
+      "add_line": "+ เพิ่มรายการ",
+      "delete_line": "ลบรายการนี้",
+      "empty_state": "ยังไม่มีรายการ — คลิก \"+ เพิ่มรายการ\" เพื่อเริ่มต้น",
+      "payroll_info": "รวมอัตโนมัติจากเงินเดือนพนักงาน {n} คน · แก้ไขที่หน้าทีม",
+      "this_month": "เดือนนี้",
+      "this_month_title": "กลับไปยังเดือนปัจจุบัน",
+      "prev_month": "เดือนก่อน",
+      "next_month": "เดือนถัดไป",
+      "copy_from": "📋 คัดลอกจาก {month}",
+      "copy_tooltip": "คัดลอกรายการทั้งหมดจาก {prev} ไปยัง {cur} เหมาะสำหรับค่าใช้จ่ายประจำ (ค่าเช่า สมาชิก) จะแทนที่รายการปัจจุบัน",
+      "copy_confirm": "คัดลอกรายการจาก {prev} ไปยัง {cur} ใช่หรือไม่?\n\nการกระทำนี้จะแทนที่รายการของเดือนปัจจุบัน",
+      "export_csv": "📥 ส่งออก CSV",
+      "export_tooltip": "ดาวน์โหลด CSV ของทุกรายการในเดือนนี้ — เหมาะสำหรับฝ่ายบัญชี"
+    },
+    "shell": {
+      "hotel_default": "Staylo Hotel",
+      "search_channels": "ค้นหาช่อง…",
+      "seed_splash_team": "กำลังตั้งค่าทีมงานโรงแรม…",
+      "seed_splash_schedules": "กำลังสร้างตารางเวร 90 วัน…",
+      "seed_splash_timesheets": "กำลังสร้างข้อมูลเวลาทำงาน…",
+      "seed_splash_finance": "กำลังโหลดข้อมูลบัญชีรายเดือน…",
+      "seed_splash_recipes": "กำลังเพิ่มสูตรอาหาร…",
+      "seed_splash_tasks": "กำลังเพิ่มเทมเพลตงาน…",
+      "seed_splash_done": "ใกล้เสร็จแล้ว…",
+      "online_count": "ออนไลน์ {n}",
+      "members_count": "สมาชิก {n} คน",
+      "message_placeholder": "ส่งข้อความ #{channel}…",
+      "time_now": "เมื่อกี้นี้",
+      "clock_in": "เข้างาน",
+      "clock_in_with_window": "เข้างาน ({start}–{end})",
+      "clock_break_over": "🔔 หมดเวลาพัก — กลับงานได้แล้ว",
+      "clock_on_break": "กำลังพัก · เหลือ {n} นาที",
+      "clock_back_title": "แตะเมื่อคุณกลับมาที่ทำงานแล้ว",
+      "clock_back_tap": "แตะ → กลับไปทำงาน",
+      "clock_out_title": "แตะเพื่อเลิกงาน (ตรวจสอบ GPS แล้ว)",
+      "clock_on_shift": "กำลังทำงาน · {dur}",
+      "clock_on_shift_ot": "กำลังทำงาน · {dur} · OT {ot}",
+      "clock_out_tap": "แตะเพื่อเลิกงาน",
+      "clock_in_title": "ตรวจสอบ GPS ที่โรงแรมเท่านั้น",
+      "break_skipped_approved": "✓ ข้ามพัก (อนุมัติแล้ว)",
+      "break_skipped_approved_title": "ผู้จัดการอนุมัติคำขอไม่พักของคุณ เวลาพักจะถูกนับเป็นเวลาทำงาน",
+      "break_skip_pending": "⏳ ข้ามพัก — รออนุมัติ",
+      "break_skip_pending_title": "รอการอนุมัติจากผู้จัดการ เมื่ออนุมัติแล้ว เวลาพักของคุณจะถูกนับเป็นเวลาทำงาน",
+      "break_start_title": "เริ่มพัก ({n} นาที)",
+      "break_start_confirm": "เริ่มพักตอนนี้เลย?\n\nแอปจะเตือนคุณ 5 นาทีก่อนหมดเวลา และเมื่อถึงเวลากลับงาน (รวม {n} นาที)",
+      "break_skip_title": "ข้ามพักวันนี้ (ต้องได้รับอนุมัติจากผู้จัดการ)",
+      "signout": "ออกจากระบบ ↪",
+      "signout_tooltip": "คลิกเพื่อออกจากระบบ",
+      "bottom": {
+        "chat": "แชท",
+        "team": "ทีม",
+        "alerts": "การแจ้งเตือน",
+        "me": "ฉัน"
+      },
+      "section": {
+        "all_staff": "พนักงานทุกคน",
+        "departments": "แผนก",
+        "operations": "ปฏิบัติการ",
+        "management": "บริหาร",
+        "guest_pulse": "พัลส์แขก",
+        "my_network": "เครือข่ายของฉัน",
+        "my_stay": "การเข้าพักของฉัน"
+      },
+      "composer_placeholder": "ข้อความ #{channel}…",
+      "rail": {
+        "channels": "ช่อง",
+        "search": "ค้นหา",
+        "tasks": "งาน (เร็วๆ นี้)",
+        "alerts": "แจ้งเตือน",
+        "team": "ทีม (HR + ตาราง)",
+        "timesheet": "ตารางเวลาของฉัน",
+        "settings": "ตั้งค่าโรงแรม",
+        "profile": "โปรไฟล์"
+      },
+      "date": {
+        "today": "วันนี้ · {date}",
+        "yesterday": "เมื่อวาน · {date}"
+      },
+      "time": {
+        "now": "ตอนนี้"
+      }
+    }
   }
 }

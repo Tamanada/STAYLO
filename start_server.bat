@@ -1,0 +1,48 @@
+@echo off
+REM ============================================================
+REM  STAYLO Messenger — local dev server launcher
+REM  Double-click this file to start the static server.
+REM  Leave the window open as long as you're testing the app.
+REM ============================================================
+
+cd /d "%~dp0"
+
+echo.
+echo ============================================================
+echo   STAYLO Messenger — local server
+echo ============================================================
+echo.
+echo   URL : http://localhost:8000/staylo_messenger.html
+echo.
+echo   Keep this window open. Close it to stop the server.
+echo.
+echo ============================================================
+echo.
+
+REM Try `python` first, then `py` (the Windows Python launcher),
+REM then `python3` as a last resort. Whichever responds wins.
+where python >nul 2>nul
+if %ERRORLEVEL%==0 (
+    python -m http.server 8000
+    goto :end
+)
+
+where py >nul 2>nul
+if %ERRORLEVEL%==0 (
+    py -m http.server 8000
+    goto :end
+)
+
+where python3 >nul 2>nul
+if %ERRORLEVEL%==0 (
+    python3 -m http.server 8000
+    goto :end
+)
+
+echo.
+echo ERROR: No Python found on PATH.
+echo Install Python from https://python.org or via the Microsoft Store.
+echo.
+pause
+
+:end

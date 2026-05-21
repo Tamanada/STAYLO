@@ -1087,5 +1087,2369 @@
     "review3_quote": "I was skeptical at first, but the governance model is real. One property, one vote. We actually decide the platform's future.",
     "review3_name": "Kenji M.",
     "review3_role": "Owner, Zen Garden Villa"
+  },
+  "app": {
+    "roster": {
+      "scope_label_full": "{count} employees · {hotel}",
+      "scope_label_filtered": "{count} / {total} employees · {hotel}",
+      "scope_label_dept": "{count} in {dept}",
+      "dept_filter_all": "All departments ({count})",
+      "dept_filter_item": "{dept} ({count})",
+      "new_employee_btn": "+ New employee",
+      "empty_state": "No employees yet. Click \"+ New employee\" to start building your team.",
+      "empty_state_filtered": "No employees in {dept}. Switch the filter to see other departments.",
+      "row_subtitle": "{role} · {dept}{outletStr} · {nationality}",
+      "row_outlet_chip": " · {outlet}",
+      "chip_onboarded": "Onboarded",
+      "chip_pending": "Pending invite"
+    },
+    "employee_form": {
+      "back_to_roster": "← Back to roster",
+      "title_new": "New employee",
+      "title_existing": "{first_name} {last_name}",
+      "section": {
+        "identity": "Identity",
+        "contact": "Contact",
+        "job": "Job",
+        "documents": "Documents on file",
+        "uniform": "Uniform",
+        "meals": "Meals (staff canteen)",
+        "housing": "Housing (staff accommodation)"
+      },
+      "label": {
+        "first_name": "First name",
+        "last_name": "Last name",
+        "nationality": "Nat.",
+        "date_of_birth": "Date of birth",
+        "id_type": "ID type",
+        "national_id": "ID / passport number",
+        "email": "Email",
+        "phone_cc": "+ Code",
+        "phone_number": "Phone number",
+        "address": "Address",
+        "role": "Role",
+        "contract_type": "Contract type",
+        "reports_to": "Reports to",
+        "hire_date": "Hire date",
+        "end_date": "Contract end",
+        "salary": "Salary ({currency} / mo)",
+        "hours_per_week": "Hrs/wk",
+        "days_per_week": "Days/wk",
+        "outlet": "Restaurant / outlet",
+        "contract_language": "Contract language",
+        "pool_points_default": "Pool pts (default)",
+        "pool_points_override": "Pool pts (override)",
+        "id_doc_copy": "Passport / ID copy",
+        "work_permit_required": "Work permit required",
+        "work_permit_copy": "Work permit copy",
+        "uniform_provided": "Uniform provided",
+        "uniform_responsibility": "Care responsibility",
+        "meal_benefit": "Meal benefit",
+        "meals_per_day": "Meals / day",
+        "meal_price": "Price / meal ({currency})",
+        "housing_provided": "Provided",
+        "housing_type": "Type",
+        "housing_max_occupants": "Max occ.",
+        "housing_rent": "Rent / mo ({currency})",
+        "housing_description": "Description (location, amenities, rules)"
+      },
+      "placeholder": {
+        "nationality": "TH",
+        "national_id": "A12345678",
+        "email": "name@example.com",
+        "phone_number": "81 234 5678",
+        "days_per_week": "6",
+        "meals_per_day": "3",
+        "meal_price": "0 = free",
+        "housing_max_occupants": "2",
+        "housing_rent": "0 = free",
+        "housing_description": "e.g. 18m² room with private bathroom, AC, wifi, behind staff building. Smoking outside only."
+      },
+      "id_type": {
+        "passport": "Passport",
+        "national_id": "National ID",
+        "driver_license": "Driver license",
+        "other": "Other"
+      },
+      "role_custom_suffix": "(custom)",
+      "btn": {
+        "add_custom_role": "+ Add a new role to the catalog",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "save": "Save",
+        "contract_qr": "Contract + QR"
+      },
+      "contract_type": {
+        "full_time": "Full-time",
+        "part_time": "Part-time",
+        "seasonal": "Seasonal",
+        "probation": "Probation (3m)"
+      },
+      "reports_to": {
+        "none": "— None —",
+        "option": "{first_name} {last_name} · {role}"
+      },
+      "hint": {
+        "auto_shift_label": "Auto shift: ",
+        "auto_shift_detail": " worked + break ({hours}h/wk ÷ {days}d/wk) — pre-fills end time when editing shifts."
+      },
+      "outlet": {
+        "hotel_wide": "— Hotel-wide —",
+        "empty_hint": "No outlets configured.",
+        "configure_btn": "Configure in Hotel Settings"
+      },
+      "contract_language": {
+        "bilingual": "Bilingual EN + TH",
+        "en": "English only",
+        "th": "Thai only"
+      },
+      "pool_points": {
+        "default_option": "Default ({pts}pt)",
+        "override_option": "Override: {pts}pt",
+        "override_zero_suffix": " (out)"
+      },
+      "doc": {
+        "not_yet": "Not yet",
+        "on_file": "On file",
+        "na_or_not_yet": "N/A or not yet",
+        "permit_no": "No (Thai)",
+        "permit_yes": "Yes (foreign)"
+      },
+      "uniform": {
+        "yes": "Yes — provided",
+        "no": "No uniform"
+      },
+      "uniform_resp": {
+        "employer": "Hotel washes (laundry)",
+        "employee": "Employee maintains"
+      },
+      "meal_benefit": {
+        "free": "Free meals",
+        "paid": "Staff pays",
+        "none": "No benefit"
+      },
+      "housing_provided": {
+        "no": "No — own",
+        "yes": "Yes"
+      },
+      "housing_type": {
+        "shared_room": "Shared room (dorm)",
+        "private_room": "Private room",
+        "studio": "Studio",
+        "apartment": "Apartment",
+        "house": "House",
+        "other": "Other"
+      },
+      "confirm": {
+        "delete": "Delete this employee record? This cannot be undone."
+      },
+      "alert": {
+        "first_name_required": "First name is required."
+      },
+      "add_role_modal": {
+        "title": "Add a custom role",
+        "desc": "Create a job title not in the built-in catalog. The role inherits the department's channels and access tier.",
+        "label": {
+          "name": "Role name",
+          "icon": "Icon",
+          "department": "Department"
+        },
+        "placeholder": {
+          "name": "e.g. Sommelier, Spa Receptionist, Boat Captain"
+        },
+        "btn": {
+          "cancel": "Cancel",
+          "add": "+ Add role"
+        },
+        "alert": {
+          "name_required": "Role name is required.",
+          "duplicate_name": "A role with this name already exists."
+        }
+      }
+    },
+    "schedule": {
+      "team_member": "Team member",
+      "team_member_caps": "TEAM MEMBER",
+      "total_caps": "TOTAL",
+      "coverage": "COVERAGE",
+      "peak": "peak {n}",
+      "view": {
+        "day": "Day",
+        "week": "Week",
+        "fortnight": "2 weeks",
+        "month": "Month"
+      },
+      "period_noun": {
+        "day": "day",
+        "week": "week",
+        "fortnight": "2 weeks",
+        "month": "month"
+      },
+      "period_total": {
+        "week": "week",
+        "fortnight": "2-week period",
+        "month": "month"
+      },
+      "dashboard_period": {
+        "day": "today",
+        "week": "this week",
+        "fortnight": "these 2 weeks",
+        "month": "this month"
+      },
+      "nav": {
+        "previous": "← Previous {period}",
+        "this": "This {period}",
+        "next": "Next {period} →",
+        "events": "📅 Events",
+        "events_tooltip": "Manage holidays, festivals, full-moon parties…",
+        "print": "🖨️ Print",
+        "undo": "↶ Undo ({n})",
+        "undo_tooltip": "Undo: {label} · {n} change{plural} reversible",
+        "skip_break_pending": "🚫 {n} skip-break pending",
+        "skip_break_pending_tooltip": "{n} staff member{plural} requested to skip their break — needs your approval"
+      },
+      "dept_filter": {
+        "all_depts": "📁 All departments ({n})",
+        "dept_label": "📁 {dept} dept",
+        "all_outlets": "📁 {dept} · all outlets ({n})",
+        "outlet": "{dept} · {outlet} ({n})"
+      },
+      "outlet_filter": {
+        "all": "🥂 All outlets"
+      },
+      "readonly_hint": "🔒 Read-only view — only your department manager can edit shifts.",
+      "empty": {
+        "dept_no_employees": "No employees in the {dept} department yet.",
+        "add_in_roster": "No employees yet. Add team members in the Roster tab first.",
+        "ask_hr": "No team members in your department yet. Ask HR/GM to add them."
+      },
+      "day_header": {
+        "click_to_open": "Click to open this day in detail (hourly Gantt view)"
+      },
+      "cell": {
+        "add_shift_tooltip": "Add shift — or drop a shift from another day",
+        "add_shift_row_tooltip": "Add shift — or drop a shift from another row",
+        "locked_tooltip": "🔒 Locked — payslip already paid for this month",
+        "locked_short": "🔒 locked (payslip paid)",
+        "locked_long": "🔒 Locked — this month's payslip has been paid",
+        "readonly": "Read-only",
+        "empty": "—",
+        "click_edit_drag_move": "Click to edit or delete · drag to another day to move (Ctrl+drag = copy)",
+        "click_edit_remove_drag": "Click to edit or remove · drag to another day to move · ",
+        "overnight_suffix": " · overnight (ends next day at {time})",
+        "overnight_marker": " +1d",
+        "break_minutes_short": "{n}min br",
+        "break_skip_pending": "⏳ skip?",
+        "break_skip_pending_tooltip": "⏳ Break skip pending manager approval",
+        "break_skipped": "🚫 no break",
+        "break_skipped_tooltip": "✓ Break officially skipped (approved). Worked time = full shift, no break deduction.",
+        "actual_worked_tooltip": "Actually worked {duration} (clocked in/out)",
+        "actual_check": "✓ {duration}",
+        "tasks_count": "📋 {n}",
+        "tasks_tooltip": "{n} task{plural}:\n{list}\n\nClick to open"
+      },
+      "row": {
+        "open_fiche_tooltip": "Click to open this employee's staff fiche",
+        "unknown_employee": "(unknown)"
+      },
+      "totals": {
+        "planned_period": "Total planned hours this {period}",
+        "actual_period": "Actually worked this {period}"
+      },
+      "day_view": {
+        "event_tooltip": "{name}",
+        "now_label": "now",
+        "hour_format": "{hh}h",
+        "continued_overnight_tooltip": "From yesterday's overnight shift ({start}–{end})",
+        "continued_overnight_label": "→ {time}",
+        "bar_tooltip_editable": "{start}–{end}{overnight} · break {min}min{at_clause} · click to edit · drag to reassign (Ctrl=copy)",
+        "bar_break_at": " at {time}",
+        "break_notch_tooltip": "🍱 Break {time} ({min}min)",
+        "coverage_hour_tooltip": "{n} {label} working at {hh}:00{gap}",
+        "coverage_one": "person",
+        "coverage_many": "people",
+        "coverage_gap_suffix": " — coverage gap!"
+      },
+      "dashboard": {
+        "at_work_now": "At work now{scope}",
+        "at_work_now_tooltip": "{clocked} clocked in · {scheduled} scheduled to be working right now ({total} in scope)",
+        "today_worked_planned": "Today · worked / planned ({n} ppl){scope}",
+        "today_worked_planned_tooltip": "Today only — does not change if you edit a shift on another day",
+        "planned_period": "Planned {period}{scope}",
+        "planned_period_tooltip": "Sum of all planned hours across the visible period — updates whenever you add/edit/delete any shift in this view",
+        "absences_period": "Absences {period}{scope}",
+        "absences_period_tooltip_clickable": "Click for full breakdown by type, employee and date",
+        "absences_period_tooltip_empty": "No absences in the visible period"
+      },
+      "absence_breakdown": {
+        "eyebrow": "🤒 Absence breakdown",
+        "heading": "{n} day{plural} {period}{scope}",
+        "summary": "{paid} paid · {unpaid} unpaid · {types} type{plural}",
+        "row_count": "{n}d",
+        "row_paid_unpaid": " ({paid} paid · {unpaid} unpaid)",
+        "row_paid": "paid",
+        "row_unpaid": "unpaid",
+        "row_tooltip": "Click to open this day in detail",
+        "footer_hint": "Click any row to jump to that day in the Day view."
+      },
+      "events": {
+        "title": "📅 Events & holidays",
+        "tab_catalog": "📚 Catalog ({n})",
+        "tab_custom": "✏️ Custom ({n})",
+        "catalog_intro": "Events for {flag} {country}. Toggle each one on/off — they'll show on schedule day headers.",
+        "lunar_dates": "lunar — {n} dates this year",
+        "custom_empty": "No custom events yet. Add hotel-specific events below (themed dinners, anniversary, local festivals…).",
+        "add_section_title": "Add custom event",
+        "placeholder": {
+          "emoji": "🎵",
+          "name": "Event name (e.g. Sunset jazz night)"
+        },
+        "add_button": "+ Add event",
+        "confirm_delete_custom": "Delete this custom event?",
+        "required_alert": "Name and date are required.",
+        "done": "Done"
+      }
+    },
+    "shift_editor": {
+      "title": {
+        "edit": "Edit entry",
+        "add": "Add entry"
+      },
+      "subtitle": "{first_name} {last_name} · {day_label}",
+      "type_toggle": {
+        "work": "💼 Work shift",
+        "absence": "🤒 Absence"
+      },
+      "copy_from_colleague": "📋 Copy from a colleague",
+      "copy_from_colleague_hint": "Tap to pre-fill the form with another {role_or_team}'s shift pattern.",
+      "copy_chip_tooltip": "Used {n} time{plural} by {name}{role_suffix}",
+      "contract_label": "⏱️ Contract: ",
+      "contract_breakdown": "{hours_per_week}h/wk ÷ {days_per_week}d/wk = ",
+      "contract_worked": "{hours}h worked",
+      "contract_per_shift": " per shift + {break}min break = ",
+      "contract_total_clock": "{hours}h on the clock",
+      "contract_end_note": ". End time auto-fills accordingly.",
+      "label": {
+        "start_time": "Start time (you set this)",
+        "end_time_auto": "End time (auto = start + {hours}h work + break, override allowed)",
+        "break_minutes": "Break (minutes — auto)",
+        "break_starts_at": "Break starts at (auto = start + 4h)",
+        "absence_type": "Absence type",
+        "absence_notes": "Notes (optional)",
+        "apply_days": "Apply to which days this week?",
+        "repeat": "Repeat?"
+      },
+      "worked_hours_hint": "Worked hours = end − start − break. When you change Start, all 3 derived fields auto-recompute. Override any after if needed.",
+      "absence_type_option": "{em} {label} ({paid_state}) — {local}",
+      "absence_paid": "paid",
+      "absence_unpaid": "unpaid",
+      "absence_notes_placeholder": "e.g. doctor certificate on file",
+      "reference_label": "📜 Reference: {ref}",
+      "series_detected": "💡 Series detected: {n} matching shifts pre-selected. Save updates all of them, Delete removes all of them. Uncheck any to exclude.",
+      "preset": {
+        "weekdays": "Mon–Fri",
+        "weekend": "Weekend",
+        "all_days": "All days",
+        "clear": "Clear"
+      },
+      "day": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      },
+      "repeat": {
+        "this_week": "Just this week",
+        "next_week": "+ Next week",
+        "month": "+ Whole month (4 wks)",
+        "year": "+ Whole year (52 wks)",
+        "until_contract": "Until contract ends ({date})"
+      },
+      "btn": {
+        "delete": "Delete",
+        "clear": "🗑️ Clear…",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "confirm": {
+        "delete_one": "Delete this entry?",
+        "delete_many": "Delete {n} entries ({days})?\n\nUncheck days in the picker to exclude them."
+      },
+      "alert": {
+        "set_times": "Set start and end times.",
+        "select_day": "Select at least one day."
+      },
+      "toast": {
+        "deleted": "✓ Deleted {n} shift{plural}",
+        "applied": "✓ Applied to {n} shift{plural}",
+        "applied_skipped": " ({n} skipped past contract end)"
+      },
+      "snapshot": {
+        "delete": "Delete {n} shift{plural}",
+        "add_or_edit": "{action} shift{plural} ({n})",
+        "action_add": "Add",
+        "action_edit": "Edit"
+      }
+    },
+    "clear_scope": {
+      "title": "🗑️ Clear shifts",
+      "subtitle": "{first_name} {last_name} — pick a scope. All operations are undoable for 12 seconds.",
+      "scope": {
+        "week": "This week",
+        "month": "This month",
+        "future": "All future shifts (today and on)",
+        "all": "EVERYTHING (entire history)"
+      },
+      "shift_count": "{n} shift{plural}",
+      "confirm": "Clear {n} shift{plural} for {first_name} {last_name}?\n\nScope: {scope}{strong}\n\nUndoable for 12s.",
+      "confirm_strong_all": "\n\n⚠️ This wipes EVERY shift ever scheduled for {first_name}.",
+      "toast_cleared": "✓ Cleared {n} shift{plural} ({scope})",
+      "snapshot": "Clear {scope} for {first_name}",
+      "btn": {
+        "cancel": "Cancel"
+      }
+    },
+    "skip_break": {
+      "staff_btn_tooltip": "Skip your break today (requires manager approval)",
+      "modal_title": "🚫 Skip break — request approval",
+      "warning_label": "⚠️ Important: ",
+      "warning_body_1": "Skipping your break requires manager approval. Once approved, the break time will be ",
+      "warning_body_paid": "paid as worked time",
+      "warning_body_2": " (you receive your full hours). Use this only when a real operational reason prevents you from taking a break (rush, understaffing, emergency).",
+      "reason_label": "Reason (required — visible to manager)",
+      "reason_placeholder": "e.g. Understaffed today — bar fully booked from 18h to 23h, no time to step away",
+      "btn": {
+        "cancel": "Cancel",
+        "send": "📨 Send request"
+      },
+      "alert": {
+        "reason_required": "Please explain why you cannot take your break. Your manager needs context to approve."
+      },
+      "confirm": {
+        "submit": "Submit skip-break request?\n\nYour manager will be notified. Until approved, your shift continues as normal."
+      },
+      "staff_pill_approved": "✓ Break skipped (approved)",
+      "staff_pill_approved_tooltip": "Manager approved your no-break request. Break time is paid as worked time.",
+      "staff_pill_pending": "⏳ Skip break — pending approval",
+      "staff_pill_pending_tooltip": "Awaiting manager approval. Once approved, your break time will be paid as worked time.",
+      "review": {
+        "eyebrow": "🚫 Break-skip requests",
+        "heading": "{n} pending",
+        "empty": "✓ No pending break-skip requests.",
+        "shift_line": "📅 {date} · shift {start}–{end} · break {break}min",
+        "requested_at": "Requested {date}",
+        "no_reason": "(no reason given)",
+        "btn_deny": "✗ Deny",
+        "btn_approve": "✓ Approve",
+        "btn_close": "Close",
+        "deny_prompt": "Optional: reason for denial (the staff will see this):",
+        "approve_confirm": "Approve break skip for {first_name} on {date}?\n\nThe {break} min of break time will be paid as worked time on this shift."
+      }
+    },
+    "absence": {
+      "sick": "Sick leave",
+      "vacation": "Vacation",
+      "annual_leave": "Annual leave",
+      "pto": "PTO",
+      "work_accident": "Work accident",
+      "work_injury": "Work injury",
+      "workers_comp": "Workers comp",
+      "maternity": "Maternity",
+      "maternity_fmla": "Maternity (FMLA)",
+      "paternity": "Paternity",
+      "personal": "Personal",
+      "bereavement": "Bereavement",
+      "public_holiday": "Public holiday",
+      "bank_holiday": "Bank holiday",
+      "federal_holiday": "Federal holiday",
+      "rtt": "RTT",
+      "jury_duty": "Jury duty"
+    },
+    "payroll": {
+      "access_denied": "🔒 Payroll access is reserved for HR / GM and department managers.",
+      "prev_month": "← Prev month",
+      "next_month": "Next month →",
+      "dept_filter": {
+        "all": "📁 All departments ({count})",
+        "dept_option": "{department} ({count})"
+      },
+      "scope_note": {
+        "dept_only": " · {department} dept only",
+        "filter_only": " · {department} only"
+      },
+      "subtitle": "{count} employees{scope} · click a row to open the payslip",
+      "summary": {
+        "hotel_total": "🏨 Hotel total",
+        "dept_total": "🧑‍🍳 {department} dept total",
+        "month_employees": "{month} · {count} employees",
+        "grand_total": "Grand total payroll"
+      },
+      "pool": {
+        "locked_label": "🔒 Locked until TGE M07 + custodial wallet legal audit",
+        "distributed_label": "✓ Distributed: {amount} {currency} across {count} staff",
+        "draft_label": "⏳ Draft: {amount} {currency} — not yet distributed",
+        "not_configured_label": "— Not configured for this period —",
+        "strip_title": "💰 {pool_name} · {period}",
+        "btn_edit": "✎ Edit",
+        "btn_set_up": "+ Set up"
+      },
+      "row": {
+        "total_label": "🏨 TOTAL",
+        "total_status_short": "{paid}P·{approved}A·{draft}D"
+      },
+      "col": {
+        "employee": "Employee",
+        "planned": "Planned",
+        "worked": "Worked",
+        "ot": "OT",
+        "absences": "Absences",
+        "base_salary": "Base salary",
+        "ot_pay": "+ OT pay",
+        "pool_fiat": "+ Pool {currency}",
+        "pool_stay": "+ Pool $STAY",
+        "status": "Status",
+        "tooltip_sort": "Click to sort by {label}",
+        "tooltip_sort_active": "Click to sort by {label} (toggles direction)"
+      },
+      "cell": {
+        "pool_fiat_tooltip": "Sum of all fiat pools landing on this month — see payslip for breakdown",
+        "pool_fiat_empty_tooltip": "No fiat pool distributed for this month",
+        "pool_stay_tooltip": "Sum of $STAY pools landing on this month",
+        "pool_stay_empty_tooltip": "No $STAY pool distributed for this month"
+      },
+      "chip": {
+        "paid": "✓ Paid",
+        "approved": "✓ Approved",
+        "draft_saved": "Draft saved"
+      },
+      "empty": {
+        "not_opened": "— Not opened —"
+      },
+      "alert": {
+        "editor_failed": "Could not open the payslip:\n\n{error}"
+      }
+    },
+    "payslip": {
+      "access_denied": "🔒 You can only open payslips for your own department.",
+      "header": {
+        "eyebrow": "💶 Fiche de paie · {month}",
+        "contract_subtitle": "{role} · {department} · {contract_type}"
+      },
+      "lock": {
+        "title": "🔒 LOCKED — Payslip marked as PAID",
+        "description": "All fields are read-only. The schedule for this month is also locked. Click \"Reopen\" to revert to Approved status and edit again.",
+        "reopen_btn": "🔓 Reopen",
+        "reopen_confirm": "Reopen this payslip ?\n\nStatus will revert to \"Approved\", schedule edits become possible again, and you can modify amounts. The original \"Paid\" timestamp is logged in audit trail."
+      },
+      "hours": {
+        "planned": "Planned",
+        "worked": "Worked",
+        "ot": "OT",
+        "work_days": "Work days"
+      },
+      "absence_chip": {
+        "unpaid_suffix": "({count} unpaid)",
+        "paid_suffix": "(paid)"
+      },
+      "label": {
+        "base_salary": "Base salary ({currency} / month)",
+        "base_override": "⚠️ override · contract = {amount} {currency}",
+        "base_from_contract": "✓ from contract",
+        "ot_multiplier": "OT multiplier",
+        "gross": "GROSS",
+        "total_charges": "TOTAL CHARGES",
+        "net_to_pay": "NET TO PAY"
+      },
+      "btn": {
+        "reset_to_contract": "🔄 Reset to contract value ({amount} {currency})",
+        "delete_saved": "Delete saved",
+        "cancel": "Cancel",
+        "print": "🖨️ Print payslip",
+        "save": "💾 Save payslip"
+      },
+      "section": {
+        "bonuses": "➕ Bonuses",
+        "manual_deductions": "➖ Manual deductions",
+        "pay_summary": "📊 Pay summary",
+        "earnings": "💵 Earnings",
+        "charges": "📤 Charges — where the money goes",
+        "payment": "💳 Payment"
+      },
+      "manual_deductions_hint": "Auto deductions (housing, paid meals, unpaid absences) are added below from the contract — you don't need to repeat them here.",
+      "bonus": {
+        "label_placeholder": "e.g. Service charge, performance bonus",
+        "add_btn": "+ Add bonus",
+        "locked_empty": "No bonuses on this paid payslip."
+      },
+      "deduction": {
+        "label_placeholder": "e.g. Salary advance, uniform damage",
+        "add_btn": "+ Add deduction",
+        "locked_empty": "No manual deductions on this paid payslip."
+      },
+      "hourly_rate": {
+        "title": "⏱️ Hourly rate",
+        "formula": "{base} {currency} ÷ ({hours_per_week}h/wk × 4.333 weeks) = {rate} {currency}/h",
+        "value_suffix": "{currency}/h"
+      },
+      "line": {
+        "base_salary": "Base salary",
+        "base_salary_subtitle": "Full month — contract",
+        "overtime": "Overtime",
+        "overtime_subtitle": "{hours}h × {rate} {currency}/h × {multiplier}× multiplier",
+        "bonus_default_label": "Bonus",
+        "bonus_prefix": "+ {label}",
+        "housing_rent": "− Housing rent",
+        "housing_rent_subtitle": "{housing_type} — billed monthly per contract",
+        "staff_meals": "− Staff meals (paid)",
+        "staff_meals_subtitle": "{work_days} work days × {meals} meals/day × {price} {currency}/meal",
+        "unpaid_absence": "− Unpaid absence",
+        "unpaid_absence_subtitle": "{days} day(s) × {amount} {currency}/day (base ÷ 30)",
+        "hours_short": "− Hours short",
+        "hours_short_subtitle": "{hours}h × {rate} {currency}/h ({tolerance}h tolerance applied)",
+        "deduction_default_label": "Deduction",
+        "deduction_prefix": "− {label}"
+      },
+      "pool": {
+        "line_label": "💰 {pool_name}",
+        "subtitle_pts_hours": "{points} pts × {hours}h = {pct}% of pool weight",
+        "subtitle_pts_hours_full": "{points} pts × {hours}h = {pct}% of {total} {currency} total",
+        "subtitle_share_only": "{pct}% of {total} {currency} total · {period}"
+      },
+      "stay": {
+        "title": "💎 $STAY Equity Bonus (token, non-cash)",
+        "line_subtitle": "{pct}% of {total} $STAY · {period}",
+        "disclaimer": "Distributed to your custodial wallet on staylo.app at TGE M07. Not part of your monthly NET salary."
+      },
+      "shortfall": {
+        "heading": "⏱️ Hours shortfall — {status}",
+        "within_tolerance": "✓ Within tolerance",
+        "exceeds_tolerate": "⚠️ Exceeds tolerance — but policy is \"tolerate\"",
+        "deducted": "➖ Hours deducted",
+        "flagged": "🚩 Flagged for manager review",
+        "body_within_tolerate": "{hours}h not worked (planned − actual). Tolerance is {tolerance}h/month — no deduction applied.",
+        "body_exceeds_tolerate": "{hours}h not worked (vs {tolerance}h tolerance). Current policy doesn't deduct — change to \"deduct\" in Hotel Settings if you want it billed.",
+        "body_within_deduct": "{hours}h not worked, within {tolerance}h tolerance — no deduction.",
+        "body_deducted": "{hours}h not worked. {tolerance}h is tolerated; the remaining {beyond}h is deducted at the hourly rate (see Charges above).",
+        "body_within_flag": "{hours}h not worked, within {tolerance}h tolerance.",
+        "body_flagged": "{hours}h not worked (beyond {tolerance}h tolerance). Decide manually: deduct via \"Add deduction\", request make-up, or accept."
+      },
+      "bik": {
+        "title": "🎁 Benefits in kind (avantages en nature)",
+        "subtitle": "Provided in addition to cash salary — economic value, NOT deducted from net.",
+        "meals_line": "🍽️ Free meals — {days}d × {meals_per_day}/d × 80 {currency}",
+        "housing_line": "🏠 Free housing — {housing_type} (estimated value)",
+        "total": "Total benefits in kind",
+        "package_total": "Total compensation package: {amount} {currency} (cash + in-kind)"
+      },
+      "payment": {
+        "method": {
+          "placeholder": "— Pick method —",
+          "bank": "🏦 Bank transfer",
+          "crypto": "🪙 Crypto",
+          "cash": "💵 Cash"
+        },
+        "date_tooltip": "Payment date",
+        "bank_name_label": "Bank name",
+        "bank_name_placeholder": "e.g. Bangkok Bank, Kasikorn, BNP Paribas",
+        "tx_ref_label": "Transaction reference",
+        "tx_ref_placeholder": "e.g. TX12345 or wire confirmation number",
+        "chain_label": "Chain / asset",
+        "chain_placeholder": "— Pick chain —",
+        "chain_other": "Other",
+        "tx_hash_label": "Tx hash / address",
+        "tx_hash_placeholder": "0x... or T...",
+        "cash_warning_lead": "⚠️ Cash payment — ",
+        "cash_warning_body": "the printed payslip will produce TWO copies on one A4 page. Both must be signed by the employee AND the manager. One stays at the hotel, one goes to the employee."
+      },
+      "notes_label": "Internal notes (not printed on payslip)",
+      "status_label": "Status:",
+      "status": {
+        "draft": "Draft",
+        "approved": "✓ Approved",
+        "paid": "💸 Paid"
+      },
+      "confirm": {
+        "delete": "Delete this saved payslip? Auto-computed values will reappear next time you open it."
+      }
+    },
+    "payslip_print": {
+      "alert": {
+        "popup_blocked": "Pop-up blocked. Allow pop-ups for this page to print payslips."
+      },
+      "window_title": "Payslip — {first_name} {last_name} · {month}",
+      "title": "FICHE DE PAIE / PAYSLIP",
+      "label": {
+        "period": "Period",
+        "issued": "Issued",
+        "employee": "Employee",
+        "role": "Role",
+        "department": "Department",
+        "hire_date": "Hire date",
+        "national_id": "National ID",
+        "contract": "Contract",
+        "gross": "GROSS",
+        "total_charges": "TOTAL CHARGES",
+        "net_to_pay": "NET TO PAY",
+        "employee_sig": "Employee signature",
+        "manager_sig": "Hotel manager signature",
+        "manager_fallback": "__________"
+      },
+      "hotel_fallback": "Hotel · {hotel_code}",
+      "hourly_rate_label": "⏱️ Hourly rate:",
+      "hourly_rate_value": "{rate} {currency}/h",
+      "hourly_rate_formula": "({base} {currency} ÷ {hours_per_week}h/wk × 4.333 wks)",
+      "hours": {
+        "planned": "Planned:",
+        "worked": "Worked:",
+        "ot": "OT:",
+        "work_days": "Work days:",
+        "absences": "Absences:"
+      },
+      "section": {
+        "earnings": "💵 Earnings",
+        "charges": "📤 Charges — where the money goes"
+      },
+      "line": {
+        "base_salary": "Base salary (full month)",
+        "overtime": "Overtime — {hours}h × {rate} {currency}/h × {multiplier}×",
+        "bonus_default": "Bonus",
+        "bonus_prefix": "+ {label}",
+        "pool_with_pts": "💰 {pool_name} — {points} pts × {hours}h — {pct}% of {total} {currency}",
+        "pool_share_only": "💰 {pool_name} — {pct}% of {total} {currency}",
+        "housing_rent": "Housing rent ({housing_type})",
+        "staff_meals": "Staff meals — {days}d × {meals_per_day}/d × {price}{currency}",
+        "unpaid_absence": "Unpaid absence — {days}d × {amount}{currency}/day",
+        "deduction_default": "Deduction",
+        "deduction_prefix": "− {label}"
+      },
+      "bik": {
+        "title": "🎁 Benefits in kind (avantages en nature)",
+        "subtitle": "Provided in addition to cash salary — economic value, NOT included in net to pay.",
+        "meals_line": "🍽️ Free meals ({days}d × {meals_per_day}/d × 80{currency})",
+        "housing_line": "🏠 Free housing ({housing_type})",
+        "total_label": "Total benefits in kind",
+        "package_total": "Total compensation package: {amount} {currency} (cash + in-kind)"
+      },
+      "stay": {
+        "title": "💎 $STAY Equity Bonus (token, non-cash)",
+        "subtitle": "Distributed to employee custodial wallet on staylo.app post-TGE. NOT included in net to pay — separate token bonus.",
+        "line": "{pool_name} — {pct}% of {total} $STAY",
+        "total_label": "Total $STAY this period"
+      },
+      "payment": {
+        "bank_label": "🏦 Paid by bank transfer",
+        "bank_line": "{bank} · Ref: {ref}",
+        "bank_fallback": "(bank)",
+        "crypto_label": "🪙 Paid in crypto",
+        "crypto_line": "{chain} · Tx: {ref}",
+        "crypto_fallback": "(chain)",
+        "cash_label": "💵 Paid in cash",
+        "cash_note": "This payslip is issued in two copies, one for the hotel and one for the employee.",
+        "date_label": "Payment date:",
+        "ref_placeholder": "__________",
+        "not_recorded": "Payment method not yet recorded."
+      },
+      "stamp": {
+        "hotel_copy": "🏨 HOTEL COPY",
+        "employee_copy": "👤 EMPLOYEE COPY"
+      }
+    },
+    "settings": {
+      "title": "⚙️ Hotel Settings",
+      "subtitle": {
+        "editable": "{hotel} · You can edit these.",
+        "readonly": "{hotel} · Read-only — managers can edit."
+      },
+      "readonly_hint": "🔒 Only General Manager / Deputy / Operations Manager / department managers can change these settings.",
+      "section": {
+        "locale": "🌍 Locale",
+        "identity": "🏨 Identity & branding",
+        "emergency": "🚨 Emergency",
+        "fb_canteen": "🍽️ F&B & Canteen",
+        "payroll": "💶 Payroll policy",
+        "pools": "💰 Pools — bonus & redistribution",
+        "timeclock": "⏱️ Time clock & geofence",
+        "biometric": "🔒 Biometric login (production only)",
+        "demo_live": "🎭 Demo / LIVE mode"
+      },
+      "label": {
+        "country": "🌍 Country (governs labour law catalogue)",
+        "currency": "💱 Display currency",
+        "hotel_name": "Hotel name (full legal)",
+        "hotel_address": "Address (full)",
+        "hotel_legal": "Legal info (Tax ID / VAT / Company N° — multi-line)",
+        "hotel_logo": "Logo (PNG / JPG / SVG, max 500KB)",
+        "assembly": "Emergency assembly point",
+        "evacuation": "Evacuation procedure",
+        "contact_fire": "Fire dept",
+        "contact_police": "Police",
+        "contact_medical": "Medical",
+        "contact_manager": "On-call manager",
+        "first_aid": "First aid kit location(s)",
+        "canteen_hours": "🍽️ Staff canteen hours",
+        "outlets": "🥂 F&B outlets / venues",
+        "shortfall_policy": "Shortfall policy",
+        "shortfall_tolerance": "Tolerance (hours / month)",
+        "geofence_lat": "Hotel latitude",
+        "geofence_lng": "Hotel longitude",
+        "geofence_radius": "Geofence radius (meters)"
+      },
+      "country_option": "{flag} {name} — absences & refs in {local_name}",
+      "currency_option": "{symbol}  {code} — {name}",
+      "identity": {
+        "sub": "Appears on every printed payslip and contract. Fill it in once."
+      },
+      "placeholder": {
+        "hotel_name": "e.g. Sunset Beach Resort & Spa Co. Ltd.",
+        "hotel_address": "12/34 Moo 5, Haad Rin\nKoh Phangan, Surat Thani 84280\nThailand",
+        "hotel_legal": "Tax ID: 0123456789012\nCompany N°: 0105561234567\nVAT: TH 1234567890123",
+        "assembly": "e.g. Pool deck — main lawn",
+        "evacuation": "Walk calmly… do not use elevators… help mobility-impaired guests…",
+        "contact_fire": "199",
+        "contact_police": "191",
+        "contact_medical": "1669",
+        "contact_manager": "+66 8…",
+        "canteen_hours": "06:00-09:00, 12:00-14:00, 18:00-21:00",
+        "outlets": "Main Restaurant, Sunset Bar, Pool Cafe, Banquet Hall",
+        "shortfall_tolerance": "2",
+        "geofence_lat": "9.7563",
+        "geofence_lng": "100.0309",
+        "geofence_radius": "200"
+      },
+      "logo": {
+        "no_logo": "No logo",
+        "btn": {
+          "replace": "🔄 Replace logo",
+          "upload": "📁 Upload logo",
+          "remove": "× Remove"
+        },
+        "too_large": "\"{name}\" is too large ({size}KB > 500KB cap). Resize it first or use SVG."
+      },
+      "outlets": {
+        "hint": "Comma-separated. Required if your hotel has multiple restaurants/bars — lets the chef filter the schedule by venue."
+      },
+      "payroll": {
+        "sub": "When an employee works fewer hours than planned (e.g. clocked out early), what should the payslip do?",
+        "tolerance_hint": "Tolerance absorbs minor monthly variance (long lunch, traffic delay, end-of-shift cleanup overrun). Below this threshold, no deduction applies regardless of policy."
+      },
+      "shortfall": {
+        "tolerate": "✓ Tolerate (default — no deduction)",
+        "deduct": "➖ Deduct beyond tolerance (at hourly rate)",
+        "flag": "🚩 Flag for manager review (no auto deduction)"
+      },
+      "pools": {
+        "sub": "A hotel can run any number of pools simultaneously: monthly F&B service charge, annual bonus on % of revenue, one-shot performance push, $STAY equity (post-TGE)… Each pool is configured by its source, frequency, and distribution method. Points-per-role and per-employee overrides are shared across all pools.",
+        "list": {
+          "empty_state": "No pools configured. Click \"+ Add a pool\" below to create one."
+        },
+        "locked_badge": "🔒 Coming TGE M07",
+        "stay_badge": "$STAY",
+        "enabled_badge": "✓ ENABLED",
+        "disabled_badge": "✗ DISABLED",
+        "btn": {
+          "edit": "✎ Edit",
+          "disable": "○ Disable",
+          "enable": "● Enable",
+          "delete": "🗑",
+          "add": "+ Add a pool"
+        },
+        "confirm_delete": "Delete pool \"{name}\"?\n\nThis also removes any distribution records associated with it. Cannot be undone.",
+        "role_points": {
+          "label": "⭐ Points per role — bareme 1 (entry) → 7 (top management)",
+          "hint": "Used by every pool that distributes \"by points\" or \"by points × hours\". 0 = excluded from those pools. Per-employee override available on each staff fiche."
+        }
+      },
+      "timeclock": {
+        "sub": "Staff can only clock in/out within X meters of these GPS coordinates. Prevents clock-in fraud (e.g. from home)."
+      },
+      "btn": {
+        "use_my_location": "📍 Use my current location",
+        "getting_location": "📡 Getting location…",
+        "location_filled": "✓ Filled with current GPS",
+        "reseed_demo": "🔄 Re-seed demo data",
+        "seed_big_hotel": "🏰 Seed BIG hotel (~140 staff)",
+        "switch_live": "🚀 Switch to LIVE",
+        "close": "Close",
+        "save": "Save settings"
+      },
+      "geolocation": {
+        "unavailable": "Geolocation API not available on this device.",
+        "error": "Could not get location: {message}"
+      },
+      "geofence": {
+        "strict_label": "Strict mode: BLOCK clock-in outside geofence (vs. warn-and-flag)"
+      },
+      "biometric": {
+        "sub": "When enabled, staff must unlock the app with their fingerprint or Face ID on every open. Their phone is bound to their account in the DB. Requires HTTPS deployment — won't work locally.",
+        "toggle_label": "Require biometric authentication on app open",
+        "unsupported": "⚠️ This browser doesn't support WebAuthn (biometric API). Toggle has no effect here."
+      },
+      "demo_live": {
+        "sub": "When you start a fresh hotel, Staylo auto-loads example employees, recipes and tasks so you can explore the UI. Once you're ready to use it for real, switch to LIVE mode — all demo data is wiped and only your own real records remain."
+      },
+      "live": {
+        "banner": "🚀 LIVE mode active.",
+        "banner_detail": "No demo data is loaded. All employees, recipes and tasks are real."
+      },
+      "demo": {
+        "banner": "🎭 Demo mode active. Currently loaded: {employees} demo employees · {recipes} recipes · {tasks} tasks. You can delete any of them individually as you replace them with real ones."
+      },
+      "reseed": {
+        "confirm": "Re-seed the demo dataset? This adds the example team back (does NOT touch your already-saved real records).",
+        "success": "✓ Demo dataset re-seeded (90-day schedule + 75-day timesheet — ready for monthly payroll editing)."
+      },
+      "seed_big": {
+        "tooltip": "Seed ~140 staff covering EVERY role across all 9 departments — useful to see the full org tree",
+        "confirm": "🏰 Seed BIG hotel team?\n\nThis loads ~140 staff covering ALL 9 departments + EVERY role in the catalogue:\n  • Management · Front Office · Housekeeping · F&B\n  • Maintenance · Spa & Wellness · Security\n  • Admin & Finance · Sales & Events\n\nWipes existing demo employees first (your own auto-linked manager record stays). Schedule + timesheet are also regenerated for the new team. Continue?",
+        "success": "🏰 Seeded {count} staff across 9 departments. 90-day schedule + 75-day clocked events generated. Open the Roster tab and use the dept filter to navigate."
+      },
+      "switch_live": {
+        "confirm": {
+          "heading": "🚀 Switch this hotel to LIVE mode?",
+          "delete_heading": "❌ DELETE:",
+          "delete_employees": "  • {count} demo employees",
+          "delete_recipes": "  • {count} demo recipes",
+          "delete_tasks": "  • {count} demo tasks",
+          "delete_attached": "  • All schedules / clock events / payslips attached to demo staff",
+          "keep_heading": "✅ KEEP (your real records — never wiped):",
+          "keep_self": "  • 👤 {first_name} {last_name} — you ({role})",
+          "keep_self_missing": "  • (no auto-linked manager record found)",
+          "keep_others": "  • {count} other employee(s) you created",
+          "keep_recipes": "  • {count} recipe(s) you created",
+          "keep_tasks": "  • {count} task(s) you created",
+          "keep_settings": "  • All hotel settings + pools + clock-in events for kept staff",
+          "footer": "After this, demo will NOT auto-load on next boot. Continue?"
+        },
+        "success": "🚀 Switched to LIVE mode. Demo data removed — your records kept."
+      },
+      "system_message": {
+        "updated": "⚙️ Hotel settings updated by {user}"
+      }
+    },
+    "pool_editor": {
+      "eyebrow": "💰 Pool Configuration",
+      "title": {
+        "new": "New pool",
+        "edit": "Edit pool"
+      },
+      "label": {
+        "pool_name": "Pool name",
+        "source_type": "Source / type",
+        "frequency": "Frequency",
+        "distribution_method": "Distribution method",
+        "percentage": "Percentage (%)",
+        "fixed_amount": "Fixed amount per period ({currency})",
+        "min_tenure": "Min tenure (months)",
+        "require_points": " Require points > 0 to be eligible",
+        "enabled": " Pool enabled — appears in Payroll & gets distributed"
+      },
+      "type_option_locked_suffix": " — 🔒 Coming TGE M07",
+      "placeholder": {
+        "percentage": "10",
+        "fixed_amount": "50000"
+      },
+      "percentage": {
+        "hint": "Informational only. Manager enters actual amount per period in the Pool Manager."
+      },
+      "fixed": {
+        "hint": "Manager-set budget. Same amount each period until changed."
+      },
+      "tenure": {
+        "hint": "Staff hired less than X months ago is excluded. 0 = no filter."
+      },
+      "require_points": {
+        "hint": "If checked, only staff with role-points > 0 (or override) participate. Uncheck for \"every staff equally\" pools."
+      },
+      "stay_warn": {
+        "title": "💎 $STAY Equity Pool — locked until TGE M07. ",
+        "body": "This pool type will be activated post-Token Generation Event + custodial wallet legal audit. For now, you can configure it but distributions are blocked."
+      },
+      "btn": {
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "save": "💾 Save"
+      },
+      "delete": {
+        "confirm": "Delete pool \"{name}\"?\n\nThis also removes any distribution records associated with it."
+      },
+      "alert": {
+        "name_required": "Pool name is required."
+      }
+    },
+    "pool_manager": {
+      "not_found": "Pool not found.",
+      "eyebrow": "💰 {name} · {period}",
+      "title": {
+        "locked": "🔒 Pool locked (TGE M07)",
+        "distributed": "✓ Distributed",
+        "draft": "Draft — not yet distributed",
+        "new": "New record"
+      },
+      "locked_banner": {
+        "title": "💎 $STAY Equity Pool — locked until TGE M07. ",
+        "body": "Configuration is editable, but distributions are blocked until the Token Generation Event + custodial wallet legal audit greenlight."
+      },
+      "distributed_banner": {
+        "title": "✓ This pool has been distributed.",
+        "body": " Each eligible staff sees the amount added to their payslip Earnings. To re-distribute, delete this record and create a new one."
+      },
+      "label": {
+        "total": "Total pool amount ({currency})"
+      },
+      "placeholder": {
+        "total_stay": "Total $STAY allocated to this pool",
+        "total_fiat": "Total {currency} for this period"
+      },
+      "preview_heading": "📊 Distribution preview",
+      "empty_total": "Enter the total pool amount above to see the distribution preview.",
+      "empty_eligible": "⚠️ No eligible staff for this period. Check Settings → Pool role points (if \"by points\"), or verify timesheet data (if weighted by hours), or relax tenure / department filters.",
+      "summary": {
+        "eligible_count": "{count} eligible staff"
+      },
+      "col": {
+        "employee": "Employee",
+        "points": "Pts",
+        "hours": "Hours",
+        "share_pct": "Share %",
+        "amount": "Amount"
+      },
+      "hint": {
+        "fb_service": "Tip: {pct}% of your F&B revenue this period is the typical pool. Calculate from your POS reports.",
+        "revenue_pct": "Tip: {pct}% of your hotel revenue this period.",
+        "profit_pct": "Tip: {pct}% of your net profit this period.",
+        "fixed": "Default budget: {amount} {currency}/period (override here if needed).",
+        "stay_token": "🔒 $STAY pool — distribution blocked until TGE M07."
+      },
+      "btn": {
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "save_draft": "💾 Save as draft",
+        "approve": "✓ Approve & distribute"
+      },
+      "delete": {
+        "confirm": "Delete this pool record? Distributed amounts will be removed from each staff's payslip earnings."
+      },
+      "alert": {
+        "amount_required": "Enter a total amount first.",
+        "no_eligible_staff": "No eligible staff to distribute to."
+      },
+      "distribute": {
+        "confirm": "Distribute {amount} {currency} across {count} staff for {period}?\n\nEach staff's payslip Earnings will get a \"{name}\" line added automatically. You can still delete this record later if you need to redo it."
+      },
+      "legacy": {
+        "no_pool": "No pool configured. Open Settings → Pools to add one."
+      }
+    },
+    "pool_types": {
+      "fb_service": {
+        "label": "🥂 F&B Service Charge",
+        "desc": "10% (or %) of F&B revenue, redistributed to staff"
+      },
+      "revenue_pct": {
+        "label": "📈 % of Total Revenue",
+        "desc": "X% of monthly hotel revenue → staff bonus pool"
+      },
+      "profit_pct": {
+        "label": "💼 % of Net Profit",
+        "desc": "Profit-sharing — X% of after-tax profit"
+      },
+      "fixed": {
+        "label": "🎯 Fixed Amount",
+        "desc": "Manager sets a fixed budget per period"
+      },
+      "stay_token": {
+        "label": "💎 $STAY Equity Pool",
+        "desc": "Distribute $STAY tokens from hotel treasury — Coming at TGE (M07)"
+      }
+    },
+    "pool_frequencies": {
+      "monthly": "📅 Monthly",
+      "quarterly": "📊 Quarterly",
+      "biannual": "📈 Bi-annual",
+      "annual": "🎄 Annual",
+      "one_shot": "⚡ One-shot"
+    },
+    "pool_distributions": {
+      "equal": "⚖️ Equal split — every eligible staff gets the same",
+      "by_points": "⭐ By points — share ∝ role bareme (1-7)",
+      "by_hours": "⏱️ By hours worked",
+      "by_points_hours": "🎯 By points × hours (default — rewards both rank + presence)"
+    },
+    "clock": {
+      "btn": {
+        "clock_in": "Clock in",
+        "clock_out": "Tap to clock out",
+        "clock_in_now": "⏱️ Clock in now"
+      },
+      "shift_window": "Clock in ({start}–{end})",
+      "tooltip": {
+        "gps_off": "GPS verified at hotel only",
+        "gps_on": "Tap to clock out (GPS verified)",
+        "tap_back": "Tap when you are back at your post",
+        "start_break": "Start break ({minutes}min)",
+        "skip_break": "Skip your break today (requires manager approval)",
+        "skip_approved": "Manager approved your no-break request. Break time is paid as worked time.",
+        "skip_pending": "Awaiting manager approval. Once approved, your break time will be paid as worked time."
+      },
+      "status": {
+        "on_shift": "On shift · {hours}",
+        "on_shift_with_ot": "On shift · {hours} · OT {ot}",
+        "on_break": "On break · {minutes}m left",
+        "break_over": "🔔 Break OVER — back now",
+        "tap_back_to_work": "Tap → back to work",
+        "skip_approved": "✓ Break skipped (approved)",
+        "skip_pending": "⏳ Skip break — pending approval"
+      },
+      "confirm": {
+        "start_break": "Start your break now?\n\nThe app will remind you 5 minutes before the end and when it's time to come back ({minutes}min total)."
+      },
+      "banner": {
+        "next_shift_today": "Next shift today: <b>{start}–{end}</b> (in {minutes}min you can clock in)",
+        "todays_shift": "Today's shift: <b>{start}–{end}</b>",
+        "shift_ended": "Today's shift ended at {end}. Next: {next}",
+        "no_shift_today": "No shift scheduled today.",
+        "no_shift": "No shift scheduled.",
+        "no_upcoming": "No upcoming shifts scheduled.",
+        "next_shift": "Next shift: <b>{date} at {time}</b>"
+      },
+      "reminder": {
+        "soon": "⏰ Shift starts in {minutes} min",
+        "now": "⏰ Your shift starts NOW",
+        "late": "⚠️ {minutes} min late — clock in!",
+        "cta": "Tap to clock in →"
+      }
+    },
+    "tasks": {
+      "title": "Tasks",
+      "btn": {
+        "new": "+ New task",
+        "today": "Today",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "save": "Save",
+        "create": "+ Create task"
+      },
+      "head": {
+        "label": "📅 Tasks for"
+      },
+      "empty": {
+        "manager": "No tasks scheduled for this date. Click \"+ New task\" to create one (with optional recurrence).",
+        "staff": "No tasks assigned to you for this date. Enjoy! 🎉"
+      },
+      "assignee": {
+        "all": "🌐 All staff",
+        "dept": "📁 {dept}",
+        "role": "🛎️ {role}",
+        "employee": "👤 {name}",
+        "unknown": "👤 Unknown"
+      },
+      "recurrence": {
+        "once": "one-off",
+        "daily": "daily",
+        "weekly": "weekly",
+        "monthly": "monthly",
+        "per_shift": "per shift"
+      },
+      "tooltip": {
+        "mark_done": "Mark as done",
+        "mark_not_done": "Mark as not done",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "completed_by": "✓ done by {name}",
+      "confirm": {
+        "delete_one": "Delete this task?",
+        "delete_recurring": "Delete this task (and all its future recurrences)?"
+      },
+      "editor": {
+        "title": {
+          "new": "+ New task",
+          "edit": "✎ Edit task"
+        }
+      },
+      "label": {
+        "title": "Title",
+        "title_placeholder": "e.g. Check fridge temperature",
+        "description": "Description (optional)",
+        "description_placeholder": "Detailed instructions, location…",
+        "assign_to": "Assign to",
+        "employee": "Employee",
+        "role": "Role",
+        "department": "Department",
+        "date": "Date",
+        "day_of_week": "Day of week",
+        "day_of_month": "Day of month (1-31)",
+        "how_often": "How often?",
+        "due_time": "Due time (optional)",
+        "priority": "Priority",
+        "linked_recipe": "📔 Linked recipe (fiche technique)"
+      },
+      "assign": {
+        "employee": "A specific employee",
+        "role": "Everyone with a role",
+        "dept": "A whole department",
+        "all": "All staff",
+        "pick_employee": "— Pick an employee —",
+        "pick_role": "— Pick a role —",
+        "pick_department": "— Pick a department —"
+      },
+      "recur_opt": {
+        "once": "One-off (specific date)",
+        "daily": "Daily",
+        "weekly": "Weekly (specific day)",
+        "monthly": "Monthly (specific day)",
+        "per_shift": "Every shift"
+      },
+      "recur_hint": {
+        "daily": "🗓️ Fires every day",
+        "per_shift": "⏱️ Fires every time the assignee starts a shift"
+      },
+      "weekday": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday"
+      },
+      "priority": {
+        "low": "🟢 Low",
+        "normal": "⚪ Normal",
+        "high": "🟠 High",
+        "urgent": "🔴 Urgent"
+      },
+      "recipe": {
+        "none": "— None —"
+      },
+      "alert": {
+        "title_required": "Title is required.",
+        "assignee_required": "Pick an assignee."
+      }
+    },
+    "recipes": {
+      "title": "Recipes",
+      "btn": {
+        "new": "+ New recipe",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "edit": "✎ Edit",
+        "close": "Close"
+      },
+      "head": {
+        "count": "{n} recipes (fiches techniques)"
+      },
+      "empty": {
+        "manager": "No recipes yet. Build standardized recipes with cost breakdown — POS-ready.",
+        "staff": "No recipes available. Ask the chef to add some."
+      },
+      "untitled": "(untitled)",
+      "label": {
+        "yield": "Yield",
+        "yield_short": "Yield (portions)",
+        "cost_per_portion": "Cost / portion",
+        "sell_price": "Sell price",
+        "sell_price_with_unit": "Sell price {currency}",
+        "cost_per_portion_short": "Cost/p",
+        "sell": "Sell",
+        "margin": "Margin",
+        "total_cost": "Total cost",
+        "food_cost": "Food cost",
+        "prep": "⏱️ Prep",
+        "cook": "🔥 Cook",
+        "rest": "🧊 Rest",
+        "total": "⌛ Total",
+        "prep_min": "⏱️ Prep (min)",
+        "cook_min": "🔥 Cook (min)",
+        "rest_min": "🧊 Rest (min)",
+        "recipe_name": "Recipe name",
+        "recipe_name_placeholder": "e.g. Pad Thai with prawns",
+        "category": "Category",
+        "pos_sku": "POS SKU",
+        "pos_sku_placeholder": "e.g. PT-001",
+        "video_url": "🎥 Video URL (YouTube embed, .mp4 link, etc.)",
+        "allergens": "⚠️ Allergens (optional)",
+        "allergens_placeholder": "e.g. peanut, shellfish, gluten",
+        "notes": "Chef notes (optional)",
+        "notes_placeholder": "Plating tips, wine pairing, variations…"
+      },
+      "margin_summary": "Food cost {foodCost}% · Margin {margin}%",
+      "section": {
+        "equipment": "🍳 Equipment / matériel",
+        "equipment_hint": "What the cook needs to gather before starting (wok, mandoline, thermomix…).",
+        "ingredients": "Ingredients",
+        "preparation": "Preparation",
+        "preparation_steps": "Preparation steps",
+        "photos_video": "📸 Photos & video",
+        "photos_hint": "Upload multiple photos: ingredients shot, technique steps, plating final, etc."
+      },
+      "allergens_prefix": "⚠️ Allergens: ",
+      "video": {
+        "open_link": "🎥 Open video link →"
+      },
+      "equipment": {
+        "placeholder": "e.g. Wok, mandoline, thermomix",
+        "qty_tooltip": "Quantity (default 1)",
+        "add": "+ Add equipment"
+      },
+      "ingredients": {
+        "add": "+ Add ingredient",
+        "col": {
+          "ingredient": "Ingredient",
+          "qty": "Qty",
+          "unit": "Unit",
+          "price": "Price {currency}",
+          "per_unit": "/ Unit",
+          "cost": "= Cost"
+        },
+        "cost_tooltip": "Auto = Qty × (price ÷ unit-conversion)"
+      },
+      "steps": {
+        "add": "+ Add step"
+      },
+      "photos": {
+        "add": "Add",
+        "too_large": "\"{name}\" too large (max 500KB per photo to fit demo storage). Resize first."
+      },
+      "cat": {
+        "starter": "🥗 Starter",
+        "main": "🍽️ Main",
+        "dessert": "🍰 Dessert",
+        "cocktail": "🍹 Cocktail",
+        "wine": "🍷 Wine",
+        "beer": "🍺 Beer",
+        "soft": "🥤 Soft drink",
+        "side": "🍚 Side"
+      },
+      "editor": {
+        "title": {
+          "new": "+ New recipe",
+          "edit": "✎ Edit recipe"
+        }
+      },
+      "confirm": {
+        "delete": "Delete this recipe?"
+      },
+      "portion_singular": "portion",
+      "portion_plural": "portions"
+    },
+    "onboarding": {
+      "tagline": "Your hotel. Connected.",
+      "step1": {
+        "title": "Who are you here as?",
+        "hint": "Each path opens a different Staylo experience."
+      },
+      "step2": {
+        "title": "What's your name?",
+        "hint": "This is how others will see you.",
+        "placeholder": "e.g. Malee Suwan"
+      },
+      "step3": {
+        "title": {
+          "staff": "Hotel code",
+          "ambassador": "Ambassador code",
+          "guest": "Booking or hotel code"
+        },
+        "hint": {
+          "staff": "Get this from your manager (e.g. KP001 for Koh Phangan property #1).",
+          "ambassador": "Your personal Staylo Ambassador ID (e.g. AMB-7421).",
+          "guest": "From your reservation confirmation, or just the hotel code if you're curious."
+        },
+        "placeholder": {
+          "staff": "KP001",
+          "ambassador": "AMB-0001",
+          "guest": "KP001 or BK-9F2A"
+        }
+      },
+      "step4": {
+        "title": "Your role",
+        "hint": "Pick the one that matches your day-to-day."
+      },
+      "btn": {
+        "continue": "Continue",
+        "back": "← Back",
+        "finish": "Enter Staylo →"
+      },
+      "audience": {
+        "staff": {
+          "title": "Hotel Staff",
+          "desc": "Internal team — reception, housekeeping, kitchen, maintenance, management."
+        },
+        "ambassador": {
+          "title": "Network Ambassador",
+          "desc": "Refer hotels to Staylo and earn commission."
+        },
+        "guest": {
+          "title": "Guest",
+          "desc": "I'm staying at a Staylo hotel."
+        }
+      },
+      "dept": {
+        "management": "Management",
+        "front_office": "Front Office",
+        "housekeeping": "Housekeeping",
+        "fnb": "Food & Beverage",
+        "maintenance": "Maintenance",
+        "spa": "Spa & Wellness",
+        "security": "Security",
+        "admin": "Admin & Finance",
+        "sales": "Sales & Events"
+      }
+    },
+    "channels": {
+      "group_all_staff": "All Staff",
+      "group_departments": "Departments",
+      "group_operations": "Operations",
+      "group_management": "Management",
+      "group_guest_pulse": "Guest Pulse",
+      "group_my_network": "My Network",
+      "group_my_stay": "My Stay",
+      "general": "general",
+      "general_d": "Everyone on the team",
+      "announcements": "announcements",
+      "announcements_d": "Management posts only",
+      "emergency": "emergency",
+      "emergency_d": "🚨 Urgent alerts",
+      "reception": "reception",
+      "housekeeping": "housekeeping",
+      "kitchen": "kitchen",
+      "maintenance": "maintenance",
+      "security": "security",
+      "spa": "spa",
+      "finance": "finance",
+      "sales": "sales",
+      "room_status": "room-status",
+      "room_status_d": "Housekeeping ↔ Reception",
+      "orders": "orders",
+      "orders_d": "Kitchen ↔ F&B floor",
+      "maintenance_requests": "maintenance-requests",
+      "maintenance_requests_d": "Issues & repairs",
+      "valet_desk": "valet-desk",
+      "valet_desk_d": "Parking & transport",
+      "lost_found": "lost-found",
+      "lost_found_d": "Lost property",
+      "managers": "managers",
+      "managers_d": "Management only",
+      "daily_briefing": "daily-briefing",
+      "revenue": "revenue",
+      "guest_feedback": "guest-feedback",
+      "guest_feedback_d": "Reviews & follow-ups",
+      "ambassadors": "ambassadors",
+      "ambassadors_d": "Ambassador community",
+      "commissions": "commissions",
+      "commissions_d": "Your earnings",
+      "staylo_hq": "staylo-hq",
+      "staylo_hq_d": "Platform updates",
+      "concierge": "concierge",
+      "concierge_d": "Direct line to reception",
+      "room_service": "room-service",
+      "room_service_d": "Order to your room",
+      "staylo_news": "staylo-news",
+      "staylo_news_d": "Tips & local picks"
+    },
+    "depts": {
+      "management": "Management",
+      "front_office": "Front Office",
+      "housekeeping": "Housekeeping",
+      "f_b": "F&B",
+      "maintenance": "Maintenance",
+      "spa": "Spa",
+      "security": "Security",
+      "admin": "Admin",
+      "sales": "Sales"
+    },
+    "roles": {
+      "general_manager": "General Manager",
+      "deputy_general_manager": "Deputy General Manager",
+      "operations_manager": "Operations Manager",
+      "revenue_manager": "Revenue Manager",
+      "front_office_manager": "Front Office Manager",
+      "night_auditor": "Night Auditor",
+      "senior_receptionist": "Senior Receptionist",
+      "receptionist": "Receptionist",
+      "trainee_receptionist": "Trainee Receptionist",
+      "concierge": "Concierge",
+      "doorman": "Doorman",
+      "bellman_porter": "Bellman / Porter",
+      "valet_driver": "Valet / Driver",
+      "guest_relations_officer": "Guest Relations Officer",
+      "executive_housekeeper": "Executive Housekeeper",
+      "floor_supervisor": "Floor Supervisor",
+      "senior_room_attendant": "Senior Room Attendant",
+      "room_attendant": "Room Attendant",
+      "turndown_attendant": "Turndown Attendant",
+      "laundry_manager": "Laundry Manager",
+      "laundry_attendant": "Laundry Attendant",
+      "public_areas_attendant": "Public Areas Attendant",
+      "f_b_manager": "F&B Manager",
+      "executive_chef": "Executive Chef",
+      "sous_chef": "Sous Chef",
+      "chef_de_partie": "Chef de Partie",
+      "commis_chef": "Commis Chef",
+      "pastry_chef": "Pastry Chef",
+      "pastry_cook": "Pastry Cook",
+      "kitchen_steward": "Kitchen Steward",
+      "restaurant_manager": "Restaurant Manager",
+      "maitre_d_hotel": "Maître d'hôtel",
+      "senior_waiter": "Senior Waiter",
+      "waiter_server": "Waiter / Server",
+      "trainee_waiter": "Trainee Waiter",
+      "head_bartender": "Head Bartender",
+      "bartender": "Bartender",
+      "barista": "Barista",
+      "room_service_server": "Room Service Server",
+      "banquet_captain": "Banquet Captain",
+      "banquet_server": "Banquet Server",
+      "chief_engineer": "Chief Engineer",
+      "maintenance_supervisor": "Maintenance Supervisor",
+      "electrician": "Electrician",
+      "plumber": "Plumber",
+      "hvac_technician": "HVAC Technician",
+      "carpenter": "Carpenter",
+      "painter": "Painter",
+      "gardener": "Gardener",
+      "pool_technician": "Pool Technician",
+      "it_support": "IT Support",
+      "spa_manager": "Spa Manager",
+      "senior_therapist": "Senior Therapist",
+      "therapist": "Therapist",
+      "beauty_therapist": "Beauty Therapist",
+      "fitness_manager": "Fitness Manager",
+      "fitness_coach": "Fitness Coach",
+      "yoga_instructor": "Yoga Instructor",
+      "security_manager": "Security Manager",
+      "security_supervisor": "Security Supervisor",
+      "security_officer": "Security Officer",
+      "night_security": "Night Security",
+      "financial_controller": "Financial Controller",
+      "accountant": "Accountant",
+      "hr_manager": "HR Manager",
+      "hr_payroll_officer": "HR / Payroll Officer",
+      "purchasing_manager": "Purchasing Manager",
+      "purchaser": "Purchaser",
+      "director_of_sales": "Director of Sales",
+      "sales_manager": "Sales Manager",
+      "marketing_manager": "Marketing Manager",
+      "event_manager": "Event Manager",
+      "wedding_coordinator": "Wedding Coordinator"
+    },
+    "team": {
+      "title": "Team",
+      "subtitle": "{count} employees · {hotel}",
+      "tile": {
+        "roster_t": "Roster",
+        "roster_d": "Employees, contracts, onboarding",
+        "schedule_t": "Schedule",
+        "schedule_d": "Shifts, weeks, day view",
+        "tasks_t": "Tasks",
+        "tasks_d": "Daily tasks & assignments",
+        "recipes_t": "Recipes",
+        "recipes_d": "Standard recipes & costing",
+        "payroll_t": "Payroll",
+        "payroll_d": "Hours, OT, payslips"
+      },
+      "tab": {
+        "roster": "👥 Roster",
+        "schedule": "📅 Schedule",
+        "tasks": "📋 Tasks",
+        "recipes": "📔 Recipes",
+        "payroll": "💶 Payroll"
+      },
+      "head_title_roster": "👥 Roster",
+      "head_title_schedule": "📅 Schedule",
+      "head_title_tasks": "📋 Tasks",
+      "head_title_recipes": "📔 Recipes",
+      "head_title_payroll": "💶 Payroll"
+    },
+    "me": {
+      "title": "Me",
+      "tile": {
+        "profile_t": "Profile",
+        "profile_d": "Your account & role",
+        "timesheet_t": "My timesheet",
+        "timesheet_d": "Hours worked, clock in/out",
+        "charges_t": "Charges",
+        "charges_d": "Expenses, payroll, revenues, P&L",
+        "settings_t": "Hotel Settings",
+        "settings_d": "Hotel-wide configuration",
+        "inventory_t": "Inventory",
+        "inventory_d": "Stock & supplies",
+        "reports_t": "Reports",
+        "reports_d": "Analytics & exports",
+        "signout_t": "Sign out",
+        "signout_d": "Switch user / clear session",
+        "soon": "soon"
+      },
+      "tab": {
+        "profile": "👤 Profile",
+        "timesheet": "⏱️ Timesheet",
+        "finance": "💶 Charges",
+        "settings": "⚙️ Settings"
+      },
+      "head_title_profile": "👤 Profile",
+      "head_title_timesheet": "⏱️ My timesheet",
+      "head_title_settings": "⚙️ Hotel Settings"
+    },
+    "alerts_view": {
+      "title": "🔔 Alerts",
+      "subtitle": "Channels with unread messages",
+      "empty": "✓ All caught up — no unread messages."
+    },
+    "context": {
+      "last_shift": "Last shift: {date}",
+      "no_recent_shift": "No recent shift",
+      "week_planned": "Week planned: {hours}",
+      "month_absences": "Month absences: {parts}",
+      "month_absences_none": "Month absences: none",
+      "home_venue": "Home venue: 🥂 {outlet}",
+      "contract_lang": "Contract: {lang}",
+      "tooltip": "Recent activity & context for this employee — helps the manager calibrate the briefing."
+    },
+    "shift_editor": {
+      "title_add": "Add entry",
+      "title_edit": "Edit entry",
+      "type_work": "💼 Work shift",
+      "type_absence": "🤒 Absence",
+      "section_timing": "⏱️ Shift timing",
+      "section_briefing": "📝 Briefing for this shift",
+      "section_tasks": "📋 Tasks for this day",
+      "section_apply": "📅 Apply",
+      "apply_label": "Which days this week?",
+      "preset_weekdays": "Mon–Fri",
+      "preset_weekend": "Weekend",
+      "preset_all": "All days",
+      "preset_clear": "Clear",
+      "repeat_label": "Repeat?",
+      "repeat_today": "Just today",
+      "repeat_this": "Just this week",
+      "repeat_next": "+ Next week",
+      "repeat_month": "+ Whole month (4 wks)",
+      "repeat_year": "+ Whole year (52 wks)",
+      "repeat_until_contract": "Until contract ends ({date})",
+      "timing_start": "Start time",
+      "timing_end": "End time",
+      "timing_break": "Break (minutes)",
+      "timing_break_starts": "Break starts at",
+      "outlet_label": "Outlet (per shift — applies forward only)",
+      "outlet_default_hint": "Default: {outlet}. Changes here update the selected days; past shifts keep their stored outlet.",
+      "outlet_no_specific": "— No specific outlet —",
+      "save_timing": "💾 Timing",
+      "save_briefing": "📝 Briefing",
+      "save_tasks": "📋 Tasks",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "clear": "🗑️ Clear…",
+      "briefing_placeholder": "e.g. \"VIP Mr Tanaka arrives at 14:00 — prepare welcome amenity. Sarah is off, you cover the lobby. Group breakfast 10:00 = priority.\"",
+      "briefing_bank": "💾 Save as template",
+      "briefing_bank_saved": "✓ Template saved",
+      "briefing_too_short": "Briefing too short to save as template.",
+      "briefing_hint": "💡 Auto-saved as draft as you type — never lost on Cancel.",
+      "briefing_reuse_label": "📚 Reuse:",
+      "tasks_empty": "No tasks planned for this day yet. Use the row below to add one.",
+      "tasks_library_label": "📚 Pick from library:",
+      "tasks_library_count": "{n} available",
+      "tasks_add": "+ Add",
+      "tasks_placeholder": "Type a new task…",
+      "tasks_prio_normal": "· Normal",
+      "tasks_prio_high": "⚡ High",
+      "tasks_prio_urgent": "🚨 Urgent",
+      "copy_colleague_label": "📋 Copy from a colleague",
+      "copy_colleague_hint": "Tap to pre-fill the form with another {who}'s shift pattern.",
+      "no_employees": "No employees yet. Add team members in the Roster tab first.",
+      "readonly_hint": "🔒 Read-only view — only your department manager can edit shifts."
+    },
+    "tasks_tab": {
+      "date_label": "📅 Tasks for",
+      "today": "Today",
+      "new_task": "+ New task",
+      "empty_mgr": "No tasks scheduled for this date. Click \"+ New task\" to create one (with optional recurrence).",
+      "empty_staff": "No tasks assigned to you for this date. Enjoy! 🎉",
+      "assignee_all": "🌐 All staff",
+      "assignee_unknown": "👤 Unknown",
+      "recur_once": "one-off",
+      "recur_daily": "daily",
+      "recur_weekly": "weekly",
+      "recur_monthly": "monthly",
+      "recur_per_shift": "per shift",
+      "mark_done": "Mark as done",
+      "mark_undone": "Mark as not done",
+      "prio_urgent": "URGENT",
+      "prio_high": "HIGH",
+      "prio_normal": "NORMAL",
+      "prio_low": "LOW",
+      "service_count": "{n} task{s}",
+      "done_by": "✓ done by {name}",
+      "delete_confirm_simple": "Delete this task?",
+      "delete_confirm_recur": "Delete this task (and all its future recurrences)?",
+      "edit_tooltip": "Edit",
+      "delete_tooltip": "Delete",
+      "service_cross_dept": "Cross-department",
+      "service_other": "Other"
+    },
+    "settings": {
+      "title": "⚙️ Hotel Settings",
+      "sub_editable": "{code} · You can edit these.",
+      "sub_readonly": "{code} · Read-only — managers can edit.",
+      "readonly_hint": "🔒 Only General Manager / Deputy / Operations Manager / department managers can change these settings.",
+      "sec_locale": "🌍 Locale",
+      "sec_identity": "🏨 Identity & branding",
+      "sec_identity_sub": "Appears on every printed payslip and contract. Fill it in once.",
+      "sec_emergency": "🚨 Emergency",
+      "sec_fnb": "🍽️ F&B & Canteen",
+      "sec_payroll": "💶 Payroll policy",
+      "sec_pools": "💰 Pools — bonus & redistribution",
+      "sec_clock": "⏱️ Time clock & geofence",
+      "sec_biometric": "🔒 Biometric login (production only)",
+      "sec_demo_live": "🎭 Demo / LIVE mode",
+      "lbl_country": "🌍 Country (governs labour law catalogue)",
+      "lbl_currency": "💱 Display currency",
+      "lbl_hotel_name": "Hotel name (full legal)",
+      "lbl_hotel_address": "Address (full)",
+      "lbl_hotel_legal": "Legal info (Tax ID / VAT / Company N° — multi-line)",
+      "lbl_hotel_logo": "Logo (PNG / JPG / SVG, max 500KB)"
+    },
+    "msg_preview": {
+      "room_status": "🛏️ Room status update",
+      "order": "🍽️ Order ticket",
+      "maintenance": "🔧 Maintenance request",
+      "valet": "🚗 Valet request",
+      "commission": "💰 Commission alert",
+      "briefing": "📊 Daily briefing",
+      "emergency": "🚨 Emergency alert",
+      "feedback": "⭐ Guest feedback"
+    },
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "delete": "Delete",
+      "close": "Close",
+      "confirm": "Confirm",
+      "dismiss": "Dismiss",
+      "edit": "Edit",
+      "view": "View",
+      "add": "Add",
+      "remove": "Remove",
+      "next": "Next →",
+      "back": "← Back",
+      "loading": "Loading…",
+      "yes": "Yes",
+      "no": "No",
+      "guest": "Guest",
+      "view_not_implemented": "View not implemented yet.",
+      "status_live": "Live",
+      "status_suggested": "Suggested",
+      "status_confirmed": "Confirmed"
+    },
+    "cards": {
+      "room": "Room {n}",
+      "floor": "Floor {n}",
+      "no_room": "Room —",
+      "table": "Table",
+      "elapsed_min": "{n} min elapsed",
+      "elapsed_delayed": "{n} min elapsed · ⚠️ delayed",
+      "checked": "✓ Checked",
+      "btn_confirm": "Confirm",
+      "btn_next": "Next →",
+      "btn_advance": "Advance →",
+      "lbl_status": "Status",
+      "lbl_assigned": "Assigned",
+      "lbl_resolution": "Resolution",
+      "lbl_response": "Response",
+      "lbl_type": "Type",
+      "lbl_eta": "ETA",
+      "valet_default_type": "Retrieve Car",
+      "valet_default_status": "REQUESTED",
+      "commission_default_hotel": "Partner Hotel",
+      "commission_subtitle": "New booking confirmed",
+      "commission_label": "Commission",
+      "commission_booking_amt": "Booking ${n}",
+      "commission_view_earnings": "View earnings →",
+      "briefing_title": "Daily Briefing",
+      "briefing_lbl_occupancy": "Occupancy",
+      "briefing_lbl_arrivals": "Arrivals",
+      "briefing_lbl_departures": "Departures",
+      "briefing_lbl_vips": "VIPs Today",
+      "briefing_lbl_open_items": "Open Items",
+      "emergency_badge": "EMERGENCY",
+      "emergency_alert_default": "ALERT",
+      "emergency_default_instructions": "Follow protocol",
+      "emergency_ack_count": "{n} / {total} staff confirmed",
+      "emergency_btn_ack": "Acknowledge",
+      "feedback_default_category": "General feedback",
+      "feedback_rating": "Rating: {n}/5",
+      "feedback_btn_followup": "Follow up →",
+      "no_quick_actions": "No quick actions for your role yet."
+    },
+    "score": {
+      "tile_title": "🏆 Score",
+      "tile_desc": "Your hotel vs the network · live benchmark · peer ranking",
+      "tab_label": "🏆 Score",
+      "head_title": "Performance Score",
+      "head_subtitle": "Your hotel benchmarked against {n} anonymous Staylo properties — live.",
+      "tagline": "You're not alone in the room. You're the best in the network.",
+      "arc_score_label": "Network Score",
+      "arc_score_caption": "Top {pct}% of the network",
+      "arc_grade_S": "Elite",
+      "arc_grade_A": "Strong",
+      "arc_grade_B": "Solid",
+      "arc_grade_C": "Catching up",
+      "sec_radar": "📡 Benchmark — 5-axis comparison",
+      "sec_radar_sub": "Where you outperform vs where you lose ground. Anonymized network average updated every 6h.",
+      "radar_legend_you": "Your hotel",
+      "radar_legend_network": "Network avg",
+      "axis_occupancy": "Occupancy",
+      "axis_revpar": "RevPAR",
+      "axis_staff_eff": "Staff efficiency",
+      "axis_fnb_margin": "F&B margin",
+      "axis_guest_return": "Guest return",
+      "sec_kpis": "📊 KPIs detail",
+      "sec_kpis_sub": "Each KPI with your value, network avg, your rank percentile, and 30-day trend.",
+      "kpi_you_label": "You",
+      "kpi_network_label": "Network",
+      "kpi_rank_label": "Rank",
+      "kpi_trend_label": "30d trend",
+      "kpi_top_pct": "Top {pct}%",
+      "kpi_unit_pct": "%",
+      "kpi_unit_thb": "฿",
+      "kpi_help_occupancy": "Rooms sold ÷ rooms available × 100",
+      "kpi_help_revpar": "Revenue per available room (rooms revenue ÷ available rooms)",
+      "kpi_help_staff_eff": "Total revenue ÷ FTE staff count",
+      "kpi_help_fnb_margin": "F&B gross profit ÷ F&B revenue × 100",
+      "kpi_help_guest_return": "% of guests who booked again within 12 months",
+      "sec_rank": "🏅 Live network ranking",
+      "sec_rank_sub": "Anonymized peer hotels by score. Positions update every few seconds — your network is alive.",
+      "rank_you": "You",
+      "rank_anon_hotel": "Hotel #{code}",
+      "rank_movement_up": "▲ {n}",
+      "rank_movement_down": "▼ {n}",
+      "rank_movement_same": "—",
+      "sec_insight": "💡 What this unlocks",
+      "insight_1_t": "Negotiate suppliers from data",
+      "insight_1_d": "F&B margin 14% above network avg → renegotiate contracts with proof.",
+      "insight_2_t": "Justify the next investment",
+      "insight_2_d": "Staff efficiency below avg → add automation tooling, reuse Staylo modules to catch up.",
+      "insight_3_t": "Show the cooperative its value",
+      "insight_3_d": "Anonymized comparison gives every hotelier-owner peer pressure to improve, without exposing private data.",
+      "insight_4_t": "Investor-ready dashboard",
+      "insight_4_d": "Network position is a vanity metric only investors care about. Now you have it on a phone screen.",
+      "demo_note": "🎭 Demo mode — benchmark figures are simulated. Production reads anonymized aggregates from the cooperative's data lake."
+    },
+    "stock": {
+      "tile_title": "📦 Stock",
+      "tile_desc": "Predictive inventory · auto-deduct from recipes · stockout alerts",
+      "tab_label": "📦 Stock",
+      "head_title": "Stock Intelligence",
+      "head_subtitle": "Predictive inventory wired to your fiches techniques. Each order auto-deducts ingredients, every stockout is forecast before it bites.",
+      "tagline": "Know what runs out — before it runs out.",
+      "hero_lbl_tracked": "Ingredients tracked",
+      "hero_lbl_at_risk": "At risk now",
+      "hero_lbl_predicted": "Predicted stockouts before midnight",
+      "hero_lbl_velocity": "Items consumed in last hour",
+      "sec_critical": "🚨 Critical — act now",
+      "sec_critical_sub": "Stockouts predicted in less than 4 hours at current consumption rate.",
+      "sec_critical_empty": "✓ No critical stockouts predicted. Nice.",
+      "critical_remaining": "{n}{unit} remaining · {pct}% of par",
+      "critical_velocity": "Burning at {n}{unit}/hr",
+      "critical_stockout_in": "Stockout in {h}h {m}m ({time})",
+      "critical_stockout_now": "🛑 OUT OF STOCK",
+      "critical_used_in": "Used in: {dishes}",
+      "critical_covers_at_risk": "{n} covers/hour at risk if no action",
+      "critical_btn_reorder": "🛒 Auto-reorder {amt}{unit} from {supplier}",
+      "critical_btn_acknowledged": "✓ Reorder placed",
+      "sec_all_stock": "📊 All ingredients",
+      "sec_all_stock_sub": "Sorted by urgency. Click any item to see linked dishes + history.",
+      "stock_lbl_qty": "Qty",
+      "stock_lbl_par": "Par level",
+      "stock_lbl_velocity": "Velocity",
+      "stock_lbl_eta": "ETA stockout",
+      "stock_eta_safe": "Safe",
+      "stock_eta_idle": "Idle",
+      "stock_eta_today": "Today {time}",
+      "stock_eta_tomorrow": "Tomorrow",
+      "stock_eta_days": "+{n}d",
+      "stock_search": "Search ingredients…",
+      "sec_deductions": "📥 Today's deductions",
+      "sec_deductions_sub": "Each Pulse order auto-deducts via the linked recipe. Live feed.",
+      "sec_deductions_empty": "No deductions yet — Pulse hasn't fired any orders.",
+      "deduction_line": "{order} · {qty}{unit} of {ing} (from {recipe})",
+      "sec_restock": "🛒 Restock calendar",
+      "sec_restock_sub": "Scheduled deliveries from your suppliers. Auto-suggestions appear when stock is low.",
+      "restock_supplier": "{name}",
+      "restock_eta": "{day} at {time}",
+      "restock_items": "{n} items",
+      "restock_btn_view": "View order",
+      "stream_play": "▶ Run simulation",
+      "stream_pause": "⏸ Pause",
+      "demo_note": "🎭 Demo mode — stock levels and consumption rates are simulated. Connect to your real inventory to see live data."
+    },
+    "pulse": {
+      "tile_title": "💰 Pulse",
+      "tile_desc": "Connect every POS · live revenue · auto pool distribution",
+      "tab_label": "💰 Pulse",
+      "head_title": "Staylo Pulse",
+      "head_subtitle": "The nervous system above every POS — connect, see, distribute.",
+      "tagline": "Not a POS. The orchestrator above ALL POS.",
+      "sec_connectors": "🔌 POS Connectors",
+      "sec_connectors_sub": "Plug Staylo on top of your existing system. Switch later — Staylo keeps the history.",
+      "connector_status_connected": "✓ Connected",
+      "connector_status_available": "Available",
+      "connector_status_soon": "Soon",
+      "connector_btn_connect": "Connect",
+      "connector_btn_configure": "Configure",
+      "connector_stores_count": "{n} store{s}",
+      "sec_live_stream": "⚡ Live Order Stream",
+      "sec_live_stream_sub": "Each ring lands here in <300ms via webhook. Every order tagged + routed.",
+      "stream_paused": "Stream paused — click to resume",
+      "stream_play": "▶ Play stream",
+      "stream_pause": "⏸ Pause",
+      "order_table": "Table {n}",
+      "order_room": "Room {n}",
+      "order_pool_credit": "+{amt} {cur} → {name}'s pool",
+      "order_ambassador_credit": "+{amt} {cur} → {name} (ambassador)",
+      "order_total": "Total",
+      "sec_pool_live": "💧 Live Pool Distribution",
+      "sec_pool_live_sub": "Watch each waiter's tip jar fill in real time. No more month-end calculation hell.",
+      "pool_today_distributed": "Today distributed",
+      "pool_per_pt": "{amt} {cur} / pt",
+      "pool_pts": "{n} pts",
+      "pool_top_earner": "Top earner today",
+      "sec_revenue_pulse": "🌐 Revenue Pulse · Multi-currency",
+      "sec_revenue_pulse_sub": "Today's revenue updates with every transaction, in 5 currencies live.",
+      "rev_lbl_today": "Today",
+      "rev_lbl_yesterday": "vs yesterday",
+      "rev_rate_updated": "Rates updated {n}s ago",
+      "rev_rate_source": "Source: CoinGecko + ECB + BoT",
+      "sec_features": "✨ What this unlocks",
+      "feat_realtime_pool_t": "Real-time pool credit",
+      "feat_realtime_pool_d": "Servers see their tip jar fill as orders ring. Distributed in fiat OR $STAY.",
+      "feat_recipe_stock_t": "Recipe-pegged stock",
+      "feat_recipe_stock_d": "Each ring auto-deducts ingredients. Predicts stockouts before they happen.",
+      "feat_cross_venue_t": "Cross-venue folio",
+      "feat_cross_venue_d": "Guest's wristband charges bar + spa + F&B → unified checkout in any currency.",
+      "feat_ambassador_t": "Ambassador-to-table tracking",
+      "feat_ambassador_d": "Referred guest spends → 10% commission auto-credited to the ambassador.",
+      "feat_compliance_t": "Compliance-as-code",
+      "feat_compliance_d": "Thai e-Tax Invoice, French NF525, EU fiscal — auto-generated per country.",
+      "feat_offline_t": "Offline-first",
+      "feat_offline_d": "Power outage on the island? Orders ring locally, sync when network returns.",
+      "feat_nft_t": "NFT receipts (optional)",
+      "feat_nft_d": "Every booking + meal mints an optional NFT. Cross-hotel loyalty, on-chain.",
+      "feat_coop_t": "Cooperative profit-share",
+      "feat_coop_d": "Each transaction across the network feeds a small % to all hotelier-owners. Built-in.",
+      "sec_compliance": "🛡️ Compliance status",
+      "compl_th_etax": "🇹🇭 e-Tax Invoice (Thailand)",
+      "compl_th_etax_status": "Active · {n} receipts signed today",
+      "compl_vat": "VAT 7% · auto",
+      "sec_demo_note": "🎭 Demo mode — orders below are simulated. Connect a real POS to see live data.",
+      "btn_connect_now": "🔌 Connect my POS",
+      "btn_view_roadmap": "🗺️ Vision & roadmap"
+    },
+    "dialogs": {
+      "access_denied_post": "Access denied: you cannot post in this channel.",
+      "team_staff_only": "Team module is staff-only.",
+      "signout_reset": "Sign out and reset session?",
+      "delete_evaluation": "Delete this evaluation?",
+      "pick_skill_to_evaluate": "Pick a skill / recipe / task to evaluate.",
+      "role_name_required": "Role name is required.",
+      "role_already_exists": "A role with this name already exists.",
+      "pool_name_required": "Pool name is required.",
+      "pool_not_found": "Pool not found.",
+      "enter_total_first": "Enter a total amount first.",
+      "no_eligible_staff": "No eligible staff to distribute to.",
+      "no_pool_configured": "No pool configured. Open Settings → Pools to add one.",
+      "popup_blocked": "Pop-up blocked. Allow pop-ups for this page to print payslips.",
+      "invite_link_copied": "Invite link copied to clipboard.\n\nPaste it in a new tab to test as this employee, or send it to them by email.",
+      "recipe_name_required": "Recipe name is required.",
+      "name_and_date_required": "Name and date are required.",
+      "title_required": "Title is required.",
+      "pick_assignee": "Pick an assignee.",
+      "set_start_end_times": "Set start and end times.",
+      "select_at_least_one_day": "Select at least one day.",
+      "no_oneoff_to_clone": "No one-off tasks attached to this day to clone elsewhere. Add tasks first via the Tasks section.",
+      "explain_break_skip": "Please explain why you cannot take your break. Your manager needs context to approve.",
+      "geolocation_unavailable": "Geolocation API not available on this device.",
+      "could_not_get_location": "Could not get location: {err}",
+      "language_load_failed": "Failed to load language: {lang}",
+      "invite_declined": "This invite was previously declined. Ask your manager to reissue a new invite if you want to join.",
+      "invite_unrecognized": "Invite link not recognized for hotel {hotel}. Ask your manager for a fresh QR.",
+      "delete_pool_record": "Delete this pool record? Distributed amounts will be removed from each staff's payslip earnings.",
+      "reopen_payslip": "Reopen this payslip ?\n\nStatus will revert to \"Approved\", schedule edits become possible again, and you can modify amounts. The original \"Paid\" timestamp is logged in audit trail.",
+      "delete_payslip": "Delete this saved payslip? Auto-computed values will reappear next time you open it.",
+      "delete_recipe": "Delete this recipe?",
+      "delete_event": "Delete this custom event?",
+      "delete_task": "Delete this task?",
+      "delete_entry": "Delete this entry?",
+      "submit_skip_break": "Submit skip-break request?\n\nYour manager will be notified. Until approved, your shift continues as normal.",
+      "reseed_demo": "Re-seed the demo dataset? This adds the example team back (does NOT touch your already-saved real records)."
+    },
+    "assembly": {
+      "title": "Assembly Point",
+      "go_here_now": "Go here NOW",
+      "btn_dismiss": "Dismiss"
+    },
+    "skills": {
+      "lbl_evaluations": "Evaluations",
+      "lbl_average": "Average",
+      "lbl_trend_3": "Trend (last 3)",
+      "section_by_skill": "By skill",
+      "section_history": "History"
+    },
+    "recipes": {
+      "header_count": "{n} recipes (fiches techniques)",
+      "btn_new": "+ New recipe",
+      "math_info_title": "How are these numbers calculated?",
+      "math_info_btn_tooltip": "Show me the maths",
+      "math_total_cost_title": "Total cost",
+      "math_total_cost_formula": "Sum of every ingredient cost (qty × unit price, with unit conversion).",
+      "math_total_cost_example": "{cost} {cur} = total of all ingredients in this recipe",
+      "math_cost_portion_title": "Cost per portion",
+      "math_cost_portion_formula": "Total cost ÷ number of portions.",
+      "math_cost_portion_example": "{total} {cur} ÷ {portions} portion(s) = {result} {cur} per portion",
+      "math_margin_title": "Gross margin",
+      "math_margin_formula": "(Sell price − cost per portion) ÷ sell price × 100",
+      "math_margin_example": "({sell} − {cost}) ÷ {sell} × 100 = {result}%",
+      "math_margin_no_sell": "Set a sell price to see the margin.",
+      "math_food_cost_title": "Food cost ratio",
+      "math_food_cost_formula": "Cost per portion ÷ sell price × 100",
+      "math_food_cost_example": "{cost} ÷ {sell} × 100 = {result}%",
+      "math_food_cost_no_sell": "Set a sell price to see the food cost ratio.",
+      "math_benchmark_title": "Industry benchmarks (Thai 5★ resort)",
+      "math_benchmark_text": "🟢 Food cost ≤ 28% — excellent\n🟡 Food cost 28-35% — acceptable, watch portion sizes\n🔴 Food cost > 35% — re-cost or raise sell price",
+      "math_close": "Got it",
+      "tot_total_cost": "Total cost",
+      "tot_cost_portion": "Cost / portion",
+      "tot_margin": "Margin",
+      "tot_food_cost": "Food cost",
+      "empty_mgr": "No recipes yet. Build standardized recipes with cost breakdown — POS-ready.",
+      "empty_staff": "No recipes available. Ask the chef to add some.",
+      "empty_mgr": "No recipes yet. Build standardized recipes with cost breakdown — POS-ready.",
+      "empty_staff": "No recipes available. Ask the chef to add some.",
+      "lbl_yield": "Yield",
+      "yield_portions_one": "{n} portion",
+      "yield_portions_many": "{n} portions",
+      "lbl_cost_per_portion": "Cost / portion",
+      "lbl_sell_price": "Sell price",
+      "lbl_food_cost_pct": "Food cost {pct}% · Margin {margin}%",
+      "lbl_pos_marker": " · POS ✓"
+    },
+    "payroll": {
+      "team_mgmt_title": "Team Management",
+      "tab_roster": "👥 Roster",
+      "tab_my_team": "👥 My team",
+      "tab_schedule": "📅 Schedule",
+      "tab_tasks": "📋 Tasks",
+      "tab_recipes": "📔 Recipes",
+      "tab_payroll": "💶 Payroll",
+      "access_denied": "🔒 Payroll access is reserved for HR / GM and department managers.",
+      "prev_month": "← Prev month",
+      "next_month": "Next month →",
+      "row_count_hint": "{n} employees · click a row to open the payslip",
+      "row_count_hint_scoped": "{n} employees · {dept} only · click a row to open the payslip",
+      "summary_hotel_total": "🏨 Hotel total",
+      "summary_dept_total": "🧑‍🍳 {dept} dept total",
+      "summary_subtitle": "{month} · {n} employees",
+      "grand_total": "Grand total payroll",
+      "pool_locked": "🔒 Locked until TGE M07 + custodial wallet legal audit",
+      "pool_distributed": "✓ Distributed: {amt} {cur} across {n} staff",
+      "pool_draft": "⏳ Draft: {amt} {cur} — not yet distributed",
+      "pool_not_set": "— Not configured for this period —",
+      "btn_pool_edit": "✎ Edit",
+      "btn_pool_setup": "+ Set up",
+      "row_total": "🏨 TOTAL",
+      "col_employee": "Employee",
+      "col_planned": "Planned",
+      "col_worked": "Worked",
+      "col_ot": "OT",
+      "col_absences": "Absences",
+      "col_base_salary": "Base salary",
+      "col_ot_pay": "+ OT pay",
+      "col_pool_fiat": "+ Pool {cur}",
+      "col_pool_stay": "+ Pool $STAY",
+      "col_status": "Status",
+      "status_paid": "✓ Paid",
+      "status_approved": "✓ Approved",
+      "status_draft": "Draft saved",
+      "status_not_opened": "— Not opened —",
+      "sort_tooltip": "Click to sort by {field}",
+      "sort_tooltip_active": "Click to sort by {field} (toggles direction)",
+      "open_payslip_failed": "Could not open the payslip:\n\n{err}",
+      "tooltip_pool_fiat_yes": "Sum of all fiat pools landing on this month — see payslip for breakdown",
+      "tooltip_pool_fiat_no": "No fiat pool distributed for this month",
+      "tooltip_pool_stay_yes": "Sum of $STAY pools landing on this month",
+      "tooltip_pool_stay_no": "No $STAY pool distributed for this month"
+    },
+    "roster_fiche": {
+      "back": "← Back to roster",
+      "new_employee": "New employee",
+      "sec_identity": "Identity",
+      "sec_contact": "Contact",
+      "sec_job": "Job",
+      "sec_documents": "Documents on file",
+      "sec_uniform": "Uniform",
+      "sec_meals": "Meals (staff canteen)",
+      "sec_housing": "Housing (staff accommodation)",
+      "sec_device_security": "🔐 Device security",
+      "lbl_first_name": "First name",
+      "lbl_last_name": "Last name",
+      "lbl_nationality": "Nat.",
+      "lbl_dob": "Date of birth",
+      "lbl_id_type": "ID type",
+      "lbl_id_number": "ID / passport number",
+      "id_passport": "📕 Passport",
+      "id_national_id": "🪪 National ID",
+      "id_driver_license": "🚗 Driver license",
+      "id_other": "❓ Other",
+      "lbl_email": "Email",
+      "lbl_phone_cc": "+ Code",
+      "lbl_phone_number": "Phone number",
+      "lbl_address": "Address",
+      "lbl_role": "Role",
+      "add_custom_role": "➕ Add a new role to the catalog",
+      "lbl_contract_type": "Contract type",
+      "ct_full_time": "Full-time",
+      "ct_part_time": "Part-time",
+      "ct_seasonal": "Seasonal",
+      "ct_probation": "Probation (3m)",
+      "lbl_reports_to": "👔 Reports to",
+      "supervisor_none": "— None —",
+      "lbl_hire_date": "Hire date",
+      "lbl_contract_end": "Contract end",
+      "lbl_salary_per_month": "Salary ({cur} / mo)",
+      "lbl_hours_per_week": "Hrs/wk",
+      "lbl_days_per_week": "Days/wk",
+      "auto_shift_prefix": "⏱️ Auto shift: ",
+      "auto_shift_suffix": " worked + break ({h}h/wk ÷ {d}d/wk) — pre-fills end time when editing shifts.",
+      "warn_shift_illegal": "⛔ Above legal cap: {dur}h/shift exceeds {max}h max ({country}).",
+      "warn_shift_overtime": "⚠️ Counts as overtime: {dur}h/shift > {normal}h normal ({country}).",
+      "warn_weekly_illegal": "⛔ Above legal weekly cap: {h}h/wk exceeds {max}h max ({country}).",
+      "warn_weekly_overtime": "⚠️ Above normal weekly hours: {h}h/wk > {normal}h normal ({country}).",
+      "warn_no_rest": "⛔ Insufficient rest: minimum {min} day(s) off per week required ({country}).",
+      "lbl_venue": "📍 Venue / Zone",
+      "venue_none": "— Hotel-wide / no specific zone —",
+      "venue_empty_msg": "No venues configured (Spa, restaurants, salon, boutique…).",
+      "venue_configure_btn": "⚙️ Configure in Hotel Settings",
+      "venue_add_inline": "+ New venue",
+      "venue_add_prompt": "Name the new venue (Spa, Sunset Bar, Beach Pavilion, Pastry Kitchen…)",
+      "venue_added_toast": "✓ Venue \"{name}\" added — assigned to this employee",
+      "lbl_contract_language": "Contract language",
+      "cl_bilingual": "Bilingual EN + TH",
+      "cl_en": "English only",
+      "cl_th": "Thai only",
+      "lbl_pool_points": "💰 Pool pts {mode}",
+      "pool_default_mode": "(default)",
+      "pool_override_mode": "(override)",
+      "pool_default_opt": "💰 Default ({n}pt)",
+      "pool_override_opt": "Override: {n}pt",
+      "pool_override_out": " (out)",
+      "lbl_id_doc": "Passport / ID copy",
+      "doc_not_yet": "Not yet",
+      "doc_on_file": "✓ On file",
+      "lbl_work_permit_required": "Work permit required",
+      "wp_no_thai": "No (Thai)",
+      "wp_yes_foreign": "Yes (foreign)",
+      "lbl_work_permit_copy": "Work permit copy",
+      "doc_na_or_not_yet": "N/A or not yet",
+      "lbl_uniform_provided": "Uniform provided",
+      "uniform_yes": "Yes — provided",
+      "uniform_no": "No uniform",
+      "lbl_uniform_responsibility": "Care responsibility",
+      "uniform_employer": "Hotel washes (laundry)",
+      "uniform_employee": "Employee maintains",
+      "lbl_meal_benefit": "Meal benefit",
+      "meal_free": "✓ Free meals",
+      "meal_paid": "Staff pays",
+      "meal_none": "No benefit",
+      "lbl_meals_per_day": "Meals / day",
+      "lbl_meal_price": "Price / meal ({cur})",
+      "ph_zero_free": "0 = free",
+      "lbl_housing_provided": "Provided",
+      "housing_no_own": "No — own",
+      "housing_yes": "✓ Yes",
+      "lbl_housing_type": "Type",
+      "ht_shared_room": "Shared room (dorm)",
+      "ht_private_room": "Private room",
+      "ht_studio": "Studio",
+      "ht_apartment": "Apartment",
+      "ht_house": "House",
+      "ht_other": "Other",
+      "lbl_housing_max": "Max occ.",
+      "lbl_housing_rent": "Rent / mo ({cur})",
+      "lbl_housing_description": "Description (location, amenities, rules)",
+      "ph_housing_description": "e.g. 18m² room with private bathroom, AC, wifi, behind staff building. Smoking outside only.",
+      "tpl_reuse": "📋 Reuse:",
+      "btn_delete": "Delete",
+      "btn_cancel": "Cancel",
+      "btn_save": "💾 Save",
+      "btn_contract_qr": "📄 Contract + QR",
+      "confirm_delete": "Delete this employee record? This cannot be undone.",
+      "alert_first_name_required": "First name is required."
+    },
+    "onboarding": {
+      "tagline": "Your hotel. Connected.",
+      "step_audience_title": "Who are you here as?",
+      "step_audience_hint": "Each path opens a different Staylo experience.",
+      "step_name_title": "What's your name?",
+      "step_name_hint": "This is how others will see you.",
+      "step_name_placeholder": "e.g. Malee Suwan",
+      "step_role_title": "Your role",
+      "step_role_hint": "Pick the one that matches your day-to-day.",
+      "btn_continue": "Continue",
+      "btn_back": "← Back",
+      "btn_finish": "Enter Staylo →",
+      "audience_staff_title": "Hotel Staff",
+      "audience_staff_desc": "Internal team — reception, housekeeping, kitchen, maintenance, management.",
+      "audience_ambassador_title": "Network Ambassador",
+      "audience_ambassador_desc": "Refer hotels to Staylo and earn commission.",
+      "audience_guest_title": "Guest",
+      "audience_guest_desc": "I'm staying at a Staylo hotel.",
+      "code_staff_title": "Hotel code",
+      "code_staff_hint": "Get this from your manager (e.g. KP001 for Koh Phangan property #1).",
+      "code_staff_placeholder": "KP001",
+      "code_ambassador_title": "Ambassador code",
+      "code_ambassador_hint": "Your personal Staylo Ambassador ID (e.g. AMB-7421).",
+      "code_ambassador_placeholder": "AMB-0001",
+      "code_guest_title": "Booking or hotel code",
+      "code_guest_hint": "From your reservation confirmation, or just the hotel code if you're curious.",
+      "code_guest_placeholder": "KP001 or BK-9F2A"
+    },
+    "schedule_nav": {
+      "prev": "← Prev",
+      "this": "Today",
+      "next": "Next →",
+      "view_day": "Day",
+      "view_week": "Week",
+      "view_fortnight": "2 weeks",
+      "view_month": "Month",
+      "period_today": "today",
+      "period_week": "this week",
+      "period_fortnight": "these 2 weeks",
+      "period_month": "this month",
+      "period_noun_day": "day",
+      "period_noun_week": "week",
+      "period_noun_fortnight": "2 weeks",
+      "period_noun_month": "month",
+      "all_depts": "📁 All departments ({n})",
+      "all_venues": "📍 All venues",
+      "events_btn": "📅 Events",
+      "print_btn": "🖨️ Print",
+      "dash_toggle_tooltip": "Show or hide the four stat cards (At work now, Worked, Planned, Absences).",
+      "dash_at_work_now_tip": "{in} clocked in · {sched} scheduled to be working right now ({total} in scope)",
+      "dash_today_only_tip": "Today only — does not change if you edit a shift on another day",
+      "dash_planned_tip": "Sum of all planned hours across the visible period — updates whenever you add/edit/delete any shift in this view",
+      "dash_absences_tip_yes": "Click for full breakdown by type, employee and date",
+      "dash_absences_tip_no": "No absences in the visible period",
+      "dash_at_work_now": "At work now",
+      "dash_today_worked_planned": "Today · worked / planned ({n} ppl)",
+      "dash_planned": "Planned {period}",
+      "dash_absences": "Absences {period}"
+    },
+    "charges": {
+      "title": "Charges",
+      "tile_desc": "Expenses, payroll, revenues, P&L",
+      "subtitle": "{hotelCode} · monthly P&L",
+      "total_expenses": "TOTAL EXPENSES",
+      "total_revenues": "TOTAL REVENUES",
+      "net_profit": "NET PROFIT",
+      "net_loss": "NET LOSS",
+      "section": {
+        "fixed": "Fixed expenses",
+        "payroll": "Payroll (monthly)",
+        "hotel": "Hotel / lodging revenues",
+        "fnb": "F&B revenues",
+        "ancillary": "Ancillary revenues",
+        "shop": "Shop revenues (non-F&B)"
+      },
+      "placeholder": {
+        "fixed": "e.g. Rent, electricity, water…",
+        "hotel": "e.g. Room nights, packages…",
+        "fnb": "e.g. Restaurant, bar, room service…",
+        "ancillary": "e.g. Tours, vehicle rental, diving…",
+        "shop": "e.g. Boutique, jewellery, art…"
+      },
+      "add_line": "+ Add line",
+      "delete_line": "Delete this line",
+      "empty_state": "No entries — click \"+ Add line\" to start.",
+      "payroll_info": "Auto-summed from {n} employee salaries. Edit in Roster.",
+      "this_month": "This month",
+      "this_month_title": "Jump back to current month",
+      "prev_month": "Previous month",
+      "next_month": "Next month",
+      "copy_from": "📋 Copy from {month}",
+      "copy_tooltip": "Copy all entries from {prev} into {cur}. Useful for recurring fixed costs (rent, subscriptions). Replaces current entries.",
+      "copy_confirm": "Copy entries from {prev} into {cur}?\n\nThis REPLACES the current month's entries.",
+      "export_csv": "📥 Export CSV",
+      "export_tooltip": "Download a CSV of every line for this month — accountant-friendly."
+    },
+    "shell": {
+      "hotel_default": "Staylo Hotel",
+      "search_channels": "Search channels…",
+      "seed_splash_team": "Setting up your hotel team…",
+      "seed_splash_schedules": "Building 90-day schedules…",
+      "seed_splash_timesheets": "Generating clock events…",
+      "seed_splash_finance": "Seeding monthly P&L…",
+      "seed_splash_recipes": "Adding recipe library…",
+      "seed_splash_tasks": "Adding task templates…",
+      "seed_splash_done": "Almost there…",
+      "online_count": "{n} online",
+      "members_count": "{n} members",
+      "message_placeholder": "Message #{channel}…",
+      "time_now": "now",
+      "clock_in": "Clock in",
+      "clock_in_with_window": "Clock in ({start}–{end})",
+      "clock_break_over": "🔔 Break OVER — back now",
+      "clock_on_break": "On break · {n}m left",
+      "clock_back_title": "Tap when you are back at your post",
+      "clock_back_tap": "Tap → back to work",
+      "clock_out_title": "Tap to clock out (GPS verified)",
+      "clock_on_shift": "On shift · {dur}",
+      "clock_on_shift_ot": "On shift · {dur} · OT {ot}",
+      "clock_out_tap": "Tap to clock out",
+      "clock_in_title": "GPS verified at hotel only",
+      "break_skipped_approved": "✓ Break skipped (approved)",
+      "break_skipped_approved_title": "Manager approved your no-break request. Break time is paid as worked time.",
+      "break_skip_pending": "⏳ Skip break — pending approval",
+      "break_skip_pending_title": "Awaiting manager approval. Once approved, your break time will be paid as worked time.",
+      "break_start_title": "Start break ({n}min)",
+      "break_start_confirm": "Start your break now?\n\nThe app will remind you 5 minutes before the end and when it's time to come back ({n}min total).",
+      "break_skip_title": "Skip your break today (requires manager approval)",
+      "signout": "Sign out ↪",
+      "signout_tooltip": "Click to sign out",
+      "bottom": {
+        "chat": "Chat",
+        "team": "Team",
+        "alerts": "Alerts",
+        "me": "Me"
+      },
+      "section": {
+        "all_staff": "ALL STAFF",
+        "departments": "DEPARTMENTS",
+        "operations": "OPERATIONS",
+        "management": "MANAGEMENT",
+        "guest_pulse": "GUEST PULSE",
+        "my_network": "MY NETWORK",
+        "my_stay": "MY STAY"
+      },
+      "composer_placeholder": "Message #{channel}…",
+      "rail": {
+        "channels": "Channels",
+        "search": "Search",
+        "tasks": "Tasks (soon)",
+        "alerts": "Alerts",
+        "team": "Team (HR + Schedule)",
+        "timesheet": "My timesheet",
+        "settings": "Hotel Settings",
+        "profile": "Profile"
+      },
+      "date": {
+        "today": "Today · {date}",
+        "yesterday": "Yesterday · {date}"
+      },
+      "time": {
+        "now": "now"
+      }
+    }
   }
 }
