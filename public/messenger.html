@@ -13870,9 +13870,54 @@ function buildScheduleDashboard(emps, days){
   const allSchedules = getSchedules();
   const inPeriod = new Set(days || []);
 
+  // ─── AUDIT-FIX (P1 #15): batch-read timesheets ──────────────────────
+  // The previous loop called isCurrentlyClockedIn(e.id) + dayWorkedMinutes(
+  // e.id, today) for EACH of the ~157 employees. Both helpers internally
+  // call getTimesheet(empId) → lsGet → localStorage.getItem + JSON.parse.
+  // That's 314 storage reads + parses on EVERY dashboard render (which
+  // fires every 30s on the schedule tab, every nav, every dept-filter
+  // change, etc.). On the demo laptop this freezes the grid for 0.5-1.5s.
+  //
+  // We now load each employee's timesheet ONCE into a Map keyed by id,
+  // then derive both "is clocked in" and "worked-today minutes" inline.
+  // Single-employee read paths (getMyEmployee + clock widget) still use
+  // the original helpers — no behavior change there.
+  const tsByEmp = new Map();
+  for(const e of emps){ tsByEmp.set(e.id, getTimesheet(e.id)); }
+
+  // Inline isCurrentlyClockedIn — same state machine, no extra ls read
+  const _isIn = (events) => {
+    if(!events || !events.length) return false;
+    const last = events[events.length-1].type;
+    return last === 'in' || last === 'break_end';
+  };
+  // Inline dayWorkedMinutes — same overnight/break handling, but reads
+  // events from the passed array instead of re-querying localStorage.
+  const _shiftByCell = new Map();
+  for(const s of allSchedules){
+    if(allowedIds.has(s.employee_id) && s.date === today){
+      _shiftByCell.set(s.employee_id, s);
+    }
+  }
+  const _workedToday = (empId) => {
+    const shift = _shiftByCell.get(empId);
+    if(!shift || shift.kind === 'absence') return 0;
+    const events = (tsByEmp.get(empId) || []).filter(ev => ev.shift_id === shift.id);
+    let total = 0, inTs = null;
+    for(const ev of events){
+      if(ev.type === 'in' || ev.type === 'break_end') inTs = ev.ts;
+      else if((ev.type === 'out' || ev.type === 'break_start') && inTs){
+        total += (new Date(ev.ts) - new Date(inTs))/60000;
+        inTs = null;
+      }
+    }
+    if(inTs) total += (Date.now() - new Date(inTs))/60000;
+    return Math.max(0, Math.round(total));
+  };
+
   for(const e of emps){
-    if(isCurrentlyClockedIn(e.id)) inHouseNow++;
-    workedTodayMin += dayWorkedMinutes(e.id, today);
+    if(_isIn(tsByEmp.get(e.id))) inHouseNow++;
+    workedTodayMin += _workedToday(e.id);
   }
   // Dedupe FIRST — one entry per (employee, date), absence wins over work.
   // Without this, stale duplicate rows in storage inflate the dashboard
@@ -17731,8 +17776,28 @@ function findNextShiftLabel(emp){
 // Refresh the open Schedule tab every 30s so the dashboard's live
 // counters (in house now, worked today, ...) reflect clock-in events
 // happening on other devices/sessions in real time.
+//
+// AUDIT-FIX (P1 #9): skip the refresh when ANY modal sits on top of
+// the schedule (shift editor, recipe modal, payslip editor, etc.).
+// Re-rendering the schedule body rebuilds its DOM, which destroys
+// the modal owner — typing a briefing for 30 seconds used to silently
+// wipe what the manager just wrote. The pickers/modals also re-open
+// against a stale closure if the user clicks again, leading to
+// confusing double-state. By bailing while any modal is mounted, we
+// preserve in-flight work AND skip a useless re-render that the
+// manager couldn't see anyway (the modal covers the schedule).
 setInterval(()=>{
-  if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+  if(!$('#hr-modal') || _hrTab !== 'schedule') return;
+  // Modal selectors that, if present, mean the schedule is occluded
+  // and a refresh would destroy in-progress work.
+  const blockers = [
+    '.shift-editor-bg', '.contract-modal', '.assembly-modal',
+    '.timesheet-modal', '.settings-modal', '.staff-claim-modal',
+  ];
+  for(const sel of blockers){
+    if(document.querySelector(sel)) return;   // user is busy, skip tick
+  }
+  renderScheduleTab();
 }, 30000);
 
 /* ============================================================================
@@ -18547,6 +18612,47 @@ function showSettingsModal(){
               if($('#hr-modal') && _hrTab==='roster') renderRosterTab();
             }
           },'🏰 Seed BIG hotel (~140 staff)'),
+          // ── Demo Reset button — for demo dress rehearsals ────────────
+          // Wipes the hotel-scoped demo state (employees, schedules,
+          // timesheets, recipes, tasks, the demo-chat bridge) and
+          // immediately re-seeds. Same effect as a fresh first-boot but
+          // without touching the user's hotel settings or the manager's
+          // own auto-linked employee record. Useful between rehearsal
+          // passes so each run starts from a known-clean state.
+          el('button',{
+            class:'btn-secondary',type:'button',
+            style:'background:rgba(108,92,231,.12);color:var(--purple);border:0;font-weight:800',
+            title:'Wipe all demo data and reseed from scratch — useful between demo rehearsals',
+            onclick:()=>{
+              const code = State.user?.hotelCode || 'DEFAULT';
+              if(!confirm(`🔁 Reset demo state?\n\nWipes:\n  • All demo employees, schedules, timesheets\n  • All demo recipes, tasks\n  • The guest↔staff demo chat bridge\n  • Cached filters (dept / outlet / view mode)\n\nKeeps:\n  • Your hotel settings (pools, country, payment, etc.)\n  • Your own auto-linked manager record\n\nThen re-seeds from scratch. Use this between demo runs to start clean.\n\nContinue?`)) return;
+              try {
+                // Wipe demo-flagged records (existing helper)
+                wipeDemoData();
+                // Wipe the demo chat bridge so each rehearsal starts on a fresh thread
+                try { localStorage.removeItem('staylo_demo_chat'); } catch {}
+                // Reset cached filters that survive across sessions
+                try {
+                  _hrEmployeeId = null;
+                  _schedFilterDept = 'all';
+                  _schedFilterOutlet = 'all';
+                  _schedViewMode = 'fortnight';
+                  _rosterFilterDept = 'all';
+                  _payrollFilterDept = 'all';
+                } catch {}
+                // Re-seed (sync path — the splash-screen async one is for
+                // first boot only; reset doesn't need the visual fanfare).
+                seedDemoDataIfNeeded();
+                // Re-render whatever HR tab is open
+                if($('#hr-modal') && _hrTab === 'roster') renderRosterTab();
+                else if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+                alert(`🔁 Demo reset complete for hotel "${code}".\n\nReady for the next rehearsal pass.`);
+              } catch(err){
+                console.error('Demo reset failed:', err);
+                alert('Reset failed: ' + (err && err.message ? err.message : err));
+              }
+            },
+          },'🔁 Reset demo state'),
           el('button',{class:'btn-danger',type:'button',style:'background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;border:0;font-weight:800',onclick:()=>{
             const cd2 = countDemoData();
             // Compute SURVIVORS explicitly — reassures the user that real records
