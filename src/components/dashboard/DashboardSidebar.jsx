@@ -36,13 +36,20 @@ import {
   Banknote,
   Shield,
   PlusCircle,
-  MessageSquare
+  MessageSquare,
+  Smartphone
 } from 'lucide-react'
 
 // ── Section definitions ─────────────────────────────────
 // Each section has a `visible` predicate computed from user state.
 // Items inside inherit their parent section's visibility.
 
+// REVIEW MODE — all sections forced visible so the full feature set can be
+// walked through during a "faire le point" review / demo. The original
+// adaptive predicates are preserved in comments next to each section so
+// restoring conditional visibility is a one-line revert per section:
+//   Hosting  → visible: ({ hasProperties }) => hasProperties
+//   Investor → visible: ({ hasShares })     => hasShares
 const SECTIONS = [
   {
     // Section 1 — everyone gets these
@@ -53,10 +60,10 @@ const SECTIONS = [
     ],
   },
   {
-    // Section 2 — Hosting tools (only after first property)
+    // Section 2 — Hosting tools (REVIEW: forced visible; was: hasProperties)
     label: 'Hosting',
     labelKey: 'dashboard.section_hosting',
-    visible: ({ hasProperties }) => hasProperties,
+    visible: () => true,
     items: [
       { to: '/dashboard/properties',   icon: Building2,     labelKey: 'dashboard.nav_properties',   label: 'My Properties' },
       { to: '/dashboard/front-desk',   icon: ConciergeBell, labelKey: 'dashboard.nav_front_desk',   label: 'Front Desk' },
@@ -66,10 +73,10 @@ const SECTIONS = [
     ],
   },
   {
-    // Section 3 — Investor (only if user holds shares)
+    // Section 3 — Investor (REVIEW: forced visible; was: hasShares)
     label: 'Investor',
     labelKey: 'dashboard.section_investor',
-    visible: ({ hasShares }) => hasShares,
+    visible: () => true,
     items: [
       { to: '/dashboard/shares', icon: Gem,     labelKey: 'dashboard.nav_shares',      label: 'My Shares' },
       { to: '/dashboard/kit',    icon: Package, labelKey: 'dashboard.sidebar_kit',     label: 'My Kit' },
@@ -225,8 +232,26 @@ export function DashboardSidebar() {
           <span className="ml-auto text-[10px] uppercase font-bold opacity-60">Open ↗</span>
         </a>
 
-        {/* Admin shortcut — only visible to users with role='admin' (RLS-enforced server-side too) */}
-        {profile?.role === 'admin' && (
+        {/* Guest App — opens the guest-facing PWA (app.staylo.app). Added so
+            the full product surface is reachable from one place during the
+            review / demo. Opens in a new tab. */}
+        <a
+          href="https://app.staylo.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => setMobileOpen(false)}
+          className="flex items-center gap-3 px-4 py-3 mt-1 rounded-xl text-sm font-semibold no-underline transition-all duration-200 text-libre/80 hover:text-libre hover:bg-libre/10 border border-libre/20"
+        >
+          <Smartphone size={18} />
+          <span>{t('dashboard.nav_guest_app', 'Guest App')}</span>
+          <span className="ml-auto text-[10px] uppercase font-bold opacity-60">Open ↗</span>
+        </a>
+
+        {/* Admin shortcut — REVIEW MODE: forced visible (was: profile?.role === 'admin').
+            Restore the role gate before shipping to real users — admin pages
+            are still RLS-enforced server-side, so this only exposes the LINK,
+            not the data. */}
+        {true && (
           <>
             <div className="pt-4 pb-1 px-4">
               <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-sunset/60">Admin</p>
