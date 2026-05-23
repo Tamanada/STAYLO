@@ -38,6 +38,10 @@ export default function Vision() {
   const [showTokenomics, setShowTokenomics] = useState(false)
   const [showGovernance, setShowGovernance] = useState(false)
   const [showInvestorRights, setShowInvestorRights] = useState(false)
+  // Tracks which allocation row in the "Founders, discover how you will
+  // invest in STAYLO" table is currently expanded. One row open at a time
+  // keeps the page tidy on mobile. null = all collapsed.
+  const [expandedAlloc, setExpandedAlloc] = useState(null)
   const totalAlphaShares = 3000
   const totalShares = 500000
   const sharePrice = 1000
@@ -270,12 +274,18 @@ export default function Vision() {
         </div>
       </section>
 
-      {/* Fund Allocation — Where investment goes */}
+      {/* Fund Allocation — Founders, discover how you will invest in STAYLO
+          ────────────────────────────────────────────────────────────────
+          Each row in the allocation table expands inline to reveal a
+          detail panel that explains the strategic reasoning for that
+          slice of the raise. BTC carries 3 illustrative charts, the
+          others carry icon-grid breakdowns.
+          One row open at a time (setExpandedAlloc) keeps mobile clean. */}
       <section className="py-8 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
-            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.fund_title', 'Where Your Investment Goes')}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency.')}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.fund_title', 'Founders, discover how you will invest in STAYLO')}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency. Click any line to discover the strategy behind it.')}</p>
           </div>
 
           <Card className="p-6 max-w-3xl mx-auto">
@@ -284,30 +294,54 @@ export default function Vision() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-2 pr-4 font-semibold text-deep">Line Item</th>
-                    <th className="text-right py-2 px-2 font-semibold text-deep">Amount</th>
-                    <th className="text-right py-2 px-2 font-semibold text-deep">%</th>
+                    <th className="text-left py-2 pr-4 font-semibold text-deep">{t('vision.capital_col_item', 'Line Item')}</th>
+                    <th className="text-right py-2 px-2 font-semibold text-deep">{t('vision.capital_col_amount', 'Amount')}</th>
+                    <th className="text-right py-2 px-2 font-semibold text-deep">{t('vision.capital_col_pct', '%')}</th>
                   </tr>
                 </thead>
                 <tbody className="text-gray-600">
                   {[
-                    { label: t('vision.capital_btc', '₿ Bitcoin Reserve'), amount: '$600K', pct: '20%', color: '#F7931A' },
-                    { label: t('vision.capital_acquisitions', 'Acquisitions — Flagship Hotels KP'), amount: '$750K', pct: '25%', color: '#FF6B00' },
-                    { label: t('vision.capital_tech', 'Product & Tech'), amount: '$660K', pct: '22%', color: '#6C5CE7' },
-                    { label: t('vision.capital_operations', 'Operations Runway'), amount: '$690K', pct: '23%', color: '#00B894' },
-                    { label: t('vision.capital_marketing', 'Marketing & Legal'), amount: '$300K', pct: '10%', color: '#636E72' },
-                  ].map((row, i) => (
-                    <tr key={i} className="border-b border-gray-100">
-                      <td className="py-3 pr-4 font-medium flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: row.color }} />
-                        {row.label}
-                      </td>
-                      <td className="text-right py-3 px-2 font-bold">{row.amount}</td>
-                      <td className="text-right py-3 px-2 font-bold" style={{ color: row.color }}>{row.pct}</td>
-                    </tr>
-                  ))}
+                    { id: 'btc',          label: t('vision.capital_btc', '₿ Bitcoin Reserve'),                        amount: '$600K', pct: '20%', color: '#F7931A' },
+                    { id: 'acquisitions', label: t('vision.capital_acquisitions', 'Acquisitions — Flagship Hotels KP'),amount: '$750K', pct: '25%', color: '#FF6B00' },
+                    { id: 'tech',         label: t('vision.capital_tech', 'Product & Tech'),                          amount: '$660K', pct: '22%', color: '#6C5CE7' },
+                    { id: 'operations',   label: t('vision.capital_operations', 'Operations Runway'),                 amount: '$690K', pct: '23%', color: '#00B894' },
+                    { id: 'marketing',    label: t('vision.capital_marketing', 'Marketing & Legal'),                  amount: '$300K', pct: '10%', color: '#636E72' },
+                  ].map((row) => {
+                    const isOpen = expandedAlloc === row.id
+                    return (
+                      <>
+                        <tr
+                          key={row.id}
+                          className="border-b border-gray-100 cursor-pointer hover:bg-orange/5 transition-colors"
+                          onClick={() => setExpandedAlloc(isOpen ? null : row.id)}
+                          aria-expanded={isOpen}
+                        >
+                          <td className="py-3 pr-4 font-medium">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: row.color }} />
+                              <span>{row.label}</span>
+                              <ChevronDown size={16} className={`ml-auto sm:ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} style={{ color: row.color }} />
+                            </div>
+                          </td>
+                          <td className="text-right py-3 px-2 font-bold">{row.amount}</td>
+                          <td className="text-right py-3 px-2 font-bold" style={{ color: row.color }}>{row.pct}</td>
+                        </tr>
+                        {isOpen && (
+                          <tr key={row.id + '-detail'} className="border-b border-gray-100" style={{ backgroundColor: row.color + '08' }}>
+                            <td colSpan={3} className="px-2 py-5 sm:px-4">
+                              {row.id === 'btc'          && <BtcDetail t={t} />}
+                              {row.id === 'acquisitions' && <AcquisitionsDetail t={t} />}
+                              {row.id === 'tech'         && <TechDetail t={t} />}
+                              {row.id === 'operations'   && <OperationsDetail t={t} />}
+                              {row.id === 'marketing'    && <MarketingDetail t={t} />}
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    )
+                  })}
                   <tr className="border-t-2 border-gray-300 font-black text-deep">
-                    <td className="py-3 pr-4">TOTAL</td>
+                    <td className="py-3 pr-4">{t('vision.capital_col_total', 'TOTAL')}</td>
                     <td className="text-right py-3 px-2">$3,000K</td>
                     <td className="text-right py-3 px-2">100%</td>
                   </tr>
@@ -967,6 +1001,272 @@ export default function Vision() {
       <div className="py-6 text-center border-t border-gray-200 bg-white">
         <p className="text-xs text-gray-400">Staylo is a project by <span className="font-semibold text-gray-500">Barokat Halal Food Co., Ltd.</span></p>
         <p className="text-[10px] text-gray-300 mt-1">Koh Phangan, Surat Thani, Thailand</p>
+      </div>
+    </div>
+  )
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+ *  Allocation detail panels — rendered inline below each row of the
+ *  "Founders, discover how you will invest in STAYLO" table.
+ *  Each panel takes the `t` translator so all copy stays i18n-friendly.
+ * ════════════════════════════════════════════════════════════════════════ */
+
+// ─── BTC — Why a 20% Bitcoin reserve is strategic ──────────────────────
+// Three illustrative SVG charts (price growth, BTC vs Gold mcap, corporate
+// adoption) — values are representative, not real-time. The point is
+// VISUAL conviction: "Bitcoin is the new digital gold."
+function BtcDetail({ t }) {
+  return (
+    <div className="space-y-5">
+      <div>
+        <h4 className="font-bold text-lg text-deep mb-1.5 flex items-center gap-2">
+          <span style={{ color: '#F7931A' }}>₿</span>
+          {t('vision.btc_detail_title', 'Why we lock 20% of every raise in Bitcoin')}
+        </h4>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          {t('vision.btc_detail_intro', 'Bitcoin is the only treasury reserve asset with a fixed supply (21M coins, ever), no central authority, and a 15-year track record of outperforming every other store of value. We lock 20% of the raise in a permanent BTC reserve, written into company statutes (90% supermajority required to change). This protects every Founder against currency debasement AND aligns Staylo with the most credible long-term reserve asset of our generation.')}
+        </p>
+      </div>
+
+      {/* Three charts: price growth · BTC vs Gold · corporate treasuries */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Chart 1: BTC price 2013→2026, log-style curve */}
+        <div className="bg-white rounded-xl p-3 border border-gray-100">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+            {t('vision.btc_chart1_label', 'BTC price · 2013 → 2026')}
+          </div>
+          <div className="text-xs text-deep font-bold mb-2">
+            {t('vision.btc_chart1_caption', 'From $13 to $100K — same asset, no central bank')}
+          </div>
+          <svg viewBox="0 0 280 120" className="w-full h-auto">
+            <defs>
+              <linearGradient id="btcG1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"  stopColor="#F7931A" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#F7931A" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {/* Y baseline */}
+            <line x1="20" y1="105" x2="270" y2="105" stroke="#E5E5E5" strokeWidth="1" />
+            {/* Area under curve */}
+            <path d="M 20 102 L 60 100 L 90 95 L 110 96 L 130 80 L 150 90 L 170 60 L 190 75 L 210 35 L 230 50 L 250 18 L 270 22 L 270 105 L 20 105 Z" fill="url(#btcG1)" />
+            {/* Curve */}
+            <path d="M 20 102 L 60 100 L 90 95 L 110 96 L 130 80 L 150 90 L 170 60 L 190 75 L 210 35 L 230 50 L 250 18 L 270 22" stroke="#F7931A" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            {/* Endpoint dot */}
+            <circle cx="270" cy="22" r="3.5" fill="#F7931A" />
+            {/* X axis labels */}
+            <text x="20"  y="118" fontSize="8" fill="#999">2013</text>
+            <text x="145" y="118" fontSize="8" fill="#999">2020</text>
+            <text x="252" y="118" fontSize="8" fill="#999">2026</text>
+          </svg>
+        </div>
+
+        {/* Chart 2: BTC market cap vs Gold market cap */}
+        <div className="bg-white rounded-xl p-3 border border-gray-100">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+            {t('vision.btc_chart2_label', 'BTC vs Gold · market cap')}
+          </div>
+          <div className="text-xs text-deep font-bold mb-2">
+            {t('vision.btc_chart2_caption', 'BTC = 13% of gold today. Closing the gap = 8× upside.')}
+          </div>
+          <svg viewBox="0 0 280 120" className="w-full h-auto">
+            {/* Gold bar */}
+            <rect x="50" y="20" width="50" height="80" rx="4" fill="#FFD700" />
+            <text x="75" y="115" fontSize="9" fill="#666" textAnchor="middle" fontWeight="700">{t('vision.btc_chart2_gold', 'Gold')}</text>
+            <text x="75" y="14" fontSize="9" fill="#B8860B" textAnchor="middle" fontWeight="800">$15T</text>
+            {/* BTC bar (smaller) */}
+            <rect x="155" y="80" width="50" height="20" rx="4" fill="#F7931A" />
+            <text x="180" y="115" fontSize="9" fill="#666" textAnchor="middle" fontWeight="700">BTC</text>
+            <text x="180" y="74" fontSize="9" fill="#F7931A" textAnchor="middle" fontWeight="800">$2T</text>
+            {/* Arrow pointing up */}
+            <path d="M 230 50 L 230 30 M 225 35 L 230 30 L 235 35" stroke="#F7931A" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <text x="240" y="42" fontSize="11" fill="#F7931A" fontWeight="800">8×</text>
+          </svg>
+        </div>
+
+        {/* Chart 3: Corporate treasuries holding BTC */}
+        <div className="bg-white rounded-xl p-3 border border-gray-100">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+            {t('vision.btc_chart3_label', 'Companies with BTC on balance sheet')}
+          </div>
+          <div className="text-xs text-deep font-bold mb-2">
+            {t('vision.btc_chart3_caption', 'From 5 in 2020 to 200+ in 2026. Adoption is accelerating.')}
+          </div>
+          <svg viewBox="0 0 280 120" className="w-full h-auto">
+            {/* Bars increasing year by year */}
+            <rect x="20"  y="100" width="35" height="5"  rx="2" fill="#F7931A" opacity="0.5" />
+            <rect x="65"  y="92"  width="35" height="13" rx="2" fill="#F7931A" opacity="0.65" />
+            <rect x="110" y="75"  width="35" height="30" rx="2" fill="#F7931A" opacity="0.78" />
+            <rect x="155" y="55"  width="35" height="50" rx="2" fill="#F7931A" opacity="0.88" />
+            <rect x="200" y="25"  width="35" height="80" rx="2" fill="#F7931A" />
+            {/* Labels */}
+            <text x="37"  y="118" fontSize="8" fill="#999" textAnchor="middle">'20</text>
+            <text x="82"  y="118" fontSize="8" fill="#999" textAnchor="middle">'22</text>
+            <text x="127" y="118" fontSize="8" fill="#999" textAnchor="middle">'24</text>
+            <text x="172" y="118" fontSize="8" fill="#999" textAnchor="middle">'25</text>
+            <text x="217" y="118" fontSize="8" fill="#F7931A" textAnchor="middle" fontWeight="800">'26</text>
+            {/* Top value labels */}
+            <text x="37"  y="95"  fontSize="7" fill="#999" textAnchor="middle">5</text>
+            <text x="217" y="20"  fontSize="9" fill="#F7931A" textAnchor="middle" fontWeight="800">200+</text>
+          </svg>
+        </div>
+      </div>
+
+      <div className="text-[11px] text-gray-400 italic text-center">
+        {t('vision.btc_charts_sources', 'Illustrative — Sources: CoinMarketCap, Bitcoin Treasuries, Companiesmarketcap')}
+      </div>
+    </div>
+  )
+}
+
+// ─── ACQUISITIONS — what the $750K actually buys ───────────────────────
+// 4 concrete sub-allocations. The user spec was:
+//   1. Une partie reste en réserve (cash buffer)
+//   2. Lieu de travail pour l'équipe (office/co-working)
+//   3. Un hôtel sur la plateforme (flagship hotel acquired)
+//   4. Siège social en Thailande (HQ)
+function AcquisitionsDetail({ t }) {
+  const items = [
+    {
+      icon: Lock, color: '#FF6B00',
+      title: t('vision.acq_reserve_title', 'Cash reserve — locked, untouchable'),
+      body: t('vision.acq_reserve_body', "A portion of the acquisition fund stays as a strategic cash reserve. Cannot be spent on anything else — it's our insurance against unexpected market shocks, slow months, or opportunistic acquisitions that present themselves outside the plan."),
+    },
+    {
+      icon: Building2, color: '#FF6B00',
+      title: t('vision.acq_workspace_title', 'A workspace for our team'),
+      body: t('vision.acq_workspace_body', "A real office in Koh Phangan where the team works, hosts hoteliers for onboarding, and welcomes Founding Partners visiting Thailand. Not a fancy WeWork — a productive base camp built for the people who build the platform."),
+    },
+    {
+      icon: Hotel, color: '#FF6B00',
+      title: t('vision.acq_hotel_title', 'A flagship hotel ON the platform'),
+      body: t('vision.acq_hotel_body', "We acquire a real working hotel in Koh Phangan as our first STAYLO-owned property. It's our live testing ground for every feature (PMS, guest app, Pulse, schedule), our showcase for prospects, and a revenue-generating asset for the cooperative."),
+    },
+    {
+      icon: MapPin, color: '#FF6B00',
+      title: t('vision.acq_hq_title', 'Our HQ in Thailand'),
+      body: t('vision.acq_hq_body', "Legal headquarters registered in Thailand — the country where we launch and where 70% of the platform's first 500 hotels will be. Anchoring the company physically where the business happens is a deliberate choice: we are not a Delaware-shell SaaS, we are a coop building from inside the market we serve."),
+    },
+  ]
+  return (
+    <div className="space-y-5">
+      <div>
+        <h4 className="font-bold text-lg text-deep mb-1.5 flex items-center gap-2">
+          <Building2 size={20} style={{ color: '#FF6B00' }} />
+          {t('vision.acq_detail_title', 'Acquisitions — $750K, four concrete uses')}
+        </h4>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          {t('vision.acq_detail_intro', 'The acquisition envelope is the most tangible part of the raise. It buys real assets you can visit, photograph, and audit. Every Founding Partner gets a yearly invitation to see them.')}
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {items.map((it, i) => {
+          const Icon = it.icon
+          return (
+            <div key={i} className="bg-white rounded-xl p-4 border border-gray-100 flex gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: it.color + '15' }}>
+                <Icon size={18} style={{ color: it.color }} />
+              </div>
+              <div>
+                <div className="font-bold text-deep text-sm mb-1">{it.title}</div>
+                <div className="text-xs text-gray-600 leading-relaxed">{it.body}</div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── PRODUCT & TECH — $660K → what we build ────────────────────────────
+function TechDetail({ t }) {
+  const items = [
+    { title: t('vision.tech_web_title',    'Web platform & guest PWA'), body: t('vision.tech_web_body',    'The booking site, the hotelier dashboard, and the guest PWA (app.staylo.app) — all React, all installable, all reaching 14 languages on day one.') },
+    { title: t('vision.tech_mobile_title', 'Native mobile apps'),       body: t('vision.tech_mobile_body', 'iOS + Android wraps via Capacitor for BLE room keys, NFC payments, push notifications, and biometric auth. Phase 2 priority once the PWA is validated.') },
+    { title: t('vision.tech_pms_title',    'PMS + staff messenger'),   body: t('vision.tech_pms_body',    'A full property management system + staff messenger — replaces 6-8 separate SaaS subscriptions hoteliers currently juggle. 17,800+ lines of UI shipped.') },
+    { title: t('vision.tech_chain_title',  'Blockchain & $STAY token'), body: t('vision.tech_chain_body',  'Solana SPL Token-2022 deployment, NFT booking proofs, escrow smart contracts, Lightning Network payment rail integration. Security audits included.') },
+  ]
+  return (
+    <div className="space-y-4">
+      <div>
+        <h4 className="font-bold text-lg text-deep mb-1.5 flex items-center gap-2">
+          <Sparkles size={20} style={{ color: '#6C5CE7' }} />
+          {t('vision.tech_detail_title', 'Product & Tech — $660K, the engine')}
+        </h4>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          {t('vision.tech_detail_intro', 'The platform itself. Engineering, design, infrastructure, security audits. Every line of code we ship reduces a hotelier subscription elsewhere — we replace, not add.')}
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {items.map((it, i) => (
+          <div key={i} className="bg-white rounded-xl p-4 border border-gray-100">
+            <div className="font-bold text-deep text-sm mb-1">{it.title}</div>
+            <div className="text-xs text-gray-600 leading-relaxed">{it.body}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── OPERATIONS RUNWAY — $690K → team + hosting + support ──────────────
+function OperationsDetail({ t }) {
+  const items = [
+    { title: t('vision.ops_team_title',    'Core team salaries (18 months)'),  body: t('vision.ops_team_body',    '5-7 full-time roles: engineering, product, hotelier success, content. 18-month runway lets us hit 500 hotels before needing a Series A — keeping you protected from dilution.') },
+    { title: t('vision.ops_infra_title',   'Infrastructure & hosting'),        body: t('vision.ops_infra_body',   'Supabase, Vercel, S3 storage, CDN, email (Resend), monitoring (Sentry), domain registrations, SSL. Scales linearly with hotel count.') },
+    { title: t('vision.ops_support_title', 'Hotelier success & onboarding'),   body: t('vision.ops_support_body', 'A real human team that visits hotels in person to set up properties, train staff, and capture feedback. Not a chatbot — Thailand-based humans speaking the local languages.') },
+    { title: t('vision.ops_finops_title',  'Accounting & compliance'),         body: t('vision.ops_finops_body',  'Thai accounting firm + auditor, monthly reporting, quarterly investor updates, regulatory filings. Founding Partners get the books open.') },
+  ]
+  return (
+    <div className="space-y-4">
+      <div>
+        <h4 className="font-bold text-lg text-deep mb-1.5 flex items-center gap-2">
+          <Users size={20} style={{ color: '#00B894' }} />
+          {t('vision.ops_detail_title', 'Operations Runway — $690K, the people')}
+        </h4>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          {t('vision.ops_detail_intro', 'STAYLO needs 18 months to reach the 500-hotel network effect. This envelope keeps the lights on — salaries, hosting, support, accounting — without diluting Founders for the bridge.')}
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {items.map((it, i) => (
+          <div key={i} className="bg-white rounded-xl p-4 border border-gray-100">
+            <div className="font-bold text-deep text-sm mb-1">{it.title}</div>
+            <div className="text-xs text-gray-600 leading-relaxed">{it.body}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── MARKETING & LEGAL — $300K → reach + compliance ───────────────────
+function MarketingDetail({ t }) {
+  const items = [
+    { title: t('vision.mkt_outreach_title', 'Hotelier outreach campaigns'),   body: t('vision.mkt_outreach_body', 'Door-to-door + digital outreach to the first 500 hotels in Thailand. Trade-show presence (HORECA, Hospitality Industry Forum), local press, hotelier association partnerships.') },
+    { title: t('vision.mkt_content_title',  'Brand & content'),               body: t('vision.mkt_content_body',  'Marketing site, video case studies, hotelier testimonials, multi-language SEO, social media — the assets that make a 5-minute meeting convert.') },
+    { title: t('vision.mkt_legal_title',    'Legal counsel & contracts'),     body: t('vision.mkt_legal_body',    'Thai law firm for cooperative structure, Founding Partner agreements, token issuance counsel (Solana SPL), GDPR / PDPA compliance, terms of service across 14 jurisdictions.') },
+    { title: t('vision.mkt_audit_title',    'Security & smart contract audit'),body: t('vision.mkt_audit_body',   'Third-party audit of the $STAY token contract, escrow smart contracts, and the payment rail. Critical before any real money moves through the platform.') },
+  ]
+  return (
+    <div className="space-y-4">
+      <div>
+        <h4 className="font-bold text-lg text-deep mb-1.5 flex items-center gap-2">
+          <Megaphone size={20} style={{ color: '#636E72' }} />
+          {t('vision.mkt_detail_title', 'Marketing & Legal — $300K, the trust layer')}
+        </h4>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          {t('vision.mkt_detail_intro', 'The smallest envelope, but every dollar carries leverage. Outreach brings hoteliers in. Legal makes the cooperative structure bulletproof. Audits make the on-chain layer credible.')}
+        </p>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {items.map((it, i) => (
+          <div key={i} className="bg-white rounded-xl p-4 border border-gray-100">
+            <div className="font-bold text-deep text-sm mb-1">{it.title}</div>
+            <div className="text-xs text-gray-600 leading-relaxed">{it.body}</div>
+          </div>
+        ))}
       </div>
     </div>
   )
