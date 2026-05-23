@@ -10,7 +10,8 @@
     "prebuild": "node scripts/sync-messenger-i18n.cjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "sync:messenger-i18n": "node scripts/sync-messenger-i18n.cjs"
+    "sync:messenger-i18n": "node scripts/sync-messenger-i18n.cjs",
+    "audit:i18n-fallbacks": "node scripts/audit_i18n_fallbacks.cjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.3",

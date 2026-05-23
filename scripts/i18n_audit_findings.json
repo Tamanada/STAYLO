@@ -1,0 +1,3540 @@
+{
+  "summary": {
+    "total_calls": 1296,
+    "occurrence_findings": 551,
+    "unique_buggy_keys": 490,
+    "cat_A": 0,
+    "cat_B": 0,
+    "cat_C": 0,
+    "cat_D": 490
+  },
+  "by_key": {
+    "verify.gate_title": {
+      "cat": "D",
+      "fb": "Verify your email first",
+      "locations": [
+        "src/components/auth/EmailVerificationGate.jsx:45"
+      ]
+    },
+    "verify.gate_reason": {
+      "cat": "D",
+      "fb": "You need a verified email",
+      "locations": [
+        "src/components/auth/EmailVerificationGate.jsx:49"
+      ]
+    },
+    "verify.gate_generic": {
+      "cat": "D",
+      "fb": "You need a verified email to continue.",
+      "locations": [
+        "src/components/auth/EmailVerificationGate.jsx:50"
+      ]
+    },
+    "verify.gate_security": {
+      "cat": "D",
+      "fb": "This protects you and the hoteliers you interact with.",
+      "locations": [
+        "src/components/auth/EmailVerificationGate.jsx:54"
+      ]
+    },
+    "verify.gate_button": {
+      "cat": "D",
+      "fb": "Verify my email",
+      "locations": [
+        "src/components/auth/EmailVerificationGate.jsx:58"
+      ]
+    },
+    "amb.addr_saved": {
+      "cat": "D",
+      "fb": "Lightning address saved.",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:81"
+      ]
+    },
+    "amb.need_addr": {
+      "cat": "D",
+      "fb": "Please set your Lightning address first.",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:89"
+      ]
+    },
+    "amb.no_ready": {
+      "cat": "D",
+      "fb": "No commissions ready to withdraw yet.",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:111"
+      ]
+    },
+    "amb.payout_done": {
+      "cat": "D",
+      "fb": "Sent {{sats}} sats ({{cents}}) to {{addr}}",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:115"
+      ]
+    },
+    "amb.title": {
+      "cat": "D",
+      "fb": "Mes commissions BTC",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:159"
+      ]
+    },
+    "amb.subtitle": {
+      "cat": "D",
+      "fb": "Vous touchez 2% (en BTC) sur chaque réservation des hôtels que vous avez référés. Pour la vie.",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:162"
+      ]
+    },
+    "amb.pending": {
+      "cat": "D",
+      "fb": "En cours (booking pending)",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:169"
+      ]
+    },
+    "amb.ready": {
+      "cat": "D",
+      "fb": "Prêt à retirer",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:176"
+      ]
+    },
+    "amb.paid": {
+      "cat": "D",
+      "fb": "Total payé en BTC",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:183"
+      ]
+    },
+    "amb.your_ln_addr": {
+      "cat": "D",
+      "fb": "Votre Lightning Address (BTC payout)",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:194"
+      ]
+    },
+    "amb.save": {
+      "cat": "D",
+      "fb": "Enregistrer",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:210"
+      ]
+    },
+    "amb.ln_help": {
+      "cat": "D",
+      "fb": "Pas de Lightning Address ? Téléchargez Wallet of Satoshi (gratuit, 30 sec) pour en créer une.",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:214"
+      ]
+    },
+    "amb.withdrawing": {
+      "cat": "D",
+      "fb": "Envoi en cours...",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:224"
+      ]
+    },
+    "amb.withdraw": {
+      "cat": "D",
+      "fb": "Retirer {{amount}} maintenant",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:225"
+      ]
+    },
+    "amb.recent": {
+      "cat": "D",
+      "fb": "Dernières commissions",
+      "locations": [
+        "src/components/dashboard/AmbassadorCommissionsWidget.jsx:245"
+      ]
+    },
+    "dashboard.cta_become_host": {
+      "cat": "D",
+      "fb": "List your property",
+      "locations": [
+        "src/components/dashboard/DashboardSidebar.jsx:205"
+      ]
+    },
+    "dashboard.cta_become_host_sub": {
+      "cat": "D",
+      "fb": "Become a hotelier on STAYLO — free, 15 minutes.",
+      "locations": [
+        "src/components/dashboard/DashboardSidebar.jsx:208"
+      ]
+    },
+    "dashboard.section_team_tools": {
+      "cat": "D",
+      "fb": "Team tools",
+      "locations": [
+        "src/components/dashboard/DashboardSidebar.jsx:220"
+      ]
+    },
+    "dashboard.nav_messenger": {
+      "cat": "D",
+      "fb": "Staff Messenger",
+      "locations": [
+        "src/components/dashboard/DashboardSidebar.jsx:231"
+      ]
+    },
+    "dashboard.nav_guest_app": {
+      "cat": "D",
+      "fb": "Guest App",
+      "locations": [
+        "src/components/dashboard/DashboardSidebar.jsx:246"
+      ]
+    },
+    "dashboard.back_to_site": {
+      "cat": "D",
+      "fb": "Back to Staylo",
+      "locations": [
+        "src/components/dashboard/DashboardSidebar.jsx:279"
+      ]
+    },
+    "common.sign_out": {
+      "cat": "D",
+      "fb": "Sign Out",
+      "locations": [
+        "src/components/dashboard/DashboardSidebar.jsx:287"
+      ]
+    },
+    "lightning.title": {
+      "cat": "D",
+      "fb": "Pay with Bitcoin Lightning",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:114"
+      ]
+    },
+    "lightning.expires_in": {
+      "cat": "D",
+      "fb": "Expires in",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:138"
+      ]
+    },
+    "lightning.copied": {
+      "cat": "D",
+      "fb": "Copied!",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:145"
+      ]
+    },
+    "lightning.copy_invoice": {
+      "cat": "D",
+      "fb": "Copy BOLT11 invoice",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:145"
+      ]
+    },
+    "lightning.waiting": {
+      "cat": "D",
+      "fb": "Waiting for payment...",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:159"
+      ]
+    },
+    "lightning.paid_title": {
+      "cat": "D",
+      "fb": "Payment received!",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:169"
+      ]
+    },
+    "lightning.paid_desc": {
+      "cat": "D",
+      "fb": "Your booking is being confirmed...",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:170"
+      ]
+    },
+    "lightning.expired_title": {
+      "cat": "D",
+      "fb": "Invoice expired",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:179"
+      ]
+    },
+    "lightning.expired_desc": {
+      "cat": "D",
+      "fb": "Lightning invoices expire after 1 hour. Generate a new one to retry.",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:180"
+      ]
+    },
+    "lightning.close": {
+      "cat": "D",
+      "fb": "Close",
+      "locations": [
+        "src/components/ota/LightningPaymentModal.jsx:181"
+      ]
+    },
+    "giants.why_10_short": {
+      "cat": "D",
+      "fb": "is all we need",
+      "locations": [
+        "src/components/sections/BreakFree.jsx:34"
+      ]
+    },
+    "giants.why_10_pct": {
+      "cat": "D",
+      "fb": "\\\"10%, that's all a platform needs when it doesn't have 22,000 employees and shareholders on Wall Street to pay.\\\"",
+      "locations": [
+        "src/components/sections/BreakFree.jsx:129"
+      ]
+    },
+    "giants.why_10_detail": {
+      "cat": "D",
+      "fb": "No offices to rent. No massive teams. No external shareholders. Your community IS the infrastructure.",
+      "locations": [
+        "src/components/sections/BreakFree.jsx:132"
+      ]
+    },
+    "social_proof.members": {
+      "cat": "D",
+      "fb": "Members",
+      "locations": [
+        "src/components/sections/FoundingMembers.jsx:113"
+      ]
+    },
+    "home_grid.empty_title": {
+      "cat": "D",
+      "fb": "Onboarding the first hotels of Koh Phangan",
+      "locations": [
+        "src/components/sections/HotelGrid.jsx:70"
+      ]
+    },
+    "home_grid.empty_desc": {
+      "cat": "D",
+      "fb": "Featured properties will appear here as hoteliers complete their listing. Want yours to be first ?",
+      "locations": [
+        "src/components/sections/HotelGrid.jsx:73"
+      ]
+    },
+    "home_grid.empty_cta": {
+      "cat": "D",
+      "fb": "List your hotel",
+      "locations": [
+        "src/components/sections/HotelGrid.jsx:77"
+      ]
+    },
+    "home_grid.view_all_count": {
+      "cat": "D",
+      "fb": "View all {{count}} hotels",
+      "locations": [
+        "src/components/sections/HotelGrid.jsx:104"
+      ]
+    },
+    "home_grid.no_price": {
+      "cat": "D",
+      "fb": "Pricing soon",
+      "locations": [
+        "src/components/sections/HotelGrid.jsx:174"
+      ]
+    },
+    "chat.error": {
+      "cat": "D",
+      "fb": "Sorry, something went wrong. Please try again.",
+      "locations": [
+        "src/components/ui/ChatBot.jsx:52"
+      ]
+    },
+    "chat.placeholder": {
+      "cat": "D",
+      "fb": "Ask anything about STAYLO...",
+      "locations": [
+        "src/components/ui/ChatBot.jsx:156"
+      ]
+    },
+    "ambassador_landing.cta_dashboard": {
+      "cat": "D",
+      "fb": "Go to My Ambassador Dashboard",
+      "locations": [
+        "src/pages/AmbassadorLanding.jsx:88",
+        "src/pages/AmbassadorLanding.jsx:325"
+      ]
+    },
+    "ambassador_landing.cta_activate": {
+      "cat": "D",
+      "fb": "Activate My Ambassador Account",
+      "locations": [
+        "src/pages/AmbassadorLanding.jsx:90",
+        "src/pages/AmbassadorLanding.jsx:327"
+      ]
+    },
+    "banking.title": {
+      "cat": "D",
+      "fb": "Banking & Payouts",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:162"
+      ]
+    },
+    "banking.subtitle": {
+      "cat": "D",
+      "fb": "Get paid in your local currency, directly to your bank account. Powered by Stripe Connect.",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:165"
+      ]
+    },
+    "banking.returned_title": {
+      "cat": "D",
+      "fb": "Welcome back from Stripe",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:175"
+      ]
+    },
+    "banking.returned_desc": {
+      "cat": "D",
+      "fb": "We are syncing your account status. This may take a few seconds.",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:176"
+      ]
+    },
+    "banking.error_title": {
+      "cat": "D",
+      "fb": "Something went wrong",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:185"
+      ]
+    },
+    "banking.start_title": {
+      "cat": "D",
+      "fb": "Set up payouts to your bank",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:194"
+      ]
+    },
+    "banking.start_desc": {
+      "cat": "D",
+      "fb": "STAYLO uses Stripe Connect Express to pay you securely. The setup takes 5 minutes — you only need your ID, business info, and bank details.",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:196"
+      ]
+    },
+    "banking.step1": {
+      "cat": "D",
+      "fb": "Choose your country (defines your default currency).",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:200"
+      ]
+    },
+    "banking.step2": {
+      "cat": "D",
+      "fb": "Verify your identity on Stripe (ID + selfie).",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:201"
+      ]
+    },
+    "banking.step3": {
+      "cat": "D",
+      "fb": "Add your bank account for payouts.",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:202"
+      ]
+    },
+    "banking.step4": {
+      "cat": "D",
+      "fb": "Done — start receiving 90% of every booking, paid the day after check-out.",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:203"
+      ]
+    },
+    "banking.country_label": {
+      "cat": "D",
+      "fb": "Country of your business",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:208"
+      ]
+    },
+    "banking.opening": {
+      "cat": "D",
+      "fb": "Opening Stripe...",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:225"
+      ]
+    },
+    "banking.start_cta": {
+      "cat": "D",
+      "fb": "Set up payouts on Stripe",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:225"
+      ]
+    },
+    "banking.account_id": {
+      "cat": "D",
+      "fb": "Stripe account ID",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:236"
+      ]
+    },
+    "banking.country": {
+      "cat": "D",
+      "fb": "Country",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:237"
+      ]
+    },
+    "banking.default_currency": {
+      "cat": "D",
+      "fb": "Default currency",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:238"
+      ]
+    },
+    "banking.last_synced": {
+      "cat": "D",
+      "fb": "Last synced",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:239"
+      ]
+    },
+    "banking.cap_details": {
+      "cat": "D",
+      "fb": "Identity & business details submitted",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:245"
+      ]
+    },
+    "banking.cap_charges": {
+      "cat": "D",
+      "fb": "Can accept charges from guests",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:246"
+      ]
+    },
+    "banking.cap_payouts": {
+      "cat": "D",
+      "fb": "Can receive payouts to bank",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:247"
+      ]
+    },
+    "banking.refresh": {
+      "cat": "D",
+      "fb": "Refresh status",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:253"
+      ]
+    },
+    "banking.continue": {
+      "cat": "D",
+      "fb": "Complete onboarding",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:258"
+      ]
+    },
+    "banking.active_title": {
+      "cat": "D",
+      "fb": "You are ready to receive payouts",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:270"
+      ]
+    },
+    "banking.active_desc": {
+      "cat": "D",
+      "fb": "90% of every guest payment is transferred to your bank account 24 hours after the booking is confirmed (or sooner once the post-checkout questionnaire is wired in).",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:272"
+      ]
+    },
+    "banking.progress_title": {
+      "cat": "D",
+      "fb": "Onboarding in progress",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:284"
+      ]
+    },
+    "banking.progress_desc": {
+      "cat": "D",
+      "fb": "Stripe is reviewing your information. You may need to provide additional documents — click \"Complete onboarding\" above to check what is missing.",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:286"
+      ]
+    },
+    "banking.restricted_title": {
+      "cat": "D",
+      "fb": "Payouts are restricted",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:298"
+      ]
+    },
+    "banking.restricted_desc": {
+      "cat": "D",
+      "fb": "Stripe has restricted some capabilities of your account. Click \"Complete onboarding\" to resolve.",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:300"
+      ]
+    },
+    "banking.footer": {
+      "cat": "D",
+      "fb": "Secured by Stripe — STAYLO never sees your card or banking details.",
+      "locations": [
+        "src/pages/dashboard/Banking.jsx:311"
+      ]
+    },
+    "dashboard.kit_title": {
+      "cat": "D",
+      "fb": "My Welcome Kit",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:54"
+      ]
+    },
+    "dashboard.kit_subtitle": {
+      "cat": "D",
+      "fb": "Your personalized materials to grow the Staylo network",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:57"
+      ]
+    },
+    "dashboard.kit_qr_title": {
+      "cat": "D",
+      "fb": "Your Unique QR Code",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:76"
+      ]
+    },
+    "dashboard.kit_qr_desc": {
+      "cat": "D",
+      "fb": "This QR code is on all your kit materials. Every scan is tracked to your account.",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:77"
+      ]
+    },
+    "dashboard.kit_first_free": {
+      "cat": "D",
+      "fb": "Your first kit is FREE",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:89"
+      ]
+    },
+    "dashboard.kit_first_desc": {
+      "cat": "D",
+      "fb": "As a Founding Partner, your personalized Welcome Kit is shipped to you at no cost. Refills are available at cost price via Print-on-Demand.",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:90"
+      ]
+    },
+    "dashboard.kit_items_title": {
+      "cat": "D",
+      "fb": "Kit Contents & Refills",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:96"
+      ]
+    },
+    "dashboard.kit_items": {
+      "cat": "D",
+      "fb": "item(s)",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:138"
+      ]
+    },
+    "dashboard.kit_pod": {
+      "cat": "D",
+      "fb": "Print-on-Demand — shipped locally",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:139"
+      ]
+    },
+    "dashboard.kit_order": {
+      "cat": "D",
+      "fb": "Order Refills",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:146"
+      ]
+    },
+    "dashboard.kit_ordered": {
+      "cat": "D",
+      "fb": "Order Received!",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:157"
+      ]
+    },
+    "dashboard.kit_ordered_desc": {
+      "cat": "D",
+      "fb": "Your refill kit will be printed and shipped locally. You\\'ll receive a tracking number by email.",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:158"
+      ]
+    },
+    "dashboard.kit_new_order": {
+      "cat": "D",
+      "fb": "Place Another Order",
+      "locations": [
+        "src/pages/dashboard/DashboardKit.jsx:160"
+      ]
+    },
+    "dashboard.my_properties": {
+      "cat": "D",
+      "fb": "My Properties",
+      "locations": [
+        "src/pages/dashboard/DashboardProperties.jsx:87"
+      ]
+    },
+    "dashboard.properties_count_label": {
+      "cat": "D",
+      "fb": "{{count}} properties registered",
+      "locations": [
+        "src/pages/dashboard/DashboardProperties.jsx:89"
+      ]
+    },
+    "dashboard.no_properties_title": {
+      "cat": "D",
+      "fb": "No properties yet",
+      "locations": [
+        "src/pages/dashboard/DashboardProperties.jsx:105"
+      ]
+    },
+    "dashboard.no_properties_detail": {
+      "cat": "D",
+      "fb": "Register your first property to get started. It only takes a few minutes.",
+      "locations": [
+        "src/pages/dashboard/DashboardProperties.jsx:108"
+      ]
+    },
+    "dashboard.avg_rate": {
+      "cat": "D",
+      "fb": "~${{rate}}/night",
+      "locations": [
+        "src/pages/dashboard/DashboardProperties.jsx:159"
+      ]
+    },
+    "dashboard.manage": {
+      "cat": "D",
+      "fb": "Manage",
+      "locations": [
+        "src/pages/dashboard/DashboardProperties.jsx:174"
+      ]
+    },
+    "dashboard.my_referrals": {
+      "cat": "D",
+      "fb": "My Referrals",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:65"
+      ]
+    },
+    "dashboard.referrals_subtitle": {
+      "cat": "D",
+      "fb": "Track your referrals and grow the community",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:67"
+      ]
+    },
+    "dashboard.total_referred": {
+      "cat": "D",
+      "fb": "Total Referred",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:78"
+      ]
+    },
+    "dashboard.hotels_referred": {
+      "cat": "D",
+      "fb": "Hotels Referred",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:85"
+      ]
+    },
+    "dashboard.ambassadors_referred": {
+      "cat": "D",
+      "fb": "Ambassadors Referred",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:92"
+      ]
+    },
+    "dashboard.your_referral_link": {
+      "cat": "D",
+      "fb": "Your Referral Link",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:98"
+      ]
+    },
+    "dashboard.referred_users": {
+      "cat": "D",
+      "fb": "Referred Users",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:226"
+      ]
+    },
+    "dashboard.no_referrals_yet": {
+      "cat": "D",
+      "fb": "No referrals yet. Share your link to start growing the community!",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:231"
+      ]
+    },
+    "dashboard.ref_name": {
+      "cat": "D",
+      "fb": "Name",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:240"
+      ]
+    },
+    "dashboard.ref_email": {
+      "cat": "D",
+      "fb": "Email",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:241"
+      ]
+    },
+    "dashboard.ref_type": {
+      "cat": "D",
+      "fb": "Type",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:242"
+      ]
+    },
+    "dashboard.ref_date": {
+      "cat": "D",
+      "fb": "Date Joined",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:243"
+      ]
+    },
+    "dashboard.ref_unknown": {
+      "cat": "D",
+      "fb": "Unknown",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:250"
+      ]
+    },
+    "dashboard.ref_type_hotel": {
+      "cat": "D",
+      "fb": "Hotel",
+      "locations": [
+        "src/pages/dashboard/DashboardReferrals.jsx:254"
+      ]
+    },
+    "dashboard.my_shares": {
+      "cat": "D",
+      "fb": "My Shares",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:123"
+      ]
+    },
+    "dashboard.shares_subtitle": {
+      "cat": "D",
+      "fb": "Your founding partner status and investment details",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:125"
+      ]
+    },
+    "dashboard.partnership_progress": {
+      "cat": "D",
+      "fb": "Partnership Progress",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:164"
+      ]
+    },
+    "dashboard.shares_held": {
+      "cat": "D",
+      "fb": "Shares Held",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:186"
+      ]
+    },
+    "dashboard.total_value": {
+      "cat": "D",
+      "fb": "Total Value",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:190"
+      ]
+    },
+    "dashboard.est_savings_year": {
+      "cat": "D",
+      "fb": "Est. Savings/Year",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:194"
+      ]
+    },
+    "dashboard.share_details": {
+      "cat": "D",
+      "fb": "Share Details",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:223"
+      ]
+    },
+    "dashboard.price_per_share": {
+      "cat": "D",
+      "fb": "Price per Share",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:227"
+      ]
+    },
+    "dashboard.max_per_property": {
+      "cat": "D",
+      "fb": "Max per Property",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:231"
+      ]
+    },
+    "dashboard.total_available_alpha": {
+      "cat": "D",
+      "fb": "Total Available (Alpha)",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:235"
+      ]
+    },
+    "dashboard.voting_rule": {
+      "cat": "D",
+      "fb": "Voting Rule",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:239"
+      ]
+    },
+    "dashboard.one_property_one_vote": {
+      "cat": "D",
+      "fb": "1 Property = 1 Vote",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:240"
+      ]
+    },
+    "dashboard.share_transfer": {
+      "cat": "D",
+      "fb": "Share Transfer",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:243"
+      ]
+    },
+    "dashboard.freely_transferable": {
+      "cat": "D",
+      "fb": "Freely Transferable",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:244"
+      ]
+    },
+    "dashboard.loi_cta_text": {
+      "cat": "D",
+      "fb": "Ready to become a founding partner? Start by signing the Letter of Intent.",
+      "locations": [
+        "src/pages/dashboard/DashboardShares.jsx:251"
+      ]
+    },
+    "bookings.incoming_title": {
+      "cat": "D",
+      "fb": "Réservations reçues",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:149"
+      ]
+    },
+    "bookings.trips_title": {
+      "cat": "D",
+      "fb": "Mes voyages",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:150"
+      ]
+    },
+    "bookings.incoming_subtitle": {
+      "cat": "D",
+      "fb": "Bookings made on your properties — guest contact, dates, special requests.",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:154"
+      ]
+    },
+    "bookings.trips_subtitle": {
+      "cat": "D",
+      "fb": "Your reservations as a traveler — past and upcoming trips.",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:155"
+      ]
+    },
+    "bookings.tab_trips": {
+      "cat": "D",
+      "fb": "Mes voyages",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:168"
+      ]
+    },
+    "bookings.tab_incoming": {
+      "cat": "D",
+      "fb": "Réservations reçues",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:181"
+      ]
+    },
+    "bookings.upcoming": {
+      "cat": "D",
+      "fb": "Upcoming",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:212"
+      ]
+    },
+    "bookings.past": {
+      "cat": "D",
+      "fb": "Past & Cancelled",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:231"
+      ]
+    },
+    "bookings.no_incoming": {
+      "cat": "D",
+      "fb": "Aucune réservation reçue",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:261"
+      ]
+    },
+    "bookings.no_incoming_desc": {
+      "cat": "D",
+      "fb": "Lorsqu\\'un voyageur réservera dans vos propriétés, ils apparaîtront ici.",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:262"
+      ]
+    },
+    "bookings.manage_properties": {
+      "cat": "D",
+      "fb": "Gérer mes propriétés",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:266"
+      ]
+    },
+    "bookings.no_bookings": {
+      "cat": "D",
+      "fb": "Aucun voyage pour l\\'instant",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:272"
+      ]
+    },
+    "bookings.no_bookings_desc": {
+      "cat": "D",
+      "fb": "Commencez à explorer des hôtels et faites votre première réservation.",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:273"
+      ]
+    },
+    "bookings.browse_hotels": {
+      "cat": "D",
+      "fb": "Parcourir les hôtels",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:277"
+      ]
+    },
+    "bookings.copy_ref": {
+      "cat": "D",
+      "fb": "Click to copy reference",
+      "locations": [
+        "src/pages/dashboard/MyBookings.jsx:318"
+      ]
+    },
+    "manage.packages_title": {
+      "cat": "D",
+      "fb": "Packages",
+      "locations": [
+        "src/pages/dashboard/PackagesTab.jsx:258"
+      ]
+    },
+    "manage.packages_sub": {
+      "cat": "D",
+      "fb": "Craft bundles guests can add at booking — honeymoon, wellness, retreat, diving…",
+      "locations": [
+        "src/pages/dashboard/PackagesTab.jsx:261"
+      ]
+    },
+    "manage.add_package": {
+      "cat": "D",
+      "fb": "Add package",
+      "locations": [
+        "src/pages/dashboard/PackagesTab.jsx:266"
+      ]
+    },
+    "manage.no_packages": {
+      "cat": "D",
+      "fb": "No packages yet. Click \"Add package\" to craft your first one.",
+      "locations": [
+        "src/pages/dashboard/PackagesTab.jsx:289"
+      ]
+    },
+    "pms.no_properties": {
+      "cat": "D",
+      "fb": "No properties to manage",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:316",
+        "src/pages/dashboard/PMSHousekeeping.jsx:76",
+        "src/pages/dashboard/PMSReports.jsx:154"
+      ]
+    },
+    "pms.add_first": {
+      "cat": "D",
+      "fb": "Register your first property to access the PMS.",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:317"
+      ]
+    },
+    "pms.add_property": {
+      "cat": "D",
+      "fb": "Add Property",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:319",
+        "src/pages/dashboard/PMSHousekeeping.jsx:78",
+        "src/pages/dashboard/PMSReports.jsx:156"
+      ]
+    },
+    "pms.front_desk": {
+      "cat": "D",
+      "fb": "Front Desk",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:330"
+      ]
+    },
+    "pms.total_rooms": {
+      "cat": "D",
+      "fb": "Total Rooms",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:349"
+      ]
+    },
+    "pms.occupied": {
+      "cat": "D",
+      "fb": "Occupied",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:353"
+      ]
+    },
+    "pms.available": {
+      "cat": "D",
+      "fb": "Available",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:357"
+      ]
+    },
+    "pms.arriving": {
+      "cat": "D",
+      "fb": "Arriving",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:361"
+      ]
+    },
+    "pms.checking_out": {
+      "cat": "D",
+      "fb": "Checking Out",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:365"
+      ]
+    },
+    "pms.occupancy": {
+      "cat": "D",
+      "fb": "Occupancy Rate",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:372"
+      ]
+    },
+    "pms.no_rooms": {
+      "cat": "D",
+      "fb": "No rooms configured",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:428"
+      ]
+    },
+    "pms.add_rooms_first": {
+      "cat": "D",
+      "fb": "Add rooms in Property Management to use the Front Desk.",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:429"
+      ]
+    },
+    "pms.manage_rooms": {
+      "cat": "D",
+      "fb": "Manage Rooms",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:432"
+      ]
+    },
+    "pms.click_to_manage": {
+      "cat": "D",
+      "fb": "Click to view calendar / check in a guest",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:641"
+      ]
+    },
+    "pms.guests": {
+      "cat": "D",
+      "fb": "guests",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1254"
+      ]
+    },
+    "pms.tab_calendar": {
+      "cat": "D",
+      "fb": "Calendar",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1265"
+      ]
+    },
+    "pms.tab_walkin": {
+      "cat": "D",
+      "fb": "Walk-in check-in",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1268"
+      ]
+    },
+    "pms.err_name": {
+      "cat": "D",
+      "fb": "At least the lead guest first name is required",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1832"
+      ]
+    },
+    "pms.err_dates": {
+      "cat": "D",
+      "fb": "Check-out must be after check-in",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1836"
+      ]
+    },
+    "pms.err_rate": {
+      "cat": "D",
+      "fb": "Rate must be > 0",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1837"
+      ]
+    },
+    "pms.err_conflict": {
+      "cat": "D",
+      "fb": "These dates overlap an existing booking",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1842"
+      ]
+    },
+    "pms.guest_phone": {
+      "cat": "D",
+      "fb": "Lead phone",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1951"
+      ]
+    },
+    "pms.guest_email": {
+      "cat": "D",
+      "fb": "Email (optional)",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1954"
+      ]
+    },
+    "pms.payment_method": {
+      "cat": "D",
+      "fb": "Payment method",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:1961"
+      ]
+    },
+    "pms.check_in_date": {
+      "cat": "D",
+      "fb": "Check-in",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:2004"
+      ]
+    },
+    "pms.check_out_date": {
+      "cat": "D",
+      "fb": "Check-out",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:2009"
+      ]
+    },
+    "pms.adults": {
+      "cat": "D",
+      "fb": "Adults",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:2046"
+      ]
+    },
+    "pms.children": {
+      "cat": "D",
+      "fb": "Children",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:2055"
+      ]
+    },
+    "pms.rate_per_night": {
+      "cat": "D",
+      "fb": "Rate per night (USD)",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:2071"
+      ]
+    },
+    "pms.special_requests": {
+      "cat": "D",
+      "fb": "Special requests (optional)",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:2283"
+      ]
+    },
+    "pms.check_in_now": {
+      "cat": "D",
+      "fb": "Check in now",
+      "locations": [
+        "src/pages/dashboard/PMSFrontDesk.jsx:2331"
+      ]
+    },
+    "pms.housekeeping": {
+      "cat": "D",
+      "fb": "Housekeeping",
+      "locations": [
+        "src/pages/dashboard/PMSHousekeeping.jsx:91"
+      ]
+    },
+    "pms.hk_subtitle": {
+      "cat": "D",
+      "fb": "Manage room cleanliness and readiness",
+      "locations": [
+        "src/pages/dashboard/PMSHousekeeping.jsx:93"
+      ]
+    },
+    "pms.hk_note": {
+      "cat": "D",
+      "fb": "Housekeeping statuses are saved locally for now. Database persistence coming soon.",
+      "locations": [
+        "src/pages/dashboard/PMSHousekeeping.jsx:180"
+      ]
+    },
+    "pms.reports": {
+      "cat": "D",
+      "fb": "Reports & Analytics",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:169"
+      ]
+    },
+    "pms.reports_subtitle": {
+      "cat": "D",
+      "fb": "Key performance metrics for your properties",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:171"
+      ]
+    },
+    "pms.all_properties": {
+      "cat": "D",
+      "fb": "All Properties",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:178"
+      ]
+    },
+    "pms.total_revenue": {
+      "cat": "D",
+      "fb": "Total Revenue",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:204"
+      ]
+    },
+    "pms.occupancy_rate": {
+      "cat": "D",
+      "fb": "Occupancy Rate",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:209"
+      ]
+    },
+    "pms.adr_desc": {
+      "cat": "D",
+      "fb": "Average Daily Rate",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:216"
+      ]
+    },
+    "pms.revpar_desc": {
+      "cat": "D",
+      "fb": "Revenue per Available Room",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:220"
+      ]
+    },
+    "pms.total_bookings": {
+      "cat": "D",
+      "fb": "Total Bookings",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:226"
+      ]
+    },
+    "pms.avg_stay": {
+      "cat": "D",
+      "fb": "Avg. Stay Length",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:229"
+      ]
+    },
+    "pms.properties_count": {
+      "cat": "D",
+      "fb": "Properties",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:232"
+      ]
+    },
+    "pms.commission": {
+      "cat": "D",
+      "fb": "STAYLO Commission (10%)",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:235"
+      ]
+    },
+    "pms.commission_note": {
+      "cat": "D",
+      "fb": "vs. $",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:237"
+      ]
+    },
+    "pms.revenue_trend": {
+      "cat": "D",
+      "fb": "Revenue Trend (Last 6 Months)",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:242"
+      ]
+    },
+    "pms.property_breakdown": {
+      "cat": "D",
+      "fb": "Revenue by Property",
+      "locations": [
+        "src/pages/dashboard/PMSReports.jsx:264"
+      ]
+    },
+    "manage.team_title": {
+      "cat": "D",
+      "fb": "Team & permissions",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:493"
+      ]
+    },
+    "manage.team_subtitle": {
+      "cat": "D",
+      "fb": "Add staff or co-managers to help run this property. They need a STAYLO account first.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:496"
+      ]
+    },
+    "manage.settings_title": {
+      "cat": "D",
+      "fb": "Property settings",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:806"
+      ]
+    },
+    "manage.settings_subtitle": {
+      "cat": "D",
+      "fb": "General property info that may change over time. Save commits everything at once.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:809"
+      ]
+    },
+    "manage.locked_title": {
+      "cat": "D",
+      "fb": "Property settings are locked",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:821"
+      ]
+    },
+    "manage.locked_desc": {
+      "cat": "D",
+      "fb": "Your property has been verified by STAYLO. Legal info (name, address, contact details, policies) is now read-only. ",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:824"
+      ]
+    },
+    "manage.property_name": {
+      "cat": "D",
+      "fb": "Property name",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:837"
+      ]
+    },
+    "manage.min_age": {
+      "cat": "D",
+      "fb": "Minimum age",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:932"
+      ]
+    },
+    "manage.locked_button": {
+      "cat": "D",
+      "fb": "Locked — contact admin",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:958"
+      ]
+    },
+    "manage.saving": {
+      "cat": "D",
+      "fb": "Saving…",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:959"
+      ]
+    },
+    "manage.videos_title": {
+      "cat": "D",
+      "fb": "Videos",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1103"
+      ]
+    },
+    "manage.videos_subtitle": {
+      "cat": "D",
+      "fb": "Up to 2 short videos. The first is shown as the hero on your property page. Keep them under 60 seconds for best engagement.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1106"
+      ]
+    },
+    "manage.uploading": {
+      "cat": "D",
+      "fb": "Uploading",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1117",
+        "src/pages/dashboard/PropertyManage.jsx:1339"
+      ]
+    },
+    "manage.upload_videos": {
+      "cat": "D",
+      "fb": "Upload video",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1118"
+      ]
+    },
+    "manage.no_videos_title": {
+      "cat": "D",
+      "fb": "No videos yet",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1150"
+      ]
+    },
+    "manage.no_videos_desc": {
+      "cat": "D",
+      "fb": "Properties with video get up to 80% more booking enquiries. Show your rooms, common areas, and the vibe in one short clip.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1153"
+      ]
+    },
+    "manage.videos_count": {
+      "cat": "D",
+      "fb": "videos",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1197"
+      ]
+    },
+    "manage.photos_title": {
+      "cat": "D",
+      "fb": "Photos",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1326"
+      ]
+    },
+    "manage.photos_subtitle": {
+      "cat": "D",
+      "fb": "The first photo is the cover image shown on search results. Drag-to-reorder coming soon.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1329"
+      ]
+    },
+    "manage.upload_photos": {
+      "cat": "D",
+      "fb": "Upload photos",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1340"
+      ]
+    },
+    "manage.no_photos_title": {
+      "cat": "D",
+      "fb": "No photos yet",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1365"
+      ]
+    },
+    "manage.no_photos_desc": {
+      "cat": "D",
+      "fb": "Properties without photos cannot go live. Upload at least 3 high-quality images of your rooms, common areas, and views.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1368"
+      ]
+    },
+    "manage.photos_count": {
+      "cat": "D",
+      "fb": "photos",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1411"
+      ]
+    },
+    "manage.photos_warning": {
+      "cat": "D",
+      "fb": "Add at least 3 photos before going live",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1414"
+      ]
+    },
+    "manage.copy_from": {
+      "cat": "D",
+      "fb": "Copy from an existing room",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1949"
+      ]
+    },
+    "manage.copy_from_hint": {
+      "cat": "D",
+      "fb": "optional, pre-fills everything",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1950"
+      ]
+    },
+    "manage.copy_from_none": {
+      "cat": "D",
+      "fb": "Start blank",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:1957"
+      ]
+    },
+    "manage.pricing_unit": {
+      "cat": "D",
+      "fb": "Pricing model",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2008"
+      ]
+    },
+    "manage.people_per_bed": {
+      "cat": "D",
+      "fb": "People per bed",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2040"
+      ]
+    },
+    "manage.price_default_hint": {
+      "cat": "D",
+      "fb": "This is what the guest pays. You can override it per day in the Availability tab.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2057"
+      ]
+    },
+    "manage.net_received": {
+      "cat": "D",
+      "fb": "Net you receive",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2068"
+      ]
+    },
+    "manage.after_commission": {
+      "cat": "D",
+      "fb": "after 10% STAYLO commission",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2068"
+      ]
+    },
+    "manage.night": {
+      "cat": "D",
+      "fb": "night",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2071"
+      ]
+    },
+    "manage.communicating_rooms": {
+      "cat": "D",
+      "fb": "Communicating rooms available",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2097"
+      ]
+    },
+    "manage.communicating_rooms_hint": {
+      "cat": "D",
+      "fb": "At least one pair of this room type connects through an internal door",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2100"
+      ]
+    },
+    "manage.communicating_with": {
+      "cat": "D",
+      "fb": "Connects with which room type?",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2106"
+      ]
+    },
+    "manage.extra_bed_offer": {
+      "cat": "D",
+      "fb": "Offer extra beds for children",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2131"
+      ]
+    },
+    "manage.extra_bed_hint": {
+      "cat": "D",
+      "fb": "Roll-away bed billed per night, kids only",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2134"
+      ]
+    },
+    "manage.extra_bed_max_qty": {
+      "cat": "D",
+      "fb": "Max extra beds",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2141"
+      ]
+    },
+    "manage.extra_bed_price": {
+      "cat": "D",
+      "fb": "Price/night (USD)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2149"
+      ]
+    },
+    "manage.extra_bed_max_age": {
+      "cat": "D",
+      "fb": "Max child age",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2158"
+      ]
+    },
+    "manage.extra_bed_adults": {
+      "cat": "D",
+      "fb": "Allow adults on the extra bed too",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2177"
+      ]
+    },
+    "manage.extra_bed_adults_hint": {
+      "cat": "D",
+      "fb": "For last-minute friends, OR a companion of a guest with reduced mobility (caregiver, accessibility helper). When checked, the age limit above becomes informational.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2180"
+      ]
+    },
+    "manage.unit_numbers_title": {
+      "cat": "D",
+      "fb": "Physical unit numbers",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2191"
+      ]
+    },
+    "manage.unit_numbers_hint": {
+      "cat": "D",
+      "fb": "Optional. Receptionists pick from this pool when assigning bookings.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2193"
+      ]
+    },
+    "manage.unit_numbers_desc": {
+      "cat": "D",
+      "fb": "Paste all unit numbers separated by commas or new lines. e.g. t.03, t.04, t.12, t.32 — for a Junior Suite type with quantity 4.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2197"
+      ]
+    },
+    "manage.long_stay_title": {
+      "cat": "D",
+      "fb": "Long-stay rates",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2245"
+      ]
+    },
+    "manage.long_stay_hint": {
+      "cat": "D",
+      "fb": "Optional. Catches digital nomads + monthly travellers.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2247"
+      ]
+    },
+    "manage.long_stay_desc": {
+      "cat": "D",
+      "fb": "Set a monthly rate for stays of ≥ N nights. STAYLO auto-applies the better of (daily × nights) vs (monthly_rate × nights / 30) — guests with long stays pay less, you fill the room.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2251"
+      ]
+    },
+    "manage.monthly_rate": {
+      "cat": "D",
+      "fb": "Monthly rate (USD per 30 nights)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2257"
+      ]
+    },
+    "manage.monthly_rate_eg": {
+      "cat": "D",
+      "fb": "e.g. 600 (= $20/night)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2261"
+      ]
+    },
+    "manage.monthly_min_nights": {
+      "cat": "D",
+      "fb": "Triggered at (nights)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2266"
+      ]
+    },
+    "manage.weekly_discount": {
+      "cat": "D",
+      "fb": "Weekly discount (%)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2274"
+      ]
+    },
+    "manage.weekly_min_nights": {
+      "cat": "D",
+      "fb": "Weekly triggered at (nights)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2283"
+      ]
+    },
+    "manage.hourly_title": {
+      "cat": "D",
+      "fb": "Hourly / day-use rental",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2301"
+      ]
+    },
+    "manage.hourly_hint": {
+      "cat": "D",
+      "fb": "Optional. Day-use guests, layovers, short stays.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2303"
+      ]
+    },
+    "manage.hourly_desc": {
+      "cat": "D",
+      "fb": "Set a flat per-hour price (and/or a half-day block rate). When a guest books for fewer hours than your day-use cap, the cheaper of (hourly × hours) vs day_use_rate wins automatically.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2307"
+      ]
+    },
+    "manage.hourly_rate": {
+      "cat": "D",
+      "fb": "Hourly rate (USD)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2313"
+      ]
+    },
+    "manage.hourly_rate_eg": {
+      "cat": "D",
+      "fb": "e.g. 8 ($/hour)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2317"
+      ]
+    },
+    "manage.hourly_min": {
+      "cat": "D",
+      "fb": "Min h",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2323"
+      ]
+    },
+    "manage.hourly_max": {
+      "cat": "D",
+      "fb": "Max h",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2331"
+      ]
+    },
+    "manage.day_use_rate": {
+      "cat": "D",
+      "fb": "Day-use flat (USD)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2340"
+      ]
+    },
+    "manage.day_use_rate_eg": {
+      "cat": "D",
+      "fb": "e.g. 35 (covers up to 6h)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2344"
+      ]
+    },
+    "manage.day_use_max_hours": {
+      "cat": "D",
+      "fb": "Day-use covers (hours)",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2349"
+      ]
+    },
+    "manage.linked_packages_title": {
+      "cat": "D",
+      "fb": "Linked packages",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2367"
+      ]
+    },
+    "manage.linked_packages_desc": {
+      "cat": "D",
+      "fb": "Tick any package to bundle it with this room. Qty defaults to the room capacity (1 unit per guest); change it manually for couple-only or family-only packages.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2373"
+      ]
+    },
+    "manage.media_after_save": {
+      "cat": "D",
+      "fb": "Save the room first, then re-open it to upload photos and videos for this specific room type.",
+      "locations": [
+        "src/pages/dashboard/PropertyManage.jsx:2558"
+      ]
+    },
+    "dashboard.call_confirmed_title": {
+      "cat": "D",
+      "fb": "We\\'ll be in touch!",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:50"
+      ]
+    },
+    "dashboard.call_confirmed_desc": {
+      "cat": "D",
+      "fb": "A member of the Staylo team will contact you via",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:52"
+      ]
+    },
+    "dashboard.call_asap_note": {
+      "cat": "D",
+      "fb": "We\\'ll try to reach you within the next 30 minutes!",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:55"
+      ]
+    },
+    "dashboard.call_time_note": {
+      "cat": "D",
+      "fb": "Preferred time:",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:58"
+      ]
+    },
+    "dashboard.call_title": {
+      "cat": "D",
+      "fb": "Welcome! Let\\'s meet.",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:69"
+      ]
+    },
+    "dashboard.call_subtitle": {
+      "cat": "D",
+      "fb": "To finalize your registration, we\\'d love to have a quick welcome call with you. How would you prefer to be contacted?",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:72"
+      ]
+    },
+    "dashboard.call_email_label": {
+      "cat": "D",
+      "fb": "Your email for the invite",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:105"
+      ]
+    },
+    "dashboard.call_number_label": {
+      "cat": "D",
+      "fb": "Your phone number or ID",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:106"
+      ]
+    },
+    "dashboard.call_time_label": {
+      "cat": "D",
+      "fb": "Preferred time",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:113"
+      ]
+    },
+    "dashboard.call_time_placeholder": {
+      "cat": "D",
+      "fb": "e.g. 2pm, morning, afternoon...",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:114"
+      ]
+    },
+    "dashboard.call_submit": {
+      "cat": "D",
+      "fb": "Request a call",
+      "locations": [
+        "src/pages/dashboard/WelcomeCall.jsx:130"
+      ]
+    },
+    "dashboard.stat_properties": {
+      "cat": "D",
+      "fb": "My Properties",
+      "locations": [
+        "src/pages/Dashboard.jsx:259"
+      ]
+    },
+    "dashboard.stat_hotels_referred": {
+      "cat": "D",
+      "fb": "Hotels Referred",
+      "locations": [
+        "src/pages/Dashboard.jsx:264"
+      ]
+    },
+    "dashboard.stat_referred_hoteliers": {
+      "cat": "D",
+      "fb": "Hoteliers I referred",
+      "locations": [
+        "src/pages/Dashboard.jsx:269"
+      ]
+    },
+    "dashboard.stat_monthly_revenue": {
+      "cat": "D",
+      "fb": "Revenue this month",
+      "locations": [
+        "src/pages/Dashboard.jsx:274"
+      ]
+    },
+    "dashboard.qr_desc_short": {
+      "cat": "D",
+      "fb": "Print it, show it — anyone who scans is linked to you forever.",
+      "locations": [
+        "src/pages/Dashboard.jsx:495"
+      ]
+    },
+    "dashboard.calc_hint": {
+      "cat": "D",
+      "fb": "Tap any number to edit and see your savings update live.",
+      "locations": [
+        "src/pages/Dashboard.jsx:535"
+      ]
+    },
+    "dashboard.calc_reset": {
+      "cat": "D",
+      "fb": "Reset to my data",
+      "locations": [
+        "src/pages/Dashboard.jsx:541"
+      ]
+    },
+    "dashboard.calc_rooms": {
+      "cat": "D",
+      "fb": "Total rooms",
+      "locations": [
+        "src/pages/Dashboard.jsx:549"
+      ]
+    },
+    "dashboard.calc_rate": {
+      "cat": "D",
+      "fb": "Avg. nightly rate",
+      "locations": [
+        "src/pages/Dashboard.jsx:555"
+      ]
+    },
+    "dashboard.calc_occupancy": {
+      "cat": "D",
+      "fb": "Avg. occupancy",
+      "locations": [
+        "src/pages/Dashboard.jsx:561"
+      ]
+    },
+    "dashboard.calc_annual_revenue": {
+      "cat": "D",
+      "fb": "Est. annual booking revenue",
+      "locations": [
+        "src/pages/Dashboard.jsx:571"
+      ]
+    },
+    "dashboard.calc_ota_commission": {
+      "cat": "D",
+      "fb": "OTA commission (~17%)",
+      "locations": [
+        "src/pages/Dashboard.jsx:576"
+      ]
+    },
+    "dashboard.calc_staylo_commission": {
+      "cat": "D",
+      "fb": "Staylo commission (10%)",
+      "locations": [
+        "src/pages/Dashboard.jsx:580"
+      ]
+    },
+    "dashboard.calc_you_save": {
+      "cat": "D",
+      "fb": "You save",
+      "locations": [
+        "src/pages/Dashboard.jsx:587"
+      ]
+    },
+    "dashboard.calc_explanation": {
+      "cat": "D",
+      "fb": "Difference between 17% OTA and 10% Staylo commission on your estimated bookings",
+      "locations": [
+        "src/pages/Dashboard.jsx:592"
+      ]
+    },
+    "auth.invalid_credentials": {
+      "cat": "D",
+      "fb": "Invalid email or password",
+      "locations": [
+        "src/pages/Login.jsx:32"
+      ]
+    },
+    "loi.ambassador_clause_title": {
+      "cat": "D",
+      "fb": "Ambassador Recruitment Program",
+      "locations": [
+        "src/pages/LOI.jsx:170"
+      ]
+    },
+    "loi.ambassador_clause_intro": {
+      "cat": "D",
+      "fb": "As a Founding Partner, you agree to participate in the Staylo Ambassador recruitment program. This is a core part of our growth strategy and your partnership.",
+      "locations": [
+        "src/pages/LOI.jsx:173"
+      ]
+    },
+    "loi.ambassador_clause_step1_title": {
+      "cat": "D",
+      "fb": "Personalized Welcome Kit",
+      "locations": [
+        "src/pages/LOI.jsx:182"
+      ]
+    },
+    "loi.ambassador_clause_step1_desc": {
+      "cat": "D",
+      "fb": "You receive a free branded kit with your unique QR code: reception stand, room cards, WiFi cards, window sticker, and founding partner certificate.",
+      "locations": [
+        "src/pages/LOI.jsx:183"
+      ]
+    },
+    "loi.ambassador_clause_step2_title": {
+      "cat": "D",
+      "fb": "QR Code on All Guest Touchpoints",
+      "locations": [
+        "src/pages/LOI.jsx:192"
+      ]
+    },
+    "loi.ambassador_clause_step2_desc": {
+      "cat": "D",
+      "fb": "Your personalized QR code is displayed at check-out, in rooms, on invoices, and on WiFi cards. Guests scan it to discover Staylo.",
+      "locations": [
+        "src/pages/LOI.jsx:193"
+      ]
+    },
+    "loi.ambassador_clause_step3_title": {
+      "cat": "D",
+      "fb": "Guest Becomes Ambassador",
+      "locations": [
+        "src/pages/LOI.jsx:202"
+      ]
+    },
+    "loi.ambassador_clause_step3_desc": {
+      "cat": "D",
+      "fb": "When a guest scans your QR, they get 1 free night on their first Staylo booking. If they recommend a hotel that joins, they earn 2% for life — and you helped grow the network.",
+      "locations": [
+        "src/pages/LOI.jsx:203"
+      ]
+    },
+    "loi.ambassador_clause_step4_title": {
+      "cat": "D",
+      "fb": "Kit Refills at Cost",
+      "locations": [
+        "src/pages/LOI.jsx:212"
+      ]
+    },
+    "loi.ambassador_clause_step4_desc": {
+      "cat": "D",
+      "fb": "Replacement kits are available at cost via your dashboard. Print-on-demand, shipped locally — no stock needed.",
+      "locations": [
+        "src/pages/LOI.jsx:213"
+      ]
+    },
+    "loi.ambassador_clause_legal": {
+      "cat": "D",
+      "fb": "By signing this LOI, you acknowledge that displaying the Staylo QR code at guest touchpoints is part of the founding partner agreement. This helps grow the platform organically and increases the value of your shares. The first personalized kit is provided free of charge.",
+      "locations": [
+        "src/pages/LOI.jsx:220"
+      ]
+    },
+    "checkout.signin_required": {
+      "cat": "D",
+      "fb": "Sign in to book",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:165"
+      ]
+    },
+    "checkout.signin_desc": {
+      "cat": "D",
+      "fb": "You need an account to complete your reservation.",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:166"
+      ]
+    },
+    "checkout.crypto_failed": {
+      "cat": "D",
+      "fb": "Could not create Lightning invoice",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:344"
+      ]
+    },
+    "checkout.crypto_no_invoice": {
+      "cat": "D",
+      "fb": "Lightning invoice missing — please retry",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:346"
+      ]
+    },
+    "checkout.err_hotelier_not_onboarded": {
+      "cat": "D",
+      "fb": "The hotelier has not yet linked a payout account. Please try again later or contact support.",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:378"
+      ]
+    },
+    "checkout.err_hotelier_inactive": {
+      "cat": "D",
+      "fb": "The hotelier\\'s payment account is not fully active yet. Your booking is on hold — please retry shortly.",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:381"
+      ]
+    },
+    "checkout.no_url": {
+      "cat": "D",
+      "fb": "Payment session could not be created. Please retry.",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:395"
+      ]
+    },
+    "checkout.your_reference": {
+      "cat": "D",
+      "fb": "Your booking reference",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:426"
+      ]
+    },
+    "checkout.click_to_copy": {
+      "cat": "D",
+      "fb": "Click to copy",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:431"
+      ]
+    },
+    "checkout.ref_note": {
+      "cat": "D",
+      "fb": "Use this reference in any correspondence with the hotel or STAYLO.",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:437"
+      ]
+    },
+    "checkout.staylo_commission": {
+      "cat": "D",
+      "fb": "STAYLO commission (10%)",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:627"
+      ]
+    },
+    "checkout.hotelier_receives": {
+      "cat": "D",
+      "fb": "Hotelier receives",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:631"
+      ]
+    },
+    "checkout.payment_method": {
+      "cat": "D",
+      "fb": "Payment method",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:638"
+      ]
+    },
+    "checkout.coming_soon": {
+      "cat": "D",
+      "fb": "Soon",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:668"
+      ]
+    },
+    "checkout.free": {
+      "cat": "D",
+      "fb": "Free",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:672"
+      ]
+    },
+    "checkout.processing_fee": {
+      "cat": "D",
+      "fb": "Processing fee",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:683"
+      ]
+    },
+    "checkout.total_you_pay": {
+      "cat": "D",
+      "fb": "You pay",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:690"
+      ]
+    },
+    "checkout.transparency_note": {
+      "cat": "D",
+      "fb": "STAYLO never marks up the room price. The processing fee covers payment gateway costs only — pay with Lightning to skip it entirely.",
+      "locations": [
+        "src/pages/ota/Checkout.jsx:696"
+      ]
+    },
+    "booking.back": {
+      "cat": "D",
+      "fb": "Back to results",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:325"
+      ]
+    },
+    "booking.show_map": {
+      "cat": "D",
+      "fb": "Show on map",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:462"
+      ]
+    },
+    "booking.amenities": {
+      "cat": "D",
+      "fb": "All amenities",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:494"
+      ]
+    },
+    "booking.amenities_collapse": {
+      "cat": "D",
+      "fb": "Show less",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:513"
+      ]
+    },
+    "booking.select_room": {
+      "cat": "D",
+      "fb": "Select your room",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:522"
+      ]
+    },
+    "booking.no_rooms": {
+      "cat": "D",
+      "fb": "No rooms available",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:531"
+      ]
+    },
+    "booking.try_dates": {
+      "cat": "D",
+      "fb": "Try different dates or a smaller group.",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:532"
+      ]
+    },
+    "booking.best_value": {
+      "cat": "D",
+      "fb": "Best value",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:555"
+      ]
+    },
+    "booking.dorm_capacity": {
+      "cat": "D",
+      "fb": "Dorm room",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:676"
+      ]
+    },
+    "booking.free_cancel": {
+      "cat": "D",
+      "fb": "Free cancellation",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:705"
+      ]
+    },
+    "booking.escrow_short": {
+      "cat": "D",
+      "fb": "Held in escrow",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:706"
+      ]
+    },
+    "booking.before_pay_fees": {
+      "cat": "D",
+      "fb": "+ payment fees at checkout",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:721"
+      ]
+    },
+    "booking.select": {
+      "cat": "D",
+      "fb": "Select",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:780"
+      ]
+    },
+    "booking.add_package": {
+      "cat": "D",
+      "fb": "Add a package?",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:792"
+      ]
+    },
+    "booking.guest_reviews": {
+      "cat": "D",
+      "fb": "Guest reviews",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:870"
+      ]
+    },
+    "booking.check_avail": {
+      "cat": "D",
+      "fb": "Check availability",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:939"
+      ]
+    },
+    "booking.too_many_guests": {
+      "cat": "D",
+      "fb": "This room sleeps up to",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1052"
+      ]
+    },
+    "booking.extra_bed_kid": {
+      "cat": "D",
+      "fb": "extra bed for child ≤",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1056"
+      ]
+    },
+    "booking.guests_lower": {
+      "cat": "D",
+      "fb": "guests. Please reduce the count or pick a larger room.",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1058"
+      ]
+    },
+    "booking.subtotal": {
+      "cat": "D",
+      "fb": "Subtotal",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1178"
+      ]
+    },
+    "booking.fees_at_checkout": {
+      "cat": "D",
+      "fb": "Payment processing fees added at checkout (free with Bitcoin Lightning).",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1182"
+      ]
+    },
+    "booking.select_room_first": {
+      "cat": "D",
+      "fb": "Select a room to book",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1203"
+      ]
+    },
+    "booking.too_many_guests_short": {
+      "cat": "D",
+      "fb": "Too many guests for this room",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1207"
+      ]
+    },
+    "booking.reserve_now": {
+      "cat": "D",
+      "fb": "Reserve Now",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1208"
+      ]
+    },
+    "booking.no_charge": {
+      "cat": "D",
+      "fb": "You won't be charged yet",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1211"
+      ]
+    },
+    "booking.badge_cancel": {
+      "cat": "D",
+      "fb": "Free cancellation before check-in",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1217"
+      ]
+    },
+    "booking.badge_escrow": {
+      "cat": "D",
+      "fb": "Funds held safely until check-out",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1221"
+      ]
+    },
+    "booking.badge_verified": {
+      "cat": "D",
+      "fb": "STAYLO verified property",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1225"
+      ]
+    },
+    "booking.need_help": {
+      "cat": "D",
+      "fb": "Need help with your booking?",
+      "locations": [
+        "src/pages/ota/PropertyDetail.jsx:1232"
+      ]
+    },
+    "booking.slogan": {
+      "cat": "D",
+      "fb": "Owned by Hoteliers, Built for Hospitality",
+      "locations": [
+        "src/pages/ota/Search.jsx:200"
+      ]
+    },
+    "booking.hero_title": {
+      "cat": "D",
+      "fb": "Find deals on hotels, resorts & more",
+      "locations": [
+        "src/pages/ota/Search.jsx:203"
+      ]
+    },
+    "booking.hero_subtitle": {
+      "cat": "D",
+      "fb": "Book directly with hoteliers — save up to 20% vs. other platforms",
+      "locations": [
+        "src/pages/ota/Search.jsx:206"
+      ]
+    },
+    "booking.where": {
+      "cat": "D",
+      "fb": "Where are you going?",
+      "locations": [
+        "src/pages/ota/Search.jsx:218"
+      ]
+    },
+    "booking.search": {
+      "cat": "D",
+      "fb": "Search",
+      "locations": [
+        "src/pages/ota/Search.jsx:264"
+      ]
+    },
+    "booking.tagline_highlight": {
+      "cat": "D",
+      "fb": "You are not just a partner — you are the platform.",
+      "locations": [
+        "src/pages/ota/Search.jsx:272"
+      ]
+    },
+    "booking.tagline_body": {
+      "cat": "D",
+      "fb": "STAYLO is the only booking platform owned and run by hoteliers.",
+      "locations": [
+        "src/pages/ota/Search.jsx:274"
+      ]
+    },
+    "booking.tagline_cta": {
+      "cat": "D",
+      "fb": "Book, share, earn — build ethical passive income while growing a community that puts hospitality first.",
+      "locations": [
+        "src/pages/ota/Search.jsx:276"
+      ]
+    },
+    "booking.popular_destinations": {
+      "cat": "D",
+      "fb": "Popular Destinations in Thailand",
+      "locations": [
+        "src/pages/ota/Search.jsx:288"
+      ]
+    },
+    "booking.explore_desc": {
+      "cat": "D",
+      "fb": "Explore our most booked cities by fellow travelers",
+      "locations": [
+        "src/pages/ota/Search.jsx:291"
+      ]
+    },
+    "booking.properties": {
+      "cat": "D",
+      "fb": "properties",
+      "locations": [
+        "src/pages/ota/Search.jsx:306"
+      ]
+    },
+    "booking.browse_all": {
+      "cat": "D",
+      "fb": "Browse All Properties",
+      "locations": [
+        "src/pages/ota/Search.jsx:328"
+      ]
+    },
+    "booking.properties_found": {
+      "cat": "D",
+      "fb": "properties found",
+      "locations": [
+        "src/pages/ota/Search.jsx:342",
+        "src/pages/ota/Search.jsx:343"
+      ]
+    },
+    "booking.adult": {
+      "cat": "D",
+      "fb": "adult",
+      "locations": [
+        "src/pages/ota/Search.jsx:346",
+        "src/pages/ota/Search.jsx:627"
+      ]
+    },
+    "booking.adults": {
+      "cat": "D",
+      "fb": "adults",
+      "locations": [
+        "src/pages/ota/Search.jsx:346",
+        "src/pages/ota/Search.jsx:627"
+      ]
+    },
+    "booking.child": {
+      "cat": "D",
+      "fb": "child",
+      "locations": [
+        "src/pages/ota/Search.jsx:346",
+        "src/pages/ota/Search.jsx:627"
+      ]
+    },
+    "booking.children": {
+      "cat": "D",
+      "fb": "children",
+      "locations": [
+        "src/pages/ota/Search.jsx:346",
+        "src/pages/ota/Search.jsx:627"
+      ]
+    },
+    "booking.sort_recommended": {
+      "cat": "D",
+      "fb": "Recommended",
+      "locations": [
+        "src/pages/ota/Search.jsx:367"
+      ]
+    },
+    "booking.sort_price_low": {
+      "cat": "D",
+      "fb": "Price: Low → High",
+      "locations": [
+        "src/pages/ota/Search.jsx:368"
+      ]
+    },
+    "booking.sort_price_high": {
+      "cat": "D",
+      "fb": "Price: High → Low",
+      "locations": [
+        "src/pages/ota/Search.jsx:369"
+      ]
+    },
+    "booking.sort_savings": {
+      "cat": "D",
+      "fb": "Biggest Savings",
+      "locations": [
+        "src/pages/ota/Search.jsx:371"
+      ]
+    },
+    "booking.flagship": {
+      "cat": "D",
+      "fb": "Flagship Property — Where It All Began",
+      "locations": [
+        "src/pages/ota/Search.jsx:415"
+      ]
+    },
+    "booking.staylo_hq": {
+      "cat": "D",
+      "fb": "STAYLO HQ",
+      "locations": [
+        "src/pages/ota/Search.jsx:457"
+      ]
+    },
+    "booking.beachfront": {
+      "cat": "D",
+      "fb": "Beachfront",
+      "locations": [
+        "src/pages/ota/Search.jsx:464"
+      ]
+    },
+    "booking.exclusive": {
+      "cat": "D",
+      "fb": "STAYLO Exclusive — No OTA markup",
+      "locations": [
+        "src/pages/ota/Search.jsx:504"
+      ]
+    },
+    "booking.save_with_staylo": {
+      "cat": "D",
+      "fb": "STAYLO Price",
+      "locations": [
+        "src/pages/ota/Search.jsx:615"
+      ]
+    },
+    "booking.popular": {
+      "cat": "D",
+      "fb": "Popular",
+      "locations": [
+        "src/pages/ota/Search.jsx:620"
+      ]
+    },
+    "booking.you_save": {
+      "cat": "D",
+      "fb": "You save",
+      "locations": [
+        "src/pages/ota/Search.jsx:636"
+      ]
+    },
+    "booking.secure": {
+      "cat": "D",
+      "fb": "Secure booking",
+      "locations": [
+        "src/pages/ota/Search.jsx:656"
+      ]
+    },
+    "booking.verified": {
+      "cat": "D",
+      "fb": "Verified properties",
+      "locations": [
+        "src/pages/ota/Search.jsx:657"
+      ]
+    },
+    "booking.support": {
+      "cat": "D",
+      "fb": "24/7 support",
+      "locations": [
+        "src/pages/ota/Search.jsx:658"
+      ]
+    },
+    "booking.commission_note": {
+      "cat": "D",
+      "fb": "10% commission only — the lowest in the industry",
+      "locations": [
+        "src/pages/ota/Search.jsx:659"
+      ]
+    },
+    "reset.error_min": {
+      "cat": "D",
+      "fb": "Password must be at least 8 characters",
+      "locations": [
+        "src/pages/ResetPassword.jsx:25"
+      ]
+    },
+    "reset.error_match": {
+      "cat": "D",
+      "fb": "Passwords do not match",
+      "locations": [
+        "src/pages/ResetPassword.jsx:30"
+      ]
+    },
+    "reset.success_title": {
+      "cat": "D",
+      "fb": "Password updated!",
+      "locations": [
+        "src/pages/ResetPassword.jsx:53"
+      ]
+    },
+    "reset.success_msg": {
+      "cat": "D",
+      "fb": "Redirecting to your dashboard...",
+      "locations": [
+        "src/pages/ResetPassword.jsx:56"
+      ]
+    },
+    "reset.title": {
+      "cat": "D",
+      "fb": "Create new password",
+      "locations": [
+        "src/pages/ResetPassword.jsx:70"
+      ]
+    },
+    "reset.subtitle": {
+      "cat": "D",
+      "fb": "Enter your new password below",
+      "locations": [
+        "src/pages/ResetPassword.jsx:73"
+      ]
+    },
+    "reset.new_password": {
+      "cat": "D",
+      "fb": "New password",
+      "locations": [
+        "src/pages/ResetPassword.jsx:86"
+      ]
+    },
+    "reset.password_placeholder": {
+      "cat": "D",
+      "fb": "Min. 8 characters",
+      "locations": [
+        "src/pages/ResetPassword.jsx:93"
+      ]
+    },
+    "reset.confirm_password": {
+      "cat": "D",
+      "fb": "Confirm password",
+      "locations": [
+        "src/pages/ResetPassword.jsx:108"
+      ]
+    },
+    "reset.confirm_placeholder": {
+      "cat": "D",
+      "fb": "Type password again",
+      "locations": [
+        "src/pages/ResetPassword.jsx:114"
+      ]
+    },
+    "reset.submit": {
+      "cat": "D",
+      "fb": "Update password",
+      "locations": [
+        "src/pages/ResetPassword.jsx:122"
+      ]
+    },
+    "property.error": {
+      "cat": "D",
+      "fb": "Registration failed. Please check all required fields and try again.",
+      "locations": [
+        "src/pages/Submit.jsx:392"
+      ]
+    },
+    "survey.savings_label": {
+      "cat": "D",
+      "fb": "Your estimated annual savings",
+      "locations": [
+        "src/pages/Survey.jsx:160",
+        "src/pages/SurveyHotelier.jsx:203",
+        "src/pages/SurveyHotelier.jsx:257"
+      ]
+    },
+    "survey.savings_detail": {
+      "cat": "D",
+      "fb": "by switching to Staylo (10% vs 17%)",
+      "locations": [
+        "src/pages/Survey.jsx:162",
+        "src/pages/SurveyHotelier.jsx:259"
+      ]
+    },
+    "survey.step1_title": {
+      "cat": "D",
+      "fb": "How much do you pay in OTA commissions per month?",
+      "locations": [
+        "src/pages/Survey.jsx:210",
+        "src/pages/SurveyHotelier.jsx:191",
+        "src/pages/SurveyHotelier.jsx:307"
+      ]
+    },
+    "survey.step1_subtitle": {
+      "cat": "D",
+      "fb": "Estimate your total monthly payment to Agoda, Booking.com, etc.",
+      "locations": [
+        "src/pages/Survey.jsx:213",
+        "src/pages/SurveyHotelier.jsx:310"
+      ]
+    },
+    "survey.per_month": {
+      "cat": "D",
+      "fb": "month",
+      "locations": [
+        "src/pages/Survey.jsx:217",
+        "src/pages/Survey.jsx:347",
+        "src/pages/SurveyHotelier.jsx:314",
+        "src/pages/SurveyHotelier.jsx:444"
+      ]
+    },
+    "survey.annual_leaving": {
+      "cat": "D",
+      "fb": "That's",
+      "locations": [
+        "src/pages/Survey.jsx:236",
+        "src/pages/SurveyHotelier.jsx:333"
+      ]
+    },
+    "survey.annual_leaving_suffix": {
+      "cat": "D",
+      "fb": "per year leaving your business.",
+      "locations": [
+        "src/pages/Survey.jsx:236",
+        "src/pages/SurveyHotelier.jsx:333"
+      ]
+    },
+    "survey.step2_title": {
+      "cat": "D",
+      "fb": "What % of your bookings come through OTAs?",
+      "locations": [
+        "src/pages/Survey.jsx:249",
+        "src/pages/SurveyHotelier.jsx:195",
+        "src/pages/SurveyHotelier.jsx:346"
+      ]
+    },
+    "survey.step2_subtitle": {
+      "cat": "D",
+      "fb": "How dependent are you on platforms like Agoda or Booking.com?",
+      "locations": [
+        "src/pages/Survey.jsx:252",
+        "src/pages/SurveyHotelier.jsx:349"
+      ]
+    },
+    "survey.dep_low": {
+      "cat": "D",
+      "fb": "Mostly direct",
+      "locations": [
+        "src/pages/Survey.jsx:269",
+        "src/pages/SurveyHotelier.jsx:366"
+      ]
+    },
+    "survey.dep_mid": {
+      "cat": "D",
+      "fb": "Balanced mix",
+      "locations": [
+        "src/pages/Survey.jsx:270",
+        "src/pages/SurveyHotelier.jsx:367"
+      ]
+    },
+    "survey.dep_high": {
+      "cat": "D",
+      "fb": "OTA dependent",
+      "locations": [
+        "src/pages/Survey.jsx:271",
+        "src/pages/SurveyHotelier.jsx:368"
+      ]
+    },
+    "survey.dep_very_high": {
+      "cat": "D",
+      "fb": "Heavily reliant",
+      "locations": [
+        "src/pages/Survey.jsx:272",
+        "src/pages/SurveyHotelier.jsx:369"
+      ]
+    },
+    "survey.selected": {
+      "cat": "D",
+      "fb": "selected",
+      "locations": [
+        "src/pages/Survey.jsx:321",
+        "src/pages/SurveyHotelier.jsx:418"
+      ]
+    },
+    "survey.step4_title": {
+      "cat": "D",
+      "fb": "What if your hotel became a shareholder in Staylo?",
+      "locations": [
+        "src/pages/Survey.jsx:337",
+        "src/pages/SurveyHotelier.jsx:199",
+        "src/pages/SurveyHotelier.jsx:434"
+      ]
+    },
+    "survey.step4_subtitle": {
+      "cat": "D",
+      "fb": "Your business, your tool — imagine owning a piece of the platform that works for you.",
+      "locations": [
+        "src/pages/Survey.jsx:340",
+        "src/pages/SurveyHotelier.jsx:437"
+      ]
+    },
+    "survey.step4_hint": {
+      "cat": "D",
+      "fb": "You currently pay",
+      "locations": [
+        "src/pages/Survey.jsx:346",
+        "src/pages/SurveyHotelier.jsx:443"
+      ]
+    },
+    "survey.step4_hint2": {
+      "cat": "D",
+      "fb": "in commissions — invest the equivalent of just 1 month.",
+      "locations": [
+        "src/pages/Survey.jsx:348",
+        "src/pages/SurveyHotelier.jsx:445"
+      ]
+    },
+    "survey.step4_question": {
+      "cat": "D",
+      "fb": "How much would you invest?",
+      "locations": [
+        "src/pages/Survey.jsx:353",
+        "src/pages/SurveyHotelier.jsx:450"
+      ]
+    },
+    "survey.suggested": {
+      "cat": "D",
+      "fb": "SUGGESTED",
+      "locations": [
+        "src/pages/Survey.jsx:377",
+        "src/pages/SurveyHotelier.jsx:474"
+      ]
+    },
+    "survey.your_investment": {
+      "cat": "D",
+      "fb": "Your investment",
+      "locations": [
+        "src/pages/Survey.jsx:399",
+        "src/pages/SurveyHotelier.jsx:496"
+      ]
+    },
+    "survey.est_saving": {
+      "cat": "D",
+      "fb": "Yearly saving",
+      "locations": [
+        "src/pages/Survey.jsx:404",
+        "src/pages/SurveyHotelier.jsx:501"
+      ]
+    },
+    "survey.in_year1": {
+      "cat": "D",
+      "fb": "in year 1",
+      "locations": [
+        "src/pages/Survey.jsx:412",
+        "src/pages/SurveyHotelier.jsx:509"
+      ]
+    },
+    "survey.popup_title": {
+      "cat": "D",
+      "fb": "How we calculate your savings",
+      "locations": [
+        "src/pages/Survey.jsx:422",
+        "src/pages/SurveyHotelier.jsx:519"
+      ]
+    },
+    "survey.popup_current": {
+      "cat": "D",
+      "fb": "What you currently pay (OTA)",
+      "locations": [
+        "src/pages/Survey.jsx:426",
+        "src/pages/SurveyHotelier.jsx:523"
+      ]
+    },
+    "survey.popup_staylo": {
+      "cat": "D",
+      "fb": "With Staylo (10% commission)",
+      "locations": [
+        "src/pages/Survey.jsx:432",
+        "src/pages/SurveyHotelier.jsx:529"
+      ]
+    },
+    "survey.popup_staylo_calc": {
+      "cat": "D",
+      "fb": "Same bookings, but only 10% instead of ~17%",
+      "locations": [
+        "src/pages/Survey.jsx:433",
+        "src/pages/SurveyHotelier.jsx:530"
+      ]
+    },
+    "survey.year": {
+      "cat": "D",
+      "fb": "year",
+      "locations": [
+        "src/pages/Survey.jsx:434",
+        "src/pages/SurveyHotelier.jsx:531"
+      ]
+    },
+    "survey.popup_saving": {
+      "cat": "D",
+      "fb": "Your annual saving",
+      "locations": [
+        "src/pages/Survey.jsx:440",
+        "src/pages/SurveyHotelier.jsx:537"
+      ]
+    },
+    "survey.popup_note": {
+      "cat": "D",
+      "fb": "This is what stays in YOUR pocket instead of going to OTA shareholders.",
+      "locations": [
+        "src/pages/Survey.jsx:442",
+        "src/pages/SurveyHotelier.jsx:539"
+      ]
+    },
+    "survey.popup_roi": {
+      "cat": "D",
+      "fb": "Your investment of",
+      "locations": [
+        "src/pages/Survey.jsx:447",
+        "src/pages/SurveyHotelier.jsx:544"
+      ]
+    },
+    "survey.popup_roi2": {
+      "cat": "D",
+      "fb": "pays for itself in",
+      "locations": [
+        "src/pages/Survey.jsx:447",
+        "src/pages/SurveyHotelier.jsx:544"
+      ]
+    },
+    "survey.popup_months": {
+      "cat": "D",
+      "fb": "months",
+      "locations": [
+        "src/pages/Survey.jsx:448",
+        "src/pages/SurveyHotelier.jsx:545"
+      ]
+    },
+    "survey.governance_title": {
+      "cat": "D",
+      "fb": "1 Hotel = 1 Governance Vote",
+      "locations": [
+        "src/pages/Survey.jsx:462",
+        "src/pages/SurveyHotelier.jsx:559"
+      ]
+    },
+    "survey.governance_desc": {
+      "cat": "D",
+      "fb": "Regardless of how many shares you hold. Every property gets equal voice.",
+      "locations": [
+        "src/pages/Survey.jsx:462",
+        "src/pages/SurveyHotelier.jsx:559"
+      ]
+    },
+    "survey.step5_title": {
+      "cat": "D",
+      "fb": "Almost done! Tell us about your property.",
+      "locations": [
+        "src/pages/Survey.jsx:476",
+        "src/pages/SurveyHotelier.jsx:573"
+      ]
+    },
+    "survey.step5_subtitle": {
+      "cat": "D",
+      "fb": "We'll contact you with next steps for becoming a founding partner.",
+      "locations": [
+        "src/pages/Survey.jsx:479",
+        "src/pages/SurveyHotelier.jsx:576"
+      ]
+    },
+    "survey.property_name": {
+      "cat": "D",
+      "fb": "Property name",
+      "locations": [
+        "src/pages/Survey.jsx:484",
+        "src/pages/SurveyHotelier.jsx:581"
+      ]
+    },
+    "survey.property_placeholder": {
+      "cat": "D",
+      "fb": "e.g. Sunset Beach Resort",
+      "locations": [
+        "src/pages/Survey.jsx:486",
+        "src/pages/SurveyHotelier.jsx:583"
+      ]
+    },
+    "survey.your_email": {
+      "cat": "D",
+      "fb": "Your email",
+      "locations": [
+        "src/pages/Survey.jsx:492",
+        "src/pages/SurveyHotelier.jsx:589"
+      ]
+    },
+    "survey.register_property": {
+      "cat": "D",
+      "fb": "Register My Property",
+      "locations": [
+        "src/pages/Survey.jsx:524",
+        "src/pages/SurveyHotelier.jsx:621"
+      ]
+    },
+    "survey.become_partner": {
+      "cat": "D",
+      "fb": "Become a Founding Partner",
+      "locations": [
+        "src/pages/Survey.jsx:524",
+        "src/pages/SurveyHotelier.jsx:621"
+      ]
+    },
+    "verify.success_title": {
+      "cat": "D",
+      "fb": "Email verified!",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:98"
+      ]
+    },
+    "verify.success_desc": {
+      "cat": "D",
+      "fb": "Taking you back to where you were…",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:101"
+      ]
+    },
+    "verify.continue": {
+      "cat": "D",
+      "fb": "Continue now →",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:104"
+      ]
+    },
+    "verify.pending_title": {
+      "cat": "D",
+      "fb": "Check your inbox",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:120"
+      ]
+    },
+    "verify.pending_desc": {
+      "cat": "D",
+      "fb": "We sent a confirmation link to",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:123"
+      ]
+    },
+    "verify.tip": {
+      "cat": "D",
+      "fb": "Click the link in the email to activate your account. Check your spam folder if you don\\'t see it within a couple of minutes.",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:130"
+      ]
+    },
+    "verify.resent": {
+      "cat": "D",
+      "fb": "Email re-sent. Check your inbox.",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:137"
+      ]
+    },
+    "verify.rate_limit": {
+      "cat": "D",
+      "fb": "Please wait a minute before requesting another email.",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:142"
+      ]
+    },
+    "verify.resending": {
+      "cat": "D",
+      "fb": "Sending…",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:159"
+      ]
+    },
+    "verify.resend_button": {
+      "cat": "D",
+      "fb": "Resend confirmation email",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:160"
+      ]
+    },
+    "verify.wrong_email": {
+      "cat": "D",
+      "fb": "Wrong email? Sign out and try again",
+      "locations": [
+        "src/pages/VerifyEmail.jsx:168"
+      ]
+    },
+    "vision.invest_cta": {
+      "cat": "D",
+      "fb": "Become a Founding Member",
+      "locations": [
+        "src/pages/Vision.jsx:97"
+      ]
+    },
+    "vision.flow_label": {
+      "cat": "D",
+      "fb": "For every",
+      "locations": [
+        "src/pages/Vision.jsx:366"
+      ]
+    },
+    "vision.flow_booked": {
+      "cat": "D",
+      "fb": "booked",
+      "locations": [
+        "src/pages/Vision.jsx:367"
+      ]
+    },
+    "vision.flow_ota_title": {
+      "cat": "D",
+      "fb": "With Booking.com / Agoda",
+      "locations": [
+        "src/pages/Vision.jsx:374"
+      ]
+    },
+    "vision.flow_ota_commission": {
+      "cat": "D",
+      "fb": "Commission",
+      "locations": [
+        "src/pages/Vision.jsx:378"
+      ]
+    },
+    "vision.flow_ota_where": {
+      "cat": "D",
+      "fb": "Where does it go?",
+      "locations": [
+        "src/pages/Vision.jsx:383"
+      ]
+    },
+    "vision.flow_ota_destination": {
+      "cat": "D",
+      "fb": "Hedge funds & tax havens",
+      "locations": [
+        "src/pages/Vision.jsx:384"
+      ]
+    },
+    "vision.flow_ota_back": {
+      "cat": "D",
+      "fb": "What comes back to you?",
+      "locations": [
+        "src/pages/Vision.jsx:387"
+      ]
+    },
+    "vision.flow_you_keep": {
+      "cat": "D",
+      "fb": "You keep",
+      "locations": [
+        "src/pages/Vision.jsx:392",
+        "src/pages/Vision.jsx:419"
+      ]
+    },
+    "vision.flow_recommended": {
+      "cat": "D",
+      "fb": "BETTER DEAL",
+      "locations": [
+        "src/pages/Vision.jsx:401"
+      ]
+    },
+    "vision.flow_staylo_title": {
+      "cat": "D",
+      "fb": "With Staylo",
+      "locations": [
+        "src/pages/Vision.jsx:405"
+      ]
+    },
+    "vision.flow_staylo_commission": {
+      "cat": "D",
+      "fb": "Commission",
+      "locations": [
+        "src/pages/Vision.jsx:409"
+      ]
+    },
+    "vision.flow_staylo_where": {
+      "cat": "D",
+      "fb": "Where does it go?",
+      "locations": [
+        "src/pages/Vision.jsx:414"
+      ]
+    },
+    "vision.flow_staylo_community": {
+      "cat": "D",
+      "fb": "Your community",
+      "locations": [
+        "src/pages/Vision.jsx:415"
+      ]
+    },
+    "vision.flow_more_revenue": {
+      "cat": "D",
+      "fb": "more revenue vs OTAs",
+      "locations": [
+        "src/pages/Vision.jsx:424"
+      ]
+    },
+    "vision.flow_disclaimer": {
+      "cat": "D",
+      "fb": "Based on average 22% OTA commission. Actual savings depend on your current platform and rates.",
+      "locations": [
+        "src/pages/Vision.jsx:430"
+      ]
+    },
+    "vision.projections_badge": {
+      "cat": "D",
+      "fb": "Financial Projections",
+      "locations": [
+        "src/pages/Vision.jsx:440"
+      ]
+    },
+    "vision.projections_title": {
+      "cat": "D",
+      "fb": "The Roadmap to $1B",
+      "locations": [
+        "src/pages/Vision.jsx:441"
+      ]
+    },
+    "vision.projections_subtitle": {
+      "cat": "D",
+      "fb": "Transparent data. Real numbers. Built for trust.",
+      "locations": [
+        "src/pages/Vision.jsx:442"
+      ]
+    },
+    "vision.proj_36m_title": {
+      "cat": "D",
+      "fb": "36-Month Financial Projections",
+      "locations": [
+        "src/pages/Vision.jsx:450"
+      ]
+    },
+    "vision.share_structure_title": {
+      "cat": "D",
+      "fb": "Share Structure — 500,000 Shares · 4 Categories",
+      "locations": [
+        "src/pages/Vision.jsx:489"
+      ]
+    },
+    "vision.tokenomics_title": {
+      "cat": "D",
+      "fb": "$STAY Token — 10B Supply · Solana · Bitcoin halving",
+      "locations": [
+        "src/pages/Vision.jsx:523"
+      ]
+    },
+    "vision.governance_detail_title": {
+      "cat": "D",
+      "fb": "Governance — On-Chain DAO · 1 Hotel = 1 Vote",
+      "locations": [
+        "src/pages/Vision.jsx:581"
+      ]
+    },
+    "vision.investor_rights_title": {
+      "cat": "D",
+      "fb": "Private Investors Rights — Engaged but not Controlling",
+      "locations": [
+        "src/pages/Vision.jsx:622"
+      ]
+    },
+    "vision.ambassador_cta": {
+      "cat": "D",
+      "fb": "Become an Ambassador",
+      "locations": [
+        "src/pages/Vision.jsx:726"
+      ]
+    },
+    "vision.docs_badge": {
+      "cat": "D",
+      "fb": "Registration Process",
+      "locations": [
+        "src/pages/Vision.jsx:875"
+      ]
+    },
+    "vision.docs_title": {
+      "cat": "D",
+      "fb": "What You Need to Join",
+      "locations": [
+        "src/pages/Vision.jsx:876"
+      ]
+    },
+    "vision.docs_subtitle": {
+      "cat": "D",
+      "fb": "To become an official Staylo Founding Partner, your business must be legally registered. Here\\'s what we require:",
+      "locations": [
+        "src/pages/Vision.jsx:877"
+      ]
+    },
+    "vision.doc_license": {
+      "cat": "D",
+      "fb": "Business License",
+      "locations": [
+        "src/pages/Vision.jsx:882"
+      ]
+    },
+    "vision.doc_license_desc": {
+      "cat": "D",
+      "fb": "TAT license (Thailand) or equivalent local business registration",
+      "locations": [
+        "src/pages/Vision.jsx:882"
+      ]
+    },
+    "vision.doc_registration": {
+      "cat": "D",
+      "fb": "Company Registration",
+      "locations": [
+        "src/pages/Vision.jsx:883"
+      ]
+    },
+    "vision.doc_registration_desc": {
+      "cat": "D",
+      "fb": "DBD registration certificate or equivalent (e.g. Ltd., Co., sole proprietor)",
+      "locations": [
+        "src/pages/Vision.jsx:883"
+      ]
+    },
+    "vision.doc_property": {
+      "cat": "D",
+      "fb": "Property Proof",
+      "locations": [
+        "src/pages/Vision.jsx:884"
+      ]
+    },
+    "vision.doc_property_desc": {
+      "cat": "D",
+      "fb": "Ownership deed, lease agreement, or management contract for the property",
+      "locations": [
+        "src/pages/Vision.jsx:884"
+      ]
+    },
+    "vision.doc_tax": {
+      "cat": "D",
+      "fb": "Tax ID",
+      "locations": [
+        "src/pages/Vision.jsx:885"
+      ]
+    },
+    "vision.doc_tax_desc": {
+      "cat": "D",
+      "fb": "Valid tax identification number for the business entity",
+      "locations": [
+        "src/pages/Vision.jsx:885"
+      ]
+    },
+    "vision.doc_loi": {
+      "cat": "D",
+      "fb": "Letter of Intent",
+      "locations": [
+        "src/pages/Vision.jsx:886"
+      ]
+    },
+    "vision.doc_loi_desc": {
+      "cat": "D",
+      "fb": "Signed LOI (provided by Staylo) — bilingual TH/EN, non-binding",
+      "locations": [
+        "src/pages/Vision.jsx:886"
+      ]
+    },
+    "vision.doc_contract": {
+      "cat": "D",
+      "fb": "Founding Partner Contract",
+      "locations": [
+        "src/pages/Vision.jsx:887"
+      ]
+    },
+    "vision.doc_contract_desc": {
+      "cat": "D",
+      "fb": "Official partnership agreement — signed upon share purchase",
+      "locations": [
+        "src/pages/Vision.jsx:887"
+      ]
+    },
+    "vision.doc_required": {
+      "cat": "D",
+      "fb": "Required",
+      "locations": [
+        "src/pages/Vision.jsx:896"
+      ]
+    },
+    "vision.docs_note": {
+      "cat": "D",
+      "fb": "The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.",
+      "locations": [
+        "src/pages/Vision.jsx:904"
+      ]
+    },
+    "app.shift_editor.scope_hint_timing": {
+      "cat": "D",
+      "fb": "Saving will apply Start / End / Break / Outlet to the days selected below.",
+      "locations": [
+        "public/messenger.html:16827"
+      ]
+    },
+    "app.shift_editor.scope_hint_briefing": {
+      "cat": "D",
+      "fb": "Saving will write the briefing to the days selected below. Days without an existing shift are skipped.",
+      "locations": [
+        "public/messenger.html:16923"
+      ]
+    },
+    "app.shift_editor.tasks_recipe_attach": {
+      "cat": "D",
+      "fb": "Attach a recipe (fiche technique)",
+      "locations": [
+        "public/messenger.html:17007"
+      ]
+    },
+    "app.shift_editor.scope_hint_tasks": {
+      "cat": "D",
+      "fb": "Saving will clone today\\'s tasks to the days selected below. Tasks already present on a target day are not duplicated.",
+      "locations": [
+        "public/messenger.html:17119"
+      ]
+    }
+  },
+  "per_file": {
+    "src/pages/dashboard/PropertyManage.jsx": 68,
+    "src/pages/SurveyHotelier.jsx": 47,
+    "src/pages/Survey.jsx": 43,
+    "src/pages/Vision.jsx": 43,
+    "src/pages/ota/Search.jsx": 37,
+    "src/pages/dashboard/PMSFrontDesk.jsx": 31,
+    "src/pages/dashboard/Banking.jsx": 30,
+    "src/pages/ota/PropertyDetail.jsx": 29,
+    "src/pages/ota/Checkout.jsx": 18,
+    "src/pages/dashboard/PMSReports.jsx": 16,
+    "src/components/dashboard/AmbassadorCommissionsWidget.jsx": 15,
+    "src/pages/dashboard/DashboardShares.jsx": 15,
+    "src/pages/dashboard/MyBookings.jsx": 15,
+    "src/pages/Dashboard.jsx": 15,
+    "src/pages/dashboard/DashboardReferrals.jsx": 14,
+    "src/pages/dashboard/DashboardKit.jsx": 13,
+    "src/pages/dashboard/WelcomeCall.jsx": 11,
+    "src/pages/LOI.jsx": 11,
+    "src/pages/ResetPassword.jsx": 11,
+    "src/pages/VerifyEmail.jsx": 11,
+    "src/components/ota/LightningPaymentModal.jsx": 10,
+    "src/components/dashboard/DashboardSidebar.jsx": 7,
+    "src/pages/dashboard/DashboardProperties.jsx": 6,
+    "src/components/auth/EmailVerificationGate.jsx": 5,
+    "src/components/sections/HotelGrid.jsx": 5,
+    "src/pages/dashboard/PMSHousekeeping.jsx": 5,
+    "src/pages/AmbassadorLanding.jsx": 4,
+    "src/pages/dashboard/PackagesTab.jsx": 4,
+    "public/messenger.html": 4,
+    "src/components/sections/BreakFree.jsx": 3,
+    "src/components/ui/ChatBot.jsx": 2,
+    "src/components/sections/FoundingMembers.jsx": 1,
+    "src/pages/Login.jsx": 1,
+    "src/pages/Submit.jsx": 1
+  }
+}
