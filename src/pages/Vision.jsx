@@ -456,7 +456,7 @@ export default function Vision() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-golden border-b border-white/10">
-                      <th className="text-left py-2 pr-4 font-semibold">Metric</th>
+                      <th className="text-left py-2 pr-4 font-semibold">{t('vision.proj_col_metric', 'Metric')}</th>
                       <th className="text-right py-2 px-2">M06</th>
                       <th className="text-right py-2 px-2">M12</th>
                       <th className="text-right py-2 px-2">M18</th>
@@ -466,17 +466,17 @@ export default function Vision() {
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Partner Hotels</td><td className="text-right px-2">100</td><td className="text-right px-2">380</td><td className="text-right px-2">1,200</td><td className="text-right px-2">4,800</td><td className="text-right px-2">9,200</td><td className="text-right px-2 text-golden font-bold">16,649</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">GMV / Month</td><td className="text-right px-2">$0.3M</td><td className="text-right px-2">$2.1M</td><td className="text-right px-2">$8.4M</td><td className="text-right px-2">$33.6M</td><td className="text-right px-2">$64.4M</td><td className="text-right px-2 text-golden font-bold">$88M</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Revenue / Month</td><td className="text-right px-2">$0.03M</td><td className="text-right px-2">$0.21M</td><td className="text-right px-2">$0.84M</td><td className="text-right px-2">$3.36M</td><td className="text-right px-2">$6.44M</td><td className="text-right px-2 text-golden font-bold">$8.8M</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">GMV Annual</td><td className="text-right px-2">$0.9M</td><td className="text-right px-2">$13.8M</td><td className="text-right px-2">$60.6M</td><td className="text-right px-2">$268.8M</td><td className="text-right px-2">$619.2M</td><td className="text-right px-2 text-golden font-bold">$1,055M</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Revenue Annual</td><td className="text-right px-2">$0.09M</td><td className="text-right px-2">$1.4M</td><td className="text-right px-2">$6.1M</td><td className="text-right px-2">$26.9M</td><td className="text-right px-2">$61.9M</td><td className="text-right px-2 text-golden font-bold">$105.5M</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Valuation (10x Rev)</td><td className="text-right px-2">—</td><td className="text-right px-2">$13.8M</td><td className="text-right px-2">$60.6M</td><td className="text-right px-2">$268.8M</td><td className="text-right px-2">$619.2M</td><td className="text-right px-2 text-golden font-bold">$1,055M</td></tr>
-                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Alpha Share Value</td><td className="text-right px-2 font-bold">$1,000</td><td className="text-right px-2 font-bold">~$4,600</td><td className="text-right px-2 font-bold">~$20K</td><td className="text-right px-2 font-bold">~$89.6K</td><td className="text-right px-2 font-bold">~$206K</td><td className="text-right px-2 font-bold text-golden">~$351K</td></tr>
-                    <tr className="bg-libre/10"><td className="py-2 pr-4 font-bold text-libre">Alpha ROI</td><td className="text-right px-2 font-bold">1x</td><td className="text-right px-2 font-bold">~5x</td><td className="text-right px-2 font-bold">~20x</td><td className="text-right px-2 font-bold">~90x</td><td className="text-right px-2 font-bold">~206x</td><td className="text-right px-2 font-bold text-libre">~351x</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.proj_partner_hotels', 'Partner Hotels')}</td><td className="text-right px-2">100</td><td className="text-right px-2">380</td><td className="text-right px-2">1,200</td><td className="text-right px-2">4,800</td><td className="text-right px-2">9,200</td><td className="text-right px-2 text-golden font-bold">16,649</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.proj_gmv_month', 'GMV / Month')}</td><td className="text-right px-2">$0.3M</td><td className="text-right px-2">$2.1M</td><td className="text-right px-2">$8.4M</td><td className="text-right px-2">$33.6M</td><td className="text-right px-2">$64.4M</td><td className="text-right px-2 text-golden font-bold">$88M</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.proj_revenue_month', 'Revenue / Month')}</td><td className="text-right px-2">$0.03M</td><td className="text-right px-2">$0.21M</td><td className="text-right px-2">$0.84M</td><td className="text-right px-2">$3.36M</td><td className="text-right px-2">$6.44M</td><td className="text-right px-2 text-golden font-bold">$8.8M</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.proj_gmv_annual', 'GMV Annual')}</td><td className="text-right px-2">$0.9M</td><td className="text-right px-2">$13.8M</td><td className="text-right px-2">$60.6M</td><td className="text-right px-2">$268.8M</td><td className="text-right px-2">$619.2M</td><td className="text-right px-2 text-golden font-bold">$1,055M</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.proj_revenue_annual', 'Revenue Annual')}</td><td className="text-right px-2">$0.09M</td><td className="text-right px-2">$1.4M</td><td className="text-right px-2">$6.1M</td><td className="text-right px-2">$26.9M</td><td className="text-right px-2">$61.9M</td><td className="text-right px-2 text-golden font-bold">$105.5M</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.proj_valuation', 'Valuation (10x Rev)')}</td><td className="text-right px-2">—</td><td className="text-right px-2">$13.8M</td><td className="text-right px-2">$60.6M</td><td className="text-right px-2">$268.8M</td><td className="text-right px-2">$619.2M</td><td className="text-right px-2 text-golden font-bold">$1,055M</td></tr>
+                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">{t('vision.proj_alpha_value', 'Alpha Share Value')}</td><td className="text-right px-2 font-bold">$1,000</td><td className="text-right px-2 font-bold">~$4,600</td><td className="text-right px-2 font-bold">~$20K</td><td className="text-right px-2 font-bold">~$89.6K</td><td className="text-right px-2 font-bold">~$206K</td><td className="text-right px-2 font-bold text-golden">~$351K</td></tr>
+                    <tr className="bg-libre/10"><td className="py-2 pr-4 font-bold text-libre">{t('vision.proj_alpha_roi', 'Alpha ROI')}</td><td className="text-right px-2 font-bold">1x</td><td className="text-right px-2 font-bold">~5x</td><td className="text-right px-2 font-bold">~20x</td><td className="text-right px-2 font-bold">~90x</td><td className="text-right px-2 font-bold">~206x</td><td className="text-right px-2 font-bold text-libre">~351x</td></tr>
                   </tbody>
                 </table>
-                <p className="text-xs text-white/30 mt-4 text-center italic">Base case projections. Not guaranteed. Revenue = GMV x 10% commission.</p>
+                <p className="text-xs text-white/30 mt-4 text-center italic">{t('vision.proj_disclaimer', 'Base case projections. Not guaranteed. Revenue = GMV x 10% commission.')}</p>
               </div>
             )}
           </div>
@@ -495,22 +495,22 @@ export default function Vision() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-golden border-b border-white/10">
-                      <th className="text-left py-2 pr-4 font-semibold">Category</th>
-                      <th className="text-right py-2 px-2">Shares</th>
+                      <th className="text-left py-2 pr-4 font-semibold">{t('vision.shs_col_category', 'Category')}</th>
+                      <th className="text-right py-2 px-2">{t('vision.shs_col_shares', 'Shares')}</th>
                       <th className="text-right py-2 px-2">%</th>
-                      <th className="text-right py-2 px-2">Price</th>
-                      <th className="text-left py-2 px-2">Conditions</th>
+                      <th className="text-right py-2 px-2">{t('vision.shs_col_price', 'Price')}</th>
+                      <th className="text-left py-2 px-2">{t('vision.shs_col_conditions', 'Conditions')}</th>
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Founders (seed cohort)</td><td className="text-right px-2">50,000</td><td className="text-right px-2">10%</td><td className="text-right px-2 italic">Sweat equity</td><td className="px-2 text-xs">12m cliff + 36m vesting</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Private Investors (non-hotelier)</td><td className="text-right px-2">100,000</td><td className="text-right px-2">20%</td><td className="text-right px-2">$1,500</td><td className="px-2 text-xs">Vote · Dividends · BTC treasury benefit</td></tr>
-                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">Alpha — Koh Phangan</td><td className="text-right px-2">3,000</td><td className="text-right px-2">0.6%</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="px-2 text-xs">KP hoteliers only — limited</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">World Round — Global Hotels</td><td className="text-right px-2">347,000</td><td className="text-right px-2">69.4%</td><td className="text-right px-2">$1,500</td><td className="px-2 text-xs">Hotel owners worldwide — open</td></tr>
-                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="text-right px-2">500,000</td><td className="text-right px-2 text-golden">100%</td><td className="text-right px-2">—</td><td className="px-2 text-xs italic">~$748.5M raised at FDV · ~$149.7M to BTC treasury</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.shs_founders', 'Founders (seed cohort)')}</td><td className="text-right px-2">50,000</td><td className="text-right px-2">10%</td><td className="text-right px-2 italic">{t('vision.shs_sweat_equity', 'Sweat equity')}</td><td className="px-2 text-xs">{t('vision.shs_founders_cond', '12m cliff + 36m vesting')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.shs_private', 'Private Investors (non-hotelier)')}</td><td className="text-right px-2">100,000</td><td className="text-right px-2">20%</td><td className="text-right px-2">$1,500</td><td className="px-2 text-xs">{t('vision.shs_private_cond', 'Vote · Dividends · BTC treasury benefit')}</td></tr>
+                    <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">{t('vision.shs_alpha', 'Alpha — Koh Phangan')}</td><td className="text-right px-2">3,000</td><td className="text-right px-2">0.6%</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="px-2 text-xs">{t('vision.shs_alpha_cond', 'KP hoteliers only — limited')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.shs_world', 'World Round — Global Hotels')}</td><td className="text-right px-2">347,000</td><td className="text-right px-2">69.4%</td><td className="text-right px-2">$1,500</td><td className="px-2 text-xs">{t('vision.shs_world_cond', 'Hotel owners worldwide — open')}</td></tr>
+                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">{t('vision.shs_total', 'TOTAL')}</td><td className="text-right px-2">500,000</td><td className="text-right px-2 text-golden">100%</td><td className="text-right px-2">—</td><td className="px-2 text-xs italic">{t('vision.shs_total_note', '~$748.5M raised at FDV · ~$149.7M to BTC treasury')}</td></tr>
                   </tbody>
                 </table>
-                <p className="text-xs text-white/30 mt-4 text-center italic">Alpha partners get the best price — forever. 20% of ALL capital raised goes to permanent Bitcoin reserve (90% shareholder vote to change). Source: STAYLO IP Protection Document (originstamp.org, 2026-04-25).</p>
+                <p className="text-xs text-white/30 mt-4 text-center italic">{t('vision.shs_footer', 'Alpha partners get the best price — forever. 20% of ALL capital raised goes to permanent Bitcoin reserve (90% shareholder vote to change). Source: STAYLO IP Protection Document (originstamp.org, 2026-04-25).')}</p>
               </div>
             )}
           </div>
@@ -528,22 +528,22 @@ export default function Vision() {
               <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4 overflow-x-auto">
                 {/* Tokenomics core params */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">Total supply</p><p className="text-white font-bold mt-1">10,000,000,000</p><p className="text-white/40">Fixed forever</p></div>
-                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">TGE price</p><p className="text-white font-bold mt-1">$0.10</p><p className="text-white/40">$1B FDV</p></div>
-                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">Blockchain</p><p className="text-white font-bold mt-1">Solana</p><p className="text-white/40">Raydium DEX</p></div>
-                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">Halving</p><p className="text-white font-bold mt-1">Every 4 years</p><p className="text-white/40">Bitcoin-style</p></div>
+                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">{t('vision.tok_supply', 'Total supply')}</p><p className="text-white font-bold mt-1">10,000,000,000</p><p className="text-white/40">{t('vision.tok_supply_note', 'Fixed forever')}</p></div>
+                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">{t('vision.tok_tge_price', 'TGE price')}</p><p className="text-white font-bold mt-1">$0.10</p><p className="text-white/40">$1B FDV</p></div>
+                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">{t('vision.tok_chain', 'Blockchain')}</p><p className="text-white font-bold mt-1">Solana</p><p className="text-white/40">Raydium DEX</p></div>
+                  <div className="bg-white/5 rounded-lg p-3"><p className="text-white/40 uppercase tracking-wider">{t('vision.tok_halving', 'Halving')}</p><p className="text-white font-bold mt-1">{t('vision.tok_halving_value', 'Every 4 years')}</p><p className="text-white/40">{t('vision.tok_halving_note', 'Bitcoin-style')}</p></div>
                 </div>
 
                 {/* Earn rate over time */}
                 <div className="bg-white/5 rounded-lg p-3 text-xs">
-                  <p className="text-white/40 uppercase tracking-wider mb-2">Earn rate (per night hosted)</p>
+                  <p className="text-white/40 uppercase tracking-wider mb-2">{t('vision.tok_earn_label', 'Earn rate (per night hosted)')}</p>
                   <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-libre font-bold">Y0–Y4 : 10 $STAY/night</span>
+                    <span className="text-libre font-bold">{t('vision.tok_earn_y0', 'Y0–Y4 : 10 $STAY/night')}</span>
                     <span className="text-white/30">→</span>
-                    <span className="text-white/70">Y4–Y8 : 5 $STAY</span>
+                    <span className="text-white/70">{t('vision.tok_earn_y4', 'Y4–Y8 : 5 $STAY')}</span>
                     <span className="text-white/30">→</span>
-                    <span className="text-white/50">Y8–Y12 : 2.5 $STAY</span>
-                    <span className="text-white/30 italic">…halving forever</span>
+                    <span className="text-white/50">{t('vision.tok_earn_y8', 'Y8–Y12 : 2.5 $STAY')}</span>
+                    <span className="text-white/30 italic">{t('vision.tok_earn_forever', '…halving forever')}</span>
                   </div>
                 </div>
 
@@ -551,24 +551,24 @@ export default function Vision() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-golden border-b border-white/10">
-                      <th className="text-left py-2 pr-4 font-semibold">Allocation</th>
-                      <th className="text-right py-2 px-2">Tokens</th>
+                      <th className="text-left py-2 pr-4 font-semibold">{t('vision.tok_col_allocation', 'Allocation')}</th>
+                      <th className="text-right py-2 px-2">{t('vision.tok_col_tokens', 'Tokens')}</th>
                       <th className="text-right py-2 px-2">%</th>
-                      <th className="text-left py-2 px-2">Purpose</th>
+                      <th className="text-left py-2 px-2">{t('vision.tok_col_purpose', 'Purpose')}</th>
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Founding Partner Earn Pool</td><td className="text-right px-2">3,000,000,000</td><td className="text-right px-2 font-bold text-golden">30%</td><td className="px-2 text-xs">Earn rewards for Alpha FP hotels</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Platform Earn Pool</td><td className="text-right px-2">2,000,000,000</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">Per-night $STAY (hotels + travelers)</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Reserve</td><td className="text-right px-2">2,000,000,000</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">Strategic reserve, future programs</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Ambassador Program</td><td className="text-right px-2">1,500,000,000</td><td className="text-right px-2">15%</td><td className="px-2 text-xs">Referral rewards + signing bonuses</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Team & Founders</td><td className="text-right px-2">1,000,000,000</td><td className="text-right px-2">10%</td><td className="px-2 text-xs">4-year vesting, 1-year cliff</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">DEX Liquidity</td><td className="text-right px-2">500,000,000</td><td className="text-right px-2">5%</td><td className="px-2 text-xs">Raydium launch liquidity pool</td></tr>
-                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">TOTAL</td><td className="text-right px-2">10,000,000,000</td><td className="text-right px-2 text-golden">100%</td><td className="px-2 text-xs italic">Fixed FOREVER · 10–15% annual buy & burn from commission revenue</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.tok_fp_pool', 'Founding Partner Earn Pool')}</td><td className="text-right px-2">3,000,000,000</td><td className="text-right px-2 font-bold text-golden">30%</td><td className="px-2 text-xs">{t('vision.tok_fp_pool_desc', 'Earn rewards for Alpha FP hotels')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.tok_platform_pool', 'Platform Earn Pool')}</td><td className="text-right px-2">2,000,000,000</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">{t('vision.tok_platform_pool_desc', 'Per-night $STAY (hotels + travelers)')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.tok_reserve', 'Reserve')}</td><td className="text-right px-2">2,000,000,000</td><td className="text-right px-2">20%</td><td className="px-2 text-xs">{t('vision.tok_reserve_desc', 'Strategic reserve, future programs')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.tok_ambassador', 'Ambassador Program')}</td><td className="text-right px-2">1,500,000,000</td><td className="text-right px-2">15%</td><td className="px-2 text-xs">{t('vision.tok_ambassador_desc', 'Referral rewards + signing bonuses')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.tok_team', 'Team & Founders')}</td><td className="text-right px-2">1,000,000,000</td><td className="text-right px-2">10%</td><td className="px-2 text-xs">{t('vision.tok_team_desc', '4-year vesting, 1-year cliff')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.tok_dex', 'DEX Liquidity')}</td><td className="text-right px-2">500,000,000</td><td className="text-right px-2">5%</td><td className="px-2 text-xs">{t('vision.tok_dex_desc', 'Raydium launch liquidity pool')}</td></tr>
+                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">{t('vision.tok_total', 'TOTAL')}</td><td className="text-right px-2">10,000,000,000</td><td className="text-right px-2 text-golden">100%</td><td className="px-2 text-xs italic">{t('vision.tok_total_note', 'Fixed FOREVER · 10–15% annual buy & burn from commission revenue')}</td></tr>
                   </tbody>
                 </table>
 
-                <p className="text-xs text-white/30 text-center italic">TGE target: Month 07 post-Alpha funding. Emergency mint requires 90% governance vote, capped at 1%/year.</p>
+                <p className="text-xs text-white/30 text-center italic">{t('vision.tok_tge_note', 'TGE target: Month 07 post-Alpha funding. Emergency mint requires 90% governance vote, capped at 1%/year.')}</p>
               </div>
             )}
           </div>
@@ -587,27 +587,27 @@ export default function Vision() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="text-golden border-b border-white/10">
-                      <th className="text-left py-2 pr-4 font-semibold">Rule</th>
-                      <th className="text-left py-2 px-2">Value</th>
+                      <th className="text-left py-2 pr-4 font-semibold">{t('vision.gov_col_rule', 'Rule')}</th>
+                      <th className="text-left py-2 px-2">{t('vision.gov_col_value', 'Value')}</th>
                     </tr>
                   </thead>
                   <tbody className="text-white/80">
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Structure</td><td className="px-2">Two layers: Singapore Pte Ltd (off-chain) + Solana DAO (on-chain, Realms)</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium text-libre">— Layer 1 —</td><td className="px-2 text-libre/80 text-xs italic">Singapore Corporate Vote (off-chain)</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">Voters</td><td className="px-2">Founders + Private Investors + Founding Partners (1 share = 1 vote)</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">Decides</td><td className="px-2">Dividends · Share dilution · M&amp;A · Treasury allocation · Audit · Board appointments</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium text-electric">— Layer 2 —</td><td className="px-2 text-electric/80 text-xs italic">Solana DAO (on-chain) — TWO seat types</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">🏨 Hotel Seats</td><td className="px-2"><strong>1 active property = 1 vote</strong> · unbounded · ≥1,000 $STAY required</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">⭐ Founder Seats</td><td className="px-2"><strong>1 founder = 1 vote · cap 10 absolute</strong> · ≥1,000 $STAY + seed cohort + active attestation</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">Sunset clause</td><td className="px-2">At M36, if &gt;10K active Hotel Seats, Founder Seats can be abolished by 51% Hotel-Seat vote alone</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">Decides</td><td className="px-2">Features · Roadmap · OTA partnerships · Marketing · Channel Manager · $STAY emissions · Commission rate (within 10% lock)</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Quorum (DAO)</td><td className="px-2">30% of total eligible seats</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Simple majority</td><td className="px-2">51% — features, partnerships, marketing</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Supermajority</td><td className="px-2 text-golden font-bold">90% · required for commission rate, BTC mandate, token supply changes</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Commission lock</td><td className="px-2 text-golden font-bold">10% per FP contract · only 90% supermajority can change</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">BTC treasury lock</td><td className="px-2 text-[#F7931A] font-bold">20% mandate in statutes · only 90% supermajority can change</td></tr>
-                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">Dividends</td><td className="px-2">20% net profit/year, distributed proportionally to all shareholders</td></tr>
-                    <tr><td className="py-2 pr-4 font-medium">Dividend currency</td><td className="px-2">USD, THB, or Bitcoin (shareholder's choice)</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.gov_structure', 'Structure')}</td><td className="px-2">{t('vision.gov_structure_val', 'Two layers: Singapore Pte Ltd (off-chain) + Solana DAO (on-chain, Realms)')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium text-libre">{t('vision.gov_layer1_label', '— Layer 1 —')}</td><td className="px-2 text-libre/80 text-xs italic">{t('vision.gov_layer1_val', 'Singapore Corporate Vote (off-chain)')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">{t('vision.gov_voters', 'Voters')}</td><td className="px-2">{t('vision.gov_voters_val', 'Founders + Private Investors + Founding Partners (1 share = 1 vote)')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">{t('vision.gov_decides', 'Decides')}</td><td className="px-2">{t('vision.gov_decides_l1_val', 'Dividends · Share dilution · M&A · Treasury allocation · Audit · Board appointments')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium text-electric">{t('vision.gov_layer2_label', '— Layer 2 —')}</td><td className="px-2 text-electric/80 text-xs italic">{t('vision.gov_layer2_val', 'Solana DAO (on-chain) — TWO seat types')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">{t('vision.gov_hotel_seats', '🏨 Hotel Seats')}</td><td className="px-2" dangerouslySetInnerHTML={{ __html: t('vision.gov_hotel_seats_val', '<strong>1 active property = 1 vote</strong> · unbounded · ≥1,000 $STAY required') }} /></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">{t('vision.gov_founder_seats', '⭐ Founder Seats')}</td><td className="px-2" dangerouslySetInnerHTML={{ __html: t('vision.gov_founder_seats_val', '<strong>1 founder = 1 vote · cap 10 absolute</strong> · ≥1,000 $STAY + seed cohort + active attestation') }} /></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">{t('vision.gov_sunset', 'Sunset clause')}</td><td className="px-2">{t('vision.gov_sunset_val', 'At M36, if >10K active Hotel Seats, Founder Seats can be abolished by 51% Hotel-Seat vote alone')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 pl-4 text-xs">{t('vision.gov_decides', 'Decides')}</td><td className="px-2">{t('vision.gov_decides_l2_val', 'Features · Roadmap · OTA partnerships · Marketing · Channel Manager · $STAY emissions · Commission rate (within 10% lock)')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.gov_quorum', 'Quorum (DAO)')}</td><td className="px-2">{t('vision.gov_quorum_val', '30% of total eligible seats')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.gov_majority', 'Simple majority')}</td><td className="px-2">{t('vision.gov_majority_val', '51% — features, partnerships, marketing')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.gov_supermaj', 'Supermajority')}</td><td className="px-2 text-golden font-bold">{t('vision.gov_supermaj_val', '90% · required for commission rate, BTC mandate, token supply changes')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.gov_comm_lock', 'Commission lock')}</td><td className="px-2 text-golden font-bold">{t('vision.gov_comm_lock_val', '10% per FP contract · only 90% supermajority can change')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.gov_btc_lock', 'BTC treasury lock')}</td><td className="px-2 text-[#F7931A] font-bold">{t('vision.gov_btc_lock_val', '20% mandate in statutes · only 90% supermajority can change')}</td></tr>
+                    <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.gov_dividends', 'Dividends')}</td><td className="px-2">{t('vision.gov_dividends_val', '20% net profit/year, distributed proportionally to all shareholders')}</td></tr>
+                    <tr><td className="py-2 pr-4 font-medium">{t('vision.gov_div_currency', 'Dividend currency')}</td><td className="px-2">{t('vision.gov_div_currency_val', "USD, THB, or Bitcoin (shareholder's choice)")}</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -626,78 +626,78 @@ export default function Vision() {
             {showInvestorRights && (
               <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
                 <p className="text-sm text-white/70 italic mb-4">
-                  Private Investors put up cash without operating hotels. They get voice + protection on their financial stake, but cannot take control of day-to-day operations (which would defeat the cooperative purpose). The 5 mechanisms below are formalized in the Shareholders Agreement (Drew &amp; Napier counsel, post-Singapore incorporation).
+                  {t('vision.pi_intro', 'Private Investors put up cash without operating hotels. They get voice + protection on their financial stake, but cannot take control of day-to-day operations (which would defeat the cooperative purpose). The 5 mechanisms below are formalized in the Shareholders Agreement (Drew & Napier counsel, post-Singapore incorporation).')}
                 </p>
 
                 <div className="space-y-3">
                   {/* Mechanism 1 */}
                   <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                    <p className="font-bold text-libre text-sm mb-1">1. Information rights — full transparency, zero power</p>
+                    <p className="font-bold text-libre text-sm mb-1">{t('vision.pi_m1_title', '1. Information rights — full transparency, zero power')}</p>
                     <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
-                      <li>Quarterly written report (bookings, revenue, BTC treasury, $STAY metrics, roadmap, risks)</li>
-                      <li>Mandatory Annual General Meeting (AGM) — physical or virtual</li>
-                      <li>Quarterly investor call with the founder/CEO</li>
-                      <li>Private Telegram/Discord "Investor Circle" — direct line to David</li>
+                      <li>{t('vision.pi_m1_li1', 'Quarterly written report (bookings, revenue, BTC treasury, $STAY metrics, roadmap, risks)')}</li>
+                      <li>{t('vision.pi_m1_li2', 'Mandatory Annual General Meeting (AGM) — physical or virtual')}</li>
+                      <li>{t('vision.pi_m1_li3', 'Quarterly investor call with the founder/CEO')}</li>
+                      <li>{t('vision.pi_m1_li4', 'Private Telegram/Discord "Investor Circle" — direct line to David')}</li>
                     </ul>
                   </div>
 
                   {/* Mechanism 2 */}
                   <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                    <p className="font-bold text-libre text-sm mb-1">2. Advisory Board — consultative seats, no decision power</p>
+                    <p className="font-bold text-libre text-sm mb-1">{t('vision.pi_m2_title', '2. Advisory Board — consultative seats, no decision power')}</p>
                     <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
-                      <li>Private Investors elect <strong>2 members</strong> of an Advisory Board</li>
-                      <li>The Advisory Board <em>advises</em> the Executive Board (Founders + Founding Partners) but does not vote on operations</li>
-                      <li>May issue public recommendations on any topic</li>
+                      <li dangerouslySetInnerHTML={{ __html: t('vision.pi_m2_li1', 'Private Investors elect <strong>2 members</strong> of an Advisory Board') }} />
+                      <li dangerouslySetInnerHTML={{ __html: t('vision.pi_m2_li2', 'The Advisory Board <em>advises</em> the Executive Board (Founders + Founding Partners) but does not vote on operations') }} />
+                      <li>{t('vision.pi_m2_li3', 'May issue public recommendations on any topic')}</li>
                     </ul>
                   </div>
 
                   {/* Mechanism 3 */}
                   <div className="bg-white/5 rounded-xl p-4 border border-golden/20">
-                    <p className="font-bold text-golden text-sm mb-1">3. Veto rights — minority defensive only (51% of PI class)</p>
-                    <p className="text-xs text-white/70 mb-2">Can BLOCK (not initiate) any of:</p>
+                    <p className="font-bold text-golden text-sm mb-1">{t('vision.pi_m3_title', '3. Veto rights — minority defensive only (51% of PI class)')}</p>
+                    <p className="text-xs text-white/70 mb-2">{t('vision.pi_m3_intro', 'Can BLOCK (not initiate) any of:')}</p>
                     <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
-                      <li>Share dilution &gt;10% of existing capital</li>
-                      <li>Sale of the company (M&amp;A)</li>
-                      <li>Any change to the 10% commission rate</li>
-                      <li>Removal of the 20% BTC treasury mandate</li>
-                      <li>Liquidation preference modification</li>
+                      <li>{t('vision.pi_m3_li1', 'Share dilution >10% of existing capital')}</li>
+                      <li>{t('vision.pi_m3_li2', 'Sale of the company (M&A)')}</li>
+                      <li>{t('vision.pi_m3_li3', 'Any change to the 10% commission rate')}</li>
+                      <li>{t('vision.pi_m3_li4', 'Removal of the 20% BTC treasury mandate')}</li>
+                      <li>{t('vision.pi_m3_li5', 'Liquidation preference modification')}</li>
                     </ul>
-                    <p className="text-[10px] text-white/40 italic mt-2">Standard VC blocking minority. They can say "no" to 5 critical things, cannot force anything.</p>
+                    <p className="text-[10px] text-white/40 italic mt-2">{t('vision.pi_m3_note', 'Standard VC blocking minority. They can say "no" to 5 critical things, cannot force anything.')}</p>
                   </div>
 
                   {/* Mechanism 4 */}
                   <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                    <p className="font-bold text-libre text-sm mb-1">4. Pre-emptive rights — anti-dilution protection</p>
+                    <p className="font-bold text-libre text-sm mb-1">{t('vision.pi_m4_title', '4. Pre-emptive rights — anti-dilution protection')}</p>
                     <ul className="text-xs text-white/70 space-y-1 list-disc list-inside">
-                      <li>On every new share issuance: <strong>30 days</strong> to exercise pro-rata right</li>
-                      <li>If they invest again → maintain their 20% stake</li>
-                      <li>If they decline → accept the dilution</li>
+                      <li dangerouslySetInnerHTML={{ __html: t('vision.pi_m4_li1', 'On every new share issuance: <strong>30 days</strong> to exercise pro-rata right') }} />
+                      <li>{t('vision.pi_m4_li2', 'If they invest again → maintain their 20% stake')}</li>
+                      <li>{t('vision.pi_m4_li3', 'If they decline → accept the dilution')}</li>
                     </ul>
                   </div>
 
                   {/* Mechanism 5 */}
                   <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                    <p className="font-bold text-libre text-sm mb-1">5. Voting on financial-only matters (1 share = 1 vote, Layer 1)</p>
-                    <p className="text-xs text-white/70 mb-2">At the corporate (Singapore Pte Ltd) layer only — never in the Solana DAO.</p>
+                    <p className="font-bold text-libre text-sm mb-1">{t('vision.pi_m5_title', '5. Voting on financial-only matters (1 share = 1 vote, Layer 1)')}</p>
+                    <p className="text-xs text-white/70 mb-2">{t('vision.pi_m5_intro', 'At the corporate (Singapore Pte Ltd) layer only — never in the Solana DAO.')}</p>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
-                        <p className="text-libre/80 font-semibold">✅ Vote sur :</p>
+                        <p className="text-libre/80 font-semibold">{t('vision.pi_m5_yes_label', '✅ Votes on:')}</p>
                         <ul className="text-white/60 list-disc list-inside">
-                          <li>Annual dividend distribution</li>
-                          <li>New share emissions</li>
-                          <li>M&amp;A, acquisitions</li>
-                          <li>Annual financial audit</li>
-                          <li>CFO / auditor appointment</li>
+                          <li>{t('vision.pi_m5_yes1', 'Annual dividend distribution')}</li>
+                          <li>{t('vision.pi_m5_yes2', 'New share emissions')}</li>
+                          <li>{t('vision.pi_m5_yes3', 'M&A, acquisitions')}</li>
+                          <li>{t('vision.pi_m5_yes4', 'Annual financial audit')}</li>
+                          <li>{t('vision.pi_m5_yes5', 'CFO / auditor appointment')}</li>
                         </ul>
                       </div>
                       <div>
-                        <p className="text-sunset/80 font-semibold">❌ NE vote PAS sur :</p>
+                        <p className="text-sunset/80 font-semibold">{t('vision.pi_m5_no_label', '❌ Does NOT vote on:')}</p>
                         <ul className="text-white/60 list-disc list-inside">
-                          <li>Product features</li>
-                          <li>Marketing campaigns</li>
-                          <li>OTA partnerships</li>
-                          <li>Channel Manager priorities</li>
-                          <li>Day-to-day operations</li>
+                          <li>{t('vision.pi_m5_no1', 'Product features')}</li>
+                          <li>{t('vision.pi_m5_no2', 'Marketing campaigns')}</li>
+                          <li>{t('vision.pi_m5_no3', 'OTA partnerships')}</li>
+                          <li>{t('vision.pi_m5_no4', 'Channel Manager priorities')}</li>
+                          <li>{t('vision.pi_m5_no5', 'Day-to-day operations')}</li>
                         </ul>
                       </div>
                     </div>
@@ -705,7 +705,7 @@ export default function Vision() {
                 </div>
 
                 <p className="text-xs text-white/30 text-center italic mt-4">
-                  Standard structure for cooperative platforms with mixed shareholder classes. Drafted by Drew &amp; Napier (Singapore counsel) post-incorporation.
+                  {t('vision.pi_footer', 'Standard structure for cooperative platforms with mixed shareholder classes. Drafted by Drew & Napier (Singapore counsel) post-incorporation.')}
                 </p>
               </div>
             )}
@@ -999,8 +999,8 @@ export default function Vision() {
 
       {/* Company footer */}
       <div className="py-6 text-center border-t border-gray-200 bg-white">
-        <p className="text-xs text-gray-400">Staylo is a project by <span className="font-semibold text-gray-500">Barokat Halal Food Co., Ltd.</span></p>
-        <p className="text-[10px] text-gray-300 mt-1">Koh Phangan, Surat Thani, Thailand</p>
+        <p className="text-xs text-gray-400">{t('vision.company_footer_by', 'Staylo is a project by')} <span className="font-semibold text-gray-500">Barokat Halal Food Co., Ltd.</span></p>
+        <p className="text-[10px] text-gray-300 mt-1">{t('vision.company_footer_location', 'Koh Phangan, Surat Thani, Thailand')}</p>
       </div>
     </div>
   )
