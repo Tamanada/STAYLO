@@ -211,13 +211,337 @@ When in doubt: **say less, deliver more.** Promises broken in pitch = trust lost
 
 ---
 
-## 11. Versioning & ownership
+## 11. Product feature catalog — canonical names
+
+When writing copy or building UI, use these EXACT names (in the user's
+language) to refer to product surfaces and modules. Inconsistent naming
+across the app makes the product feel half-finished.
+
+### 11.1 — Hotelier dashboard modules (`staylo.app/dashboard`)
+
+| Internal slug | EN canonical | FR canonical | TH canonical |
+|---|---|---|---|
+| `/dashboard` | **Overview** | Vue d'ensemble | ภาพรวม |
+| `/dashboard/bookings` | **My Trips** *(as guest)* / **Bookings received** *(as host)* | Mes voyages / Réservations reçues | การเดินทางของฉัน / การจองที่ได้รับ |
+| `/dashboard/properties` | **My Properties** | Mes propriétés | คุณสมบัติของฉัน |
+| `/dashboard/front-desk` | **PMS Front Desk** | PMS Réception | PMS โต๊ะต้อนรับ |
+| `/dashboard/housekeeping` | **Housekeeping** | Housekeeping *(or "Ménage")* | แม่บ้าน |
+| `/dashboard/reports` | **Reports** | Rapports | รายงาน |
+| `/dashboard/banking` | **Banking** | Banque | ธนาคาร |
+| `/dashboard/shares` | **My Shares** | Mes parts | หุ้นของฉัน |
+| `/dashboard/kit` | **My Kit** | Mon kit | ชุดของฉัน |
+| `/dashboard/referrals` | **Referrals** | Parrainages | การแนะนำ |
+
+### 11.2 — Staff messenger modules (`staylo.app/messenger.html`)
+
+| Module | EN canonical | FR canonical | What it does |
+|---|---|---|---|
+| Chat | **Chat** | Chat | Channels, direct messages, structured cards (order tickets, maintenance requests, room status) |
+| Team | **Team** (or HR if formal) | Équipe | Employee profiles, contracts, documents, payroll, evaluations |
+| Roster | **Roster** | Roster | List view of all employees with filters |
+| Schedule | **Schedule** | Planning | Day/week/fortnight/month grid with shift editor |
+| Tasks | **Tasks** | Tâches | Recurring + one-off task assignments |
+| Recipes | **Recipes** (or "Fiches techniques") | Fiches techniques | Chef recipes with ingredients, cost, prep time, video |
+| Pulse | **Pulse** *(brand name, do not translate)* | Pulse | POS hub: revenue live, tip pool, server credit |
+| Stock | **Stock** | Stock | Inventory levels, auto-reorder, supplier links |
+| Score | **Score** | Score | Network benchmark KPIs vs STAYLO network average |
+| Pool | **Tip Pool** | Pool de pourboires | Server tip redistribution by points × hours |
+| Payroll | **Payroll** | Paie | Auto-computed from schedule + clock events |
+| Alerts | **Alerts** | Alertes | Emergency broadcasts, break reminders, low-stock |
+| Settings | **Hotel Settings** | Paramètres hôtel | Country, currency, pools, contacts, custom roles/depts |
+
+### 11.3 — Guest PWA modules (`app.staylo.app`)
+
+| Route | EN canonical | FR canonical |
+|---|---|---|
+| `/welcome` | **Welcome** | Bienvenue |
+| `/` | **Stay** *(your current stay)* | Séjour |
+| `/booking` | **Booking** | Réservation |
+| `/checkin` | **Check-in** | Enregistrement |
+| `/chat` | **Chat** | Chat |
+| `/services` | **Services** | Services |
+| `/history` | **History** | Historique |
+
+### 11.4 — Module DO NOT confuse
+
+- **Pulse ≠ Pool.** Pulse = POS aggregator + revenue dashboard. Pool = tip redistribution engine. They sit side-by-side in the messenger Me view.
+- **Score ≠ Reports.** Score = comparison vs network benchmark (relative). Reports = absolute revenue/occupancy/ADR/RevPAR for the hotel.
+- **Booking (dashboard) ≠ Booking (guest PWA route).** Hotelier sees a list of bookings received; guest sees their booking confirmation.
+
+---
+
+## 12. Acronyms & abbreviations
+
+Stop guessing what these mean. One canonical expansion each.
+
+### Industry / hospitality
+
+| Acronym | Full form | Notes |
+|---|---|---|
+| **OTA** | Online Travel Agency | Booking.com, Agoda, Expedia, Hotels.com, Trip.com |
+| **PMS** | Property Management System | The hotelier's daily-ops software |
+| **ADR** | Average Daily Rate | Revenue per occupied room |
+| **RevPAR** | Revenue Per Available Room | ADR × occupancy rate |
+| **GMV** | Gross Merchandise Value | Total $ booked through the platform |
+| **NPS** | Net Promoter Score | Guest satisfaction metric |
+| **F&B** | Food & Beverage | Restaurant / bar / room service |
+| **FOH** | Front of House | Reception, concierge, bell, valet |
+| **BOH** | Back of House | Kitchen, housekeeping, maintenance |
+| **LTV** | Lifetime Value | Total revenue from a single guest across all stays |
+| **OCC** | Occupancy | Rooms sold ÷ rooms available |
+| **LOI** | Letter of Intent | Founding Partner pre-commitment doc |
+
+### STAYLO-specific
+
+| Acronym | Full form | Notes |
+|---|---|---|
+| **FP** | Founding Partner | First-cohort hotelier who buys Alpha shares |
+| **KP** | Koh Phangan | The Alpha launch geography |
+| **$STAY** | The STAYLO token | Always with $, Solana SPL Token-2022 |
+| **TGE** | Token Generation Event | When $STAY goes live on Raydium (M07 target) |
+| **FDV** | Fully Diluted Valuation | $STAY: $1B at $0.10/token × 10B supply |
+| **DAO** | Decentralized Autonomous Organization | On-chain governance via Solana Realms |
+| **DEX** | Decentralized Exchange | Raydium = where $STAY trades |
+| **SPL** | Solana Program Library | Token standard ($STAY uses SPL Token-2022) |
+| **AMM** | Automated Market Maker | The mechanism Raydium uses for liquidity |
+| **BTC** | Bitcoin | The 20% treasury reserve asset |
+| **PWA** | Progressive Web App | What app.staylo.app installs as on phones |
+| **PDPA** | Personal Data Protection Act | Thai equivalent of GDPR |
+| **RLS** | Row-Level Security | Postgres / Supabase access control |
+| **HQ** | Headquarters | Always clarify: legal HQ (Singapore) vs operational HQ (Thailand) |
+
+---
+
+## 13. Roadmap & milestones
+
+This is the canonical timeline. Don't invent dates, don't shift months
+without updating this section.
+
+| Milestone | Code | Timeline | What ships |
+|---|---|---|---|
+| **Alpha launch** | M01 | Month 0 → 6 | First 100 hotels in Koh Phangan, hotelier dashboard, staff messenger, guest PWA live |
+| **Founding Partner round close** | M03 | Month 3 | 3,000 Alpha shares sold (or window closes), commission 10% locked for FPs |
+| **BTC Wallet** | M03 | Month 3 | In-app wallet (Lightning Network), pay bookings + dividends + referrals in BTC |
+| **V2 — F&B layer** | M06–M12 | Month 6 → 12 | Pulse POS hub mature, restaurant booking, $STAY rewards live |
+| **TGE** | M07 | Month 7 | $STAY token launches on Raydium @ $0.10, FDV $1B |
+| **V3 — Activity layer** | M12–M18 | Month 12 → 18 | Activities + concierge full integration, 1,000 hotel target |
+| **V4 — Transport layer** | M18–M24 | Month 18 → 24 | Plane/transfer/taxi bookings, 5,000 hotel target |
+| **V5 — Global** | M24+ | Month 24+ | Multi-region rollout, Capacitor native apps, 16,000+ hotels |
+| **Founder Seat sunset** | M36 | Month 36 | If >10K active Hotel Seats, Founder Seats can be abolished by 51% Hotel-Seat vote |
+
+### Phase letters used in the marketing copy
+
+- **Alpha** = Founding Partner round only (3,000 shares max, $1,000 each)
+- **World Round** = post-Alpha public-ish round ($1,500/share, non-hoteliers welcome)
+- **V2 / V3 / V4 / V5** = product phases (feature layers)
+
+These are NOT interchangeable. "Alpha" is investment cohort; "V2" is product version.
+
+---
+
+## 14. Visual identity
+
+### Color palette (CSS tokens, current as of `src/index.css`)
+
+| Token | Hex | Use |
+|---|---|---|
+| `--color-deep` | `#2D3436` | Body text, hero headlines |
+| `--color-orange` (brand) | `#FF6B00` | Primary accent — STAYLO orange |
+| `--color-sunset` | `#FF3CB4` | Secondary accent, gradients |
+| `--color-electric` | `#6C5CE7` | Tertiary (purple) — used for "Dashboard" link, info badges |
+| `--color-libre` | `#00B894` | Teal — success states, "Live", positive deltas |
+| `--color-golden` | `#FDCB6E` | Founding Partner / premium accent |
+| `--color-deep-bg` | `#0F2847` | Dark backgrounds (Investor table, footer dark) |
+| `--color-red` | `#E74C3C` | Errors, warnings, illegal-shift banners |
+| `--color-light` | `#F8F6F0` | Page backgrounds (warm off-white) |
+| BTC orange | `#F7931A` | ONLY for Bitcoin-related UI (treasury, BTC chart bars) |
+| Gold (illustrative) | `#FFD700` | ONLY in comparisons (BTC vs Gold chart) |
+
+### Brand gradient
+
+The signature STAYLO gradient:
+```css
+linear-gradient(90deg, #FF6B00, #FF1F70)
+/* or 135deg for hero areas */
+linear-gradient(135deg, #FF6B00, #FF3CB4)
+```
+
+Used on: DEMO banner top, messenger bottom-nav, guest welcome screen, "List your hotel" CTA, primary buttons.
+
+### Typography
+
+- **Headlines:** `font-black` (900) — extra-bold sans
+- **Body:** `font-medium` (500) for paragraphs
+- **Brand wordmark:** "stay" (deep) + "lo" (orange or gradient), font-extrabold
+- **Code/data:** `font-mono` for numbers in tables
+- System stack: `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif` — no custom web font
+
+### Logo rules
+
+- Always two-word split: `stay` + `lo`
+- Never insert hyphens, dots, or other glyphs between
+- Minimum size: 24px height (digital), 8mm (print)
+- Clear space around logo: ≥ height of the "S"
+- On dark backgrounds: white "stay" + orange "lo"
+- On light backgrounds: deep-color "stay" + orange "lo"
+
+---
+
+## 15. Competitor positioning
+
+### How to talk about Booking.com / Agoda / Expedia
+
+**The framing:** they're not enemies. They're a comparison point. Hotels will keep using them in parallel for the first 2-3 years until STAYLO has enough direct demand.
+
+✅ **Allowed phrasings:**
+- "Booking.com charges 22% commission. We charge 10%."
+- "OTAs are great for discovery. STAYLO is great for retention."
+- "You can keep your Booking.com listing. We don't ask for exclusivity."
+- "Booking.com keeps the guest's email. STAYLO sends it to you."
+
+❌ **Forbidden phrasings:**
+- "Booking.com is a leech / parasite / scam"
+- "Death to Big OTA"
+- "We will destroy Booking.com"
+- Comparisons that make us look petty or insecure
+
+### How to talk about Airbnb
+
+Different product (vacation rentals + experiences vs hotels). Not a direct competitor for STAYLO V1. **Don't mention Airbnb in hotelier pitches** — it confuses the value proposition. Only mention if specifically asked.
+
+### How to talk about other booking coops / hospitality DAOs
+
+These exist (e.g. "HotelDAO", various Web3 hotel projects). Most are vaporware or pre-product.
+
+✅ Allowed: "We're aware of other cooperative experiments. We're the only one shipping production hospitality software in 2026."
+
+❌ Avoid: detailed comparisons by name. Looks defensive.
+
+### The "we are NOT" list (define ourselves by contrast)
+
+- We are **NOT** Booking.com (we don't dominate the relationship)
+- We are **NOT** Airbnb (we focus on professional hotels, not P2P rentals)
+- We are **NOT** a Web3 startup (we're a hospitality company that uses blockchain selectively)
+- We are **NOT** a SaaS subscription (no monthly fee — commission-based)
+- We are **NOT** an OTA (we don't markup; we redirect transparently)
+
+---
+
+## 16. Format conventions
+
+### Dates
+
+- **Display format (hotelier/guest UI):** localized via `_localeDate()` — "12 May 2026" / "12 mai 2026" / "๑๒ พฤษภาคม ๒๕๖๙"
+- **Storage format:** ISO 8601 `YYYY-MM-DD`. NEVER store as `MM/DD/YYYY` or `DD/MM/YYYY`.
+- **In marketing copy:** "May 2026" / "Mai 2026" — month + year. Avoid "5/26" or "5-26".
+
+### Numbers
+
+- **Prices:** comma thousands separator → `$1,000` / `1 000 €` / `฿1,000`
+- **Percentages:** integer when possible → "10%", "22%". Decimals only when meaningful → "22.5%".
+- **Token amounts:** comma thousands → `10,000,000,000 $STAY`
+- **Hotel counts, guest counts:** abbreviate above 1K → "1,247 hotels", "142K guests", "1.2M bookings"
+
+### Currencies
+
+- **Primary symbol per market:** `฿` (THB) for Thai context, `$` (USD) for international, `€` (EUR) for EU.
+- **Crypto:** `$STAY`, `₿` (BTC), `SOL`
+- **Always show the unit:** "฿1,200" not "1,200" alone. Ambiguity kills trust.
+
+### Naming conventions in code
+
+- **Files:** kebab-case for components (`property-manage.jsx` would be wrong — use `PropertyManage.jsx` per React convention)
+- **i18n keys:** `snake_case` namespaced by section → `vision.btc_detail_title`
+- **CSS classes:** kebab-case → `.guest-rail-btn`, `.dwp-col`
+
+---
+
+## 17. Vendor / partner stack
+
+For transparency in legal docs and trust-building copy. Each vendor is
+chosen because they're industry-leading for their function. Names appear
+"as-is" — no need to brand-protect them.
+
+| Function | Vendor | Why |
+|---|---|---|
+| **Frontend hosting + CDN** | Vercel | Edge network global, instant deploys, multi-domain routing |
+| **Database + Auth + Realtime + Storage** | Supabase | Postgres + RLS + OAuth + edge functions, hotelier-data sovereignty |
+| **Payment (card)** | Stripe (Connect) | Best-in-class; we use Stripe Connect so hoteliers receive payouts directly |
+| **Payment (crypto)** | Lightning Network (BTC) | Self-custody, instant settlement, 14% of crypto bookings are travel |
+| **Token chain** | Solana | High throughput, low fees, mature SPL Token-2022 standard |
+| **Email** | Resend | Transactional + marketing email, modern API, deliverability strong |
+| **i18n** | i18next | 14 languages, mature, used by major hospitality brands |
+| **Error monitoring** | Sentry | (Planned) — error tracking + performance |
+| **Maps / location** | TBD (Mapbox vs Google) | Decision pending based on cost at scale |
+| **Analytics** | First-party (`page_views` table in Supabase) | No third-party trackers, GDPR/PDPA friendly |
+| **Legal — Singapore parent** | (TBD law firm name) | Local SG corporate counsel |
+| **Legal — Thai operations** | (TBD law firm name) | Hospitality license, PDPA, labor law |
+| **Accounting** | (TBD Thai accounting firm) | Quarterly investor reports, statutory audit |
+| **Security audit** | (TBD — Halborn / Trail of Bits / OpenZeppelin) | Smart contract audit before TGE |
+
+### "Powered by" / partner mentions
+
+- Use sparingly. The hotelier doesn't care that we use Supabase.
+- Acceptable in: investor decks, technical docs, term sheets.
+- NOT acceptable on: marketing site, hotelier outreach, guest app.
+
+---
+
+## 18. Canonical phrases & punchlines
+
+The recurring one-liners we use across pitches, copy, and team talk. If
+you write a new one, add it here so we can reuse it everywhere.
+
+### The 5 official punchlines
+
+1. **"The booking platform owned by hoteliers."**
+   *Marketing hero, 1st impression. Communicates ownership + booking + hotelier-first.*
+
+2. **"One app. Every hotel of the network. Forever yours."**
+   *Guest welcome screen. Communicates permanence + network effect.*
+
+3. **"10% commission for life — locked by the people who book it."**
+   *Hotelier cold meeting opener. The economic hook.*
+
+4. **"Singapore for legal certainty. Thailand for everything that happens on the ground."**
+   *Investor / legal pitch — the structure summary.*
+
+5. **"We're not building a better Booking.com. We're building the one you own."**
+   *Closing line. Reframes the entire conversation.*
+
+### Supporting one-liners (use as needed)
+
+- "Your guests, not their guests."
+- "Direct relationship. Direct payment. Direct upside."
+- "From locataire to copropriétaire." *(FR-only, plays on the rent/owner contrast)*
+- "Earn $STAY on every stay. Spend it on the next."
+- "Bitcoin in the treasury. Code in the platform. Hoteliers in the driver's seat."
+- "We replace 6 SaaS subscriptions with 1 cooperative." *(when pitching the staff messenger)*
+
+### Phrases to AVOID
+
+- "Disrupting hospitality" — overused, sounds 2015
+- "The future of travel" — generic
+- "Web3 for hotels" — narrows us to crypto natives
+- "Better booking experience" — vague, what does "better" mean
+- "AI-powered" — we don't sell AI, we sell control + economics
+
+---
+
+## 19. Versioning & ownership
 
 - This doc lives at `BRAND_GLOSSARY.md` at the repo root.
 - Any contributor adding new brand language → add a row to the relevant section, commit with `docs(glossary): add <term>` style message.
 - Translators consuming this file should treat it as a **constraint**, not a suggestion.
 - AI assistants (Claude, GPT-4, etc.) should be pointed to this file before being asked to write any STAYLO copy.
 
+### Change log
+
+| Date | Commit | Change |
+|---|---|---|
+| 2026-05-23 | `5907bfe` | Initial creation (11 sections) + Singapore/Thailand fix |
+| 2026-05-23 | *(this commit)* | Extended to 19 sections: feature catalog, acronyms, roadmap, visual ID, competitor positioning, formats, vendor stack, canonical phrases |
+
 ---
 
-**End of glossary.** Last commit before this version: `d91623d` (Vision allocation refactor).
+**End of glossary.** Last commit before this version: `5907bfe` (initial glossary + Singapore fix).
