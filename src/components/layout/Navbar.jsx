@@ -97,41 +97,11 @@ export function Navbar() {
                 {t('nav.submit', 'For Hoteliers')}
               </Link>
 
-              {/* REVIEW-MODE links — quick access to every product surface
-                  from the marketing nav. These are normally hidden behind
-                  auth gates; exposed here so we can navigate the full app
-                  for the demo/review. Remove or gate behind a feature flag
-                  before shipping to real users. */}
-              <Link to="/dashboard" className="text-sm font-medium no-underline transition-colors"
-                style={{ color: '#6C5CE7' }}
-                onMouseEnter={e => e.target.style.color = '#FF6B00'}
-                onMouseLeave={e => e.target.style.color = '#6C5CE7'}
-                title="Hotelier dashboard">
-                🛠️ Dashboard
-              </Link>
-              <a href="/messenger.html" target="_blank" rel="noopener noreferrer"
-                className="text-sm font-medium no-underline transition-colors"
-                style={{ color: '#FF6B00' }}
-                onMouseEnter={e => e.target.style.color = '#FF1F70'}
-                onMouseLeave={e => e.target.style.color = '#FF6B00'}
-                title="Staff messenger (opens in new tab)">
-                💬 Messenger
-              </a>
-              <a href="https://app.staylo.app/" target="_blank" rel="noopener noreferrer"
-                className="text-sm font-medium no-underline transition-colors"
-                style={{ color: '#00B894' }}
-                onMouseEnter={e => e.target.style.color = '#FF6B00'}
-                onMouseLeave={e => e.target.style.color = '#00B894'}
-                title="Guest app (opens in new tab)">
-                📱 Guest App
-              </a>
-              <Link to="/admin" className="text-sm font-medium no-underline transition-colors"
-                style={{ color: '#FF3CB4' }}
-                onMouseEnter={e => e.target.style.color = '#FF6B00'}
-                onMouseLeave={e => e.target.style.color = '#FF3CB4'}
-                title="Admin back-office">
-                🛡️ Admin
-              </Link>
+              {/* (Review-mode shortcuts Dashboard/Messenger/Guest App/Admin
+                  removed — they were used for the internal walk-through
+                  and don't belong in the public marketing nav. The same
+                  surfaces remain reachable from the dashboard sidebar
+                  once a user is signed in.) */}
 
               {/* Language */}
               <div className="relative">
@@ -234,14 +204,8 @@ export function Navbar() {
               <Link to="/vision" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.vision', 'About')}</Link>
               <Link to="/submit" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.submit', 'For Hoteliers')}</Link>
               <a href="mailto:contact@staylo.app" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.contact', 'Contact')}</a>
-
-              {/* REVIEW-MODE — same 4 surface shortcuts as desktop nav. */}
-              <div className="pt-2 mt-2" style={{ borderTop: '1px dashed #E8E0D8' }}>
-                <Link to="/dashboard" className="block py-2 text-sm font-medium no-underline" style={{ color: '#6C5CE7' }} onClick={() => setMobileOpen(false)}>🛠️ Dashboard</Link>
-                <a href="/messenger.html" target="_blank" rel="noopener noreferrer" className="block py-2 text-sm font-medium no-underline" style={{ color: '#FF6B00' }} onClick={() => setMobileOpen(false)}>💬 Messenger</a>
-                <a href="https://app.staylo.app/" target="_blank" rel="noopener noreferrer" className="block py-2 text-sm font-medium no-underline" style={{ color: '#00B894' }} onClick={() => setMobileOpen(false)}>📱 Guest App</a>
-                <Link to="/admin" className="block py-2 text-sm font-medium no-underline" style={{ color: '#FF3CB4' }} onClick={() => setMobileOpen(false)}>🛡️ Admin</Link>
-              </div>
+              {/* (Review-mode shortcuts removed from mobile menu — same
+                   rationale as desktop above.) */}
 
               <div className="pt-3 space-y-2" style={{ borderTop: '1.5px solid #E8E0D8' }}>
                 {user ? (
