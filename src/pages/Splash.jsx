@@ -53,7 +53,11 @@ export default function Splash() {
   ]
 
   const timeline = [
-    { icon: CheckCircle, color: 'libre', key: 'now' },
+    // The "now" item is the ONLY actionable step on the roadmap —
+    // a hotelier reading this page can ONLY do this one today. We
+    // mark it with a `to` prop so the renderer wraps it in a <Link>
+    // and adds a chevron + hover lift so the affordance is obvious.
+    { icon: CheckCircle, color: 'libre', key: 'now', to: '/submit' },
     { icon: RefreshCw, color: 'ocean', key: 'build' },
     { icon: Rocket, color: 'golden', key: 'launch' },
   ]
@@ -195,22 +199,54 @@ export default function Splash() {
           <div className="space-y-6">
             {timeline.map((item) => {
               const Icon = item.icon
-              return (
-                <div
-                  key={item.key}
-                  className="flex items-start gap-5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
-                >
+              // Shared inner layout — used both by the static card and the
+              // clickable card so the visual is identical except for the
+              // hover affordance + chevron.
+              const inner = (
+                <>
                   <div className={`flex items-center justify-center shrink-0 w-12 h-12 rounded-2xl bg-${item.color}/10`}>
                     <Icon size={24} className={`text-${item.color}`} />
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <p className={`text-sm font-bold text-${item.color} uppercase tracking-wider mb-1`}>
                       {t(`splash.timeline_${item.key}_label`)}
                     </p>
                     <p className="text-white/70 text-base">
                       {t(`splash.timeline_${item.key}_desc`)}
                     </p>
+                    {/* Inline CTA hint — only on the actionable "now" row */}
+                    {item.to && (
+                      <p className={`mt-2 text-sm font-bold text-${item.color} inline-flex items-center gap-1`}>
+                        {t('splash.timeline_now_cta', 'Inscrivez-vous maintenant')}
+                        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                      </p>
+                    )}
                   </div>
+                  {/* Big right-side chevron — only on the actionable row.
+                      Mobile: hidden (we already show the inline CTA above). */}
+                  {item.to && (
+                    <ArrowRight
+                      size={22}
+                      className={`hidden sm:block shrink-0 self-center text-${item.color}/60 group-hover:text-${item.color} group-hover:translate-x-1 transition-all`}
+                    />
+                  )}
+                </>
+              )
+              // Clickable row → <Link>; non-actionable rows → <div>
+              return item.to ? (
+                <Link
+                  key={item.key}
+                  to={item.to}
+                  className={`group flex items-start gap-5 bg-white/5 backdrop-blur-sm border border-${item.color}/30 rounded-2xl p-6 no-underline cursor-pointer transition-all hover:bg-white/10 hover:border-${item.color}/60 hover:shadow-lg hover:shadow-${item.color}/10 hover:-translate-y-0.5`}
+                >
+                  {inner}
+                </Link>
+              ) : (
+                <div
+                  key={item.key}
+                  className="flex items-start gap-5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+                >
+                  {inner}
                 </div>
               )
             })}
