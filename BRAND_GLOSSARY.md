@@ -209,6 +209,17 @@ Never mix taglines. One screen = one tagline.
 | "Acquisition target: flagship hotel in Koh Phangan" | "We own hotels" *(not yet — target M01-M06)* |
 | "Multi-layer governance: shareholders (DAO) + ops (board)" | "Audited smart contracts" *(audit budget allocated, not yet completed)* |
 | "Built for Thai hospitality regulation (PDPA, hotelier license)" | "GDPR certified" *(compliance ≠ certification)* |
+| **"90% of every booking goes to the hotelier (not Wall Street)"** *(this IS the canonical ethical claim — verifiable, locked in FP contracts)* | **"Save up to 15% / 20% / X% cheaper than Booking.com"** *(price-discount claims are NOT under our control — each hotelier sets their own rates; we don't control whether they pass the commission savings to the guest)* |
+
+### Pricing-claim rule (added 2026-05-25)
+
+NEVER claim a specific % discount for guests vs OTAs. Reasons:
+
+1. **We don't set the room price** — each hotelier does. They MIGHT pass the 12-point commission saving to the guest, or they MIGHT keep it as margin. Both are legitimate choices.
+2. **Promising what we don't control = broken trust.** A guest who lands on a STAYLO hotel at the same price as Booking.com (because the hotelier kept the savings) feels deceived if we said "20% cheaper".
+3. **The ETHICAL angle is stronger.** "90% goes to your hotelier (not Wall Street)" is a verifiable, brand-aligned claim that resonates with the rising "conscious traveler" demographic. It re-frames the value from "I save money" to "my money goes to the right place" — a more durable and defensible message.
+
+If you need to put a number on the comparison, the ONLY safe number is the **commission split** (10% STAYLO vs 22% Booking → 12 percentage-point delta on the hotelier side). That's a fact. Anything translated to "guest savings" is speculation.
 
 When in doubt: **say less, deliver more.** Promises broken in pitch = trust lost.
 

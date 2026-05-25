@@ -203,7 +203,7 @@ export default function OTASearch() {
               {t('booking.hero_title', 'Find deals on hotels, resorts & more')}
             </h1>
             <p className="text-blue-200/70 text-sm sm:text-base max-w-2xl mx-auto">
-              {t('booking.hero_subtitle', 'Book directly with hoteliers — save up to 20% vs. other platforms')}
+              {t('booking.hero_subtitle', 'Book directly with hoteliers — 90% of every booking goes to them, not to Wall Street.')}
             </p>
           </div>
 

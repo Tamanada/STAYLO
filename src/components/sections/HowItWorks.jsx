@@ -21,7 +21,7 @@ const TRAVELER_STEPS = [
     highlightKey: 'tr_step1_hl', highlightDef: 'Best price',
     bullets: [
       { key: 'tr_step1_b1', def: 'Same hotels as Booking & Agoda' },
-      { key: 'tr_step1_b2', def: 'Up to 15% cheaper' },
+      { key: 'tr_step1_b2', def: '90% goes directly to the hotelier' },
       { key: 'tr_step1_b3', def: 'No hidden fees' },
     ],
     color: '#FF6B00', bg: 'rgba(255,107,0,0.1)',
