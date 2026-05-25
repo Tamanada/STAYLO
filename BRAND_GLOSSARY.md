@@ -81,6 +81,9 @@ This is the most-confused area. **Memorize this table.**
 - ❌ Calling a hotelier "user" or "client" → ✅ "hotelier" or "partner"
 - ❌ Saying "Founding Partner = founder" → No. Founders ≠ Founding Partners. Founders = team. Founding Partners = first-cohort hoteliers who buy Alpha shares.
 - ❌ "Guest" = "client" → in FR copy, "guest" is fine. In EN, never "client" for a hotel customer — always "guest".
+- ❌ **"Travelers and hoteliers can both become co-owners"** → No. **Only people who BUY shares** become co-owners (= Hoteliers via Founding Partner Alpha round, OR Private Investors via World Round, OR Founders via vested equity). A traveler who just books a stay does NOT become a co-owner — they earn $STAY rewards (loyalty) + can become an Ambassador if they refer hotels. To become a co-owner a traveler must either (a) open their own hotel + buy FP shares, or (b) invest cash in the World Round ($1,500/share).
+  - ✅ Correct framing: "Both win — travelers earn $STAY rewards on every stay, hoteliers can become co-owners of the platform."
+  - ❌ Wrong framing (used until 2026-05-25 on /home How-It-Works section, since fixed): "Both win, and both can become co-owners."
 
 ---
 

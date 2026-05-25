@@ -167,7 +167,7 @@ export function HowItWorks() {
             {t('home_how.title', 'Two sides, one fair platform')}
           </h2>
           <p className="text-base mt-3 max-w-2xl mx-auto px-4" style={{ color: '#636E72' }}>
-            {t('home_how.subtitle', 'STAYLO is built around two audiences — travelers who book stays and hoteliers who host them. Both win, and both can become co-owners.')}
+            {t('home_how.subtitle', 'STAYLO is built around two audiences — travelers who book stays and hoteliers who host them. Both win: travelers earn $STAY rewards on every stay, hoteliers can become co-owners of the platform.')}
           </p>
         </div>
 
