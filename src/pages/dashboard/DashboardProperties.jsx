@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings } from 'lucide-react'
+import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Banknote } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -94,6 +94,41 @@ export default function DashboardProperties() {
             <Plus size={18} />
             {t('dashboard.add_property', 'Add Property')}
           </Button>
+        </Link>
+      </div>
+
+      {/* Hosting quick-nav — direct links to the 4 operational tools
+          (Front Desk / Housekeeping / Reports / Banking) that live on
+          their own routes but are CONTEXTUAL to "your properties". User
+          shouldn't have to scan the sidebar to find them. */}
+      <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
+        <Link
+          to="/dashboard/front-desk"
+          className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-ocean/40 hover:bg-ocean/5 hover:text-ocean hover:shadow-sm"
+        >
+          <ConciergeBell size={16} className="text-ocean" />
+          {t('dashboard.nav_front_desk', 'Front Desk')}
+        </Link>
+        <Link
+          to="/dashboard/housekeeping"
+          className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-libre/40 hover:bg-libre/5 hover:text-libre hover:shadow-sm"
+        >
+          <Sparkles size={16} className="text-libre" />
+          {t('dashboard.nav_housekeeping', 'Housekeeping')}
+        </Link>
+        <Link
+          to="/dashboard/reports"
+          className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-electric/40 hover:bg-electric/5 hover:text-electric hover:shadow-sm"
+        >
+          <BarChart3 size={16} className="text-electric" />
+          {t('dashboard.nav_reports', 'Reports')}
+        </Link>
+        <Link
+          to="/dashboard/banking"
+          className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-sunset/40 hover:bg-sunset/5 hover:text-sunset hover:shadow-sm"
+        >
+          <Banknote size={16} className="text-sunset" />
+          {t('dashboard.nav_banking', 'Banking')}
         </Link>
       </div>
 
