@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import {
@@ -25,6 +25,7 @@ const MAX_PHOTOS = 10
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 
 // ── Services & Amenities ──────────────────────────────
+// Static structure — labels translated at render time via t('submit.amenities.<key>', fallback)
 const AMENITY_CATEGORIES = [
   {
     key: 'essentials', label: 'Essentials',
@@ -151,6 +152,20 @@ const STEPS = [
   { key: 'location', label: 'Location & Map', icon: MapPin },
 ]
 
+// Languages spoken — static keys, labels translated at render time
+const LANGUAGES_SPOKEN = [
+  { key: 'en', flag: '🇬🇧', label: 'English' },
+  { key: 'th', flag: '🇹🇭', label: 'Thai' },
+  { key: 'fr', flag: '🇫🇷', label: 'French' },
+  { key: 'de', flag: '🇩🇪', label: 'German' },
+  { key: 'zh', flag: '🇨🇳', label: 'Chinese' },
+  { key: 'ja', flag: '🇯🇵', label: 'Japanese' },
+  { key: 'ru', flag: '🇷🇺', label: 'Russian' },
+  { key: 'es', flag: '🇪🇸', label: 'Spanish' },
+  { key: 'ko', flag: '🇰🇷', label: 'Korean' },
+  { key: 'ar', flag: '🇸🇦', label: 'Arabic' },
+]
+
 function extractNameFromBookingUrl(url) {
   try {
     const match = url.match(/booking\.com\/hotel\/[a-z]{2}\/([^./]+)/)
@@ -224,6 +239,44 @@ export default function Submit() {
     lat: '', lng: '', address: '',
   })
 
+  // Translated arrays — rebuilt when language changes so labels track the locale
+  const translatedAmenityCategories = useMemo(
+    () => AMENITY_CATEGORIES.map(cat => ({
+      ...cat,
+      label: t(`submit.amenities.categories.${cat.key}`, cat.label),
+      items: cat.items.map(item => ({
+        ...item,
+        label: t(`submit.amenities.items.${item.key}`, item.label),
+      })),
+    })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t]
+  )
+  const translatedAccessibilityFeatures = useMemo(
+    () => ACCESSIBILITY_FEATURES.map(f => ({
+      ...f,
+      label: t(`submit.accessibility_features.${f.key}`, f.label),
+    })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t]
+  )
+  const translatedBedTypes = useMemo(
+    () => BED_TYPES.map(b => ({
+      ...b,
+      label: t(`submit.bed_types.${b.key}`, b.label),
+    })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t]
+  )
+  const translatedAttractions = useMemo(
+    () => ATTRACTION_TYPES.map(a => ({
+      ...a,
+      label: t(`submit.attractions.${a.key}`, a.label),
+    })),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [t]
+  )
+
   function updateField(field, value) {
     setForm(prev => ({ ...prev, [field]: value }))
   }
@@ -286,7 +339,7 @@ export default function Submit() {
       setImportResult({ success: true, extracted: e })
       trackEvent(EVENTS.LINK_PARSE, { source: e.source })
     } catch (err) {
-      setImportResult({ success: false, message: err?.message || 'Unknown error' })
+      setImportResult({ success: false, message: err?.message || t('submit.import.unknown_error', 'Unknown error') })
     } finally {
       setParsing(false)
     }
@@ -296,13 +349,13 @@ export default function Submit() {
     setPhotoError('')
     const files = Array.from(e.target.files || [])
     if (photos.length + files.length > MAX_PHOTOS) {
-      setPhotoError(`You can upload up to ${MAX_PHOTOS} photos`); return
+      setPhotoError(t('submit.photos.error_max_count', 'You can upload up to {{max}} photos', { max: MAX_PHOTOS })); return
     }
     if (files.find(f => f.size > MAX_FILE_SIZE)) {
-      setPhotoError('Each photo must be under 5MB'); return
+      setPhotoError(t('submit.photos.error_too_large', 'Each photo must be under 5MB')); return
     }
     if (files.find(f => !['image/jpeg', 'image/png', 'image/webp'].includes(f.type))) {
-      setPhotoError('Only JPG, PNG, and WebP files are accepted'); return
+      setPhotoError(t('submit.photos.error_bad_type', 'Only JPG, PNG, and WebP files are accepted')); return
     }
     setPhotos(prev => [...prev, ...files])
     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -331,9 +384,9 @@ export default function Submit() {
     }
     if (failures.length > 0) {
       throw new Error(
-        `Photo upload failed (${failures.length}/${photos.length}):\n` +
+        t('submit.photos.upload_failed_header', 'Photo upload failed ({{failed}}/{{total}}):', { failed: failures.length, total: photos.length }) + '\n' +
         failures.join('\n') +
-        '\n\nThe property was saved without photos. Edit the property to add them once the issue is resolved.'
+        '\n\n' + t('submit.photos.upload_failed_footer', 'The property was saved without photos. Edit the property to add them once the issue is resolved.')
       )
     }
     return urls
@@ -432,7 +485,7 @@ export default function Submit() {
                 'bg-gray-100 text-gray-400'
               }`}>
               <Icon size={14} />
-              <span className="hidden sm:inline">{s.label}</span>
+              <span className="hidden sm:inline">{t(`submit.steps.${s.key}`, s.label)}</span>
               {i < STEPS.length - 1 && <ChevronRight size={12} className="ml-1 text-gray-300" />}
             </button>
           )
@@ -446,7 +499,7 @@ export default function Submit() {
           {step === 0 && (
             <div className="space-y-5">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Building2 size={20} className="text-ocean" /> Basic Information
+                <Building2 size={20} className="text-ocean" /> {t('submit.basics.heading', 'Basic Information')}
               </h2>
 
               {/* Smart link — Import from any listing URL.
@@ -456,9 +509,9 @@ export default function Submit() {
                 <div className="flex items-start gap-2">
                   <LinkIcon size={18} className="text-ocean mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-bold text-deep">Already listed on Booking, Airbnb or another OTA?</p>
+                    <p className="text-sm font-bold text-deep">{t('submit.import.title', 'Already listed on Booking, Airbnb or another OTA?')}</p>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      Paste the URL — we'll auto-fill what we can (name, location, cover photo, description) so you start from a populated form instead of a blank one.
+                      {t('submit.import.hint', "Paste the URL — we'll auto-fill what we can (name, location, cover photo, description) so you start from a populated form instead of a blank one.")}
                     </p>
                   </div>
                 </div>
@@ -467,12 +520,12 @@ export default function Submit() {
                     type="url"
                     value={importUrl}
                     onChange={e => setImportUrl(e.target.value)}
-                    placeholder="https://www.booking.com/hotel/... or https://www.airbnb.com/rooms/..."
+                    placeholder={t('submit.import.url_placeholder', 'https://www.booking.com/hotel/... or https://www.airbnb.com/rooms/...')}
                     className="flex-1 min-w-0 px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-sm text-deep focus:outline-none focus:ring-2 focus:ring-ocean/30"
                   />
                   <Button onClick={handleImport} disabled={parsing || !importUrl.trim()}>
                     {parsing ? <Loader2 size={14} className="animate-spin" /> : <LinkIcon size={14} />}
-                    {parsing ? 'Fetching…' : 'Import'}
+                    {parsing ? t('submit.import.fetching', 'Fetching…') : t('submit.import.button', 'Import')}
                   </Button>
                 </div>
 
@@ -480,25 +533,25 @@ export default function Submit() {
                 {importResult?.success && importResult.extracted && (
                   <div className="bg-libre/5 border border-libre/20 rounded-lg p-3 space-y-2">
                     <p className="text-xs font-bold text-libre flex items-center gap-1.5">
-                      ✅ Imported from {importResult.extracted.source}
+                      ✅ {t('submit.import.success_from', 'Imported from {{source}}', { source: importResult.extracted.source })}
                     </p>
                     <div className="text-xs text-gray-700 space-y-0.5">
-                      {importResult.extracted.name        && <div>✓ <strong>Name:</strong> {importResult.extracted.name}</div>}
-                      {importResult.extracted.city        && <div>✓ <strong>City:</strong> {importResult.extracted.city}</div>}
-                      {importResult.extracted.country     && <div>✓ <strong>Country:</strong> {importResult.extracted.country}</div>}
-                      {importResult.extracted.address     && <div>✓ <strong>Address:</strong> {importResult.extracted.address}</div>}
-                      {importResult.extracted.image_url   && <div>✓ <strong>Cover image</strong> (preview below)</div>}
-                      {importResult.extracted.star_rating && <div>✓ <strong>Star rating:</strong> {importResult.extracted.star_rating}</div>}
-                      {importResult.extracted.type        && <div>✓ <strong>Type:</strong> {importResult.extracted.type}</div>}
+                      {importResult.extracted.name        && <div>✓ <strong>{t('submit.import.field_name', 'Name:')}</strong> {importResult.extracted.name}</div>}
+                      {importResult.extracted.city        && <div>✓ <strong>{t('submit.import.field_city', 'City:')}</strong> {importResult.extracted.city}</div>}
+                      {importResult.extracted.country     && <div>✓ <strong>{t('submit.import.field_country', 'Country:')}</strong> {importResult.extracted.country}</div>}
+                      {importResult.extracted.address     && <div>✓ <strong>{t('submit.import.field_address', 'Address:')}</strong> {importResult.extracted.address}</div>}
+                      {importResult.extracted.image_url   && <div>✓ <strong>{t('submit.import.field_cover_image', 'Cover image')}</strong> {t('submit.import.field_cover_image_suffix', '(preview below)')}</div>}
+                      {importResult.extracted.star_rating && <div>✓ <strong>{t('submit.import.field_star_rating', 'Star rating:')}</strong> {importResult.extracted.star_rating}</div>}
+                      {importResult.extracted.type        && <div>✓ <strong>{t('submit.import.field_type', 'Type:')}</strong> {importResult.extracted.type}</div>}
                     </div>
                     {importResult.extracted.image_url && (
-                      <img src={importResult.extracted.image_url} alt="Cover preview"
+                      <img src={importResult.extracted.image_url} alt={t('submit.import.cover_preview_alt', 'Cover preview')}
                         className="w-32 h-20 object-cover rounded border border-gray-200" />
                     )}
                     {importResult.extracted.manual_fields_needed?.length > 0 && (
                       <details className="pt-2 border-t border-libre/20">
                         <summary className="text-xs font-bold text-amber-700 cursor-pointer">
-                          ⚠️ {importResult.extracted.manual_fields_needed.length} fields you still need to fill in manually
+                          ⚠️ {t('submit.import.manual_fields_summary', '{{count}} fields you still need to fill in manually', { count: importResult.extracted.manual_fields_needed.length })}
                         </summary>
                         <ul className="mt-2 space-y-0.5 text-[11px] text-gray-600 pl-4 list-disc">
                           {importResult.extracted.manual_fields_needed.map((f, i) => (
@@ -512,67 +565,67 @@ export default function Submit() {
 
                 {importResult && !importResult.success && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700">
-                    <strong>Import failed:</strong> {importResult.message}
-                    <p className="text-red-600 mt-1">No worries — fill the form manually below. The URL is saved either way.</p>
+                    <strong>{t('submit.import.failed_label', 'Import failed:')}</strong> {importResult.message}
+                    <p className="text-red-600 mt-1">{t('submit.import.failed_hint', 'No worries — fill the form manually below. The URL is saved either way.')}</p>
                   </div>
                 )}
 
                 {/* Manual URL fields — kept so the link is stored even if import didn't run */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-ocean/10">
-                  <Input label="Booking.com URL (optional)" placeholder="https://www.booking.com/hotel/..."
+                  <Input label={t('submit.basics.booking_url_label', 'Booking.com URL (optional)')} placeholder="https://www.booking.com/hotel/..."
                     value={form.booking_link} onChange={e => handleLinkPaste('booking_link', e.target.value)} />
-                  <Input label="Airbnb URL (optional)" placeholder="https://www.airbnb.com/rooms/..."
+                  <Input label={t('submit.basics.airbnb_url_label', 'Airbnb URL (optional)')} placeholder="https://www.airbnb.com/rooms/..."
                     value={form.airbnb_link} onChange={e => handleLinkPaste('airbnb_link', e.target.value)} />
                 </div>
               </div>
 
-              <Input label="Property Name *" placeholder="e.g., Sunset Beach Resort" required
+              <Input label={t('submit.basics.name_label', 'Property Name *')} placeholder={t('submit.basics.name_placeholder', 'e.g., Sunset Beach Resort')} required
                 value={form.name} onChange={e => updateField('name', e.target.value)} />
 
               <div className="grid grid-cols-2 gap-4">
-                <Select label="Property Type *" value={form.type} onChange={e => updateField('type', e.target.value)}>
-                  {propertyTypes.map(t => <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>)}
+                <Select label={t('submit.basics.type_label', 'Property Type *')} value={form.type} onChange={e => updateField('type', e.target.value)}>
+                  {propertyTypes.map(tp => <option key={tp} value={tp}>{t(`submit.property_types.${tp}`, tp.charAt(0).toUpperCase() + tp.slice(1))}</option>)}
                 </Select>
-                <Select label="Star Rating" value={form.star_rating} onChange={e => updateField('star_rating', e.target.value)}>
-                  {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{n} Star{n > 1 ? 's' : ''}</option>)}
+                <Select label={t('submit.basics.star_rating_label', 'Star Rating')} value={form.star_rating} onChange={e => updateField('star_rating', e.target.value)}>
+                  {[1, 2, 3, 4, 5].map(n => <option key={n} value={n}>{t('submit.basics.star_option', '{{n}} Star', { count: n, n })}</option>)}
                 </Select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <AutocompleteInput label="Country *" placeholder="Start typing..." options={countries}
+                <AutocompleteInput label={t('submit.basics.country_label', 'Country *')} placeholder={t('submit.basics.country_placeholder', 'Start typing...')} options={countries}
                   value={form.country} onChange={v => updateField('country', v)} />
-                <AutocompleteInput label="City *" placeholder="City name" value={form.city}
+                <AutocompleteInput label={t('submit.basics.city_label', 'City *')} placeholder={t('submit.basics.city_placeholder', 'City name')} value={form.city}
                   options={form.country === 'Thailand' ? thailandCities : []} onChange={v => updateField('city', v)} />
               </div>
 
-              <Input label="Street Address" placeholder="123 Beach Road, Soi 4..."
+              <Input label={t('submit.basics.address_label', 'Street Address')} placeholder={t('submit.basics.address_placeholder', '123 Beach Road, Soi 4...')}
                 value={form.address} onChange={e => updateField('address', e.target.value)} />
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <Input label="Total Rooms *" type="number" min={1} required
+                <Input label={t('submit.basics.rooms_label', 'Total Rooms *')} type="number" min={1} required
                   value={form.room_count} onChange={e => updateField('room_count', e.target.value)} />
-                <Select label="Currency *" value={form.currency} onChange={e => updateField('currency', e.target.value)}>
+                <Select label={t('submit.basics.currency_label', 'Currency *')} value={form.currency} onChange={e => updateField('currency', e.target.value)}>
                   {currencies.map(c => <option key={c.code} value={c.code}>{c.symbol} {c.code} — {c.name}</option>)}
                 </Select>
-                <Input label={`Avg. Nightly Rate (${getCurrency(form.currency).symbol}) *`} type="number" min={0} step="0.01" required
+                <Input label={t('submit.basics.avg_rate_label', 'Avg. Nightly Rate ({{symbol}}) *', { symbol: getCurrency(form.currency).symbol })} type="number" min={0} step="0.01" required
                   value={form.avg_nightly_rate} onChange={e => updateField('avg_nightly_rate', e.target.value)} />
-                <Input label="Website" placeholder="https://..." type="url"
+                <Input label={t('submit.basics.website_label', 'Website')} placeholder="https://..." type="url"
                   value={form.website} onChange={e => updateField('website', e.target.value)} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Contact Email *" type="email" required
+                <Input label={t('submit.basics.contact_email_label', 'Contact Email *')} type="email" required
                   value={form.contact_email} onChange={e => updateField('contact_email', e.target.value)} />
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('submit.basics.phone_label', 'Phone')}</label>
                   <PhoneInput value={form.contact_phone} onChange={v => updateField('contact_phone', v)} />
                 </div>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">{t('submit.basics.description_label', 'Description')}</label>
                 <textarea className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean resize-none"
-                  rows={4} maxLength={2000} placeholder="Describe your property, its location, what makes it special..."
+                  rows={4} maxLength={2000} placeholder={t('submit.basics.description_placeholder', 'Describe your property, its location, what makes it special...')}
                   value={form.description} onChange={e => updateField('description', e.target.value)} />
                 <p className="text-xs text-gray-400 text-right">{form.description.length}/2000</p>
               </div>
@@ -583,20 +636,21 @@ export default function Submit() {
           {step === 1 && (
             <div className="space-y-5">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Image size={20} className="text-ocean" /> Property Photos
+                <Image size={20} className="text-ocean" /> {t('submit.photos.heading', 'Property Photos')}
               </h2>
-              <p className="text-sm text-gray-500">Upload up to {MAX_PHOTOS} photos. Show your best rooms, lobby, pool, restaurant, views... First photo will be the cover image.</p>
+              <p className="text-sm text-gray-500">{t('submit.photos.hint', 'Upload up to {{max}} photos. Show your best rooms, lobby, pool, restaurant, views... First photo will be the cover image.', { max: MAX_PHOTOS })}</p>
 
               {photos.length > 0 && (
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                   {photos.map((file, index) => (
                     <div key={index} className="relative group aspect-square rounded-xl overflow-hidden border-2 border-gray-200">
                       {index === 0 && (
-                        <span className="absolute top-1 left-1 bg-ocean text-white text-[8px] font-bold uppercase px-1.5 py-0.5 rounded z-10">Cover</span>
+                        <span className="absolute top-1 left-1 bg-ocean text-white text-[8px] font-bold uppercase px-1.5 py-0.5 rounded z-10">{t('submit.photos.cover_badge', 'Cover')}</span>
                       )}
-                      <img src={URL.createObjectURL(file)} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                      <img src={URL.createObjectURL(file)} alt={t('submit.photos.preview_alt', 'Preview {{n}}', { n: index + 1 })} className="w-full h-full object-cover" />
                       <button type="button" onClick={() => removePhoto(index)}
-                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label={t('submit.photos.remove_aria', 'Remove photo')}>
                         <X size={12} />
                       </button>
                     </div>
@@ -609,9 +663,11 @@ export default function Submit() {
                   className="flex flex-col items-center gap-2 px-4 py-8 w-full rounded-xl border-2 border-dashed border-gray-300 hover:border-ocean/50 text-gray-400 hover:text-ocean transition-colors">
                   <Upload size={32} />
                   <span className="text-sm font-medium">
-                    {photos.length === 0 ? 'Click to upload photos' : `Add more (${photos.length}/${MAX_PHOTOS})`}
+                    {photos.length === 0
+                      ? t('submit.photos.upload_cta', 'Click to upload photos')
+                      : t('submit.photos.add_more', 'Add more ({{count}}/{{max}})', { count: photos.length, max: MAX_PHOTOS })}
                   </span>
-                  <span className="text-xs text-gray-400">JPG, PNG, WebP — max 5MB each</span>
+                  <span className="text-xs text-gray-400">{t('submit.photos.format_hint', 'JPG, PNG, WebP — max 5MB each')}</span>
                 </button>
               )}
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handlePhotoSelect} />
@@ -623,11 +679,11 @@ export default function Submit() {
           {step === 2 && (
             <div className="space-y-6">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Sparkles size={20} className="text-ocean" /> Services & Amenities
+                <Sparkles size={20} className="text-ocean" /> {t('submit.amenities.heading', 'Services & Amenities')}
               </h2>
-              <p className="text-sm text-gray-500">Select all services and amenities your property offers. This helps guests find the perfect match.</p>
+              <p className="text-sm text-gray-500">{t('submit.amenities.hint', 'Select all services and amenities your property offers. This helps guests find the perfect match.')}</p>
 
-              {AMENITY_CATEGORIES.map(cat => (
+              {translatedAmenityCategories.map(cat => (
                 <div key={cat.key}>
                   <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">{cat.label}</h3>
                   <CheckboxGrid items={cat.items} selected={form.amenities}
@@ -637,55 +693,49 @@ export default function Submit() {
 
               {/* Check-in / Check-out times */}
               <div className="pt-4 border-t border-gray-100">
-                <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">Policies</h3>
+                <h3 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider">{t('submit.policies.heading', 'Policies')}</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <Input label="Check-in Time" type="time" value={form.check_in_time}
+                  <Input label={t('submit.policies.check_in_label', 'Check-in Time')} type="time" value={form.check_in_time}
                     onChange={e => updateField('check_in_time', e.target.value)} />
-                  <Input label="Check-out Time" type="time" value={form.check_out_time}
+                  <Input label={t('submit.policies.check_out_label', 'Check-out Time')} type="time" value={form.check_out_time}
                     onChange={e => updateField('check_out_time', e.target.value)} />
-                  <Select label="Cancellation" value={form.cancellation_policy}
+                  <Select label={t('submit.policies.cancellation_label', 'Cancellation')} value={form.cancellation_policy}
                     onChange={e => updateField('cancellation_policy', e.target.value)}>
-                    <option value="flexible">Flexible</option>
-                    <option value="moderate">Moderate (48h)</option>
-                    <option value="strict">Strict (7 days)</option>
-                    <option value="non_refundable">Non-refundable</option>
+                    <option value="flexible">{t('submit.policies.cancellation.flexible', 'Flexible')}</option>
+                    <option value="moderate">{t('submit.policies.cancellation.moderate', 'Moderate (48h)')}</option>
+                    <option value="strict">{t('submit.policies.cancellation.strict', 'Strict (7 days)')}</option>
+                    <option value="non_refundable">{t('submit.policies.cancellation.non_refundable', 'Non-refundable')}</option>
                   </Select>
-                  <Select label="Smoking" value={form.smoking_policy}
+                  <Select label={t('submit.policies.smoking_label', 'Smoking')} value={form.smoking_policy}
                     onChange={e => updateField('smoking_policy', e.target.value)}>
-                    <option value="no_smoking">No Smoking</option>
-                    <option value="designated_areas">Designated Areas</option>
-                    <option value="allowed">Allowed</option>
+                    <option value="no_smoking">{t('submit.policies.smoking.no_smoking', 'No Smoking')}</option>
+                    <option value="designated_areas">{t('submit.policies.smoking.designated_areas', 'Designated Areas')}</option>
+                    <option value="allowed">{t('submit.policies.smoking.allowed', 'Allowed')}</option>
                   </Select>
-                  <Select label="Minimum age"
+                  <Select label={t('submit.policies.min_age_label', 'Minimum age')}
                     value={form.min_age || ''}
                     onChange={e => updateField('min_age', e.target.value)}>
-                    <option value="">All ages welcome</option>
-                    <option value="16">16+ (teens & adults)</option>
-                    <option value="18">18+ (adults only)</option>
-                    <option value="21">21+ (party / adults)</option>
-                    <option value="25">25+ (luxury)</option>
+                    <option value="">{t('submit.policies.min_age.all', 'All ages welcome')}</option>
+                    <option value="16">{t('submit.policies.min_age.16', '16+ (teens & adults)')}</option>
+                    <option value="18">{t('submit.policies.min_age.18', '18+ (adults only)')}</option>
+                    <option value="21">{t('submit.policies.min_age.21', '21+ (party / adults)')}</option>
+                    <option value="25">{t('submit.policies.min_age.25', '25+ (luxury)')}</option>
                   </Select>
                 </div>
               </div>
 
               {/* Languages */}
               <div>
-                <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Languages Spoken</h3>
+                <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">{t('submit.languages.heading', 'Languages Spoken')}</h3>
                 <div className="flex flex-wrap gap-2">
-                  {[
-                    { key: 'en', label: '🇬🇧 English' }, { key: 'th', label: '🇹🇭 Thai' },
-                    { key: 'fr', label: '🇫🇷 French' }, { key: 'de', label: '🇩🇪 German' },
-                    { key: 'zh', label: '🇨🇳 Chinese' }, { key: 'ja', label: '🇯🇵 Japanese' },
-                    { key: 'ru', label: '🇷🇺 Russian' }, { key: 'es', label: '🇪🇸 Spanish' },
-                    { key: 'ko', label: '🇰🇷 Korean' }, { key: 'ar', label: '🇸🇦 Arabic' },
-                  ].map(lang => (
+                  {LANGUAGES_SPOKEN.map(lang => (
                     <button key={lang.key} type="button" onClick={() => toggleArrayField('languages_spoken', lang.key)}
                       className={`px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all ${
                         form.languages_spoken.includes(lang.key)
                           ? 'border-ocean bg-ocean/5 text-ocean'
                           : 'border-gray-200 text-gray-500 hover:border-gray-300'
                       }`}>
-                      {lang.label}
+                      {lang.flag} {t(`submit.languages.${lang.key}`, lang.label)}
                     </button>
                   ))}
                 </div>
@@ -697,14 +747,14 @@ export default function Submit() {
           {step === 3 && (
             <div className="space-y-5">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Accessibility size={20} className="text-ocean" /> Accessibility
+                <Accessibility size={20} className="text-ocean" /> {t('submit.accessibility.heading', 'Accessibility')}
               </h2>
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <p className="text-sm text-blue-800 font-medium">
-                  Accessibility matters. Providing accurate information helps guests with disabilities plan their stay with confidence. Please check all features your property offers.
+                  {t('submit.accessibility.intro', 'Accessibility matters. Providing accurate information helps guests with disabilities plan their stay with confidence. Please check all features your property offers.')}
                 </p>
               </div>
-              <CheckboxGrid items={ACCESSIBILITY_FEATURES.map(f => ({ ...f, icon: Accessibility }))}
+              <CheckboxGrid items={translatedAccessibilityFeatures.map(f => ({ ...f, icon: Accessibility }))}
                 selected={form.accessibility} onToggle={key => toggleArrayField('accessibility', key)} columns={2} />
             </div>
           )}
@@ -713,30 +763,30 @@ export default function Submit() {
           {step === 4 && (
             <div className="space-y-6">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <Star size={20} className="text-ocean" /> Specials & Extras
+                <Star size={20} className="text-ocean" /> {t('submit.specials.heading', 'Specials & Extras')}
               </h2>
 
               {/* Bed types */}
               <div>
-                <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Bed Types Available</h3>
-                <CheckboxGrid items={BED_TYPES.map(b => ({ ...b, icon: BedDouble }))}
+                <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">{t('submit.specials.bed_types_heading', 'Bed Types Available')}</h3>
+                <CheckboxGrid items={translatedBedTypes.map(b => ({ ...b, icon: BedDouble }))}
                   selected={form.bed_types} onToggle={key => toggleArrayField('bed_types', key)} columns={2} />
               </div>
 
               {/* Nearby attractions */}
               <div className="pt-4 border-t border-gray-100">
-                <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Nearby Attractions & Activities</h3>
-                <p className="text-xs text-gray-500 mb-3">What can guests do or see near your property?</p>
-                <CheckboxGrid items={ATTRACTION_TYPES} selected={form.attractions}
+                <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">{t('submit.specials.attractions_heading', 'Nearby Attractions & Activities')}</h3>
+                <p className="text-xs text-gray-500 mb-3">{t('submit.specials.attractions_hint', 'What can guests do or see near your property?')}</p>
+                <CheckboxGrid items={translatedAttractions} selected={form.attractions}
                   onToggle={key => toggleArrayField('attractions', key)} columns={2} />
               </div>
 
               {/* Special requests */}
               <div className="pt-4 border-t border-gray-100">
-                <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Special Requests & Notes</h3>
+                <h3 className="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">{t('submit.specials.requests_heading', 'Special Requests & Notes')}</h3>
                 <textarea className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean resize-none"
                   rows={4} maxLength={1000}
-                  placeholder="Anything else guests should know? e.g., 'Late check-in available upon request', 'Honeymoon packages available', 'Airport pickup included for stays over 3 nights'..."
+                  placeholder={t('submit.specials.requests_placeholder', "Anything else guests should know? e.g., 'Late check-in available upon request', 'Honeymoon packages available', 'Airport pickup included for stays over 3 nights'...")}
                   value={form.special_requests} onChange={e => updateField('special_requests', e.target.value)} />
               </div>
             </div>
@@ -746,25 +796,25 @@ export default function Submit() {
           {step === 5 && (
             <div className="space-y-5">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                <MapPin size={20} className="text-ocean" /> Location & Map
+                <MapPin size={20} className="text-ocean" /> {t('submit.location.heading', 'Location & Map')}
               </h2>
 
               <div className="grid grid-cols-2 gap-4">
-                <Input label="Latitude" placeholder="e.g., 9.7489" type="number" step="any"
+                <Input label={t('submit.location.latitude_label', 'Latitude')} placeholder={t('submit.location.latitude_placeholder', 'e.g., 9.7489')} type="number" step="any"
                   value={form.lat} onChange={e => updateField('lat', e.target.value)} />
-                <Input label="Longitude" placeholder="e.g., 100.0143" type="number" step="any"
+                <Input label={t('submit.location.longitude_label', 'Longitude')} placeholder={t('submit.location.longitude_placeholder', 'e.g., 100.0143')} type="number" step="any"
                   value={form.lng} onChange={e => updateField('lng', e.target.value)} />
               </div>
 
               <p className="text-xs text-gray-500">
-                Tip: Find your coordinates on <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="text-ocean hover:underline">Google Maps</a> — right-click on your property and select "What's here?"
+                {t('submit.location.tip_prefix', 'Tip: Find your coordinates on')} <a href="https://maps.google.com" target="_blank" rel="noopener noreferrer" className="text-ocean hover:underline">{t('submit.location.google_maps', 'Google Maps')}</a> {t('submit.location.tip_suffix', '— right-click on your property and select "What\'s here?"')}
               </p>
 
               {/* Map preview */}
               <div className="rounded-xl overflow-hidden border-2 border-gray-200 bg-gray-100">
                 {form.lat && form.lng ? (
                   <iframe
-                    title="Property Location"
+                    title={t('submit.location.iframe_title', 'Property Location')}
                     width="100%"
                     height="350"
                     style={{ border: 0 }}
@@ -775,8 +825,8 @@ export default function Submit() {
                 ) : (
                   <div className="h-[350px] flex flex-col items-center justify-center text-gray-400">
                     <Map size={48} className="mb-3" />
-                    <p className="text-sm font-medium">Enter coordinates to preview your location on the map</p>
-                    <p className="text-xs mt-1">The map will appear here automatically</p>
+                    <p className="text-sm font-medium">{t('submit.location.placeholder_main', 'Enter coordinates to preview your location on the map')}</p>
+                    <p className="text-xs mt-1">{t('submit.location.placeholder_sub', 'The map will appear here automatically')}</p>
                   </div>
                 )}
               </div>
@@ -784,17 +834,17 @@ export default function Submit() {
               {/* Summary */}
               <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
                 <h3 className="text-sm font-bold text-emerald-800 mb-2 flex items-center gap-2">
-                  <CheckCircle size={16} /> Ready to Submit
+                  <CheckCircle size={16} /> {t('submit.summary.heading', 'Ready to Submit')}
                 </h3>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-sm text-emerald-700">
-                  <span>Property: <strong>{form.name || '—'}</strong></span>
-                  <span>Type: <strong>{form.type}</strong></span>
-                  <span>Location: <strong>{form.city}, {form.country}</strong></span>
-                  <span>Rooms: <strong>{form.room_count || '—'}</strong></span>
-                  <span>Amenities: <strong>{form.amenities.length} selected</strong></span>
-                  <span>Accessibility: <strong>{form.accessibility.length} features</strong></span>
-                  <span>Photos: <strong>{photos.length} uploaded</strong></span>
-                  <span>Attractions: <strong>{form.attractions.length} nearby</strong></span>
+                  <span>{t('submit.summary.property', 'Property:')} <strong>{form.name || '—'}</strong></span>
+                  <span>{t('submit.summary.type', 'Type:')} <strong>{t(`submit.property_types.${form.type}`, form.type)}</strong></span>
+                  <span>{t('submit.summary.location', 'Location:')} <strong>{form.city}, {form.country}</strong></span>
+                  <span>{t('submit.summary.rooms', 'Rooms:')} <strong>{form.room_count || '—'}</strong></span>
+                  <span>{t('submit.summary.amenities', 'Amenities:')} <strong>{t('submit.summary.selected', '{{count}} selected', { count: form.amenities.length })}</strong></span>
+                  <span>{t('submit.summary.accessibility', 'Accessibility:')} <strong>{t('submit.summary.features', '{{count}} features', { count: form.accessibility.length })}</strong></span>
+                  <span>{t('submit.summary.photos', 'Photos:')} <strong>{t('submit.summary.uploaded', '{{count}} uploaded', { count: photos.length })}</strong></span>
+                  <span>{t('submit.summary.attractions', 'Attractions:')} <strong>{t('submit.summary.nearby', '{{count}} nearby', { count: form.attractions.length })}</strong></span>
                 </div>
               </div>
             </div>
@@ -812,24 +862,24 @@ export default function Submit() {
             {step > 0 ? (
               <button type="button" onClick={() => setStep(s => s - 1)}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-all">
-                <ChevronLeft size={16} /> Back
+                <ChevronLeft size={16} /> {t('submit.nav.back', 'Back')}
               </button>
             ) : <div />}
 
             {step < STEPS.length - 1 ? (
               <button type="button" onClick={() => setStep(s => s + 1)} disabled={!canProceed()}
                 className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold bg-ocean text-white hover:bg-ocean/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-ocean/20">
-                Next <ChevronRight size={16} />
+                {t('submit.nav.next', 'Next')} <ChevronRight size={16} />
               </button>
             ) : (
               <Button type="submit" disabled={loading} className="shadow-lg">
-                {loading ? <><Loader2 size={16} className="animate-spin" /> Submitting...</> : 'Register Property'}
+                {loading ? <><Loader2 size={16} className="animate-spin" /> {t('submit.nav.submitting', 'Submitting...')}</> : t('submit.nav.register', 'Register Property')}
               </Button>
             )}
           </div>
 
           <p className="text-center text-xs text-gray-400 mt-4">
-            Step {step + 1} of {STEPS.length} — {STEPS[step].label}
+            {t('submit.nav.step_counter', 'Step {{current}} of {{total}} — {{label}}', { current: step + 1, total: STEPS.length, label: t(`submit.steps.${STEPS[step].key}`, STEPS[step].label) })}
           </p>
         </form>
       </Card>
