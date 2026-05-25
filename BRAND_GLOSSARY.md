@@ -334,7 +334,8 @@ without updating this section.
 | Milestone | Code | Timeline | What ships |
 |---|---|---|---|
 | **Alpha launch** | M01 | Month 0 → 6 | First 100 hotels in Koh Phangan, hotelier dashboard, staff messenger, guest PWA live |
-| **Founding Partner round close** | M03 | Month 3 | 3,000 Alpha shares sold (or window closes), commission 10% locked for FPs |
+| **Launch threshold (booking engine goes live)** | M0X | When reached | **400 Koh Phangan hotels registered OR 500 paid Alpha shares (whichever comes first).** This is the minimum-viable threshold that triggers shipping the booking engine to production — decoupled from the full $3M raise. |
+| **Founding Partner round close** | M03 | Month 3 (target) | 3,000 Alpha shares sold (or window closes), commission 10% locked for FPs. NOT the same as the launch threshold above. |
 | **BTC Wallet** | M03 | Month 3 | In-app wallet (Lightning Network), pay bookings + dividends + referrals in BTC |
 | **V2 — F&B layer** | M06–M12 | Month 6 → 12 | Pulse POS hub mature, restaurant booking, $STAY rewards live |
 | **TGE** | M07 | Month 7 | $STAY token launches on Raydium @ $0.10, FDV $1B |
@@ -342,6 +343,19 @@ without updating this section.
 | **V4 — Transport layer** | M18–M24 | Month 18 → 24 | Plane/transfer/taxi bookings, 5,000 hotel target |
 | **V5 — Global** | M24+ | Month 24+ | Multi-region rollout, Capacitor native apps, 16,000+ hotels |
 | **Founder Seat sunset** | M36 | Month 36 | If >10K active Hotel Seats, Founder Seats can be abolished by 51% Hotel-Seat vote |
+
+### Important: Launch threshold vs FP round close (added 2026-05-25)
+
+These two milestones are **NOT the same** and must not be conflated in marketing copy:
+
+| | Launch threshold | FP round close |
+|---|---|---|
+| **What triggers it** | 400 KP hotels registered OR 500 paid shares | All 3,000 Alpha shares sold (or window closes administratively) |
+| **What ships** | The booking engine goes live to production | The Alpha share sale ends; 10% commission lock takes effect for all who bought in |
+| **Order** | Comes FIRST (lower bar) | Comes SECOND (full sell-out) |
+| **Why decoupled** | We don't need the full $3M before shipping. A few hundred committed hotels + ~$500K in cash is enough to deploy and start booking. The remaining shares fund continued growth. |
+
+In the splash page roadmap (`splash.timeline_build_*`), the "build/launch" milestone refers to the **launch threshold**, NOT the FP round close. Don't say "we launch when 3,000 shares are sold" — that's the round close, not the launch.
 
 ### Phase letters used in the marketing copy
 
