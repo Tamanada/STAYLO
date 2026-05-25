@@ -96,6 +96,12 @@ export function Navbar() {
                 onMouseLeave={e => e.target.style.color = '#636E72'}>
                 {t('nav.submit', 'For Hoteliers')}
               </Link>
+              <Link to="/ambassador" className="text-sm font-medium no-underline transition-colors"
+                style={{ color: '#636E72' }}
+                onMouseEnter={e => e.target.style.color = '#FF6B00'}
+                onMouseLeave={e => e.target.style.color = '#636E72'}>
+                {t('nav.ambassador', 'Ambassador')}
+              </Link>
 
               {/* (Review-mode shortcuts Dashboard/Messenger/Guest App/Admin
                   removed — they were used for the internal walk-through
@@ -203,6 +209,7 @@ export function Navbar() {
               <Link to="/ota" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.book', 'Book')}</Link>
               <Link to="/vision" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.vision', 'About')}</Link>
               <Link to="/submit" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.submit', 'For Hoteliers')}</Link>
+              <Link to="/ambassador" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.ambassador', 'Ambassador')}</Link>
               <a href="mailto:contact@staylo.app" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.contact', 'Contact')}</a>
               {/* (Review-mode shortcuts removed from mobile menu — same
                    rationale as desktop above.) */}
