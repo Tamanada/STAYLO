@@ -295,6 +295,21 @@ export default function Splash() {
               <p className="text-sm text-gray-500">{t('splash.why_stat3_desc')}</p>
             </Card>
           </div>
+
+          {/* CTA — the section ends on an emotional note ("Unis · communauté
+              prête"). We give the visitor a way to JOIN that community right
+              here, instead of forcing them to scroll further. Brand-gradient
+              pill, white text, slight hover lift to invite the click. */}
+          <div className="mt-10 text-center">
+            <Link
+              to="/submit"
+              className="group inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-black text-white text-base sm:text-lg no-underline shadow-lg shadow-sunset/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-sunset/30"
+              style={{ background: 'linear-gradient(90deg, #FF6B00, #FF3CB4)' }}
+            >
+              {t('splash.why_cta', 'Je rejoins la communauté')}
+              <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
       </section>
 
