@@ -1,0 +1,1518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>STAYLO — List your hotel · Hotelier brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+Thai:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+/* ================================================================
+   STAYLO Founding Partner Pitch Deck
+   Target : Sasiwimol — President, Koh Phangan Hoteliers Association
+   Languages : EN / TH toggle
+   Print : Ctrl+P → Landscape → No margins → Save as PDF
+   ================================================================ */
+
+:root {
+  /* Brand palette — matches STAYLO logo (orange → hot pink → deep purple).
+     Variable names kept (--teal etc.) for backwards compat; values now
+     reflect the third logo color (purple) instead of teal. */
+  --teal:     #7E22CE;   /* was #00897B — purple, 3rd logo color */
+  --teal-d:   #581C87;   /* was #00695C — deeper purple */
+  --teal-l:   #F3E8FF;   /* was #E0F2F1 — light purple wash */
+  --orange:   #FF6B00;   /* was #F4511E — brighter orange matching logo top */
+  --orange-l: #FFEEDD;   /* was #FBE9E7 */
+  --pink:     #FF1F70;   /* NEW — logo middle color (hot pink) */
+  --pink-d:   #C2185B;
+  --pink-l:   #FCE4EC;
+  --deep:     #1A1A2E;
+  --ink:      #2C2C3E;
+  --muted:    #6B7280;
+  --line:     #E5E7EB;
+  --cream:    #FAFAF8;
+  --white:    #FFFFFF;
+  --green:    #15803D;
+  --green-l:  #DCFCE7;
+  --gold:     #B45309;
+  --gold-l:   #FEF3C7;
+
+  --grad-main: linear-gradient(135deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%);  /* THE logo gradient */
+  --grad-warm: linear-gradient(135deg, #FF6B00 0%, #FF1F70 100%);                /* orange→pink only */
+  --grad-cool: linear-gradient(135deg, #FF1F70 0%, #7E22CE 100%);                /* pink→purple only */
+  --grad-hero: linear-gradient(145deg, #1A1A2E 0%, #2D0A3D 45%, #3D0A45 100%);   /* dark with purple hint */
+  --grad-logo: linear-gradient(135deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%);   /* alias of grad-main */
+
+  --slide-w: 1280px;
+  --slide-h: 720px;
+  --font-main: 'Inter', -apple-system, sans-serif;
+  --font-thai: 'Noto Sans Thai', 'Inter', sans-serif;
+  --radius: 14px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: #111827;
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+/* ── Language switch ── */
+body.lang-th .en { display: none !important; }
+body.lang-en .th { display: none !important; }
+body.lang-th [class*="slide-text"] { font-family: var(--font-thai); }
+body.lang-th h1, body.lang-th h2, body.lang-th h3,
+body.lang-th p, body.lang-th li, body.lang-th span,
+body.lang-th div {
+  font-family: var(--font-thai);
+}
+
+/* ── Slide engine ── */
+.deck {
+  position: relative;
+  width: 100%;
+}
+
+.slide {
+  width: var(--slide-w);
+  height: var(--slide-h);
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--cream);
+}
+
+/* Screen mode: presentation stack with snap */
+@media screen {
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0 80px;
+    gap: 12px;
+  }
+  .slide {
+    box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+    border-radius: 6px;
+    scroll-snap-align: start;
+  }
+  /* Presentation mode (fullscreen) */
+  body.present .slide { display: none; }
+  body.present .slide.active {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    margin: 0;
+    z-index: 50;
+  }
+}
+
+/* ── Brand bar (every slide) ── */
+.brand {
+  position: absolute;
+  top: 28px;
+  left: 52px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+.brand-mark {
+  width: 32px; height: 32px;
+  background: var(--grad-main);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px; color: white;
+  letter-spacing: -0.5px;
+}
+.brand-name {
+  font-weight: 900; font-size: 18px; letter-spacing: -0.5px;
+  background: var(--grad-main);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* Inverted brand (dark slides) */
+.slide-dark .brand-name { background: none; color: white; }
+.slide-dark .brand-mark { background: rgba(255,255,255,0.15); }
+
+/* ── Slide number ── */
+.slide-num {
+  position: absolute;
+  bottom: 22px; right: 48px;
+  font-size: 15px; color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+.slide-dark .slide-num { color: rgba(255,255,255,0.3); }
+
+/* ── Footer URL ── */
+.footer-url {
+  position: absolute;
+  bottom: 20px; left: 52px;
+  font-size: 15px; color: var(--muted);
+  font-weight: 600; letter-spacing: 0.3px;
+}
+.footer-url a { color: var(--teal); text-decoration: none; }
+.slide-dark .footer-url { color: rgba(255,255,255,0.3); }
+.slide-dark .footer-url a { color: rgba(255,255,255,0.55); }
+
+/* ── Content area (inside the slide, below brand bar) ── */
+.content {
+  flex: 1;
+  padding: 72px 52px 52px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ── Typography ── */
+.label {
+  font-size: 15px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 2.5px;
+  color: var(--teal);
+  margin-bottom: 16px;
+}
+.slide-dark .label { color: rgba(255,255,255,0.45); }
+
+h1 {
+  font-size: 62px; font-weight: 900; line-height: 1.05;
+  letter-spacing: -1.5px; color: var(--deep);
+}
+h1.xl { font-size: 72px; }
+h1.lg { font-size: 56px; }
+h1.md { font-size: 48px; }
+h2 { font-size: 38px; font-weight: 800; line-height: 1.15; letter-spacing: -0.8px; color: var(--deep); }
+h3 { font-size: 21px; font-weight: 700; color: var(--ink); line-height: 1.3; }
+p  { font-size: 18px; line-height: 1.6; color: #4B5563; }
+p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
+.accent { color: var(--orange); }
+.teal   { color: var(--teal-d); }
+.white  { color: white; }
+.grad-text {
+  background: var(--grad-main);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* ── Slide: COVER ── */
+.slide-cover {
+  background: var(--grad-hero);
+}
+.slide-cover h1 { color: white; font-size: 58px; letter-spacing: -1px; }
+.slide-cover .sub {
+  font-size: 20px; color: rgba(255,255,255,0.65);
+  margin-top: 20px; line-height: 1.6;
+  max-width: 660px;
+}
+.slide-cover .tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 17px; font-weight: 600; color: rgba(255,255,255,0.7);
+  margin-bottom: 36px;
+}
+.slide-cover .tag-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #4ADE80;
+  box-shadow: 0 0 6px #4ADE80;
+}
+.cover-badge {
+  position: absolute;
+  right: 52px; bottom: 68px;
+  text-align: right;
+}
+.cover-badge .big {
+  font-size: 72px; font-weight: 900; letter-spacing: -3px;
+  background: linear-gradient(135deg, #F4511E, #FFAB40);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  line-height: 1;
+}
+.cover-badge .small-label {
+  font-size: 17px; font-weight: 600;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 1px; text-transform: uppercase;
+}
+
+/* ── Slide: PAIN ── */
+.pain-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 32px;
+}
+.pain-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.pain-card-ota {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: #F1F5F9;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 19px; color: #374151;
+  flex-shrink: 0;
+}
+.pain-card-body { flex: 1; }
+.pain-card-name { font-size: 18px; font-weight: 700; color: var(--ink); }
+.pain-card-rate { font-size: 26px; font-weight: 900; color: #DC2626; line-height: 1.1; margin-top: 2px; }
+.pain-card-note { font-size: 16px; color: var(--muted); margin-top: 2px; }
+
+.callout-band {
+  margin-top: 24px;
+  padding: 18px 24px;
+  background: linear-gradient(90deg, #FFF7ED, #FEF2F2);
+  border-left: 4px solid var(--orange);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 19px; font-weight: 600; color: var(--ink);
+  line-height: 1.5;
+}
+.callout-band span { color: var(--orange); font-weight: 800; }
+
+/* ── Slide: THE SHIFT ── */
+.shift-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 36px;
+  align-items: stretch;
+}
+.shift-col {
+  border-radius: var(--radius);
+  padding: 28px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.shift-col.old {
+  background: #F9FAFB;
+  border: 1px solid var(--line);
+}
+.shift-col.new {
+  background: var(--teal-l);
+  border: 1px solid rgba(0,137,123,0.25);
+}
+.shift-col-label {
+  font-size: 15px; font-weight: 800;
+  text-transform: uppercase; letter-spacing: 2px;
+}
+.shift-col.old .shift-col-label { color: var(--muted); }
+.shift-col.new .shift-col-label { color: var(--teal-d); }
+.shift-col-title { font-size: 22px; font-weight: 800; line-height: 1.2; }
+.shift-col.old .shift-col-title { color: #6B7280; }
+.shift-col.new .shift-col-title { color: var(--teal-d); }
+.shift-item {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 19px; color: var(--ink);
+}
+.shift-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.shift-col.old .shift-dot { background: #D1D5DB; }
+.shift-col.new .shift-dot { background: var(--teal); }
+.shift-col.old .shift-item { color: #9CA3AF; }
+.shift-col.new .shift-item { color: var(--teal-d); font-weight: 500; }
+
+.shift-arrow {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px; height: 44px;
+  background: var(--grad-main);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 18px; font-weight: 900;
+  box-shadow: 0 4px 16px rgba(0,137,123,0.35);
+  z-index: 2;
+}
+.shift-wrapper {
+  position: relative;
+  margin-top: 36px;
+}
+
+/* ── Slide: 1 VOTE ── */
+.vote-hero {
+  text-align: center;
+  margin-top: 28px;
+}
+.vote-fraction {
+  font-size: 120px; font-weight: 900; letter-spacing: -6px;
+  line-height: 1;
+  background: var(--grad-main);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.vote-sub {
+  font-size: 28px; font-weight: 700; color: var(--ink);
+  margin-top: 8px;
+}
+.vote-rule-list {
+  display: flex; gap: 20px; margin-top: 32px;
+  justify-content: center;
+}
+.vote-rule {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  text-align: center;
+  min-width: 200px;
+}
+.vote-rule-pct {
+  font-size: 30px; font-weight: 900; color: var(--teal-d); line-height: 1;
+}
+.vote-rule-label {
+  font-size: 16px; font-weight: 600; color: var(--muted);
+  margin-top: 6px; line-height: 1.4;
+  text-transform: uppercase; letter-spacing: 0.8px;
+}
+
+/* ── Slide: 10% ── */
+.commission-hero {
+  display: flex; align-items: center; gap: 48px; margin-top: 24px;
+}
+.commission-dial {
+  position: relative; flex-shrink: 0;
+  width: 220px; height: 220px;
+}
+.commission-dial svg { width: 220px; height: 220px; }
+.commission-dial-num {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.commission-dial-big {
+  font-size: 52px; font-weight: 900; letter-spacing: -2px;
+  background: var(--grad-main);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  line-height: 1;
+}
+.commission-dial-tag {
+  font-size: 16px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.commission-table {
+  flex: 1;
+}
+.commission-row {
+  display: flex; align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  gap: 12px;
+}
+.commission-row:last-child { border-bottom: none; }
+.commission-name {
+  font-size: 19px; font-weight: 600; color: var(--ink);
+  flex: 1;
+}
+.commission-pct {
+  font-size: 20px; font-weight: 800;
+  min-width: 80px; text-align: right;
+}
+.commission-pct.bad  { color: #DC2626; }
+.commission-pct.good { color: var(--teal-d); }
+.commission-bar {
+  height: 8px; border-radius: 4px; background: var(--line);
+  flex-shrink: 0; width: 120px; overflow: hidden;
+}
+.commission-bar-fill {
+  height: 100%; border-radius: 4px;
+}
+.commission-bar-fill.bad  { background: #EF4444; }
+.commission-bar-fill.good { background: var(--teal); }
+.lifetime-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 20px;
+  background: var(--green-l);
+  border: 1px solid rgba(21,128,61,0.25);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 19px; font-weight: 700; color: var(--green);
+}
+
+/* ── Slide: ALPHA ── */
+.alpha-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 36px; margin-top: 28px;
+}
+.alpha-price-block {
+  background: var(--grad-hero);
+  border-radius: var(--radius);
+  padding: 32px;
+  color: white;
+}
+.alpha-price-label {
+  font-size: 15px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 2px; color: rgba(255,255,255,0.5);
+  margin-bottom: 12px;
+}
+.alpha-price-amount {
+  font-size: 64px; font-weight: 900; letter-spacing: -3px; line-height: 1;
+  color: white;
+}
+.alpha-price-per { font-size: 18px; color: rgba(255,255,255,0.55); margin-top: 6px; }
+.alpha-supply {
+  margin-top: 20px;
+  padding: 12px 0 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  font-size: 18px; color: rgba(255,255,255,0.55);
+}
+.alpha-supply strong { color: #FFAB40; font-size: 22px; }
+
+.alpha-perks { display: flex; flex-direction: column; gap: 12px; }
+.alpha-perk {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: white; border: 1px solid var(--line);
+  border-radius: 10px; padding: 14px 16px;
+}
+.perk-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  background: var(--teal-l);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.perk-title { font-size: 18px; font-weight: 700; color: var(--ink); }
+.perk-note  { font-size: 16px; color: var(--muted); margin-top: 2px; }
+.urgency-bar {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: var(--gold-l);
+  border-left: 4px solid var(--gold);
+  border-radius: 0 8px 8px 0;
+  font-size: 18px; font-weight: 600; color: var(--gold);
+}
+
+/* ── Slide: CAP TABLE ── */
+.captable-layout {
+  display: grid; grid-template-columns: 320px 1fr;
+  gap: 40px; margin-top: 28px; align-items: center;
+}
+.captable-visual {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.ct-bar-wrap { display: flex; flex-direction: column; gap: 4px; }
+.ct-bar-label {
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 17px; font-weight: 600; color: var(--ink);
+}
+.ct-bar-label span { font-size: 15px; color: var(--muted); }
+.ct-bar-track {
+  height: 20px; background: var(--line); border-radius: 4px; overflow: hidden;
+}
+.ct-bar-fill { height: 100%; border-radius: 4px; }
+
+.captable-list { display: flex; flex-direction: column; gap: 14px; }
+.ct-row {
+  display: grid; grid-template-columns: 28px 1fr auto auto;
+  gap: 12px; align-items: center;
+  padding: 14px 18px;
+  background: white; border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.ct-swatch { width: 14px; height: 14px; border-radius: 3px; }
+.ct-name { font-size: 18px; font-weight: 600; color: var(--ink); }
+.ct-detail { font-size: 15px; color: var(--muted); margin-top: 1px; }
+.ct-shares { font-size: 19px; font-weight: 800; color: var(--teal-d); text-align: right; }
+.ct-capital { font-size: 15px; color: var(--muted); text-align: right; }
+.ct-row.highlight {
+  background: var(--teal-l); border-color: rgba(0,137,123,0.3);
+}
+.ct-row.highlight .ct-name { color: var(--teal-d); }
+.ct-row.highlight .ct-shares { color: var(--teal-d); }
+
+/* ── Slide: $STAY ── */
+.stay-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 36px; margin-top: 28px;
+}
+.stay-token-card {
+  background: var(--grad-hero);
+  border-radius: var(--radius);
+  padding: 28px;
+  color: white;
+}
+.stay-token-name {
+  font-size: 17px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 2px; color: rgba(255,255,255,0.45);
+  margin-bottom: 10px;
+}
+.stay-token-ticker {
+  font-size: 52px; font-weight: 900; letter-spacing: -2px; line-height: 1;
+}
+.stay-token-network {
+  margin-top: 8px; font-size: 17px; color: rgba(255,255,255,0.5);
+}
+.stay-stats { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.stay-stat {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.stay-stat:last-child { border-bottom: none; }
+.stay-stat-key { font-size: 17px; color: rgba(255,255,255,0.5); }
+.stay-stat-val { font-size: 19px; font-weight: 700; color: white; }
+.stay-stat-val.green { color: #4ADE80; }
+
+.stay-earn-list { display: flex; flex-direction: column; gap: 7px; }
+.stay-earn-item {
+  display: flex; align-items: center; gap: 10px;
+  background: white; border: 1px solid var(--line);
+  border-radius: 10px; padding: 9px 14px;
+}
+.earn-icon {
+  width: 32px; height: 32px; background: var(--teal-l);
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.earn-action { font-size: 18px; font-weight: 600; color: var(--ink); }
+.earn-amount {
+  margin-left: auto; font-size: 19px; font-weight: 800;
+  color: var(--teal-d);
+}
+
+/* ── Slide: 500 threshold ── */
+.threshold-layout {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 40px; margin-top: 24px; align-items: center;
+}
+.threshold-left { display: flex; flex-direction: column; gap: 16px; }
+.threshold-big {
+  font-size: 110px; font-weight: 900; letter-spacing: -5px; line-height: 1;
+  background: var(--grad-main);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.threshold-unit { font-size: 22px; font-weight: 700; color: var(--ink); margin-top: -8px; }
+.threshold-desc { font-size: 19px; color: #4B5563; line-height: 1.6; }
+
+.progress-wrap { margin-top: 8px; }
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-size: 17px; font-weight: 600; color: var(--muted);
+  margin-bottom: 8px;
+}
+.progress-track {
+  height: 12px; background: var(--line); border-radius: 6px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; width: 0%;
+  background: var(--grad-main); border-radius: 6px;
+  transition: width 1s ease;
+}
+
+.threshold-right { display: flex; flex-direction: column; gap: 12px; }
+.threshold-card {
+  background: white; border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 11px 18px;
+}
+.threshold-card-title { font-size: 17px; font-weight: 700; color: var(--ink); }
+.threshold-card-body { font-size: 15px; color: var(--muted); margin-top: 3px; line-height: 1.45; }
+
+/* ── Slide: ASK / CLOSE ── */
+.slide-close {
+  background: var(--grad-hero);
+}
+.slide-close h1 { color: white; }
+.slide-close .label { color: rgba(255,255,255,0.4); }
+.close-steps {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 20px; margin-top: 36px;
+}
+.close-step {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius);
+  padding: 24px 20px;
+}
+.close-step-num {
+  font-size: 15px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 2px; color: rgba(255,255,255,0.4);
+  margin-bottom: 10px;
+}
+.close-step-title { font-size: 20px; font-weight: 800; color: white; line-height: 1.2; }
+.close-step-body { font-size: 18px; color: rgba(255,255,255,0.55); margin-top: 8px; line-height: 1.5; }
+
+.close-urgency {
+  margin-top: 24px;
+  padding: 16px 22px;
+  background: rgba(244,81,30,0.15);
+  border: 1px solid rgba(244,81,30,0.3);
+  border-radius: var(--radius);
+  font-size: 18px; font-weight: 600; color: rgba(255,255,255,0.85);
+  line-height: 1.5;
+}
+.close-urgency span { color: #FFAB40; font-weight: 800; }
+
+/* ── Slide: QR / CONTACT ── */
+.contact-layout {
+  display: grid; grid-template-columns: 1fr auto;
+  gap: 52px; margin-top: 28px; align-items: center;
+}
+.contact-list { display: flex; flex-direction: column; gap: 14px; }
+.contact-item {
+  display: flex; align-items: center; gap: 14px;
+  background: white; border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 16px 20px;
+}
+.contact-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--grad-main);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.contact-title { font-size: 18px; font-weight: 700; color: var(--ink); }
+.contact-detail { font-size: 17px; color: var(--muted); margin-top: 2px; }
+
+.qr-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.qr-wrap img {
+  width: 200px; height: 200px;
+  border: 3px solid var(--deep);
+  border-radius: 12px; padding: 6px; background: white;
+}
+.qr-label {
+  font-size: 18px; font-weight: 700; color: var(--deep); text-align: center;
+}
+.qr-code-ref {
+  font-size: 15px; color: var(--muted); text-align: center;
+  font-family: monospace; letter-spacing: 0.5px;
+}
+
+/* ── Controls (screen only) ── */
+.controls {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(26,26,46,0.92);
+  border: 1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 999px;
+  padding: 8px 16px;
+  z-index: 200;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.ctrl-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: none; color: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  transition: background 0.15s;
+}
+.ctrl-btn:hover { background: rgba(255,255,255,0.18); }
+.ctrl-counter {
+  font-size: 17px; font-weight: 600; color: rgba(255,255,255,0.6);
+  min-width: 52px; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.ctrl-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.12); }
+.lang-toggle {
+  display: flex; background: rgba(255,255,255,0.06); border-radius: 999px; overflow: hidden;
+}
+.lang-btn {
+  padding: 6px 12px; border: none; cursor: pointer;
+  font-size: 16px; font-weight: 700; letter-spacing: 0.5px;
+  background: transparent; color: rgba(255,255,255,0.5);
+  transition: all 0.15s;
+}
+.lang-btn.active { background: var(--teal); color: white; border-radius: 999px; }
+
+.ctrl-present {
+  padding: 6px 14px; border-radius: 999px;
+  background: var(--grad-main); border: none; color: white;
+  font-size: 16px; font-weight: 700; cursor: pointer; letter-spacing: 0.5px;
+}
+.ctrl-pdf {
+  padding: 6px 14px; border-radius: 999px;
+  background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.7);
+  font-size: 16px; font-weight: 600; cursor: pointer; letter-spacing: 0.5px;
+}
+
+/* ── Print rules ── */
+@media print {
+  body {
+    background: white;
+    display: block;
+    padding: 0;
+    gap: 0;
+  }
+  .controls { display: none !important; }
+  .slide {
+    width: 100%;
+    height: 100vh;
+    margin: 0;
+    box-shadow: none;
+    border-radius: 0;
+    page-break-after: always;
+    break-after: page;
+  }
+  .slide:last-of-type {
+    page-break-after: auto;
+    break-after: auto;
+  }
+  @page {
+    size: 1280px 720px landscape;
+    margin: 0;
+  }
+}
+</style>
+</head>
+<body class="lang-en">
+
+<!-- ================================================================
+     SLIDE 1 — COVER
+     ================================================================ -->
+<!-- ================================================================
+     SLIDE 1 — COVER — Stop paying 18% to Booking
+     ================================================================ -->
+<!-- ================================================================
+     SLIDE 1 — COVER — Stop paying 18% to Booking
+     ================================================================ -->
+<section class="slide slide-dark slide-cover" data-slide="1">
+  <div class="brand">
+    <div class="brand-mark">S</div>
+    <span class="brand-name" style="color:white; background:none;">STAYLO</span>
+  </div>
+
+  <div class="content" style="justify-content:flex-end; padding-bottom:96px;">
+    <div class="tag">
+      <span class="tag-dot"></span>
+      <span class="en">Koh Phangan · Founding Partner Program</span>
+      <span class="th">เกาะพะงัน · โปรแกรม Founding Partner</span>
+    </div>
+
+    <h1 class="en">Stop paying 18%<br/>to Booking.</h1>
+    <h1 class="th">หยุดจ่าย 18%<br/>ให้ Booking</h1>
+
+    <p class="sub en" style="margin-top:20px;">
+      10% commission for life. The tools to run your hotel — free.<br/>
+      The platform you co-own. Built with hoteliers, for hoteliers.
+    </p>
+    <p class="sub th" style="margin-top:20px;">
+      ค่าคอม 10% ตลอดชีพ เครื่องมือบริหารโรงแรม — ฟรี<br/>
+      แพลตฟอร์มที่คุณเป็นเจ้าของร่วม สร้างกับเจ้าของโรงแรม เพื่อเจ้าของโรงแรม
+    </p>
+  </div>
+
+  <div class="cover-badge">
+    <div class="big">10%</div>
+    <div class="small-label en">Commission · locked forever</div>
+    <div class="small-label th">ค่าคอมมิชชัน · ตลอดชีพ</div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+  <div class="slide-num">1 / 9</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 2 — PAIN — OTA commission bleed
+     ================================================================ -->
+<section class="slide" data-slide="2">
+  <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
+
+  <div class="content" style="justify-content:flex-start; padding-top:80px;">
+    <div class="label en">The problem</div>
+    <div class="label th">ปัญหา</div>
+
+    <h1 class="lg en">Every 5th booking —<br/>you work for <span class="accent">Booking.com.</span></h1>
+    <h1 class="lg th">ทุก 5 การจอง —<br/>คุณทำงานให้ <span class="accent">Booking.com</span></h1>
+
+    <div class="pain-grid">
+      <div class="pain-card">
+        <div class="pain-card-ota">B</div>
+        <div class="pain-card-body">
+          <div class="pain-card-name">Booking.com</div>
+          <div class="pain-card-rate">18–22%</div>
+          <div class="pain-card-note en">Per booking, every time</div>
+          <div class="pain-card-note th">ต่อการจองทุกครั้ง</div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-card-ota">A</div>
+        <div class="pain-card-body">
+          <div class="pain-card-name">Agoda</div>
+          <div class="pain-card-rate">17–20%</div>
+          <div class="pain-card-note en">Thailand standard rate</div>
+          <div class="pain-card-note th">อัตราสำหรับประเทศไทย</div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-card-ota">E</div>
+        <div class="pain-card-body">
+          <div class="pain-card-name">Expedia / Hotels.com</div>
+          <div class="pain-card-rate">20–25%</div>
+          <div class="pain-card-note en">Highest fees on the market</div>
+          <div class="pain-card-note th">ค่าธรรมเนียมสูงที่สุดในตลาด</div>
+        </div>
+      </div>
+      <div class="pain-card">
+        <div class="pain-card-ota">Ai</div>
+        <div class="pain-card-body">
+          <div class="pain-card-name">Airbnb</div>
+          <div class="pain-card-rate">15%</div>
+          <div class="pain-card-note en">Plus guest fees on top</div>
+          <div class="pain-card-note th">บวกค่าธรรมเนียมจากแขกเพิ่มเติม</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout-band">
+      <span class="en"><span>$6.3 million</span> leaves Koh Phangan every year to OTA shareholders in New York and Singapore. None of it comes back.</span>
+      <span class="th"><span>6.3 ล้านดอลลาร์</span> ออกจากเกาะพะงันทุกปีไปสู่ผู้ถือหุ้น OTA ในนิวยอร์กและสิงคโปร์ ไม่มีแม้แต่บาทเดียวที่กลับมา</span>
+    </div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+  <div class="slide-num">2 / 9</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 3 — 10% COMMISSION LOCKED — your savings
+     ================================================================ -->
+<section class="slide" data-slide="3">
+  <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
+
+  <div class="content" style="padding-top:76px;">
+    <div class="label en">Commission structure</div>
+    <div class="label th">โครงสร้างค่าคอมมิชชัน</div>
+
+    <h1 class="md en">Keep <span class="grad-text">90 cents</span> of every dollar.<br/>Forever.</h1>
+    <h1 class="md th">เก็บ <span class="grad-text">90 สตางค์</span> จากทุกบาท<br/>ตลอดไป</h1>
+
+    <div class="commission-hero">
+      <!-- SVG dial -->
+      <div class="commission-dial">
+        <svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="110" cy="110" r="96" stroke="#E5E7EB" stroke-width="18" fill="none"/>
+          <!-- 90% arc teal (324 deg of 360 = 90%) -->
+          <circle cx="110" cy="110" r="96"
+            stroke="url(#dialGrad)" stroke-width="18" fill="none"
+            stroke-dasharray="603.2 670.2"
+            stroke-dashoffset="167.5"
+            stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="dialGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#00897B"/>
+              <stop offset="100%" stop-color="#26A69A"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="commission-dial-num">
+          <div class="commission-dial-big">90%</div>
+          <div class="commission-dial-tag en">yours</div>
+          <div class="commission-dial-tag th">ของคุณ</div>
+        </div>
+      </div>
+
+      <div class="commission-table">
+        <div class="commission-row">
+          <div class="commission-name">Booking.com</div>
+          <div class="commission-bar"><div class="commission-bar-fill bad" style="width:81%"></div></div>
+          <div class="commission-pct bad">–22%</div>
+        </div>
+        <div class="commission-row">
+          <div class="commission-name">Expedia</div>
+          <div class="commission-bar"><div class="commission-bar-fill bad" style="width:91%"></div></div>
+          <div class="commission-pct bad">–25%</div>
+        </div>
+        <div class="commission-row">
+          <div class="commission-name">Agoda</div>
+          <div class="commission-bar"><div class="commission-bar-fill bad" style="width:74%"></div></div>
+          <div class="commission-pct bad">–17%</div>
+        </div>
+        <div class="commission-row">
+          <div class="commission-name" style="color:var(--teal-d); font-weight:800;">STAYLO</div>
+          <div class="commission-bar"><div class="commission-bar-fill good" style="width:40%"></div></div>
+          <div class="commission-pct good">–10%</div>
+        </div>
+
+        <div class="lifetime-badge">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L10 6H15L11 9.5L12.5 14.5L8 11.5L3.5 14.5L5 9.5L1 6H6L8 1Z" fill="#15803D"/></svg>
+          <span class="en">Locked for life — by DAO constitution</span>
+          <span class="th">ล็อคตลอดชีพ — โดยธรรมนูญ DAO</span>
+        </div>
+
+        <p style="font-size:18px; color:var(--muted); margin-top:12px; line-height:1.5;">
+          <span class="en">10 rooms · $100 avg rate · 70% occupancy &nbsp;=&nbsp; <strong style="color:var(--green);">+$30,660 / year</strong> vs Booking.com</span>
+          <span class="th">10 ห้อง · ราคาเฉลี่ย $100 · อัตราเข้าพัก 70% &nbsp;=&nbsp; <strong style="color:var(--green);">+$30,660 / ปี</strong> เทียบ Booking.com</span>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+  <div class="slide-num">3 / 9</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 4 — STAYLO SHIP — free operational toolkit
+     ================================================================ -->
+<section class="slide" data-slide="4">
+  <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
+
+  <div class="content" style="padding-top:64px;">
+    <div class="label en">Bonus — STAYLO Ship</div>
+    <div class="label th">โบนัส — STAYLO Ship</div>
+
+    <h1 class="md en">Manage your hotel <span class="grad-text">in the palm of your hand.</span></h1>
+    <h1 class="md th">บริหารโรงแรมของคุณ <span class="grad-text">ในฝ่ามือ</span></h1>
+
+    <p style="font-size:18px; color:var(--muted); margin-top:8px; max-width:780px; line-height:1.5;">
+      <span class="en">The full operational app, included free with your Founding Partner share. No subscription. No usage cap. Every new hotel onboarded — even via Booking.com — uses it from day one.</span>
+      <span class="th">แอปปฏิบัติการเต็มรูปแบบ รวมฟรีกับหุ้น Founding Partner ของคุณ ไม่ต้องสมัครสมาชิก ไม่จำกัดการใช้งาน โรงแรมทุกแห่งที่เข้าร่วม — แม้จะมาจาก Booking.com — ใช้งานได้ตั้งแต่วันแรก</span>
+    </p>
+
+    <!-- Feature grid: 6 modules -->
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:22px;">
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">👥</div>
+        <div style="font-size:17px; font-weight:800; color:var(--ink);"><span class="en">HR &amp; Contracts</span><span class="th">HR และสัญญา</span></div>
+        <div style="font-size:15px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Bilingual contracts, ID/work permit scans, payroll, vacation tracking</span><span class="th">สัญญาสองภาษา สแกนบัตร/ใบอนุญาตทำงาน บัญชีเงินเดือน วันหยุด</span></div>
+      </div>
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">📅</div>
+        <div style="font-size:17px; font-weight:800; color:var(--ink);"><span class="en">Schedule</span><span class="th">ตารางเวลา</span></div>
+        <div style="font-size:15px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Shifts, swaps, auto-conflict detection, hours/week limits</span><span class="th">กะ การสับเปลี่ยน ตรวจสอบความขัดแย้ง ขีดจำกัดชม./สัปดาห์</span></div>
+      </div>
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">✅</div>
+        <div style="font-size:17px; font-weight:800; color:var(--ink);"><span class="en">Tasks &amp; Routines</span><span class="th">งานและกิจวัตร</span></div>
+        <div style="font-size:15px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Daily/weekly/monthly tasks per zone, recurring, photo checks</span><span class="th">งานรายวัน/สัปดาห์/เดือนต่อพื้นที่ ซ้ำได้ ตรวจสอบด้วยภาพ</span></div>
+      </div>
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">📋</div>
+        <div style="font-size:17px; font-weight:800; color:var(--ink);"><span class="en">Fiches techniques</span><span class="th">คู่มือเทคนิค</span></div>
+        <div style="font-size:15px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Kitchen recipes, maintenance SOPs, spa rituals, dept-locked access</span><span class="th">สูตรครัว ขั้นตอนซ่อมบำรุง พิธีกรรมสปา เข้าถึงตามแผนก</span></div>
+      </div>
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">🛏️</div>
+        <div style="font-size:17px; font-weight:800; color:var(--ink);"><span class="en">Booking engine</span><span class="th">เครื่องมือจอง</span></div>
+        <div style="font-size:15px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Direct booking, channel manager, room inventory, rates, 14 languages</span><span class="th">จองตรง จัดการช่องทาง สต็อกห้อง ราคา 14 ภาษา</span></div>
+      </div>
+
+      <div style="background:linear-gradient(135deg, rgba(255,107,0,0.08), rgba(126,34,206,0.08)); border:1px solid var(--orange); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">💬</div>
+        <div style="font-size:17px; font-weight:800; color:var(--ink);"><span class="en">Guest bridge &amp; Ambassador</span><span class="th">สะพานแขกและแอมบาสเดอร์</span></div>
+        <div style="font-size:15px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">In-hotel services, QR check-in, ambassador onboarding (2% BTC)</span><span class="th">บริการในโรงแรม QR เช็คอิน รับแอมบาสเดอร์ (2% BTC)</span></div>
+      </div>
+
+    </div>
+
+    <!-- Cost comparison strip -->
+    <div style="margin-top:18px; background:linear-gradient(135deg, #1A1A2E 0%, #2D0A3D 100%); border-radius:10px; padding:14px 22px; display:grid; grid-template-columns:1.6fr 1fr; gap:24px; align-items:center;">
+      <div>
+        <div style="font-size:13px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:6px;">
+          <span class="en">What others charge per month</span>
+          <span class="th">คู่แข่งเก็บต่อเดือน</span>
+        </div>
+        <div style="display:flex; gap:14px; flex-wrap:wrap; font-size:16px; color:rgba(255,255,255,0.85); font-weight:600;">
+          <span>Cloudbeds <strong style="color:#FF6B00;">$250–500</strong></span>
+          <span>Mews <strong style="color:#FF6B00;">$300+</strong></span>
+          <span>Little Hotelier <strong style="color:#FF6B00;">$99–150</strong></span>
+          <span>RoomRaccoon <strong style="color:#FF6B00;">$200+</strong></span>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:2px;">
+          <span class="en">You pay</span>
+          <span class="th">คุณจ่าย</span>
+        </div>
+        <div style="font-size:42px; font-weight:900; line-height:1; background:var(--grad-warm); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-2px;">$0 / mo</div>
+        <div style="font-size:15px; color:rgba(255,255,255,0.7); margin-top:2px;">
+          <span class="en">included with your share, for life</span>
+          <span class="th">รวมกับหุ้นของคุณตลอดชีพ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+  <div class="slide-num">4 / 9</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 5 — 1 PROPERTY = 1 VOTE — your protection
+     ================================================================ -->
+<section class="slide" data-slide="5">
+  <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
+
+  <div class="content" style="padding-top:72px; align-items:center; text-align:center;">
+    <div class="label en">Governance</div>
+    <div class="label th">การกำกับดูแล</div>
+
+    <div class="vote-fraction">1</div>
+    <div class="vote-sub en">property &nbsp;=&nbsp; 1 vote</div>
+    <div class="vote-sub th">โรงแรม &nbsp;=&nbsp; 1 เสียง</div>
+
+    <p style="margin-top:16px; font-size:18px; color:var(--muted); max-width:640px;">
+      <span class="en">No matter how many shares you hold, every hotelier has equal say. Sasiwimol's hotel and David's hotel — same vote.</span>
+      <span class="th">ไม่ว่าจะถือหุ้นเท่าไร เจ้าของโรงแรมทุกรายมีสิทธิ์เท่ากัน โรงแรมของสาสิวิมลและโรงแรมของเดวิด — เสียงเท่ากัน</span>
+    </p>
+
+    <div class="vote-rule-list">
+      <div class="vote-rule">
+        <div class="vote-rule-pct">50%+1</div>
+        <div class="vote-rule-label en">Product, features,<br/>partnerships</div>
+        <div class="vote-rule-label th">สินค้า ฟีเจอร์<br/>พันธมิตร</div>
+      </div>
+      <div class="vote-rule">
+        <div class="vote-rule-pct">67%</div>
+        <div class="vote-rule-label en">Commission rate,<br/>ownership structure</div>
+        <div class="vote-rule-label th">อัตราค่าคอม<br/>โครงสร้างความเป็นเจ้าของ</div>
+      </div>
+      <div class="vote-rule">
+        <div class="vote-rule-pct">90%</div>
+        <div class="vote-rule-label en">Platform dissolution,<br/>fundamental change</div>
+        <div class="vote-rule-label th">ยุบแพลตฟอร์ม<br/>การเปลี่ยนแปลงพื้นฐาน</div>
+      </div>
+    </div>
+
+    <div class="callout-band" style="max-width:680px; margin-top:24px; text-align:left;">
+      <span class="en">The commission rate can <strong>only rise</strong> if <span>90% of all hoteliers agree</span>. In practice — it never will.</span>
+      <span class="th">อัตราค่าคอมมิชชันจะ<strong>ขึ้นได้</strong>ก็ต่อเมื่อ<span>เจ้าของโรงแรม 90% เห็นด้วย</span> ในทางปฏิบัติ — มันจะไม่มีวันเกิดขึ้น</span>
+    </div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+  <div class="slide-num">5 / 9</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 6 — THE SHIFT — built with hoteliers
+     ================================================================ -->
+<section class="slide" data-slide="6">
+  <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
+
+  <div class="content" style="padding-top:80px;">
+    <div class="label en">The shift</div>
+    <div class="label th">การเปลี่ยนแปลง</div>
+
+    <h1 class="lg en">Built with hoteliers.<br/><span class="grad-text">Owned by hoteliers.</span></h1>
+    <h1 class="lg th">สร้างโดยเจ้าของโรงแรม<br/><span class="grad-text">เป็นเจ้าของโดยเจ้าของโรงแรม</span></h1>
+
+    <div class="shift-wrapper">
+      <div class="shift-cols">
+        <div class="shift-col old">
+          <div class="shift-col-label en">Today — OTA model</div>
+          <div class="shift-col-label th">วันนี้ — โมเดล OTA</div>
+          <div class="shift-col-title en">You rent the shelf.</div>
+          <div class="shift-col-title th">คุณเช่าพื้นที่ขาย</div>
+          <div class="shift-item"><span class="shift-dot"></span><span class="en">Commission rises without your vote</span><span class="th">ค่าคอมมิชชันขึ้นโดยไม่ผ่านเสียงคุณ</span></div>
+          <div class="shift-item"><span class="shift-dot"></span><span class="en">You own zero equity in the platform</span><span class="th">คุณไม่มีหุ้นในแพลตฟอร์มเลย</span></div>
+          <div class="shift-item"><span class="shift-dot"></span><span class="en">Guest data stays with them</span><span class="th">ข้อมูลแขกอยู่กับพวกเขา</span></div>
+          <div class="shift-item"><span class="shift-dot"></span><span class="en">Payout delayed up to 30 days</span><span class="th">การจ่ายเงินล่าช้าถึง 30 วัน</span></div>
+        </div>
+        <div class="shift-col new">
+          <div class="shift-col-label en">STAYLO — cooperative model</div>
+          <div class="shift-col-label th">STAYLO — โมเดลสหกรณ์</div>
+          <div class="shift-col-title en">You own the platform.</div>
+          <div class="shift-col-title th">คุณเป็นเจ้าของแพลตฟอร์ม</div>
+          <div class="shift-item"><span class="shift-dot"></span><span class="en">10% commission, locked by vote</span><span class="th">ค่าคอมมิชชัน 10% ถูกล็อคโดยเสียงโหวต</span></div>
+          <div class="shift-item"><span class="shift-dot"></span><span class="en">Real shares — real ownership</span><span class="th">หุ้นจริง — ความเป็นเจ้าของจริง</span></div>
+          <div class="shift-item"><span class="shift-dot"></span><span class="en">You keep the guest relationship</span><span class="th">คุณดูแลความสัมพันธ์กับแขกเอง</span></div>
+          <div class="shift-item"><span class="shift-dot"></span><span class="en">Payout within 72 hours</span><span class="th">รับเงินภายใน 72 ชั่วโมง</span></div>
+        </div>
+      </div>
+      <div class="shift-arrow" style="top:50%; left:calc(50% - 0px);">&#8594;</div>
+    </div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+  <div class="slide-num">6 / 9</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 7 — THRESHOLD 500 — launch + ambassador flywheel
+     ================================================================ -->
+<section class="slide" data-slide="7">
+  <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
+
+  <div class="content" style="padding-top:54px;">
+    <div class="label en">The launch threshold</div>
+    <div class="label th">เกณฑ์การเปิดตัว</div>
+
+    <h1 class="md en">Koh Phangan launches at<br/><span class="grad-text">500 hotels registered.</span></h1>
+    <h1 class="md th">เกาะพะงันเปิดตัวเมื่อ<br/><span class="grad-text">มีโรงแรมลงทะเบียน 500 แห่ง</span></h1>
+
+    <div class="threshold-layout">
+      <div class="threshold-left">
+        <div class="threshold-big">500</div>
+        <div class="threshold-unit en">properties · one island · one market</div>
+        <div class="threshold-unit th">ที่พัก · เกาะเดียว · ตลาดเดียว</div>
+
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span class="en">Registered</span>
+            <span class="th">ลงทะเบียนแล้ว</span>
+            <span>500</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <div class="threshold-desc">
+          <span class="en">Around <strong>600 properties of all types</strong> operate on Koh Phangan — hotels, resorts, villas, bungalows, hostels, guesthouses. Once 500 are registered, the booking engine goes live and every Founding Partner is immediately visible to travelers worldwide.</span>
+          <span class="th">บนเกาะพะงันมี <strong>ที่พักประมาณ 600 แห่งทุกประเภท</strong> — โรงแรม รีสอร์ท วิลล่า บังกะโล โฮสเทล เกสต์เฮาส์ เมื่อมีที่พักลงทะเบียน 500 แห่ง เครื่องมือจองจะเปิดให้บริการ และ Founding Partner ทุกรายจะปรากฏต่อนักเดินทางทั่วโลกทันที</span>
+        </div>
+
+        <!-- Ambassador flywheel: every guest becomes a paid recruiter (2% BTC for life per referred hotel) -->
+        <div style="margin-top:6px; padding:7px 12px; background:linear-gradient(135deg, rgba(244,81,30,0.08), rgba(0,137,123,0.08)); border-left:3px solid var(--orange); border-radius:6px;">
+          <div style="font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:3px;">
+            <span class="en">The ambassador flywheel · วงล้อแอมบาสเดอร์</span>
+            <span class="th">วงล้อแอมบาสเดอร์ · The ambassador flywheel</span>
+          </div>
+          <div style="font-size:11.5px; line-height:1.4; color:var(--ink);">
+            <span class="en">Every guest — <strong>even on a Booking.com reservation</strong> — opens the STAYLO app for in-hotel services and discovers the <strong>ambassador program</strong>: refer any hotel worldwide → <strong>2% BTC, for life</strong>. Your guests become a paid global sales force. <strong>One hotel = a launchpad for a thousand ambassadors.</strong></span>
+            <span class="th">แขกทุกคน — <strong>แม้จะมาจากการจอง Booking.com</strong> — เปิดแอป STAYLO เพื่อใช้บริการในโรงแรมและพบ <strong>โปรแกรมแอมบาสเดอร์</strong>: แนะนำโรงแรมทั่วโลก → <strong>2% BTC ตลอดชีพ</strong> แขกของคุณกลายเป็นทีมขายระดับโลกที่ได้รับค่าตอบแทน <strong>หนึ่งโรงแรม = ฐานปล่อยแอมบาสเดอร์พันคน</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="threshold-right">
+        <div class="threshold-card">
+          <div class="threshold-card-title en">Why 500? — One coordinated launch.</div>
+          <div class="threshold-card-title th">ทำไมต้อง 500? — เปิดตัวพร้อมกันครั้งเดียว</div>
+          <div class="threshold-card-body en"><strong>We all start direct marketing the same day.</strong> Every visitor to our first Full Moon party leaves knowing STAYLO — billboards at Thong Sala pier, staff handing out cards, no exception. One island. One platform. One narrative — at the world's biggest beach party.</div>
+          <div class="threshold-card-body th"><strong>เราเริ่มการตลาดโดยตรงพร้อมกันในวันเดียวกัน</strong> นักท่องเที่ยวทุกคนที่มาร่วมงาน Full Moon ครั้งแรกของเราต้องรู้จัก STAYLO — ป้ายโฆษณาที่ท่าเรือท้องศาลา พนักงานแจกการ์ดประจำจุด ไม่มีข้อยกเว้น หนึ่งเกาะ หนึ่งแพลตฟอร์ม หนึ่งเรื่องราว — ในงานปาร์ตี้ชายหาดที่ใหญ่ที่สุดในโลก</div>
+        </div>
+        <div class="threshold-card">
+          <div class="threshold-card-title en">Your role, Sasiwimol</div>
+          <div class="threshold-card-title th">บทบาทของคุณ สาสิวิมล</div>
+          <div class="threshold-card-body en">As president of the Koh Phangan hoteliers association, your endorsement accelerates the 500-hotel threshold. Every hotel you refer earns you a 2% BTC commission on their bookings — for life.</div>
+          <div class="threshold-card-body th">ในฐานะประธานสมาคมเจ้าของโรงแรมเกาะพะงัน การรับรองของคุณเร่งให้ถึงเกณฑ์ 500 โรงแรม ทุกโรงแรมที่คุณแนะนำ คุณได้รับค่าคอมมิชชัน BTC 2% จากการจองของโรงแรมนั้น — ตลอดชีพ</div>
+        </div>
+        <div class="threshold-card" style="background:var(--teal-l); border-color:rgba(0,137,123,0.25);">
+          <div class="threshold-card-title" style="color:var(--teal-d);">
+            <span class="en">~600 properties on the island.</span>
+            <span class="th">ที่พักประมาณ 600 แห่งบนเกาะ</span>
+          </div>
+          <div class="threshold-card-body" style="color:var(--teal-d);">
+            <span class="en">Together we reach 500 well before the next Full Moon. D-Day = launch.</span>
+            <span class="th">เราถึง 500 ได้ก่อนงาน Full Moon ครั้งถัดไป วัน D-Day = เปิดตัว</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+  <div class="slide-num">7 / 9</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 8 — CLOSE — list your hotel today
+     ================================================================ -->
+<section class="slide slide-dark slide-close" data-slide="8">
+  <div class="brand">
+    <div class="brand-mark" style="background:rgba(255,255,255,0.15);">S</div>
+    <span class="brand-name" style="color:white; background:none;">STAYLO</span>
+  </div>
+
+  <div class="content" style="padding-top:84px;">
+    <div class="label en" style="color:rgba(255,255,255,0.5);">List your hotel today</div>
+    <div class="label th" style="color:rgba(255,255,255,0.5);">ลงทะเบียนโรงแรมของคุณวันนี้</div>
+
+    <h1 class="md en" style="color:white;">Three steps. <span class="grad-text">No money today.</span></h1>
+    <h1 class="md th" style="color:white;">สามขั้นตอน <span class="grad-text">ไม่ต้องจ่ายวันนี้</span></h1>
+
+    <div class="close-steps" style="display:grid; grid-template-columns:repeat(3,1fr); gap:24px; margin-top:36px;">
+
+      <div class="close-step" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:24px 24px 22px;">
+        <div style="font-size:13px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:#FF6B00; margin-bottom:10px;">Step 1</div>
+        <div class="close-step-title en" style="font-size:22px; font-weight:800; color:white;">List your hotel</div>
+        <div class="close-step-title th" style="font-size:22px; font-weight:800; color:white;">ลงทะเบียนโรงแรม</div>
+        <div class="close-step-body en" style="font-size:16px; color:rgba(255,255,255,0.65); margin-top:10px; line-height:1.5;">15 minutes on staylo.app. Photos, rooms, rates. Your "Founding Member" badge appears the same day.</div>
+        <div class="close-step-body th" style="font-size:16px; color:rgba(255,255,255,0.65); margin-top:10px; line-height:1.5;">15 นาทีบน staylo.app รูปภาพ ห้อง ราคา ตราสัญลักษณ์ "Founding Member" ปรากฏในวันเดียวกัน</div>
+      </div>
+
+      <div class="close-step" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:24px 24px 22px;">
+        <div style="font-size:13px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:#FF1F70; margin-bottom:10px;">Step 2</div>
+        <div class="close-step-title en" style="font-size:22px; font-weight:800; color:white;">Open STAYLO Ship</div>
+        <div class="close-step-title th" style="font-size:22px; font-weight:800; color:white;">เปิดใช้ STAYLO Ship</div>
+        <div class="close-step-body en" style="font-size:16px; color:rgba(255,255,255,0.65); margin-top:10px; line-height:1.5;">The full operational app — HR, schedule, tasks, fiches, booking, guest bridge. Free for life. Onboard your team in an afternoon.</div>
+        <div class="close-step-body th" style="font-size:16px; color:rgba(255,255,255,0.65); margin-top:10px; line-height:1.5;">แอปปฏิบัติการเต็มรูปแบบ — HR ตารางงาน คู่มือ จอง สะพานแขก ฟรีตลอดชีพ ฝึกอบรมทีมในบ่ายเดียว</div>
+      </div>
+
+      <div class="close-step" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:14px; padding:24px 24px 22px;">
+        <div style="font-size:13px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:#7E22CE; margin-bottom:10px;">Step 3</div>
+        <div class="close-step-title en" style="font-size:22px; font-weight:800; color:white;">Refer 3 hotels</div>
+        <div class="close-step-title th" style="font-size:22px; font-weight:800; color:white;">แนะนำ 3 โรงแรม</div>
+        <div class="close-step-body en" style="font-size:16px; color:rgba(255,255,255,0.65); margin-top:10px; line-height:1.5;">Each hotel you bring in earns you <strong style="color:white;">2% of their bookings in BTC — for life</strong>. Three hotels = passive income that compounds.</div>
+        <div class="close-step-body th" style="font-size:16px; color:rgba(255,255,255,0.65); margin-top:10px; line-height:1.5;">ทุกโรงแรมที่คุณชวนเข้ามาได้รับ <strong style="color:white;">2% ของการจองเป็น BTC ตลอดชีพ</strong> สามโรงแรม = รายได้เชิงรับที่ทบต้น</div>
+      </div>
+
+    </div>
+
+    <div class="close-urgency" style="margin-top:32px; padding:18px 24px; background:rgba(255,107,0,0.10); border:1px solid rgba(255,107,0,0.30); border-radius:12px;">
+      <span class="en" style="font-size:16px; color:rgba(255,255,255,0.85); line-height:1.55;">No fee to list. No subscription. <strong style="color:#FF6B00;">10% commission locked for life</strong> by cooperative constitution — requires a 90% vote of members to change. Start saving on day one of platform launch.</span>
+      <span class="th" style="font-size:16px; color:rgba(255,255,255,0.85); line-height:1.55;">ไม่มีค่าลงทะเบียน ไม่มีค่าสมาชิก <strong style="color:#FF6B00;">ค่าคอม 10% ล็อคตลอดชีพ</strong> ตามรัฐธรรมนูญสหกรณ์ — ต้องใช้เสียงโหวต 90% ของสมาชิกเพื่อเปลี่ยน เริ่มประหยัดตั้งแต่วันแรกที่แพลตฟอร์มเปิดตัว</span>
+    </div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app" style="color:rgba(255,255,255,0.35);">staylo.app</a></div>
+  <div class="slide-num" style="color:rgba(255,255,255,0.3);">8 / 9</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 9 — QR / CONTACT
+     ================================================================ -->
+<section class="slide" data-slide="9">
+  <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
+
+  <div class="content" style="padding-top:76px;">
+    <div class="label en">Next step — right now</div>
+    <div class="label th">ก้าวถัดไป — ตอนนี้เลย</div>
+
+    <h1 class="md en">Scan. Register.<br/><span class="grad-text">Become a co-owner.</span></h1>
+    <h1 class="md th">สแกน ลงทะเบียน<br/><span class="grad-text">กลายเป็นเจ้าของร่วม</span></h1>
+
+    <div class="contact-layout">
+      <div class="contact-list">
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+              <line x1="14" y1="14" x2="14" y2="17"/><line x1="17" y1="14" x2="21" y2="14"/><line x1="14" y1="20" x2="17" y2="20"/><line x1="20" y1="17" x2="20" y2="21"/>
+            </svg>
+          </div>
+          <div>
+            <div class="contact-title en">Scan the QR code</div>
+            <div class="contact-title th">สแกน QR Code</div>
+            <div class="contact-detail">staylo.app/welcome · ref: STAYLO-N3CK007</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="none">
+              <path d="M20.52 3.48A12 12 0 0 0 3.48 20.52L2 22l1.55-.41A12 12 0 1 0 20.52 3.48zM12 21.5a9.5 9.5 0 0 1-4.84-1.32l-.35-.21-3.59.94.96-3.5-.23-.36A9.5 9.5 0 1 1 12 21.5z"/>
+              <path d="M17.5 14.4c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.68-2.08-.18-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.07-.15-.68-1.65-.94-2.27-.25-.6-.5-.52-.68-.53l-.58-.01c-.2 0-.53.07-.8.37-.28.3-1.05 1.03-1.05 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.27-.2-.57-.35z"/>
+            </svg>
+          </div>
+          <div>
+            <div class="contact-title en">WhatsApp David — right now</div>
+            <div class="contact-title th">WhatsApp David — ตอนนี้เลย</div>
+            <div class="contact-detail en">English / Thai · Koh Phangan based</div>
+            <div class="contact-detail th">ภาษาอังกฤษ / ไทย · ประจำเกาะพะงัน</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
+              <line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/>
+            </svg>
+          </div>
+          <div>
+            <div class="contact-title en">Coffee on Koh Phangan</div>
+            <div class="contact-title th">กาแฟบนเกาะพะงัน</div>
+            <div class="contact-detail en">Founder lives here — no VC office, no pitch theater</div>
+            <div class="contact-detail th">ผู้ก่อตั้งอยู่ที่นี่ — ไม่มีสำนักงาน VC ไม่มีการแสดง</div>
+          </div>
+        </div>
+        <div style="padding:16px 0; border-top:1px solid var(--line);">
+          <p style="font-size:19px; font-weight:600; color:var(--ink); line-height:1.6;">
+            <span class="en">"Built with hoteliers, for hoteliers.<br/>Who owns the platform, makes the rules."</span>
+            <span class="th">"สร้างร่วมกับเจ้าของโรงแรม เพื่อเจ้าของโรงแรม<br/>ผู้เป็นเจ้าของแพลตฟอร์ม คือผู้กำหนดกฎ"</span>
+          </p>
+        </div>
+      </div>
+
+      <div class="qr-wrap">
+        <img
+          src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fstaylo.app%2Fwelcome%3Fref%3DSTAYLO-N3CK007%26utm_source%3Dpitch_qr%26utm_campaign%3Dfounding_close&size=200x200&margin=2&color=1A1A2E&bgcolor=FAFAF8"
+          alt="staylo.app/welcome"
+        />
+        <div class="qr-label">staylo.app/welcome</div>
+        <div class="qr-code-ref">ref: STAYLO-N3CK007</div>
+        <div style="margin-top:8px; padding:8px 14px; background:var(--green-l); border-radius:8px; text-align:center;">
+          <div style="font-size:15px; font-weight:700; color:var(--green); line-height:1.5;">
+            <span class="en">Every signup via this code<br/>funds the STAYLO Foundation</span>
+            <span class="th">การลงทะเบียนทุกครั้งผ่านโค้ดนี้<br/>สนับสนุน STAYLO Foundation</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+  <div class="slide-num"> 9 / 9 </div>
+</section>
+
+<!-- ================================================================
+     RESOURCES FOOTER — accessible online below the deck
+     ================================================================ -->
+<footer style="background:#1A1A2E; color:white; padding:48px 64px 64px; font-family:var(--font-main);">
+  <div style="max-width:1280px; margin:0 auto;">
+
+    <div style="font-size:13px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:#FF6B00; margin-bottom:8px;">
+      <span class="en">Resources for hoteliers</span>
+      <span class="th">เอกสารสำหรับโรงแรม</span>
+    </div>
+    <h2 style="font-size:34px; font-weight:800; margin-bottom:6px; letter-spacing:-1px;">
+      <span class="en">Take it home. Decide on your own time.</span>
+      <span class="th">นำกลับบ้าน ตัดสินใจตามเวลาของคุณ</span>
+    </h2>
+    <p style="font-size:17px; color:rgba(255,255,255,0.6); margin-bottom:32px; max-width:680px;">
+      <span class="en">Everything you need to evaluate STAYLO at your own pace. No pressure.</span>
+      <span class="th">ทุกอย่างที่คุณต้องใช้เพื่อพิจารณา STAYLO ตามจังหวะของคุณ ไม่กดดัน</span>
+    </p>
+
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:16px;">
+
+      <a href="/pitch/one-pager.html" target="_blank" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:22px 24px; text-decoration:none; color:white;">
+        <div style="font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:#FF6B00; margin-bottom:6px;">📄 One-pager A4</div>
+        <div style="font-size:19px; font-weight:800; margin-bottom:4px;"><span class="en">STAYLO at a glance</span><span class="th">STAYLO โดยย่อ</span></div>
+        <div style="font-size:14px; color:rgba(255,255,255,0.6); line-height:1.4;"><span class="en">Print, share, hand to your team · EN / FR / TH</span><span class="th">พิมพ์ แชร์ แจกทีมงาน · EN / FR / TH</span></div>
+      </a>
+
+      <a href="/messenger.html" target="_blank" style="background:linear-gradient(135deg, rgba(255,31,112,0.10), rgba(126,34,206,0.10)); border:1px solid rgba(255,31,112,0.35); border-radius:12px; padding:22px 24px; text-decoration:none; color:white;">
+        <div style="font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:#FF1F70; margin-bottom:6px;">🚢 Try STAYLO Ship</div>
+        <div style="font-size:19px; font-weight:800; margin-bottom:4px;"><span class="en">The operational app · live demo</span><span class="th">แอปปฏิบัติการ · เดโมจริง</span></div>
+        <div style="font-size:14px; color:rgba(255,255,255,0.6); line-height:1.4;"><span class="en">HR · Schedule · Tasks · Booking · Guest bridge</span><span class="th">HR · ตารางงาน · งาน · จอง · สะพานแขก</span></div>
+      </a>
+
+      <a href="/pitch.html" target="_blank" style="background:linear-gradient(135deg, rgba(255,107,0,0.10), rgba(126,34,206,0.10)); border:1px solid rgba(255,107,0,0.35); border-radius:12px; padding:22px 24px; text-decoration:none; color:white;">
+        <div style="font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:#7E22CE; margin-bottom:6px;">💼 Want to invest?</div>
+        <div style="font-size:19px; font-weight:800; margin-bottom:4px;"><span class="en">Founding Partner pitch</span><span class="th">การนำเสนอ Founding Partner</span></div>
+        <div style="font-size:14px; color:rgba(255,255,255,0.6); line-height:1.4;"><span class="en">13 slides · cap table · token · roadmap · Alpha share $1,000</span><span class="th">13 สไลด์ · cap table · โทเค็น · roadmap · หุ้น Alpha $1,000</span></div>
+      </a>
+
+    </div>
+
+    <div style="margin-top:36px; padding-top:24px; border-top:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; font-size:14px; color:rgba(255,255,255,0.55);">
+      <div>
+        <span class="en">Built with hoteliers, for hoteliers · Koh Phangan, Thailand</span>
+        <span class="th">สร้างกับเจ้าของโรงแรม เพื่อเจ้าของโรงแรม · เกาะพะงัน ประเทศไทย</span>
+      </div>
+      <div style="font-family:'Courier New',monospace; font-size:13px;">
+        contact@staylo.app · staylo.app
+      </div>
+    </div>
+
+  </div>
+</footer>
+
+<!-- ================================================================
+     CONTROLS
+     ================================================================ -->
+<div class="controls" id="controls">
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btnEN" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" id="btnTH" onclick="setLang('th')">TH</button>
+  </div>
+  <div class="ctrl-sep"></div>
+  <button class="ctrl-btn" onclick="nav(-1)" title="Previous">&#8592;</button>
+  <span class="ctrl-counter" id="counter">1 / 9</span>
+  <button class="ctrl-btn" onclick="nav(1)" title="Next">&#8594;</button>
+  <div class="ctrl-sep"></div>
+  <button class="ctrl-present" onclick="togglePresent()">Present</button>
+  <button class="ctrl-pdf" onclick="window.print()">PDF</button>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var slides = Array.from(document.querySelectorAll('.slide'));
+  var total  = slides.length;
+  var cur    = 0;
+  var presenting = false;
+  var lang   = 'en';
+
+  /* ── Presentation mode ── */
+  function showSlide(idx) {
+    if (!presenting) return;
+    slides.forEach(function (s, i) {
+      s.classList.toggle('active', i === idx);
+    });
+    document.getElementById('counter').textContent = (idx + 1) + ' / ' + total;
+  }
+
+  window.nav = function (dir) {
+    if (!presenting) return;
+    cur = Math.max(0, Math.min(total - 1, cur + dir));
+    showSlide(cur);
+  };
+
+  window.togglePresent = function () {
+    presenting = !presenting;
+    document.body.classList.toggle('present', presenting);
+    var btn = document.querySelector('.ctrl-present');
+    if (presenting) {
+      btn.textContent = 'Exit';
+      btn.style.background = 'rgba(255,255,255,0.12)';
+      showSlide(cur);
+    } else {
+      btn.textContent = 'Present';
+      btn.style.background = '';
+      slides.forEach(function (s) { s.classList.remove('active'); });
+    }
+  };
+
+  /* ── Keyboard navigation ── */
+  document.addEventListener('keydown', function (e) {
+    if (!presenting) {
+      if (e.key === 'Enter' || e.key === 'F5') togglePresent();
+      return;
+    }
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault(); nav(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault(); nav(-1);
+    } else if (e.key === 'Escape') {
+      togglePresent();
+    }
+  });
+
+  /* ── Language toggle ── */
+  window.setLang = function (l) {
+    lang = l;
+    document.body.classList.toggle('lang-en', l === 'en');
+    document.body.classList.toggle('lang-th', l === 'th');
+    document.getElementById('btnEN').classList.toggle('active', l === 'en');
+    document.getElementById('btnTH').classList.toggle('active', l === 'th');
+  };
+
+  /* ── Progress bar animation (slide 9) ── */
+  function animateProgress() {
+    var fill = document.getElementById('progressFill');
+    if (!fill) return;
+    setTimeout(function () {
+      fill.style.width = '0%'; /* start at 0 — David fills in actual number */
+    }, 300);
+  }
+  animateProgress();
+
+  /* ── Scroll-based counter update (screen mode) ── */
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting && !presenting) {
+        var idx = slides.indexOf(entry.target);
+        if (idx >= 0) {
+          document.getElementById('counter').textContent = (idx + 1) + ' / ' + total;
+        }
+      }
+    });
+  }, { threshold: 0.55 });
+  slides.forEach(function (s) { observer.observe(s); });
+
+  /* Init */
+  setLang('en');
+})();
+</script>
+</body>
+</html>
