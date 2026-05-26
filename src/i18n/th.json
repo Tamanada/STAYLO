@@ -3251,6 +3251,8 @@
     "tasks_tab": {
       "date_label": "📅 งานของวันที่",
       "today": "วันนี้",
+      "past": "◀ ที่ผ่านมา",
+      "future": "ถัดไป ▶",
       "new_task": "+ งานใหม่",
       "filter_dept_label": "🏷️ แผนก:",
       "filter_zone_label": "📍 พื้นที่:",

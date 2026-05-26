@@ -3249,6 +3249,8 @@
     "tasks_tab": {
       "date_label": "📅 Tasks for",
       "today": "Today",
+      "past": "◀ Past",
+      "future": "Future ▶",
       "new_task": "+ New task",
       "filter_dept_label": "🏷️ Dept:",
       "filter_zone_label": "📍 Zone:",

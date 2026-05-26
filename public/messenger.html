@@ -16389,41 +16389,61 @@ function renderTasksTab(){
     });
   }
 
-  // ── Build the filter chips BEFORE the header so we can inline the dept
-  // row right of the date picker on the same line. Counts are based on
-  // the date-filtered tasks (myDayTasks) before dept/zone narrowing, so
-  // the user sees how many tasks each filter would surface.
+  // ── Build the filter dropdowns BEFORE the header so we can inline the
+  // dept select right of the date picker on the same line. Counts are
+  // based on the date-filtered tasks (myDayTasks) before dept/zone
+  // narrowing, so the user sees how many tasks each filter would surface.
   const deptCounts = new Map();
   for(const tk of myDayTasks){
     const svc = deriveService(tk);
     deptCounts.set(svc, (deptCounts.get(svc) || 0) + 1);
   }
-  const makeChip = (value, label, active, onClick) => {
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.style.cssText = `padding:6px 12px;border-radius:var(--r-pill);border:2px solid ${active?'var(--navy)':'var(--border)'};background:${active?'var(--navy)':'#fff'};color:${active?'#fff':'var(--navy)'};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .12s ease`;
-    chip.textContent = label;
-    chip.addEventListener('click', onClick);
-    return chip;
+  // Reusable dropdown builder — used for dept + zone. Returns a wrapped
+  // [label, <select>] pair. The select is styled to match the rest of the
+  // app's form controls; the label is the small uppercase chip ("🏷️ Dept:").
+  const makeFilterDropdown = (label, currentValue, options, onChange) => {
+    const sel = document.createElement('select');
+    sel.style.cssText = 'padding:6px 10px;border-radius:8px;border:2px solid var(--border);background:#fff;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;max-width:260px';
+    for(const o of options){
+      const opt = document.createElement('option');
+      opt.value = o.value;
+      opt.textContent = o.label;
+      if(String(currentValue) === String(o.value)) opt.selected = true;
+      sel.appendChild(opt);
+    }
+    sel.addEventListener('change', () => onChange(sel.value));
+    return el('div',{style:'display:flex;align-items:center;gap:6px'},
+      el('span',{style:'font-size:10px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap'}, label),
+      sel,
+    );
   };
-  // Dept filter inline row — sits between the date picker and "+ New task"
-  // button on the header. flex-wrap kicks in on narrow screens.
-  const deptRow = el('div',{style:'display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;min-width:0'},
-    el('span',{style:'font-size:10px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;margin-right:4px'}, t('app.tasks_tab.filter_dept_label') || '🏷️ Dept:'),
-  );
-  deptRow.appendChild(makeChip('all', `🌐 All (${myDayTasks.length})`, _tasksDeptFilter==='all', () => {
-    _tasksDeptFilter = 'all'; lsSet(_hkey('staylo_tasks_dept_filter'), 'all'); renderTasksTab();
-  }));
+  // Dept filter: "All (N)" + every dept with at least one task this date
+  const deptOptions = [{value:'all', label:`🌐 All (${myDayTasks.length})`}];
   for(const svc of SERVICE_ORDER){
     const n = deptCounts.get(svc) || 0;
-    if(n === 0) continue;   // hide depts with zero tasks today
+    if(n === 0) continue;
     const em = SERVICE_EM[svc] || '📋';
-    deptRow.appendChild(makeChip(svc, `${em} ${svc} (${n})`, _tasksDeptFilter===svc, () => {
-      _tasksDeptFilter = svc; lsSet(_hkey('staylo_tasks_dept_filter'), svc); renderTasksTab();
-    }));
+    deptOptions.push({value: svc, label: `${em} ${svc} (${n})`});
   }
+  const deptRow = makeFilterDropdown(
+    t('app.tasks_tab.filter_dept_label') || '🏷️ Dept:',
+    _tasksDeptFilter,
+    deptOptions,
+    (v) => { _tasksDeptFilter = v; lsSet(_hkey('staylo_tasks_dept_filter'), v); renderTasksTab(); },
+  );
 
-  // Header: date picker | dept filter chips | + New task button — all in one row
+  // Quick-nav helper: shift _tasksDate by N days (in LOCAL time to avoid
+  // UTC-offset edge cases right after midnight). Iteratively clicking
+  // "Past" walks further into the past, "Future" walks forward.
+  const shiftTaskDay = (delta) => {
+    const [y,mn,d] = (_tasksDate || new Date().toISOString().slice(0,10)).split('-').map(Number);
+    const dt = new Date(y, mn-1, d);
+    dt.setDate(dt.getDate() + delta);
+    _tasksDate = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+    renderTasksTab();
+  };
+
+  // Header: date picker | Past/Today/Future | dept filter | + New task — all on one row
   root.appendChild(el('div',{class:'tasks-head'},
     el('div',{class:'date-picker'},
       el('span',{},t('app.tasks_tab.date_label')),
@@ -16443,16 +16463,18 @@ function renderTasksTab(){
         });
         return pair.wrap;
       })(),
+      // Quick-nav buttons — words rather than chevrons so it's obvious to
+      // non-tech hoteliers what each one does.
+      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>shiftTaskDay(-1)},t('app.tasks_tab.past') || '◀ Past'),
       el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksDate=new Date().toISOString().slice(0,10);renderTasksTab();}},t('app.tasks_tab.today')),
+      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>shiftTaskDay(1)},t('app.tasks_tab.future') || 'Future ▶'),
     ),
     deptRow,
     isMgr ? el('button',{class:'btn-primary',onclick:()=>showTaskEditor(null)},t('app.tasks_tab.new_task')) : null,
   ));
 
-  // ── Zone chip row (separate line — only shown when a task is anchored to
-  // an outlet). Kept on its own line because zone names can be long
-  // ("Sunset Bar", "Pool Cafe", "Main Restaurant") and would crowd the
-  // header next to the dept chips. ──
+  // ── Zone dropdown (separate line — only shown when a task is anchored
+  // to an outlet). Same builder pattern as the dept dropdown above. ──
   (() => {
     const zoneCounts = new Map();
     for(const tk of myDayTasks){
@@ -16460,18 +16482,17 @@ function renderTasksTab(){
       if(z) zoneCounts.set(z, (zoneCounts.get(z) || 0) + 1);
     }
     if(zoneCounts.size > 0){
-      const zoneRow = el('div',{style:'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center'},
-        el('span',{style:'font-size:10px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;margin-right:4px'}, t('app.tasks_tab.filter_zone_label') || '📍 Zone:'),
-      );
-      zoneRow.appendChild(makeChip('all', `🌐 All`, _tasksZoneFilter==='all', () => {
-        _tasksZoneFilter = 'all'; lsSet(_hkey('staylo_tasks_zone_filter'), 'all'); renderTasksTab();
-      }));
-      const zones = [...zoneCounts.keys()].sort();
-      for(const z of zones){
-        zoneRow.appendChild(makeChip(z, `📍 ${z} (${zoneCounts.get(z)})`, _tasksZoneFilter===z, () => {
-          _tasksZoneFilter = z; lsSet(_hkey('staylo_tasks_zone_filter'), z); renderTasksTab();
-        }));
+      const zoneOptions = [{value:'all', label:'🌐 All'}];
+      for(const z of [...zoneCounts.keys()].sort()){
+        zoneOptions.push({value: z, label: `📍 ${z} (${zoneCounts.get(z)})`});
       }
+      const zoneRow = makeFilterDropdown(
+        t('app.tasks_tab.filter_zone_label') || '📍 Zone:',
+        _tasksZoneFilter,
+        zoneOptions,
+        (v) => { _tasksZoneFilter = v; lsSet(_hkey('staylo_tasks_zone_filter'), v); renderTasksTab(); },
+      );
+      zoneRow.style.marginBottom = '10px';
       root.appendChild(zoneRow);
     }
   })();

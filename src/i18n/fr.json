@@ -3793,6 +3793,8 @@
     "tasks_tab": {
       "date_label": "📅 Tâches du",
       "today": "Aujourd'hui",
+      "past": "◀ Passé",
+      "future": "Futur ▶",
       "new_task": "+ Nouvelle tâche",
       "filter_dept_label": "🏷️ Service :",
       "filter_zone_label": "📍 Zone :",
