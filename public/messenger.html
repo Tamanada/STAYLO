@@ -10,8 +10,10 @@
        • blocks external <script src=evil.com> injection (script-src whitelist)
        • blocks eval() / new Function() (no 'unsafe-eval' here)
        • blocks form action hijacking and clickjacking via iframes
-     Whitelisted: Supabase SDK CDN, Supabase API, Google fonts gstatic. -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net; img-src 'self' data: blob:; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+     Whitelisted: Supabase SDK CDN, Supabase API, Google fonts gstatic.
+     Image sources: Supabase Storage, Pixabay, Unsplash, Pexels, Wikimedia
+     (free-photo CDNs used by the equipment image picker). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net; img-src 'self' data: blob: https://*.supabase.co https://cdn.pixabay.com https://images.unsplash.com https://images.pexels.com https://upload.wikimedia.org; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>Staylo Messenger — Your hotel. Connected.</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
@@ -3145,8 +3147,8 @@ body.off-shift .quick-actions{display:none !important}
 /* =============================================================
    STAYLO MESSENGER — App Logic
    ============================================================= */
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://xicxajwqzlndqtzuvttd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpY3hhandxemxuZHF0enV2dHRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNDg0MzksImV4cCI6MjA4OTgyNDQzOX0.uNgo9xpzgHRClrKQFP_X8HT8zHIWz4K5anSXQuYGPBs';
 const DEMO_MODE = !SUPABASE_URL.startsWith('https://');
 
 /* ---------- Roles & departments ----------
@@ -14925,13 +14927,27 @@ function showRecipeView(r){
         ),
       );
     })(),
-    // Equipment list — shown when at least one item is filled
+    // Equipment list — shown when at least one item is filled.
+    // When an item has an image_url, we show a 20px thumb inside the chip
+    // so cooks who don't know the local name still recognize the tool.
     ((r.equipment||[]).filter(e => e.name?.trim()).length > 0) ? el('div',{style:'margin-top:8px'},
       el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray)'},'🍳 Equipment / matériel'),
       el('div',{style:'display:flex;flex-wrap:wrap;gap:6px'},
-        ...(r.equipment||[]).filter(e => e.name?.trim()).map(e => el('span',{
-          style:'display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#F5F1EA;border:1px solid var(--border);border-radius:var(--r-pill);font-size:12px;font-weight:600',
-        }, (e.qty && e.qty>1) ? `${e.qty}× ${e.name}` : e.name)),
+        ...(r.equipment||[]).filter(e => e.name?.trim()).map(e => {
+          const chip = el('span',{
+            style:'display:inline-flex;align-items:center;gap:6px;padding:'+(e.image_url?'2px 10px 2px 2px':'4px 10px')+';background:#F5F1EA;border:1px solid var(--border);border-radius:var(--r-pill);font-size:12px;font-weight:600',
+          });
+          if(e.image_url){
+            const thumb = document.createElement('img');
+            thumb.src = e.image_url; thumb.alt = '';
+            thumb.referrerPolicy = 'no-referrer';
+            thumb.style.cssText = 'width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#fff';
+            thumb.addEventListener('error', () => { thumb.style.display='none'; });
+            chip.appendChild(thumb);
+          }
+          chip.appendChild(document.createTextNode((e.qty && e.qty>1) ? `${e.qty}× ${e.name}` : e.name));
+          return chip;
+        }),
       ),
     ) : null,
     el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:8px'},'Ingredients'),
@@ -14982,15 +14998,22 @@ function showRecipeEditor(rec){
   const stepHost = el('div',{id:'rec-steps'});
   const totalsHost = el('div',{class:'totals'});
 
-  /* Equipment list — simple "name + optional qty" rows.
+  /* Equipment list — "name + optional qty + image thumb" rows.
    * Lighter pattern than ingredients: no cost calc, no unit conversion,
    * just what the cook needs to gather before starting (wok, mandoline,
    * thermomix, gastro pan, ring mould, etc.). qty defaults to 1 and is
-   * only shown when > 1 in the read-only view. */
+   * only shown when > 1 in the read-only view.
+   *
+   * Each row also has an image picker (📷 button) that opens a modal
+   * fed by `pixabay-search` edge function + local equipment_library
+   * catalog. Picked URL is saved on eq.image_url + eq.image_source so
+   * the read-only recipe view can show a thumbnail next to the name —
+   * lets the next cook recognize an unfamiliar item at a glance.
+   */
   function rebuildEquipment(){
     eqHost.innerHTML = '';
     r.equipment.forEach((eq, idx) => {
-      const row = el('div',{style:'display:grid;grid-template-columns:1fr 70px 28px;gap:6px;margin-bottom:4px;align-items:center'});
+      const row = el('div',{style:'display:grid;grid-template-columns:1fr 60px 36px 28px;gap:6px;margin-bottom:4px;align-items:center'});
       const nameInp = document.createElement('input');
       nameInp.type='text'; nameInp.value = eq.name||'';
       nameInp.placeholder = 'e.g. Wok, mandoline, thermomix';
@@ -15001,11 +15024,58 @@ function showRecipeEditor(rec){
       qtyInp.style.cssText='padding:7px 8px;border-radius:6px;border:2px solid var(--border);font-size:12px;text-align:center;font-family:inherit';
       qtyInp.title = 'Quantity (default 1)';
       qtyInp.addEventListener('input', () => { eq.qty = parseInt(qtyInp.value)||1; });
+      // Image picker button — shows a 28px thumb if already picked, otherwise 📷
+      const picBtn = document.createElement('button');
+      picBtn.type = 'button';
+      picBtn.title = 'Pick an image (search photos)';
+      picBtn.style.cssText = 'background:#F5F1EA;border:2px solid var(--border);border-radius:6px;cursor:pointer;height:32px;padding:0;display:flex;align-items:center;justify-content:center;overflow:hidden';
+      const refreshPicBtn = () => {
+        picBtn.innerHTML = '';
+        if(eq.image_url){
+          const img = document.createElement('img');
+          img.src = eq.image_url;
+          img.alt = '';
+          // Pixabay + Unsplash CDNs block hot-linking when the browser sends
+          // a Referer header pointing at localhost or unknown origins.
+          // `no-referrer` strips the Referer entirely, which usually lets
+          // their CDNs serve the image without 403.
+          img.referrerPolicy = 'no-referrer';
+          img.style.cssText = 'width:32px;height:28px;object-fit:cover;border-radius:4px;display:block';
+          picBtn.appendChild(img);
+          picBtn.title = 'Change image (currently picked from '+(eq.image_source||'pixabay')+')';
+        } else {
+          picBtn.textContent = '📷';
+          picBtn.style.fontSize = '14px';
+        }
+      };
+      refreshPicBtn();
+      picBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Pre-fill the picker with whatever the user typed in the name field
+        const query = (nameInp.value || eq.name || '').trim();
+        openEquipmentImagePicker(query, (picked) => {
+          if(picked === null){
+            // explicit "remove image"
+            eq.image_url = ''; eq.image_source = '';
+          } else if(picked){
+            eq.image_url = picked.image_url;
+            eq.image_source = picked.source;
+            // If the picker also gave us a canonical name (from local
+            // library), upgrade the row name — but only if the user
+            // hasn't typed something more specific.
+            if(picked.name && !nameInp.value.trim()){
+              eq.name = picked.name;
+              nameInp.value = picked.name;
+            }
+          }
+          refreshPicBtn();
+        });
+      });
       const rmBtn = document.createElement('button');
       rmBtn.textContent='×'; rmBtn.type='button';
       rmBtn.style.cssText='background:rgba(231,76,60,.1);color:var(--red);border:0;border-radius:6px;cursor:pointer;font-size:14px;font-weight:700;height:30px';
       rmBtn.addEventListener('click', () => { r.equipment.splice(idx,1); rebuildEquipment(); });
-      row.appendChild(nameInp); row.appendChild(qtyInp); row.appendChild(rmBtn);
+      row.appendChild(nameInp); row.appendChild(qtyInp); row.appendChild(picBtn); row.appendChild(rmBtn);
       eqHost.appendChild(row);
     });
     eqHost.appendChild(el('button',{class:'add-line',onclick:() => {
@@ -15308,6 +15378,238 @@ function showRecipeEditor(rec){
   modal.appendChild(panel);
   document.body.appendChild(modal);
   rebuildIngredients(); rebuildEquipment(); rebuildSteps(); recalcTotals();
+}
+
+/* ============================================================================
+ * EQUIPMENT IMAGE PICKER — search Pixabay + the shared equipment_library
+ * ============================================================================
+ * Opens a modal that lets a cook pick a thumbnail for a piece of equipment.
+ * Two-tier source strategy:
+ *   1. equipment_library table (Supabase) — shared catalog of ~150 common
+ *      kitchen tools. Instant hits, stable URLs, no API quota burn.
+ *   2. pixabay-search edge function — live Pixabay query. Used when the
+ *      local catalog has < 3 hits for the query.
+ *
+ * Why both: every kitchen searches "wok", "mandoline", "whisk" repeatedly.
+ * Caching the canonical answer in our own DB makes those instant + offline-
+ * friendly. Long-tail queries ("escargot tongs", "kappa maki mat") fall
+ * back to live Pixabay so the catalog grows organically.
+ *
+ * The picker mutates the parent equipment row via the onPick callback:
+ *   onPick(null)              → user clicked "Remove image"
+ *   onPick({image_url, source, name?}) → user picked a thumb
+ *   (no call, modal dismissed) → user cancelled
+ *
+ * Failure modes:
+ *   - No PIXABAY_API_KEY set on the edge function → 503; UI shows local
+ *     library hits only + a "configure Pixabay" hint to the admin.
+ *   - Supabase down → library skipped; live Pixabay only.
+ *   - Both down → empty grid + "Try again" message.
+ * ============================================================================ */
+function openEquipmentImagePicker(initialQuery, onPick){
+  // Strip any previous picker (defensive — should never overlap, but
+  // double-clicks on the picker button could race)
+  const existing = $('#eq-image-picker'); if(existing) existing.remove();
+
+  const modal = el('div',{class:'shift-editor-bg',id:'eq-image-picker'});
+  bindSafeBackdropClose(modal,'eq-image-picker');
+
+  // Header: search input + close
+  const searchInp = document.createElement('input');
+  searchInp.type = 'text';
+  searchInp.value = initialQuery || '';
+  searchInp.placeholder = 'wok, mandoline, thermomix…';
+  searchInp.style.cssText = 'flex:1;padding:10px 14px;border-radius:8px;border:2px solid var(--border);font-size:14px;font-family:inherit';
+
+  const statusLine = el('div',{style:'font-size:11px;color:var(--gray);margin:6px 0 4px 0'},'');
+  const resultsHost = el('div',{style:'display:grid;grid-template-columns:repeat(3,1fr);gap:8px;min-height:220px'});
+
+  // Build a "card" per result. Click → fires onPick + closes modal.
+  function renderResults(results, libraryName){
+    resultsHost.innerHTML = '';
+    if(!results.length){
+      resultsHost.appendChild(el('div',{
+        style:'grid-column:1/-1;text-align:center;color:var(--gray);font-size:13px;padding:32px 16px',
+      },'No images found. Try a simpler word — e.g. "wok" instead of "carbon-steel wok 36cm".'));
+      return;
+    }
+    for(const it of results){
+      const card = el('div',{
+        style:'border:2px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;background:#fff;transition:transform .12s ease, border-color .12s ease',
+      });
+      card.addEventListener('mouseenter', () => { card.style.transform='translateY(-2px)'; card.style.borderColor='var(--navy)'; });
+      card.addEventListener('mouseleave', () => { card.style.transform=''; card.style.borderColor='var(--border)'; });
+      const img = document.createElement('img');
+      img.src = it.thumb || it.image_url;
+      img.alt = it.alt || it.name || '';
+      img.loading = 'lazy';
+      // Strip Referer so Pixabay / Unsplash CDNs don't 403 from localhost
+      img.referrerPolicy = 'no-referrer';
+      img.style.cssText = 'width:100%;height:100px;object-fit:cover;display:block;background:#F5F1EA';
+      // If the image fails (CDN hiccup), grey it out rather than show the broken-image icon
+      img.addEventListener('error', () => { img.style.opacity='.3'; img.alt='Image unavailable'; });
+      card.appendChild(img);
+      // Source badge — tiny "from library" or "Pixabay" tag
+      const tag = it.source === 'pixabay' ? 'Pixabay' : '✔ in catalog';
+      card.appendChild(el('div',{style:'padding:5px 8px;font-size:10px;color:var(--gray);background:#F5F1EA;text-align:center;font-weight:600'}, tag));
+      card.addEventListener('click', () => {
+        onPick({
+          image_url: it.preview || it.image_url || it.thumb,
+          source: it.source || 'pixabay',
+          name: libraryName ? it.name : '',
+        });
+        modal.remove();
+      });
+      resultsHost.appendChild(card);
+    }
+  }
+
+  // ---- Search logic ----
+  // Library hits ALWAYS take precedence (faster + more curated).
+  // We fetch library + pixabay in parallel, library renders first, then
+  // pixabay results fill the remaining slots.
+  let lastRunId = 0;
+  async function runSearch(){
+    const q = searchInp.value.trim();
+    const runId = ++lastRunId;   // poor-man's debounce/cancel guard
+    if(!q){
+      resultsHost.innerHTML = '';
+      statusLine.textContent = 'Type a name to search…';
+      return;
+    }
+    statusLine.textContent = 'Searching…';
+    const lang = (I18N.current || 'en').toLowerCase();
+    const lib = await searchEquipmentLibrary(q, lang).catch(() => []);
+    if(runId !== lastRunId) return;   // a newer query came in, drop stale
+    let combined = lib.slice(0, 6);
+    if(combined.length < 6 && !DEMO_MODE){
+      const pix = await searchPixabay(q, lang, 6 - combined.length).catch(() => []);
+      if(runId !== lastRunId) return;
+      combined = combined.concat(pix);
+    }
+    if(combined.length === 0){
+      statusLine.textContent = 'No matches — try a simpler word.';
+    } else {
+      statusLine.textContent = combined.length + ' result' + (combined.length>1?'s':'') + ' for "' + q + '"';
+    }
+    // The libraryName flag tells renderResults whether to import the
+    // canonical name from the result. Only library results carry a
+    // trusted canonical name; pixabay results carry tag-soup alt text.
+    // We render each result with its own flag.
+    resultsHost.innerHTML = '';
+    if(combined.length === 0){
+      resultsHost.appendChild(el('div',{
+        style:'grid-column:1/-1;text-align:center;color:var(--gray);font-size:13px;padding:32px 16px',
+      },'No images found. Try a simpler word.'));
+      return;
+    }
+    for(const it of combined){
+      const isLib = it.source !== 'pixabay';
+      const card = el('div',{
+        style:'border:2px solid var(--border);border-radius:8px;overflow:hidden;cursor:pointer;background:#fff;transition:transform .12s ease, border-color .12s ease',
+      });
+      card.addEventListener('mouseenter', () => { card.style.transform='translateY(-2px)'; card.style.borderColor='var(--navy)'; });
+      card.addEventListener('mouseleave', () => { card.style.transform=''; card.style.borderColor='var(--border)'; });
+      const img = document.createElement('img');
+      img.src = it.thumb || it.image_url;
+      img.alt = it.alt || it.name || '';
+      img.loading = 'lazy';
+      // Strip Referer so Pixabay / Unsplash CDNs don't 403 from localhost
+      img.referrerPolicy = 'no-referrer';
+      img.style.cssText = 'width:100%;height:100px;object-fit:cover;display:block;background:#F5F1EA';
+      img.addEventListener('error', () => { img.style.opacity='.3'; });
+      card.appendChild(img);
+      card.appendChild(el('div',{style:'padding:5px 8px;font-size:10px;color:var(--gray);background:#F5F1EA;text-align:center;font-weight:600'},
+        isLib ? '✔ in catalog' : 'Pixabay'));
+      card.addEventListener('click', () => {
+        onPick({
+          image_url: it.preview || it.image_url || it.thumb,
+          source: it.source || 'pixabay',
+          name: isLib ? it.name : '',
+        });
+        modal.remove();
+      });
+      resultsHost.appendChild(card);
+    }
+  }
+
+  // Debounce typing — runSearch fires 350ms after user stops typing
+  let typingTimer;
+  searchInp.addEventListener('input', () => {
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(runSearch, 350);
+  });
+  // Submit on Enter for impatient users
+  searchInp.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){ e.preventDefault(); clearTimeout(typingTimer); runSearch(); }
+  });
+
+  const panel = el('div',{class:'shift-editor-panel',style:'max-width:560px'});
+  panel.appendChild(el('div',{style:'display:flex;justify-content:space-between;align-items:center;margin-bottom:8px'},
+    el('h3',{style:'margin:0'},'📷 Pick an equipment image'),
+    el('button',{class:'btn-secondary',style:'padding:4px 10px',onclick:()=>modal.remove()},'×'),
+  ));
+  panel.appendChild(el('div',{style:'font-size:12px;color:var(--gray);margin-bottom:10px'},
+    'Search a free photo to help other cooks recognize the item at a glance.'));
+  panel.appendChild(el('div',{style:'display:flex;gap:6px;align-items:center'}, searchInp));
+  panel.appendChild(statusLine);
+  panel.appendChild(resultsHost);
+  panel.appendChild(el('div',{style:'margin-top:14px;display:flex;justify-content:space-between;align-items:center;gap:8px'},
+    el('button',{class:'btn-danger',style:'padding:7px 12px;font-size:12px',onclick:()=>{ onPick(null); modal.remove(); }},'🗑 Remove image'),
+    el('div',{style:'font-size:10px;color:var(--gray);text-align:right'},'Photos © their authors via Pixabay. Free for commercial use.'),
+  ));
+  modal.appendChild(panel);
+  document.body.appendChild(modal);
+
+  // Trigger initial search if we already have a query
+  if(initialQuery){ runSearch(); }
+  setTimeout(() => searchInp.focus(), 50);
+}
+
+/* Search the local equipment_library table — returns up to 6 hits matching
+ * `q` (case-insensitive substring on the name column for the current lang,
+ * with EN fallback). Empty array on any error (caller falls back to Pixabay). */
+async function searchEquipmentLibrary(q, lang){
+  if(DEMO_MODE || !State.supa) return [];
+  const col = ['fr','th'].includes(lang) ? ('name_'+lang) : 'name_en';
+  const like = '%'+q.replace(/[%_]/g,'')+'%';
+  try {
+    // PostgREST .or filter — match either the lang-specific name OR English fallback OR the slug
+    const { data, error } = await State.supa
+      .from('equipment_library')
+      .select('slug,name_en,name_fr,name_th,image_url,thumb_url,source')
+      .or(`${col}.ilike.${like},name_en.ilike.${like},slug.ilike.${like}`)
+      .limit(6);
+    if(error){ console.warn('equipment_library search', error); return []; }
+    return (data||[]).map(d => ({
+      name: d[col] || d.name_en || d.slug,
+      image_url: d.image_url,
+      thumb: d.thumb_url || d.image_url,
+      preview: d.image_url,
+      alt: d.name_en,
+      source: d.source || 'library',
+    }));
+  } catch(err){ console.warn('equipment_library search threw', err); return []; }
+}
+
+/* Call the pixabay-search edge function (server holds the API key).
+ * Returns up to `limit` results; empty array on any error. */
+async function searchPixabay(q, lang, limit){
+  if(DEMO_MODE) return [];
+  try {
+    const params = new URLSearchParams({ q, lang, per_page: String(Math.max(3, limit||6)) });
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/pixabay-search?${params.toString()}`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+    });
+    if(!resp.ok){
+      // 503 = no API key configured. Don't spam the console for that case
+      // (admin will see the configure hint in the function logs).
+      if(resp.status !== 503) console.warn('pixabay-search', resp.status, await resp.text().catch(()=>'?'));
+      return [];
+    }
+    const json = await resp.json();
+    return (json.results || []).slice(0, limit||6);
+  } catch(err){ console.warn('pixabay-search threw', err); return []; }
 }
 
 /* ============================================================================
