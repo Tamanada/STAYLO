@@ -7437,7 +7437,11 @@ function escapeHtml(s){
    HR MODULE — Employees, Schedules, Timesheets, Contracts, Clock
    ============================================================= */
 // HR-tier roles: can create/edit employee records, generate contracts, run payroll.
-const HR_ROLES = ['General Manager','Deputy General Manager','Operations Manager','HR Manager','HR / Payroll Officer'];
+// Owner sits at the top — the hotelier themselves, has FULL access to
+// every management surface (roster, schedule, tasks, fiches, payroll,
+// settings). HR/GM and other management roles inherit the same powers
+// via canManageHR(); regular staff don't.
+const HR_ROLES = ['Owner','General Manager','Deputy General Manager','Operations Manager','HR Manager','HR / Payroll Officer'];
 const EMPTY_EMP = {
   first_name:'', last_name:'', nationality:'TH',
   // National ID: type (passport/id/license/other) + the actual number/code
