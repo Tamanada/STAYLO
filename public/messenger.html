@@ -130,6 +130,7 @@ input,textarea,select{font:inherit;color:inherit;outline:none;border:0;backgroun
 .role-card:hover{background:#FFE9D6}
 .role-card .em{font-size:26px;margin-bottom:4px;line-height:1}
 .role-card .nm{font-size:11px;font-weight:600;color:var(--navy);line-height:1.2}
+.role-card .ds{font-size:9px;font-weight:500;color:var(--gray);line-height:1.25;margin-top:3px;padding:0 2px}
 .role-card.selected{border-color:var(--orange);background:#FFF4EA}
 .role-card.selected .nm{color:var(--orange)}
 
@@ -3167,7 +3168,9 @@ const ROLE_GROUPS = [
     // Owner sits at the top — usually the hotelier themselves, the
     // ultimate "reports to" node in the org chart. Distinct from
     // General Manager (operational top) by both emoji + position.
-    {em:'🏆',nm:'Owner'},
+    // Carries a hint key so the role-card grid shows a sub-line clarifying
+    // that "Owner" means the hotelier, not a room owner (P1-1).
+    {em:'🏆',nm:'Owner',hintKey:'app.onboarding.role_hint_owner'},
     {em:'👑',nm:'General Manager'},
     {em:'👔',nm:'Deputy General Manager'},
     {em:'🎯',nm:'Operations Manager'},
@@ -3416,9 +3419,23 @@ const State = {
   rt: null,     // realtime channel
 };
 
-/* ---------- localStorage helpers ---------- */
+/* ---------- localStorage helpers ----------
+ * lsSet swallows quota errors silently (legacy behaviour, callers may not
+ * care). For payloads where silent failure is dangerous (employees with
+ * base64 photos / ID scans / work permits — easily 5+ MB), use lsSetVerify
+ * which returns true/false so the caller can warn the user instead of
+ * losing data. See saveEmployees() for the canonical pattern. */
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function lsSetVerify(k,v){
+  try{
+    localStorage.setItem(k,JSON.stringify(v));
+    return true;
+  }catch(e){
+    console.error('[lsSetVerify] write failed for key', k, e?.name || e);
+    return false;
+  }
+}
 
 /* ============================================================================
  * DEVICE FINGERPRINT — anti-fraud: 1 employee account = 1 device.
@@ -4272,10 +4289,17 @@ function renderRoleGrid(){
     const grp = el('div'); grp.appendChild(el('h3',{},translateDept(g.dept)));
     const grid = el('div',{class:'ob-grid'});
     for(const r of g.items){
-      const card = el('button',{class:'role-card',type:'button',onclick:()=>selectRole(r.nm,card)},
+      const children = [
         el('div',{class:'em'},r.em),
         el('div',{class:'nm'},translateRole(r.nm)),
-      );
+      ];
+      if(r.hintKey){
+        const hint = t(r.hintKey);
+        if(hint && hint !== r.hintKey){
+          children.push(el('div',{class:'ds'},hint));
+        }
+      }
+      const card = el('button',{class:'role-card',type:'button',onclick:()=>selectRole(r.nm,card)}, ...children);
       grid.appendChild(card);
     }
     grp.appendChild(grid); root.appendChild(grp);
@@ -8700,7 +8724,22 @@ function countDemoData(){
     tasks:     getTasks().filter(t => t.is_demo).length,
   };
 }
-function saveEmployees(a){lsSet(_hkey('staylo_employees'),a)}
+function saveEmployees(a){
+  // Employees can carry base64 photos + ID scans + work permits → easily
+  // 1–5 MB per record. localStorage caps at 5–10 MB per origin. A silent
+  // failure here = data lost without the user knowing, which destroys
+  // trust during a demo. Verify the write and surface quota errors.
+  const ok = lsSetVerify(_hkey('staylo_employees'), a);
+  if(!ok){
+    try{
+      const msg = t('app.roster.quota_exceeded');
+      alert(msg !== 'app.roster.quota_exceeded'
+        ? msg
+        : 'Storage full — your last save could not be persisted.\n\nTry: remove the largest scans (ID / work permit) from existing employees, or export your data and reload.');
+    }catch(_){}
+  }
+  return ok;
+}
 function findEmployee(id){return getEmployees().find(e=>e.id===id)||null}
 function upsertEmployee(emp){
   const all = getEmployees();
@@ -13352,6 +13391,15 @@ function showStaffClaimFlow(emp, hotelCode){
         render();   // re-render to enable the Next button
       }
     });
+    // FIX P0-1: if contract fits in viewport without scrolling (large screen,
+    // short contract), the scroll event never fires → button stays disabled
+    // forever. Detect non-overflow after layout settles and unlock immediately.
+    setTimeout(() => {
+      if(!scrolledContractToBottom && wrapper.scrollHeight <= wrapper.clientHeight + 30){
+        scrolledContractToBottom = true;
+        render();
+      }
+    }, 200);
     host.appendChild(el('div',{style:'margin-top:10px;font-size:11px;color:'+(scrolledContractToBottom?'var(--teal)':'var(--gray)')+';text-align:center;font-weight:700'},
       scrolledContractToBottom ? '✓ You\'ve read the full contract — you can continue' : '↓ Scroll to the bottom of the contract to enable the next step',
     ));

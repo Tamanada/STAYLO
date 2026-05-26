@@ -1934,6 +1934,7 @@
       "dept_filter_item": "{dept} ({count})",
       "new_employee_btn": "+ เพิ่มพนักงานใหม่",
       "empty_state": "ยังไม่มีพนักงาน คลิก \"+ เพิ่มพนักงานใหม่\" เพื่อเริ่มสร้างทีมของคุณ",
+      "quota_exceeded": "พื้นที่จัดเก็บเต็ม — ไม่สามารถบันทึกข้อมูลล่าสุดได้\n\nลอง: ลบสำเนาเอกสารที่ใหญ่ที่สุด (บัตรประชาชน / ใบอนุญาตทำงาน) ของพนักงานที่มีอยู่ หรือส่งออกข้อมูลของคุณก่อน",
       "empty_state_filtered": "ไม่มีพนักงานในแผนก {dept} เปลี่ยนตัวกรองเพื่อดูแผนกอื่น",
       "row_subtitle": "{role} · {dept}{outletStr} · {nationality}",
       "row_outlet_chip": " · {outlet}",
@@ -1972,7 +1973,7 @@
         "salary": "เงินเดือน ({currency} / เดือน)",
         "hours_per_week": "ชม./สัปดาห์",
         "days_per_week": "วัน/สัปดาห์",
-        "outlet": "ร้านอาหาร / เอาท์เลต",
+        "outlet": "พื้นที่ทำงาน / โซน",
         "contract_language": "ภาษาในสัญญา",
         "pool_points_default": "คะแนน Pool (ค่าเริ่มต้น)",
         "pool_points_override": "คะแนน Pool (กำหนดเอง)",
@@ -2032,7 +2033,7 @@
       },
       "outlet": {
         "hotel_wide": "— ทั่วทั้งโรงแรม —",
-        "empty_hint": "ยังไม่มีเอาท์เลต",
+        "empty_hint": "ยังไม่มีพื้นที่ทำงาน",
         "configure_btn": "ตั้งค่าในหน้าตั้งค่าโรงแรม"
       },
       "contract_language": {
@@ -2148,11 +2149,11 @@
       "dept_filter": {
         "all_depts": "📁 ทุกแผนก ({n})",
         "dept_label": "📁 แผนก {dept}",
-        "all_outlets": "📁 {dept} · ทุกเอาท์เลต ({n})",
+        "all_outlets": "📁 {dept} · ทุกพื้นที่ ({n})",
         "outlet": "{dept} · {outlet} ({n})"
       },
       "outlet_filter": {
-        "all": "🥂 ทุกเอาท์เลต"
+        "all": "🥂 ทุกพื้นที่"
       },
       "readonly_hint": "🔒 มุมมองอ่านอย่างเดียว — เฉพาะผู้จัดการแผนกของคุณเท่านั้นที่แก้ไขกะได้",
       "empty": {
@@ -3059,6 +3060,7 @@
       "audience_ambassador_desc": "แนะนำโรงแรมให้ Staylo และรับค่าคอมมิชชั่น",
       "audience_guest_title": "แขกผู้เข้าพัก",
       "audience_guest_desc": "ฉันกำลังพักอยู่ที่โรงแรม Staylo",
+      "role_hint_owner": "เจ้าของโรงแรม — โดยปกติคือคุณ",
       "code_staff_title": "รหัสโรงแรม",
       "code_staff_hint": "ขอจากผู้จัดการของคุณ (เช่น KP001 สำหรับโรงแรมเกาะพะงันที่ 1)",
       "code_staff_placeholder": "KP001",
