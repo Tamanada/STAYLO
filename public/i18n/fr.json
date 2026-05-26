@@ -3655,7 +3655,9 @@
       "spa": "Spa",
       "security": "Sécurité",
       "admin": "Admin & Finance",
-      "sales": "Ventes & Événements"
+      "sales": "Ventes & Événements",
+      "cross_department": "Inter-services",
+      "other": "Autre"
     },
     "roles": {
       "general_manager": "Directeur Général",

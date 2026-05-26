@@ -3111,7 +3111,9 @@
       "spa": "Spa",
       "security": "Security",
       "admin": "Admin",
-      "sales": "Sales"
+      "sales": "Sales",
+      "cross_department": "Cross-department",
+      "other": "Other"
     },
     "roles": {
       "general_manager": "General Manager",

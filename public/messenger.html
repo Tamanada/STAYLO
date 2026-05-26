@@ -16620,12 +16620,14 @@ function renderTasksTab(){
   };
   // Dept dropdown — first option is "📁 All departments (N)" to match the
   // Schedule tab's wording, then one option per dept that has tasks.
+  // translateDept() resolves the dept name via i18n (app.depts.<slug>),
+  // so the FR user sees "Inter-services" instead of "Cross-department".
   const deptOptions = [{value:'all', label:`📁 ${t('app.tasks_tab.all_departments') || 'All departments'} (${myDayTasks.length})`}];
   for(const svc of SERVICE_ORDER){
     const n = deptCounts.get(svc) || 0;
     if(n === 0) continue;
     const em = SERVICE_EM[svc] || '📋';
-    deptOptions.push({value: svc, label: `${em} ${svc} (${n})`});
+    deptOptions.push({value: svc, label: `${em} ${translateDept(svc)} (${n})`});
   }
   const deptDropdown = makeFilterDropdown(
     _tasksDeptFilter,

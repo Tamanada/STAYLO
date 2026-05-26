@@ -3113,7 +3113,9 @@
       "spa": "สปา",
       "security": "รักษาความปลอดภัย",
       "admin": "ธุรการ",
-      "sales": "ฝ่ายขาย"
+      "sales": "ฝ่ายขาย",
+      "cross_department": "ข้ามแผนก",
+      "other": "อื่นๆ"
     },
     "roles": {
       "general_manager": "ผู้จัดการทั่วไป",
