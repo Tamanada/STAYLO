@@ -16794,7 +16794,38 @@ function renderTasksTab(){
       return e ? `👤 ${e.first_name} ${e.last_name||''}` : t('app.tasks_tab.assignee_unknown');
     })();
     const recurKey = ({once:'recur_once',daily:'recur_daily',weekly:'recur_weekly',monthly:'recur_monthly',per_shift:'recur_per_shift'})[tk.recurrence] || 'recur_once';
-    const recurLbl = t('app.tasks_tab.' + recurKey);
+    // Enrich the recurrence label with actual date/day-of-week/day-of-month
+    // info so range views (1w/2w/1m/All) show WHEN each task fires. For
+    // 'daily' and 'per_shift' the bare i18n key is informative enough.
+    // Falls back to the bare i18n key if we don't have the data we need.
+    const recurLbl = (() => {
+      if(tk.recurrence === 'once' && tk.due_date){
+        const [y,mn,d] = tk.due_date.split('-').map(Number);
+        const dt = new Date(y, mn-1, d);
+        // Locale-formatted "May 26, 2026" (year omitted if same as current)
+        const today = new Date();
+        const sameYear = dt.getFullYear() === today.getFullYear();
+        return '📅 ' + dt.toLocaleDateString(undefined, sameYear
+          ? { month:'short', day:'numeric' }
+          : { month:'short', day:'numeric', year:'numeric' });
+      }
+      if(tk.recurrence === 'weekly' && tk.weekday != null){
+        const dayNames = [
+          t('app.tasks_tab.day_sun') || 'Sun',
+          t('app.tasks_tab.day_mon') || 'Mon',
+          t('app.tasks_tab.day_tue') || 'Tue',
+          t('app.tasks_tab.day_wed') || 'Wed',
+          t('app.tasks_tab.day_thu') || 'Thu',
+          t('app.tasks_tab.day_fri') || 'Fri',
+          t('app.tasks_tab.day_sat') || 'Sat',
+        ];
+        return '↻ ' + (t('app.tasks_tab.every') || 'Every') + ' ' + (dayNames[tk.weekday] || dayNames[1]);
+      }
+      if(tk.recurrence === 'monthly' && tk.day_of_month){
+        return '↻ ' + (t('app.tasks_tab.day_of_month') || 'Day') + ' ' + tk.day_of_month;
+      }
+      return '↻ ' + t('app.tasks_tab.' + recurKey);
+    })();
     const prioKey = 'prio_' + (tk.priority || 'normal');
     const prioLbl = t('app.tasks_tab.' + prioKey);
     const row = el('div',{class:'task-row'+(done?' done':'')},
@@ -16807,7 +16838,7 @@ function renderTasksTab(){
         tk.description ? el('div',{style:'font-size:11px;color:var(--gray);margin-top:2px'}, tk.description) : null,
         el('div',{class:'t-meta'},
           el('span',{class:'chip assignee'}, assigneeLbl),
-          el('span',{class:'chip recur'}, '↻ '+recurLbl),
+          el('span',{class:'chip recur'}, recurLbl),
           tk.due_time ? el('span',{class:'chip time'}, tk.due_time) : null,
           el('span',{class:'chip '+(tk.priority||'normal')}, prioLbl),
           // Recipe chip — clickable, opens the fiche technique
