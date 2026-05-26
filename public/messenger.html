@@ -16427,21 +16427,19 @@ function renderTasksTab(){
     });
   }
 
-  // ── Build the filter dropdowns BEFORE the header so we can inline the
-  // dept select right of the date picker on the same line. Counts are
-  // based on the date-filtered tasks (myDayTasks) before dept/zone
-  // narrowing, so the user sees how many tasks each filter would surface.
+  // ── Build the filter dropdowns ──
+  // Layout mirrors the Schedule tab's `.sched-nav` for visual consistency:
+  // [← Past] [Today] [Future →] [dark date pill]  ⇢  [Day/Week/2w/Month/All toggle] [Dept ▼] [Zone ▼] [+ New task]
   const deptCounts = new Map();
   for(const tk of myDayTasks){
     const svc = deriveService(tk);
     deptCounts.set(svc, (deptCounts.get(svc) || 0) + 1);
   }
-  // Reusable dropdown builder — used for dept + zone. Returns a wrapped
-  // [label, <select>] pair. The select is styled to match the rest of the
-  // app's form controls; the label is the small uppercase chip ("🏷️ Dept:").
-  const makeFilterDropdown = (label, currentValue, options, onChange) => {
+  // Build a styled <select> that matches `.sched-dept-filter` from the
+  // Schedule tab (rounded pill with chevron icon, beige background).
+  const makeFilterDropdown = (currentValue, options, onChange) => {
     const sel = document.createElement('select');
-    sel.style.cssText = 'padding:6px 10px;border-radius:8px;border:2px solid var(--border);background:#fff;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;max-width:260px';
+    sel.className = 'sched-dept-filter';
     for(const o of options){
       const opt = document.createElement('option');
       opt.value = o.value;
@@ -16450,115 +16448,107 @@ function renderTasksTab(){
       sel.appendChild(opt);
     }
     sel.addEventListener('change', () => onChange(sel.value));
-    return el('div',{style:'display:flex;align-items:center;gap:6px'},
-      el('span',{style:'font-size:10px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap'}, label),
-      sel,
-    );
+    return sel;
   };
-  // Dept filter: "All (N)" + every dept with at least one task this date
-  const deptOptions = [{value:'all', label:`🌐 All (${myDayTasks.length})`}];
+  // Dept dropdown — first option is "📁 All departments (N)" to match the
+  // Schedule tab's wording, then one option per dept that has tasks.
+  const deptOptions = [{value:'all', label:`📁 ${t('app.tasks_tab.all_departments') || 'All departments'} (${myDayTasks.length})`}];
   for(const svc of SERVICE_ORDER){
     const n = deptCounts.get(svc) || 0;
     if(n === 0) continue;
     const em = SERVICE_EM[svc] || '📋';
     deptOptions.push({value: svc, label: `${em} ${svc} (${n})`});
   }
-  const deptRow = makeFilterDropdown(
-    t('app.tasks_tab.filter_dept_label') || '🏷️ Dept:',
+  const deptDropdown = makeFilterDropdown(
     _tasksDeptFilter,
     deptOptions,
     (v) => { _tasksDeptFilter = v; lsSet(_hkey('staylo_tasks_dept_filter'), v); renderTasksTab(); },
   );
 
-  // Quick-nav helper: shift _tasksDate by N days (in LOCAL time to avoid
-  // UTC-offset edge cases right after midnight). Iteratively clicking
-  // "Past" walks further into the past, "Future" walks forward.
-  const shiftTaskDay = (delta) => {
+  // Zone dropdown — only rendered when at least one task has a zone
+  // (explicit task.zone OR derived from assigned employee's outlet).
+  const zoneCounts = new Map();
+  for(const tk of myDayTasks){
+    const z = deriveZone(tk);
+    if(z) zoneCounts.set(z, (zoneCounts.get(z) || 0) + 1);
+  }
+  let zoneDropdown = null;
+  if(zoneCounts.size > 0){
+    const zoneOptions = [{value:'all', label:`📍 ${t('app.tasks_tab.all_venues') || 'All venues'}`}];
+    for(const z of [...zoneCounts.keys()].sort()){
+      zoneOptions.push({value: z, label: `📍 ${z} (${zoneCounts.get(z)})`});
+    }
+    zoneDropdown = makeFilterDropdown(
+      _tasksZoneFilter,
+      zoneOptions,
+      (v) => { _tasksZoneFilter = v; lsSet(_hkey('staylo_tasks_zone_filter'), v); renderTasksTab(); },
+    );
+  }
+
+  // Range toggle — segmented control styled like the Schedule's `.view-toggle`.
+  // 'day' shows just _tasksDate; 1w/2w/1m widen the window forward; All shows
+  // every active task.
+  const rangeToggle = el('div',{class:'view-toggle'});
+  const RANGE_LABELS = {
+    'day':  t('app.tasks_tab.range_day')  || 'Day',
+    '1w':   t('app.tasks_tab.range_1w')   || '1 week',
+    '2w':   t('app.tasks_tab.range_2w')   || '2 weeks',
+    '1m':   t('app.tasks_tab.range_1m')   || '1 month',
+    'all':  t('app.tasks_tab.range_all')  || 'All',
+  };
+  for(const k of ['day','1w','2w','1m','all']){
+    const btn = document.createElement('button');
+    btn.textContent = RANGE_LABELS[k];
+    // 'day' matches both the saved 'day' string and the null/unset default
+    if(_tasksRange === k || (k === 'day' && (!_tasksRange || _tasksRange === 'day'))) btn.className = 'on';
+    btn.addEventListener('click', () => {
+      _tasksRange = k; lsSet(_hkey('staylo_tasks_range'), k); renderTasksTab();
+    });
+    rangeToggle.appendChild(btn);
+  }
+
+  // Past/Today/Future shift by one RANGE unit so navigation feels natural
+  // in any view mode: in 'day' it's ±1 day, in '1w' it's ±7 days, etc.
+  // 'all' has no notion of moving forward/back so it's a no-op there.
+  const SHIFT_DAYS = { 'day': 1, '1w': 7, '2w': 14, '1m': 30 };
+  const shiftTaskRange = (delta) => {
+    if(_tasksRange === 'all') return;   // no anchor to shift
+    const days = SHIFT_DAYS[_tasksRange || 'day'] || 1;
     const [y,mn,d] = (_tasksDate || new Date().toISOString().slice(0,10)).split('-').map(Number);
     const dt = new Date(y, mn-1, d);
-    dt.setDate(dt.getDate() + delta);
+    dt.setDate(dt.getDate() + delta * days);
     _tasksDate = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
     renderTasksTab();
   };
 
-  // Header: date picker | Past/Today/Future | dept filter | + New task — all on one row
-  root.appendChild(el('div',{class:'tasks-head'},
-    el('div',{class:'date-picker'},
-      el('span',{},t('app.tasks_tab.date_label')),
-      (() => {
-        // Wheel picker — Tasks tab date filter. Changes _tasksDate and
-        // re-renders the tab on commit (same behavior as the native
-        // input's 'change' event).
-        const pair = dateInputWithWheel({
-          id:'tasks-date-filter',
-          value: _tasksDate || '',
-          allowClear: false,    // tab is keyed by date — must always have one
-        });
-        pair.input.addEventListener('change', e => {
-          if(!e.target.value) return;
-          _tasksDate = e.target.value;
-          renderTasksTab();
-        });
-        return pair.wrap;
-      })(),
-      // Quick-nav buttons — words rather than chevrons so it's obvious to
-      // non-tech hoteliers what each one does. Past/Today/Future shift the
-      // anchor date by ±1 day; the 4 range buttons widen the view to a
-      // multi-day window (or all-time for "All").
-      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksRange='day';lsSet(_hkey('staylo_tasks_range'),'day');shiftTaskDay(-1);}},t('app.tasks_tab.past') || '◀ Past'),
-      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksRange='day';lsSet(_hkey('staylo_tasks_range'),'day');_tasksDate=new Date().toISOString().slice(0,10);renderTasksTab();}},t('app.tasks_tab.today')),
-      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksRange='day';lsSet(_hkey('staylo_tasks_range'),'day');shiftTaskDay(1);}},t('app.tasks_tab.future') || 'Future ▶'),
-      // Range buttons — set _tasksRange and re-render. Active button is
-      // highlighted with a filled style so the user always knows which view
-      // they're in.
-      (() => {
-        const mkRangeBtn = (key, label) => {
-          const active = _tasksRange === key;
-          const styleActive = 'padding:6px 12px;font-size:11px;background:var(--navy);color:#fff;border:2px solid var(--navy);border-radius:8px;font-weight:700;cursor:pointer';
-          const styleIdle   = 'padding:6px 12px;font-size:11px;background:#fff;color:var(--navy);border:2px solid var(--border);border-radius:8px;font-weight:700;cursor:pointer';
-          return el('button',{
-            style: active ? styleActive : styleIdle,
-            onclick: () => { _tasksRange = key; lsSet(_hkey('staylo_tasks_range'), key); renderTasksTab(); },
-          }, label);
-        };
-        // We render the 4 buttons inside a wrapper so el()'s positional
-        // children list stays flat. Wrapping in a span lets all 4 share the
-        // same flex parent.
-        return el('span',{style:'display:inline-flex;gap:4px;margin-left:4px'},
-          mkRangeBtn('1w',  t('app.tasks_tab.range_1w')  || '1 week'),
-          mkRangeBtn('2w',  t('app.tasks_tab.range_2w')  || '2 weeks'),
-          mkRangeBtn('1m',  t('app.tasks_tab.range_1m')  || '1 month'),
-          mkRangeBtn('all', t('app.tasks_tab.range_all') || 'All'),
-        );
-      })(),
-    ),
-    deptRow,
-    isMgr ? el('button',{class:'btn-primary',onclick:()=>showTaskEditor(null)},t('app.tasks_tab.new_task')) : null,
-  ));
-
-  // ── Zone dropdown (separate line — only shown when a task is anchored
-  // to an outlet). Same builder pattern as the dept dropdown above. ──
-  (() => {
-    const zoneCounts = new Map();
-    for(const tk of myDayTasks){
-      const z = deriveZone(tk);
-      if(z) zoneCounts.set(z, (zoneCounts.get(z) || 0) + 1);
-    }
-    if(zoneCounts.size > 0){
-      const zoneOptions = [{value:'all', label:'🌐 All'}];
-      for(const z of [...zoneCounts.keys()].sort()){
-        zoneOptions.push({value: z, label: `📍 ${z} (${zoneCounts.get(z)})`});
-      }
-      const zoneRow = makeFilterDropdown(
-        t('app.tasks_tab.filter_zone_label') || '📍 Zone:',
-        _tasksZoneFilter,
-        zoneOptions,
-        (v) => { _tasksZoneFilter = v; lsSet(_hkey('staylo_tasks_zone_filter'), v); renderTasksTab(); },
-      );
-      zoneRow.style.marginBottom = '10px';
-      root.appendChild(zoneRow);
-    }
+  // Date-range pill — dark navy chip showing the current window.
+  // 'day' = "May 26, 2026"; range modes = "May 26 → Jun 1, 2026"; All = "All time".
+  const fmtDate = (dt) => dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  const rangeLabel = (() => {
+    if(_tasksRange === 'all') return t('app.tasks_tab.label_all_time') || 'All time';
+    const [y,m,d] = (_tasksDate || new Date().toISOString().slice(0,10)).split('-').map(Number);
+    const start = new Date(y, m-1, d);
+    if(!_tasksRange || _tasksRange === 'day') return fmtDate(start);
+    const days = { '1w': 6, '2w': 13, '1m': 29 }[_tasksRange] || 6;
+    const end = new Date(start);
+    end.setDate(start.getDate() + days);
+    return `${fmtDate(start)} → ${fmtDate(end)}`;
   })();
+
+  // ── Render the unified nav row (mirrors Schedule's `.sched-nav`) ──
+  root.appendChild(el('div',{class:'sched-nav'},
+    el('button',{class:'nav-btn',onclick:()=>shiftTaskRange(-1)},t('app.tasks_tab.past') || '← Past'),
+    el('button',{class:'nav-btn',onclick:()=>{_tasksDate=new Date().toISOString().slice(0,10);renderTasksTab();}},t('app.tasks_tab.today')),
+    el('button',{class:'nav-btn',onclick:()=>shiftTaskRange(1)},t('app.tasks_tab.future') || 'Future →'),
+    el('span',{class:'sched-week-label'}, rangeLabel),
+    el('span',{class:'sched-spacer'}),
+    el('div',{class:'sched-nav-right'},
+      rangeToggle,
+      deptDropdown,
+      zoneDropdown,
+      isMgr ? el('button',{class:'btn-primary',style:'padding:6px 12px;font-size:11px',onclick:()=>showTaskEditor(null)},t('app.tasks_tab.new_task')) : null,
+    ),
+  ));
 
   if(!filteredTasks.length){
     // Two distinct empty states: nothing at all on this date, vs filter
