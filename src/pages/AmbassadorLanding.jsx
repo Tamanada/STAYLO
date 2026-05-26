@@ -248,59 +248,59 @@ export default function AmbassadorLanding() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('ambassador_landing.contract_title', 'The Tripartite Agreement')}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">
+            <p className="text-gray-700 max-w-2xl mx-auto text-lg sm:text-xl leading-relaxed">
               {t('ambassador_landing.contract_subtitle', 'A binding contract between all three parties protects your 2% for as long as the hotel stays on Staylo.')}
             </p>
           </div>
 
           <Card className="p-8 sm:p-10 border-2 border-electric/20 bg-gradient-to-br from-white to-electric/5">
-            {/* Triangle visual */}
-            <div className="flex items-center justify-center gap-4 sm:gap-10 flex-wrap mb-8">
+            {/* Triangle visual — larger circles + heavier labels for desktop legibility */}
+            <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap mb-10">
               <div className="text-center">
-                <div className="w-20 h-20 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-ocean/30">
-                  <Globe size={32} className="text-ocean" />
+                <div className="w-24 h-24 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-ocean/30">
+                  <Globe size={36} className="text-ocean" />
                 </div>
-                <p className="text-sm font-bold text-deep">{t('ambassador_landing.party_staylo', 'STAYLO')}</p>
-                <p className="text-xs text-gray-400">{t('ambassador_landing.party_staylo_role', 'Platform')}</p>
+                <p className="text-base sm:text-lg font-extrabold text-deep tracking-wide">{t('ambassador_landing.party_staylo', 'STAYLO')}</p>
+                <p className="text-sm sm:text-base text-gray-600 font-medium">{t('ambassador_landing.party_staylo_role', 'Platform')}</p>
               </div>
 
-              <div className="text-gray-300 text-3xl font-light hidden sm:block">&#x27F7;</div>
+              <div className="text-gray-400 text-4xl font-light hidden sm:block">&#x27F7;</div>
 
               <div className="text-center">
-                <div className="w-20 h-20 bg-libre/10 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-libre/30">
-                  <Hotel size={32} className="text-libre" />
+                <div className="w-24 h-24 bg-libre/10 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-libre/30">
+                  <Hotel size={36} className="text-libre" />
                 </div>
-                <p className="text-sm font-bold text-deep">{t('ambassador_landing.party_hotel', 'HOTEL')}</p>
-                <p className="text-xs text-gray-400">{t('ambassador_landing.party_hotel_role', 'Partner')}</p>
+                <p className="text-base sm:text-lg font-extrabold text-deep tracking-wide">{t('ambassador_landing.party_hotel', 'HOTEL')}</p>
+                <p className="text-sm sm:text-base text-gray-600 font-medium">{t('ambassador_landing.party_hotel_role', 'Partner')}</p>
               </div>
 
-              <div className="text-gray-300 text-3xl font-light hidden sm:block">&#x27F7;</div>
+              <div className="text-gray-400 text-4xl font-light hidden sm:block">&#x27F7;</div>
 
               <div className="text-center">
-                <div className="w-20 h-20 bg-sunset/10 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-sunset/30">
-                  <Users size={32} className="text-sunset" />
+                <div className="w-24 h-24 bg-sunset/10 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-sunset/30">
+                  <Users size={36} className="text-sunset" />
                 </div>
-                <p className="text-sm font-bold text-deep">{t('ambassador_landing.party_ambassador', 'AMBASSADOR')}</p>
-                <p className="text-xs text-gray-400">{t('ambassador_landing.party_ambassador_role', 'Business Bringer')}</p>
+                <p className="text-base sm:text-lg font-extrabold text-deep tracking-wide">{t('ambassador_landing.party_ambassador', 'AMBASSADOR')}</p>
+                <p className="text-sm sm:text-base text-gray-600 font-medium">{t('ambassador_landing.party_ambassador_role', 'Business Bringer')}</p>
               </div>
             </div>
 
-            {/* Contract details */}
+            {/* Contract details — bumped sizes + darker text for desktop reading */}
             <div className="grid sm:grid-cols-3 gap-4 text-center">
-              <div className="bg-ocean/5 rounded-2xl p-5">
-                <DollarSign size={20} className="text-ocean mx-auto mb-2" />
-                <p className="text-sm font-semibold text-deep mb-1">{t('ambassador_landing.contract_guaranteed', 'Guaranteed 2%')}</p>
-                <p className="text-xs text-gray-400">{t('ambassador_landing.contract_guaranteed_desc', 'Your share is locked into the contract between all parties.')}</p>
+              <div className="bg-ocean/5 rounded-2xl p-6">
+                <DollarSign size={24} className="text-ocean mx-auto mb-3" />
+                <p className="text-base sm:text-lg font-bold text-deep mb-2">{t('ambassador_landing.contract_guaranteed', 'Guaranteed 2%')}</p>
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{t('ambassador_landing.contract_guaranteed_desc', 'Your share is locked into the contract between all parties.')}</p>
               </div>
-              <div className="bg-libre/5 rounded-2xl p-5">
-                <Handshake size={20} className="text-libre mx-auto mb-2" />
-                <p className="text-sm font-semibold text-deep mb-1">{t('ambassador_landing.contract_binding', 'Legally Binding')}</p>
-                <p className="text-xs text-gray-400">{t('ambassador_landing.contract_binding_desc', 'A formal agreement signed by Staylo, the hotel, and you.')}</p>
+              <div className="bg-libre/5 rounded-2xl p-6">
+                <Handshake size={24} className="text-libre mx-auto mb-3" />
+                <p className="text-base sm:text-lg font-bold text-deep mb-2">{t('ambassador_landing.contract_binding', 'Legally Binding')}</p>
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{t('ambassador_landing.contract_binding_desc', 'A formal agreement signed by Staylo, the hotel, and you.')}</p>
               </div>
-              <div className="bg-sunset/5 rounded-2xl p-5">
-                <TrendingUp size={20} className="text-sunset mx-auto mb-2" />
-                <p className="text-sm font-semibold text-deep mb-1">{t('ambassador_landing.contract_lifetime', 'Lifetime Duration')}</p>
-                <p className="text-xs text-gray-400">{t('ambassador_landing.contract_lifetime_desc', 'Active for as long as the hotel remains on the Staylo platform.')}</p>
+              <div className="bg-sunset/5 rounded-2xl p-6">
+                <TrendingUp size={24} className="text-sunset mx-auto mb-3" />
+                <p className="text-base sm:text-lg font-bold text-deep mb-2">{t('ambassador_landing.contract_lifetime', 'Lifetime Duration')}</p>
+                <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{t('ambassador_landing.contract_lifetime_desc', 'Active for as long as the hotel remains on the Staylo platform.')}</p>
               </div>
             </div>
           </Card>

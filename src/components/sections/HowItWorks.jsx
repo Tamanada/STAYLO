@@ -112,29 +112,29 @@ function StepCard({ step, t }) {
             </div>
             <span className="text-3xl shrink-0">{step.emoji}</span>
           </div>
-          <div className="text-[11px] font-black px-2.5 py-1 rounded-md whitespace-nowrap shrink-0"
-            style={{ background: step.color, color: 'white', letterSpacing: '0.2px' }}>
+          <div className="text-xs md:text-sm font-black px-3 py-1.5 rounded-md whitespace-nowrap shrink-0"
+            style={{ background: step.color, color: 'white', letterSpacing: '0.3px' }}>
             {t(`home_how.${step.highlightKey}`, step.highlightDef)}
           </div>
         </div>
 
         {/* Title */}
-        <h3 className="font-black text-lg mb-2 leading-tight" style={{ color: '#2D3436' }}>
+        <h3 className="font-black text-xl md:text-2xl mb-2 leading-tight" style={{ color: '#1A1D1F' }}>
           {t(`home_how.${step.titleKey}`, step.titleDef)}
         </h3>
 
-        {/* Description (kept short) */}
-        <p className="text-sm leading-relaxed mb-4" style={{ color: '#636E72' }}>
+        {/* Description (kept short) — darker color for legibility on cream bg */}
+        <p className="text-sm md:text-base leading-relaxed mb-4" style={{ color: '#3D4449' }}>
           {t(`home_how.${step.descKey}`, step.descDef)}
         </p>
 
         {/* Key features — instantly scannable */}
-        <ul className="space-y-2 pt-3 border-t" style={{ borderColor: '#F0EBE5' }}>
+        <ul className="space-y-2.5 pt-3 border-t" style={{ borderColor: '#E8E0D8' }}>
           {step.bullets.map((b, i) => (
-            <li key={i} className="text-xs flex items-start gap-2" style={{ color: '#2D3436' }}>
+            <li key={i} className="text-sm md:text-[15px] flex items-start gap-2.5" style={{ color: '#1A1D1F' }}>
               <span className="rounded-full flex items-center justify-center shrink-0"
-                style={{ width: '16px', height: '16px', background: step.bg, marginTop: '1px' }}>
-                <Check size={11} strokeWidth={3.5} style={{ color: step.color }} />
+                style={{ width: '20px', height: '20px', background: step.bg, marginTop: '1px' }}>
+                <Check size={13} strokeWidth={3.5} style={{ color: step.color }} />
               </span>
               <span className="font-semibold leading-snug">{t(`home_how.${b.key}`, b.def)}</span>
             </li>
@@ -166,7 +166,7 @@ export function HowItWorks() {
           }}>
             {t('home_how.title', 'Two sides, one fair platform')}
           </h2>
-          <p className="text-base mt-3 max-w-2xl mx-auto px-4" style={{ color: '#636E72' }}>
+          <p className="text-base md:text-lg mt-4 max-w-2xl mx-auto px-4 leading-relaxed" style={{ color: '#3D4449' }}>
             {t('home_how.subtitle', 'STAYLO is built around two audiences — travelers who book stays and hoteliers who host them. Both win: travelers earn $STAY rewards on every stay, hoteliers can become co-owners of the platform.')}
           </p>
         </div>
@@ -178,15 +178,15 @@ export function HowItWorks() {
           <div className="min-w-0">
             <div className="text-center mb-6">
               <div className="inline-flex items-center gap-2 mb-2">
-                <span className="text-2xl">🧳</span>
-                <h3 className="text-xl font-black" style={{ color: '#FF6B00' }}>
+                <span className="text-3xl">🧳</span>
+                <h3 className="text-2xl md:text-3xl font-black" style={{ color: '#FF6B00' }}>
                   {t('home_how.for_travelers', 'For travelers')}
                 </h3>
               </div>
               <div>
-                <Link to="/ota" className="inline-flex items-center gap-1 text-xs font-bold no-underline transition-colors"
+                <Link to="/ota" className="inline-flex items-center gap-1 text-sm md:text-base font-bold no-underline transition-colors"
                   style={{ color: '#FF6B00' }}>
-                  {t('home_how.cta_book', 'Find a stay')} <ArrowRight size={14} />
+                  {t('home_how.cta_book', 'Find a stay')} <ArrowRight size={16} />
                 </Link>
               </div>
             </div>
@@ -199,15 +199,15 @@ export function HowItWorks() {
           <div className="min-w-0">
             <div className="text-center mb-6">
               <div className="inline-flex items-center gap-2 mb-2">
-                <span className="text-2xl">🏨</span>
-                <h3 className="text-xl font-black" style={{ color: '#F7931A' }}>
+                <span className="text-3xl">🏨</span>
+                <h3 className="text-2xl md:text-3xl font-black" style={{ color: '#F7931A' }}>
                   {t('home_how.for_hoteliers', 'For hoteliers')}
                 </h3>
               </div>
               <div>
-                <Link to="/submit" className="inline-flex items-center gap-1 text-xs font-bold no-underline transition-colors"
+                <Link to="/submit" className="inline-flex items-center gap-1 text-sm md:text-base font-bold no-underline transition-colors"
                   style={{ color: '#F7931A' }}>
-                  {t('home_how.cta_list', 'List your hotel')} <ArrowRight size={14} />
+                  {t('home_how.cta_list', 'List your hotel')} <ArrowRight size={16} />
                 </Link>
               </div>
             </div>
@@ -218,7 +218,7 @@ export function HowItWorks() {
         </div>
 
         {/* Tagline footer */}
-        <p className="text-sm text-center mt-12 italic max-w-3xl mx-auto px-4" style={{ color: '#636E72' }}>
+        <p className="text-base md:text-lg text-center mt-12 italic max-w-3xl mx-auto px-4 leading-relaxed" style={{ color: '#3D4449' }}>
           {t('home_how.footer', 'Built with hoteliers, for hoteliers. Alone, it is impossible. Together, we are unstoppable.')}
         </p>
       </div>
