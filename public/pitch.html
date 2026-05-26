@@ -16,11 +16,17 @@
    ================================================================ */
 
 :root {
-  --teal:     #00897B;
-  --teal-d:   #00695C;
-  --teal-l:   #E0F2F1;
-  --orange:   #F4511E;
-  --orange-l: #FBE9E7;
+  /* Brand palette — matches STAYLO logo (orange → hot pink → deep purple).
+     Variable names kept (--teal etc.) for backwards compat; values now
+     reflect the third logo color (purple) instead of teal. */
+  --teal:     #7E22CE;   /* was #00897B — purple, 3rd logo color */
+  --teal-d:   #581C87;   /* was #00695C — deeper purple */
+  --teal-l:   #F3E8FF;   /* was #E0F2F1 — light purple wash */
+  --orange:   #FF6B00;   /* was #F4511E — brighter orange matching logo top */
+  --orange-l: #FFEEDD;   /* was #FBE9E7 */
+  --pink:     #FF1F70;   /* NEW — logo middle color (hot pink) */
+  --pink-d:   #C2185B;
+  --pink-l:   #FCE4EC;
   --deep:     #1A1A2E;
   --ink:      #2C2C3E;
   --muted:    #6B7280;
@@ -32,9 +38,11 @@
   --gold:     #B45309;
   --gold-l:   #FEF3C7;
 
-  --grad-main: linear-gradient(135deg, #00897B 0%, #00695C 100%);
-  --grad-warm: linear-gradient(135deg, #F4511E 0%, #BF360C 100%);
-  --grad-hero: linear-gradient(145deg, #1A1A2E 0%, #0D2137 50%, #002D2A 100%);
+  --grad-main: linear-gradient(135deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%);  /* THE logo gradient */
+  --grad-warm: linear-gradient(135deg, #FF6B00 0%, #FF1F70 100%);                /* orange→pink only */
+  --grad-cool: linear-gradient(135deg, #FF1F70 0%, #7E22CE 100%);                /* pink→purple only */
+  --grad-hero: linear-gradient(145deg, #1A1A2E 0%, #2D0A3D 45%, #3D0A45 100%);   /* dark with purple hint */
+  --grad-logo: linear-gradient(135deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%);   /* alias of grad-main */
 
   --slide-w: 1280px;
   --slide-h: 720px;
@@ -795,7 +803,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">1 / 12</div>
+  <div class="slide-num">1 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -857,7 +865,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">2 / 12</div>
+  <div class="slide-num">2 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -901,7 +909,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">3 / 12</div>
+  <div class="slide-num">3 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -948,7 +956,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">4 / 12</div>
+  <div class="slide-num">4 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -1026,11 +1034,102 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">5 / 12</div>
+  <div class="slide-num">5 / 13</div>
 </section>
 
 <!-- ================================================================
-     SLIDE 6 — ALPHA SHARE $1,000
+     SLIDE 6 — STAYLO SHIP (free operational toolkit)
+     ================================================================ -->
+<section class="slide" data-slide="6">
+  <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
+
+  <div class="content" style="padding-top:64px;">
+    <div class="label en">Bonus — STAYLO Ship</div>
+    <div class="label th">โบนัส — STAYLO Ship</div>
+
+    <h1 class="md en">Manage your hotel <span class="grad-text">in the palm of your hand.</span></h1>
+    <h1 class="md th">บริหารโรงแรมของคุณ <span class="grad-text">ในฝ่ามือ</span></h1>
+
+    <p style="font-size:16px; color:var(--muted); margin-top:8px; max-width:780px; line-height:1.5;">
+      <span class="en">The full operational app, included free with your Founding Partner share. No subscription. No usage cap. Every new hotel onboarded — even via Booking.com — uses it from day one.</span>
+      <span class="th">แอปปฏิบัติการเต็มรูปแบบ รวมฟรีกับหุ้น Founding Partner ของคุณ ไม่ต้องสมัครสมาชิก ไม่จำกัดการใช้งาน โรงแรมทุกแห่งที่เข้าร่วม — แม้จะมาจาก Booking.com — ใช้งานได้ตั้งแต่วันแรก</span>
+    </p>
+
+    <!-- Feature grid: 6 modules -->
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:22px;">
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">👥</div>
+        <div style="font-size:13px; font-weight:800; color:var(--ink);"><span class="en">HR &amp; Contracts</span><span class="th">HR และสัญญา</span></div>
+        <div style="font-size:11px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Bilingual contracts, ID/work permit scans, payroll, vacation tracking</span><span class="th">สัญญาสองภาษา สแกนบัตร/ใบอนุญาตทำงาน บัญชีเงินเดือน วันหยุด</span></div>
+      </div>
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">📅</div>
+        <div style="font-size:13px; font-weight:800; color:var(--ink);"><span class="en">Schedule</span><span class="th">ตารางเวลา</span></div>
+        <div style="font-size:11px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Shifts, swaps, auto-conflict detection, hours/week limits</span><span class="th">กะ การสับเปลี่ยน ตรวจสอบความขัดแย้ง ขีดจำกัดชม./สัปดาห์</span></div>
+      </div>
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">✅</div>
+        <div style="font-size:13px; font-weight:800; color:var(--ink);"><span class="en">Tasks &amp; Routines</span><span class="th">งานและกิจวัตร</span></div>
+        <div style="font-size:11px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Daily/weekly/monthly tasks per zone, recurring, photo checks</span><span class="th">งานรายวัน/สัปดาห์/เดือนต่อพื้นที่ ซ้ำได้ ตรวจสอบด้วยภาพ</span></div>
+      </div>
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">📋</div>
+        <div style="font-size:13px; font-weight:800; color:var(--ink);"><span class="en">Fiches techniques</span><span class="th">คู่มือเทคนิค</span></div>
+        <div style="font-size:11px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Kitchen recipes, maintenance SOPs, spa rituals, dept-locked access</span><span class="th">สูตรครัว ขั้นตอนซ่อมบำรุง พิธีกรรมสปา เข้าถึงตามแผนก</span></div>
+      </div>
+
+      <div style="background:var(--cream); border:1px solid var(--line); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">🛏️</div>
+        <div style="font-size:13px; font-weight:800; color:var(--ink);"><span class="en">Booking engine</span><span class="th">เครื่องมือจอง</span></div>
+        <div style="font-size:11px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">Direct booking, channel manager, room inventory, rates, 14 languages</span><span class="th">จองตรง จัดการช่องทาง สต็อกห้อง ราคา 14 ภาษา</span></div>
+      </div>
+
+      <div style="background:linear-gradient(135deg, rgba(255,107,0,0.08), rgba(126,34,206,0.08)); border:1px solid var(--orange); border-radius:10px; padding:12px 14px;">
+        <div style="font-size:22px; line-height:1; margin-bottom:5px;">💬</div>
+        <div style="font-size:13px; font-weight:800; color:var(--ink);"><span class="en">Guest bridge &amp; Ambassador</span><span class="th">สะพานแขกและแอมบาสเดอร์</span></div>
+        <div style="font-size:11px; color:var(--muted); line-height:1.4; margin-top:3px;"><span class="en">In-hotel services, QR check-in, ambassador onboarding (2% BTC)</span><span class="th">บริการในโรงแรม QR เช็คอิน รับแอมบาสเดอร์ (2% BTC)</span></div>
+      </div>
+
+    </div>
+
+    <!-- Cost comparison strip -->
+    <div style="margin-top:18px; background:linear-gradient(135deg, #1A1A2E 0%, #2D0A3D 100%); border-radius:10px; padding:14px 22px; display:grid; grid-template-columns:1.6fr 1fr; gap:24px; align-items:center;">
+      <div>
+        <div style="font-size:9px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:6px;">
+          <span class="en">What others charge per month</span>
+          <span class="th">คู่แข่งเก็บต่อเดือน</span>
+        </div>
+        <div style="display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:rgba(255,255,255,0.85); font-weight:600;">
+          <span>Cloudbeds <strong style="color:#FF6B00;">$250–500</strong></span>
+          <span>Mews <strong style="color:#FF6B00;">$300+</strong></span>
+          <span>Little Hotelier <strong style="color:#FF6B00;">$99–150</strong></span>
+          <span>RoomRaccoon <strong style="color:#FF6B00;">$200+</strong></span>
+        </div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:9px; font-weight:800; letter-spacing:1.8px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:2px;">
+          <span class="en">You pay</span>
+          <span class="th">คุณจ่าย</span>
+        </div>
+        <div style="font-size:42px; font-weight:900; line-height:1; background:var(--grad-warm); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-2px;">$0 / mo</div>
+        <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:2px;">
+          <span class="en">included with your share, for life</span>
+          <span class="th">รวมกับหุ้นของคุณตลอดชีพ</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
+  <div class="slide-num">6 / 13</div>
+</section>
+
+<!-- ================================================================
+     SLIDE 7 — ALPHA SHARE $1,000  (was slide 6 before Ship insertion)
      ================================================================ -->
 <section class="slide" data-slide="6">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
@@ -1108,7 +1207,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">6 / 12</div>
+  <div class="slide-num">7 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -1218,7 +1317,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">7 / 12</div>
+  <div class="slide-num">8 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -1319,7 +1418,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">8 / 12</div>
+  <div class="slide-num">9 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -1398,7 +1497,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">9 / 12</div>
+  <div class="slide-num">10 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -1501,7 +1600,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">10 / 12</div>
+  <div class="slide-num">11 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -1556,7 +1655,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app" style="color:rgba(255,255,255,0.35);">staylo.app</a></div>
-  <div class="slide-num" style="color:rgba(255,255,255,0.3);">11 / 12</div>
+  <div class="slide-num" style="color:rgba(255,255,255,0.3);">12 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -1626,7 +1725,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
 
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num">12 / 12</div>
+  <div class="slide-num">13 / 13</div>
 </section>
 
 <!-- ================================================================
@@ -1639,7 +1738,7 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   </div>
   <div class="ctrl-sep"></div>
   <button class="ctrl-btn" onclick="nav(-1)" title="Previous">&#8592;</button>
-  <span class="ctrl-counter" id="counter">1 / 12</span>
+  <span class="ctrl-counter" id="counter">1 / 13</span>
   <button class="ctrl-btn" onclick="nav(1)" title="Next">&#8594;</button>
   <div class="ctrl-sep"></div>
   <button class="ctrl-present" onclick="togglePresent()">Present</button>
