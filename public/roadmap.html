@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAYLO — Roadmap 2026–2031</title>
+<meta name="description" content="STAYLO's 4-phase rollout: Hotels → Restaurants → Tours → National. Multi-token cooperative economy.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700;800&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --bg:#FAFAF7;
+    --paper:#FFFFFF;
+    --ink:#1A2433;
+    --muted:#5B6573;
+    --border:#E2E8F0;
+    --teal:#00897B;
+    --teal-d:#00695C;
+    --teal-l:#E0F2F1;
+    --orange:#F4511E;
+    --orange-d:#E64A19;
+    --orange-l:#FFF3E0;
+    --sky:#0284C7;
+    --sky-l:#F0F9FF;
+    --purple:#7E22CE;
+    --purple-l:#FAF5FF;
+    --font:'Inter','Noto Sans Thai',sans-serif;
+  }
+
+  body{
+    font-family:var(--font);
+    font-size:14px;
+    line-height:1.55;
+    color:var(--ink);
+    background:var(--bg);
+  }
+
+  body.lang-th .en{display:none}
+  body:not(.lang-th) .th{display:none}
+
+  @page{size:A4 landscape;margin:8mm}
+  @media print{
+    .no-print{display:none!important}
+    body{background:white;font-size:11px}
+    .section{page-break-inside:avoid}
+  }
+
+  /* Sticky nav */
+  .nav{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(255,255,255,0.96);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--border);
+    padding:14px 32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .nav .brand{font-size:18pt;font-weight:800;color:var(--teal);letter-spacing:-0.5px}
+  .nav .brand span{color:var(--orange)}
+  .nav .controls{display:flex;gap:8px;align-items:center}
+  .nav button{
+    padding:6px 14px;
+    border:1.5px solid var(--teal);
+    background:var(--paper);
+    color:var(--teal);
+    border-radius:6px;
+    cursor:pointer;
+    font-family:var(--font);
+    font-size:12px;
+    font-weight:600;
+  }
+  .nav button.active{background:var(--teal);color:white}
+  .nav button.print{border-color:var(--orange);color:var(--orange)}
+  .nav button.print:hover{background:var(--orange);color:white}
+
+  /* Page wrapper */
+  .wrap{max-width:1280px;margin:0 auto;padding:48px 32px 64px}
+
+  /* Hero */
+  .hero{margin-bottom:48px}
+  .hero .label{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:1.8px;
+    text-transform:uppercase;
+    color:var(--orange);
+    margin-bottom:14px;
+  }
+  .hero h1{
+    font-size:56px;
+    font-weight:800;
+    line-height:1.05;
+    letter-spacing:-1.5px;
+    color:var(--ink);
+    margin-bottom:18px;
+  }
+  .hero h1 .grad{
+    background:linear-gradient(135deg,var(--teal) 0%,var(--orange) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .hero .lede{
+    font-size:18px;
+    color:var(--muted);
+    max-width:780px;
+    line-height:1.5;
+  }
+
+  /* Section title */
+  .section{margin-bottom:56px}
+  .section-h{
+    font-size:11px;
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--orange);
+    margin-bottom:10px;
+  }
+  .section-t{
+    font-size:32px;
+    font-weight:800;
+    color:var(--ink);
+    margin-bottom:24px;
+    letter-spacing:-0.5px;
+  }
+
+  /* Gantt */
+  .gantt{
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:28px;
+    overflow:hidden;
+  }
+  .gantt-header{
+    display:grid;
+    grid-template-columns:140px repeat(5, 1fr);
+    gap:0;
+    border-bottom:2px solid var(--border);
+    padding-bottom:8px;
+    margin-bottom:16px;
+    font-size:10px;
+    font-weight:700;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+  }
+  .gantt-header .month-tick{
+    text-align:center;
+    border-left:1px dashed var(--border);
+    padding:0 4px;
+  }
+  .gantt-lane{
+    display:grid;
+    grid-template-columns:140px 1fr;
+    gap:14px;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px dashed var(--border);
+  }
+  .gantt-lane:last-child{border-bottom:none}
+  .lane-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .lane-label .emoji{font-size:18px;line-height:1}
+  .lane-track{
+    position:relative;
+    height:36px;
+    background:linear-gradient(to right, var(--bg) 0%, transparent 5%, transparent 95%, var(--bg) 100%);
+    border-radius:6px;
+  }
+  .lane-track::before{
+    content:"";
+    position:absolute;
+    top:50%;
+    left:0;
+    right:0;
+    height:1px;
+    background:var(--border);
+  }
+  /* Each lane subdivision: M0-M60 means 60 units. Bar position uses % */
+  .gantt-bar{
+    position:absolute;
+    top:6px;
+    bottom:6px;
+    border-radius:5px;
+    display:flex;
+    align-items:center;
+    padding:0 10px;
+    font-size:11px;
+    font-weight:700;
+    color:white;
+    overflow:hidden;
+    white-space:nowrap;
+  }
+  .gantt-bar.phase-1{background:linear-gradient(90deg, var(--orange) 0%, var(--orange-d) 100%);}
+  .gantt-bar.phase-2{background:linear-gradient(90deg, var(--teal) 0%, var(--teal-d) 100%);}
+  .gantt-bar.phase-3{background:linear-gradient(90deg, var(--sky) 0%, #0369A1 100%);}
+  .gantt-bar.phase-4{background:linear-gradient(90deg, var(--purple) 0%, #6B21A8 100%);}
+  .gantt-bar.dashed{
+    background:repeating-linear-gradient(45deg, #94A3B8, #94A3B8 6px, #CBD5E0 6px, #CBD5E0 12px);
+    color:#1A2433;
+  }
+  /* Milestones */
+  .gantt-milestone{
+    position:absolute;
+    top:50%;
+    transform:translate(-50%, -50%);
+    width:10px;
+    height:10px;
+    background:white;
+    border:2px solid var(--ink);
+    border-radius:50%;
+    z-index:5;
+    cursor:help;
+  }
+  .gantt-milestone.tge{background:#FFD700;border-color:#B8860B}
+  .gantt-milestone.launch{background:var(--orange);border-color:var(--orange-d)}
+
+  /* Phase detail cards */
+  .phases{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+  .phase-card{
+    background:var(--paper);
+    border:1.5px solid var(--border);
+    border-radius:14px;
+    padding:24px 26px;
+    position:relative;
+  }
+  .phase-card.p1{border-color:var(--orange);background:linear-gradient(180deg, var(--orange-l) 0%, var(--paper) 50%);}
+  .phase-card.p2{border-color:var(--teal);background:linear-gradient(180deg, var(--teal-l) 0%, var(--paper) 50%);}
+  .phase-card.p3{border-color:var(--sky);background:linear-gradient(180deg, var(--sky-l) 0%, var(--paper) 50%);}
+  .phase-card.p4{border-color:var(--purple);background:linear-gradient(180deg, var(--purple-l) 0%, var(--paper) 50%);}
+
+  .phase-card .badge{
+    position:absolute;
+    top:-12px;
+    right:24px;
+    color:white;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:1.4px;
+    text-transform:uppercase;
+    padding:5px 12px;
+    border-radius:14px;
+  }
+  .phase-card.p1 .badge{background:var(--orange)}
+  .phase-card.p2 .badge{background:var(--teal-d)}
+  .phase-card.p3 .badge{background:var(--sky)}
+  .phase-card.p4 .badge{background:var(--purple)}
+
+  .phase-card .num{
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    margin-bottom:4px;
+  }
+  .phase-card.p1 .num{color:var(--orange)}
+  .phase-card.p2 .num{color:var(--teal-d)}
+  .phase-card.p3 .num{color:var(--sky)}
+  .phase-card.p4 .num{color:var(--purple)}
+
+  .phase-card .title{
+    font-size:24px;
+    font-weight:800;
+    color:var(--ink);
+    margin-bottom:14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .phase-card .title .emoji{font-size:32px;line-height:1}
+
+  .phase-card .summary{
+    font-size:14px;
+    color:var(--muted);
+    margin-bottom:18px;
+    line-height:1.5;
+  }
+
+  .kv{
+    display:grid;
+    grid-template-columns:120px 1fr;
+    gap:10px;
+    padding:8px 0;
+    border-bottom:1px dotted var(--border);
+    font-size:13px;
+  }
+  .kv:last-child{border-bottom:none}
+  .kv .k{
+    font-size:11px;
+    font-weight:700;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.8px;
+  }
+  .kv .v{color:var(--ink);font-weight:600}
+  .kv .v strong{color:inherit;font-weight:800}
+
+  .milestones{
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px solid var(--border);
+  }
+  .milestones h4{
+    font-size:11px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    color:var(--ink);
+    margin-bottom:8px;
+  }
+  .milestones ul{list-style:none;padding:0}
+  .milestones li{
+    padding:5px 0 5px 18px;
+    position:relative;
+    font-size:12.5px;
+    color:var(--muted);
+    line-height:1.45;
+  }
+  .milestones li::before{
+    content:"●";
+    position:absolute;
+    left:0;
+    top:5px;
+    font-size:10px;
+  }
+  .phase-card.p1 .milestones li::before{color:var(--orange)}
+  .phase-card.p2 .milestones li::before{color:var(--teal-d)}
+  .phase-card.p3 .milestones li::before{color:var(--sky)}
+  .phase-card.p4 .milestones li::before{color:var(--purple)}
+
+  /* Tokenomics table */
+  .tk-table{
+    background:var(--paper);
+    border:1px solid var(--border);
+    border-radius:14px;
+    overflow:hidden;
+  }
+  .tk-row{
+    display:grid;
+    grid-template-columns:1.2fr 0.8fr 1fr 1fr 1.5fr;
+    padding:18px 24px;
+    align-items:center;
+    border-bottom:1px solid var(--border);
+    font-size:13px;
+  }
+  .tk-row:last-child{border-bottom:none}
+  .tk-row.tk-head{
+    background:var(--ink);
+    color:white;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    padding:14px 24px;
+  }
+  .tk-token{font-weight:800;font-size:15px}
+  .tk-token.t1{color:var(--orange)}
+  .tk-token.t2{color:var(--teal-d)}
+  .tk-token.t3{color:var(--sky)}
+  .tk-token.t4{color:var(--purple)}
+  .tk-row .v{color:var(--ink);font-weight:600}
+
+  /* Swap rules */
+  .swap-box{
+    background:linear-gradient(135deg, var(--orange-l), var(--teal-l));
+    border:1px solid var(--orange);
+    border-radius:14px;
+    padding:24px 28px;
+    margin-top:24px;
+  }
+  .swap-box h3{
+    font-size:11px;
+    font-weight:800;
+    color:var(--orange);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    margin-bottom:10px;
+  }
+  .swap-box p{
+    font-size:14px;
+    line-height:1.6;
+    color:var(--ink);
+  }
+  .swap-box strong{color:var(--ink)}
+
+  /* Footer */
+  .foot{
+    margin-top:64px;
+    padding-top:28px;
+    border-top:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12px;
+    color:var(--muted);
+  }
+  .foot .left strong{color:var(--ink);font-weight:700}
+  .foot .right{font-family:'Courier New',monospace;font-size:11px}
+
+  @media (max-width: 880px){
+    .hero h1{font-size:38px}
+    .phases{grid-template-columns:1fr}
+    .gantt{padding:18px;overflow-x:auto}
+    .gantt-header,.gantt-lane{min-width:680px}
+    .tk-row{font-size:11px;padding:12px}
+  }
+</style>
+</head>
+<body>
+
+<!-- Sticky nav -->
+<nav class="nav no-print">
+  <div class="brand">STAY<span>LO</span></div>
+  <div class="controls">
+    <button id="btnEN" class="active" onclick="setLang('en')">EN</button>
+    <button id="btnTH" onclick="setLang('th')">TH</button>
+    <button class="print" onclick="window.print()">🖨 Print PDF</button>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="label">
+      <span class="en">Roadmap 2026 – 2031 · 60 months</span>
+      <span class="th">แผนระยะยาว 2026 – 2031 · 60 เดือน</span>
+    </div>
+    <h1>
+      <span class="en">From <span class="grad">one island</span><br>to the world.</span>
+      <span class="th">จาก <span class="grad">เกาะเดียว</span><br>สู่ทั่วโลก</span>
+    </h1>
+    <p class="lede">
+      <span class="en">STAYLO begins as a hotel cooperative on Koh Phangan. It grows phase by phase — restaurants, tours, then national and regional. Each phase has its own Alpha round, its own token, and its own threshold. Phase 1 hoteliers carry priority access to every round that follows.</span>
+      <span class="th">STAYLO เริ่มต้นเป็นสหกรณ์โรงแรมบนเกาะพะงัน ขยายเฟสต่อเฟส — ร้านอาหาร ทัวร์ และจากนั้นทั่วประเทศและภูมิภาค แต่ละเฟสมีรอบ Alpha โทเค็น และเกณฑ์ของตัวเอง โรงแรม Phase 1 มีสิทธิ์เข้าถึงทุกรอบที่ตามมาเป็นลำดับแรก</span>
+    </p>
+  </section>
+
+  <!-- GANTT -->
+  <section class="section">
+    <div class="section-h">
+      <span class="en">The 60-month plan</span>
+      <span class="th">แผน 60 เดือน</span>
+    </div>
+    <h2 class="section-t">
+      <span class="en">Phased rollout · M0 → M60</span>
+      <span class="th">เปิดตัวเป็นเฟส · M0 → M60</span>
+    </h2>
+
+    <div class="gantt">
+      <div class="gantt-header">
+        <div></div>
+        <div class="month-tick">M0–M12</div>
+        <div class="month-tick">M12–M24</div>
+        <div class="month-tick">M24–M36</div>
+        <div class="month-tick">M36–M48</div>
+        <div class="month-tick">M48–M60</div>
+      </div>
+
+      <!-- Phase 1 Hotels -->
+      <div class="gantt-lane">
+        <div class="lane-label"><span class="emoji">🏨</span>
+          <span><span class="en">Hotels</span><span class="th">โรงแรม</span></span>
+        </div>
+        <div class="lane-track">
+          <div class="gantt-bar phase-1" style="left:0%; width:20%;">
+            <span class="en">Alpha + World rounds</span>
+            <span class="th">รอบ Alpha + World</span>
+          </div>
+          <div class="gantt-bar dashed" style="left:20%; width:80%;">
+            <span class="en">Live · expanding nationally</span>
+            <span class="th">เปิดให้บริการ · ขยายทั่วประเทศ</span>
+          </div>
+          <!-- Milestones: M7 TGE, M12 launch -->
+          <div class="gantt-milestone tge" style="left:11.7%;" title="M7 — $STAY TGE on Raydium @ $0.10"></div>
+          <div class="gantt-milestone launch" style="left:20%;" title="M12 — Platform goes live (500 hotels reached)"></div>
+        </div>
+      </div>
+
+      <!-- Phase 2 F&B -->
+      <div class="gantt-lane">
+        <div class="lane-label"><span class="emoji">🍽️</span>
+          <span><span class="en">F&amp;B</span><span class="th">ร้านอาหาร</span></span>
+        </div>
+        <div class="lane-track">
+          <div class="gantt-bar phase-2" style="left:20%; width:20%;">
+            <span class="en">Alpha + build + launch</span>
+            <span class="th">Alpha + พัฒนา + เปิดตัว</span>
+          </div>
+          <div class="gantt-bar dashed" style="left:40%; width:60%;">
+            <span class="en">Live · expanding</span>
+            <span class="th">เปิดให้บริการ · ขยาย</span>
+          </div>
+          <div class="gantt-milestone tge" style="left:33%;" title="M20 — $TASTE TGE"></div>
+          <div class="gantt-milestone launch" style="left:40%;" title="M24 — F&B platform goes live"></div>
+        </div>
+      </div>
+
+      <!-- Phase 3 Tours -->
+      <div class="gantt-lane">
+        <div class="lane-label"><span class="emoji">🎯</span>
+          <span><span class="en">Tours</span><span class="th">ทัวร์</span></span>
+        </div>
+        <div class="lane-track">
+          <div class="gantt-bar phase-3" style="left:40%; width:20%;">
+            <span class="en">Alpha + build + launch</span>
+            <span class="th">Alpha + พัฒนา + เปิดตัว</span>
+          </div>
+          <div class="gantt-bar dashed" style="left:60%; width:40%;">
+            <span class="en">Live · regional</span>
+            <span class="th">เปิดให้บริการ · ระดับภูมิภาค</span>
+          </div>
+          <div class="gantt-milestone tge" style="left:53%;" title="M32 — $TOUR TGE"></div>
+          <div class="gantt-milestone launch" style="left:60%;" title="M36 — Tours platform goes live"></div>
+        </div>
+      </div>
+
+      <!-- Phase 4 National / SEA -->
+      <div class="gantt-lane">
+        <div class="lane-label"><span class="emoji">🌏</span>
+          <span><span class="en">National / SEA</span><span class="th">ทั่วประเทศ / อาเซียน</span></span>
+        </div>
+        <div class="lane-track">
+          <div class="gantt-bar phase-4" style="left:60%; width:40%;">
+            <span class="en">Multi-token economy · regional expansion</span>
+            <span class="th">เศรษฐกิจหลายโทเค็น · ขยายภูมิภาค</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gantt legend -->
+    <div style="margin-top:12px; display:flex; gap:24px; font-size:11px; color:var(--muted); flex-wrap:wrap;">
+      <span><span style="display:inline-block;width:10px;height:10px;background:#FFD700;border:2px solid #B8860B;border-radius:50%;vertical-align:middle;margin-right:5px;"></span>
+        <span class="en">Token Generation Event (TGE)</span>
+        <span class="th">วันเปิดโทเค็น (TGE)</span></span>
+      <span><span style="display:inline-block;width:10px;height:10px;background:var(--orange);border:2px solid var(--orange-d);border-radius:50%;vertical-align:middle;margin-right:5px;"></span>
+        <span class="en">Platform launch (threshold reached)</span>
+        <span class="th">เปิดแพลตฟอร์ม (ถึงเกณฑ์)</span></span>
+    </div>
+  </section>
+
+  <!-- PHASE DETAIL CARDS -->
+  <section class="section">
+    <div class="section-h">
+      <span class="en">Phase detail</span>
+      <span class="th">รายละเอียดเฟส</span>
+    </div>
+    <h2 class="section-t">
+      <span class="en">Four phases. Four tokens. One cooperative.</span>
+      <span class="th">สี่เฟส สี่โทเค็น หนึ่งสหกรณ์</span>
+    </h2>
+
+    <div class="phases">
+
+      <!-- PHASE 1 -->
+      <div class="phase-card p1">
+        <div class="badge">▶ Live now · เปิดอยู่</div>
+        <div class="num">Phase 1 · M0 — M12</div>
+        <div class="title"><span class="emoji">🏨</span> <span><span class="en">Hotels</span><span class="th">โรงแรม</span></span></div>
+        <div class="summary">
+          <span class="en">The foundation. Koh Phangan hoteliers form the cooperative, launch the booking engine, and lay the rails everything else runs on.</span>
+          <span class="th">รากฐาน เจ้าของโรงแรมเกาะพะงันก่อตั้งสหกรณ์ เปิดเครื่องมือจอง และวางรากฐานทุกอย่างที่ตามมา</span>
+        </div>
+        <div class="kv"><div class="k">Token</div><div class="v"><strong style="color:var(--orange);">$STAY</strong> · 10B supply · Solana SPL Token-2022</div></div>
+        <div class="kv"><div class="k">Alpha</div><div class="v">3,000 shares × $1,000 · <strong>max 10/property</strong></div></div>
+        <div class="kv"><div class="k">Threshold</div><div class="v">500 hotels registered → platform live</div></div>
+        <div class="kv"><div class="k">Disrupts</div><div class="v">Booking.com · Agoda · Expedia</div></div>
+
+        <div class="milestones">
+          <h4>Key milestones · จุดสำคัญ</h4>
+          <ul>
+            <li><span class="en">M0 — Alpha round opens (Koh Phangan founding 100)</span><span class="th">M0 — เปิดรอบ Alpha (เกาะพะงัน 100 แห่งแรก)</span></li>
+            <li><span class="en">M6 — World round opens at $1,500/share</span><span class="th">M6 — เปิดรอบ World ที่ $1,500 ต่อหุ้น</span></li>
+            <li><span class="en">M7 — $STAY TGE on Raydium @ $0.10</span><span class="th">M7 — $STAY TGE บน Raydium ที่ $0.10</span></li>
+            <li><span class="en">M12 — 500 hotels reached → booking engine goes live</span><span class="th">M12 — โรงแรม 500 แห่ง → เปิดเครื่องมือจอง</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PHASE 2 -->
+      <div class="phase-card p2">
+        <div class="badge">Next · ถัดไป</div>
+        <div class="num">Phase 2 · M12 — M24</div>
+        <div class="title"><span class="emoji">🍽️</span> <span><span class="en">Restaurants &amp; F&amp;B</span><span class="th">ร้านอาหารและ F&amp;B</span></span></div>
+        <div class="summary">
+          <span class="en">Every traveler eats. The hotelier already onboards guests to the STAYLO app — the same app becomes the gateway to discovering local restaurants.</span>
+          <span class="th">นักท่องเที่ยวทุกคนต้องกิน เจ้าของโรงแรมแนะนำแขกใช้แอป STAYLO อยู่แล้ว — แอปเดียวกันกลายเป็นประตูสู่ร้านอาหารท้องถิ่น</span>
+        </div>
+        <div class="kv"><div class="k">Token</div><div class="v"><strong style="color:var(--teal-d);">$TASTE</strong> · 5B supply · Solana SPL Token-2022</div></div>
+        <div class="kv"><div class="k">Alpha</div><div class="v">2,000 shares × $1,000 · <strong>max 10/establishment</strong></div></div>
+        <div class="kv"><div class="k">Threshold</div><div class="v">200 restaurants registered → F&amp;B engine live</div></div>
+        <div class="kv"><div class="k">Disrupts</div><div class="v">TheFork · OpenTable · Hungry Hub</div></div>
+
+        <div class="milestones">
+          <h4>Key milestones · จุดสำคัญ</h4>
+          <ul>
+            <li><span class="en">M12 — F&amp;B Alpha round opens (Phase 1 hoteliers first in line)</span><span class="th">M12 — เปิดรอบ Alpha F&amp;B (โรงแรม Phase 1 ได้ก่อน)</span></li>
+            <li><span class="en">M14 — Restaurant POS + table booking shipped in messenger app</span><span class="th">M14 — ระบบ POS + จองโต๊ะในแอป messenger</span></li>
+            <li><span class="en">M20 — $TASTE TGE</span><span class="th">M20 — $TASTE TGE</span></li>
+            <li><span class="en">M24 — 200 restaurants → F&amp;B platform goes live</span><span class="th">M24 — 200 ร้าน → เปิดแพลตฟอร์ม F&amp;B</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PHASE 3 -->
+      <div class="phase-card p3">
+        <div class="badge">M+24</div>
+        <div class="num">Phase 3 · M24 — M36</div>
+        <div class="title"><span class="emoji">🎯</span> <span><span class="en">Tours &amp; Experiences</span><span class="th">ทัวร์และประสบการณ์</span></span></div>
+        <div class="summary">
+          <span class="en">Kayak, dive, full moon shuttle, yoga retreat. Tour operators join the same cooperative, replacing the 25%-30% margin to Klook and Viator.</span>
+          <span class="th">คายัค ดำน้ำ รถรับส่ง Full Moon รีทรีตโยคะ ผู้ประกอบการทัวร์เข้าร่วมสหกรณ์เดียวกัน แทนค่าคอม 25-30% ที่จ่ายให้ Klook และ Viator</span>
+        </div>
+        <div class="kv"><div class="k">Token</div><div class="v"><strong style="color:var(--sky);">$TOUR</strong> · 3B supply · Solana SPL Token-2022</div></div>
+        <div class="kv"><div class="k">Alpha</div><div class="v">1,500 shares × $1,000 · <strong>max 10/operator</strong></div></div>
+        <div class="kv"><div class="k">Threshold</div><div class="v">100 tour operators registered → tours engine live</div></div>
+        <div class="kv"><div class="k">Disrupts</div><div class="v">Klook · GetYourGuide · Viator</div></div>
+
+        <div class="milestones">
+          <h4>Key milestones · จุดสำคัญ</h4>
+          <ul>
+            <li><span class="en">M24 — Tours Alpha round opens</span><span class="th">M24 — เปิดรอบ Alpha ทัวร์</span></li>
+            <li><span class="en">M26 — Group booking + guide calendar shipped</span><span class="th">M26 — ระบบจองกลุ่ม + ปฏิทินไกด์</span></li>
+            <li><span class="en">M32 — $TOUR TGE</span><span class="th">M32 — $TOUR TGE</span></li>
+            <li><span class="en">M36 — 100 operators → tours platform goes live</span><span class="th">M36 — ผู้ประกอบการ 100 ราย → เปิดแพลตฟอร์มทัวร์</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- PHASE 4 -->
+      <div class="phase-card p4">
+        <div class="badge">M+36</div>
+        <div class="num">Phase 4 · M36 +</div>
+        <div class="title"><span class="emoji">🌏</span> <span><span class="en">National &amp; SEA</span><span class="th">ทั่วประเทศและอาเซียน</span></span></div>
+        <div class="summary">
+          <span class="en">Koh Phangan was the proof. Phuket, Samui, Krabi, Bangkok, Chiang Mai next — then regionally to Vietnam, Indonesia, the Philippines. Multi-token economy with Raydium inter-swaps.</span>
+          <span class="th">เกาะพะงันคือบทพิสูจน์ ภูเก็ต สมุย กระบี่ กรุงเทพ เชียงใหม่ จากนั้นขยายไปยังเวียดนาม อินโดนีเซีย ฟิลิปปินส์ เศรษฐกิจหลายโทเค็นพร้อมการสลับผ่าน Raydium</span>
+        </div>
+        <div class="kv"><div class="k">Tokens</div><div class="v"><strong>$STAY + $TASTE + $TOUR</strong> · inter-swap via Raydium</div></div>
+        <div class="kv"><div class="k">Alpha</div><div class="v">Regional rounds per market · pricing TBD by cooperative vote</div></div>
+        <div class="kv"><div class="k">Targets</div><div class="v">3,000+ properties · 1,000+ F&amp;B · 500+ tours by M60</div></div>
+        <div class="kv"><div class="k">Disrupts</div><div class="v">All major OTAs across SEA</div></div>
+
+        <div class="milestones">
+          <h4>Key milestones · จุดสำคัญ</h4>
+          <ul>
+            <li><span class="en">M36 — Multi-island launch: Phuket, Samui, Krabi</span><span class="th">M36 — เปิดหลายเกาะ: ภูเก็ต สมุย กระบี่</span></li>
+            <li><span class="en">M42 — Bangkok &amp; Chiang Mai national expansion</span><span class="th">M42 — ขยายกรุงเทพและเชียงใหม่ระดับประเทศ</span></li>
+            <li><span class="en">M48 — Thailand-wide: 3,000+ properties target</span><span class="th">M48 — ทั่วประเทศไทย: เป้า 3,000+ ที่พัก</span></li>
+            <li><span class="en">M60 — SEA: Vietnam · Indonesia · Philippines</span><span class="th">M60 — อาเซียน: เวียดนาม อินโดนีเซีย ฟิลิปปินส์</span></li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- TOKENOMICS TABLE -->
+  <section class="section">
+    <div class="section-h">
+      <span class="en">Tokenomics</span>
+      <span class="th">เศรษฐศาสตร์โทเค็น</span>
+    </div>
+    <h2 class="section-t">
+      <span class="en">One token per phase. No dilution of earlier holders.</span>
+      <span class="th">โทเค็นเดียวต่อเฟส ไม่เจือจางผู้ถือก่อนหน้า</span>
+    </h2>
+
+    <div class="tk-table">
+      <div class="tk-row tk-head">
+        <div><span class="en">Token</span><span class="th">โทเค็น</span></div>
+        <div><span class="en">Supply</span><span class="th">ซัพพลาย</span></div>
+        <div><span class="en">TGE</span><span class="th">วันเปิด</span></div>
+        <div><span class="en">Listing price</span><span class="th">ราคาเปิด</span></div>
+        <div><span class="en">Earn mechanics</span><span class="th">วิธีรับ</span></div>
+      </div>
+      <div class="tk-row">
+        <div class="tk-token t1">$STAY 🏨</div>
+        <div class="v">10,000,000,000</div>
+        <div class="v">M7 · Raydium</div>
+        <div class="v">$0.10</div>
+        <div class="v"><span class="en">10/night hosted · 1,000/hotel referred</span><span class="th">10/คืนที่ให้บริการ · 1,000/แนะนำโรงแรม</span></div>
+      </div>
+      <div class="tk-row">
+        <div class="tk-token t2">$TASTE 🍽️</div>
+        <div class="v">5,000,000,000</div>
+        <div class="v">M20 · Raydium</div>
+        <div class="v"><span class="en">TBD · cooperative vote</span><span class="th">TBD · โหวตสหกรณ์</span></div>
+        <div class="v"><span class="en">1/cover served · 500/restaurant referred</span><span class="th">1/แขกที่บริการ · 500/แนะนำร้าน</span></div>
+      </div>
+      <div class="tk-row">
+        <div class="tk-token t3">$TOUR 🎯</div>
+        <div class="v">3,000,000,000</div>
+        <div class="v">M32 · Raydium</div>
+        <div class="v"><span class="en">TBD · cooperative vote</span><span class="th">TBD · โหวตสหกรณ์</span></div>
+        <div class="v"><span class="en">5/booking · 500/operator referred</span><span class="th">5/การจอง · 500/แนะนำผู้ประกอบการ</span></div>
+      </div>
+    </div>
+
+    <!-- Swap mechanics -->
+    <div class="swap-box">
+      <h3>
+        <span class="en">Inter-token swap · Raydium</span>
+        <span class="th">การสลับระหว่างโทเค็น · Raydium</span>
+      </h3>
+      <p>
+        <span class="en">
+          The three tokens are independent but interchangeable via Raydium pools — <strong>1 $STAY ↔ X $TASTE ↔ Y $TOUR</strong> at market rate.
+          A hotelier earning $STAY can convert it to $TASTE to invest in a restaurant ambassador slot, or stake $TOUR to back a new
+          dive shop. Each token preserves the value of its phase's early holders while letting capital flow freely across the
+          ecosystem.
+        </span>
+        <span class="th">
+          โทเค็นทั้งสามแยกกันแต่สลับได้ผ่านพูล Raydium — <strong>1 $STAY ↔ X $TASTE ↔ Y $TOUR</strong> ตามราคาตลาด
+          เจ้าของโรงแรมที่รับ $STAY สามารถแปลงเป็น $TASTE เพื่อลงทุนในตำแหน่งแอมบาสเดอร์ร้านอาหาร หรือ stake $TOUR เพื่อสนับสนุนร้านดำน้ำใหม่
+          โทเค็นแต่ละตัวรักษามูลค่าของผู้ถือก่อนของเฟสนั้น ในขณะที่ทุนไหลได้อย่างอิสระทั่วทั้งระบบนิเวศ
+        </span>
+      </p>
+    </div>
+
+  </section>
+
+  <!-- PHASE 1 HOTELIER PRIORITY -->
+  <section class="section">
+    <div class="swap-box" style="background:linear-gradient(135deg, var(--orange-l), var(--purple-l)); border-color:var(--orange);">
+      <h3>
+        <span class="en">Why this matters for a Phase 1 hotelier</span>
+        <span class="th">เหตุใดสำคัญสำหรับโรงแรม Phase 1</span>
+      </h3>
+      <p>
+        <span class="en">
+          <strong>Phase 1 hoteliers carry priority access to every subsequent Alpha round.</strong> When the $TASTE Alpha opens in M12,
+          $STAY holders see the inventory first — before public open. Same for $TOUR in M24. The Koh Phangan investment is more than
+          a hotel platform stake — it's a renewable option to compound into restaurants, then tours, then regional expansion,
+          all at $1,000/share Alpha pricing.
+        </span>
+        <span class="th">
+          <strong>โรงแรม Phase 1 ได้สิทธิ์เข้าถึงรอบ Alpha ทุกรอบต่อจากนี้เป็นลำดับแรก</strong> เมื่อ $TASTE Alpha เปิดในเดือนที่ 12
+          ผู้ถือ $STAY เห็นรายการก่อน — ก่อนเปิดสาธารณะ เช่นเดียวกับ $TOUR ในเดือนที่ 24 การลงทุนเกาะพะงันมีค่ามากกว่าแค่หุ้นแพลตฟอร์มโรงแรม
+          — เป็นสิทธิ์ทบต้นเข้าสู่ร้านอาหาร ทัวร์ และขยายภูมิภาค ทั้งหมดที่ราคา Alpha $1,000 ต่อหุ้น
+        </span>
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <div class="foot">
+    <div class="left">
+      <strong>STAYLO · </strong>
+      <span class="en">Built with hoteliers, for hoteliers. Roadmap subject to cooperative vote.</span>
+      <span class="th">สร้างกับเจ้าของโรงแรม เพื่อเจ้าของโรงแรม แผนระยะยาวขึ้นอยู่กับการโหวตของสหกรณ์</span>
+    </div>
+    <div class="right">staylo.app · david.dancingelephant@gmail.com</div>
+  </div>
+
+</div>
+
+<script>
+  function setLang(lang){
+    document.body.classList.toggle('lang-th', lang==='th');
+    document.getElementById('btnEN').classList.toggle('active', lang==='en');
+    document.getElementById('btnTH').classList.toggle('active', lang==='th');
+    try{localStorage.setItem('staylo_roadmap_lang', lang)}catch(e){}
+  }
+  // Restore saved language preference
+  try{
+    var saved = localStorage.getItem('staylo_roadmap_lang');
+    if(saved === 'th') setLang('th');
+  }catch(e){}
+</script>
+
+</body>
+</html>
