@@ -16933,31 +16933,36 @@ function showTaskEditor(task){
       // `tk-due-date` so the save handler at the bottom of showTaskEditor
       // can still read $('#tk-due-date').value unchanged.
       const dpair = dateInputWithWheel({ id:'tk-due-date', value: tk.due_date || '' });
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Date'), dpair.wrap));
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.date_label')), dpair.wrap));
     } else if(rec === 'weekly'){
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Day of week'),
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.day_of_week')),
         sel('tk-weekday', [
-          {value:'1',label:'Monday'},{value:'2',label:'Tuesday'},{value:'3',label:'Wednesday'},
-          {value:'4',label:'Thursday'},{value:'5',label:'Friday'},{value:'6',label:'Saturday'},{value:'0',label:'Sunday'},
+          {value:'1',label:t('app.tasks_editor.weekday_mon')},
+          {value:'2',label:t('app.tasks_editor.weekday_tue')},
+          {value:'3',label:t('app.tasks_editor.weekday_wed')},
+          {value:'4',label:t('app.tasks_editor.weekday_thu')},
+          {value:'5',label:t('app.tasks_editor.weekday_fri')},
+          {value:'6',label:t('app.tasks_editor.weekday_sat')},
+          {value:'0',label:t('app.tasks_editor.weekday_sun')},
         ], tk.weekday)));
     } else if(rec === 'monthly'){
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Day of month (1-31)'),
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.day_of_month')),
         inp('tk-dom','number', tk.day_of_month||1)));
     } else if(rec === 'daily' || rec === 'per_shift'){
       wrap.appendChild(el('div',{style:'font-size:11px;color:var(--gray);padding:4px 0'},
-        rec==='daily' ? '🗓️ Fires every day' : '⏱️ Fires every time the assignee starts a shift'));
+        rec==='daily' ? t('app.tasks_editor.fires_daily') : t('app.tasks_editor.fires_per_shift')));
     }
     return wrap;
   };
 
   const recurField = el('div',{class:'fld'},
-    el('label',{},'How often?'),
+    el('label',{},t('app.tasks_editor.how_often')),
     sel('tk-recur', [
-      {value:'once',label:'One-off (specific date)'},
-      {value:'daily',label:'Daily'},
-      {value:'weekly',label:'Weekly (specific day)'},
-      {value:'monthly',label:'Monthly (specific day)'},
-      {value:'per_shift',label:'Every shift'},
+      {value:'once',label:t('app.tasks_editor.recur_once')},
+      {value:'daily',label:t('app.tasks_editor.recur_daily')},
+      {value:'weekly',label:t('app.tasks_editor.recur_weekly')},
+      {value:'monthly',label:t('app.tasks_editor.recur_monthly')},
+      {value:'per_shift',label:t('app.tasks_editor.recur_per_shift')},
     ], tk.recurrence),
   );
   const conditionalSlot = el('div',{id:'tk-recur-fields'});
@@ -16966,17 +16971,17 @@ function showTaskEditor(task){
   const buildAssignField = (kind) => {
     const wrap = document.createElement('div');
     if(kind === 'employee'){
-      const opts = allEmps.map(e => ({value:e.id, label:`${e.first_name} ${e.last_name||''} · ${e.role}`}));
-      opts.unshift({value:'',label:'— Pick an employee —'});
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Employee'), sel('tk-assign-val', opts, tk.assign_value)));
+      const opts = allEmps.map(e => ({value:e.id, label:`${e.first_name} ${e.last_name||''} · ${translateRole(e.role)}`}));
+      opts.unshift({value:'',label:t('app.tasks_editor.pick_employee')});
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.employee_label')), sel('tk-assign-val', opts, tk.assign_value)));
     } else if(kind === 'role'){
-      const opts = allRoles.map(r => ({value:r,label:r}));
-      opts.unshift({value:'',label:'— Pick a role —'});
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Role'), sel('tk-assign-val', opts, tk.assign_value)));
+      const opts = allRoles.map(r => ({value:r,label:translateRole(r)}));
+      opts.unshift({value:'',label:t('app.tasks_editor.pick_role')});
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.role_label')), sel('tk-assign-val', opts, tk.assign_value)));
     } else if(kind === 'dept'){
-      const opts = allDepts.map(d => ({value:d,label:d}));
-      opts.unshift({value:'',label:'— Pick a department —'});
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Department'), sel('tk-assign-val', opts, tk.assign_value)));
+      const opts = allDepts.map(d => ({value:d,label:translateDept(d)}));
+      opts.unshift({value:'',label:t('app.tasks_editor.pick_department')});
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.department_label')), sel('tk-assign-val', opts, tk.assign_value)));
     } else if(kind === 'unassigned'){
       // Library template — no fixed assignee, but a SERVICE category so the
       // card only appears for employees in matching department (kitchen tasks
@@ -17006,13 +17011,13 @@ function showTaskEditor(task){
     return wrap;
   };
   const assignKindField = el('div',{class:'fld'},
-    el('label',{},'Assign to'),
+    el('label',{},t('app.tasks_editor.assign_to')),
     sel('tk-assign-kind', [
-      {value:'unassigned',label:'📚 Library template (pick from shift editor)'},
-      {value:'employee',label:'A specific employee'},
-      {value:'role',label:'Everyone with a role'},
-      {value:'dept',label:'A whole department'},
-      {value:'all',label:'All staff'},
+      {value:'unassigned',label:t('app.tasks_editor.assign_kind_unassigned')},
+      {value:'employee',label:t('app.tasks_editor.assign_kind_employee')},
+      {value:'role',label:t('app.tasks_editor.assign_kind_role')},
+      {value:'dept',label:t('app.tasks_editor.assign_kind_dept')},
+      {value:'all',label:t('app.tasks_editor.assign_kind_all')},
     ], tk.assign_kind || 'unassigned'),
   );
   const assignSlot = el('div',{id:'tk-assign-slot'});
@@ -17083,8 +17088,8 @@ function showTaskEditor(task){
       el('h3',{}, isEdit ? '✎ Edit task' : '+ New task'),
       el('button',{class:'close-btn',onclick:()=>modal.remove()},'×'),
     ),
-    el('div',{class:'fld'}, el('label',{},'Title'),     inp('tk-title','text', tk.title, 'e.g. Check fridge temperature')),
-    el('div',{class:'fld'}, el('label',{},'Description (optional)'), inp('tk-desc','textarea', tk.description, 'Detailed instructions, location…')),
+    el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.title_label')),     inp('tk-title','text', tk.title, t('app.tasks_editor.title_placeholder'))),
+    el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.desc_label')), inp('tk-desc','textarea', tk.description, t('app.tasks_editor.desc_placeholder'))),
     assignKindField, assignSlot,
     // Zone (outlet) — optional. Pulled from hotel_settings.outlets. Empty
     // string = no zone anchor (task applies anywhere). Different from
@@ -17092,27 +17097,32 @@ function showTaskEditor(task){
     // works for ANY assign_kind and is purely an additional filter axis.
     (() => {
       const outlets = (typeof getOutletList === 'function') ? getOutletList() : [];
-      const opts = [{value:'', label:'— Any zone (no outlet anchor) —'}];
+      const opts = [{value:'', label:t('app.tasks_editor.zone_any')}];
       for(const o of outlets) opts.push({value: o, label: `📍 ${o}`});
       return el('div',{class:'fld'},
-        el('label',{for:'tk-zone'},'📍 Zone / outlet (optional)'),
+        el('label',{for:'tk-zone'},t('app.tasks_editor.zone_optional')),
         sel('tk-zone', opts, tk.zone || ''),
       );
     })(),
     recurField, conditionalSlot,
     absenceSlot,
     el('div',{style:'display:grid;grid-template-columns:1fr 1fr;gap:8px'},
-      el('div',{class:'fld'}, el('label',{},'Due time (optional)'), inp('tk-time','time', tk.due_time)),
-      el('div',{class:'fld'}, el('label',{},'Priority'), sel('tk-priority',
-        [{value:'low',label:'🟢 Low'},{value:'normal',label:'⚪ Normal'},{value:'high',label:'🟠 High'},{value:'urgent',label:'🔴 Urgent'}],
+      el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.due_time_optional')), inp('tk-time','time', tk.due_time)),
+      el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.priority_label')), sel('tk-priority',
+        [
+          {value:'low',label:'🟢 ' + (t('app.tasks_tab.prio_low') || 'Low')},
+          {value:'normal',label:'⚪ ' + (t('app.tasks_tab.prio_normal') || 'Normal')},
+          {value:'high',label:'🟠 ' + (t('app.tasks_tab.prio_high') || 'High')},
+          {value:'urgent',label:'🔴 ' + (t('app.tasks_tab.prio_urgent') || 'Urgent')},
+        ],
         tk.priority)),
     ),
     // Optional fiche-technique attachment — chef-built recipes
     (() => {
       const recs = getRecipes();
       if(!recs.length) return null;
-      const opts = [{value:'', label:'— None —'}, ...recs.map(r => ({value:r.id, label:`📔 ${r.name}`+(r.pos_sku?` (POS: ${r.pos_sku})`:'')}))];
-      return el('div',{class:'fld'}, el('label',{},'📔 Linked recipe (fiche technique)'), sel('tk-recipe', opts, tk.recipe_id||''));
+      const opts = [{value:'', label:t('app.tasks_editor.none_option')}, ...recs.map(r => ({value:r.id, label:`📔 ${r.name}`+(r.pos_sku?` (POS: ${r.pos_sku})`:'')}))];
+      return el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.linked_recipe')), sel('tk-recipe', opts, tk.recipe_id||''));
     })(),
     el('div',{class:'row-actions'},
       isEdit ? el('button',{class:'btn-danger',onclick:()=>{
@@ -17151,7 +17161,7 @@ function showTaskEditor(task){
         if(next.assign_kind === 'unassigned') next.assign_value = '';
         upsertTask(next);
         modal.remove(); renderTasksTab();
-      }},isEdit?'Save':'+ Create task'),
+      }},isEdit ? t('app.common.save') : t('app.tasks_editor.create_task')),
     ),
   );
   modal.appendChild(panel);
