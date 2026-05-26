@@ -16302,6 +16302,11 @@ let _tasksDate = null;     // YYYY-MM-DD currently displayed (default: today)
 // sticks across tab switches and reloads (per-hotel via _hkey).
 let _tasksDeptFilter = null;   // initialized from localStorage on first render
 let _tasksZoneFilter = null;
+// View range: 'day' = just _tasksDate (default), '1w' / '2w' / '1m' = forward
+// window of N days starting at _tasksDate, 'all' = every active task.
+// In range modes, tasks are de-duplicated by id (a daily-recurring task shows
+// once, not N times) so the list stays readable.
+let _tasksRange = null;        // 'day' | '1w' | '2w' | '1m' | 'all'
 function renderTasksTab(){
   const root = $('#hr-body'); if(!root) return; root.innerHTML='';
   root.classList.remove('tab-schedule');
@@ -16311,8 +16316,36 @@ function renderTasksTab(){
   const isMgr = canManageHR() || canManageSchedule();
   const allEmps = getEmployees();
   const me = getMyEmployee();
-  // What tasks fire on this date?
-  const dayTasks = getTasksForDate(_tasksDate);
+
+  // ── Pick the task set based on the current range view ──
+  // - 'day'  → just tasks firing on _tasksDate (legacy single-day behavior)
+  // - '1w'/'2w'/'1m' → walk N days forward from _tasksDate, dedupe by id
+  // - 'all'  → every active task (incl. library templates so the manager
+  //   can see the full catalog of recurring chores)
+  if(_tasksRange === null) _tasksRange = lsGet(_hkey('staylo_tasks_range'), 'day');
+  const RANGE_DAYS = { '1w': 7, '2w': 14, '1m': 30 };
+  let dayTasks;
+  if(_tasksRange === 'day' || !_tasksRange){
+    dayTasks = getTasksForDate(_tasksDate);
+  } else if(_tasksRange === 'all'){
+    // Include library templates (assign_kind='unassigned') so the manager
+    // can see the master list of recurring chores from the catalog.
+    dayTasks = getTasks().filter(t => t.active !== false);
+  } else {
+    const n = RANGE_DAYS[_tasksRange] || 7;
+    const dedup = new Map();
+    const [sy, sm, sd] = (_tasksDate || new Date().toISOString().slice(0,10)).split('-').map(Number);
+    for(let i = 0; i < n; i++){
+      const d = new Date(sy, sm-1, sd);
+      d.setDate(d.getDate() + i);
+      const iso = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      for(const t of getTasksForDate(iso)){
+        if(!dedup.has(t.id)) dedup.set(t.id, t);
+      }
+    }
+    dayTasks = [...dedup.values()];
+  }
+
   // Filter for the viewer
   let myDayTasks;
   if(isMgr){
@@ -16464,10 +16497,35 @@ function renderTasksTab(){
         return pair.wrap;
       })(),
       // Quick-nav buttons — words rather than chevrons so it's obvious to
-      // non-tech hoteliers what each one does.
-      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>shiftTaskDay(-1)},t('app.tasks_tab.past') || '◀ Past'),
-      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksDate=new Date().toISOString().slice(0,10);renderTasksTab();}},t('app.tasks_tab.today')),
-      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>shiftTaskDay(1)},t('app.tasks_tab.future') || 'Future ▶'),
+      // non-tech hoteliers what each one does. Past/Today/Future shift the
+      // anchor date by ±1 day; the 4 range buttons widen the view to a
+      // multi-day window (or all-time for "All").
+      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksRange='day';lsSet(_hkey('staylo_tasks_range'),'day');shiftTaskDay(-1);}},t('app.tasks_tab.past') || '◀ Past'),
+      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksRange='day';lsSet(_hkey('staylo_tasks_range'),'day');_tasksDate=new Date().toISOString().slice(0,10);renderTasksTab();}},t('app.tasks_tab.today')),
+      el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksRange='day';lsSet(_hkey('staylo_tasks_range'),'day');shiftTaskDay(1);}},t('app.tasks_tab.future') || 'Future ▶'),
+      // Range buttons — set _tasksRange and re-render. Active button is
+      // highlighted with a filled style so the user always knows which view
+      // they're in.
+      (() => {
+        const mkRangeBtn = (key, label) => {
+          const active = _tasksRange === key;
+          const styleActive = 'padding:6px 12px;font-size:11px;background:var(--navy);color:#fff;border:2px solid var(--navy);border-radius:8px;font-weight:700;cursor:pointer';
+          const styleIdle   = 'padding:6px 12px;font-size:11px;background:#fff;color:var(--navy);border:2px solid var(--border);border-radius:8px;font-weight:700;cursor:pointer';
+          return el('button',{
+            style: active ? styleActive : styleIdle,
+            onclick: () => { _tasksRange = key; lsSet(_hkey('staylo_tasks_range'), key); renderTasksTab(); },
+          }, label);
+        };
+        // We render the 4 buttons inside a wrapper so el()'s positional
+        // children list stays flat. Wrapping in a span lets all 4 share the
+        // same flex parent.
+        return el('span',{style:'display:inline-flex;gap:4px;margin-left:4px'},
+          mkRangeBtn('1w',  t('app.tasks_tab.range_1w')  || '1 week'),
+          mkRangeBtn('2w',  t('app.tasks_tab.range_2w')  || '2 weeks'),
+          mkRangeBtn('1m',  t('app.tasks_tab.range_1m')  || '1 month'),
+          mkRangeBtn('all', t('app.tasks_tab.range_all') || 'All'),
+        );
+      })(),
     ),
     deptRow,
     isMgr ? el('button',{class:'btn-primary',onclick:()=>showTaskEditor(null)},t('app.tasks_tab.new_task')) : null,
