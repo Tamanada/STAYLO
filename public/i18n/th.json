@@ -2992,6 +2992,7 @@
     "recipes": {
       "title_new": "+ เอกสารใหม่",
       "title_edit": "✎ แก้ไขเอกสาร",
+      "btn_create": "+ สร้าง",
       "lbl_title": "ชื่อเรื่อง",
       "lbl_title_placeholder": "เช่น ผัดไทยกุ้ง / ซ่อมเตาซาลามานเดอร์",
       "lbl_photos_video": "📸 รูปและวิดีโอ",

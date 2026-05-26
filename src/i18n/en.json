@@ -2990,6 +2990,7 @@
     "recipes": {
       "title_new": "+ New fiche",
       "title_edit": "✎ Edit fiche",
+      "btn_create": "+ Create",
       "lbl_title": "Title",
       "lbl_title_placeholder": "e.g. Pad Thai with prawns / Service salamander grill",
       "lbl_photos_video": "📸 Photos & video",

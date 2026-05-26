@@ -15767,7 +15767,7 @@ function showRecipeEditor(rec){
         upsertRecipe(next);
         modal.remove();
         renderRecipesTab();
-      }},isEdit?'Save':'+ Create recipe'),
+      }},isEdit ? t('app.common.save') : (t('app.recipes.btn_create') || '+ Create')),
     ),
   );
   modal.appendChild(panel);
