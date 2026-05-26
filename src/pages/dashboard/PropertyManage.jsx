@@ -209,7 +209,7 @@ export default function PropertyManage() {
   if (!property) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center">
-        <h2 className="text-2xl font-bold text-deep mb-4">Property not found</h2>
+        <h2 className="text-2xl font-bold text-deep mb-4">{t('manage.property_not_found', 'Property not found')}</h2>
         <Link to="/dashboard/properties"><Button variant="secondary"><ArrowLeft size={16} /> Back</Button></Link>
       </div>
     )
@@ -579,7 +579,7 @@ function TeamTab({ property }) {
           </h3>
           <form onSubmit={handleAdd} className="grid grid-cols-1 sm:grid-cols-[1fr_auto_auto] gap-2 items-start">
             <div>
-              <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">STAYLO email</label>
+              <label className="block text-[10px] font-bold uppercase text-gray-500 mb-1">{t('manage.team_staylo_email', 'STAYLO email')}</label>
               <input
                 type="email"
                 value={inviteEmail}
@@ -639,6 +639,7 @@ function TeamTab({ property }) {
 // ShareInviteModal — fallback share UI for pending invitations
 // ============================================
 function ShareInviteModal({ data, property, onClose }) {
+  const { t } = useTranslation()
   const { email, role, signupUrl, emailSent, emailError } = data
   const [copied, setCopied] = useState(false)
 
@@ -680,12 +681,12 @@ function ShareInviteModal({ data, property, onClose }) {
 
         {emailError && !emailSent && (
           <div className="mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">
-            <strong>Email service not configured:</strong> {emailError}
+            <strong>{t('manage.email_not_configured', 'Email service not configured:')}</strong> {emailError}
           </div>
         )}
 
         <div className="mb-3">
-          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Signup link</label>
+          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">{t('manage.signup_link', 'Signup link')}</label>
           <div className="flex gap-1">
             <input
               type="text" value={signupUrl} readOnly
@@ -843,7 +844,7 @@ function SettingsTab({ property, onRefresh }) {
           <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.description', 'Description')}</label>
           <textarea value={form.description} onChange={e => update('description', e.target.value)}
             rows={3}
-            placeholder="A short paragraph that will appear at the top of your listing."
+            placeholder={t('manage.description_placeholder', 'A short paragraph that will appear at the top of your listing.')}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 resize-none" />
         </div>
 
@@ -859,67 +860,67 @@ function SettingsTab({ property, onRefresh }) {
         </div>
 
         <div className="sm:col-span-2">
-          <label className="block text-xs font-medium text-gray-500 mb-1">Full address</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.full_address', 'Full address')}</label>
           <input type="text" value={form.address} onChange={e => update('address', e.target.value)}
             placeholder="Street, district…"
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Contact name</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.contact_name', 'Contact name')}</label>
           <input type="text" value={form.contact_name} onChange={e => update('contact_name', e.target.value)}
             placeholder="e.g. Sarah Chen"
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Contact role</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.contact_role', 'Contact role')}</label>
           <input type="text" value={form.contact_role} onChange={e => update('contact_role', e.target.value)}
             placeholder="e.g. General Manager"
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Contact email</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.contact_email', 'Contact email')}</label>
           <input type="email" value={form.contact_email} onChange={e => update('contact_email', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Contact phone</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.contact_phone', 'Contact phone')}</label>
           <PhoneInput value={form.contact_phone} onChange={v => update('contact_phone', v)} />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Check-in time</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.check_in_time', 'Check-in time')}</label>
           <input type="time" value={form.check_in_time} onChange={e => update('check_in_time', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Check-out time</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.check_out_time', 'Check-out time')}</label>
           <input type="time" value={form.check_out_time} onChange={e => update('check_out_time', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Cancellation policy</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.cancellation_policy', 'Cancellation policy')}</label>
           <select value={form.cancellation_policy} onChange={e => update('cancellation_policy', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
-            <option value="flexible">Flexible</option>
-            <option value="moderate">Moderate (48h)</option>
-            <option value="strict">Strict (7 days)</option>
-            <option value="non_refundable">Non-refundable</option>
+            <option value="flexible">{t('manage.cancel_flexible', 'Flexible')}</option>
+            <option value="moderate">{t('manage.cancel_moderate', 'Moderate (48h)')}</option>
+            <option value="strict">{t('manage.cancel_strict', 'Strict (7 days)')}</option>
+            <option value="non_refundable">{t('manage.cancel_non_refundable', 'Non-refundable')}</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Smoking policy</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.smoking_policy', 'Smoking policy')}</label>
           <select value={form.smoking_policy} onChange={e => update('smoking_policy', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
-            <option value="no_smoking">No Smoking</option>
-            <option value="designated_areas">Designated Areas</option>
-            <option value="allowed">Allowed</option>
+            <option value="no_smoking">{t('manage.smoke_no', 'No Smoking')}</option>
+            <option value="designated_areas">{t('manage.smoke_designated', 'Designated Areas')}</option>
+            <option value="allowed">{t('manage.smoke_allowed', 'Allowed')}</option>
           </select>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Star rating</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.star_rating', 'Star rating')}</label>
           <select value={form.star_rating} onChange={e => update('star_rating', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
             {[1, 2, 3, 4, 5].map(n => (
@@ -933,7 +934,7 @@ function SettingsTab({ property, onRefresh }) {
           </label>
           <select value={form.min_age} onChange={e => update('min_age', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
-            <option value="">All ages welcome</option>
+            <option value="">{t('manage.min_age_all', 'All ages welcome')}</option>
             <option value="16">16+ (teens & adults)</option>
             <option value="18">18+ (adults only)</option>
             <option value="21">21+ (party / adults)</option>
@@ -1175,7 +1176,7 @@ function VideosTab({ property, onRefresh }) {
                   <button
                     onClick={() => handleSetCover(idx)}
                     className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-white border border-gray-200 text-deep hover:border-ocean hover:text-ocean cursor-pointer"
-                    title="Make this the hero video"
+                    title={t('manage.set_hero_video', 'Make this the hero video')}
                   >
                     Set as hero
                   </button>
@@ -1183,7 +1184,7 @@ function VideosTab({ property, onRefresh }) {
                 <button
                   onClick={() => handleDelete(idx)}
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-white border border-gray-200 text-red-600 hover:bg-red-50 hover:border-red-200 cursor-pointer"
-                  title="Remove video"
+                  title={t('manage.remove_video', 'Remove video')}
                 >
                   <Trash2 size={11} /> Delete
                 </button>
@@ -1391,7 +1392,7 @@ function PhotosTab({ property, onRefresh }) {
                     <button
                       onClick={() => handleSetCover(idx)}
                       className="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-white text-deep hover:bg-gray-100 cursor-pointer"
-                      title="Make this the cover image"
+                      title={t('manage.set_cover_image', 'Make this the cover image')}
                     >
                       Set cover
                     </button>
@@ -1399,7 +1400,7 @@ function PhotosTab({ property, onRefresh }) {
                   <button
                     onClick={() => handleDelete(idx)}
                     className="p-1.5 rounded bg-red-500 text-white hover:bg-red-600 cursor-pointer"
-                    title="Remove photo"
+                    title={t('manage.remove_photo', 'Remove photo')}
                   >
                     <Trash2 size={12} />
                   </button>
@@ -1821,7 +1822,7 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
               ) : (
                 <div className="flex-shrink-0 w-32 h-28 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center text-gray-300">
                   <Camera size={20} />
-                  <span className="text-[9px] mt-1">No photos</span>
+                  <span className="text-[9px] mt-1">{t('manage.no_photos', 'No photos')}</span>
                 </div>
               )}
 
@@ -1896,7 +1897,7 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
                 <button onClick={() => toggleActive(room)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600" title={room.is_active ? 'Deactivate' : 'Activate'}>
                   {room.is_active ? <Ban size={16} /> : <Check size={16} />}
                 </button>
-                <button onClick={() => openEdit(room)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-ocean" title="Edit room & manage media">
+                <button onClick={() => openEdit(room)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-ocean" title={t('manage.edit_room_media', 'Edit room & manage media')}>
                   <Pencil size={16} />
                 </button>
                 <button onClick={() => handleDelete(room.id)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-sunset">
@@ -1984,7 +1985,7 @@ function RoomEditFormCard({
           <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.description', 'Description')}</label>
           <textarea
             value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-            rows={2} placeholder="Brief description of the room..."
+            rows={2} placeholder={t('manage.room_description_placeholder', 'Brief description of the room...')}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean text-sm resize-none"
           />
         </div>
@@ -2029,8 +2030,8 @@ function RoomEditFormCard({
           </div>
           {form.pricing_unit === 'bed' && (
             <p className="text-[11px] text-gray-500 mt-1.5">
-              💡 <strong>Quantity</strong> = total beds available · <strong>Max guests</strong> = people PER BED
-              (1 = single, 2 = double/queen/king, 3+ = bunk for groups)
+              💡 <strong>{t('manage.bed_quantity', 'Quantity')}</strong> = {t('manage.bed_quantity_desc', 'total beds available')} · <strong>{t('manage.bed_max_guests', 'Max guests')}</strong> = {t('manage.bed_max_guests_desc', 'people PER BED')}
+              {' '}{t('manage.bed_examples', '(1 = single, 2 = double/queen/king, 3+ = bunk for groups)')}
             </p>
           )}
         </div>
@@ -2477,7 +2478,7 @@ function RoomEditFormCard({
                                       <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-deep rotate-45" />
                                     </div>
                                   )}
-                                  <span className="text-[10px] text-gray-400 uppercase tracking-wide">Start</span>
+                                  <span className="text-[10px] text-gray-400 uppercase tracking-wide">{t('manage.window_start', 'Start')}</span>
                                   <input type="date" value={d.start || ''}
                                     onChange={e => updatePackageDateBlock?.(pkg.id, i, 'start', e.target.value)}
                                     className="px-1.5 py-0.5 rounded border border-gray-200 text-[11px]" />
@@ -2487,7 +2488,7 @@ function RoomEditFormCard({
                                   <button type="button"
                                     onClick={() => removePackageDateBlock?.(pkg.id, i)}
                                     className="ml-auto p-1 text-gray-400 hover:text-sunset"
-                                    title="Remove this window">
+                                    title={t('manage.remove_window', 'Remove this window')}>
                                     <X size={12} />
                                   </button>
                                 </div>
@@ -3358,11 +3359,11 @@ function CalendarTab({ rooms }) {
                     {!isBlocked && (
                       <div className="bg-gray-50 rounded-lg px-2.5 py-1.5 mb-2">
                         <div className="flex items-baseline justify-between">
-                          <span className="text-[11px] text-gray-500">Guest pays</span>
+                          <span className="text-[11px] text-gray-500">{t('manage.cal_guest_pays', 'Guest pays')}</span>
                           <span className="text-base font-bold text-ocean">
                             ${priceAfterPromo.toFixed(0)}
                             {promoPct > 0 && <span className="ml-1 text-[10px] font-normal text-gray-400 line-through">${priceBrut.toFixed(0)}</span>}
-                            {hasOverride && <span className="ml-1 text-[10px] text-orange" title="Custom price for this day">★</span>}
+                            {hasOverride && <span className="ml-1 text-[10px] text-orange" title={t('manage.cal_custom_price', 'Custom price for this day')}>★</span>}
                           </span>
                         </div>
                         <div className="flex items-baseline justify-between">

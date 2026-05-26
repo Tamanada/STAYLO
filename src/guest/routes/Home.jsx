@@ -9,6 +9,8 @@
 // MOCKUP for now — current stay is hard-coded; real Supabase wiring
 // in phase 2. The data shape is what the real backend will return.
 
+import { useTranslation } from 'react-i18next'
+
 const MOCK_STAY = {
   hotel_name: 'By Nanda Phangan',
   hotel_location: 'Koh Phangan, Thailand',
@@ -31,6 +33,7 @@ function nightsBetween(a, b) {
 }
 
 export default function GuestHome() {
+  const { t } = useTranslation()
   const s = MOCK_STAY
   return (
     <div className="guest-page">
@@ -47,7 +50,7 @@ export default function GuestHome() {
 
       {/* Hero card — the centrepiece. Gradient + property name + dates */}
       <section className="guest-hero">
-        <div className="guest-hero-eyebrow">Your current stay</div>
+        <div className="guest-hero-eyebrow">{t('guest_app.home.current_stay', 'Your current stay')}</div>
         <div className="guest-hero-title">{s.hotel_name}</div>
         <div className="guest-hero-sub">{s.hotel_location} · {s.room_label}</div>
         <div className="guest-hero-dates">
@@ -70,10 +73,10 @@ export default function GuestHome() {
 
       {/* Quick tiles — most-used actions for an in-stay guest */}
       <section className="guest-tiles">
-        <Tile to="/services?cat=restaurant" emoji="🍽️" label="Book a table"       hint="2 restaurants" />
-        <Tile to="/services?cat=spa"        emoji="🧖" label="Spa & wellness"     hint="From 14:00" />
-        <Tile to="/services?cat=activity"   emoji="🌊" label="Activities"         hint="Kayak, yoga…" />
-        <Tile to="/services?cat=concierge"  emoji="🛎️" label="Ask reception"      hint="Reply ≤ 5 min" />
+        <Tile to="/services?cat=restaurant" emoji="🍽️" label={t('guest_app.home.tile_book_table',    'Book a table')}    hint={t('guest_app.home.tile_book_table_hint',    '2 restaurants')} />
+        <Tile to="/services?cat=spa"        emoji="🧖" label={t('guest_app.home.tile_spa',           'Spa & wellness')}  hint={t('guest_app.home.tile_spa_hint',           'From 14:00')} />
+        <Tile to="/services?cat=activity"   emoji="🌊" label={t('guest_app.home.tile_activities',    'Activities')}      hint={t('guest_app.home.tile_activities_hint',    'Kayak, yoga…')} />
+        <Tile to="/services?cat=concierge"  emoji="🛎️" label={t('guest_app.home.tile_ask_reception', 'Ask reception')}   hint={t('guest_app.home.tile_ask_reception_hint', 'Reply ≤ 5 min')} />
       </section>
 
       {/* Up-next strip — the next thing on their stay agenda */}

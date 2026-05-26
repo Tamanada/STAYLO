@@ -392,10 +392,10 @@ export default function PackagesTab({ propertyId, rooms = [], onRefresh }) {
 
             {/* Description */}
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Description</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('packages.description', 'Description')}</label>
               <textarea value={form.description} rows={3}
                 onChange={e => setForm({ ...form, description: e.target.value })}
-                placeholder="What makes this package special?"
+                placeholder={t('packages.description_placeholder', 'What makes this package special?')}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
 
@@ -428,14 +428,14 @@ export default function PackagesTab({ propertyId, rooms = [], onRefresh }) {
 
             {/* Price + pricing type */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Price (USD)</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('packages.price_usd', 'Price (USD)')}</label>
               <input type="number" min="0" step="0.01" value={form.price}
                 onChange={e => setForm({ ...form, price: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Pricing type</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('packages.pricing_type', 'Pricing type')}</label>
               <select value={form.pricing_type}
                 onChange={e => setForm({ ...form, pricing_type: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
@@ -445,7 +445,7 @@ export default function PackagesTab({ propertyId, rooms = [], onRefresh }) {
 
             {/* Pricing mode */}
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Pricing mode</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('packages.pricing_mode', 'Pricing mode')}</label>
               <div className="flex gap-2">
                 {PRICING_MODES.map(m => (
                   <button key={m.key} type="button"
@@ -480,14 +480,14 @@ export default function PackagesTab({ propertyId, rooms = [], onRefresh }) {
 
             {/* Min nights / guests */}
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Min nights</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('packages.min_nights', 'Min nights')}</label>
               <input type="number" min="1" max="90" value={form.min_nights}
                 onChange={e => setForm({ ...form, min_nights: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Min guests</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('packages.min_guests', 'Min guests')}</label>
               <input type="number" min="1" max="20" value={form.min_guests}
                 onChange={e => setForm({ ...form, min_guests: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
@@ -495,14 +495,14 @@ export default function PackagesTab({ propertyId, rooms = [], onRefresh }) {
 
             {/* Photo — upload to Supabase storage, preview inline */}
             <div className="md:col-span-2">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Cover photo (optional)</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{t('packages.cover_photo', 'Cover photo (optional)')}</label>
               {form.photo_url ? (
                 <div className="relative inline-block group">
                   <img src={form.photo_url} alt="Package cover"
                     className="h-32 w-48 object-cover rounded-lg border border-gray-200" />
                   <button type="button" onClick={removePhoto}
                     className="absolute top-1 right-1 p-1 rounded-full bg-white/90 text-sunset hover:bg-white shadow"
-                    title="Remove photo">
+                    title={t('packages.remove_photo', 'Remove photo')}>
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -554,7 +554,7 @@ export default function PackagesTab({ propertyId, rooms = [], onRefresh }) {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.is_active}
                   onChange={e => setForm({ ...form, is_active: e.target.checked })} />
-                <span className="text-sm text-gray-700">Active (visible to guests)</span>
+                <span className="text-sm text-gray-700">{t('packages.active_visible', 'Active (visible to guests)')}</span>
               </label>
             </div>
           </div>

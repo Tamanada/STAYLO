@@ -9,13 +9,16 @@
 // Phase 2: real QR encoding {booking_id, signed_token, expires_at}
 // and the staff messenger has a "Scan check-in" action that consumes it.
 
+import { useTranslation } from 'react-i18next'
+
 const MOCK_QR_DATA = 'STAYLO_CHECKIN_STY-2K26-04219_2026-05-22'
 
 export default function GuestCheckin() {
+  const { t } = useTranslation()
   return (
     <div className="guest-page guest-page-centered">
-      <div className="guest-page-title">Check-in</div>
-      <div className="guest-page-sub">Show this to reception when you arrive</div>
+      <div className="guest-page-title">{t('guest_app.checkin.title', 'Check-in')}</div>
+      <div className="guest-page-sub">{t('guest_app.checkin.subtitle', 'Show this to reception when you arrive')}</div>
 
       <section className="guest-qr-card">
         {/* Pure-SVG QR placeholder — the real one would be generated
@@ -31,12 +34,12 @@ export default function GuestCheckin() {
       </section>
 
       <section className="guest-card">
-        <div className="guest-card-title">How it works</div>
+        <div className="guest-card-title">{t('guest_app.checkin.how_it_works', 'How it works')}</div>
         <ol className="guest-card-list-ordered">
-          <li>Arrive at the hotel — no need to queue at reception.</li>
-          <li>Show this QR to a STAYLO team member (any badge).</li>
-          <li>They scan it from their staff app → your room key is sent here.</li>
-          <li>Unlock the door with your phone (Bluetooth or NFC).</li>
+          <li>{t('guest_app.checkin.step_arrive', 'Arrive at the hotel — no need to queue at reception.')}</li>
+          <li>{t('guest_app.checkin.step_show_qr', 'Show this QR to a STAYLO team member (any badge).')}</li>
+          <li>{t('guest_app.checkin.step_scan', 'They scan it from their staff app → your room key is sent here.')}</li>
+          <li>{t('guest_app.checkin.step_unlock', 'Unlock the door with your phone (Bluetooth or NFC).')}</li>
         </ol>
       </section>
 
@@ -51,6 +54,7 @@ export default function GuestCheckin() {
 // Decorative QR — a recognisable QR-shaped pattern. The real one is
 // a proper QR code from a real signed token in phase 2.
 function QRPlaceholder({ data }) {
+  const { t } = useTranslation()
   // Deterministic "pattern" generator so the same `data` always shows
   // the same shape (helps the demo look stable). 21×21 grid like a real
   // QR. The 3 finder squares (corners) are real, the rest is hashed-noise.
@@ -81,7 +85,7 @@ function QRPlaceholder({ data }) {
     }
   }
   return (
-    <svg viewBox={`0 0 ${size} ${size}`} className="guest-qr-svg" aria-label="Check-in QR code">
+    <svg viewBox={`0 0 ${size} ${size}`} className="guest-qr-svg" aria-label={t('guest_app.checkin.qr_aria', 'Check-in QR code')}>
       <rect x="0" y="0" width={size} height={size} fill="#fff" />
       {cells.filter(x => x.on).map(({ r, c }) => (
         <rect key={`${r}-${c}`} x={c} y={r} width="1.02" height="1.02" fill="#1A1F2E" />

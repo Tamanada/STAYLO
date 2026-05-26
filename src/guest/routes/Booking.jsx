@@ -6,6 +6,8 @@
 // actions are stubs for phase 1 (open a contact-reception modal in
 // phase 2).
 
+import { useTranslation, Trans } from 'react-i18next'
+
 const MOCK_BOOKING = {
   ref: 'STY-2K26-04219',
   hotel_name: 'By Nanda Phangan',
@@ -33,11 +35,12 @@ function fmtDate(iso) {
 }
 
 export default function GuestBooking() {
+  const { t } = useTranslation()
   const b = MOCK_BOOKING
   const nights = Math.round((new Date(b.departure) - new Date(b.arrival)) / 86400000)
   return (
     <div className="guest-page">
-      <div className="guest-page-title">Your booking</div>
+      <div className="guest-page-title">{t('guest_app.booking.title', 'Your booking')}</div>
       <div className="guest-page-sub">Reference {b.ref}</div>
 
       <section className="guest-card">
@@ -64,7 +67,7 @@ export default function GuestBooking() {
       </section>
 
       <section className="guest-card">
-        <div className="guest-card-title">What's included</div>
+        <div className="guest-card-title">{t('guest_app.booking.whats_included', "What's included")}</div>
         <ul className="guest-card-list">
           {b.inclusions.map((it, i) => <li key={i}>✓ {it}</li>)}
         </ul>
@@ -86,14 +89,17 @@ export default function GuestBooking() {
       </section>
 
       <section className="guest-actions">
-        <button className="guest-btn-secondary">Modify dates</button>
-        <button className="guest-btn-secondary">Add a room</button>
-        <button className="guest-btn-ghost">Cancellation policy</button>
+        <button className="guest-btn-secondary">{t('guest_app.booking.modify_dates', 'Modify dates')}</button>
+        <button className="guest-btn-secondary">{t('guest_app.booking.add_room', 'Add a room')}</button>
+        <button className="guest-btn-ghost">{t('guest_app.booking.cancellation_policy', 'Cancellation policy')}</button>
       </section>
 
       <p className="guest-page-note">
-        Need help? Tap <a href="/services?cat=concierge">Ask reception</a> — a
-        team member replies in under 5 minutes during business hours.
+        <Trans
+          i18nKey="guest_app.booking.need_help"
+          defaults="Need help? Tap <1>Ask reception</1> — a team member replies in under 5 minutes during business hours."
+          components={[<span key="0" />, <a key="1" href="/services?cat=concierge" />]}
+        />
       </p>
     </div>
   )

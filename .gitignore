@@ -6,3 +6,4 @@ dist
 *.log
 .claude
 extracted_files/
+.i18n_extraction/

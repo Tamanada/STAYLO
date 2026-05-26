@@ -1,0 +1,814 @@
+{
+  "summary": {
+    "files_scanned": 116,
+    "files_flagged": 25,
+    "total": 136
+  },
+  "by_file": [
+    {
+      "file": "src/pages/legal/Privacy.jsx",
+      "findings": [
+        {
+          "line": 17,
+          "text": "Privacy Policy",
+          "raw": "<h1 className=\"text-3xl sm:text-4xl font-bold mb-2\">Privacy Policy</h1>"
+        },
+        {
+          "line": 25,
+          "text": "Account data",
+          "raw": "<li><strong>Account data</strong>: email, full name, password hash (managed by Supabase Auth).</li>"
+        },
+        {
+          "line": 26,
+          "text": "Hotelier data",
+          "raw": "<li><strong>Hotelier data</strong>: property details, photos, bank account info (held by Stripe Connect — STAYLO never sees full banking details).</li>"
+        },
+        {
+          "line": 27,
+          "text": "Booking data",
+          "raw": "<li><strong>Booking data</strong>: dates, guest count, special requests, special-needs information you provide.</li>"
+        },
+        {
+          "line": 28,
+          "text": "Payment data",
+          "raw": "<li><strong>Payment data</strong>: card details are processed by Stripe and never stored on our servers. Bitcoin Lightning invoices are stored as BOLT11 strings (no private keys).</li>"
+        },
+        {
+          "line": 30,
+          "text": "Usage data",
+          "raw": "<li><strong>Usage data</strong>: anonymous analytics on which pages are visited (no cookies that track you across other sites).</li>"
+        },
+        {
+          "line": 37,
+          "text": "Process bookings and route payments to hoteliers",
+          "raw": "<li>Process bookings and route payments to hoteliers</li>"
+        },
+        {
+          "line": 38,
+          "text": "Send booking confirmations and operational notifications",
+          "raw": "<li>Send booking confirmations and operational notifications</li>"
+        },
+        {
+          "line": 39,
+          "text": "Calculate ambassador commissions and pay them in BTC to your declared Lightning address",
+          "raw": "<li>Calculate ambassador commissions and pay them in BTC to your declared Lightning address</li>"
+        },
+        {
+          "line": 40,
+          "text": "Improve the Service (bug fixes, performance, new features)",
+          "raw": "<li>Improve the Service (bug fixes, performance, new features)</li>"
+        },
+        {
+          "line": 41,
+          "text": "Comply with legal obligations (KYC/AML when triggered by share purchases or large payouts)",
+          "raw": "<li>Comply with legal obligations (KYC/AML when triggered by share purchases or large payouts)</li>"
+        },
+        {
+          "line": 49,
+          "text": "Stripe Privacy Policy",
+          "raw": "<li><strong>Stripe</strong> (payment processing) — see <a href=\"https://stripe.com/privacy\" target=\"_blank\" rel=\"noreferrer\" className=\"text-orange\">Stripe Privacy Policy</a>.</li>"
+        },
+        {
+          "line": 50,
+          "text": "Lightning provider",
+          "raw": "<li><strong>Lightning provider</strong> (BTCPay Server self-hosted or similar) — for crypto payments.</li>"
+        },
+        {
+          "line": 51,
+          "text": "Supabase Privacy Policy",
+          "raw": "<li><strong>Supabase</strong> (database + auth) — see <a href=\"https://supabase.com/privacy\" target=\"_blank\" rel=\"noreferrer\" className=\"text-orange\">Supabase Privacy Policy</a>.</li>"
+        },
+        {
+          "line": 59,
+          "text": "You have the right to:",
+          "raw": "<p>You have the right to:</p>"
+        },
+        {
+          "line": 61,
+          "text": "Access the personal data we hold about you",
+          "raw": "<li>Access the personal data we hold about you</li>"
+        },
+        {
+          "line": 62,
+          "text": "Request correction or deletion of your data",
+          "raw": "<li>Request correction or deletion of your data</li>"
+        },
+        {
+          "line": 63,
+          "text": "Withdraw consent at any time (deleting your account removes most data; some bookings may be retained for legal/accounting reasons)",
+          "raw": "<li>Withdraw consent at any time (deleting your account removes most data; some bookings may be retained for legal/accounting reasons)</li>"
+        },
+        {
+          "line": 64,
+          "text": "Lodge a complaint with a supervisory authority (in your jurisdiction or in Singapore once incorporated)",
+          "raw": "<li>Lodge a complaint with a supervisory authority (in your jurisdiction or in Singapore once incorporated)</li>"
+        },
+        {
+          "line": 66,
+          "text": "To exercise these rights:",
+          "raw": "<p>To exercise these rights: <a href=\"mailto:contact@staylo.app\" className=\"text-orange\">contact@staylo.app</a></p>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminSettings.jsx",
+      "findings": [
+        {
+          "line": 57,
+          "text": "Admin configuration",
+          "raw": "<p className=\"text-gray-500 text-sm mt-1\">Admin configuration</p>"
+        },
+        {
+          "line": 91,
+          "text": "Admin Access",
+          "raw": "<h3 className=\"font-semibold text-deep\">Admin Access</h3>"
+        },
+        {
+          "line": 94,
+          "text": "Authorized admin emails:",
+          "raw": "<p className=\"text-gray-500 text-xs mb-3\">Authorized admin emails:</p>"
+        },
+        {
+          "line": 157,
+          "text": "Feature Toggles",
+          "raw": "<h3 className=\"font-semibold text-deep\">Feature Toggles</h3>"
+        },
+        {
+          "line": 158,
+          "text": "Enable or disable sections of the app",
+          "raw": "<p className=\"text-xs text-gray-400\">Enable or disable sections of the app</p>"
+        },
+        {
+          "line": 168,
+          "text": "Ambassador Program",
+          "raw": "<p className=\"font-medium text-deep text-sm\">Ambassador Program</p>"
+        },
+        {
+          "line": 169,
+          "text": "Show ambassador pages, navbar link, and admin tab",
+          "raw": "<p className=\"text-xs text-gray-400\">Show ambassador pages, navbar link, and admin tab</p>"
+        },
+        {
+          "line": 185,
+          "text": "Splash Page (Koh Phangan)",
+          "raw": "<p className=\"font-medium text-deep text-sm\">Splash Page (Koh Phangan)</p>"
+        },
+        {
+          "line": 186,
+          "text": "Show the /splash exclusivity page",
+          "raw": "<p className=\"text-xs text-gray-400\">Show the /splash exclusivity page</p>"
+        },
+        {
+          "line": 203,
+          "text": "Show the survey link in navbar",
+          "raw": "<p className=\"text-xs text-gray-400\">Show the survey link in navbar</p>"
+        },
+        {
+          "line": 219,
+          "text": "Social Proof (Founding Members)",
+          "raw": "<p className=\"font-medium text-deep text-sm\">Social Proof (Founding Members)</p>"
+        },
+        {
+          "line": 220,
+          "text": "Show the founding members list on homepage",
+          "raw": "<p className=\"text-xs text-gray-400\">Show the founding members list on homepage</p>"
+        },
+        {
+          "line": 236,
+          "text": "Referral System",
+          "raw": "<p className=\"font-medium text-deep text-sm\">Referral System</p>"
+        },
+        {
+          "line": 237,
+          "text": "Show referral links and tracking",
+          "raw": "<p className=\"text-xs text-gray-400\">Show referral links and tracking</p>"
+        },
+        {
+          "line": 249,
+          "text": "Changes take effect immediately across the app.",
+          "raw": "<p className=\"text-xs text-gray-400 mt-4 italic\">Changes take effect immediately across the app.</p>"
+        },
+        {
+          "line": 254,
+          "text": "Coming Soon",
+          "raw": "<h3 className=\"text-lg font-bold mb-2\">Coming Soon</h3>"
+        },
+        {
+          "line": 255,
+          "text": "Future admin settings will include:",
+          "raw": "<p className=\"text-white/60 text-sm mb-4\">Future admin settings will include:</p>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminProspects.jsx",
+      "findings": [
+        {
+          "line": 348,
+          "text": "Today",
+          "raw": "if (c === 'today')   return <Badge variant=\"orange\">Today</Badge>"
+        },
+        {
+          "line": 452,
+          "text": "With email",
+          "raw": "<KpiTile label=\"With email\"  value={stats.with_email}  icon={Mail}           tone=\"blue\" />"
+        },
+        {
+          "line": 461,
+          "text": "Due today",
+          "raw": "<div className=\"text-xs text-sunset uppercase tracking-wider font-bold\">Due today</div>"
+        },
+        {
+          "line": 471,
+          "text": "Signed up",
+          "raw": "<KpiTile label=\"Signed up\"   value={stats.signed_up}   icon={CheckCircle2}   tone=\"green\" />"
+        },
+        {
+          "line": 957,
+          "text": "Email",
+          "raw": "<ProspectField label=\"Email\" icon={Mail}>"
+        },
+        {
+          "line": 964,
+          "text": "Phone / WhatsApp",
+          "raw": "<ProspectField label=\"Phone / WhatsApp\" icon={Phone}>"
+        },
+        {
+          "line": 971,
+          "text": "Website",
+          "raw": "<ProspectField label=\"Website\" icon={Globe}>"
+        },
+        {
+          "line": 978,
+          "text": "Contact name",
+          "raw": "<ProspectField label=\"Contact name\">"
+        },
+        {
+          "line": 982,
+          "text": "Khun Som / Marie Dupont",
+          "raw": "placeholder=\"Khun Som / Marie Dupont\""
+        },
+        {
+          "line": 985,
+          "text": "Contact position",
+          "raw": "<ProspectField label=\"Contact position\">"
+        },
+        {
+          "line": 989,
+          "text": "Owner / GM / Front desk / Marketing",
+          "raw": "placeholder=\"Owner / GM / Front desk / Marketing\""
+        },
+        {
+          "line": 1061,
+          "text": "Send a branded HTML invitation",
+          "raw": "<strong className=\"text-deep\">Send a branded HTML invitation</strong>"
+        },
+        {
+          "line": 1068,
+          "text": "Send STAYLO email & mark contacted",
+          "raw": ": <><Send size={14} /> Send STAYLO email & mark contacted</>}"
+        },
+        {
+          "line": 1123,
+          "text": "Next follow-up",
+          "raw": "<label className=\"block text-xs font-medium text-gray-500 mb-1\">Next follow-up</label>"
+        },
+        {
+          "line": 1147,
+          "text": "Source id:",
+          "raw": "<div>Source id: <code className=\"bg-gray-100 px-1 rounded\">{prospect.source_place_id}</code></div>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminTransactions.jsx",
+      "findings": [
+        {
+          "line": 360,
+          "text": "Escrow Held",
+          "raw": "<KpiCard icon={Lock} label=\"Escrow Held\" value={formatCurrency(kpis.escrowAmount, 'USD')}"
+        },
+        {
+          "line": 362,
+          "text": "Shares Sold",
+          "raw": "<KpiCard icon={Gem} label=\"Shares Sold\" value={kpis.sharesSold}"
+        },
+        {
+          "line": 409,
+          "text": "Clear range",
+          "raw": "className=\"text-gray-400 hover:text-deep text-xs ml-1\" title=\"Clear range\">"
+        },
+        {
+          "line": 499,
+          "text": "Guest",
+          "raw": "<th className=\"text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-500\">Guest</th>"
+        },
+        {
+          "line": 500,
+          "text": "Property",
+          "raw": "<th className=\"text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-500\">Property</th>"
+        },
+        {
+          "line": 524,
+          "text": "Open in Stripe Dashboard",
+          "raw": "title=\"Open in Stripe Dashboard\">"
+        },
+        {
+          "line": 604,
+          "text": "Force release escrow (Stripe)",
+          "raw": "<ActionItem icon={ZapOff} label=\"Force release escrow (Stripe)\" disabled={!canRelease}"
+        },
+        {
+          "line": 607,
+          "text": "Mark as manually settled",
+          "raw": "<ActionItem icon={FileCheck} label=\"Mark as manually settled\" disabled={!canRelease}"
+        },
+        {
+          "line": 611,
+          "text": "Refund this booking",
+          "raw": "<ActionItem icon={RotateCcw} label=\"Refund this booking\" disabled={!canRefund} danger"
+        },
+        {
+          "line": 614,
+          "text": "Resend confirmation",
+          "raw": "<ActionItem icon={Mail} label=\"Resend confirmation\" disabled"
+        },
+        {
+          "line": 649,
+          "text": "No share purchases yet.",
+          "raw": "<p className=\"text-sm text-gray-500\">No share purchases yet.</p>"
+        },
+        {
+          "line": 663,
+          "text": "Property",
+          "raw": "<th className=\"text-left px-4 py-3 text-[11px] font-bold uppercase tracking-wider text-gray-500\">Property</th>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminProperties.jsx",
+      "findings": [
+        {
+          "line": 94,
+          "text": "Start review",
+          "raw": "title=\"Start review\""
+        },
+        {
+          "line": 140,
+          "text": "Review and manage property submissions",
+          "raw": "<p className=\"text-gray-500 text-sm mt-1\">Review and manage property submissions</p>"
+        },
+        {
+          "line": 171,
+          "text": "Property Details",
+          "raw": "title=\"Property Details\""
+        },
+        {
+          "line": 190,
+          "text": "Edit property details",
+          "raw": "title=\"Edit property details\""
+        },
+        {
+          "line": 205,
+          "text": "Edit property",
+          "raw": "<p className=\"text-xs font-bold uppercase tracking-wider text-ocean\">Edit property</p>"
+        },
+        {
+          "line": 224,
+          "text": "Contact email",
+          "raw": "<label className=\"block text-[10px] font-bold uppercase text-gray-500 mb-1\">Contact email</label>"
+        },
+        {
+          "line": 232,
+          "text": "Contact phone",
+          "raw": "<label className=\"block text-[10px] font-bold uppercase text-gray-500 mb-1\">Contact phone</label>"
+        },
+        {
+          "line": 239,
+          "text": "Minimum age",
+          "raw": "<label className=\"block text-[10px] font-bold uppercase text-gray-500 mb-1\">Minimum age</label>"
+        },
+        {
+          "line": 245,
+          "text": "All ages welcome",
+          "raw": "<option value=\"\">All ages welcome</option>"
+        },
+        {
+          "line": 307,
+          "text": "No photos uploaded.",
+          "raw": "<strong>No photos uploaded.</strong> Without photos this listing"
+        },
+        {
+          "line": 371,
+          "text": "Phone",
+          "raw": "<p className=\"text-gray-400 text-xs\">Phone</p>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminDashboard.jsx",
+      "findings": [
+        {
+          "line": 70,
+          "text": "Overview of your Staylo alpha metrics",
+          "raw": "<p className=\"text-gray-500 text-sm mt-1\">Overview of your Staylo alpha metrics</p>"
+        },
+        {
+          "line": 75,
+          "text": "Total Users",
+          "raw": "<StatCard title=\"Total Users\" value={stats.totalUsers} icon={Users} color=\"ocean\" />"
+        },
+        {
+          "line": 83,
+          "text": "Signups (Last 7 Days)",
+          "raw": "<SimpleBarChart data={signupsByDay} color=\"bg-ocean\" title=\"Signups (Last 7 Days)\" />"
+        },
+        {
+          "line": 84,
+          "text": "Properties by Status",
+          "raw": "<SimpleBarChart data={statusChart} title=\"Properties by Status\" />"
+        },
+        {
+          "line": 91,
+          "text": "Survey Insights",
+          "raw": "<h3 className=\"text-sm font-semibold text-gray-700 mb-4\">Survey Insights</h3>"
+        },
+        {
+          "line": 94,
+          "text": "Avg Interest",
+          "raw": "<span className=\"text-sm text-gray-500\">Avg Interest</span>"
+        },
+        {
+          "line": 98,
+          "text": "Avg Commission",
+          "raw": "<span className=\"text-sm text-gray-500\">Avg Commission</span>"
+        },
+        {
+          "line": 102,
+          "text": "Would Join",
+          "raw": "<span className=\"text-sm text-gray-500\">Would Join</span>"
+        },
+        {
+          "line": 106,
+          "text": "Pending Review",
+          "raw": "<span className=\"text-sm text-gray-500\">Pending Review</span>"
+        },
+        {
+          "line": 114,
+          "text": "Recent Activity",
+          "raw": "<h3 className=\"text-sm font-semibold text-gray-700 mb-4\">Recent Activity</h3>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminAmbassadors.jsx",
+      "findings": [
+        {
+          "line": 74,
+          "text": "Total Ambassadors",
+          "raw": "<p className=\"text-sm text-gray-500 mt-1\">Total Ambassadors</p>"
+        },
+        {
+          "line": 78,
+          "text": "Total Hotels Brought",
+          "raw": "<p className=\"text-sm text-gray-500 mt-1\">Total Hotels Brought</p>"
+        },
+        {
+          "line": 82,
+          "text": "Est. Total Commissions",
+          "raw": "<p className=\"text-sm text-gray-500 mt-1\">Est. Total Commissions</p>"
+        },
+        {
+          "line": 92,
+          "text": "Email",
+          "raw": "<th className=\"text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase\">Email</th>"
+        },
+        {
+          "line": 95,
+          "text": "Est. Earnings",
+          "raw": "<th className=\"text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase\">Est. Earnings</th>"
+        },
+        {
+          "line": 103,
+          "text": "No ambassadors yet",
+          "raw": "<td colSpan={7} className=\"px-4 py-8 text-center text-gray-400\">No ambassadors yet</td>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminSurveys.jsx",
+      "findings": [
+        {
+          "line": 81,
+          "text": "Survey Responses",
+          "raw": "<h1 className=\"text-2xl font-bold text-deep\">Survey Responses</h1>"
+        },
+        {
+          "line": 87,
+          "text": "Total Responses",
+          "raw": "<StatCard title=\"Total Responses\" value={stats.totalSurveys} icon={ClipboardList} color=\"golden\" />"
+        },
+        {
+          "line": 88,
+          "text": "Avg Interest",
+          "raw": "<StatCard title=\"Avg Interest\" value={`${stats.avgInterestScore}/10`} icon={TrendingUp} color=\"ocean\" />"
+        },
+        {
+          "line": 89,
+          "text": "Avg Commission",
+          "raw": "<StatCard title=\"Avg Commission\" value={`${stats.avgCommission}%`} icon={Percent} color=\"sunset\" />"
+        },
+        {
+          "line": 90,
+          "text": "Would Join Rate",
+          "raw": "<StatCard title=\"Would Join Rate\" value={`${stats.wouldJoinRate}%`} icon={ThumbsUp} color=\"libre\" />"
+        },
+        {
+          "line": 95,
+          "text": "Top Frustration Keywords",
+          "raw": "<h3 className=\"text-sm font-semibold text-gray-700 mb-3\">Top Frustration Keywords</h3>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminUsers.jsx",
+      "findings": [
+        {
+          "line": 62,
+          "text": "User Details",
+          "raw": "<Modal open={!!selected} onClose={() => setSelected(null)} title=\"User Details\">"
+        },
+        {
+          "line": 89,
+          "text": "No properties submitted",
+          "raw": "<p className=\"text-sm text-gray-400 italic\">No properties submitted</p>"
+        },
+        {
+          "line": 109,
+          "text": "Survey Response",
+          "raw": "<h3 className=\"text-sm font-semibold text-gray-700\">Survey Response</h3>"
+        },
+        {
+          "line": 112,
+          "text": "No survey completed",
+          "raw": "<p className=\"text-sm text-gray-400 italic\">No survey completed</p>"
+        },
+        {
+          "line": 128,
+          "text": "Would Join",
+          "raw": "<span className=\"text-gray-500\">Would Join</span>"
+        },
+        {
+          "line": 148,
+          "text": "No referrals yet",
+          "raw": "<p className=\"text-sm text-gray-400 italic\">No referrals yet</p>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminReferrals.jsx",
+      "findings": [
+        {
+          "line": 53,
+          "text": "Referral Leaderboard",
+          "raw": "<h1 className=\"text-2xl font-bold text-deep\">Referral Leaderboard</h1>"
+        },
+        {
+          "line": 61,
+          "text": "Total Referrals",
+          "raw": "<p className=\"text-sm text-gray-500 mt-1\">Total Referrals</p>"
+        },
+        {
+          "line": 65,
+          "text": "Active Referrers",
+          "raw": "<p className=\"text-sm text-gray-500 mt-1\">Active Referrers</p>"
+        },
+        {
+          "line": 69,
+          "text": "Avg per Referrer",
+          "raw": "<p className=\"text-sm text-gray-500 mt-1\">Avg per Referrer</p>"
+        },
+        {
+          "line": 111,
+          "text": "Referred Users",
+          "raw": "<th className=\"text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase\">Referred Users</th>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/legal/Terms.jsx",
+      "findings": [
+        {
+          "line": 17,
+          "text": "Terms of Service",
+          "raw": "<h1 className=\"text-3xl sm:text-4xl font-bold mb-2\">Terms of Service</h1>"
+        },
+        {
+          "line": 26,
+          "text": "Staylo Holdings Pte. Ltd.",
+          "raw": "currently in Alpha. The legal entity will be <strong>Staylo Holdings Pte. Ltd.</strong>,"
+        },
+        {
+          "line": 39,
+          "text": "No real-money bookings are guaranteed during this phase.",
+          "raw": "providers. <strong>No real-money bookings are guaranteed during this phase.</strong> By using"
+        },
+        {
+          "line": 47,
+          "text": "Property / Founding Partner",
+          "raw": "<li><strong>Property / Founding Partner</strong> — hoteliers list rooms, set prices, and accept the 10% commission contract.</li>"
+        }
+      ]
+    },
+    {
+      "file": "src/components/dashboard/RewardModal.jsx",
+      "findings": [
+        {
+          "line": 174,
+          "text": "Title shown to guests",
+          "raw": "<label className=\"block text-[10px] font-bold text-gray-400 uppercase mb-0.5\">Title shown to guests</label>"
+        },
+        {
+          "line": 184,
+          "text": "Perk description",
+          "raw": "<label className=\"block text-[10px] font-bold text-gray-400 uppercase mb-0.5\">Perk description</label>"
+        },
+        {
+          "line": 244,
+          "text": "Title shown to guests",
+          "raw": "<label className=\"block text-[10px] font-bold text-gray-400 uppercase mb-0.5\">Title shown to guests</label>"
+        }
+      ]
+    },
+    {
+      "file": "src/components/layout/Footer.jsx",
+      "findings": [
+        {
+          "line": 38,
+          "text": "For Hoteliers",
+          "raw": "<Link to=\"/submit\" className=\"block text-sm no-underline transition-colors\" style={{ color: '#B2BEC3' }}>For Hoteliers</Link>"
+        },
+        {
+          "line": 43,
+          "text": "Koh Phangan",
+          "raw": "<Link to=\"/splash\" className=\"block text-sm no-underline transition-colors\" style={{ color: '#B2BEC3' }}>Koh Phangan</Link>"
+        },
+        {
+          "line": 51,
+          "text": "Singapore Pte Ltd",
+          "raw": "<span className=\"block text-xs\" style={{ color: '#636E72' }}>Singapore Pte Ltd<br/>(incorporation pending)</span>"
+        }
+      ]
+    },
+    {
+      "file": "src/guest/routes/History.jsx",
+      "findings": [
+        {
+          "line": 34,
+          "text": "Your STAYLO journey",
+          "raw": "<div className=\"guest-page-title\">Your STAYLO journey</div>"
+        },
+        {
+          "line": 52,
+          "text": "Silver perks (active)",
+          "raw": "<div className=\"guest-card-title\">Silver perks (active)</div>"
+        },
+        {
+          "line": 68,
+          "text": "Past stays",
+          "raw": "<div className=\"guest-section-title\">Past stays</div>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/ota/PropertyDetail.jsx",
+      "findings": [
+        {
+          "line": 331,
+          "text": "Share this property",
+          "raw": "title=\"Share this property\""
+        },
+        {
+          "line": 805,
+          "text": "No package",
+          "raw": "<div className=\"text-xs text-gray-500\">No package</div>"
+        },
+        {
+          "line": 1270,
+          "text": "Close",
+          "raw": "aria-label=\"Close\""
+        }
+      ]
+    },
+    {
+      "file": "src/GuestApp.jsx",
+      "findings": [
+        {
+          "line": 86,
+          "text": "Main navigation",
+          "raw": "<nav className=\"guest-rail\" aria-label=\"Main navigation\">"
+        },
+        {
+          "line": 88,
+          "text": "Booking",
+          "raw": "<NavTab to=\"/booking\"  label=\"Booking\"      icon={IconKey} />"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/Welcome.jsx",
+      "findings": [
+        {
+          "line": 67,
+          "text": "Owned by Hoteliers, built for hospitality",
+          "raw": "<p className=\"text-sm text-golden/80 font-medium italic mb-2\">Owned by Hoteliers, built for hospitality</p>"
+        },
+        {
+          "line": 135,
+          "text": "Change language",
+          "raw": "aria-label=\"Change language\""
+        }
+      ]
+    },
+    {
+      "file": "src/components/admin/AdminSidebar.jsx",
+      "findings": [
+        {
+          "line": 67,
+          "text": "Admin Panel",
+          "raw": "<span>Admin Panel</span>"
+        }
+      ]
+    },
+    {
+      "file": "src/components/sections/CompareTable.jsx",
+      "findings": [
+        {
+          "line": 69,
+          "text": "Booking.com",
+          "raw": "<th className=\"text-center px-4 py-5 text-sm font-bold\" style={{ color: '#B2BEC3' }}>Booking.com</th>"
+        }
+      ]
+    },
+    {
+      "file": "src/guest/routes/Booking.jsx",
+      "findings": [
+        {
+          "line": 100,
+          "text": "Ask reception",
+          "raw": "defaults=\"Need help? Tap <1>Ask reception</1> — a team member replies in under 5 minutes during business hours.\""
+        }
+      ]
+    },
+    {
+      "file": "src/guest/routes/Checkin.jsx",
+      "findings": [
+        {
+          "line": 31,
+          "text": "Sasiwimol Wong",
+          "raw": "<div className=\"guest-qr-name\">Sasiwimol Wong</div>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/admin/AdminAnalytics.jsx",
+      "findings": [
+        {
+          "line": 190,
+          "text": "Visitor Analytics",
+          "raw": "<h1 className=\"text-2xl font-bold text-deep\">Visitor Analytics</h1>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/ota/Checkout.jsx",
+      "findings": [
+        {
+          "line": 598,
+          "text": "Room subtotal",
+          "raw": "<span className=\"text-deep\">Room subtotal</span>"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/ota/Search.jsx",
+      "findings": [
+        {
+          "line": 562,
+          "text": "Weekly and/or monthly long-stay rates available",
+          "raw": "title=\"Weekly and/or monthly long-stay rates available\">"
+        }
+      ]
+    },
+    {
+      "file": "src/pages/Vision.jsx",
+      "findings": [
+        {
+          "line": 955,
+          "text": "David Deveaux",
+          "raw": "<h2 className=\"text-3xl sm:text-4xl font-extrabold text-white mb-1\">David Deveaux</h2>"
+        }
+      ]
+    }
+  ]
+}

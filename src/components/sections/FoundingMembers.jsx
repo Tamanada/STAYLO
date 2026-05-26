@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Globe, Building2, DollarSign, MapPin, Crown } from 'lucide-react'
+import { Globe, Building2, Users, MapPin, Crown } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
 function AnimatedCounter({ target, prefix = '', suffix = '', duration = 2000 }) {
@@ -35,29 +35,40 @@ function AnimatedCounter({ target, prefix = '', suffix = '', duration = 2000 }) 
   )
 }
 
-const founders = [
-  { name: 'S. Patel', loc: 'Koh Phangan, TH', rooms: 24, type: 'Resort' },
-  { name: 'L. Martin', loc: 'Bali, ID', rooms: 12, type: 'Villa' },
-  { name: 'K. Tanaka', loc: 'Kyoto, JP', rooms: 8, type: 'Guesthouse' },
-  { name: 'M. Garcia', loc: 'Tulum, MX', rooms: 32, type: 'Hotel' },
-  { name: 'A. Dubois', loc: 'Nice, FR', rooms: 15, type: 'Hotel' },
-]
-
 export function FoundingMembers() {
   const { t } = useTranslation()
-  const [userCount, setUserCount] = useState(0)
+  const [memberCount, setMemberCount] = useState(0)
   const [propertyCount, setPropertyCount] = useState(0)
+  const [countryCount, setCountryCount] = useState(0)
+  const [cityCount, setCityCount] = useState(0)
+  const [latestProperties, setLatestProperties] = useState([])
 
   useEffect(() => {
-    async function fetchCounts() {
-      const [users, properties] = await Promise.all([
+    async function fetchAll() {
+      const [members, propsAgg, latest] = await Promise.all([
         supabase.from('users').select('id', { count: 'exact', head: true }),
-        supabase.from('properties').select('id', { count: 'exact', head: true }),
+        supabase
+          .from('properties')
+          .select('country, city', { count: 'exact' })
+          .in('status', ['live', 'validated']),
+        supabase
+          .from('properties')
+          .select('id, name, city, country, type, room_count')
+          .in('status', ['live', 'validated'])
+          .order('created_at', { ascending: false })
+          .limit(5),
       ])
-      if (users.count != null) setUserCount(users.count)
-      if (properties.count != null) setPropertyCount(properties.count)
+      if (members.count != null) setMemberCount(members.count)
+      if (propsAgg.count != null) setPropertyCount(propsAgg.count)
+      if (propsAgg.data) {
+        const countries = new Set(propsAgg.data.map((p) => p.country).filter(Boolean))
+        const cities = new Set(propsAgg.data.map((p) => p.city).filter(Boolean))
+        setCountryCount(countries.size)
+        setCityCount(cities.size)
+      }
+      if (latest.data) setLatestProperties(latest.data)
     }
-    fetchCounts()
+    fetchAll()
   }, [])
 
   return (
@@ -74,70 +85,76 @@ export function FoundingMembers() {
             {t('founding_members.badge', 'Founding Members')}
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-3">
-            {t('social_proof.title', { count: 120 })}
+            {t('social_proof.title', { count: memberCount })}
           </h2>
         </div>
 
-        {/* Animated stats */}
+        {/* Animated stats — all live from Supabase */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-7">
           <div className="text-center">
             <Globe size={22} className="mx-auto text-ocean mb-2" />
             <p className="text-3xl sm:text-4xl font-extrabold">
-              <AnimatedCounter target={12} />
+              <AnimatedCounter target={countryCount} />
             </p>
             <p className="text-sm text-white/50">{t('social_proof.countries')}</p>
           </div>
           <div className="text-center">
             <Building2 size={22} className="mx-auto text-sunrise mb-2" />
             <p className="text-3xl sm:text-4xl font-extrabold">
-              <AnimatedCounter target={propertyCount || userCount} />
+              <AnimatedCounter target={propertyCount} />
             </p>
             <p className="text-sm text-white/50">{t('social_proof.properties')}</p>
           </div>
           <div className="text-center">
-            <DollarSign size={22} className="mx-auto text-libre mb-2" />
+            <Users size={22} className="mx-auto text-libre mb-2" />
             <p className="text-3xl sm:text-4xl font-extrabold">
-              $<AnimatedCounter target={2.1} suffix="M" />
+              <AnimatedCounter target={memberCount} />
             </p>
-            <p className="text-sm text-white/50">{t('social_proof.saved')}</p>
+            <p className="text-sm text-white/50">{t('social_proof.members', 'Members')}</p>
           </div>
           <div className="text-center">
             <MapPin size={22} className="mx-auto text-golden mb-2" />
             <p className="text-3xl sm:text-4xl font-extrabold">
-              <AnimatedCounter target={42} />
+              <AnimatedCounter target={cityCount} />
             </p>
-            <p className="text-sm text-white/50">{t('founding_members.cities', 'Cities worldwide')}</p>
+            <p className="text-sm text-white/50">{t('founding_members.cities', 'Cities')}</p>
           </div>
         </div>
 
-        {/* Founding members list preview */}
-        <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 max-w-2xl mx-auto">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-sm font-semibold text-white/70">{t('founding_members.latest', 'Latest founding members')}</span>
-            <span className="text-xs text-golden font-mono">{t('founding_members.live', 'LIVE')}</span>
-          </div>
-          <div className="space-y-2">
-            {founders.map((f, i) => (
-              <div key={i} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-2.5 hover:bg-white/10 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-ocean to-electric rounded-lg flex items-center justify-center text-xs font-bold">
-                    #{i + 1}
+        {/* Founding members list — hidden when empty (no fictitious entries) */}
+        {latestProperties.length > 0 && (
+          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 max-w-2xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-sm font-semibold text-white/70">{t('founding_members.latest', 'Latest founding members')}</span>
+              <span className="text-xs text-golden font-mono">{t('founding_members.live', 'LIVE')}</span>
+            </div>
+            <div className="space-y-2">
+              {latestProperties.map((p, i) => (
+                <div key={p.id} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-2.5 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-ocean to-electric rounded-lg flex items-center justify-center text-xs font-bold">
+                      #{i + 1}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{p.name}</p>
+                      <p className="text-xs text-white/40 flex items-center gap-1">
+                        <MapPin size={10} /> {p.city}{p.country ? `, ${p.country}` : ''}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">{f.name}</p>
-                    <p className="text-xs text-white/40 flex items-center gap-1">
-                      <MapPin size={10} /> {f.loc}
-                    </p>
+                  <div className="text-right">
+                    <p className="text-xs text-white/60 capitalize">{p.type}</p>
+                    {p.room_count > 0 && (
+                      <p className="text-xs text-libre font-mono">
+                        {t('founding_members.rooms_count', '{{count}} rooms', { count: p.room_count })}
+                      </p>
+                    )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-white/60">{f.type}</p>
-                  <p className="text-xs text-libre font-mono">{t('founding_members.rooms_count', '{{count}} rooms', { count: f.rooms })}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   )

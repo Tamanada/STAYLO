@@ -15,11 +15,13 @@
 // ============================================================================
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Loader2, CheckCircle2, AlertTriangle, MapPin, Calendar, Hotel } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import SEO from '../components/SEO'
 
 export default function PublicCheckIn() {
+  const { t } = useTranslation()
   const { token } = useParams()
   const [booking, setBooking]     = useState(null)
   const [loading, setLoading]     = useState(true)
@@ -121,9 +123,9 @@ export default function PublicCheckIn() {
       <Page>
         <div className="text-center py-20">
           <AlertTriangle size={32} className="text-sunset mx-auto mb-3" />
-          <h1 className="text-lg font-bold text-deep mb-1">Check-in link unavailable</h1>
+          <h1 className="text-lg font-bold text-deep mb-1">{t('public_checkin.link_unavailable', 'Check-in link unavailable')}</h1>
           <p className="text-sm text-gray-500 max-w-sm mx-auto">{loadError || 'This link is invalid or expired.'}</p>
-          <p className="text-xs text-gray-400 mt-4">Ask the front desk to print a new QR code, or try again from a fresh link.</p>
+          <p className="text-xs text-gray-400 mt-4">{t('public_checkin.link_unavailable_hint', 'Ask the front desk to print a new QR code, or try again from a fresh link.')}</p>
         </div>
       </Page>
     )
@@ -137,7 +139,7 @@ export default function PublicCheckIn() {
         <div className="text-center py-12">
           <CheckCircle2 size={48} className="text-libre mx-auto mb-3" />
           <h1 className="text-2xl font-bold text-deep mb-2">You're all set, {form.first_name}!</h1>
-          <p className="text-sm text-gray-500 mb-6">Your details have been added to the booking.</p>
+          <p className="text-sm text-gray-500 mb-6">{t('public_checkin.details_added', 'Your details have been added to the booking.')}</p>
 
           {remaining > 0 ? (
             <button onClick={() => { setSubmitted(false); setForm(f => ({ ...f, first_name: '', last_name: '', passport_number: '', date_of_birth: '' })) }}
@@ -190,7 +192,7 @@ export default function PublicCheckIn() {
         <div className="text-center p-6 bg-amber-50 border border-amber-200 rounded-2xl">
           <AlertTriangle size={24} className="text-amber-600 mx-auto mb-2" />
           <p className="text-sm font-bold text-amber-900">All {booking.capacity} guests already checked in.</p>
-          <p className="text-xs text-amber-700 mt-1">Need an extra bed? Ask the front desk.</p>
+          <p className="text-xs text-amber-700 mt-1">{t('public_checkin.extra_bed_hint', 'Need an extra bed? Ask the front desk.')}</p>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -211,23 +213,23 @@ export default function PublicCheckIn() {
                 <option value="">—</option>
                 <option value="M">Male</option>
                 <option value="F">Female</option>
-                <option value="X">Prefer not to say</option>
+                <option value="X">{t('public_checkin.prefer_not_to_say', 'Prefer not to say')}</option>
               </select>
             </Field>
-            <Field label="Date of birth">
+            <Field label={t('public_checkin.date_of_birth', 'Date of birth')}>
               <input type="date" value={form.date_of_birth}
                 max={new Date().toISOString().slice(0, 10)}
                 onChange={e => set('date_of_birth', e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </Field>
-            <Field label="Nationality (2-letter)">
+            <Field label={t('public_checkin.nationality', 'Nationality (2-letter)')}>
               <input type="text" value={form.nationality}
                 placeholder="FR, TH, US…"
                 maxLength={2}
                 onChange={e => set('nationality', e.target.value.toUpperCase().slice(0, 2))}
                 className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </Field>
-            <Field label="Passport number">
+            <Field label={t('public_checkin.passport_number', 'Passport number')}>
               <input type="text" value={form.passport_number}
                 placeholder={form.is_child ? 'optional' : ''}
                 onChange={e => set('passport_number', e.target.value)}
@@ -248,17 +250,17 @@ export default function PublicCheckIn() {
               showTM30 ? 'bg-ocean/10 text-ocean border-ocean/30' : 'bg-gray-50 text-gray-500 border-gray-200 hover:text-gray-700'
             }`}>
             {showTM30 ? '▾' : '▸'} Thai Immigration details (TM30)
-            <span className="float-right text-[10px] normal-case font-normal opacity-60">Required for foreign guests</span>
+            <span className="float-right text-[10px] normal-case font-normal opacity-60">{t('public_checkin.required_foreign', 'Required for foreign guests')}</span>
           </button>
           {showTM30 && (
             <div className="grid grid-cols-2 gap-3 p-3 bg-ocean/5 rounded-xl">
-              <Field label="Arrived in Thailand on" small>
+              <Field label={t('public_checkin.thailand_arrival_date', 'Arrived in Thailand on')} small>
                 <input type="date" value={form.thailand_arrival_date}
                   max={booking.check_in}
                   onChange={e => set('thailand_arrival_date', e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
               </Field>
-              <Field label="Port of entry" small>
+              <Field label={t('public_checkin.port_of_entry', 'Port of entry')} small>
                 <input type="text" value={form.thailand_port_of_entry}
                   placeholder="BKK, DMK, HKT…"
                   maxLength={12}
@@ -269,7 +271,7 @@ export default function PublicCheckIn() {
                 <select value={form.visa_type} onChange={e => set('visa_type', e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30">
                   <option value="">—</option>
-                  <option value="exempt">Visa exempt</option>
+                  <option value="exempt">{t('public_checkin.visa_exempt', 'Visa exempt')}</option>
                   <option value="TR">TR (Tourist)</option>
                   <option value="TR-VOA">TR-VOA</option>
                   <option value="NON-B">NON-B (Business)</option>
@@ -280,7 +282,7 @@ export default function PublicCheckIn() {
                   <option value="LTR">LTR (Long-Term)</option>
                 </select>
               </Field>
-              <Field label="Visa number" small>
+              <Field label={t('public_checkin.visa_number', 'Visa number')} small>
                 <input type="text" value={form.visa_number}
                   placeholder="from sticker"
                   onChange={e => set('visa_number', e.target.value)}

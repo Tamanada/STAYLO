@@ -17,19 +17,20 @@
 // ============================================================================
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { Loader2, CheckCircle2, AlertTriangle, Calendar, MapPin, Hotel, Star } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import SEO from '../components/SEO'
 
-const ASPECTS = [
-  { key: 'cleanliness', label: 'Cleanliness',   emoji: '🧼' },
-  { key: 'location',    label: 'Location',      emoji: '📍' },
-  { key: 'vibe',        label: 'Vibe',          emoji: '✨' },
-  { key: 'value',       label: 'Value',         emoji: '💰' },
-  { key: 'service',     label: 'Service',       emoji: '🤝' },
-]
-
 export default function PublicCheckOut() {
+  const { t } = useTranslation()
+  const ASPECTS = [
+    { key: 'cleanliness', label: t('public_checkout.aspect_cleanliness', 'Cleanliness'), emoji: '🧼' },
+    { key: 'location',    label: t('public_checkout.aspect_location',    'Location'),    emoji: '📍' },
+    { key: 'vibe',        label: t('public_checkout.aspect_vibe',        'Vibe'),        emoji: '✨' },
+    { key: 'value',       label: t('public_checkout.aspect_value',       'Value'),       emoji: '💰' },
+    { key: 'service',     label: t('public_checkout.aspect_service',     'Service'),     emoji: '🤝' },
+  ]
   const { token } = useParams()
   const [booking, setBooking]     = useState(null)
   const [loading, setLoading]     = useState(true)
@@ -113,20 +114,20 @@ export default function PublicCheckOut() {
   if (loadError || !booking) {
     return <Page><div className="text-center py-20">
       <AlertTriangle size={32} className="text-sunset mx-auto mb-3" />
-      <h1 className="text-lg font-bold text-deep mb-1">Check-out link unavailable</h1>
+      <h1 className="text-lg font-bold text-deep mb-1">{t('public_checkout.link_unavailable', 'Check-out link unavailable')}</h1>
       <p className="text-sm text-gray-500 max-w-sm mx-auto">{loadError || 'This link is invalid.'}</p>
     </div></Page>
   }
 
   if (booking.already_submitted && !submitted) {
     return <Page>
-      <SEO title="Already reviewed" noindex path={`/checkout/${token}`} />
+      <SEO title={t('public_checkout.already_reviewed', 'Already reviewed')} noindex path={`/checkout/${token}`} />
       <div className="text-center py-12">
         <CheckCircle2 size={48} className="text-libre mx-auto mb-3" />
-        <h1 className="text-xl font-bold text-deep mb-2">Already reviewed</h1>
-        <p className="text-sm text-gray-500">A guest from this booking has already submitted the survey. Thanks!</p>
+        <h1 className="text-xl font-bold text-deep mb-2">{t('public_checkout.already_reviewed', 'Already reviewed')}</h1>
+        <p className="text-sm text-gray-500">{t('public_checkout.already_reviewed_body', 'A guest from this booking has already submitted the survey. Thanks!')}</p>
         {booking.dispute_open && (
-          <p className="text-xs text-sunset mt-4 italic">A STAYLO counselor is reviewing the case.</p>
+          <p className="text-xs text-sunset mt-4 italic">{t('public_checkout.counselor_reviewing', 'A STAYLO counselor is reviewing the case.')}</p>
         )}
       </div>
     </Page>
@@ -148,7 +149,7 @@ export default function PublicCheckOut() {
         ) : (
           <>
             <CheckCircle2 size={48} className="text-libre mx-auto mb-3" />
-            <h1 className="text-2xl font-bold text-deep mb-2">Thank you!</h1>
+            <h1 className="text-2xl font-bold text-deep mb-2">{t('public_checkout.thank_you', 'Thank you!')}</h1>
             <p className="text-sm text-gray-600 mb-4 max-w-sm mx-auto">
               Your review will appear on the hotel's listing.
               The hotelier receives payment <strong>within 1 hour</strong>.
@@ -192,7 +193,7 @@ export default function PublicCheckOut() {
 
       {/* Would recommend */}
       <div className="p-3 bg-gradient-to-r from-orange/5 to-pink-500/5 rounded-xl">
-        <p className="text-sm font-medium text-deep mb-2">Would you recommend this place?</p>
+        <p className="text-sm font-medium text-deep mb-2">{t('public_checkout.would_recommend', 'Would you recommend this place?')}</p>
         <div className="flex gap-2">
           <button type="button"
             onClick={() => setRecommend(true)}
@@ -209,7 +210,7 @@ export default function PublicCheckOut() {
 
       {/* Free-form review */}
       <div>
-        <label className="block text-xs font-bold uppercase text-gray-400 mb-1">A few words for future guests (optional)</label>
+        <label className="block text-xs font-bold uppercase text-gray-400 mb-1">{t('public_checkout.review_label', 'A few words for future guests (optional)')}</label>
         <textarea value={reviewText} onChange={e => setReviewText(e.target.value)}
           rows={3} placeholder="What you loved, what surprised you…"
           className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 resize-none" />
@@ -218,7 +219,7 @@ export default function PublicCheckOut() {
       {/* Reviewer name + anonymous toggle */}
       <div className="grid grid-cols-3 gap-3">
         <div className="col-span-2">
-          <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Your first name (for the review)</label>
+          <label className="block text-xs font-bold uppercase text-gray-400 mb-1">{t('public_checkout.reviewer_name_label', 'Your first name (for the review)')}</label>
           <input type="text" value={reviewerName}
             onChange={e => setReviewerName(e.target.value)}
             disabled={isAnonymous}
@@ -253,7 +254,7 @@ export default function PublicCheckOut() {
           <textarea value={helpReason}
             onChange={e => setHelpReason(e.target.value)}
             rows={3} required
-            placeholder="What happened? Be specific so we can help quickly."
+            placeholder={t('public_checkout.help_placeholder', 'What happened? Be specific so we can help quickly.')}
             className="w-full mt-3 px-3 py-2 rounded-lg border border-sunset/40 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-sunset/30 resize-none" />
         )}
       </div>

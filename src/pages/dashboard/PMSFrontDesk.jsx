@@ -230,21 +230,36 @@ export default function PMSFrontDesk() {
       unitsByType[u.roomTypeId].push(u)
     }
 
+    // Half-open date interval [start, endExclusive) occupied by a booking on
+    // the daily rack chart. Overnight = standard check_in → check_out range.
+    // Hourly / day-use = single day (treated as a 1-day block at rack
+    // granularity; finer-grained hour conflicts are intentional out of scope).
+    const isOvernight = (b) => !b.booking_type || b.booking_type === 'overnight'
+    const addOneDay = (yyyymmdd) => {
+      const dt = new Date(yyyymmdd + 'T00:00:00Z')
+      dt.setUTCDate(dt.getUTCDate() + 1)
+      return dt.toISOString().slice(0, 10)
+    }
+    const occupiedRange = (b) =>
+      isOvernight(b) ? [b.check_in, b.check_out] : [b.check_in, addOneDay(b.check_in)]
+
     for (const [typeId, units] of Object.entries(unitsByType)) {
       // Bookings of this type that overlap the visible window
-      const overlapping = (bookingsByType.get(typeId) || []).filter(b =>
-        b.check_in <= windowEnd && b.check_out > windowStart
-      )
+      const overlapping = (bookingsByType.get(typeId) || []).filter(b => {
+        const [s, eExc] = occupiedRange(b)
+        return s <= windowEnd && eExc > windowStart
+      })
 
       // 1) Numbered bookings take their named slot first
       const consumedBookings = new Set()
-      const slotBusy = {}            // unitKey → true after a booking is placed there
+      const slotBusy = {}            // unitKey → list of bookings placed there
       const place = (booking, unitKey) => {
         consumedBookings.add(booking.id)
         slotBusy[unitKey] = slotBusy[unitKey] || []
         slotBusy[unitKey].push(booking)
+        const [s, eExc] = occupiedRange(booking)
         for (const d of windowDays) {
-          if (booking.check_in <= d && booking.check_out > d) result[d][unitKey] = booking
+          if (s <= d && d < eExc) result[d][unitKey] = booking
         }
       }
 
@@ -264,9 +279,13 @@ export default function PMSFrontDesk() {
           String(a.id).localeCompare(String(b.id))
         )
       for (const b of remaining) {
+        const [bStart, bEnd] = occupiedRange(b)
         const slot = units.find(u => {
           const bookings = slotBusy[u.key] || []
-          return bookings.every(x => x.check_out <= b.check_in || x.check_in >= b.check_out)
+          return bookings.every(x => {
+            const [xStart, xEnd] = occupiedRange(x)
+            return xEnd <= bStart || xStart >= bEnd
+          })
         })
         if (slot) place(b, slot.key)
       }
@@ -557,12 +576,12 @@ export default function PMSFrontDesk() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-[11px] font-bold uppercase tracking-wide text-gray-500">
                 <tr>
-                  <th className="px-3 py-2 text-left">Unit</th>
-                  <th className="px-3 py-2 text-left">Type</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Guest</th>
-                  <th className="px-3 py-2 text-left">Dates</th>
-                  <th className="px-3 py-2 text-left">Actions</th>
+                  <th className="px-3 py-2 text-left">{t('pms_frontdesk.col_unit', 'Unit')}</th>
+                  <th className="px-3 py-2 text-left">{t('pms_frontdesk.col_type', 'Type')}</th>
+                  <th className="px-3 py-2 text-left">{t('pms_frontdesk.col_status', 'Status')}</th>
+                  <th className="px-3 py-2 text-left">{t('pms_frontdesk.col_guest', 'Guest')}</th>
+                  <th className="px-3 py-2 text-left">{t('pms_frontdesk.col_dates', 'Dates')}</th>
+                  <th className="px-3 py-2 text-left">{t('pms_frontdesk.col_actions', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -807,6 +826,7 @@ function chargeMeta(key) {
 //   3. Folio   — ancillary charges (bar, restaurant, spa…) with running total
 // ============================================================================
 function BookingEditModal({ booking, rooms, onClose, onSaved }) {
+  const { t } = useTranslation()
   const [tab, setTab] = useState('booking')      // 'booking' | 'guests' | 'folio'
   const [form, setForm] = useState(null)
   const [saving, setSaving] = useState(false)
@@ -928,12 +948,12 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
       {tab === 'booking' && (
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Guest name">
+            <Field label={t('pms_frontdesk.guest_name', 'Guest name')}>
               <input type="text" value={form.guest_name}
                 onChange={e => setForm(f => ({ ...f, guest_name: e.target.value }))}
                 className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
             </Field>
-            <Field label="Status">
+            <Field label={t('pms_frontdesk.status', 'Status')}>
               <select value={form.status}
                 onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
                 className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm">
@@ -944,33 +964,33 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
                 <option value="cancelled">cancelled</option>
               </select>
             </Field>
-            <Field label="Email">
+            <Field label={t('pms_frontdesk.email', 'Email')}>
               <input type="email" value={form.guest_email}
                 onChange={e => setForm(f => ({ ...f, guest_email: e.target.value }))}
                 className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
             </Field>
-            <Field label="Phone">
+            <Field label={t('pms_frontdesk.phone', 'Phone')}>
               <input type="tel" value={form.guest_phone}
                 onChange={e => setForm(f => ({ ...f, guest_phone: e.target.value }))}
                 className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
             </Field>
-            <Field label="Check-in">
+            <Field label={t('pms.check_in_date', 'Check-in')}>
               <input type="date" value={form.check_in}
                 onChange={e => setForm(f => ({ ...f, check_in: e.target.value }))}
                 className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
             </Field>
-            <Field label="Check-out">
+            <Field label={t('pms.check_out_date', 'Check-out')}>
               <input type="date" value={form.check_out}
                 onChange={e => setForm(f => ({ ...f, check_out: e.target.value }))}
                 min={form.check_in || undefined}
                 className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
             </Field>
-            <Field label="Adults">
+            <Field label={t('pms.adults', 'Adults')}>
               <input type="number" min="1" max="20" value={form.adults}
                 onChange={e => setForm(f => ({ ...f, adults: e.target.value }))}
                 className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
             </Field>
-            <Field label="Children">
+            <Field label={t('pms.children', 'Children')}>
               <input type="number" min="0" max="20" value={form.children}
                 onChange={e => setForm(f => ({ ...f, children: e.target.value }))}
                 className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm" />
@@ -995,7 +1015,7 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
             </Field>
             <div />
           </div>
-          <Field label="Special requests">
+          <Field label={t('pms_frontdesk.special_requests', 'Special requests')}>
             <textarea value={form.special_requests} rows={2}
               onChange={e => setForm(f => ({ ...f, special_requests: e.target.value }))}
               className="w-full px-3 py-2 rounded border border-gray-200 bg-white text-deep text-sm resize-y" />
@@ -1081,6 +1101,7 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
 // FolioPanel — list of charges + quick-add row + paid/unpaid toggle + total bar
 // ──────────────────────────────────────────────────────────────────────────────
 function FolioPanel({ charges, loading, totals, onAdd, onTogglePaid, onDelete }) {
+  const { t } = useTranslation()
   const [draft, setDraft] = useState({
     category: 'bar', description: '', unit_price: '', qty: 1,
   })
@@ -1107,7 +1128,7 @@ function FolioPanel({ charges, loading, totals, onAdd, onTogglePaid, onDelete })
       {/* Totals bar */}
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-deep/5 rounded-lg p-2.5 text-center">
-          <div className="text-[10px] uppercase tracking-wide text-gray-500 font-bold">Folio total</div>
+          <div className="text-[10px] uppercase tracking-wide text-gray-500 font-bold">{t('pms_frontdesk.folio_total', 'Folio total')}</div>
           <div className="text-xl font-extrabold text-deep">${totals.total.toFixed(2)}</div>
         </div>
         <div className={`rounded-lg p-2.5 text-center ${totals.unpaid > 0 ? 'bg-orange/10' : 'bg-libre/10'}`}>
@@ -1133,7 +1154,7 @@ function FolioPanel({ charges, loading, totals, onAdd, onTogglePaid, onDelete })
             </select>
           </div>
           <div className="col-span-5">
-            <label className="block text-[10px] text-gray-400 mb-0.5">Description</label>
+            <label className="block text-[10px] text-gray-400 mb-0.5">{t('pms_frontdesk.charge_description', 'Description')}</label>
             <input type="text" value={draft.description}
               onChange={e => setDraft(d => ({ ...d, description: e.target.value }))}
               placeholder="e.g. 2× Singha beer"
@@ -1199,7 +1220,7 @@ function FolioPanel({ charges, loading, totals, onAdd, onTogglePaid, onDelete })
                 </span>
                 <button onClick={() => onDelete(c)}
                   className="text-gray-300 hover:text-sunset text-base leading-none px-1"
-                  title="Delete this charge">×</button>
+                  title={t('pms_frontdesk.delete_charge', 'Delete this charge')}>×</button>
               </div>
             )
           })}
@@ -1905,11 +1926,17 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     // the room's available_count via the bookings_sync_availability trigger,
     // and cascades the booking_guests rows.
     if (onUndoOffer && inserted?.id) {
-      const nightsLabel = nights === 1 ? '1 night' : `${nights} nights`
+      // Duration label respects booking type: nights for overnight,
+      // hours for hourly/day-use (so the toast doesn't fib "1 night" on a
+      // 2-hour stay).
+      const durationLabel =
+        form.booking_type === 'overnight'
+          ? (nights === 1 ? '1 night' : `${nights} nights`)
+          : (billedHours === 1 ? '1 hour' : `${billedHours}h`)
       const leadName = [lead.first_name, lead.last_name].filter(Boolean).join(' ').trim() || form.guest_name.trim()
       onUndoOffer({
         label:    `Walk-in checked in: ${leadName}${inserted.booking_ref ? ` · ${inserted.booking_ref}` : ''}`,
-        sublabel: `${nightsLabel} · ${room.name} · ${guestRows.length} guest${guestRows.length === 1 ? '' : 's'} · $${totalPrice.toFixed(0)}`,
+        sublabel: `${durationLabel} · ${room.name} · ${guestRows.length} guest${guestRows.length === 1 ? '' : 's'} · $${totalPrice.toFixed(0)}`,
         onUndo:   async () => {
           await supabase.from('bookings').delete().eq('id', inserted.id)
           onDone()        // refresh list + close any open modal
@@ -1936,9 +1963,9 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
         <Field label={t('pms.payment_method', 'Payment method')}>
           <select value={form.payment_method} onChange={e => set('payment_method', e.target.value)}
             className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
-            <option value="manual">Cash / direct</option>
-            <option value="card">Card (terminal)</option>
-            <option value="lightning">Lightning (BTC)</option>
+            <option value="manual">{t('pms_frontdesk.pay_cash', 'Cash / direct')}</option>
+            <option value="card">{t('pms_frontdesk.pay_card', 'Card (terminal)')}</option>
+            <option value="lightning">{t('pms_frontdesk.pay_lightning', 'Lightning (BTC)')}</option>
           </select>
         </Field>
         {/* ── Booking type toggle — only show options the room actually offers ── */}
@@ -1989,12 +2016,12 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
           </>
         ) : (
           <>
-            <Field label="Check-in date">
+            <Field label={t('pms_frontdesk.check_in_date_label', 'Check-in date')}>
               <input type="date" value={form.check_in} onChange={e => set('check_in', e.target.value)}
                 min={today}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
             </Field>
-            <Field label="Start time">
+            <Field label={t('pms_frontdesk.start_time', 'Start time')}>
               <input type="time" value={form.check_in_time}
                 onChange={e => set('check_in_time', e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-electric/30" />
@@ -2118,7 +2145,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                     <button type="button"
                       onClick={() => setGuests(arr => arr.filter((_, i) => i !== idx))}
                       className="text-gray-300 hover:text-sunset text-base leading-none w-5 h-5 flex items-center justify-center"
-                      title="Remove this guest">×</button>
+                      title={t('pms_frontdesk.remove_guest', 'Remove this guest')}>×</button>
                   </>
                 )}
               </div>
@@ -2171,7 +2198,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                 </div>
                 {/* DOB */}
                 <div className="col-span-2">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Date of birth</label>
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">{t('pms_frontdesk.tm30_dob', 'Date of birth')}</label>
                   <input type="date" value={g.date_of_birth || ''}
                     onChange={e => updateGuest(idx, 'date_of_birth', e.target.value)}
                     max={new Date().toISOString().slice(0, 10)}
@@ -2183,15 +2210,15 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                   <select value={g.travel_doc_type || 'passport'}
                     onChange={e => updateGuest(idx, 'travel_doc_type', e.target.value)}
                     className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30">
-                    <option value="passport">Passport</option>
-                    <option value="national_id">National ID</option>
-                    <option value="border_pass">Border pass</option>
-                    <option value="other">Other</option>
+                    <option value="passport">{t('pms_frontdesk.id_passport', 'Passport')}</option>
+                    <option value="national_id">{t('pms_frontdesk.id_national', 'National ID')}</option>
+                    <option value="border_pass">{t('pms_frontdesk.id_border_pass', 'Border pass')}</option>
+                    <option value="other">{t('pms_frontdesk.id_other', 'Other')}</option>
                   </select>
                 </div>
                 {/* Thailand arrival date */}
                 <div className="col-span-3">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Arrived in Thailand on</label>
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">{t('pms_frontdesk.tm30_arrival', 'Arrived in Thailand on')}</label>
                   <input type="date" value={g.thailand_arrival_date || ''}
                     onChange={e => updateGuest(idx, 'thailand_arrival_date', e.target.value)}
                     max={form.check_in}
@@ -2199,7 +2226,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                 </div>
                 {/* Port of entry */}
                 <div className="col-span-3">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Port of entry</label>
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">{t('pms_frontdesk.tm30_port', 'Port of entry')}</label>
                   <input type="text" value={g.thailand_port_of_entry || ''}
                     onChange={e => updateGuest(idx, 'thailand_port_of_entry', e.target.value.toUpperCase().slice(0, 12))}
                     placeholder="BKK / DMK / HKT / CNX"
@@ -2213,7 +2240,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                     onChange={e => updateGuest(idx, 'visa_type', e.target.value)}
                     className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30">
                     <option value="">—</option>
-                    <option value="exempt">Exempt (visa-on-arrival)</option>
+                    <option value="exempt">{t('pms_frontdesk.visa_exempt', 'Exempt (visa-on-arrival)')}</option>
                     <option value="TR">TR (Tourist)</option>
                     <option value="TR-VOA">TR-VOA</option>
                     <option value="NON-B">NON-B (Business)</option>
@@ -2226,7 +2253,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                 </div>
                 {/* Visa number */}
                 <div className="col-span-3">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Visa number</label>
+                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">{t('pms_frontdesk.tm30_visa_number', 'Visa number')}</label>
                   <input type="text" value={g.visa_number || ''}
                     onChange={e => updateGuest(idx, 'visa_number', e.target.value)}
                     placeholder="from sticker"
@@ -2249,15 +2276,15 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
             onChange={e => set('communicating_rooms_requested', e.target.checked)}
             className="accent-amber-500" />
           <span className="text-xs text-deep">
-            🚪 <strong>Assign communicating rooms</strong>
-            <span className="text-gray-500"> — pair this booking with an adjoining room (family-friendly)</span>
+            🚪 <strong>{t('pms_frontdesk.assign_communicating', 'Assign communicating rooms')}</strong>
+            <span className="text-gray-500"> — {t('pms_frontdesk.assign_communicating_hint', 'pair this booking with an adjoining room (family-friendly)')}</span>
           </span>
         </label>
       )}
 
       <Field label={t('pms.special_requests', 'Special requests (optional)')}>
         <textarea value={form.special_requests} onChange={e => set('special_requests', e.target.value)}
-          rows={2} placeholder="Late check-in, extra towels, etc."
+          rows={2} placeholder={t('pms_frontdesk.special_requests_placeholder', 'Late check-in, extra towels, etc.')}
           className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 resize-none" />
       </Field>
 
@@ -2274,7 +2301,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
           </div>
         )}
         <div className="flex justify-between font-bold pt-1 border-t border-libre/15">
-          <span>Total guest pays</span>
+          <span>{t('pms_frontdesk.total_guest_pays', 'Total guest pays')}</span>
           <span>${totalPrice.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-xs text-gray-400">
@@ -2282,7 +2309,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
           <span>−${commission.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-xs text-libre font-bold pt-1 border-t border-libre/15">
-          <span>You receive (paid directly)</span>
+          <span>{t('pms_frontdesk.you_receive', 'You receive (paid directly)')}</span>
           <span>${(totalPrice - commission).toFixed(2)}</span>
         </div>
       </div>

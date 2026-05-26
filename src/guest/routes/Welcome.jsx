@@ -17,6 +17,7 @@
 // CTA at the bottom. Animated fade-in on each block for polish.
 
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 const SCALE_STATS = {
   hotels:   '1,247',
@@ -26,6 +27,7 @@ const SCALE_STATS = {
 }
 
 export default function GuestWelcome() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const dismiss = () => {
     try { localStorage.setItem('staylo_welcomed', '1') } catch {}
@@ -46,7 +48,7 @@ export default function GuestWelcome() {
         <div className="gw-badge">✨ Your hospitality companion</div>
         <h1 className="gw-tagline">
           One app.<br/>
-          <span className="gw-tagline-accent">Every hotel of the network.</span><br/>
+          <span className="gw-tagline-accent">{t('guest_app.welcome.tagline_every_hotel', 'Every hotel of the network.')}</span><br/>
           Forever yours.
         </h1>
         <p className="gw-sub">
@@ -66,12 +68,15 @@ export default function GuestWelcome() {
 
       {/* Promise cards — what the app actually does, in 3 beats. */}
       <section className="gw-promises">
-        <Promise em="🔑" title="Skip the front desk"
-          body="Walk in, show your QR, head straight to your room. No paperwork, no waiting." />
-        <Promise em="🍽️" title="Everything 1-tap away"
-          body="Restaurants, spa, activities, room service — book any service of any STAYLO hotel right from the app." />
-        <Promise em="💎" title="Loyalty that follows you"
-          body="Earn $STAY on every stay. Spend it at any hotel of the network. The more you travel with us, the more it pays back." />
+        <Promise em="🔑"
+          title={t('guest_app.welcome.promise_skip_desk_title', 'Skip the front desk')}
+          body={t('guest_app.welcome.promise_skip_desk_body', 'Walk in, show your QR, head straight to your room. No paperwork, no waiting.')} />
+        <Promise em="🍽️"
+          title={t('guest_app.welcome.promise_one_tap_title', 'Everything 1-tap away')}
+          body={t('guest_app.welcome.promise_one_tap_body', 'Restaurants, spa, activities, room service — book any service of any STAYLO hotel right from the app.')} />
+        <Promise em="💎"
+          title={t('guest_app.welcome.promise_loyalty_title', 'Loyalty that follows you')}
+          body={t('guest_app.welcome.promise_loyalty_body', 'Earn $STAY on every stay. Spend it at any hotel of the network. The more you travel with us, the more it pays back.')} />
       </section>
 
       {/* CTA — single big button. No "skip" link. The user can only
@@ -82,7 +87,7 @@ export default function GuestWelcome() {
         </button>
         <p className="gw-tos">
           By continuing you agree to our <a href="#" onClick={(e)=>e.preventDefault()}>Terms</a> and{' '}
-          <a href="#" onClick={(e)=>e.preventDefault()}>Privacy Policy</a>.
+          <a href="#" onClick={(e)=>e.preventDefault()}>{t('guest_app.welcome.privacy_policy', 'Privacy Policy')}</a>.
         </p>
       </footer>
     </div>
