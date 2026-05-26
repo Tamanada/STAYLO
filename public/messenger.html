@@ -16384,9 +16384,14 @@ function renderTasksTab(){
     }
     return 'Other';
   };
-  // Zone (outlet) derivation — only meaningful for employee-assigned tasks.
-  // Cross-zone tasks (dept/role/all) always pass the zone filter.
+  // Zone (outlet) derivation — three-tier resolution:
+  //   1. Explicit task.zone (set via the task editor's Zone field — works
+  //      for any assign_kind, lets a dept-wide task anchor to a specific
+  //      outlet like "Sunset Bar")
+  //   2. Assigned employee's outlet (fallback when no explicit zone)
+  //   3. Empty = cross-zone (always passes the zone filter)
   const deriveZone = (t) => {
+    if(t.zone) return t.zone;
     if(t.assign_kind === 'employee'){
       const e = allEmps.find(x => x.id === t.assign_value);
       return (e && e.outlet) ? e.outlet : '';
@@ -16684,6 +16689,10 @@ function showTaskEditor(task){
   const tk = task ? {...task} : {
     title:'', description:'',
     assign_kind:'employee', assign_value:'',
+    // Zone — optional outlet anchor. Empty string = task is not zone-anchored
+    // (applies anywhere). When set, the task surfaces under that zone in the
+    // Tasks tab's Zone filter even when it's assigned to a whole dept/role.
+    zone:'',
     recurrence:'once', due_date:_tasksDate||new Date().toISOString().slice(0,10),
     weekday:1, day_of_month:1,
     due_time:'', priority:'normal',
@@ -16886,6 +16895,19 @@ function showTaskEditor(task){
     el('div',{class:'fld'}, el('label',{},'Title'),     inp('tk-title','text', tk.title, 'e.g. Check fridge temperature')),
     el('div',{class:'fld'}, el('label',{},'Description (optional)'), inp('tk-desc','textarea', tk.description, 'Detailed instructions, location…')),
     assignKindField, assignSlot,
+    // Zone (outlet) — optional. Pulled from hotel_settings.outlets. Empty
+    // string = no zone anchor (task applies anywhere). Different from
+    // `service` which is only meaningful for library templates: `zone`
+    // works for ANY assign_kind and is purely an additional filter axis.
+    (() => {
+      const outlets = (typeof getOutletList === 'function') ? getOutletList() : [];
+      const opts = [{value:'', label:'— Any zone (no outlet anchor) —'}];
+      for(const o of outlets) opts.push({value: o, label: `📍 ${o}`});
+      return el('div',{class:'fld'},
+        el('label',{for:'tk-zone'},'📍 Zone / outlet (optional)'),
+        sel('tk-zone', opts, tk.zone || ''),
+      );
+    })(),
     recurField, conditionalSlot,
     absenceSlot,
     el('div',{style:'display:grid;grid-template-columns:1fr 1fr;gap:8px'},
@@ -16925,6 +16947,8 @@ function showTaskEditor(task){
           // Service field — only meaningful for unassigned library templates.
           // For other kinds, kept as-is (preserves any existing value).
           service: ($('#tk-service')?.value) || tk.service || '',
+          // Zone (outlet) — empty string = not zone-anchored
+          zone: $('#tk-zone')?.value || '',
           active: true,
         };
         // 'unassigned' library templates and 'all'-staff tasks don't need an
