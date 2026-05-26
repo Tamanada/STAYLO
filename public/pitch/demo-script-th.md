@@ -24,7 +24,7 @@
 | P3 | Value prop 2 — ownership | "With Staylo, you own the platform. One hotel, one vote. Always." | "Avec Staylo, vous êtes propriétaire de la plateforme. Un hôtel, un vote. Toujours." | "กับ Staylo คุณเป็นเจ้าของแพลตฟอร์มเองครับ หนึ่งโรงแรม หนึ่งเสียงโหวต ตลอดไป" | **Gap Staylo KHUN pen JAO-KHONG plat-FORM eng KRAP. NEUNG RONG-RAEM, NEUNG SIANG-VOTE, ta-LOT pai.** | Min 3–4, tap table for emphasis |
 | P4 | Value prop 3 — commission | "Our commission is ten percent. Locked for life. It takes a ninety-percent vote of all hoteliers to change it." | "Notre commission est de dix pourcent. Garantie à vie. Il faut un vote à 90% de tous les hôteliers pour la changer." | "ค่าคอมมิชชันของเราคือ 10% ครับ ล็อคตลอดชีพ ต้องใช้เสียงโหวต 90% ถึงจะเปลี่ยนได้" | **Kaa-KOM-mi-chan khong RAO keu SIP peh-SENT KRAP. LOK ta-LOT cheep. DTONG chai SIANG-vote GAO-SIP peh-SENT teung ja PLIAN dai.** | Min 4, with commission comparison table |
 | P5 | Transition to coop | "This is not a contract with us. This is co-ownership. You help build the platform your guests book with." | "Ce n'est pas un contrat avec nous. C'est une co-propriété. Vous aidez à construire la plateforme sur laquelle vos clients réservent." | "นี่ไม่ใช่สัญญากับเราครับ นี่คือการเป็นเจ้าของร่วมกัน คุณช่วยสร้างแพลตฟอร์มที่แขกของคุณใช้จองห้องพัก" | **NEE mai-CHAI SAN-yaa gap RAO KRAP. NEE keu gaan pen JAO-KHONG ruam-GAN. KHUN chuay SAANG plat-FORM tee KHAEK khong KHUN chai JONG HONG-PHAK.** | Min 6, leaning forward |
-| P6 | Close — invitation | "Koh Phangan is our starting point. We are looking for the first one hundred hotels. Are you interested in being part of this?" | "Koh Phangan est notre point de départ. Nous cherchons les cent premiers hôtels. Êtes-vous intéressée à en faire partie ?" | "เกาะพะงันคือจุดเริ่มต้นของเราครับ เรากำลังมองหา 100 โรงแรมแรก คุณสนใจที่จะเป็นส่วนหนึ่งไหมครับ?" | **Gao-Pa-NGAN keu JUT REEM-DTOHN khong RAO KRAP. RAO gam-LANG MONG-HAA RAAN RONG-RAEM RAEK. KHUN son-JAI tee ja pen SUAN-NEUNG mai KRAP?** | Min 8 — pause after asking, let her respond |
+| P6 | Close — invitation | "Koh Phangan is our starting point. We are looking for the first three hundred hotels. Are you interested in being part of this?" | "Koh Phangan est notre point de départ. Nous cherchons les trois cents premiers hôtels. Êtes-vous intéressée à en faire partie ?" | "เกาะพะงันคือจุดเริ่มต้นของเราครับ เรากำลังมองหา 300 โรงแรมแรก คุณสนใจที่จะเป็นส่วนหนึ่งไหมครับ?" | **Gao-Pa-NGAN keu JUT REEM-DTOHN khong RAO KRAP. RAO gam-LANG MONG-HAA SAAM-ROI RONG-RAEM RAEK. KHUN son-JAI tee ja pen SUAN-NEUNG mai KRAP?** | Min 8 — pause after asking, let her respond |
 | P7 | Thank you — closing | "Thank you very much, Khun Sasiwimol. It is an honor to meet you." | "Merci beaucoup, Khun Sasiwimol. C'est un honneur de vous rencontrer." | "ขอบคุณมากครับ คุณศศิวิมล เป็นเกียรติมากที่ได้พบคุณครับ" | **KHOP-khun MAAK KRAP, Khun Sa-si-WI-mol. Pen GIAT MAAK tee dai PHOP KHUN KRAP.** | Final words, wai again |
 
 ---
@@ -101,7 +101,7 @@ Phonetic: **"MEUAN sa-ha-GORN KRAP, dtae pen sa-ha-GORN JONG RONG-RAEM."**
 **Action:** Point to right column ("ข้อเสนอ"). Tap the CTA box showing $1,000.
 
 **Say (EN):**
-> "The Founding Partner share is one thousand US dollars — one share, one vote, ten percent commission for life. The first one hundred hotels on Koh Phangan are eligible. After that, the price rises to fifteen hundred."
+> "The Founding Partner share is one thousand US dollars — one share, one vote, ten percent commission for life. The first three hundred hotels on Koh Phangan are eligible (three thousand shares total, ten shares max per property). After that, the price rises to fifteen hundred."
 > 
 > "There is no obligation today. But I wanted you to be the first to know, because your association represents the hotels who should own this platform."
 
@@ -114,7 +114,7 @@ Phonetic: **"MEUAN sa-ha-GORN KRAP, dtae pen sa-ha-GORN JONG RONG-RAEM."**
 **Action:** Slide the one-pager to her side of the table. Make eye contact.
 
 **Say (EN):**
-> "Koh Phangan is where we start. We need five hundred hotels registered across Thailand before the platform goes live — and one hundred of them should be from this island. Are you interested in being part of this?"
+> "Koh Phangan is where we start. We need five hundred hotels registered across Thailand before the platform goes live — and three hundred of them should be from this island. Are you interested in being part of this?"
 
 **Phonetic key phrase:** Deliver **P6**. Then: silence. Let her answer.
 
