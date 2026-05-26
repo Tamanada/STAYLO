@@ -16389,7 +16389,41 @@ function renderTasksTab(){
     });
   }
 
-  // Header: date picker + filter + add button
+  // ── Build the filter chips BEFORE the header so we can inline the dept
+  // row right of the date picker on the same line. Counts are based on
+  // the date-filtered tasks (myDayTasks) before dept/zone narrowing, so
+  // the user sees how many tasks each filter would surface.
+  const deptCounts = new Map();
+  for(const tk of myDayTasks){
+    const svc = deriveService(tk);
+    deptCounts.set(svc, (deptCounts.get(svc) || 0) + 1);
+  }
+  const makeChip = (value, label, active, onClick) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.style.cssText = `padding:6px 12px;border-radius:var(--r-pill);border:2px solid ${active?'var(--navy)':'var(--border)'};background:${active?'var(--navy)':'#fff'};color:${active?'#fff':'var(--navy)'};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .12s ease`;
+    chip.textContent = label;
+    chip.addEventListener('click', onClick);
+    return chip;
+  };
+  // Dept filter inline row — sits between the date picker and "+ New task"
+  // button on the header. flex-wrap kicks in on narrow screens.
+  const deptRow = el('div',{style:'display:flex;flex-wrap:wrap;gap:6px;align-items:center;flex:1;min-width:0'},
+    el('span',{style:'font-size:10px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;margin-right:4px'}, t('app.tasks_tab.filter_dept_label') || '🏷️ Dept:'),
+  );
+  deptRow.appendChild(makeChip('all', `🌐 All (${myDayTasks.length})`, _tasksDeptFilter==='all', () => {
+    _tasksDeptFilter = 'all'; lsSet(_hkey('staylo_tasks_dept_filter'), 'all'); renderTasksTab();
+  }));
+  for(const svc of SERVICE_ORDER){
+    const n = deptCounts.get(svc) || 0;
+    if(n === 0) continue;   // hide depts with zero tasks today
+    const em = SERVICE_EM[svc] || '📋';
+    deptRow.appendChild(makeChip(svc, `${em} ${svc} (${n})`, _tasksDeptFilter===svc, () => {
+      _tasksDeptFilter = svc; lsSet(_hkey('staylo_tasks_dept_filter'), svc); renderTasksTab();
+    }));
+  }
+
+  // Header: date picker | dept filter chips | + New task button — all in one row
   root.appendChild(el('div',{class:'tasks-head'},
     el('div',{class:'date-picker'},
       el('span',{},t('app.tasks_tab.date_label')),
@@ -16411,46 +16445,15 @@ function renderTasksTab(){
       })(),
       el('button',{class:'btn-secondary',style:'padding:6px 12px;font-size:11px',onclick:()=>{_tasksDate=new Date().toISOString().slice(0,10);renderTasksTab();}},t('app.tasks_tab.today')),
     ),
+    deptRow,
     isMgr ? el('button',{class:'btn-primary',onclick:()=>showTaskEditor(null)},t('app.tasks_tab.new_task')) : null,
   ));
 
-  // ── Filter chip row: dept (always) + zone (only if any task has one) ──
-  // Counts are based on the date-filtered tasks (myDayTasks) before
-  // dept/zone narrowing, so the user can see how many would appear if
-  // they switched filters.
+  // ── Zone chip row (separate line — only shown when a task is anchored to
+  // an outlet). Kept on its own line because zone names can be long
+  // ("Sunset Bar", "Pool Cafe", "Main Restaurant") and would crowd the
+  // header next to the dept chips. ──
   (() => {
-    // Build the department chip row
-    const deptCounts = new Map();
-    for(const tk of myDayTasks){
-      const svc = deriveService(tk);
-      deptCounts.set(svc, (deptCounts.get(svc) || 0) + 1);
-    }
-    const makeChip = (value, label, active, onClick) => {
-      const chip = document.createElement('button');
-      chip.type = 'button';
-      chip.style.cssText = `padding:6px 12px;border-radius:var(--r-pill);border:2px solid ${active?'var(--navy)':'var(--border)'};background:${active?'var(--navy)':'#fff'};color:${active?'#fff':'var(--navy)'};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .12s ease`;
-      chip.textContent = label;
-      chip.addEventListener('click', onClick);
-      return chip;
-    };
-    const deptRow = el('div',{style:'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center'},
-      el('span',{style:'font-size:10px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;margin-right:4px'}, t('app.tasks_tab.filter_dept_label') || '🏷️ Dept:'),
-    );
-    deptRow.appendChild(makeChip('all', `🌐 All (${myDayTasks.length})`, _tasksDeptFilter==='all', () => {
-      _tasksDeptFilter = 'all'; lsSet(_hkey('staylo_tasks_dept_filter'), 'all'); renderTasksTab();
-    }));
-    for(const svc of SERVICE_ORDER){
-      const n = deptCounts.get(svc) || 0;
-      if(n === 0) continue;   // hide depts with zero tasks today
-      const em = SERVICE_EM[svc] || '📋';
-      deptRow.appendChild(makeChip(svc, `${em} ${svc} (${n})`, _tasksDeptFilter===svc, () => {
-        _tasksDeptFilter = svc; lsSet(_hkey('staylo_tasks_dept_filter'), svc); renderTasksTab();
-      }));
-    }
-    root.appendChild(deptRow);
-
-    // Zone chip row — only if at least one employee-assigned task has an outlet.
-    // Otherwise it would be a useless row with just "All".
     const zoneCounts = new Map();
     for(const tk of myDayTasks){
       const z = deriveZone(tk);
