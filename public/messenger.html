@@ -9167,10 +9167,60 @@ function evaluationStats(empId){
 }
 
 /* ============================================================================
- * RECIPES (fiches techniques) — chef-built standardized recipes with
- * ingredient cost breakdown, prep steps, yield, allergens. Attachable to
- * a task so the cook on duty has the exact recipe at their fingertips.
+ * FICHES TECHNIQUES — originally chef-built recipes (cuisine), now generalised
+ * to any department's standard-operating-procedure document. A maintenance
+ * "fiche" describes how to service a salamander grill; a spa "fiche"
+ * describes a treatment protocol; a garden "fiche" the watering schedule for
+ * a specific plot. Each fiche carries a `fiche_category` that routes it to
+ * the matching department.
+ *
+ * Access control: HR/GM see ALL categories. Other roles see only fiches
+ * matching their own department (via FICHE_CATEGORIES dept mapping).
  * ============================================================================ */
+
+// Fiche categories — single source of truth.
+// `dept` is the messenger department string used elsewhere in this file
+// (ROLE_GROUPS / employee.department / MGMT_ROLES). Add a new category here
+// + add its label to en/fr/th.json under app.fiches.cat_<slug> and it
+// automatically appears in the editor + the filter dropdown.
+const FICHE_CATEGORIES = [
+  { slug:'cuisine',     emoji:'🍳', dept:'F&B'          },
+  { slug:'maintenance', emoji:'🔧', dept:'Maintenance'  },
+  { slug:'garden',      emoji:'🌳', dept:'Maintenance'  },
+  { slug:'spa',         emoji:'💆', dept:'Spa'          },
+  { slug:'housekeeping',emoji:'🧹', dept:'Housekeeping' },
+  { slug:'frontoffice', emoji:'🛎️', dept:'Front Office' },
+  { slug:'general',     emoji:'📋', dept:null            },  // null = visible to all
+];
+
+// Resolve a fiche category record by slug. Falls back to 'cuisine' for
+// legacy fiches saved before the field existed (they're virtually all
+// recipes anyway).
+function ficheCategory(slug){
+  return FICHE_CATEGORIES.find(c => c.slug === (slug || 'cuisine'))
+      || FICHE_CATEGORIES.find(c => c.slug === 'cuisine');
+}
+
+// Can the current user see fiches in `categorySlug`?
+//   - HR/GM (canManageHR): everything
+//   - Anyone else: only fiches whose category.dept === their department,
+//     OR the 'general' category (dept:null) which is visible to all.
+function canSeeFicheCategory(categorySlug){
+  if(canManageHR()) return true;
+  const cat = ficheCategory(categorySlug);
+  if(!cat || !cat.dept) return true;   // general / unknown → visible to all
+  return State.user.department === cat.dept;
+}
+
+// Lookup the display label for a category. Reads i18n with sensible
+// EN fallback so a missing key doesn't crash the UI.
+function ficheCategoryLabel(slug){
+  const FALLBACK = { cuisine:'Cuisine', maintenance:'Maintenance', garden:'Garden',
+                     spa:'Spa', housekeeping:'Housekeeping', frontoffice:'Front Office',
+                     general:'General' };
+  return t(`app.fiches.cat_${slug}`) || FALLBACK[slug] || slug;
+}
+
 function getRecipes(){ return lsGet(_hkey('staylo_recipes'), []); }
 function saveRecipes(arr){ lsSet(_hkey('staylo_recipes'), arr); }
 function findRecipe(id){ return getRecipes().find(r => r.id === id) || null; }
@@ -10143,7 +10193,10 @@ function showHRModal(){
  * ============================================================================ */
 function renderTeamView(body, title, subtitle, tabs){
   const u = State.user;
-  const showRecipes = canManageHR() || u.department === 'F&B';
+  // Fiches tab is now visible to EVERY dept (was F&B-only). Each user only
+  // sees fiches matching their own dept inside renderRecipesTab — HR/GM
+  // see all.
+  const showRecipes = true;
   const tabList =
       canManageHR()
       ? [['roster',t('app.team.tab.roster')],['schedule',t('app.team.tab.schedule')],['tasks',t('app.team.tab.tasks')], ...(showRecipes?[['recipes',t('app.team.tab.recipes')]]:[]), ['payroll',t('app.team.tab.payroll')]]
@@ -10506,9 +10559,8 @@ function renderHRModal(){
   //  - HR/GM: full access (Roster + Schedule + Tasks + Recipes)
   //  - Dept manager: their team's roster + schedule + tasks (+ Recipes if F&B)
   //  - Regular staff: schedule + tasks (+ Recipes if F&B for reading)
-  const showRecipes = State.user.department === 'F&B'
-                   || canManageHR()
-                   || (State.user.role === 'F&B Manager');
+  // Fiches visible to all depts now — filtered per-dept inside renderRecipesTab.
+  const showRecipes = true;
   const tabs = canManageHR()
     ? [['roster',t('app.payroll.tab_roster')],['schedule',t('app.payroll.tab_schedule')],['tasks',t('app.payroll.tab_tasks')],['recipes',t('app.payroll.tab_recipes')],['payroll',t('app.payroll.tab_payroll')]]
     : canManageSchedule()
@@ -15036,24 +15088,90 @@ function recipePhotos(r){
  * (Lightspeed, Square, custom) can map menu items 1:1 to a fiche technique.
  * When an order comes in, the kitchen task auto-loads the recipe.
  * ============================================================================ */
+// Persisted UI state for the Fiches tab — category filter survives tab switches
+let _fichesCatFilter = null;   // 'all' | one of FICHE_CATEGORIES[*].slug
+
 function renderRecipesTab(){
   const root = $('#hr-body'); if(!root) return; root.innerHTML='';
   root.classList.remove('tab-schedule');
   applyHRModalWidth();
-  const recipes = getRecipes();
   const isMgr = canManageHR() || canManageSchedule();
+
+  // ── Visibility filter: dept-based access control ──
+  // HR/GM see every fiche. Other roles see only fiches in categories that
+  // belong to their department (or in the 'general' bucket which is visible
+  // to all). Implemented via canSeeFicheCategory() so it stays in sync
+  // with the category metadata.
+  const allRecipes = getRecipes();
+  const visibleRecipes = allRecipes.filter(r => canSeeFicheCategory(r.fiche_category));
+
+  // Init category filter from localStorage on first render this session
+  if(_fichesCatFilter === null) _fichesCatFilter = lsGet(_hkey('staylo_fiches_cat_filter'), 'all');
+
+  // Per-category counts (over the dept-visible set, not the full set —
+  // counts must reflect what the user CAN see)
+  const catCounts = new Map();
+  for(const r of visibleRecipes){
+    const k = r.fiche_category || 'cuisine';
+    catCounts.set(k, (catCounts.get(k) || 0) + 1);
+  }
+
+  // Apply the category filter
+  const filtered = _fichesCatFilter === 'all'
+    ? visibleRecipes
+    : visibleRecipes.filter(r => (r.fiche_category || 'cuisine') === _fichesCatFilter);
+
   root.appendChild(el('div',{class:'roster-head'},
-    el('div',{}, t('app.recipes.header_count', {n: recipes.length})),
+    el('div',{}, t('app.recipes.header_count', {n: visibleRecipes.length})),
     isMgr ? el('button',{class:'btn-primary',onclick:()=>showRecipeEditor(null)}, t('app.recipes.btn_new')) : null,
   ));
-  if(!recipes.length){
-    root.appendChild(el('div',{class:'recipe-empty'},
-      isMgr ? t('app.recipes.empty_mgr')
-            : t('app.recipes.empty_staff')));
+
+  // ── Category filter chips — shown only when there's > 1 category in scope ──
+  // For dept users with access to a single category, the row would be useless
+  // ("All" + one chip). HR/GM always see the chips since they span categories.
+  if(canManageHR() || catCounts.size > 1){
+    const chipRow = el('div',{style:'display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px 0;align-items:center'});
+    const mkChip = (slug, label, count, isActive) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.style.cssText = `padding:6px 12px;border-radius:var(--r-pill);border:2px solid ${isActive?'var(--navy)':'transparent'};background:${isActive?'var(--navy)':'var(--light)'};color:${isActive?'#fff':'var(--gray)'};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap`;
+      btn.textContent = `${label}${count!=null?` (${count})`:''}`;
+      btn.addEventListener('click', () => {
+        _fichesCatFilter = slug;
+        lsSet(_hkey('staylo_fiches_cat_filter'), slug);
+        renderRecipesTab();
+      });
+      return btn;
+    };
+    chipRow.appendChild(mkChip('all', t('app.fiches.all_categories') || '📂 All', visibleRecipes.length, _fichesCatFilter==='all'));
+    for(const cat of FICHE_CATEGORIES){
+      const n = catCounts.get(cat.slug) || 0;
+      // HR/GM see every category chip even when empty (so they can create
+      // a "first" fiche for a dept). Other users see only non-empty chips.
+      if(n === 0 && !canManageHR()) continue;
+      chipRow.appendChild(mkChip(cat.slug, `${cat.emoji} ${ficheCategoryLabel(cat.slug)}`, n, _fichesCatFilter===cat.slug));
+    }
+    root.appendChild(chipRow);
+  }
+
+  if(!filtered.length){
+    if(visibleRecipes.length === 0){
+      root.appendChild(el('div',{class:'recipe-empty'},
+        isMgr ? t('app.recipes.empty_mgr')
+              : t('app.recipes.empty_staff')));
+    } else {
+      // Filter narrowed to zero — give a clear way back to "All"
+      root.appendChild(el('div',{class:'recipe-empty'},
+        el('div',{}, t('app.fiches.empty_filter') || 'No fiches in this category yet.'),
+        el('button',{class:'btn-secondary',style:'margin-top:10px;padding:6px 14px;font-size:12px',
+          onclick:()=>{ _fichesCatFilter='all'; lsSet(_hkey('staylo_fiches_cat_filter'),'all'); renderRecipesTab(); }},
+          t('app.fiches.reset_filter') || 'Show all categories'),
+      ));
+    }
     return;
   }
   const list = el('div',{class:'recipe-list'});
-  for(const r of recipes){
+  for(const r of filtered){
     const tot = recipeTotals(r);
     let mClass = 'good';
     if(tot.foodCostPct > 35) mClass = 'bad';
@@ -15223,7 +15341,12 @@ function showRecipeEditor(rec){
                    ingredients:[...(rec.ingredients||[])],
                    steps:[...(rec.steps||[])],
                    equipment:[...(rec.equipment||[])]}
-                : {name:'',category:'main',pos_sku:'',pos_category:'food',
+                : {name:'',
+                   // Fiche category determines who CAN SEE this fiche. Defaults
+                   // to 'cuisine' for backwards compatibility (every legacy
+                   // recipe was a cuisine fiche).
+                   fiche_category: (_fichesCatFilter && _fichesCatFilter !== 'all') ? _fichesCatFilter : 'cuisine',
+                   category:'main',pos_sku:'',pos_category:'food',
                    yield_portions:4, selling_price_thb:0,
                    prep_minutes:'', cook_minutes:'', rest_minutes:'',
                    ingredients:[{name:'',qty:'',unit:'g',price_amount:0,price_per_unit:'kg'}],
@@ -15510,6 +15633,23 @@ function showRecipeEditor(rec){
       el('h3',{}, isEdit ? '✎ Edit recipe' : '+ New recipe'),
       el('button',{class:'close-btn',onclick:()=>modal.remove()},'×'),
     ),
+    // Fiche category — the FIRST field because it determines who can see
+    // this fiche (dept-based access control) and which sub-category labels
+    // are relevant. A maintenance fiche doesn't need "POS SKU" or "Sell
+    // price"; we keep those visible for now (legacy demo) but later we can
+    // hide cuisine-only fields when category != 'cuisine'.
+    el('div',{class:'fld'},
+      el('label',{for:'rec-fiche-cat',style:'display:flex;align-items:center;gap:6px'},
+        el('span',{},t('app.fiches.lbl_category') || '📂 Fiche category'),
+        el('span',{style:'font-size:10px;color:var(--gray);font-weight:600'}, t('app.fiches.lbl_category_hint') || '— determines which department sees this fiche'),
+      ),
+      sel('rec-fiche-cat',
+        FICHE_CATEGORIES.map(c => ({
+          value: c.slug,
+          label: `${c.emoji} ${ficheCategoryLabel(c.slug)}${c.dept ? ` · ${c.dept}` : ' · everyone'}`,
+        })),
+        r.fiche_category || 'cuisine'),
+    ),
     el('div',{style:'display:grid;grid-template-columns:2fr 1fr;gap:8px'},
       el('div',{class:'fld'}, el('label',{},'Recipe name'), inp('rec-name','text', r.name, 'e.g. Pad Thai with prawns')),
       el('div',{class:'fld'}, el('label',{},'Category'), sel('rec-cat',
@@ -15591,6 +15731,7 @@ function showRecipeEditor(rec){
         const next = {
           ...r,
           name: $('#rec-name').value.trim(),
+          fiche_category: $('#rec-fiche-cat')?.value || r.fiche_category || 'cuisine',
           category: $('#rec-cat').value,
           pos_sku: $('#rec-sku').value.trim(),
           pos_category: $('#rec-cat').value,

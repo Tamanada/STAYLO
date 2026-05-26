@@ -2532,7 +2532,7 @@
       "tab_my_team": "👥 Mon équipe",
       "tab_schedule": "📅 Planning",
       "tab_tasks": "📋 Tâches",
-      "tab_recipes": "📔 Recettes",
+      "tab_recipes": "📔 Fiches",
       "tab_payroll": "💶 Paie",
       "row_count_hint": "{n} employés · clique une ligne pour ouvrir la fiche de paie",
       "row_count_hint_scoped": "{n} employés · {dept} uniquement · clique une ligne pour ouvrir la fiche de paie",
@@ -3285,6 +3285,20 @@
         "assignee_required": "Choisis un assigné."
       }
     },
+    "fiches": {
+      "lbl_category": "📂 Catégorie de fiche",
+      "lbl_category_hint": "— détermine quel service voit cette fiche",
+      "all_categories": "📂 Toutes",
+      "empty_filter": "Aucune fiche dans cette catégorie pour l'instant.",
+      "reset_filter": "Afficher toutes les catégories",
+      "cat_cuisine": "Cuisine",
+      "cat_maintenance": "Maintenance",
+      "cat_garden": "Jardin",
+      "cat_spa": "Spa",
+      "cat_housekeeping": "Étages",
+      "cat_frontoffice": "Réception",
+      "cat_general": "Général"
+    },
     "recipes": {
       "title": "Recettes",
       "btn": {
@@ -3390,8 +3404,8 @@
       },
       "portion_singular": "portion",
       "portion_plural": "portions",
-      "header_count": "{n} recettes (fiches techniques)",
-      "btn_new": "+ Nouvelle recette",
+      "header_count": "{n} fiches techniques",
+      "btn_new": "+ Nouvelle fiche",
       "math_info_title": "Comment sont calculés ces chiffres ?",
       "math_info_btn_tooltip": "Voir les calculs",
       "math_total_cost_title": "Coût total",
@@ -3737,7 +3751,7 @@
         "roster": "👥 Liste",
         "schedule": "📅 Planning",
         "tasks": "📋 Tâches",
-        "recipes": "📔 Recettes",
+        "recipes": "📔 Fiches",
         "payroll": "💶 Paie"
       },
       "head_title_roster": "Liste du personnel",

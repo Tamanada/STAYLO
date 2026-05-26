@@ -2385,7 +2385,7 @@
       "tab_my_team": "👥 My team",
       "tab_schedule": "📅 Schedule",
       "tab_tasks": "📋 Tasks",
-      "tab_recipes": "📔 Recipes",
+      "tab_recipes": "📔 Fiches",
       "tab_payroll": "💶 Payroll",
       "access_denied": "🔒 Payroll access is reserved for HR / GM and department managers.",
       "prev_month": "← Prev month",
@@ -2973,8 +2973,22 @@
         "assignee_required": "Pick an assignee."
       }
     },
+    "fiches": {
+      "lbl_category": "📂 Fiche category",
+      "lbl_category_hint": "— determines which department sees this fiche",
+      "all_categories": "📂 All",
+      "empty_filter": "No fiches in this category yet.",
+      "reset_filter": "Show all categories",
+      "cat_cuisine": "Cuisine",
+      "cat_maintenance": "Maintenance",
+      "cat_garden": "Garden",
+      "cat_spa": "Spa",
+      "cat_housekeeping": "Housekeeping",
+      "cat_frontoffice": "Front Office",
+      "cat_general": "General"
+    },
     "recipes": {
-      "header_count": "{n} recipes (fiches techniques)",
+      "header_count": "{n} fiches techniques",
       "btn_new": "+ New recipe",
       "math_info_title": "How are these numbers calculated?",
       "math_info_btn_tooltip": "Show me the maths",
@@ -3193,7 +3207,7 @@
         "roster": "👥 Roster",
         "schedule": "📅 Schedule",
         "tasks": "📋 Tasks",
-        "recipes": "📔 Recipes",
+        "recipes": "📔 Fiches",
         "payroll": "💶 Payroll"
       },
       "head_title_roster": "👥 Roster",

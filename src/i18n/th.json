@@ -2387,7 +2387,7 @@
       "tab_my_team": "👥 ทีมของฉัน",
       "tab_schedule": "📅 ตารางเวร",
       "tab_tasks": "📋 งาน",
-      "tab_recipes": "📔 สูตรอาหาร",
+      "tab_recipes": "📔 เอกสารงาน",
       "tab_payroll": "💶 เงินเดือน",
       "access_denied": "🔒 เฉพาะ HR/GM และหัวหน้าแผนกเท่านั้นที่เข้าถึงเงินเดือนได้",
       "prev_month": "← เดือนก่อน",
@@ -2975,9 +2975,23 @@
         "assignee_required": "เลือกผู้รับมอบหมาย"
       }
     },
+    "fiches": {
+      "lbl_category": "📂 หมวดเอกสาร",
+      "lbl_category_hint": "— กำหนดว่าแผนกใดเห็นเอกสารนี้",
+      "all_categories": "📂 ทั้งหมด",
+      "empty_filter": "ยังไม่มีเอกสารในหมวดนี้",
+      "reset_filter": "แสดงทุกหมวด",
+      "cat_cuisine": "อาหาร",
+      "cat_maintenance": "ซ่อมบำรุง",
+      "cat_garden": "สวน",
+      "cat_spa": "สปา",
+      "cat_housekeeping": "แม่บ้าน",
+      "cat_frontoffice": "แผนกต้อนรับ",
+      "cat_general": "ทั่วไป"
+    },
     "recipes": {
-      "header_count": "สูตรอาหาร {n} รายการ (fiche technique)",
-      "btn_new": "+ สูตรใหม่",
+      "header_count": "เอกสารงาน {n} รายการ",
+      "btn_new": "+ เอกสารใหม่",
       "math_info_title": "ตัวเลขเหล่านี้คำนวณอย่างไร?",
       "math_info_btn_tooltip": "ดูการคำนวณ",
       "math_total_cost_title": "ต้นทุนรวม",
@@ -3195,7 +3209,7 @@
         "roster": "👥 รายชื่อ",
         "schedule": "📅 ตารางเวร",
         "tasks": "📋 งาน",
-        "recipes": "📔 สูตรอาหาร",
+        "recipes": "📔 เอกสารงาน",
         "payroll": "💶 เงินเดือน"
       },
       "head_title_roster": "👥 รายชื่อพนักงาน",
