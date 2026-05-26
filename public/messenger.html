@@ -3160,6 +3160,10 @@ const DEMO_MODE = !SUPABASE_URL.startsWith('https://');
  * department". */
 const ROLE_GROUPS = [
   { dept:'Management', items:[
+    // Owner sits at the top — usually the hotelier themselves, the
+    // ultimate "reports to" node in the org chart. Distinct from
+    // General Manager (operational top) by both emoji + position.
+    {em:'🏆',nm:'Owner'},
     {em:'👑',nm:'General Manager'},
     {em:'👔',nm:'Deputy General Manager'},
     {em:'🎯',nm:'Operations Manager'},
@@ -3376,7 +3380,7 @@ const CHANNEL_GROUPS = [
 // schedule, post in #managers / #daily-briefing / #revenue, bypass shift lock.
 const MGMT_ROLES = [
   // Executive
-  'General Manager','Deputy General Manager','Operations Manager','Revenue Manager',
+  'Owner','General Manager','Deputy General Manager','Operations Manager','Revenue Manager',
   // Front Office
   'Front Office Manager','Night Auditor',
   // Housekeeping
@@ -7448,10 +7452,18 @@ const EMPTY_EMP = {
   // 6 is the typical Thai hotel pattern (1 day off/week).
   days_per_week:6,
   contract_language:'bilingual',
-  // Documents on file
+  // Documents on file — Y/N receipt indicators (auto-set to true when the
+  // matching *_url is populated below) + the actual scanned/photographed files.
+  // Files are stored as base64 data URIs so they live entirely in localStorage
+  // alongside the rest of the employee record. ~200-400KB per file is fine;
+  // anything bigger should ideally be downsampled before saving.
   id_doc_copy_received: false,
   work_permit_required: false,           // auto-suggested true for non-TH
   work_permit_copy_received: false,
+  // File payloads (data URIs). Empty string = not yet provided.
+  photo_url: '',         // employee headshot in uniform — visual identification
+  id_doc_url: '',        // passport / national ID scan
+  work_permit_url: '',   // Thai work permit (or equivalent) — only for foreigners
   // Uniform policy
   uniform_provided: true,
   uniform_responsibility: 'employer',    // 'employer' | 'employee'
@@ -12367,6 +12379,160 @@ function renderEmployeeForm(root,emp){
     if(opts.placeholder) inp.placeholder = opts.placeholder;
     return el('div',{class:'fld'},el('label',{for:id},label),inp);
   };
+  /* File upload field — base64 data URI in localStorage.
+   * Used for the employee photo + ID document + work permit. We deliberately
+   * keep these client-side rather than wiring up Supabase Storage:
+   *   - The whole employee record lives in localStorage anyway
+   *   - No bucket/RLS setup needed for the demo
+   *   - 200-500 KB per file is fine (typical staff photo + scanned ID)
+   * For 50+ staff or production use, swap to Supabase Storage with RLS.
+   *
+   * opts.companion (string) — name of a Y/N field that should auto-flip to
+   *   'true' when a file is uploaded (e.g. id_doc_copy_received), and back
+   *   to 'false' on remove. Lets the existing checklist stay accurate.
+   * opts.maxSizeMB (number, default 2) — guard against blowing localStorage.
+   * opts.accept (string, default 'image/*') — file picker filter. Use
+   *   'image/*,application/pdf' for ID docs to allow scanned PDFs too.
+   * opts.previewHeight (px, default 90) — thumbnail height in the form.
+   * opts.thumbRound (bool) — circular preview for staff photo.
+   */
+  const fileField = (label, key, opts={}) => {
+    const id = 'emp-'+key;
+    const maxMB = opts.maxSizeMB || 2;
+    const previewH = opts.previewHeight || 90;
+
+    // Hidden input the save handler reads via $('#emp-'+key)
+    const hidden = document.createElement('input');
+    hidden.type = 'hidden'; hidden.id = id;
+    hidden.value = emp[key] || '';
+
+    // Off-screen file picker, triggered by the visible button
+    const fileIn = document.createElement('input');
+    fileIn.type = 'file'; fileIn.accept = opts.accept || 'image/*';
+    fileIn.style.display = 'none';
+
+    const previewBox = el('div',{style:`width:${previewH*1.2}px;min-width:${previewH*1.2}px;height:${previewH}px;border:2px dashed var(--border);border-radius:${opts.thumbRound?'50%':'8px'};display:flex;align-items:center;justify-content:center;background:#F5F1EA;overflow:hidden;color:var(--gray);font-size:11px;text-align:center;flex-shrink:0`},'');
+
+    const uploadBtn = el('button',{type:'button',class:'btn-secondary',style:'padding:6px 12px;font-size:12px;font-weight:600'},'');
+    const removeBtn = el('button',{type:'button',class:'btn-danger',style:'padding:6px 10px;font-size:12px;font-weight:600;display:none'},'🗑');
+
+    function refresh(){
+      previewBox.innerHTML = '';
+      const url = hidden.value;
+      if(url){
+        if(url.startsWith('data:image')){
+          const img = document.createElement('img');
+          img.src = url; img.alt = label;
+          img.style.cssText = `width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block`;
+          img.addEventListener('click', () => {
+            // Open a fullscreen modal preview for the uploaded file
+            const fs = el('div',{style:'position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:99999;cursor:zoom-out',onclick:(e)=>{ if(e.target===fs) fs.remove(); }});
+            const big = document.createElement('img');
+            big.src = url;
+            big.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.6)';
+            big.addEventListener('click', () => fs.remove());
+            fs.appendChild(big);
+            document.body.appendChild(fs);
+          });
+          previewBox.appendChild(img);
+        } else if(url.startsWith('data:application/pdf')){
+          previewBox.innerHTML = '<div style="font-size:22px">📄</div><div style="font-size:10px;margin-top:4px">PDF</div>';
+          previewBox.style.flexDirection = 'column';
+        } else {
+          previewBox.textContent = '✓ file';
+        }
+        uploadBtn.textContent = '🔄 Replace';
+        removeBtn.style.display = '';
+      } else {
+        previewBox.innerHTML = '<div style="font-size:24px;opacity:.4">📷</div>';
+        uploadBtn.textContent = '📎 Upload';
+        removeBtn.style.display = 'none';
+      }
+    }
+
+    uploadBtn.addEventListener('click', () => fileIn.click());
+
+    /* Downscale + recompress an image File before storing as data URI.
+     * Why: phone photos are often 3-8 MB at 4032×3024. We display them
+     * at 96 px max (chat avatars, form preview) so a full-res blob is
+     * pure localStorage waste. Resizing to 1200 px wide + JPEG quality
+     * 0.85 typically yields 200-400 KB, indistinguishable at display size.
+     * Skipped for PDFs and non-image files (they're already compact enough). */
+    function compressImageIfNeeded(file, maxWidth, quality){
+      return new Promise((resolve) => {
+        if(!file.type.startsWith('image/') || file.size < 500 * 1024){
+          // Small enough, or not an image — pass through
+          const r = new FileReader(); r.onload = () => resolve(String(r.result));
+          r.readAsDataURL(file); return;
+        }
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxWidth / img.width);
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          // PNG for transparent inputs, JPEG otherwise — JPEG is dramatically
+          // smaller for photographic content.
+          const out = canvas.toDataURL('image/jpeg', quality);
+          resolve(out);
+        };
+        img.onerror = () => {
+          // Couldn't decode — fall back to raw read
+          const r = new FileReader(); r.onload = () => resolve(String(r.result));
+          r.readAsDataURL(file);
+        };
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
+    fileIn.addEventListener('change', async () => {
+      const file = fileIn.files[0]; if(!file) return;
+      if(file.size > maxMB * 1024 * 1024){
+        alert(`File too large (${(file.size/1024/1024).toFixed(1)} MB). Max ${maxMB} MB.\n\nTip: take the photo at lower quality, or use a free online compressor.`);
+        fileIn.value = ''; return;
+      }
+      try {
+        const dataUri = await compressImageIfNeeded(file, 1200, 0.85);
+        hidden.value = dataUri;
+        emp[key] = dataUri;
+        // Auto-flip companion Y/N (e.g., id_doc_copy_received = 'true')
+        if(opts.companion){
+          emp[opts.companion] = true;
+          const comp = $('#emp-'+opts.companion);
+          if(comp) comp.value = 'true';
+        }
+        refresh();
+      } catch(err) {
+        console.error('file upload', err);
+        alert('Could not read this file. Try a different one.');
+      }
+      fileIn.value = '';   // reset so re-selecting the same file fires onchange again
+    });
+
+    removeBtn.addEventListener('click', () => {
+      if(!confirm(t('app.common.confirm') || 'Remove this file?')) return;
+      hidden.value = ''; emp[key] = '';
+      if(opts.companion){
+        emp[opts.companion] = false;
+        const comp = $('#emp-'+opts.companion);
+        if(comp) comp.value = 'false';
+      }
+      refresh();
+    });
+
+    refresh();
+    return el('div',{class:'fld'},
+      el('label',{for:id},label),
+      el('div',{style:'display:flex;gap:10px;align-items:center'},
+        previewBox,
+        el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'}, uploadBtn, removeBtn),
+      ),
+      hidden, fileIn,
+    );
+  };
   // Shared save handler — used by BOTH the top "Enregistrer" button (next to
   // the title) and the bottom one (in form-actions). Avoids duplicating ~30
   // lines of field-collection + phone recombine + pool-override logic.
@@ -12404,6 +12570,83 @@ function renderEmployeeForm(root,emp){
       el('button',{class:'btn-primary emp-form-save-top',onclick:handleSave}, t('app.roster_fiche.btn_save')),
     ),
     el('h3',{},isNew?t('app.roster_fiche.new_employee'):`${emp.first_name} ${emp.last_name||''}`),
+
+    // ── Photo + Job: 2-column layout. Photo on the left (compact round
+    // avatar — visible everywhere in the app as the user's identifier),
+    // Job section on the right with the 3 most-defining fields (role +
+    // contract + reports-to) in a sub-grid. The role drives most of the
+    // form below it (uniform/meals/salary defaults), so it makes sense
+    // to set it before scrolling. Dates + auto-shift banner span the
+    // full width below this grid for breathing room on the date pickers. ──
+    el('div',{style:'display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;margin-bottom:6px'},
+      // Left column: photo widget. We drop the sec-title here — the
+      // round avatar IS the section header visually.
+      el('div',{style:'min-width:130px'},
+        fileField(
+          t('app.roster_fiche.lbl_photo'),
+          'photo_url',
+          {previewHeight: 110, thumbRound: true, maxSizeMB: 3},
+        ),
+      ),
+      // Right column: JOB section title + 3 sub-fields in a row.
+      el('div',{},
+        el('div',{class:'sec-title',style:'margin-top:0'},t('app.roster_fiche.sec_job')),
+        el('div',{class:'grid-job-trio'},
+          el('div',{},
+            f(t('app.roster_fiche.lbl_role'),'role',{type:'select',options:allRoles}),
+            el('button',{
+              type:'button',
+              style:'margin-top:4px;background:transparent;color:var(--purple);font-size:11px;font-weight:700;padding:2px 0;cursor:pointer',
+              onclick:()=>showAddCustomRoleModal(emp.department || userDept, (newRoleName)=>{
+                for(const key of Object.keys(EMPTY_EMP)){
+                  const inp2 = $('#emp-'+key); if(!inp2) continue;
+                  emp[key] = inp2.value;
+                }
+                // Keep the split phone fields combined, same as the Save handler
+                const cc  = $('#emp-phone_cc')?.value || getDefaultPhoneCC();
+                const num = ($('#emp-phone_num')?.value || '').trim();
+                emp.phone = num ? `${cc} ${num}` : '';
+                emp.role = newRoleName;
+                renderEmployeeForm(root, emp);
+              }),
+            },t('app.roster_fiche.add_custom_role')),
+          ),
+          f(t('app.roster_fiche.lbl_contract_type'),'contract_type',{type:'select',options:[
+            {value:'full_time',label:t('app.roster_fiche.ct_full_time')},
+            {value:'part_time',label:t('app.roster_fiche.ct_part_time')},
+            {value:'seasonal',label:t('app.roster_fiche.ct_seasonal')},
+            {value:'probation',label:t('app.roster_fiche.ct_probation')},
+          ]}),
+          // Direct supervisor — shows on the contract §2 ("reports directly to ...")
+          (() => {
+            const allEmps = getEmployees();
+            const empDept = ROLE_TO_DEPT[emp.role] || emp.department;
+            const supChoices = allEmps
+              .filter(e => e.id !== emp.id && MGMT_ROLES.includes(e.role))
+              .filter(e => isHR || e.department === empDept || e.department === 'Management')
+              .sort((a,b) => `${a.first_name} ${a.last_name||''}`.localeCompare(`${b.first_name} ${b.last_name||''}`))
+              .map(e => ({value: e.id, label: `${e.first_name} ${e.last_name||''} · ${translateRole(e.role)}`}));
+            const opts = [{value:'', label:t('app.roster_fiche.supervisor_none')}, ...supChoices];
+            return f(t('app.roster_fiche.lbl_reports_to'),'supervisor_id',{type:'select', options: opts});
+          })(),
+        ),
+      ),
+    ),
+    // Dates + numbers + Days/week — all on ONE row (5 cols), full width below
+    // the Photo|Job grid so date pickers and number inputs have breathing room.
+    el('div',{class:'grid-dates5'},
+      f(t('app.roster_fiche.lbl_hire_date'),'hire_date',{type:'date'}),
+      f(t('app.roster_fiche.lbl_contract_end'),'end_date',{type:'date'}),
+      f(t('app.roster_fiche.lbl_salary_per_month',{cur:curSym()}),'monthly_salary_thb',{type:'number'}),
+      f(t('app.roster_fiche.lbl_hours_per_week'),'hours_per_week',{type:'number'}),
+      f(t('app.roster_fiche.lbl_days_per_week'),'days_per_week',{type:'number',placeholder:'6'}),
+    ),
+    // Auto shift duration — REACTIVE banner. Reads h/sem and j/sem live and
+    // shows a red warning if the resulting shift exceeds the country's legal
+    // daily/weekly cap (Thailand LPA §23, France CT L3121, UK WTR 1998, etc.).
+    // The empty wrapper is filled by recomputeShiftBanner() right after mount,
+    // and refreshed on every input change to the two number fields.
+    el('div',{id:'emp-shift-auto-banner', style:'margin:2px 0'}),
 
     // ── Identity: everything on a single dense row (6 cols) ──
     el('div',{class:'sec-title'},t('app.roster_fiche.sec_identity')),
@@ -12453,61 +12696,6 @@ function renderEmployeeForm(root,emp){
     ),
     f(t('app.roster_fiche.lbl_address'),'address',{type:'textarea'}),
 
-    // ── Job: role + contract type + supervisor — ALL on one row (3 cols) ──
-    el('div',{class:'sec-title'},t('app.roster_fiche.sec_job')),
-    el('div',{class:'grid-job-trio'},
-      el('div',{},
-        f(t('app.roster_fiche.lbl_role'),'role',{type:'select',options:allRoles}),
-        el('button',{
-          type:'button',
-          style:'margin-top:4px;background:transparent;color:var(--purple);font-size:11px;font-weight:700;padding:2px 0;cursor:pointer',
-          onclick:()=>showAddCustomRoleModal(emp.department || userDept, (newRoleName)=>{
-            for(const key of Object.keys(EMPTY_EMP)){
-              const inp2 = $('#emp-'+key); if(!inp2) continue;
-              emp[key] = inp2.value;
-            }
-            // Keep the split phone fields combined, same as the Save handler
-            const cc  = $('#emp-phone_cc')?.value || getDefaultPhoneCC();
-            const num = ($('#emp-phone_num')?.value || '').trim();
-            emp.phone = num ? `${cc} ${num}` : '';
-            emp.role = newRoleName;
-            renderEmployeeForm(root, emp);
-          }),
-        },t('app.roster_fiche.add_custom_role')),
-      ),
-      f(t('app.roster_fiche.lbl_contract_type'),'contract_type',{type:'select',options:[
-        {value:'full_time',label:t('app.roster_fiche.ct_full_time')},
-        {value:'part_time',label:t('app.roster_fiche.ct_part_time')},
-        {value:'seasonal',label:t('app.roster_fiche.ct_seasonal')},
-        {value:'probation',label:t('app.roster_fiche.ct_probation')},
-      ]}),
-      // Direct supervisor — shows on the contract §2 ("reports directly to ...")
-      (() => {
-        const allEmps = getEmployees();
-        const empDept = ROLE_TO_DEPT[emp.role] || emp.department;
-        const supChoices = allEmps
-          .filter(e => e.id !== emp.id && MGMT_ROLES.includes(e.role))
-          .filter(e => isHR || e.department === empDept || e.department === 'Management')
-          .sort((a,b) => `${a.first_name} ${a.last_name||''}`.localeCompare(`${b.first_name} ${b.last_name||''}`))
-          .map(e => ({value: e.id, label: `${e.first_name} ${e.last_name||''} · ${translateRole(e.role)}`}));
-        const opts = [{value:'', label:t('app.roster_fiche.supervisor_none')}, ...supChoices];
-        return f(t('app.roster_fiche.lbl_reports_to'),'supervisor_id',{type:'select', options: opts});
-      })(),
-    ),
-    // Dates + numbers + Days/week — all on ONE row (5 cols)
-    el('div',{class:'grid-dates5'},
-      f(t('app.roster_fiche.lbl_hire_date'),'hire_date',{type:'date'}),
-      f(t('app.roster_fiche.lbl_contract_end'),'end_date',{type:'date'}),
-      f(t('app.roster_fiche.lbl_salary_per_month',{cur:curSym()}),'monthly_salary_thb',{type:'number'}),
-      f(t('app.roster_fiche.lbl_hours_per_week'),'hours_per_week',{type:'number'}),
-      f(t('app.roster_fiche.lbl_days_per_week'),'days_per_week',{type:'number',placeholder:'6'}),
-    ),
-    // Auto shift duration — REACTIVE banner. Reads h/sem and j/sem live and
-    // shows a red warning if the resulting shift exceeds the country's legal
-    // daily/weekly cap (Thailand LPA §23, France CT L3121, UK WTR 1998, etc.).
-    // The empty wrapper is filled by recomputeShiftBanner() right after mount,
-    // and refreshed on every input change to the two number fields.
-    el('div',{id:'emp-shift-auto-banner', style:'margin:2px 0'}),
     // Venue / Zone (property-wide, not F&B-only) + Contract language + Pool
     (() => {
       const settings = getHotelSettings();
@@ -12633,7 +12821,10 @@ function renderEmployeeForm(root,emp){
       return el('div',{class:cls}, ...children);
     })(),
 
-    // ── Documents: 3 short Yes/No selects on one row ──
+    // ── Documents: 3 Y/N receipt indicators (the checklist) + 2 actual
+    // file uploads (the scans themselves). The Y/N fields auto-flip when
+    // a file is uploaded, but HR can still toggle them manually (e.g.
+    // when a paper copy is on file but not yet scanned). ──
     el('div',{class:'sec-title'},t('app.roster_fiche.sec_documents')),
     el('div',{class:'grid3'},
       f(t('app.roster_fiche.lbl_id_doc'),'id_doc_copy_received',{type:'select',options:[
@@ -12648,6 +12839,20 @@ function renderEmployeeForm(root,emp){
         {value:'false',label:t('app.roster_fiche.doc_na_or_not_yet')},
         {value:'true',label:t('app.roster_fiche.doc_on_file')},
       ]}),
+    ),
+    // Two actual file uploads — scans of the ID + the work permit.
+    // Images OR PDF accepted (a phone photo of the document is fine).
+    el('div',{class:'grid2',style:'margin-top:8px'},
+      fileField(
+        t('app.roster_fiche.lbl_id_doc_file','ID / passport scan'),
+        'id_doc_url',
+        {accept:'image/*,application/pdf', companion:'id_doc_copy_received', maxSizeMB:3},
+      ),
+      fileField(
+        t('app.roster_fiche.lbl_work_permit_file','Work permit scan (foreigners only)'),
+        'work_permit_url',
+        {accept:'image/*,application/pdf', companion:'work_permit_copy_received', maxSizeMB:3},
+      ),
     ),
 
     // ── Uniform: 2 selects ──
@@ -12694,39 +12899,75 @@ function renderEmployeeForm(root,emp){
       f(t('app.roster_fiche.lbl_housing_rent',{cur:curSym()}),'housing_paid_monthly_thb',{type:'number',placeholder:t('app.roster_fiche.ph_zero_free')}),
     ),
     // Housing description with auto-saved templates. Every description the
-    // hotelier types gets remembered (10 most-recent, deduped). Next employee
-    // they fiche → quick-fill chips above the textarea — saves typing the
-    // same "18m² room with AC, wifi…" 30 times.
+    // hotelier types gets remembered (10 most-recent, fuzzily-deduped). Next
+    // employee they fiche → quick-fill chips above the textarea, saves
+    // re-typing the same "18m² room with AC, wifi…" 30 times.
+    //
+    // Dedup is normalized (lowercase + whitespace-collapsed) so a typo like
+    // "queen size bed" vs "quen size bed" doesn't create two near-duplicate
+    // chips. Each chip also has a × delete button so the hotelier can prune
+    // outdated or wrong templates manually.
     (() => {
       const TPLKEY = _hkey('staylo_housing_tpls');
+      // Normalize for fuzzy comparison: lowercase + collapse runs of
+      // whitespace + strip trailing punctuation. NOT used for display.
+      const norm = (s) => String(s||'').toLowerCase().replace(/\s+/g,' ').replace(/[.,;:!?\-]+$/,'').trim();
       const tpls = lsGet(TPLKEY, []);
+
       const ta = document.createElement('textarea');
       ta.id = 'emp-housing_description';
       ta.value = emp.housing_description || '';
       ta.placeholder = t('app.roster_fiche.ph_housing_description');
-      // Save on blur — only if non-trivial (>= 12 chars, not a duplicate)
+      // Save on blur — only if non-trivial (>= 12 chars). New entry replaces
+      // any existing entry with the same NORMALIZED form (so the latest
+      // wording wins — typo fixes propagate).
       ta.addEventListener('blur', () => {
         const v = (ta.value || '').trim();
         if(v.length < 12) return;
-        const cur = lsGet(TPLKEY, []).filter(x => x !== v);
+        const nv = norm(v);
+        const cur = lsGet(TPLKEY, []).filter(x => norm(x) !== nv);
         cur.unshift(v);
         if(cur.length > 10) cur.length = 10;
         lsSet(TPLKEY, cur);
       });
+
       const chipRow = el('div',{class:'tpl-chips'});
-      if(tpls.length){
+      function renderChips(){
+        chipRow.innerHTML = '';
+        const list = lsGet(TPLKEY, []);
+        if(!list.length) return;
         chipRow.appendChild(el('span',{class:'tpl-chips-lbl'}, t('app.roster_fiche.tpl_reuse')));
-        for(const tpl of tpls){
+        list.forEach((tpl, idx) => {
           const preview = tpl.length > 60 ? tpl.slice(0, 57) + '…' : tpl;
+          // Chip = clickable button (fills textarea) + tiny × (deletes)
+          const wrap = el('span',{style:'display:inline-flex;align-items:center;gap:0;margin-right:6px;margin-bottom:4px'});
           const chip = document.createElement('button');
           chip.type = 'button';
           chip.className = 'tpl-chip';
           chip.title = tpl + '\n\nClick to fill the description with this template.';
           chip.textContent = preview;
+          chip.style.borderTopRightRadius = '0';
+          chip.style.borderBottomRightRadius = '0';
           chip.addEventListener('click', () => { ta.value = tpl; ta.focus(); });
-          chipRow.appendChild(chip);
-        }
+          const del = document.createElement('button');
+          del.type = 'button';
+          del.title = 'Remove this template';
+          del.textContent = '×';
+          del.style.cssText = 'background:rgba(231,76,60,.08);color:var(--red);border:0;border-left:1px solid rgba(0,0,0,.08);padding:4px 8px;font-weight:700;cursor:pointer;border-radius:0 var(--r-pill) var(--r-pill) 0;font-size:12px;line-height:1';
+          del.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const cur = lsGet(TPLKEY, []);
+            cur.splice(idx, 1);
+            lsSet(TPLKEY, cur);
+            renderChips();   // re-render so indices stay in sync
+          });
+          wrap.appendChild(chip);
+          wrap.appendChild(del);
+          chipRow.appendChild(wrap);
+        });
       }
+      renderChips();
+
       return el('div',{class:'fld'},
         el('label',{for:'emp-housing_description'},t('app.roster_fiche.lbl_housing_description')),
         chipRow,
@@ -16056,6 +16297,11 @@ function renderEventsModal(){
  * staff sees only the tasks assigned to them and toggles done/not done.
  * ============================================================================ */
 let _tasksDate = null;     // YYYY-MM-DD currently displayed (default: today)
+// Tasks tab filter state. 'all' shows every department; otherwise we narrow
+// to the matching service bucket. Persists in localStorage so the filter
+// sticks across tab switches and reloads (per-hotel via _hkey).
+let _tasksDeptFilter = null;   // initialized from localStorage on first render
+let _tasksZoneFilter = null;
 function renderTasksTab(){
   const root = $('#hr-body'); if(!root) return; root.innerHTML='';
   root.classList.remove('tab-schedule');
@@ -16091,6 +16337,58 @@ function renderTasksTab(){
     myDayTasks = me ? tasksAssignedToEmployee(dayTasks, me) : [];
   }
 
+  // ── Service derivation + filter constants ──
+  // Each task is bucketed by the department it concerns (derived from
+  // assign_kind + assign_value). Lifted above the header so the filter
+  // chip row can count tasks per department.
+  const deriveService = (t) => {
+    if(t.assign_kind === 'all') return 'Cross-department';
+    if(t.assign_kind === 'dept') return t.assign_value || 'Other';
+    if(t.assign_kind === 'role') return ROLE_TO_DEPT[t.assign_value] || 'Other';
+    if(t.assign_kind === 'employee'){
+      const e = allEmps.find(x => x.id === t.assign_value);
+      return (e && e.department) || 'Other';
+    }
+    return 'Other';
+  };
+  // Zone (outlet) derivation — only meaningful for employee-assigned tasks.
+  // Cross-zone tasks (dept/role/all) always pass the zone filter.
+  const deriveZone = (t) => {
+    if(t.assign_kind === 'employee'){
+      const e = allEmps.find(x => x.id === t.assign_value);
+      return (e && e.outlet) ? e.outlet : '';
+    }
+    return '';   // not zone-specific
+  };
+  const SERVICE_ORDER = [
+    'Cross-department', 'Front Office', 'Housekeeping',
+    'F&B', 'Maintenance', 'Spa', 'Security',
+    'Admin', 'Sales', 'Other',
+  ];
+  const SERVICE_EM = {
+    'Cross-department':'🌐', 'Front Office':'🛎️', 'Housekeeping':'🧹',
+    'F&B':'🍽️', 'Maintenance':'🔧', 'Spa':'💆', 'Security':'🛡️',
+    'Admin':'📊', 'Sales':'📣', 'Other':'📋',
+  };
+
+  // ── Read persisted filter state (per-hotel) ──
+  if(_tasksDeptFilter === null) _tasksDeptFilter = lsGet(_hkey('staylo_tasks_dept_filter'), 'all');
+  if(_tasksZoneFilter === null) _tasksZoneFilter = lsGet(_hkey('staylo_tasks_zone_filter'), 'all');
+
+  // ── Apply dept + zone filters on top of the date/role pre-filter ──
+  let filteredTasks = myDayTasks;
+  if(_tasksDeptFilter !== 'all'){
+    filteredTasks = filteredTasks.filter(t => deriveService(t) === _tasksDeptFilter);
+  }
+  if(_tasksZoneFilter !== 'all'){
+    filteredTasks = filteredTasks.filter(t => {
+      const z = deriveZone(t);
+      // Empty zone = cross-zone task → always included so dept-wide
+      // chores still show up when a specific zone is selected.
+      return z === '' || z === _tasksZoneFilter;
+    });
+  }
+
   // Header: date picker + filter + add button
   root.appendChild(el('div',{class:'tasks-head'},
     el('div',{class:'date-picker'},
@@ -16116,39 +16414,95 @@ function renderTasksTab(){
     isMgr ? el('button',{class:'btn-primary',onclick:()=>showTaskEditor(null)},t('app.tasks_tab.new_task')) : null,
   ));
 
-  if(!myDayTasks.length){
-    root.appendChild(el('div',{class:'empty-state'},
-      isMgr ? t('app.tasks_tab.empty_mgr')
-            : t('app.tasks_tab.empty_staff')));
+  // ── Filter chip row: dept (always) + zone (only if any task has one) ──
+  // Counts are based on the date-filtered tasks (myDayTasks) before
+  // dept/zone narrowing, so the user can see how many would appear if
+  // they switched filters.
+  (() => {
+    // Build the department chip row
+    const deptCounts = new Map();
+    for(const tk of myDayTasks){
+      const svc = deriveService(tk);
+      deptCounts.set(svc, (deptCounts.get(svc) || 0) + 1);
+    }
+    const makeChip = (value, label, active, onClick) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.style.cssText = `padding:6px 12px;border-radius:var(--r-pill);border:2px solid ${active?'var(--navy)':'var(--border)'};background:${active?'var(--navy)':'#fff'};color:${active?'#fff':'var(--navy)'};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .12s ease`;
+      chip.textContent = label;
+      chip.addEventListener('click', onClick);
+      return chip;
+    };
+    const deptRow = el('div',{style:'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;align-items:center'},
+      el('span',{style:'font-size:10px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;margin-right:4px'}, t('app.tasks_tab.filter_dept_label') || '🏷️ Dept:'),
+    );
+    deptRow.appendChild(makeChip('all', `🌐 All (${myDayTasks.length})`, _tasksDeptFilter==='all', () => {
+      _tasksDeptFilter = 'all'; lsSet(_hkey('staylo_tasks_dept_filter'), 'all'); renderTasksTab();
+    }));
+    for(const svc of SERVICE_ORDER){
+      const n = deptCounts.get(svc) || 0;
+      if(n === 0) continue;   // hide depts with zero tasks today
+      const em = SERVICE_EM[svc] || '📋';
+      deptRow.appendChild(makeChip(svc, `${em} ${svc} (${n})`, _tasksDeptFilter===svc, () => {
+        _tasksDeptFilter = svc; lsSet(_hkey('staylo_tasks_dept_filter'), svc); renderTasksTab();
+      }));
+    }
+    root.appendChild(deptRow);
+
+    // Zone chip row — only if at least one employee-assigned task has an outlet.
+    // Otherwise it would be a useless row with just "All".
+    const zoneCounts = new Map();
+    for(const tk of myDayTasks){
+      const z = deriveZone(tk);
+      if(z) zoneCounts.set(z, (zoneCounts.get(z) || 0) + 1);
+    }
+    if(zoneCounts.size > 0){
+      const zoneRow = el('div',{style:'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center'},
+        el('span',{style:'font-size:10px;font-weight:800;color:var(--gray);text-transform:uppercase;letter-spacing:.6px;margin-right:4px'}, t('app.tasks_tab.filter_zone_label') || '📍 Zone:'),
+      );
+      zoneRow.appendChild(makeChip('all', `🌐 All`, _tasksZoneFilter==='all', () => {
+        _tasksZoneFilter = 'all'; lsSet(_hkey('staylo_tasks_zone_filter'), 'all'); renderTasksTab();
+      }));
+      const zones = [...zoneCounts.keys()].sort();
+      for(const z of zones){
+        zoneRow.appendChild(makeChip(z, `📍 ${z} (${zoneCounts.get(z)})`, _tasksZoneFilter===z, () => {
+          _tasksZoneFilter = z; lsSet(_hkey('staylo_tasks_zone_filter'), z); renderTasksTab();
+        }));
+      }
+      root.appendChild(zoneRow);
+    }
+  })();
+
+  if(!filteredTasks.length){
+    // Two distinct empty states: nothing at all on this date, vs filter
+    // removed everything. Give the user a clear next-action either way.
+    if(myDayTasks.length === 0){
+      root.appendChild(el('div',{class:'empty-state'},
+        isMgr ? t('app.tasks_tab.empty_mgr')
+              : t('app.tasks_tab.empty_staff')));
+    } else {
+      const emptyMsg = el('div',{class:'empty-state'},
+        el('div',{}, t('app.tasks_tab.empty_filter') || 'No tasks match the current filter.'),
+        el('button',{
+          class:'btn-secondary',
+          style:'margin-top:10px;padding:6px 14px;font-size:12px',
+          onclick:()=>{
+            _tasksDeptFilter='all'; _tasksZoneFilter='all';
+            lsSet(_hkey('staylo_tasks_dept_filter'),'all');
+            lsSet(_hkey('staylo_tasks_zone_filter'),'all');
+            renderTasksTab();
+          },
+        }, t('app.tasks_tab.reset_filters') || 'Reset filters'),
+      );
+      root.appendChild(emptyMsg);
+    }
     return;
   }
 
   // ── Group by service / department for visual scanning ──
-  // Each task is bucketed by the department it concerns (derived from
-  // assign_kind + assign_value). Within each bucket: pending first, then
-  // urgent/high/normal/low, then by due_time.
-  const deriveService = (t) => {
-    if(t.assign_kind === 'all') return 'Cross-department';
-    if(t.assign_kind === 'dept') return t.assign_value || 'Other';
-    if(t.assign_kind === 'role') return ROLE_TO_DEPT[t.assign_value] || 'Other';
-    if(t.assign_kind === 'employee'){
-      const e = allEmps.find(x => x.id === t.assign_value);
-      return (e && e.department) || 'Other';
-    }
-    return 'Other';
-  };
-  const SERVICE_ORDER = [
-    'Cross-department', 'Front Office', 'Housekeeping',
-    'F&B', 'Maintenance', 'Spa', 'Security',
-    'Admin', 'Sales', 'Other',
-  ];
-  const SERVICE_EM = {
-    'Cross-department':'🌐', 'Front Office':'🛎️', 'Housekeeping':'🧹',
-    'F&B':'🍽️', 'Maintenance':'🔧', 'Spa':'💆', 'Security':'🛡️',
-    'Admin':'📊', 'Sales':'📣', 'Other':'📋',
-  };
+  // Within each bucket: pending first, then urgent/high/normal/low, then by due_time.
   const groups = new Map();
-  for(const t of myDayTasks){
+  for(const t of filteredTasks){
     const svc = deriveService(t);
     if(!groups.has(svc)) groups.set(svc, []);
     groups.get(svc).push(t);
@@ -16239,7 +16593,13 @@ function renderTasksTab(){
 function showTaskEditor(task){
   const ex = $('#task-editor'); if(ex) ex.remove();
   const isEdit = !!task;
-  const t = task ? {...task} : {
+  // CRITICAL: must be `tk` not `t` — `t` is the global i18n helper, and
+  // shadowing it here breaks every t('app.xxx') call later in this scope.
+  // Bug was: clicking "New task" did nothing because the save handler
+  // crashed at alert(t('app.dialogs.title_required')) trying to call an
+  // object as a function. Renamed to `tk` (matches the DOM id prefix
+  // `tk-title`, `tk-desc`, etc. used everywhere below).
+  const tk = task ? {...task} : {
     title:'', description:'',
     assign_kind:'employee', assign_value:'',
     recurrence:'once', due_date:_tasksDate||new Date().toISOString().slice(0,10),
@@ -16290,17 +16650,17 @@ function showTaskEditor(task){
       // consistency with the rest of the app. Hidden input keeps id
       // `tk-due-date` so the save handler at the bottom of showTaskEditor
       // can still read $('#tk-due-date').value unchanged.
-      const dpair = dateInputWithWheel({ id:'tk-due-date', value: t.due_date || '' });
+      const dpair = dateInputWithWheel({ id:'tk-due-date', value: tk.due_date || '' });
       wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Date'), dpair.wrap));
     } else if(rec === 'weekly'){
       wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Day of week'),
         sel('tk-weekday', [
           {value:'1',label:'Monday'},{value:'2',label:'Tuesday'},{value:'3',label:'Wednesday'},
           {value:'4',label:'Thursday'},{value:'5',label:'Friday'},{value:'6',label:'Saturday'},{value:'0',label:'Sunday'},
-        ], t.weekday)));
+        ], tk.weekday)));
     } else if(rec === 'monthly'){
       wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Day of month (1-31)'),
-        inp('tk-dom','number', t.day_of_month||1)));
+        inp('tk-dom','number', tk.day_of_month||1)));
     } else if(rec === 'daily' || rec === 'per_shift'){
       wrap.appendChild(el('div',{style:'font-size:11px;color:var(--gray);padding:4px 0'},
         rec==='daily' ? '🗓️ Fires every day' : '⏱️ Fires every time the assignee starts a shift'));
@@ -16316,25 +16676,25 @@ function showTaskEditor(task){
       {value:'weekly',label:'Weekly (specific day)'},
       {value:'monthly',label:'Monthly (specific day)'},
       {value:'per_shift',label:'Every shift'},
-    ], t.recurrence),
+    ], tk.recurrence),
   );
   const conditionalSlot = el('div',{id:'tk-recur-fields'});
-  conditionalSlot.appendChild(buildRecurFields(t.recurrence));
+  conditionalSlot.appendChild(buildRecurFields(tk.recurrence));
 
   const buildAssignField = (kind) => {
     const wrap = document.createElement('div');
     if(kind === 'employee'){
       const opts = allEmps.map(e => ({value:e.id, label:`${e.first_name} ${e.last_name||''} · ${e.role}`}));
       opts.unshift({value:'',label:'— Pick an employee —'});
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Employee'), sel('tk-assign-val', opts, t.assign_value)));
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Employee'), sel('tk-assign-val', opts, tk.assign_value)));
     } else if(kind === 'role'){
       const opts = allRoles.map(r => ({value:r,label:r}));
       opts.unshift({value:'',label:'— Pick a role —'});
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Role'), sel('tk-assign-val', opts, t.assign_value)));
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Role'), sel('tk-assign-val', opts, tk.assign_value)));
     } else if(kind === 'dept'){
       const opts = allDepts.map(d => ({value:d,label:d}));
       opts.unshift({value:'',label:'— Pick a department —'});
-      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Department'), sel('tk-assign-val', opts, t.assign_value)));
+      wrap.appendChild(el('div',{class:'fld'}, el('label',{},'Department'), sel('tk-assign-val', opts, tk.assign_value)));
     } else if(kind === 'unassigned'){
       // Library template — no fixed assignee, but a SERVICE category so the
       // card only appears for employees in matching department (kitchen tasks
@@ -16358,7 +16718,7 @@ function showTaskEditor(task){
       ];
       wrap.appendChild(el('div',{class:'fld'},
         el('label',{for:'tk-service'},'Service / department'),
-        sel('tk-service', svcOptions, t.service || 'all'),
+        sel('tk-service', svcOptions, tk.service || 'all'),
       ));
     } // 'all' = no extra field
     return wrap;
@@ -16371,10 +16731,10 @@ function showTaskEditor(task){
       {value:'role',label:'Everyone with a role'},
       {value:'dept',label:'A whole department'},
       {value:'all',label:'All staff'},
-    ], t.assign_kind || 'unassigned'),
+    ], tk.assign_kind || 'unassigned'),
   );
   const assignSlot = el('div',{id:'tk-assign-slot'});
-  assignSlot.appendChild(buildAssignField(t.assign_kind));
+  assignSlot.appendChild(buildAssignField(tk.assign_kind));
 
   // ── Absence warning slot ──────────────────────────────────────────────
   // For "one-off" tasks on a specific date, check if the chosen target
@@ -16385,10 +16745,10 @@ function showTaskEditor(task){
   const absenceSlot = el('div',{id:'tk-absence-slot',style:'margin-top:-4px;margin-bottom:8px'});
   function refreshAbsenceWarning(){
     absenceSlot.innerHTML = '';
-    const recur     = $('#tk-recur')?.value || t.recurrence;
-    const kind      = $('#tk-assign-kind')?.value || t.assign_kind;
-    const value     = $('#tk-assign-val')?.value || t.assign_value;
-    const date      = $('#tk-due-date')?.value || t.due_date;
+    const recur     = $('#tk-recur')?.value || tk.recurrence;
+    const kind      = $('#tk-assign-kind')?.value || tk.assign_kind;
+    const value     = $('#tk-assign-val')?.value || tk.assign_value;
+    const date      = $('#tk-due-date')?.value || tk.due_date;
     if(recur !== 'once' || !date) return;   // only meaningful for one-off + dated
     // Resolve target employees
     let targets = [];
@@ -16441,34 +16801,34 @@ function showTaskEditor(task){
       el('h3',{}, isEdit ? '✎ Edit task' : '+ New task'),
       el('button',{class:'close-btn',onclick:()=>modal.remove()},'×'),
     ),
-    el('div',{class:'fld'}, el('label',{},'Title'),     inp('tk-title','text', t.title, 'e.g. Check fridge temperature')),
-    el('div',{class:'fld'}, el('label',{},'Description (optional)'), inp('tk-desc','textarea', t.description, 'Detailed instructions, location…')),
+    el('div',{class:'fld'}, el('label',{},'Title'),     inp('tk-title','text', tk.title, 'e.g. Check fridge temperature')),
+    el('div',{class:'fld'}, el('label',{},'Description (optional)'), inp('tk-desc','textarea', tk.description, 'Detailed instructions, location…')),
     assignKindField, assignSlot,
     recurField, conditionalSlot,
     absenceSlot,
     el('div',{style:'display:grid;grid-template-columns:1fr 1fr;gap:8px'},
-      el('div',{class:'fld'}, el('label',{},'Due time (optional)'), inp('tk-time','time', t.due_time)),
+      el('div',{class:'fld'}, el('label',{},'Due time (optional)'), inp('tk-time','time', tk.due_time)),
       el('div',{class:'fld'}, el('label',{},'Priority'), sel('tk-priority',
         [{value:'low',label:'🟢 Low'},{value:'normal',label:'⚪ Normal'},{value:'high',label:'🟠 High'},{value:'urgent',label:'🔴 Urgent'}],
-        t.priority)),
+        tk.priority)),
     ),
     // Optional fiche-technique attachment — chef-built recipes
     (() => {
       const recs = getRecipes();
       if(!recs.length) return null;
       const opts = [{value:'', label:'— None —'}, ...recs.map(r => ({value:r.id, label:`📔 ${r.name}`+(r.pos_sku?` (POS: ${r.pos_sku})`:'')}))];
-      return el('div',{class:'fld'}, el('label',{},'📔 Linked recipe (fiche technique)'), sel('tk-recipe', opts, t.recipe_id||''));
+      return el('div',{class:'fld'}, el('label',{},'📔 Linked recipe (fiche technique)'), sel('tk-recipe', opts, tk.recipe_id||''));
     })(),
     el('div',{class:'row-actions'},
       isEdit ? el('button',{class:'btn-danger',onclick:()=>{
-        if(confirm(t('app.dialogs.delete_task'))){ deleteTask(t.id); modal.remove(); renderTasksTab(); }
+        if(confirm(t('app.dialogs.delete_task'))){ deleteTask(tk.id); modal.remove(); renderTasksTab(); }
       }}, t('app.common.delete')) : null,
       el('button',{class:'btn-secondary',onclick:()=>modal.remove()}, t('app.common.cancel')),
       el('button',{class:'btn-primary',onclick:()=>{
         const title = $('#tk-title').value.trim();
         if(!title){ alert(t('app.dialogs.title_required')); return; }
         const next = {
-          ...t,
+          ...tk,
           title,
           description: $('#tk-desc').value.trim(),
           assign_kind: $('#tk-assign-kind').value,
@@ -16482,7 +16842,7 @@ function showTaskEditor(task){
           recipe_id: $('#tk-recipe')?.value || '',
           // Service field — only meaningful for unassigned library templates.
           // For other kinds, kept as-is (preserves any existing value).
-          service: ($('#tk-service')?.value) || t.service || '',
+          service: ($('#tk-service')?.value) || tk.service || '',
           active: true,
         };
         // 'unassigned' library templates and 'all'-staff tasks don't need an
