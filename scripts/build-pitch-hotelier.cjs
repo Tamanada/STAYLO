@@ -228,10 +228,19 @@ function main() {
   const keptOldNums = [1, 2, 3, 4, 5, 6, 7];
   const byNum = Object.fromEntries(sections.map(s => [s.num, s]));
 
-  // Rewrite kept slides with new numbering (1..7 of 9 total)
+  // Rewrite kept slides with new numbering (1..7 of 9 total). Also strip
+  // any pre-existing HTML comment banner that may be glued to the start
+  // of the section text — we'll re-emit a fresh one with the new title
+  // below in the stitch step, otherwise we'd get duplicated banners.
   const keptOut = keptOldNums.map((oldNum, idx) => {
     const newNum = idx + 1;
-    return adjustKeptSlide(byNum[oldNum].text, newNum, 9);
+    let t = byNum[oldNum].text;
+    // The source file may have <!-- ... --> banners absorbed into the
+    // section.text capture range if our findSections regex picked them up.
+    // (It doesn't currently, but defensive: drop any leading <!-- ... -->
+    // sequence so we never double-emit.)
+    t = t.replace(/^<!--[\s\S]*?-->\s*/m, '');
+    return adjustKeptSlide(t, newNum, 9);
   });
 
   // Build new close slide (8 of 9)
