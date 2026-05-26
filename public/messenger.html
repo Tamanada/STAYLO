@@ -2749,6 +2749,10 @@ body.off-shift .quick-actions{display:none !important}
 .recipe-card .margin.warn{color:var(--orange)}
 .recipe-card .margin.bad {color:var(--red)}
 .recipe-empty{text-align:center;padding:40px;color:var(--gray)}
+/* Hide cuisine-specific sections (POS SKU, ingredients, prep/cook/rest, allergens…)
+   when the fiche category isn't 'cuisine'. The form gets `.non-cuisine` toggled
+   on it dynamically when the user changes the Fiche Category dropdown. */
+.recipe-form.non-cuisine .cuisine-only{display:none !important}
 .recipe-form .ing-row,.recipe-form .step-row{
   display:grid;grid-template-columns:1.5fr 60px 60px 70px 60px 70px 24px;gap:5px;align-items:center;margin-bottom:4px;
 }
@@ -15630,7 +15634,7 @@ function showRecipeEditor(rec){
 
   const panel = el('div',{class:'shift-editor-panel recipe-form',style:'max-width:600px;max-height:85vh;overflow-y:auto'},
     el('div',{style:'display:flex;justify-content:space-between;align-items:center'},
-      el('h3',{}, isEdit ? '✎ Edit recipe' : '+ New recipe'),
+      el('h3',{}, isEdit ? (t('app.recipes.title_edit') || '✎ Edit fiche') : (t('app.recipes.title_new') || '+ New fiche')),
       el('button',{class:'close-btn',onclick:()=>modal.remove()},'×'),
     ),
     // Fiche category — the FIRST field because it determines who can see
@@ -15650,24 +15654,26 @@ function showRecipeEditor(rec){
         })),
         r.fiche_category || 'cuisine'),
     ),
-    el('div',{style:'display:grid;grid-template-columns:2fr 1fr;gap:8px'},
-      el('div',{class:'fld'}, el('label',{},'Recipe name'), inp('rec-name','text', r.name, 'e.g. Pad Thai with prawns')),
-      el('div',{class:'fld'}, el('label',{},'Category'), sel('rec-cat',
+    // Name — always visible (works as a recipe title OR a fiche title).
+    // The food-Category dropdown (Main/Dessert/Cocktail…) only makes sense
+    // for cuisine fiches, so it's wrapped with `.cuisine-only` and hidden
+    // for maintenance/spa/garden/etc.
+    el('div',{class:'fld'}, el('label',{},'Title'), inp('rec-name','text', r.name, 'e.g. Pad Thai with prawns / Service salamander grill')),
+    el('div',{class:'cuisine-only',style:'display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px'},
+      el('div',{class:'fld'}, el('label',{},'Menu category'), sel('rec-cat',
         [{value:'starter',label:'🥗 Starter'},{value:'main',label:'🍽️ Main'},{value:'dessert',label:'🍰 Dessert'},
          {value:'cocktail',label:'🍹 Cocktail'},{value:'wine',label:'🍷 Wine'},{value:'beer',label:'🍺 Beer'},{value:'soft',label:'🥤 Soft drink'},{value:'side',label:'🍚 Side'}],
         r.category)),
-    ),
-    el('div',{style:'display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px'},
       el('div',{class:'fld'}, el('label',{},'POS SKU'), inp('rec-sku','text', r.pos_sku, 'e.g. PT-001')),
       el('div',{class:'fld'}, el('label',{},'Yield (portions)'), inp('rec-yield','number', r.yield_portions, '4')),
-      el('div',{class:'fld'}, el('label',{},'Sell price '+curSym()), inp('rec-sell','number', r.selling_price_thb, '180')),
     ),
-    // Reference times — minutes; cooks plan their service from these
-    el('div',{style:'display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px'},
+    el('div',{class:'cuisine-only',style:'display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px'},
+      el('div',{class:'fld'}, el('label',{},'Sell price '+curSym()), inp('rec-sell','number', r.selling_price_thb, '180')),
       el('div',{class:'fld'}, el('label',{},'⏱️ Prep (min)'),  inp('rec-prep','number', r.prep_minutes, '15')),
       el('div',{class:'fld'}, el('label',{},'🔥 Cook (min)'), inp('rec-cook','number', r.cook_minutes, '20')),
-      el('div',{class:'fld'}, el('label',{},'🧊 Rest (min)'), inp('rec-rest','number', r.rest_minutes, '0')),
     ),
+    // Rest time (cuisine concept) — kept inline as a single optional row
+    el('div',{class:'cuisine-only fld',style:'max-width:200px'}, el('label',{},'🧊 Rest (min)'), inp('rec-rest','number', r.rest_minutes, '0')),
     // Photos (multiple) + video — visual references for cooks
     el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},'📸 Photos & video'),
     el('div',{style:'font-size:11px;color:var(--gray);margin-bottom:6px'},'Upload multiple photos: ingredients shot, technique steps, plating final, etc.'),
@@ -15715,13 +15721,20 @@ function showRecipeEditor(rec){
     el('div',{style:'font-size:11px;color:var(--gray);margin-bottom:6px'},'What the cook needs to gather before starting (wok, mandoline, thermomix…).'),
     eqHost,
 
-    el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},'Ingredients'),
-    ingHost,
-    el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},'Preparation steps'),
+    // Ingredients section — cuisine-only. For maintenance fiches, "parts
+    // needed" lives in the Equipment list above (good enough for now).
+    el('div',{class:'cuisine-only'},
+      el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},'Ingredients'),
+      ingHost,
+    ),
+    el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},'Steps'),
     stepHost,
-    totalsHost,
-    el('div',{class:'fld'}, el('label',{},'⚠️ Allergens (optional)'), inp('rec-allergens','text', r.allergens, 'e.g. peanut, shellfish, gluten')),
-    el('div',{class:'fld'}, el('label',{},'Chef notes (optional)'), inp('rec-notes','textarea', r.notes, 'Plating tips, wine pairing, variations…')),
+    // Totals (food-cost breakdown) — cuisine-only
+    el('div',{class:'cuisine-only'}, totalsHost),
+    // Allergens — cuisine-only
+    el('div',{class:'cuisine-only fld'}, el('label',{},'⚠️ Allergens (optional)'), inp('rec-allergens','text', r.allergens, 'e.g. peanut, shellfish, gluten')),
+    // Notes — always visible (works for any kind of fiche)
+    el('div',{class:'fld'}, el('label',{},'Notes (optional)'), inp('rec-notes','textarea', r.notes, 'Plating tips, wine pairing, variations, safety reminders…')),
     el('div',{class:'row-actions'},
       isEdit ? el('button',{class:'btn-danger',onclick:()=>{
         if(confirm(t('app.dialogs.delete_recipe'))){ deleteRecipe(r.id); modal.remove(); renderRecipesTab(); }
@@ -15760,6 +15773,20 @@ function showRecipeEditor(rec){
   modal.appendChild(panel);
   document.body.appendChild(modal);
   rebuildIngredients(); rebuildEquipment(); rebuildSteps(); recalcTotals();
+
+  // ── Conditional cuisine-only fields ──
+  // The CSS rule `.recipe-form.non-cuisine .cuisine-only { display:none }`
+  // hides POS SKU / Yield / Sell price / Prep / Cook / Rest / Ingredients /
+  // Allergens / Menu category whenever the fiche category isn't 'cuisine'.
+  // Toggle the class on initial render + every time the user changes the
+  // Fiche Category dropdown.
+  const ficheCatSel = $('#rec-fiche-cat');
+  const applyCuisineMask = () => {
+    const isCuisine = (ficheCatSel?.value || 'cuisine') === 'cuisine';
+    panel.classList.toggle('non-cuisine', !isCuisine);
+  };
+  applyCuisineMask();
+  if(ficheCatSel) ficheCatSel.addEventListener('change', applyCuisineMask);
 }
 
 /* ============================================================================
