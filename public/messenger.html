@@ -15384,7 +15384,7 @@ function showRecipeEditor(rec){
       const row = el('div',{style:'display:grid;grid-template-columns:1fr 60px 36px 28px;gap:6px;margin-bottom:4px;align-items:center'});
       const nameInp = document.createElement('input');
       nameInp.type='text'; nameInp.value = eq.name||'';
-      nameInp.placeholder = 'e.g. Wok, mandoline, thermomix';
+      nameInp.placeholder = t('app.recipes.lbl_equipment_placeholder');
       nameInp.style.cssText='padding:7px 10px;border-radius:6px;border:2px solid var(--border);font-size:12px;font-family:inherit';
       nameInp.addEventListener('input', () => { eq.name = nameInp.value; });
       const qtyInp = document.createElement('input');
@@ -15448,7 +15448,7 @@ function showRecipeEditor(rec){
     });
     eqHost.appendChild(el('button',{class:'add-line',onclick:() => {
       r.equipment.push({name:'',qty:1}); rebuildEquipment();
-    }},'+ Add equipment'));
+    }},t('app.recipes.lbl_add_equipment')));
   }
 
   function rebuildIngredients(){
@@ -15634,7 +15634,7 @@ function showRecipeEditor(rec){
 
   const panel = el('div',{class:'shift-editor-panel recipe-form',style:'max-width:600px;max-height:85vh;overflow-y:auto'},
     el('div',{style:'display:flex;justify-content:space-between;align-items:center'},
-      el('h3',{}, isEdit ? (t('app.recipes.title_edit') || '✎ Edit fiche') : (t('app.recipes.title_new') || '+ New fiche')),
+      el('h3',{}, isEdit ? t('app.recipes.title_edit') : t('app.recipes.title_new')),
       el('button',{class:'close-btn',onclick:()=>modal.remove()},'×'),
     ),
     // Fiche category — the FIRST field because it determines who can see
@@ -15658,7 +15658,7 @@ function showRecipeEditor(rec){
     // The food-Category dropdown (Main/Dessert/Cocktail…) only makes sense
     // for cuisine fiches, so it's wrapped with `.cuisine-only` and hidden
     // for maintenance/spa/garden/etc.
-    el('div',{class:'fld'}, el('label',{},'Title'), inp('rec-name','text', r.name, 'e.g. Pad Thai with prawns / Service salamander grill')),
+    el('div',{class:'fld'}, el('label',{},t('app.recipes.lbl_title')), inp('rec-name','text', r.name, t('app.recipes.lbl_title_placeholder'))),
     el('div',{class:'cuisine-only',style:'display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px'},
       el('div',{class:'fld'}, el('label',{},'Menu category'), sel('rec-cat',
         [{value:'starter',label:'🥗 Starter'},{value:'main',label:'🍽️ Main'},{value:'dessert',label:'🍰 Dessert'},
@@ -15675,8 +15675,8 @@ function showRecipeEditor(rec){
     // Rest time (cuisine concept) — kept inline as a single optional row
     el('div',{class:'cuisine-only fld',style:'max-width:200px'}, el('label',{},'🧊 Rest (min)'), inp('rec-rest','number', r.rest_minutes, '0')),
     // Photos (multiple) + video — visual references for cooks
-    el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},'📸 Photos & video'),
-    el('div',{style:'font-size:11px;color:var(--gray);margin-bottom:6px'},'Upload multiple photos: ingredients shot, technique steps, plating final, etc.'),
+    el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},t('app.recipes.lbl_photos_video')),
+    el('div',{style:'font-size:11px;color:var(--gray);margin-bottom:6px'},t('app.recipes.lbl_photos_hint')),
     (() => {
       // Migrate legacy photo_url to photos[] array on the working copy
       r.photos = recipePhotos(r);
@@ -15715,10 +15715,10 @@ function showRecipeEditor(rec){
       rebuild();
       return strip;
     })(),
-    el('div',{class:'fld'}, el('label',{},'🎥 Video URL (YouTube embed, .mp4 link, etc.)'), inp('rec-video','text', r.video_url, 'https://youtu.be/... or https://...mp4')),
+    el('div',{class:'fld'}, el('label',{},t('app.recipes.lbl_video_url')), inp('rec-video','text', r.video_url, 'https://youtu.be/... or https://...mp4')),
 
-    el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},'🍳 Equipment / matériel'),
-    el('div',{style:'font-size:11px;color:var(--gray);margin-bottom:6px'},'What the cook needs to gather before starting (wok, mandoline, thermomix…).'),
+    el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},t('app.recipes.lbl_equipment')),
+    el('div',{style:'font-size:11px;color:var(--gray);margin-bottom:6px'},t('app.recipes.lbl_equipment_hint')),
     eqHost,
 
     // Ingredients section — cuisine-only. For maintenance fiches, "parts
@@ -15727,14 +15727,14 @@ function showRecipeEditor(rec){
       el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},'Ingredients'),
       ingHost,
     ),
-    el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},'Steps'),
+    el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-top:14px'},t('app.recipes.lbl_steps')),
     stepHost,
     // Totals (food-cost breakdown) — cuisine-only
     el('div',{class:'cuisine-only'}, totalsHost),
     // Allergens — cuisine-only
     el('div',{class:'cuisine-only fld'}, el('label',{},'⚠️ Allergens (optional)'), inp('rec-allergens','text', r.allergens, 'e.g. peanut, shellfish, gluten')),
     // Notes — always visible (works for any kind of fiche)
-    el('div',{class:'fld'}, el('label',{},'Notes (optional)'), inp('rec-notes','textarea', r.notes, 'Plating tips, wine pairing, variations, safety reminders…')),
+    el('div',{class:'fld'}, el('label',{},t('app.recipes.lbl_notes')), inp('rec-notes','textarea', r.notes, t('app.recipes.lbl_notes_placeholder'))),
     el('div',{class:'row-actions'},
       isEdit ? el('button',{class:'btn-danger',onclick:()=>{
         if(confirm(t('app.dialogs.delete_recipe'))){ deleteRecipe(r.id); modal.remove(); renderRecipesTab(); }
