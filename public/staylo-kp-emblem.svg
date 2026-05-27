@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <!--
+    STAYLO · KP EMBLEM
+    Koh Phangan at the centre of a new hospitality world.
+    Concentric brand-gradient rings radiate from a stylised KP island,
+    palm tree silhouette anchors the centre, four outward arrows
+    suggest the world responding (Phuket / Bali / Lisbon / SEA).
+
+    Brand palette : #FF6B00 · #FF1F70 · #7E22CE · #FFD580
+    Standalone .svg — embeds cleanly in HTML, prints crisp at any size,
+    no font dependency (geometry only).
+  -->
+
+  <defs>
+    <!-- Master brand gradient — orange → hot pink → deep purple -->
+    <linearGradient id="kp-grad-full" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="#FF6B00"/>
+      <stop offset="50%" stop-color="#FF1F70"/>
+      <stop offset="100%" stop-color="#7E22CE"/>
+    </linearGradient>
+
+    <linearGradient id="kp-grad-warm" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B00"/>
+      <stop offset="100%" stop-color="#FF1F70"/>
+    </linearGradient>
+
+    <radialGradient id="kp-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#FFD580" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#FF6B00" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#FF6B00" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="kp-island" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"  stop-color="#FFAB40"/>
+      <stop offset="100%" stop-color="#FF1F70"/>
+    </linearGradient>
+  </defs>
+
+  <!-- ============================================================
+       OUTER ENERGY RAYS — 8 directions, radiating outward
+       ============================================================ -->
+  <g opacity="0.35">
+    <!-- 8 thin gradient rays at 45° increments -->
+    <line x1="200" y1="200" x2="200" y2="40"  stroke="url(#kp-grad-full)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="200" y1="200" x2="320" y2="80"  stroke="url(#kp-grad-full)" stroke-width="2"   stroke-linecap="round"/>
+    <line x1="200" y1="200" x2="360" y2="200" stroke="url(#kp-grad-full)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="200" y1="200" x2="320" y2="320" stroke="url(#kp-grad-full)" stroke-width="2"   stroke-linecap="round"/>
+    <line x1="200" y1="200" x2="200" y2="360" stroke="url(#kp-grad-full)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="200" y1="200" x2="80"  y2="320" stroke="url(#kp-grad-full)" stroke-width="2"   stroke-linecap="round"/>
+    <line x1="200" y1="200" x2="40"  y2="200" stroke="url(#kp-grad-full)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="200" y1="200" x2="80"  y2="80"  stroke="url(#kp-grad-full)" stroke-width="2"   stroke-linecap="round"/>
+  </g>
+
+  <!-- ============================================================
+       OUTER WORLD DOTS — cities the wave reaches
+       ============================================================ -->
+  <g>
+    <circle cx="200" cy="38"  r="5" fill="url(#kp-grad-warm)"/>
+    <circle cx="324" cy="76"  r="4" fill="url(#kp-grad-warm)"/>
+    <circle cx="362" cy="200" r="5" fill="url(#kp-grad-warm)"/>
+    <circle cx="324" cy="324" r="4" fill="url(#kp-grad-warm)"/>
+    <circle cx="200" cy="362" r="5" fill="url(#kp-grad-warm)"/>
+    <circle cx="76"  cy="324" r="4" fill="url(#kp-grad-warm)"/>
+    <circle cx="38"  cy="200" r="5" fill="url(#kp-grad-warm)"/>
+    <circle cx="76"  cy="76"  r="4" fill="url(#kp-grad-warm)"/>
+  </g>
+
+  <!-- ============================================================
+       OUTER PURPLE RING — boundary of the "new world"
+       ============================================================ -->
+  <circle cx="200" cy="200" r="160" fill="none" stroke="#7E22CE" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.5"/>
+
+  <!-- ============================================================
+       MIDDLE PINK RING — the brand identity
+       ============================================================ -->
+  <circle cx="200" cy="200" r="125" fill="none" stroke="url(#kp-grad-full)" stroke-width="6"/>
+
+  <!-- ============================================================
+       INNER GLOW — Koh Phangan's radiance
+       ============================================================ -->
+  <circle cx="200" cy="200" r="100" fill="url(#kp-glow)"/>
+
+  <!-- ============================================================
+       KOH PHANGAN — stylised island silhouette
+       Bean-like island shape with curve, anchored centre.
+       ============================================================ -->
+  <g transform="translate(200 200)">
+    <!-- Island base — soft bean shape -->
+    <path d="M -52 18
+             C -58 -8, -32 -38, 0 -38
+             C 28 -38, 52 -22, 56 0
+             C 60 22, 36 38, 8 40
+             C -22 42, -46 36, -52 18 Z"
+          fill="url(#kp-island)"
+          stroke="#1A1A2E"
+          stroke-width="0.5"
+          opacity="0.92"/>
+
+    <!-- Island texture — soft inner shadow for depth -->
+    <path d="M -42 12
+             C -48 -2, -28 -28, 2 -28
+             C 22 -28, 38 -18, 42 -2"
+          fill="none"
+          stroke="rgba(255,255,255,0.45)"
+          stroke-width="1.2"
+          stroke-linecap="round"/>
+
+    <!-- Palm tree silhouette on the island -->
+    <g transform="translate(-2 -10)">
+      <!-- Trunk -->
+      <path d="M 0 0 L 0 22 M -2 22 L 2 22" stroke="#1A1A2E" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <!-- Fronds — 5 directions -->
+      <path d="M 0 0 Q -14 -6 -22 -14" stroke="#1A1A2E" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M 0 0 Q -10 -10 -18 -22" stroke="#1A1A2E" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M 0 0 Q 0  -12 -2 -24" stroke="#1A1A2E" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M 0 0 Q 10 -10 18 -22" stroke="#1A1A2E" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <path d="M 0 0 Q 14 -6  22 -14" stroke="#1A1A2E" stroke-width="2" stroke-linecap="round" fill="none"/>
+    </g>
+
+    <!-- "KP" wordmark below the palm -->
+    <text x="0" y="32"
+          font-family="Inter, sans-serif"
+          font-size="14"
+          font-weight="900"
+          fill="#1A1A2E"
+          text-anchor="middle"
+          letter-spacing="2">KOH PHANGAN</text>
+  </g>
+
+  <!-- ============================================================
+       BOTTOM RIBBON — "THE CENTER" callout
+       ============================================================ -->
+  <g transform="translate(200 370)">
+    <rect x="-95" y="-12" width="190" height="22" rx="11" fill="url(#kp-grad-warm)"/>
+    <text x="0" y="3"
+          font-family="Inter, sans-serif"
+          font-size="9.5"
+          font-weight="800"
+          fill="white"
+          text-anchor="middle"
+          letter-spacing="2.2"
+          dominant-baseline="middle">THE CENTER OF A NEW WORLD</text>
+  </g>
+</svg>
