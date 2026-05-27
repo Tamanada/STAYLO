@@ -2,187 +2,204 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
   <!--
     STAYLO · KP EMBLEM
-    Koh Phangan at the centre of a new hospitality world.
-    Concentric brand-gradient rings radiate from a stylised KP island,
-    palm tree silhouette anchors the centre, four outward arrows
-    suggest the world responding (Phuket / Bali / Lisbon / SEA).
+    Mission : "From one island to the world."
+    A stylised globe in the brand colours, with Koh Phangan
+    shining at Thailand's position, sparkling links radiating to
+    seven world destinations.
 
+    Standalone .svg — no font dependency for the visual.
     Brand palette : #FF6B00 · #FF1F70 · #7E22CE · #FFD580
-    Standalone .svg — embeds cleanly in HTML, prints crisp at any size,
-    no font dependency (geometry only).
   -->
 
   <defs>
-    <!-- Master brand gradient — orange → hot pink → deep purple -->
-    <linearGradient id="kp-grad-full" x1="0%" y1="0%" x2="100%" y2="100%">
+    <!-- Brand gradient background -->
+    <radialGradient id="kp-bg" cx="50%" cy="50%" r="70%">
       <stop offset="0%"  stop-color="#FF6B00"/>
-      <stop offset="50%" stop-color="#FF1F70"/>
+      <stop offset="55%" stop-color="#FF1F70"/>
       <stop offset="100%" stop-color="#7E22CE"/>
-    </linearGradient>
-
-    <linearGradient id="kp-grad-warm" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF6B00"/>
-      <stop offset="100%" stop-color="#FF1F70"/>
-    </linearGradient>
-
-    <radialGradient id="kp-glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%"  stop-color="#FFD580" stop-opacity="0.9"/>
-      <stop offset="60%" stop-color="#FF6B00" stop-opacity="0.25"/>
-      <stop offset="100%" stop-color="#FF6B00" stop-opacity="0"/>
     </radialGradient>
 
-    <linearGradient id="kp-island" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%"  stop-color="#FFAB40"/>
-      <stop offset="100%" stop-color="#FF1F70"/>
+    <!-- Soft glow behind globe -->
+    <radialGradient id="globe-aura" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- KP glow (warm yellow → orange → transparent) -->
+    <radialGradient id="kp-shine" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="1"/>
+      <stop offset="35%" stop-color="#FFD580" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#FFD580" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Sparkle filter (just opacity, no fancy effects for SVG compat) -->
+    <linearGradient id="link-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.35"/>
     </linearGradient>
   </defs>
 
   <!-- ============================================================
-       OUTER ENERGY RAYS — 8 directions, radiating outward
+       BACKGROUND — full brand gradient
        ============================================================ -->
-  <g opacity="0.35">
-    <!-- 8 thin gradient rays at 45° increments -->
-    <line x1="200" y1="200" x2="200" y2="40"  stroke="url(#kp-grad-full)" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="200" y1="200" x2="320" y2="80"  stroke="url(#kp-grad-full)" stroke-width="2"   stroke-linecap="round"/>
-    <line x1="200" y1="200" x2="360" y2="200" stroke="url(#kp-grad-full)" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="200" y1="200" x2="320" y2="320" stroke="url(#kp-grad-full)" stroke-width="2"   stroke-linecap="round"/>
-    <line x1="200" y1="200" x2="200" y2="360" stroke="url(#kp-grad-full)" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="200" y1="200" x2="80"  y2="320" stroke="url(#kp-grad-full)" stroke-width="2"   stroke-linecap="round"/>
-    <line x1="200" y1="200" x2="40"  y2="200" stroke="url(#kp-grad-full)" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="200" y1="200" x2="80"  y2="80"  stroke="url(#kp-grad-full)" stroke-width="2"   stroke-linecap="round"/>
+  <rect width="400" height="400" rx="32" fill="url(#kp-bg)"/>
+
+  <!-- Soft aura behind globe -->
+  <circle cx="200" cy="200" r="170" fill="url(#globe-aura)"/>
+
+  <!-- ============================================================
+       GLOBE — meridians + parallels (small white lines)
+       Centered at (200,200) · radius 140
+       ============================================================ -->
+  <g stroke="white" stroke-width="1.8" fill="none" opacity="0.85">
+    <!-- Outer sphere -->
+    <circle cx="200" cy="200" r="140"/>
+  </g>
+
+  <g stroke="white" stroke-width="1.4" fill="none" opacity="0.7">
+    <!-- Equator (horizontal) -->
+    <line x1="60" y1="200" x2="340" y2="200"/>
+    <!-- Central meridian (vertical) -->
+    <line x1="200" y1="60" x2="200" y2="340"/>
+  </g>
+
+  <g stroke="white" stroke-width="1.2" fill="none" opacity="0.55">
+    <!-- Other meridians (vertical ellipses with shrinking rx) -->
+    <ellipse cx="200" cy="200" rx="58"  ry="140"/>
+    <ellipse cx="200" cy="200" rx="103" ry="140"/>
+    <!-- Parallels (horizontal ellipses with shrinking ry) -->
+    <ellipse cx="200" cy="200" rx="140" ry="58"/>
+    <ellipse cx="200" cy="200" rx="140" ry="103"/>
+  </g>
+
+  <!-- Tropic lines, subtle -->
+  <g stroke="white" stroke-width="0.8" fill="none" opacity="0.32">
+    <ellipse cx="200" cy="200" rx="140" ry="28"/>
+    <ellipse cx="200" cy="200" rx="140" ry="85"/>
+    <ellipse cx="200" cy="200" rx="28"  ry="140"/>
+    <ellipse cx="200" cy="200" rx="85"  ry="140"/>
   </g>
 
   <!-- ============================================================
-       OUTER WORLD DOTS — cities the wave reaches
+       SPARKLING LINKS — KP to 7 world destinations
+       All originate at KP (243, 178) and curve outward
        ============================================================ -->
-  <g>
-    <circle cx="200" cy="38"  r="5" fill="url(#kp-grad-warm)"/>
-    <circle cx="324" cy="76"  r="4" fill="url(#kp-grad-warm)"/>
-    <circle cx="362" cy="200" r="5" fill="url(#kp-grad-warm)"/>
-    <circle cx="324" cy="324" r="4" fill="url(#kp-grad-warm)"/>
-    <circle cx="200" cy="362" r="5" fill="url(#kp-grad-warm)"/>
-    <circle cx="76"  cy="324" r="4" fill="url(#kp-grad-warm)"/>
-    <circle cx="38"  cy="200" r="5" fill="url(#kp-grad-warm)"/>
-    <circle cx="76"  cy="76"  r="4" fill="url(#kp-grad-warm)"/>
+  <g stroke="url(#link-grad)" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-dasharray="3 5">
+    <!-- KP → Europe (upper-left) -->
+    <path d="M 243 178 Q 165 130, 105 110"/>
+    <!-- KP → North America (left) -->
+    <path d="M 243 178 Q 145 175, 70 165"/>
+    <!-- KP → South America (lower-left) -->
+    <path d="M 243 178 Q 140 240, 95 285"/>
+    <!-- KP → Africa (lower-left-center) -->
+    <path d="M 243 178 Q 195 235, 160 290"/>
+    <!-- KP → Australia (lower-right) -->
+    <path d="M 243 178 Q 270 245, 290 305"/>
+    <!-- KP → East Asia (right-up) -->
+    <path d="M 243 178 Q 285 145, 320 130"/>
+    <!-- KP → Pacific Islands (right) -->
+    <path d="M 243 178 Q 308 195, 335 215"/>
   </g>
 
   <!-- ============================================================
-       OUTER PURPLE RING — boundary of the "new world"
+       ENDPOINT SPARKLES — 4-point stars at each destination
        ============================================================ -->
-  <circle cx="200" cy="200" r="160" fill="none" stroke="#7E22CE" stroke-width="1.5" stroke-dasharray="3 6" opacity="0.5"/>
+  <g fill="white">
+    <!-- Star helper: small 4-point diamond -->
+    <g transform="translate(105 110)">
+      <path d="M 0 -5 L 1 -1 L 5 0 L 1 1 L 0 5 L -1 1 L -5 0 L -1 -1 Z"/>
+      <circle cx="0" cy="0" r="1.5"/>
+    </g>
+    <g transform="translate(70 165)">
+      <path d="M 0 -4 L 0.8 -0.8 L 4 0 L 0.8 0.8 L 0 4 L -0.8 0.8 L -4 0 L -0.8 -0.8 Z"/>
+    </g>
+    <g transform="translate(95 285)">
+      <path d="M 0 -5 L 1 -1 L 5 0 L 1 1 L 0 5 L -1 1 L -5 0 L -1 -1 Z"/>
+      <circle cx="0" cy="0" r="1.5"/>
+    </g>
+    <g transform="translate(160 290)">
+      <path d="M 0 -4 L 0.8 -0.8 L 4 0 L 0.8 0.8 L 0 4 L -0.8 0.8 L -4 0 L -0.8 -0.8 Z"/>
+    </g>
+    <g transform="translate(290 305)">
+      <path d="M 0 -5 L 1 -1 L 5 0 L 1 1 L 0 5 L -1 1 L -5 0 L -1 -1 Z"/>
+      <circle cx="0" cy="0" r="1.5"/>
+    </g>
+    <g transform="translate(320 130)">
+      <path d="M 0 -4 L 0.8 -0.8 L 4 0 L 0.8 0.8 L 0 4 L -0.8 0.8 L -4 0 L -0.8 -0.8 Z"/>
+    </g>
+    <g transform="translate(335 215)">
+      <path d="M 0 -4 L 0.8 -0.8 L 4 0 L 0.8 0.8 L 0 4 L -0.8 0.8 L -4 0 L -0.8 -0.8 Z"/>
+    </g>
+  </g>
 
   <!-- ============================================================
-       MIDDLE PINK RING — the brand identity
+       KOH PHANGAN — shining at Thailand's position on the globe
+       Position : (243, 178) - upper-right of center
        ============================================================ -->
-  <circle cx="200" cy="200" r="125" fill="none" stroke="url(#kp-grad-full)" stroke-width="6"/>
+  <g transform="translate(243 178)">
+    <!-- Big halo / shine glow -->
+    <circle cx="0" cy="0" r="32" fill="url(#kp-shine)"/>
 
-  <!-- ============================================================
-       INNER GLOW — Koh Phangan's radiance
-       ============================================================ -->
-  <circle cx="200" cy="200" r="100" fill="url(#kp-glow)"/>
+    <!-- Inner bright halo -->
+    <circle cx="0" cy="0" r="15" fill="#FFD580" opacity="0.55"/>
 
-  <!-- ============================================================
-       KOH PHANGAN — real-shape island silhouette
-       Traced from Google Maps : NW peninsula (Haad Yao / Zen Beach),
-       jagged north coast (Chaloklum / Bottle Beach), straight east,
-       southern point reaching down to Haad Rin (Full Moon beach).
-       ============================================================ -->
-  <g transform="translate(200 200) scale(0.62)">
-    <!-- Island base — traced KP outline -->
-    <path d="
-      M -10 -105
-      C  20 -112, 55 -110, 85 -100
-      C 110 -90, 128 -68, 132 -38
-      C 134  -8, 130  22, 122  50
-      C 110  78,  88  98,  60 112
-      C  35 122,  10 124, -15 122
-      C -38 119, -58 112, -78 100
-      C -95  86, -105 68, -110 48
-      C -113 32, -113 18, -110  4
-      L -120  -2
-      L -132 -10
-      L -136 -22
-      L -130 -34
-      L -118 -38
-      L -108 -28
-      C -103 -48, -94 -64, -78 -78
-      C -58 -94, -34 -103, -10 -105
-      Z"
-      fill="url(#kp-island)"
-      stroke="#1A1A2E"
-      stroke-width="1"
-      stroke-linejoin="round"
-      opacity="0.95"/>
-
-    <!-- Coast highlight — soft inner shadow north -->
-    <path d="
-      M -8 -95
-      C 20 -100, 55 -98, 80 -88
-      C 100 -78, 118 -60, 122 -32"
-      fill="none"
-      stroke="rgba(255,255,255,0.45)"
-      stroke-width="1.5"
-      stroke-linecap="round"/>
-
-    <!-- Mountain hint (Namtok Than Sadet) — center -->
-    <path d="
-      M -25 10
-      L -10 -15
-      L 5 5
-      L 22 -25
-      L 38 10"
-      fill="none"
-      stroke="rgba(26,26,46,0.35)"
-      stroke-width="1.8"
-      stroke-linecap="round"
-      stroke-linejoin="round"/>
-
-    <!-- FULL MOON — iconic of KP, positioned over Haad Rin (south point) -->
-    <g transform="translate(45 85)">
-      <!-- Moon halo glow -->
-      <circle cx="0" cy="0" r="22" fill="rgba(255,213,128,0.5)"/>
-      <!-- Moon disc -->
-      <circle cx="0" cy="0" r="14" fill="#FFF5DD" stroke="#FFD580" stroke-width="1.5"/>
-      <!-- Subtle craters for character -->
-      <circle cx="-4" cy="-3" r="1.8" fill="rgba(255,213,128,0.6)"/>
-      <circle cx="3" cy="2" r="1.4" fill="rgba(255,213,128,0.5)"/>
-      <circle cx="-2" cy="5" r="1.2" fill="rgba(255,213,128,0.4)"/>
+    <!-- Koh Phangan island silhouette (small, recognizable shape) -->
+    <g transform="scale(0.08)">
+      <path d="
+        M -10 -105
+        C  20 -112, 55 -110, 85 -100
+        C 110 -90, 128 -68, 132 -38
+        C 134  -8, 130  22, 122  50
+        C 110  78,  88  98,  60 112
+        C  35 122,  10 124, -15 122
+        C -38 119, -58 112, -78 100
+        C -95  86, -105 68, -110 48
+        C -113 32, -113 18, -110  4
+        L -120  -2
+        L -132 -10
+        L -136 -22
+        L -130 -34
+        L -118 -38
+        L -108 -28
+        C -103 -48, -94 -64, -78 -78
+        C -58 -94, -34 -103, -10 -105
+        Z"
+        fill="#FFFFFF"
+        stroke="#FFD580"
+        stroke-width="3"/>
     </g>
 
-    <!-- Small offshore islands (Chumphon Archipelago — SW) -->
-    <ellipse cx="-95" cy="92" rx="6" ry="3" fill="url(#kp-island)" opacity="0.7"/>
-    <ellipse cx="-78" cy="105" rx="4" ry="2" fill="url(#kp-island)" opacity="0.6"/>
+    <!-- Bright center sparkle -->
+    <g>
+      <path d="M 0 -10 L 1.5 -1.5 L 10 0 L 1.5 1.5 L 0 10 L -1.5 1.5 L -10 0 L -1.5 -1.5 Z" fill="white"/>
+      <circle cx="0" cy="0" r="2.5" fill="#FFD580"/>
+    </g>
   </g>
 
-  <!-- "KOH PHANGAN" wordmark below the island (outside transform) -->
-  <text x="200" y="280"
-        font-family="Inter, sans-serif"
-        font-size="11"
-        font-weight="900"
-        fill="#1A1A2E"
-        text-anchor="middle"
-        letter-spacing="2.5">KOH PHANGAN</text>
-  <text x="200" y="295"
-        font-family="Inter, sans-serif"
-        font-size="8"
-        font-weight="600"
-        fill="#5A4A5A"
-        text-anchor="middle"
-        letter-spacing="1.8"
-        opacity="0.75">เกาะพะงัน</text>
-
   <!-- ============================================================
-       BOTTOM RIBBON — "THE CENTER" callout
+       TAGLINE BAND — "From one island to the world"
        ============================================================ -->
-  <g transform="translate(200 370)">
-    <rect x="-95" y="-12" width="190" height="22" rx="11" fill="url(#kp-grad-warm)"/>
-    <text x="0" y="3"
+  <g>
+    <!-- Translucent dark band for legibility -->
+    <rect x="40" y="358" width="320" height="28" rx="14" fill="rgba(26,26,46,0.55)"/>
+    <text x="200" y="375"
           font-family="Inter, sans-serif"
-          font-size="9.5"
-          font-weight="800"
-          fill="white"
+          font-size="13"
+          font-weight="900"
+          fill="#FFFFFF"
           text-anchor="middle"
-          letter-spacing="2.2"
-          dominant-baseline="middle">THE CENTER OF A NEW WORLD</text>
+          letter-spacing="3"
+          dominant-baseline="middle">FROM ONE ISLAND TO THE WORLD</text>
+  </g>
+
+  <!-- Optional micro-label — KP location callout -->
+  <g transform="translate(243 220)">
+    <text font-family="Inter, sans-serif"
+          font-size="9"
+          font-weight="800"
+          fill="#FFFFFF"
+          text-anchor="middle"
+          letter-spacing="1.8"
+          opacity="0.95">KOH PHANGAN</text>
   </g>
 </svg>
