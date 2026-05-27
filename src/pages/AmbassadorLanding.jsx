@@ -66,22 +66,28 @@ export default function AmbassadorLanding() {
         description="Refer hotels to STAYLO and earn 2% in Bitcoin on every booking they receive — paid to your Lightning wallet, forever. Free to join. Lifetime commission."
         path="/ambassador"
       />
-      {/* ── Hero — Option A brand radiant ── */}
-      <section
-        className="text-white py-20 sm:py-28 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF3CB4 50%, #6C5CE7 100%)' }}
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 left-[20%] w-60 h-60 bg-white/15 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-[#FDCB6E]/25 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-        </div>
+      {/* ── Hero — JohnLenon.png painting as background ── */}
+      <section className="text-white py-20 sm:py-28 relative overflow-hidden">
+        <img
+          src="/JohnLenon.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <Badge variant="golden" className="mb-6">{t('ambassador_landing.badge', 'Ambassador Program')}</Badge>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6">
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 tracking-tight"
+            style={{ textShadow: '0 2px 18px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
             {t('ambassador_landing.hero_title_prefix', 'Earn')} <span className="text-gradient-gold">{t('ambassador_landing.hero_title_highlight', '2%')}</span> {t('ambassador_landing.hero_title_suffix', 'for Life')}
           </h1>
-          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto mb-10">
+          <p
+            className="text-lg sm:text-xl text-white max-w-2xl mx-auto mb-10 font-medium leading-relaxed"
+            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
             {t('ambassador_landing.hero_subtitle', 'Bring hotels to Staylo and earn lifetime passive income on every booking they receive. No cap, no expiry — forever.')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
