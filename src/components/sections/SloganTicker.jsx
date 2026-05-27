@@ -20,13 +20,20 @@ export function SloganTicker() {
   const items = [...slogans, ...slogans]
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-deep via-[#0d1f3c] to-deep py-4 border-y border-white/10">
+    <div
+      className="relative overflow-hidden py-4"
+      style={{
+        background: 'linear-gradient(90deg, #FF6B00 0%, #FF3CB4 50%, #6C5CE7 100%)',
+        borderTop: '1px solid rgba(255,255,255,0.15)',
+        borderBottom: '1px solid rgba(255,255,255,0.15)',
+      }}
+    >
       <div className="flex animate-ticker whitespace-nowrap">
         {items.map((s, i) => (
           <span key={i} className="inline-flex items-center mx-8 shrink-0">
-            <span className="text-xs font-mono text-ocean/60 mr-2">{s.lang}</span>
-            <span className="text-sm font-semibold text-white/80">{s.text}</span>
-            <span className="ml-8 text-sunset/40">✦</span>
+            <span className="text-xs font-mono text-white/70 mr-2">{s.lang}</span>
+            <span className="text-sm font-semibold text-white" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.18)' }}>{s.text}</span>
+            <span className="ml-8" style={{ color: '#FDCB6E' }}>✦</span>
           </span>
         ))}
       </div>

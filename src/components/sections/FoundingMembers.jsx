@@ -73,71 +73,74 @@ export function FoundingMembers() {
 
   return (
     <section className="py-8 sm:py-12 relative overflow-hidden">
-      {/* Gradient background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-deep via-deep to-electric/40" />
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-sunset/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-libre/5 rounded-full blur-3xl" />
+      {/* Option C — deep brand-purple background */}
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(160deg, #1a0d2e 0%, #2a1148 100%)' }} />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#FF6B00]/12 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#FF3CB4]/12 rounded-full blur-3xl" />
 
       <div className="relative max-w-6xl mx-auto px-4 sm:px-6 text-white">
         <div className="text-center mb-7">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-golden/10 border border-golden/20 rounded-full text-sm text-golden font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold mb-4" style={{ background: 'rgba(253,203,110,0.12)', color: '#FDCB6E', border: '1px solid rgba(253,203,110,0.3)' }}>
             <Crown size={14} />
             {t('founding_members.badge', 'Founding Members')}
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-3">
-            {t('social_proof.title', { count: memberCount })}
+            <span className="text-gradient">{t('social_proof.title', { count: memberCount })}</span>
           </h2>
         </div>
 
-        {/* Animated stats — all live from Supabase */}
+        {/* Animated stats — brand palette cycle */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 mb-7">
           <div className="text-center">
-            <Globe size={22} className="mx-auto text-ocean mb-2" />
+            <Globe size={22} className="mx-auto mb-2" style={{ color: '#FF6B00' }} />
             <p className="text-3xl sm:text-4xl font-extrabold">
               <AnimatedCounter target={countryCount} />
             </p>
-            <p className="text-sm text-white/50">{t('social_proof.countries')}</p>
+            <p className="text-sm text-white/60">{t('social_proof.countries')}</p>
           </div>
           <div className="text-center">
-            <Building2 size={22} className="mx-auto text-sunrise mb-2" />
+            <Building2 size={22} className="mx-auto mb-2" style={{ color: '#FF3CB4' }} />
             <p className="text-3xl sm:text-4xl font-extrabold">
               <AnimatedCounter target={propertyCount} />
             </p>
-            <p className="text-sm text-white/50">{t('social_proof.properties')}</p>
+            <p className="text-sm text-white/60">{t('social_proof.properties')}</p>
           </div>
           <div className="text-center">
-            <Users size={22} className="mx-auto text-libre mb-2" />
+            <Users size={22} className="mx-auto mb-2" style={{ color: '#6C5CE7' }} />
             <p className="text-3xl sm:text-4xl font-extrabold">
               <AnimatedCounter target={memberCount} />
             </p>
-            <p className="text-sm text-white/50">{t('social_proof.members', 'Members')}</p>
+            <p className="text-sm text-white/60">{t('social_proof.members', 'Members')}</p>
           </div>
           <div className="text-center">
-            <MapPin size={22} className="mx-auto text-golden mb-2" />
+            <MapPin size={22} className="mx-auto mb-2" style={{ color: '#FDCB6E' }} />
             <p className="text-3xl sm:text-4xl font-extrabold">
               <AnimatedCounter target={cityCount} />
             </p>
-            <p className="text-sm text-white/50">{t('founding_members.cities', 'Cities')}</p>
+            <p className="text-sm text-white/60">{t('founding_members.cities', 'Cities')}</p>
           </div>
         </div>
 
         {/* Founding members list — hidden when empty (no fictitious entries) */}
         {latestProperties.length > 0 && (
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-6 max-w-2xl mx-auto">
+          <div className="bg-white/8 backdrop-blur-md border border-white/15 rounded-3xl p-6 max-w-2xl mx-auto">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-semibold text-white/70">{t('founding_members.latest', 'Latest founding members')}</span>
-              <span className="text-xs text-golden font-mono">{t('founding_members.live', 'LIVE')}</span>
+              <span className="text-sm font-semibold text-white/80">{t('founding_members.latest', 'Latest founding members')}</span>
+              <span className="text-xs font-mono" style={{ color: '#FDCB6E' }}>{t('founding_members.live', 'LIVE')}</span>
             </div>
             <div className="space-y-2">
               {latestProperties.map((p, i) => (
                 <div key={p.id} className="flex items-center justify-between bg-white/5 rounded-xl px-4 py-2.5 hover:bg-white/10 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-ocean to-electric rounded-lg flex items-center justify-center text-xs font-bold">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold text-white"
+                      style={{ background: 'linear-gradient(135deg, #FF6B00, #FF3CB4)' }}
+                    >
                       #{i + 1}
                     </div>
                     <div>
                       <p className="text-sm font-medium">{p.name}</p>
-                      <p className="text-xs text-white/40 flex items-center gap-1">
+                      <p className="text-xs text-white/50 flex items-center gap-1">
                         <MapPin size={10} /> {p.city}{p.country ? `, ${p.country}` : ''}
                       </p>
                     </div>
@@ -145,7 +148,7 @@ export function FoundingMembers() {
                   <div className="text-right">
                     <p className="text-xs text-white/60 capitalize">{p.type}</p>
                     {p.room_count > 0 && (
-                      <p className="text-xs text-libre font-mono">
+                      <p className="text-xs font-mono" style={{ color: '#FF3CB4' }}>
                         {t('founding_members.rooms_count', '{{count}} rooms', { count: p.room_count })}
                       </p>
                     )}
