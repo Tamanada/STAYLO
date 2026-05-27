@@ -188,7 +188,10 @@ function rewriteFooterResources(src) {
       </a>
 
       <a href="/messenger.html" target="_blank" style="background:linear-gradient(135deg, rgba(255,31,112,0.10), rgba(126,34,206,0.10)); border:1px solid rgba(255,31,112,0.35); border-radius:12px; padding:22px 24px; text-decoration:none; color:white;">
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:#FF1F70; margin-bottom:6px;">🚢 Try STAYLO Ship</div>
+        <div style="display:flex; align-items:center; gap:8px; font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:#FF1F70; margin-bottom:6px;">
+          <img src="/staylo-ship-icon.svg" alt="" width="22" height="22" style="border-radius:5px; display:block;" />
+          Try STAYLO Ship
+        </div>
         <div style="font-size:19px; font-weight:800; margin-bottom:4px;"><span class="en">The operational app · live demo</span><span class="th">แอปปฏิบัติการ · เดโมจริง</span></div>
         <div style="font-size:14px; color:rgba(255,255,255,0.6); line-height:1.4;"><span class="en">HR · Schedule · Tasks · Booking · Guest bridge</span><span class="th">HR · ตารางงาน · งาน · จอง · สะพานแขก</span></div>
       </a>
