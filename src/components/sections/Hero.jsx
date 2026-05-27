@@ -1,6 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Search, ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
@@ -12,7 +10,6 @@ export function Hero() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const [activeFilter, setActiveFilter] = useState(0)
-  const [searchQuery, setSearchQuery] = useState('')
   // Real hotel count from platform_stats() RPC. Was '420+' hardcoded
   // (lying about onboarded count). Honest = real count or 'soon' if 0.
   const [hotelCount, setHotelCount] = useState(null)
@@ -111,35 +108,6 @@ export function Hero() {
         }}>
           {t('home_hero.subtitle', 'Every booking on Staylo goes back to the hoteliers who built it. Co-owned by worldwide hoteliers. 10% commission forever… and much more.')}
         </p>
-
-        {/* Search box */}
-        <div className="max-w-2xl mx-auto mb-6">
-          <div className="flex items-center rounded-full overflow-hidden"
-            style={{
-              background: 'white',
-              border: '1.5px solid #E8E0D8',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-              padding: '6px',
-            }}>
-            <div className="flex items-center flex-1 pl-5 gap-3">
-              <Search size={20} style={{ color: '#B2BEC3' }} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder={t('home_hero.search_placeholder', 'Where do you want to stay?')}
-                className="flex-1 py-3 text-base outline-none bg-transparent"
-                style={{ color: '#2D3436', fontSize: '15px' }}
-              />
-            </div>
-            <Link to="/ota">
-              <button className="btn-primary !rounded-full !py-3 !px-8 flex items-center gap-2">
-                <span>{t('home_hero.search_button', 'Search')}</span>
-                <ArrowRight size={16} />
-              </button>
-            </Link>
-          </div>
-        </div>
 
         {/* Filter pills */}
         <div className="flex flex-wrap justify-center gap-2 mb-8">
