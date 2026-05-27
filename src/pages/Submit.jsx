@@ -465,24 +465,26 @@ export default function Submit() {
 
   return (
     <>
-      {/* ─── Hero band — Topoftheworld painting as background ─── */}
-      <section className="relative overflow-hidden">
+      {/* ─── Hero — Topoftheworld painting, FULL SCREEN ─── */}
+      <section className="relative overflow-hidden min-h-screen flex items-center">
         <img
           src="/Topoftheworld.png"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
-        <div className="relative max-w-3xl mx-auto px-4 py-16 sm:py-20 text-center">
+        {/* Light scrim — keep title + subtitle crisp without muting the
+            painting too much (it's already a dark night scene) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/50" />
+        <div className="relative max-w-3xl mx-auto w-full px-4 sm:px-6 py-16 sm:py-20 text-center">
           <h1
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-3 tracking-tight"
-            style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.95)' }}
+            className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-4 tracking-tight"
+            style={{ textShadow: '0 2px 18px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.95)' }}
           >
             {t('property.title', 'List Your Property')}
           </h1>
           <p
-            className="text-lg sm:text-xl text-white font-medium max-w-xl mx-auto"
+            className="text-lg sm:text-xl lg:text-2xl text-white font-medium max-w-xl mx-auto leading-relaxed"
             style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
           >
             {t('property.subtitle', 'Register your property to secure your Founding Member position.')}
