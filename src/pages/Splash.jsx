@@ -65,12 +65,20 @@ export default function Splash() {
   return (
     <div>
       {/* ==================== SECTION 1: HERO ==================== */}
-      {/* Pure STAYLO brand radiant — orange → pink → purple, no banner
-          image (would letterbox), no dark scrim filter. */}
-      <section
-        className="relative overflow-hidden min-h-screen flex items-center"
-        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
-      >
+      {/* ThePath artwork as full-bleed background — same scrim treatment
+          as the artwork-backed sections on /vision so the page feels
+          like one consistent brand surface. */}
+      <section className="relative overflow-hidden min-h-screen flex items-center">
+        {/* Painting background */}
+        <img
+          src="/ThePath.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Light dark scrim — keeps the white headline crisp while
+            letting the artwork breathe (same level as Vision sections) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
 
         <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center text-white">
           {/* Badge */}
