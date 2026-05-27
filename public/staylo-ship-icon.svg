@@ -11,13 +11,13 @@
   <!-- Rounded-square brand tile -->
   <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="url(#ship-bg)"/>
 
-  <!-- Sail — single clean triangle, white -->
-  <path d="M 256 110 L 256 340 L 395 340 Z" fill="#FFFFFF"/>
+  <!-- Sail — forward-leaning triangle (tilts right for motion).
+       The top apex sits LEFT of the base's left edge, which is what
+       gives the sail its "wind-in-it" tilt instead of looking static. -->
+  <path d="M 218 92 L 250 348 L 408 348 Z" fill="#FFFFFF"/>
 
-  <!-- Hull — simple curved boat shape, white -->
-  <path d="M 130 350 L 382 350 Q 366 405 296 408 L 216 408 Q 146 405 130 350 Z" fill="#FFFFFF"/>
-
-  <!-- Water — one clean wave line under the hull -->
-  <path d="M 95 445 Q 175 425 256 445 T 417 445"
-        stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <!-- Hull — single fluid asymmetric curve, sits with a small gap
+       below the sail (the gap reveals the brand gradient = implied
+       deck/waterline, no extra strokes needed). -->
+  <path d="M 104 372 L 408 372 Q 422 412 350 418 L 178 418 Q 116 414 104 372 Z" fill="#FFFFFF"/>
 </svg>
