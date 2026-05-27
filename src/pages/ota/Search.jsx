@@ -203,11 +203,11 @@ export default function OTASearch() {
             <p className="text-sm sm:text-base font-semibold text-[#ffb700] tracking-wider uppercase mb-4 drop-shadow-lg">
               {t('booking.slogan', 'Owned by Hoteliers, Built for Hospitality')}
             </p>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3 tracking-tight drop-shadow-lg">
-              {t('booking.hero_title', 'Find deals on hotels, resorts & more')}
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-lg leading-tight">
+              {t('booking.hero_title', 'Where you stay shapes the world.')}
             </h1>
-            <p className="text-white/90 text-sm sm:text-base max-w-2xl mx-auto drop-shadow-md">
-              {t('booking.hero_subtitle', 'Book directly with hoteliers — 90% of every booking goes to them, not to Wall Street.')}
+            <p className="text-white/90 text-base sm:text-lg max-w-2xl mx-auto drop-shadow-md leading-relaxed">
+              {t('booking.hero_subtitle', 'Travel directly with hoteliers — co-owners of the only platform built for hospitality. From one island to the world.')}
             </p>
           </div>
 
