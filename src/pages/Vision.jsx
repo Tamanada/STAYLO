@@ -194,11 +194,25 @@ export default function Vision() {
         </div>
       </section>
 
-      {/* Live Share Counter — Option C (deep brand-purple, premium/serious) */}
-      <section className="py-8 text-white relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #2a1148 0%, #1a0d2e 100%)' }}>
+      {/* Live Share Counter — emotional brand moment: elephants at sunset
+          (the painting literally IS our brand palette: orange-pink-purple sky,
+          rooted in Koh Phangan with palm silhouettes). */}
+      <section className="py-8 text-white relative overflow-hidden">
+        {/* Painting as full-bleed background */}
+        <img
+          src="/elephants-sunset.jpg"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Strong dark scrim — the painting is very saturated (bright sun
+            in the center), so we need enough darkening to keep every line
+            of body copy legible without killing the artwork. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/55 to-black/70" />
+        {/* One subtle brand orb pulled in front of the scrim to add a
+            soft glow without competing with the painting's own light */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-[10%] w-72 h-72 bg-[#FF6B00]/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-[10%] w-80 h-80 bg-[#FF3CB4]/20 rounded-full blur-3xl" />
+          <div className="absolute top-[15%] right-[8%] w-64 h-64 bg-[#FFAB40]/15 rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-5">
