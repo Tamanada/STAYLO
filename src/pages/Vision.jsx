@@ -910,11 +910,21 @@ export default function Vision() {
         </div>
       </section>
 
-      {/* Required Documents — Option C deep brand-purple */}
-      <section className="py-8 text-white relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #1a0d2e 0%, #2a1148 100%)' }}>
+      {/* Required Documents — Bob.png as background (brand-aligned artwork) */}
+      <section className="py-8 text-white relative overflow-hidden">
+        {/* Bob.png as full-bleed background */}
+        <img
+          src="/Bob.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Dark scrim — keep doc cards and "What You Need to Join"
+            headline crisp against the artwork */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/55 to-black/70" />
+        {/* Subtle warm glow top-right */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 right-[10%] w-72 h-72 bg-[#FF6B00]/15 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 left-[10%] w-72 h-72 bg-[#FF3CB4]/15 rounded-full blur-3xl" />
+          <div className="absolute top-10 right-[8%] w-64 h-64 bg-[#FFAB40]/12 rounded-full blur-3xl" />
         </div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
