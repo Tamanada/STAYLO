@@ -11,13 +11,39 @@
   <!-- Rounded-square brand tile -->
   <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="url(#ship-bg)"/>
 
-  <!-- Sail — forward-leaning triangle (tilts right for motion).
-       The top apex sits LEFT of the base's left edge, which is what
-       gives the sail its "wind-in-it" tilt instead of looking static. -->
-  <path d="M 218 92 L 250 348 L 408 348 Z" fill="#FFFFFF"/>
+  <!-- Ship's wheel — hoteliers at the helm.
+       6 spokes (modern, less busy than 8), 6 handles, hub. -->
 
-  <!-- Hull — single fluid asymmetric curve, sits with a small gap
-       below the sail (the gap reveals the brand gradient = implied
-       deck/waterline, no extra strokes needed). -->
-  <path d="M 104 372 L 408 372 Q 422 412 350 418 L 178 418 Q 116 414 104 372 Z" fill="#FFFFFF"/>
+  <!-- Outer rim — thick ring -->
+  <circle cx="256" cy="256" r="138" fill="none" stroke="#FFFFFF" stroke-width="22"/>
+
+  <!-- 6 spokes radiating from center, evenly spaced at 60° -->
+  <g stroke="#FFFFFF" stroke-width="18" stroke-linecap="round">
+    <line x1="256" y1="256" x2="256" y2="124"/>                 <!-- 0°   -->
+    <line x1="256" y1="256" x2="370.32" y2="190"/>              <!-- 60°  -->
+    <line x1="256" y1="256" x2="370.32" y2="322"/>              <!-- 120° -->
+    <line x1="256" y1="256" x2="256" y2="388"/>                 <!-- 180° -->
+    <line x1="256" y1="256" x2="141.68" y2="322"/>              <!-- 240° -->
+    <line x1="256" y1="256" x2="141.68" y2="190"/>              <!-- 300° -->
+  </g>
+
+  <!-- 6 handles — knobs extending past the rim at each spoke -->
+  <g fill="#FFFFFF">
+    <!-- 0° handle (top) -->
+    <rect x="240" y="68" width="32" height="62" rx="16"/>
+    <!-- 60° handle -->
+    <g transform="rotate(60 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
+    <!-- 120° handle -->
+    <g transform="rotate(120 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
+    <!-- 180° handle (bottom) -->
+    <g transform="rotate(180 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
+    <!-- 240° handle -->
+    <g transform="rotate(240 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
+    <!-- 300° handle -->
+    <g transform="rotate(300 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
+  </g>
+
+  <!-- Hub at center — solid white circle with brand-color dot for depth -->
+  <circle cx="256" cy="256" r="32" fill="#FFFFFF"/>
+  <circle cx="256" cy="256" r="10" fill="url(#ship-bg)"/>
 </svg>
