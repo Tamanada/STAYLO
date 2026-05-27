@@ -925,17 +925,20 @@ export default function Vision() {
                   key={phase.key}
                   type="button"
                   onClick={() => setOpenPhase(phase)}
-                  className={`relative flex-shrink-0 w-[180px] md:w-auto snap-start text-center bg-white rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer ${
+                  className={`relative flex-shrink-0 w-[180px] md:w-auto snap-start text-center bg-white/12 backdrop-blur-md rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer ${
                     i === 0
-                      ? 'border-libre/40 shadow-lg shadow-libre/10 hover:shadow-xl hover:-translate-y-1'
-                      : 'border-gray-200 hover:border-gray-300 hover:shadow-lg hover:-translate-y-1'
+                      ? 'border-libre/60 shadow-lg shadow-libre/20 hover:shadow-xl hover:bg-white/18 hover:-translate-y-1'
+                      : 'border-white/25 hover:border-white/45 hover:bg-white/18 hover:shadow-xl hover:-translate-y-1'
                   }`}
                 >
                   {/* Icon tile sits ON the connecting line at the top */}
                   <div className={`relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center shadow-md mb-3`}>
                     <phase.icon size={24} className="text-white" />
                   </div>
-                  <h3 className="text-sm sm:text-base font-bold text-deep mb-1.5 line-clamp-1">
+                  <h3
+                    className="text-sm sm:text-base font-bold text-white mb-1.5 line-clamp-1"
+                    style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}
+                  >
                     {t(`vision.${phase.key}`)}
                   </h3>
                   <div className="flex items-center justify-center mb-1.5">
@@ -943,7 +946,12 @@ export default function Vision() {
                       {phase.status}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-gray-400 font-medium">{phase.timeline}</p>
+                  <p
+                    className="text-[11px] text-white/85 font-medium"
+                    style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}
+                  >
+                    {phase.timeline}
+                  </p>
                 </button>
               ))}
             </div>
