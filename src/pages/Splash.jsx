@@ -93,24 +93,36 @@ export default function Splash() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-2xl sm:text-3xl font-bold mb-6 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+          <p
+            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 text-white"
+            style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
             {t('splash.subtitle')}
           </p>
 
           {/* Description */}
-          <p className="text-lg sm:text-xl text-white/95 max-w-2xl mx-auto mb-8 leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
+          <p
+            className="text-xl sm:text-2xl text-white max-w-2xl mx-auto mb-8 leading-relaxed font-medium"
+            style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
             {t('splash.description')}
           </p>
 
           {/* Glowing emphasized box */}
-          <div className="inline-flex items-center gap-3 px-6 sm:px-8 py-4 rounded-2xl bg-gradient-to-r from-golden/15 via-sunrise/15 to-sunset/15 border border-golden/30 mb-6 animate-pulse-glow">
-            <span className="text-white font-bold text-xl sm:text-2xl tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+          <div className="inline-flex items-center gap-3 px-6 sm:px-8 py-4 rounded-2xl bg-black/35 backdrop-blur-md border border-golden/40 mb-6 animate-pulse-glow">
+            <span
+              className="text-white font-bold text-xl sm:text-2xl tracking-wide"
+              style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}
+            >
               {t('splash.types')}
             </span>
           </div>
 
           {/* Small text */}
-          <p className="text-white/90 text-base sm:text-lg mb-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
+          <p
+            className="text-white text-lg sm:text-xl mb-10 font-medium"
+            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.85)' }}
+          >
             {t('splash.license_note')}
           </p>
 
