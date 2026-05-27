@@ -10,12 +10,12 @@ import { useAuth } from '../hooks/useAuth'
 import SEO from '../components/SEO'
 
 const phases = [
-  { key: 'phase1', icon: Hotel, gradient: 'from-ocean to-electric', status: 'Alpha', timeline: 'Now' },
+  { key: 'phase1', icon: Hotel, gradient: 'from-[#FF6B00] to-[#FF3CB4]', status: 'Alpha', timeline: 'Now' },
   { key: 'phase_wallet', icon: Wallet, gradient: 'from-[#F7931A] to-[#E8840F]', status: 'M03', timeline: 'M03' },
-  { key: 'phase2', icon: UtensilsCrossed, gradient: 'from-libre to-libre/70', status: 'V2', timeline: 'M6–M12' },
-  { key: 'phase3', icon: Compass, gradient: 'from-sunrise to-sunset', status: 'V3', timeline: 'M12–M18' },
-  { key: 'phase4', icon: Plane, gradient: 'from-electric to-sunset', status: 'V4', timeline: 'M18–M24' },
-  { key: 'phase5', icon: Globe, gradient: 'from-golden to-sunrise', status: 'V5', timeline: 'M24+' },
+  { key: 'phase2', icon: UtensilsCrossed, gradient: 'from-[#FF3CB4] to-[#6C5CE7]', status: 'V2', timeline: 'M6–M12' },
+  { key: 'phase3', icon: Compass, gradient: 'from-[#6C5CE7] to-[#FF3CB4]', status: 'V3', timeline: 'M12–M18' },
+  { key: 'phase4', icon: Plane, gradient: 'from-[#FDCB6E] to-[#FF6B00]', status: 'V4', timeline: 'M18–M24' },
+  { key: 'phase5', icon: Globe, gradient: 'from-[#FF6B00] via-[#FF3CB4] to-[#6C5CE7]', status: 'V5', timeline: 'M24+' },
 ]
 
 const benefitIcons = {
@@ -81,54 +81,58 @@ export default function Vision() {
         description="Why STAYLO exists: 22% commissions are killing hotel margins. We're building a hotelier-owned cooperative where members vote, share revenue, and pay 10% for life. Roadmap, milestones, and ownership model."
         path="/vision"
       />
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-deep via-[#0d1f3c] to-ocean/90 text-white py-10 sm:py-14 relative overflow-hidden animate-gradient">
-        <div className="absolute inset-0">
-          <div className="absolute top-10 left-[20%] w-60 h-60 bg-golden/15 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-sunset/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+      {/* Hero — brand radiant (Option A) */}
+      <section
+        className="text-white py-10 sm:py-14 relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF3CB4 45%, #6C5CE7 100%)' }}
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 left-[20%] w-60 h-60 bg-white/15 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-[#FDCB6E]/25 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
         </div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <Badge variant="golden" className="mb-3">{t('vision.title')}</Badge>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-3">{t('vision.hero_title')}</h1>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto mb-5">{t('vision.hero_subtitle')}</p>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-3" style={{ textShadow: '0 2px 24px rgba(0,0,0,0.18)' }}>{t('vision.hero_title')}</h1>
+          <p className="text-lg text-white/85 max-w-2xl mx-auto mb-5">{t('vision.hero_subtitle')}</p>
           <Link to={user ? '/dashboard' : '/register'}>
-            <button className="px-10 py-4 bg-gradient-to-r from-golden to-sunrise text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-3 cursor-pointer">
+            <button className="px-10 py-4 bg-white text-[#FF6B00] font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-3 cursor-pointer animate-pulse-glow">
               <Sparkles size={22} />
-              {user ? t('nav.dashboard', 'Go to Dashboard') : t('vision.invest_cta', 'Become a Founding Member')}
-              <ArrowRight size={20} />
+              <span className="text-gradient">{user ? t('nav.dashboard', 'Go to Dashboard') : t('vision.invest_cta', 'Become a Founding Member')}</span>
+              <ArrowRight size={20} className="text-[#FF3CB4]" />
             </button>
           </Link>
         </div>
       </section>
 
-      {/* Company Structure */}
-      <section className="py-8 sm:py-12">
+      {/* Company Structure — Option B (light brand cards, orange→pink→purple cycle) */}
+      <section className="py-8 sm:py-12 bg-[#FFFDF8]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
+            <p className="section-label mb-3">{t('vision.structure_label', 'Structure')}</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.structure_title', 'The Staylo Structure')}</h2>
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.structure_subtitle', 'A platform built, owned, and governed by the people who use it.')}</p>
           </div>
 
           <div className="grid sm:grid-cols-3 gap-6">
-            <Card className="p-6 text-center border-2 border-ocean/20 hover:border-ocean/40 transition-all">
-              <div className="w-14 h-14 bg-ocean/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Building2 size={28} className="text-ocean" />
+            <Card className="p-6 text-center border-2 border-[#FF6B00]/20 hover:border-[#FF6B00]/50 transition-all card-hover">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(255,107,0,0.12)' }}>
+                <Building2 size={28} style={{ color: '#FF6B00' }} />
               </div>
               <h3 className="text-lg font-bold text-deep mb-2">{t('vision.structure_coop_title', 'Cooperative Model')}</h3>
               <p className="text-sm text-gray-500">{t('vision.structure_coop_desc', 'Staylo is a collectively-owned platform. Hoteliers are not customers — they are shareholders and decision-makers.')}</p>
             </Card>
 
-            <Card className="p-6 text-center border-2 border-libre/20 hover:border-libre/40 transition-all">
-              <div className="w-14 h-14 bg-libre/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Vote size={28} className="text-libre" />
+            <Card className="p-6 text-center border-2 border-[#FF3CB4]/20 hover:border-[#FF3CB4]/50 transition-all card-hover">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(255,60,180,0.12)' }}>
+                <Vote size={28} style={{ color: '#FF3CB4' }} />
               </div>
               <h3 className="text-lg font-bold text-deep mb-2">{t('vision.structure_vote_title', '1 Hotel = 1 Vote')}</h3>
               <p className="text-sm text-gray-500">{t('vision.structure_vote_desc', 'Governance is democratic. Whether you hold 1 share or 10, your property gets one equal vote on all platform decisions.')}</p>
             </Card>
 
-            <Card className="p-6 text-center border-2 border-sunset/20 hover:border-sunset/40 transition-all">
-              <div className="w-14 h-14 bg-sunset/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Lock size={28} className="text-sunset" />
+            <Card className="p-6 text-center border-2 border-[#6C5CE7]/20 hover:border-[#6C5CE7]/50 transition-all card-hover">
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(108,92,231,0.12)' }}>
+                <Lock size={28} style={{ color: '#6C5CE7' }} />
               </div>
               <h3 className="text-lg font-bold text-deep mb-2">{t('vision.structure_transfer_title', 'Transferable Shares')}</h3>
               <p className="text-sm text-gray-500">{t('vision.structure_transfer_desc', 'Shares are freely transferable. Voting rights stay with the active property registration, not the shares themselves.')}</p>
@@ -190,59 +194,63 @@ export default function Vision() {
         </div>
       </section>
 
-      {/* Live Share Counter */}
-      <section className="py-8 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      {/* Live Share Counter — Option C (deep brand-purple, premium/serious) */}
+      <section className="py-8 text-white relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #2a1148 0%, #1a0d2e 100%)' }}>
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-[10%] w-72 h-72 bg-[#FF6B00]/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-[10%] w-80 h-80 bg-[#FF3CB4]/20 rounded-full blur-3xl" />
+        </div>
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-5">
             <h2 className="text-3xl sm:text-4xl font-bold mb-3">{t('vision.share_sale_title', 'Alpha Share Whitelisting')}</h2>
-            <p className="text-white/60">{t('vision.share_sale_subtitle', 'Phase Alpha — Founding Partners only. Limited to 3,000 shares.')}</p>
+            <p className="text-white/70">{t('vision.share_sale_subtitle', 'Phase Alpha — Founding Partners only. Limited to 3,000 shares.')}</p>
           </div>
 
           {/* Big counter */}
-          <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-3xl p-8 sm:p-10 mb-4">
+          <div className="bg-white/8 backdrop-blur-md border border-[#FF6B00]/30 rounded-3xl p-8 sm:p-10 mb-4">
             <div className="flex items-center justify-center gap-2 mb-3">
-              <span className="text-6xl sm:text-7xl font-black text-golden">{sharesSold}</span>
+              <span className="text-6xl sm:text-7xl font-black text-gradient">{sharesSold}</span>
               <span className="text-2xl text-white/40 font-medium">/ {totalAlphaShares.toLocaleString()}</span>
             </div>
-            <p className="text-center text-white/50 text-sm mb-3">{t('vision.shares_claimed', 'alpha shares claimed')}</p>
+            <p className="text-center text-white/60 text-sm mb-3">{t('vision.shares_claimed', 'alpha shares claimed')}</p>
 
             {/* Progress bar */}
             <div className="w-full bg-white/10 rounded-full h-4 mb-4 overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-golden via-sunrise to-sunset rounded-full transition-all duration-1000 relative"
-                style={{ width: `${pctSold}%` }}
+                className="h-full rounded-full transition-all duration-1000 relative"
+                style={{ width: `${pctSold}%`, background: 'linear-gradient(90deg, #FF6B00, #FF3CB4, #6C5CE7)' }}
               >
                 <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full" />
               </div>
             </div>
-            <div className="flex justify-between text-xs text-white/40">
+            <div className="flex justify-between text-xs text-white/50">
               <span>0</span>
               <span>{pctSold}% {t('vision.sold', 'sold')}</span>
               <span>{totalAlphaShares.toLocaleString()}</span>
             </div>
 
             {/* Urgency message */}
-            <div className="bg-sunset/10 border border-sunset/30 rounded-2xl p-4 mt-4 mb-4 text-center">
+            <div className="rounded-2xl p-4 mt-4 mb-4 text-center" style={{ background: 'rgba(255,107,0,0.12)', border: '1px solid rgba(255,107,0,0.35)' }}>
               <p className="text-white font-bold text-lg mb-1">
                 {t('vision.urgency_title', '600 hotels. 3,000 shares. Do the math.')}
               </p>
-              <p className="text-white/70 text-sm leading-relaxed">
+              <p className="text-white/80 text-sm leading-relaxed">
                 {t('vision.urgency_line1', "That's ~5 shares per hotel.")}<br />
                 {t('vision.urgency_line2', 'Max 10 per property at Alpha price.')}<br />
                 {t('vision.urgency_line3', 'Not everyone will get theirs.')}
               </p>
-              <p className="text-sunset font-black text-xs uppercase tracking-wider mt-2">
+              <p className="font-black text-xs uppercase tracking-wider mt-2" style={{ color: '#FF6B00' }}>
                 {t('vision.urgency_cta', 'First come, first served. No exceptions.')}
               </p>
             </div>
 
             {/* Share pricing — Alpha vs World */}
             <div className="grid sm:grid-cols-2 gap-4 mt-4">
-              <div className="bg-golden/10 border border-golden/30 rounded-2xl p-5 text-center">
-                <p className="text-xs text-golden uppercase tracking-wider font-semibold mb-2">{t('vision.tier_alpha', 'Alpha (Now)')}</p>
-                <p className="text-4xl font-black text-golden">$1,000</p>
-                <p className="text-xs text-white/40 mt-1">{t('vision.per_share', 'per share')}</p>
-                <p className="text-xs text-golden/60 mt-2">{t('vision.tier_alpha_note', 'For KP. Best price. Forever.')}</p>
+              <div className="rounded-2xl p-5 text-center" style={{ background: 'rgba(253,203,110,0.12)', border: '1px solid rgba(253,203,110,0.35)' }}>
+                <p className="text-xs uppercase tracking-wider font-semibold mb-2" style={{ color: '#FDCB6E' }}>{t('vision.tier_alpha', 'Alpha (Now)')}</p>
+                <p className="text-4xl font-black" style={{ color: '#FDCB6E' }}>$1,000</p>
+                <p className="text-xs text-white/50 mt-1">{t('vision.per_share', 'per share')}</p>
+                <p className="text-xs mt-2" style={{ color: 'rgba(253,203,110,0.75)' }}>{t('vision.tier_alpha_note', 'For KP. Best price. Forever.')}</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center opacity-60">
                 <p className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-2">{t('vision.tier_world', 'World (Next)')}</p>
@@ -254,21 +262,21 @@ export default function Vision() {
 
           {/* Key numbers */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white/5 rounded-2xl p-5 text-center">
+            <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black text-white">{totalShares.toLocaleString()}</p>
-              <p className="text-xs text-white/40">{t('vision.total_shares', 'Total shares')}</p>
+              <p className="text-xs text-white/50">{t('vision.total_shares', 'Total shares')}</p>
             </div>
-            <div className="bg-white/5 rounded-2xl p-5 text-center">
-              <p className="text-2xl font-black text-golden">$1,000</p>
-              <p className="text-xs text-white/40">{t('vision.per_share_alpha', 'Per share (alpha)')}</p>
+            <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
+              <p className="text-2xl font-black" style={{ color: '#FDCB6E' }}>$1,000</p>
+              <p className="text-xs text-white/50">{t('vision.per_share_alpha', 'Per share (alpha)')}</p>
             </div>
-            <div className="bg-white/5 rounded-2xl p-5 text-center">
+            <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black text-white">1–10</p>
-              <p className="text-xs text-white/40">{t('vision.shares_per_property', '1 to 10 shares per property')}</p>
+              <p className="text-xs text-white/50">{t('vision.shares_per_property', '1 to 10 shares per property')}</p>
             </div>
-            <div className="bg-white/5 rounded-2xl p-5 text-center">
-              <p className="text-2xl font-black text-libre">10%</p>
-              <p className="text-xs text-white/40">{t('vision.commission_forever', 'Commission — forever')}</p>
+            <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
+              <p className="text-2xl font-black" style={{ color: '#FF6B00' }}>10%</p>
+              <p className="text-xs text-white/50">{t('vision.commission_forever', 'Commission — forever')}</p>
             </div>
           </div>
         </div>
@@ -361,92 +369,106 @@ export default function Vision() {
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.revenue_distribution_subtitle', 'Full transparency. Every dollar accounted for.')}</p>
           </div>
 
-          {/* Money flow — For every $100 booked */}
-          <Card className="p-6 sm:p-10 mb-3 max-w-4xl mx-auto bg-gradient-to-br from-deep to-[#0F2847] text-white overflow-hidden">
-            <p className="text-center text-sm text-gray-400 mb-2 uppercase tracking-wider">{t('vision.flow_label', 'For every')}</p>
-            <p className="text-center text-5xl sm:text-6xl font-black mb-4">$100 <span className="text-2xl font-normal text-gray-400">{t('vision.flow_booked', 'booked')}</span></p>
+          {/* Money flow — For every $100 booked (brand comparison panel) */}
+          <div className="p-6 sm:p-10 mb-3 max-w-4xl mx-auto rounded-3xl overflow-hidden" style={{ background: '#FFFDF8', border: '1.5px solid #E8E0D8', boxShadow: '0 8px 32px rgba(255,107,0,0.08)' }}>
+            <p className="text-center text-sm text-gray-500 mb-2 uppercase tracking-wider font-semibold">{t('vision.flow_label', 'For every')}</p>
+            <p className="text-center text-5xl sm:text-6xl font-black mb-4 text-deep">$100 <span className="text-2xl font-normal text-gray-400">{t('vision.flow_booked', 'booked')}</span></p>
 
             <div className="grid sm:grid-cols-2 gap-6">
-              {/* OTA side */}
-              <div className="bg-white/5 backdrop-blur rounded-2xl p-6 border border-white/10">
+              {/* OTA side — muted "loser" treatment */}
+              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-3 h-3 rounded-full bg-sunset" />
-                  <p className="font-bold text-gray-300">{t('vision.flow_ota_title', 'With Booking.com / Agoda')}</p>
+                  <div className="w-3 h-3 rounded-full bg-gray-400" />
+                  <p className="font-bold text-gray-500">{t('vision.flow_ota_title', 'With Booking.com / Agoda')}</p>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">{t('vision.flow_ota_commission', 'Commission')}</span>
-                    <span className="text-2xl font-bold text-sunset">−$22</span>
+                    <span className="text-gray-500 text-sm">{t('vision.flow_ota_commission', 'Commission')}</span>
+                    <span className="text-2xl font-bold" style={{ color: '#dc2626' }}>−$22</span>
                   </div>
-                  <div className="h-px bg-white/10" />
+                  <div className="h-px bg-gray-200" />
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">{t('vision.flow_ota_where', 'Where does it go?')}</span>
-                    <span className="text-sm text-gray-500">→ {t('vision.flow_ota_destination', 'Hedge funds & tax havens')}</span>
+                    <span className="text-gray-500 text-sm">{t('vision.flow_ota_where', 'Where does it go?')}</span>
+                    <span className="text-sm text-gray-400">→ {t('vision.flow_ota_destination', 'Hedge funds & tax havens')}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">{t('vision.flow_ota_back', 'What comes back to you?')}</span>
-                    <span className="text-lg font-bold text-sunset">$0</span>
+                    <span className="text-gray-500 text-sm">{t('vision.flow_ota_back', 'What comes back to you?')}</span>
+                    <span className="text-lg font-bold" style={{ color: '#dc2626' }}>$0</span>
                   </div>
-                  <div className="h-px bg-white/10" />
+                  <div className="h-px bg-gray-200" />
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-300 font-medium">{t('vision.flow_you_keep', 'You keep')}</span>
-                    <span className="text-2xl font-bold text-white">$78</span>
+                    <span className="text-gray-600 font-medium">{t('vision.flow_you_keep', 'You keep')}</span>
+                    <span className="text-2xl font-bold text-gray-500">$78</span>
                   </div>
                 </div>
               </div>
 
-              {/* Staylo side */}
-              <div className="bg-libre/10 backdrop-blur rounded-2xl p-6 border-2 border-libre/30 relative">
-                <div className="absolute -top-3 right-4 bg-libre text-white text-xs font-bold px-3 py-1 rounded-full">
+              {/* Staylo side — brand-gradient WINNER */}
+              <div
+                className="rounded-2xl p-6 relative"
+                style={{
+                  background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #FF6B00, #FF3CB4, #6C5CE7) border-box',
+                  border: '2px solid transparent',
+                  boxShadow: '0 8px 32px rgba(255,60,180,0.18)',
+                }}
+              >
+                <div
+                  className="absolute -top-3 right-4 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider animate-pulse-glow"
+                  style={{ background: 'linear-gradient(135deg, #FF6B00, #FF3CB4)' }}
+                >
                   {t('vision.flow_recommended', 'BETTER DEAL')}
                 </div>
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-3 h-3 rounded-full bg-libre" />
-                  <p className="font-bold text-libre">{t('vision.flow_staylo_title', 'With Staylo')}</p>
+                  <div className="w-3 h-3 rounded-full" style={{ background: 'linear-gradient(135deg, #FF6B00, #FF3CB4)' }} />
+                  <p className="font-bold text-gradient">{t('vision.flow_staylo_title', 'With Staylo')}</p>
                 </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">{t('vision.flow_staylo_commission', 'Commission')}</span>
-                    <span className="text-2xl font-bold text-libre">−$10</span>
+                    <span className="text-gray-600 text-sm">{t('vision.flow_staylo_commission', 'Commission')}</span>
+                    <span className="text-2xl font-black" style={{ color: '#FF6B00' }}>−$10</span>
                   </div>
-                  <div className="h-px bg-white/10" />
+                  <div className="h-px bg-gray-200" />
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">{t('vision.flow_staylo_where', 'Where does it go?')}</span>
-                    <span className="text-sm text-libre">→ {t('vision.flow_staylo_community', 'Your community')}</span>
+                    <span className="text-gray-600 text-sm">{t('vision.flow_staylo_where', 'Where does it go?')}</span>
+                    <span className="text-sm font-semibold" style={{ color: '#FF3CB4' }}>→ {t('vision.flow_staylo_community', 'Your community')}</span>
                   </div>
-                  <div className="h-px bg-white/10" />
+                  <div className="h-px bg-gray-200" />
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-300 font-medium">{t('vision.flow_you_keep', 'You keep')}</span>
-                    <span className="text-2xl font-bold text-libre">$90</span>
+                    <span className="text-gray-700 font-medium">{t('vision.flow_you_keep', 'You keep')}</span>
+                    <span className="text-2xl font-black text-gradient">$90</span>
                   </div>
-                  <div className="text-center mt-3 bg-libre/20 rounded-lg py-2">
-                    <span className="text-libre font-bold text-lg">+15.4% </span>
-                    <span className="text-gray-400 text-sm">{t('vision.flow_more_revenue', 'more revenue vs OTAs')}</span>
+                  <div className="text-center mt-3 rounded-lg py-2" style={{ background: 'linear-gradient(135deg, rgba(255,107,0,0.1), rgba(255,60,180,0.1), rgba(108,92,231,0.1))' }}>
+                    <span className="font-black text-lg" style={{ color: '#FF6B00' }}>+15.4% </span>
+                    <span className="text-gray-600 text-sm">{t('vision.flow_more_revenue', 'more revenue vs OTAs')}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <p className="text-center text-xs text-gray-500 mt-3">{t('vision.flow_disclaimer', 'Based on average 22% OTA commission. Actual savings depend on your current platform and rates.')}</p>
-          </Card>
+            <p className="text-center text-xs text-gray-400 mt-3">{t('vision.flow_disclaimer', 'Based on average 22% OTA commission. Actual savings depend on your current platform and rates.')}</p>
+          </div>
 
         </div>
       </section>
 
-      {/* Detailed Projections — Toggable Sections */}
-      <section className="py-8 sm:py-12 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+      {/* Detailed Projections — Option C deep brand-purple, premium/financial */}
+      <section className="py-8 sm:py-12 text-white relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #1a0d2e 0%, #2a1148 60%, #1a0d2e 100%)' }}>
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 right-[5%] w-96 h-96 bg-[#FF6B00]/12 rounded-full blur-3xl" />
+          <div className="absolute bottom-20 left-[5%] w-96 h-96 bg-[#FF3CB4]/12 rounded-full blur-3xl" />
+        </div>
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <Badge variant="golden" className="mb-4">{t('vision.projections_badge', 'Financial Projections')}</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">{t('vision.projections_title', 'The Roadmap to $1B')}</h2>
-            <p className="text-white/60 max-w-2xl mx-auto">{t('vision.projections_subtitle', 'Transparent data. Real numbers. Built for trust.')}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3"><span className="text-gradient">{t('vision.projections_title', 'The Roadmap to $1B')}</span></h2>
+            <p className="text-white/70 max-w-2xl mx-auto">{t('vision.projections_subtitle', 'Transparent data. Real numbers. Built for trust.')}</p>
           </div>
 
-          {/* 36-Month Projections */}
+          {/* 36-Month Projections — icon orange */}
           <div className="mb-4">
-            <button onClick={() => setShowProjection(!showProjection)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+            <button onClick={() => setShowProjection(!showProjection)} className="w-full flex items-center justify-between bg-white/8 backdrop-blur-md border border-[#FF6B00]/30 rounded-2xl p-5 hover:bg-white/12 transition-all cursor-pointer">
               <div className="flex items-center gap-3">
-                <TrendingUp className="text-golden" size={24} />
+                <TrendingUp style={{ color: '#FF6B00' }} size={24} />
                 <span className="font-bold text-lg">{t('vision.proj_36m_title', '36-Month Financial Projections')}</span>
               </div>
               {showProjection ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -481,11 +503,11 @@ export default function Vision() {
             )}
           </div>
 
-          {/* Share Structure — 4 Categories per IP Protection Document */}
+          {/* Share Structure — icon pink */}
           <div className="mb-4">
-            <button onClick={() => setShowShareStructure(!showShareStructure)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+            <button onClick={() => setShowShareStructure(!showShareStructure)} className="w-full flex items-center justify-between bg-white/8 backdrop-blur-md border border-[#FF3CB4]/30 rounded-2xl p-5 hover:bg-white/12 transition-all cursor-pointer">
               <div className="flex items-center gap-3">
-                <PieChart className="text-ocean" size={24} />
+                <PieChart style={{ color: '#FF3CB4' }} size={24} />
                 <span className="font-bold text-lg">{t('vision.share_structure_title', 'Share Structure — 500,000 Shares · 4 Categories')}</span>
               </div>
               {showShareStructure ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -515,11 +537,11 @@ export default function Vision() {
             )}
           </div>
 
-          {/* $STAY Tokenomics — per IP Protection Document */}
+          {/* $STAY Tokenomics — icon purple */}
           <div className="mb-4">
-            <button onClick={() => setShowTokenomics(!showTokenomics)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+            <button onClick={() => setShowTokenomics(!showTokenomics)} className="w-full flex items-center justify-between bg-white/8 backdrop-blur-md border border-[#6C5CE7]/30 rounded-2xl p-5 hover:bg-white/12 transition-all cursor-pointer">
               <div className="flex items-center gap-3">
-                <DollarSign className="text-libre" size={24} />
+                <DollarSign style={{ color: '#6C5CE7' }} size={24} />
                 <span className="font-bold text-lg">{t('vision.tokenomics_title', '$STAY Token — 10B Supply · Solana · Bitcoin halving')}</span>
               </div>
               {showTokenomics ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -573,11 +595,11 @@ export default function Vision() {
             )}
           </div>
 
-          {/* Governance */}
+          {/* Governance — icon gold */}
           <div className="mb-4">
-            <button onClick={() => setShowGovernance(!showGovernance)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+            <button onClick={() => setShowGovernance(!showGovernance)} className="w-full flex items-center justify-between bg-white/8 backdrop-blur-md border border-[#FDCB6E]/30 rounded-2xl p-5 hover:bg-white/12 transition-all cursor-pointer">
               <div className="flex items-center gap-3">
-                <Scale className="text-electric" size={24} />
+                <Scale style={{ color: '#FDCB6E' }} size={24} />
                 <span className="font-bold text-lg">{t('vision.governance_detail_title', 'Governance — On-Chain DAO · 1 Hotel = 1 Vote')}</span>
               </div>
               {showGovernance ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -614,11 +636,11 @@ export default function Vision() {
             )}
           </div>
 
-          {/* Private Investors Rights — 5 mechanisms */}
+          {/* Private Investors Rights — icon teal (semantic positive: protection) */}
           <div className="mb-4">
-            <button onClick={() => setShowInvestorRights(!showInvestorRights)} className="w-full flex items-center justify-between bg-white/5 backdrop-blur border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-all cursor-pointer">
+            <button onClick={() => setShowInvestorRights(!showInvestorRights)} className="w-full flex items-center justify-between bg-white/8 backdrop-blur-md border border-[#00B894]/30 rounded-2xl p-5 hover:bg-white/12 transition-all cursor-pointer">
               <div className="flex items-center gap-3">
-                <Shield className="text-libre" size={24} />
+                <Shield style={{ color: '#00B894' }} size={24} />
                 <span className="font-bold text-lg">{t('vision.investor_rights_title', 'Private Investors Rights — Engaged but not Controlling')}</span>
               </div>
               {showInvestorRights ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -849,59 +871,83 @@ export default function Vision() {
         </div>
       </section>
 
-      {/* Founding benefits */}
+      {/* Founding benefits — brand palette cycle */}
       <section className="py-8 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl font-bold text-deep text-center mb-5">
             {t('vision.founding_title')}
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
-            {Object.entries(benefitIcons).map(([key, Icon]) => (
-              <Card key={key} className="p-5 flex items-start gap-4">
-                <div className="w-10 h-10 bg-libre/10 rounded-xl flex items-center justify-center shrink-0">
-                  <Icon size={20} className="text-libre" />
-                </div>
-                <p className="text-sm text-gray-600">{t(`vision.founding_benefits.${key}`)}</p>
-              </Card>
-            ))}
+            {(() => {
+              const palette = ['#FF6B00', '#FF3CB4', '#6C5CE7', '#FDCB6E', '#00B894']
+              return Object.entries(benefitIcons).map(([key, Icon], i) => {
+                const color = palette[i % palette.length]
+                return (
+                  <Card key={key} className="p-5 flex items-start gap-4 card-hover" style={{ borderColor: color + '33' }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '1A' }}>
+                      <Icon size={20} style={{ color }} />
+                    </div>
+                    <p className="text-sm text-gray-600">{t(`vision.founding_benefits.${key}`)}</p>
+                  </Card>
+                )
+              })
+            })()}
           </div>
         </div>
       </section>
 
-      {/* Required Documents for Whitelisted Businesses */}
-      <section className="py-8 bg-gradient-to-br from-deep to-[#0F2847] text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      {/* Required Documents — Option C deep brand-purple */}
+      <section className="py-8 text-white relative overflow-hidden" style={{ background: 'linear-gradient(180deg, #1a0d2e 0%, #2a1148 100%)' }}>
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 right-[10%] w-72 h-72 bg-[#FF6B00]/15 rounded-full blur-3xl" />
+          <div className="absolute bottom-10 left-[10%] w-72 h-72 bg-[#FF3CB4]/15 rounded-full blur-3xl" />
+        </div>
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
             <Badge variant="golden" className="mb-4">{t('vision.docs_badge', 'Registration Process')}</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">{t('vision.docs_title', 'What You Need to Join')}</h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">{t('vision.docs_subtitle', 'To become an official Staylo Founding Partner, your business must be legally registered. Here\'s what we require:')}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4"><span className="text-gradient">{t('vision.docs_title', 'What You Need to Join')}</span></h2>
+            <p className="text-white/70 max-w-2xl mx-auto">{t('vision.docs_subtitle', 'To become an official Staylo Founding Partner, your business must be legally registered. Here\'s what we require:')}</p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-5">
-            {[
-              { icon: FileText, title: t('vision.doc_license', 'Business License'), desc: t('vision.doc_license_desc', 'TAT license (Thailand) or equivalent local business registration'), required: true },
-              { icon: Building2, title: t('vision.doc_registration', 'Company Registration'), desc: t('vision.doc_registration_desc', 'DBD registration certificate or equivalent (e.g. Ltd., Co., sole proprietor)'), required: true },
-              { icon: MapPin, title: t('vision.doc_property', 'Property Proof'), desc: t('vision.doc_property_desc', 'Ownership deed, lease agreement, or management contract for the property'), required: true },
-              { icon: CreditCard, title: t('vision.doc_tax', 'Tax ID'), desc: t('vision.doc_tax_desc', 'Valid tax identification number for the business entity'), required: true },
-              { icon: FileCheck, title: t('vision.doc_loi', 'Letter of Intent'), desc: t('vision.doc_loi_desc', 'Signed LOI (provided by Staylo) — bilingual TH/EN, non-binding'), required: true },
-              { icon: Scale, title: t('vision.doc_contract', 'Founding Partner Contract'), desc: t('vision.doc_contract_desc', 'Official partnership agreement — signed upon share purchase'), required: false },
-            ].map((doc, i) => (
-              <div key={i} className="bg-white/5 backdrop-blur rounded-2xl p-5 border border-white/10 flex gap-4">
-                <div className="w-12 h-12 bg-golden/10 rounded-xl flex items-center justify-center shrink-0">
-                  <doc.icon size={22} className="text-golden" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-semibold text-white text-sm">{doc.title}</h4>
-                    {doc.required && <span className="text-[10px] bg-sunset/20 text-sunset px-2 py-0.5 rounded-full">{t('vision.doc_required', 'Required')}</span>}
+            {(() => {
+              const palette = ['#FF6B00', '#FF3CB4', '#6C5CE7', '#FDCB6E', '#FF6B00', '#FF3CB4']
+              const docs = [
+                { icon: FileText, title: t('vision.doc_license', 'Business License'), desc: t('vision.doc_license_desc', 'TAT license (Thailand) or equivalent local business registration'), required: true },
+                { icon: Building2, title: t('vision.doc_registration', 'Company Registration'), desc: t('vision.doc_registration_desc', 'DBD registration certificate or equivalent (e.g. Ltd., Co., sole proprietor)'), required: true },
+                { icon: MapPin, title: t('vision.doc_property', 'Property Proof'), desc: t('vision.doc_property_desc', 'Ownership deed, lease agreement, or management contract for the property'), required: true },
+                { icon: CreditCard, title: t('vision.doc_tax', 'Tax ID'), desc: t('vision.doc_tax_desc', 'Valid tax identification number for the business entity'), required: true },
+                { icon: FileCheck, title: t('vision.doc_loi', 'Letter of Intent'), desc: t('vision.doc_loi_desc', 'Signed LOI (provided by Staylo) — bilingual TH/EN, non-binding'), required: true },
+                { icon: Scale, title: t('vision.doc_contract', 'Founding Partner Contract'), desc: t('vision.doc_contract_desc', 'Official partnership agreement — signed upon share purchase'), required: false },
+              ]
+              return docs.map((doc, i) => {
+                const color = palette[i % palette.length]
+                return (
+                  <div key={i} className="bg-white/8 backdrop-blur-md rounded-2xl p-5 border border-white/10 flex gap-4 hover:bg-white/12 transition-all" style={{ borderColor: color + '33' }}>
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '20' }}>
+                      <doc.icon size={22} style={{ color }} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-semibold text-white text-sm">{doc.title}</h4>
+                        {doc.required && (
+                          <span
+                            className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                            style={{ background: 'rgba(255,107,0,0.15)', color: '#FF6B00', border: '1px solid rgba(255,107,0,0.4)' }}
+                          >
+                            {t('vision.doc_required', 'Required')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-white/65 mt-1">{doc.desc}</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">{doc.desc}</p>
-                </div>
-              </div>
-            ))}
+                )
+              })
+            })()}
           </div>
 
-          <p className="text-center text-xs text-gray-500 mt-4">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
+          <p className="text-center text-xs text-white/50 mt-4">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
         </div>
       </section>
 
@@ -935,9 +981,13 @@ export default function Vision() {
         </div>
       </section>
 
-      {/* Founder Section */}
-      <section className="py-8 sm:py-12 bg-gradient-to-br from-deep via-deep to-ocean/90">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      {/* Founder Section — Option C deep brand-purple */}
+      <section className="py-8 sm:py-12 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #1a0d2e 0%, #2a1148 60%, #1a0d2e 100%)' }}>
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-[15%] w-[420px] h-[420px] bg-[#FF6B00]/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-[15%] w-[420px] h-[420px] bg-[#6C5CE7]/15 rounded-full blur-3xl" />
+        </div>
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-6">
             <Badge variant="golden" className="mb-4">{t('vision.founder_badge', 'The Founder')}</Badge>
           </div>
