@@ -11,39 +11,34 @@
   <!-- Rounded-square brand tile -->
   <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="url(#ship-bg)"/>
 
-  <!-- Ship's wheel — hoteliers at the helm.
-       6 spokes (modern, less busy than 8), 6 handles, hub. -->
+  <!-- Compass rose — set your course as a hotelier.
+       Outer bezel + 4 cardinal star points + 4 smaller intercardinal
+       points + center hub with brand-gradient dot. -->
 
-  <!-- Outer rim — thick ring -->
-  <circle cx="256" cy="256" r="138" fill="none" stroke="#FFFFFF" stroke-width="22"/>
+  <!-- Outer bezel ring -->
+  <circle cx="256" cy="256" r="170" stroke="#FFFFFF" stroke-width="14" fill="none"/>
 
-  <!-- 6 spokes radiating from center, evenly spaced at 60° -->
-  <g stroke="#FFFFFF" stroke-width="18" stroke-linecap="round">
-    <line x1="256" y1="256" x2="256" y2="124"/>                 <!-- 0°   -->
-    <line x1="256" y1="256" x2="370.32" y2="190"/>              <!-- 60°  -->
-    <line x1="256" y1="256" x2="370.32" y2="322"/>              <!-- 120° -->
-    <line x1="256" y1="256" x2="256" y2="388"/>                 <!-- 180° -->
-    <line x1="256" y1="256" x2="141.68" y2="322"/>              <!-- 240° -->
-    <line x1="256" y1="256" x2="141.68" y2="190"/>              <!-- 300° -->
+  <!-- Intercardinal points (NE / SE / SW / NW) — smaller, slightly faded
+       so the cardinal star reads as the dominant element -->
+  <g fill="#FFFFFF" opacity="0.55">
+    <g transform="rotate(45 256 256)"><polygon points="256,140 276,256 236,256"/></g>
+    <g transform="rotate(135 256 256)"><polygon points="256,140 276,256 236,256"/></g>
+    <g transform="rotate(225 256 256)"><polygon points="256,140 276,256 236,256"/></g>
+    <g transform="rotate(315 256 256)"><polygon points="256,140 276,256 236,256"/></g>
   </g>
 
-  <!-- 6 handles — knobs extending past the rim at each spoke -->
+  <!-- Cardinal points (N / E / S / W) — the main 4-point star -->
   <g fill="#FFFFFF">
-    <!-- 0° handle (top) -->
-    <rect x="240" y="68" width="32" height="62" rx="16"/>
-    <!-- 60° handle -->
-    <g transform="rotate(60 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
-    <!-- 120° handle -->
-    <g transform="rotate(120 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
-    <!-- 180° handle (bottom) -->
-    <g transform="rotate(180 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
-    <!-- 240° handle -->
-    <g transform="rotate(240 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
-    <!-- 300° handle -->
-    <g transform="rotate(300 256 256)"><rect x="240" y="68" width="32" height="62" rx="16"/></g>
+    <polygon points="256,80 284,256 228,256"/>
+    <g transform="rotate(90 256 256)"><polygon points="256,80 284,256 228,256"/></g>
+    <g transform="rotate(180 256 256)"><polygon points="256,80 284,256 228,256"/></g>
+    <g transform="rotate(270 256 256)"><polygon points="256,80 284,256 228,256"/></g>
   </g>
 
-  <!-- Hub at center — solid white circle with brand-color dot for depth -->
-  <circle cx="256" cy="256" r="32" fill="#FFFFFF"/>
-  <circle cx="256" cy="256" r="10" fill="url(#ship-bg)"/>
+  <!-- Center hub — solid white with brand-gradient dot for depth -->
+  <circle cx="256" cy="256" r="22" fill="#FFFFFF"/>
+  <circle cx="256" cy="256" r="8" fill="url(#ship-bg)"/>
+
+  <!-- Tiny "north" indicator above the top point — subtle visual anchor -->
+  <circle cx="256" cy="60" r="9" fill="#FFE54C"/>
 </svg>
