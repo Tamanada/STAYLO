@@ -17,10 +17,10 @@ const phases = [
     long: 'The foundation: book hotels, guesthouses, resorts and bungalows directly through STAYLO. 10% commission for life — versus 22% on Booking.com and Agoda. Hoteliers keep more revenue, guests pay fair prices, and Founding Partners own a piece of the platform itself.',
   },
   {
-    key: 'phase_ship', icon: Smartphone, gradient: 'from-[#00B894] to-[#6C5CE7]', status: 'Alpha', timeline: 'Now',
+    key: 'phase_ship', icon: Smartphone, iconSrc: '/staylo-ship-icon.svg', gradient: 'from-[#00B894] to-[#6C5CE7]', status: 'Alpha', timeline: 'Now',
     title: 'STAYLO Ship',
     desc: 'The hotelier dashboard — manage your property from the palm of your hand',
-    long: 'STAYLO Ship is the hotelier-side cockpit: PMS, front desk, channel manager, housekeeping, F&B, payments, staff scheduling, and reporting. Run your whole operation from a smartphone instead of stitching together five different SaaS tools. Free for Founding Partners; low flat monthly fee for everyone else.',
+    long: 'SHIP — Staylo Hotelier Integrated Platform. The hotelier-side cockpit: PMS, front desk, channel manager, housekeeping, F&B, payments, staff scheduling, and reporting. Run your whole operation from a smartphone instead of stitching together five different SaaS tools. Free for Founding Partners; low flat monthly fee for everyone else.',
   },
   {
     key: 'phase_wallet', icon: Wallet, gradient: 'from-[#F7931A] to-[#E8840F]', status: 'M03', timeline: 'M03',
@@ -949,10 +949,21 @@ export default function Vision() {
                       : 'border-white/50 hover:border-white/70 hover:bg-white/80 hover:shadow-xl hover:-translate-y-1'
                   }`}
                 >
-                  {/* Icon tile sits ON the connecting line at the top */}
-                  <div className={`relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center shadow-md mb-3`}>
-                    <phase.icon size={24} className="text-white" />
-                  </div>
+                  {/* Icon tile sits ON the connecting line at the top.
+                      For phases that supply a brand-tile iconSrc (e.g. STAYLO Ship),
+                      render the SVG full-tile — its rounded-square brand gradient
+                      is already baked in, so we skip the gradient wrapper. */}
+                  {phase.iconSrc ? (
+                    <img
+                      src={phase.iconSrc}
+                      alt={phase.title}
+                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl shadow-md mb-3 block"
+                    />
+                  ) : (
+                    <div className={`relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center shadow-md mb-3`}>
+                      <phase.icon size={24} className="text-white" />
+                    </div>
+                  )}
                   <h3 className="text-sm sm:text-base font-bold text-deep mb-1.5 line-clamp-1">
                     {t(`vision.${phase.key}`, phase.title)}
                   </h3>
@@ -990,9 +1001,17 @@ export default function Vision() {
                 <X size={18} />
               </button>
 
-              <div className={`w-16 h-16 bg-gradient-to-br ${openPhase.gradient} rounded-2xl flex items-center justify-center shadow-lg mb-4`}>
-                <openPhase.icon size={32} className="text-white" />
-              </div>
+              {openPhase.iconSrc ? (
+                <img
+                  src={openPhase.iconSrc}
+                  alt={openPhase.title}
+                  className="w-16 h-16 rounded-2xl shadow-lg mb-4 block"
+                />
+              ) : (
+                <div className={`w-16 h-16 bg-gradient-to-br ${openPhase.gradient} rounded-2xl flex items-center justify-center shadow-lg mb-4`}>
+                  <openPhase.icon size={32} className="text-white" />
+                </div>
+              )}
 
               <h3 id="phase-modal-title" className="text-2xl sm:text-3xl font-bold text-deep mb-2">
                 {t(`vision.${openPhase.key}`, openPhase.title)}
