@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale, Wallet } from 'lucide-react'
+import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale, Wallet, X } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
@@ -10,12 +10,30 @@ import { useAuth } from '../hooks/useAuth'
 import SEO from '../components/SEO'
 
 const phases = [
-  { key: 'phase1', icon: Hotel, gradient: 'from-[#FF6B00] to-[#FF3CB4]', status: 'Alpha', timeline: 'Now' },
-  { key: 'phase_wallet', icon: Wallet, gradient: 'from-[#F7931A] to-[#E8840F]', status: 'M03', timeline: 'M03' },
-  { key: 'phase2', icon: UtensilsCrossed, gradient: 'from-[#FF3CB4] to-[#6C5CE7]', status: 'V2', timeline: 'M6–M12' },
-  { key: 'phase3', icon: Compass, gradient: 'from-[#6C5CE7] to-[#FF3CB4]', status: 'V3', timeline: 'M12–M18' },
-  { key: 'phase4', icon: Plane, gradient: 'from-[#FDCB6E] to-[#FF6B00]', status: 'V4', timeline: 'M18–M24' },
-  { key: 'phase5', icon: Globe, gradient: 'from-[#FF6B00] via-[#FF3CB4] to-[#6C5CE7]', status: 'V5', timeline: 'M24+' },
+  {
+    key: 'phase1', icon: Hotel, gradient: 'from-[#FF6B00] to-[#FF3CB4]', status: 'Alpha', timeline: 'Now',
+    long: 'The foundation: book hotels, guesthouses, resorts and bungalows directly through STAYLO. 10% commission for life — versus 22% on Booking.com and Agoda. Hoteliers keep more revenue, guests pay fair prices, and Founding Partners own a piece of the platform itself.',
+  },
+  {
+    key: 'phase_wallet', icon: Wallet, gradient: 'from-[#F7931A] to-[#E8840F]', status: 'M03', timeline: 'M03',
+    long: 'A built-in Bitcoin Lightning wallet for every user. Load BTC, USDT, or pay by card. Use it to settle bookings, collect dividend payouts as a Founding Partner, or claim 2% lifetime referral commissions as an Ambassador. Self-custodied, fast, and global by default.',
+  },
+  {
+    key: 'phase2', icon: UtensilsCrossed, gradient: 'from-[#FF3CB4] to-[#6C5CE7]', status: 'V2', timeline: 'M6–M12',
+    long: 'Restaurant and dining bookings — a fair alternative to TheFork and OpenTable. Hoteliers can cross-promote on-site F&B. Restaurants pay a flat low fee per cover instead of percentages. Guests discover authentic local food, including independent venues priced out by today\'s platforms.',
+  },
+  {
+    key: 'phase3', icon: Compass, gradient: 'from-[#6C5CE7] to-[#FF3CB4]', status: 'V3', timeline: 'M12–M18',
+    long: 'Activities, tours, wellness, and nightlife. Whatever guests want to do on their trip — from a Full Moon Party ticket to a Muay Thai class — booked alongside their stay. Operators set their own prices, keep direct customer relationships, and pay a single low fee. No more 30% bites from GetYourGuide.',
+  },
+  {
+    key: 'phase4', icon: Plane, gradient: 'from-[#FDCB6E] to-[#FF6B00]', status: 'V4', timeline: 'M18–M24',
+    long: 'Flights and transfers to complete the travel journey. Search and book domestic and international routes side-by-side with hotels. Airport transfers, ferries, and inter-island taxis bookable from one trip view. The full stack of travel — owned by the people who run it.',
+  },
+  {
+    key: 'phase5', icon: Globe, gradient: 'from-[#FF6B00] via-[#FF3CB4] to-[#6C5CE7]', status: 'V5', timeline: 'M24+',
+    long: 'Every layer of travel stitched into one platform. Stay, Eat, Do, Fly — plus token-based governance where Founding Partners and $STAY holders vote on roadmap, treasury, and policy. A global cooperative for hospitality, operated by its own community.',
+  },
 ]
 
 const benefitIcons = {
@@ -42,6 +60,8 @@ export default function Vision() {
   // invest in STAYLO" table is currently expanded. One row open at a time
   // keeps the page tidy on mobile. null = all collapsed.
   const [expandedAlloc, setExpandedAlloc] = useState(null)
+  // Roadmap popup: which phase is the user inspecting (null = closed)
+  const [openPhase, setOpenPhase] = useState(null)
   const totalAlphaShares = 3000
   const totalShares = 500000
   const sharePrice = 1000
@@ -862,37 +882,101 @@ export default function Vision() {
         </div>
       </section>
 
-      {/* Roadmap */}
-      <section className="py-8 sm:py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+      {/* Roadmap — horizontal timeline with click-to-expand popup */}
+      <section className="py-12 sm:py-16 bg-gradient-to-b from-white to-[#F8F6F0]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl sm:text-4xl font-bold text-deep text-center mb-3">
             {t('vision.roadmap_title', 'Roadmap')}
           </h2>
+          <p className="text-center text-gray-500 mb-10 max-w-2xl mx-auto text-sm sm:text-base">
+            {t('vision.roadmap_subtitle', 'Click any step to see what we ship and when.')}
+          </p>
+
           <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-7 top-0 bottom-0 w-0.5 bg-gray-200 hidden sm:block" />
-            <div className="space-y-6">
+            {/* Connecting line behind the cards — brand-gradient bar, desktop only */}
+            <div
+              className="hidden md:block absolute top-9 left-[8%] right-[8%] h-1 rounded-full opacity-40 pointer-events-none"
+              style={{ background: 'linear-gradient(90deg, #FF6B00, #F7931A, #FF3CB4, #6C5CE7, #FDCB6E, #FF3CB4)' }}
+            />
+
+            {/* Horizontal scroll on mobile, even grid on desktop */}
+            <div className="flex md:grid md:grid-cols-6 gap-3 sm:gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
               {phases.map((phase, i) => (
-                <div key={phase.key} className="relative flex items-start gap-5">
-                  {/* Timeline dot */}
-                  <div className={`relative z-10 w-14 h-14 bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center shrink-0 shadow-lg`}>
-                    <phase.icon size={28} className="text-white" />
+                <button
+                  key={phase.key}
+                  type="button"
+                  onClick={() => setOpenPhase(phase)}
+                  className={`relative flex-shrink-0 w-[180px] md:w-auto snap-start text-center bg-white rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer ${
+                    i === 0
+                      ? 'border-libre/40 shadow-lg shadow-libre/10 hover:shadow-xl hover:-translate-y-1'
+                      : 'border-gray-200 hover:border-gray-300 hover:shadow-lg hover:-translate-y-1'
+                  }`}
+                >
+                  {/* Icon tile sits ON the connecting line at the top */}
+                  <div className={`relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center shadow-md mb-3`}>
+                    <phase.icon size={24} className="text-white" />
                   </div>
-                  <Card className={`flex-1 p-5 ${i === 0 ? 'border-2 border-libre/30 shadow-lg' : ''}`}>
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-lg font-bold text-deep">{t(`vision.${phase.key}`)}</h3>
-                      <Badge variant={i === 0 ? 'green' : 'gray'} className="text-xs">
-                        {phase.status}
-                      </Badge>
-                      <span className="text-xs text-gray-400 ml-auto">{phase.timeline}</span>
-                    </div>
-                    <p className="text-sm text-gray-500">{t(`vision.${phase.key}_desc`)}</p>
-                  </Card>
-                </div>
+                  <h3 className="text-sm sm:text-base font-bold text-deep mb-1.5 line-clamp-1">
+                    {t(`vision.${phase.key}`)}
+                  </h3>
+                  <div className="flex items-center justify-center mb-1.5">
+                    <Badge variant={i === 0 ? 'green' : 'gray'} className="text-[10px]">
+                      {phase.status}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-gray-400 font-medium">{phase.timeline}</p>
+                </button>
               ))}
             </div>
           </div>
         </div>
+
+        {/* Popup modal — opens when a phase card is clicked */}
+        {openPhase && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setOpenPhase(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="phase-modal-title"
+          >
+            <div
+              className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setOpenPhase(null)}
+                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+
+              <div className={`w-16 h-16 bg-gradient-to-br ${openPhase.gradient} rounded-2xl flex items-center justify-center shadow-lg mb-4`}>
+                <openPhase.icon size={32} className="text-white" />
+              </div>
+
+              <h3 id="phase-modal-title" className="text-2xl sm:text-3xl font-bold text-deep mb-2">
+                {t(`vision.${openPhase.key}`)}
+              </h3>
+
+              <div className="flex items-center gap-2 mb-5">
+                <Badge variant={openPhase.timeline === 'Now' ? 'green' : 'gray'} className="text-xs">
+                  {openPhase.status}
+                </Badge>
+                <span className="text-sm text-gray-500 font-medium">{openPhase.timeline}</span>
+              </div>
+
+              <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 font-medium">
+                {t(`vision.${openPhase.key}_desc`)}
+              </p>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                {t(`vision.${openPhase.key}_long`, openPhase.long)}
+              </p>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Founding benefits — brand palette cycle */}
