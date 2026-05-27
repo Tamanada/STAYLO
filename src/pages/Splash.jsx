@@ -193,18 +193,23 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 3: WHAT HAPPENS NEXT ==================== */}
-      {/* Background = bannerSTAYLO.png (STAYLO · FROM ONE ISLAND TO THE WORLD).
-          The "what happens next" steps narratively pair with the global-reach
-          banner — KP today, the world next. */}
-      <section className="relative py-16 sm:py-24 text-white overflow-hidden">
+      {/* Background = bannerSTAYLO.png (FROM ONE ISLAND TO THE WORLD).
+          object-contain so the whole banner stays uncropped; the section
+          backdrop is the matching brand gradient so the letterboxing area
+          (top/bottom of the contained banner) blends invisibly with the
+          banner's own edge colors. */}
+      <section
+        className="relative py-16 sm:py-24 text-white overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
+      >
         <img
           src="/bannerSTAYLO.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-contain object-center"
         />
-        {/* Light scrim — banner is already vibrant, we just nudge the contrast
-            so the white headline + step cards read crisply */}
+        {/* Light scrim — banner + matching gradient backdrop are already
+            vibrant, just nudge contrast for the step cards */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
