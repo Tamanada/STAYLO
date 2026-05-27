@@ -11,34 +11,18 @@
   <!-- Rounded-square brand tile -->
   <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="url(#ship-bg)"/>
 
-  <!-- Compass rose — set your course as a hotelier.
-       Outer bezel + 4 cardinal star points + 4 smaller intercardinal
-       points + center hub with brand-gradient dot. -->
+  <!-- Origami paper boat — folded-paper aesthetic, very modern and
+       app-icon friendly. Two shapes (peak + hull) with a gap that
+       reveals the brand gradient as the fold line, plus one wave. -->
 
-  <!-- Outer bezel ring -->
-  <circle cx="256" cy="256" r="170" stroke="#FFFFFF" stroke-width="14" fill="none"/>
+  <!-- Top peak / sail (triangle pointing up) -->
+  <path d="M 256 122 L 380 282 L 132 282 Z" fill="#FFFFFF"/>
 
-  <!-- Intercardinal points (NE / SE / SW / NW) — smaller, slightly faded
-       so the cardinal star reads as the dominant element -->
-  <g fill="#FFFFFF" opacity="0.55">
-    <g transform="rotate(45 256 256)"><polygon points="256,140 276,256 236,256"/></g>
-    <g transform="rotate(135 256 256)"><polygon points="256,140 276,256 236,256"/></g>
-    <g transform="rotate(225 256 256)"><polygon points="256,140 276,256 236,256"/></g>
-    <g transform="rotate(315 256 256)"><polygon points="256,140 276,256 236,256"/></g>
-  </g>
+  <!-- Hull (trapezoid — wider at top, narrower at bottom, like a boat
+       sitting on the water) -->
+  <path d="M 100 296 L 412 296 L 352 408 L 160 408 Z" fill="#FFFFFF"/>
 
-  <!-- Cardinal points (N / E / S / W) — the main 4-point star -->
-  <g fill="#FFFFFF">
-    <polygon points="256,80 284,256 228,256"/>
-    <g transform="rotate(90 256 256)"><polygon points="256,80 284,256 228,256"/></g>
-    <g transform="rotate(180 256 256)"><polygon points="256,80 284,256 228,256"/></g>
-    <g transform="rotate(270 256 256)"><polygon points="256,80 284,256 228,256"/></g>
-  </g>
-
-  <!-- Center hub — solid white with brand-gradient dot for depth -->
-  <circle cx="256" cy="256" r="22" fill="#FFFFFF"/>
-  <circle cx="256" cy="256" r="8" fill="url(#ship-bg)"/>
-
-  <!-- Tiny "north" indicator above the top point — subtle visual anchor -->
-  <circle cx="256" cy="60" r="9" fill="#FFE54C"/>
+  <!-- One stylized wave under the hull -->
+  <path d="M 70 452 Q 160 432 256 452 T 442 452"
+        stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" fill="none"/>
 </svg>
