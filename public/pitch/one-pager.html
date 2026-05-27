@@ -728,6 +728,27 @@ table.comp .rate-good { color: var(--orange); font-weight: 800; }
 /* ============================================================
    HOTEL SCENE ILLUSTRATION
 ============================================================ */
+/* New footer banner — KP shining worldwide */
+.footer-banner-wrap {
+  margin-top: 4mm;
+  margin-bottom: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(126,34,206,0.18);
+  line-height: 0;
+}
+
+.footer-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media print {
+  .footer-banner-wrap { margin-top: 3mm; border-radius: 6px; box-shadow: none; }
+}
+
+/* Legacy — old wave radiant container, kept for safety */
 .hotel-scene-wrap {
   margin-top: 4mm;
   margin-bottom: 0;
@@ -1297,44 +1318,9 @@ table.comp .rate-good { color: var(--orange); font-weight: 800; }
   </div><!-- /panel-th -->
 
 
-  <!-- WAVE RADIANT — invitation to ride the wave at the right momentum -->
-  <div class="hotel-scene-wrap">
-    <svg class="hotel-scene" viewBox="0 0 720 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <radialGradient id="radiant-glow" cx="75%" cy="50%" r="55%">
-          <stop offset="0%"  stop-color="#FFD580" stop-opacity="0.55"/>
-          <stop offset="45%" stop-color="#FF6B00" stop-opacity="0.18"/>
-          <stop offset="100%" stop-color="#FF6B00" stop-opacity="0"/>
-        </radialGradient>
-        <linearGradient id="wave-1" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"  stop-color="#FF6B00" stop-opacity="0"/>
-          <stop offset="50%" stop-color="#FF6B00" stop-opacity="0.85"/>
-          <stop offset="100%" stop-color="#FF8C42" stop-opacity="0.95"/>
-        </linearGradient>
-        <linearGradient id="wave-2" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"  stop-color="#FF1F70" stop-opacity="0"/>
-          <stop offset="50%" stop-color="#FF1F70" stop-opacity="0.85"/>
-          <stop offset="100%" stop-color="#E91E63" stop-opacity="0.95"/>
-        </linearGradient>
-        <linearGradient id="wave-3" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"  stop-color="#7E22CE" stop-opacity="0"/>
-          <stop offset="50%" stop-color="#7E22CE" stop-opacity="0.85"/>
-          <stop offset="100%" stop-color="#6B21A8" stop-opacity="0.95"/>
-        </linearGradient>
-      </defs>
-      <!-- Soft radiant glow on the right (the "now" moment) -->
-      <rect width="720" height="110" fill="url(#radiant-glow)"/>
-      <!-- 3 flowing wave bands rising right (momentum) -->
-      <path d="M0 78 Q120 60 240 70 T480 60 T720 32 L720 110 L0 110 Z" fill="url(#wave-1)"/>
-      <path d="M0 90 Q150 78 300 82 T560 64 T720 44 L720 110 L0 110 Z" fill="url(#wave-2)"/>
-      <path d="M0 102 Q180 92 360 94 T620 76 T720 58 L720 110 L0 110 Z" fill="url(#wave-3)"/>
-      <!-- Small sparkle / sun marker at peak of right -->
-      <circle cx="640" cy="36" r="5" fill="#FFD580" opacity="0.9"/>
-      <circle cx="640" cy="36" r="11" fill="none" stroke="#FFD580" stroke-width="1" opacity="0.5"/>
-      <!-- Tagline overlay -->
-      <text x="42" y="50" font-family="Inter, sans-serif" font-size="22" font-weight="900" fill="#1A1A2E" letter-spacing="-0.5">Ride the wave.</text>
-      <text x="42" y="74" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#5A4A5A" letter-spacing="0.2">The momentum is now. Koh Phangan is the start.</text>
-    </svg>
+  <!-- FOOTER BANNER — KP shining worldwide (From one island to the world) -->
+  <div class="footer-banner-wrap">
+    <img src="/staylo-footer-banner.svg" alt="STAYLO — From one island to the world" class="footer-banner-img"/>
   </div>
 
   <!-- FOOTER BAND -->
