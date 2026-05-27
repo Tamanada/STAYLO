@@ -1429,182 +1429,58 @@ table.comp .rate-good { color: var(--orange); font-weight: 800; }
   </div><!-- /panel-th -->
 
 
-  <!-- HOTEL SCENE ILLUSTRATION — between columns and footer -->
+  <!-- HOTEL SCENE ILLUSTRATION — clean & minimal, inspired by the reference brochure -->
   <div class="hotel-scene-wrap">
     <svg class="hotel-scene" viewBox="0 0 720 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
       <defs>
-        <!-- Sky sunset gradient -->
-        <linearGradient id="sky" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#FF6B00" stop-opacity="0.9"/>
-          <stop offset="45%" stop-color="#FF1F70" stop-opacity="0.85"/>
-          <stop offset="100%" stop-color="#7E22CE" stop-opacity="0.9"/>
+        <linearGradient id="sky-soft" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FFE8D6"/>
+          <stop offset="55%" stop-color="#FFCBA8"/>
+          <stop offset="100%" stop-color="#FFB088"/>
         </linearGradient>
-        <!-- Building gradient warm -->
-        <linearGradient id="bldg1" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#FF8C40"/>
-          <stop offset="100%" stop-color="#CC3366"/>
+        <linearGradient id="bldg-soft" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FFAB73"/>
+          <stop offset="100%" stop-color="#FF7A5C"/>
         </linearGradient>
-        <linearGradient id="bldg2" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#FF6B00"/>
-          <stop offset="100%" stop-color="#9B1F8A"/>
-        </linearGradient>
-        <linearGradient id="bldg3" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#FFAB40"/>
-          <stop offset="100%" stop-color="#FF1F70"/>
-        </linearGradient>
-        <!-- Water reflection -->
-        <linearGradient id="water" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#FF1F70" stop-opacity="0.35"/>
-          <stop offset="100%" stop-color="#7E22CE" stop-opacity="0.25"/>
-        </linearGradient>
-        <!-- Glow behind sun -->
-        <radialGradient id="sunglow" cx="50%" cy="40%" r="30%">
-          <stop offset="0%" stop-color="#FFDD88" stop-opacity="0.6"/>
-          <stop offset="100%" stop-color="#FF6B00" stop-opacity="0"/>
-        </radialGradient>
       </defs>
-
-      <!-- Sky background -->
-      <rect width="720" height="180" fill="url(#sky)"/>
-
-      <!-- Sun glow -->
-      <ellipse cx="360" cy="70" rx="110" ry="70" fill="url(#sunglow)"/>
-
-      <!-- Sun disc -->
-      <circle cx="360" cy="82" r="18" fill="#FFDD88" opacity="0.75"/>
-
-      <!-- Horizon line + water -->
-      <rect x="0" y="128" width="720" height="52" fill="url(#water)"/>
-
-      <!-- Water shimmer lines -->
-      <line x1="60"  y1="140" x2="130" y2="140" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="200" y1="145" x2="290" y2="145" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-linecap="round"/>
-      <line x1="400" y1="138" x2="500" y2="138" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" stroke-linecap="round"/>
-      <line x1="560" y1="150" x2="650" y2="150" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-linecap="round"/>
-      <line x1="100" y1="158" x2="170" y2="158" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-linecap="round"/>
-      <line x1="310" y1="155" x2="410" y2="155" stroke="rgba(255,255,255,0.13)" stroke-width="1" stroke-linecap="round"/>
-
-      <!-- BUILDING LEFT — tall modern with balconies -->
-      <rect x="55" y="52" width="68" height="80" fill="url(#bldg1)" rx="3" opacity="0.92"/>
-      <!-- balcony rows left building -->
-      <rect x="57" y="62"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
-      <rect x="71" y="62"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
-      <rect x="85" y="62"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
-      <rect x="99" y="62"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
-      <rect x="57" y="74"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.14)"/>
-      <rect x="71" y="74"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.14)"/>
-      <rect x="85" y="74"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.14)"/>
-      <rect x="99" y="74"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.14)"/>
-      <rect x="57" y="86"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.1)"/>
-      <rect x="71" y="86"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.1)"/>
-      <rect x="85" y="86"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.1)"/>
-      <rect x="99" y="86"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.1)"/>
-      <rect x="57" y="98"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
-      <rect x="71" y="98"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
-      <rect x="85" y="98"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
-      <rect x="99" y="98"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
-      <!-- roof accent -->
-      <rect x="55" y="49" width="68" height="5" rx="2" fill="#FFAB40" opacity="0.55"/>
-
-      <!-- BUILDING CENTER — flagship hotel, wider & taller -->
-      <rect x="275" y="30" width="170" height="100" fill="url(#bldg2)" rx="4" opacity="0.95"/>
-      <!-- balcony rows center -->
-      <rect x="278" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
-      <rect x="298" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
-      <rect x="318" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
-      <rect x="338" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
-      <rect x="358" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
-      <rect x="378" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
-      <rect x="398" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
-      <rect x="418" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
-
-      <rect x="278" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
-      <rect x="298" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
-      <rect x="318" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
-      <rect x="338" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
-      <rect x="358" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
-      <rect x="378" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
-      <rect x="398" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
-      <rect x="418" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
-
-      <rect x="278" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
-      <rect x="298" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
-      <rect x="318" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
-      <rect x="338" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
-      <rect x="358" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
-      <rect x="378" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
-      <rect x="398" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
-      <rect x="418" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
-
-      <rect x="278" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
-      <rect x="298" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
-      <rect x="318" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
-      <rect x="338" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
-      <rect x="358" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
-      <rect x="378" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
-      <rect x="398" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
-      <rect x="418" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
-
-      <!-- roof penthouse center -->
-      <rect x="310" y="20" width="100" height="12" rx="3" fill="url(#bldg3)" opacity="0.88"/>
-      <rect x="330" y="13" width="60" height="9" rx="2" fill="#FF8C40" opacity="0.7"/>
-
-      <!-- BUILDING RIGHT -->
-      <rect x="590" y="62" width="72" height="68" fill="url(#bldg1)" rx="3" opacity="0.88"/>
-      <rect x="593" y="72" width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
-      <rect x="607" y="72" width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
-      <rect x="621" y="72" width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
-      <rect x="635" y="72" width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
-      <rect x="593" y="84" width="10" height="4" rx="1" fill="rgba(255,255,255,0.12)"/>
-      <rect x="607" y="84" width="10" height="4" rx="1" fill="rgba(255,255,255,0.12)"/>
-      <rect x="621" y="84" width="10" height="4" rx="1" fill="rgba(255,255,255,0.12)"/>
-      <rect x="635" y="84" width="10" height="4" rx="1" fill="rgba(255,255,255,0.12)"/>
-      <rect x="593" y="96" width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
-      <rect x="607" y="96" width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
-      <rect x="621" y="96" width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
-      <rect x="635" y="96" width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
-      <rect x="590" y="59" width="72" height="5" rx="2" fill="#FFAB40" opacity="0.5"/>
-
-      <!-- PALM LEFT — silhouette -->
-      <line x1="168" y1="130" x2="175" y2="60" stroke="#1A1A2E" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
-      <!-- fronds -->
-      <path d="M175 60 C165 48 145 50 140 58 C152 55 165 58 175 60z" fill="#1A1A2E" opacity="0.82"/>
-      <path d="M175 60 C185 48 205 50 210 58 C198 55 185 58 175 60z" fill="#1A1A2E" opacity="0.82"/>
-      <path d="M175 60 C168 44 162 40 155 44 C163 48 170 54 175 60z" fill="#1A1A2E" opacity="0.7"/>
-      <path d="M175 60 C182 44 188 40 195 44 C187 48 180 54 175 60z" fill="#1A1A2E" opacity="0.7"/>
-      <path d="M175 60 C174 44 172 38 168 37 C170 44 173 52 175 60z" fill="#1A1A2E" opacity="0.65"/>
-      <!-- coconuts -->
-      <circle cx="174" cy="63" r="3.5" fill="#2D1B1B" opacity="0.7"/>
-      <circle cx="179" cy="61" r="3"   fill="#2D1B1B" opacity="0.7"/>
-
-      <!-- PALM RIGHT — silhouette -->
-      <line x1="545" y1="130" x2="538" y2="55" stroke="#1A1A2E" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
-      <path d="M538 55 C528 43 508 45 503 53 C515 50 528 53 538 55z" fill="#1A1A2E" opacity="0.82"/>
-      <path d="M538 55 C548 43 568 45 573 53 C561 50 548 53 538 55z" fill="#1A1A2E" opacity="0.82"/>
-      <path d="M538 55 C531 39 525 35 518 39 C526 43 533 49 538 55z" fill="#1A1A2E" opacity="0.7"/>
-      <path d="M538 55 C545 39 551 35 558 39 C550 43 543 49 538 55z" fill="#1A1A2E" opacity="0.7"/>
-      <path d="M538 55 C537 39 535 33 531 32 C533 39 536 47 538 55z" fill="#1A1A2E" opacity="0.6"/>
-      <circle cx="537" cy="58" r="3.5" fill="#2D1B1B" opacity="0.7"/>
-      <circle cx="542" cy="56" r="3"   fill="#2D1B1B" opacity="0.7"/>
-
-      <!-- LOW FOLIAGE / BUSHES -->
-      <ellipse cx="240" cy="128" rx="30" ry="10" fill="#1A1A2E" opacity="0.6"/>
-      <ellipse cx="480" cy="128" rx="25" ry="9"  fill="#1A1A2E" opacity="0.55"/>
-      <ellipse cx="50"  cy="130" rx="22" ry="7"  fill="#1A1A2E" opacity="0.5"/>
-      <ellipse cx="670" cy="130" rx="22" ry="7"  fill="#1A1A2E" opacity="0.5"/>
-
-      <!-- BIRDS (· · ·) -->
-      <!-- bird shape: simple M curve silhouette -->
-      <path d="M90  38 Q92  34 95  36 Q97  34 100 38" stroke="#1A1A2E" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.65"/>
-      <path d="M105 33 Q107 29 110 31 Q112 29 115 33" stroke="#1A1A2E" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.65"/>
-      <path d="M118 40 Q120 37 122 38.5 Q124 37 127 40" stroke="#1A1A2E" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.5"/>
-
-      <path d="M590 28 Q592 24 595 26 Q597 24 600 28" stroke="#1A1A2E" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.6"/>
-      <path d="M608 22 Q610 18 613 20 Q615 18 618 22" stroke="#1A1A2E" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.6"/>
-      <path d="M624 30 Q626 27 628 28.5 Q630 27 633 30" stroke="#1A1A2E" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.45"/>
-
-      <!-- Horizon fade overlay — soften top edge -->
-      <rect x="0" y="0" width="720" height="18" fill="url(#sky)" opacity="0.3"/>
+      <!-- Soft sky -->
+      <rect width="720" height="180" fill="url(#sky-soft)"/>
+      <!-- Setting sun -->
+      <circle cx="230" cy="130" r="34" fill="#FFD580" opacity="0.95"/>
+      <!-- 3 birds in flight (V-marks) -->
+      <path d="M120 50 Q124 46 128 50 Q132 46 136 50" stroke="#1A1A2E" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.55"/>
+      <path d="M548 38 Q552 34 556 38 Q560 34 564 38" stroke="#1A1A2E" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.5"/>
+      <path d="M570 60 Q573 57 576 60 Q579 57 582 60" stroke="#1A1A2E" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.4"/>
+      <!-- ONE clean modern hotel building (right side, like the reference) -->
+      <rect x="412" y="58" width="230" height="122" fill="url(#bldg-soft)" rx="4"/>
+      <!-- subtle balcony lines (3 horizontal bands only — minimal) -->
+      <rect x="412" y="86" width="230" height="2" fill="rgba(26,26,46,0.18)"/>
+      <rect x="412" y="116" width="230" height="2" fill="rgba(26,26,46,0.18)"/>
+      <rect x="412" y="146" width="230" height="2" fill="rgba(26,26,46,0.18)"/>
+      <!-- a few subtle windows (vertical accents, minimal) -->
+      <rect x="432" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
+      <rect x="462" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
+      <rect x="492" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
+      <rect x="522" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
+      <rect x="552" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
+      <rect x="582" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
+      <rect x="612" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
+      <!-- Palm tree LEFT — thin silhouette -->
+      <path d="M340 180 L340 110 Q336 108 332 110 L332 180 Z" fill="#1A1A2E" opacity="0.85"/>
+      <!-- left palm fronds -->
+      <path d="M336 110 Q318 100 308 92 Q322 100 336 108 Z" fill="#1A1A2E" opacity="0.85"/>
+      <path d="M336 110 Q318 116 304 122 Q324 114 336 112 Z" fill="#1A1A2E" opacity="0.85"/>
+      <path d="M336 110 Q352 96 364 88 Q352 102 338 110 Z" fill="#1A1A2E" opacity="0.85"/>
+      <path d="M336 110 Q352 116 368 124 Q352 116 338 112 Z" fill="#1A1A2E" opacity="0.85"/>
+      <path d="M336 110 Q336 96 332 84 Q336 96 338 110 Z" fill="#1A1A2E" opacity="0.85"/>
+      <!-- Palm tree RIGHT (smaller, distant) -->
+      <path d="M390 180 L390 130 Q387 128 384 130 L384 180 Z" fill="#1A1A2E" opacity="0.75"/>
+      <path d="M388 130 Q374 122 366 116 Q378 124 388 128 Z" fill="#1A1A2E" opacity="0.75"/>
+      <path d="M388 130 Q374 134 364 138 Q378 132 388 130 Z" fill="#1A1A2E" opacity="0.75"/>
+      <path d="M388 130 Q400 120 410 114 Q400 124 390 130 Z" fill="#1A1A2E" opacity="0.75"/>
+      <path d="M388 130 Q400 134 412 138 Q400 132 390 130 Z" fill="#1A1A2E" opacity="0.75"/>
+      <!-- Ground/horizon line — subtle -->
+      <line x1="0" y1="178" x2="720" y2="178" stroke="#1A1A2E" stroke-width="1" opacity="0.25"/>
     </svg>
   </div>
 
