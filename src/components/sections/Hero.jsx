@@ -38,7 +38,7 @@ export function Hero() {
 
   return (
     <section className="relative overflow-hidden" style={{
-      padding: '80px 5% 60px',
+      padding: '40px 5% 50px',
     }}>
       {/* Samuii.png — starry-night beach painting as background.
           Aligned to the rest of the site's artwork-backed surfaces. */}
@@ -54,7 +54,7 @@ export function Hero() {
 
       <div className="relative max-w-4xl mx-auto text-center">
         {/* Tag pill — bumped to translucent gold pill on dark painting */}
-        <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-8"
+        <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-5"
           style={{
             background: 'rgba(253,203,110,0.15)',
             border: '1.5px solid rgba(253,203,110,0.55)',
@@ -68,32 +68,34 @@ export function Hero() {
 
         {/* Headline */}
         <h1 style={{
-          fontSize: 'clamp(44px, 6vw, 84px)',
+          fontSize: 'clamp(40px, 5.5vw, 76px)',
           fontWeight: 900,
           letterSpacing: '-3px',
           lineHeight: 1.05,
           color: '#FFFFFF',
-          margin: '0 0 24px',
+          margin: '0 0 20px',
           textShadow: '0 2px 18px rgba(0,0,0,0.85), 0 0 8px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.9)',
         }}>
           {t('home_hero.title_1', 'Book with ')}
-          <span style={{
-            background: 'linear-gradient(135deg, #FFE54C, #FF6B00, #FF3CB4)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-          }}>{t('home_hero.title_highlight', 'purpose.')}</span>
+          {/*
+            "purpose." was a gradient text-fill with transparent fill —
+            the parent h1's text-shadow was bleeding through the
+            transparent fill and making it look black against the
+            dark painting. Switched to a solid bright yellow that
+            inherits the same shadow halo, so it pops on any zone.
+          */}
+          <span style={{ color: '#FFE54C' }}>{t('home_hero.title_highlight', 'purpose.')}</span>
           <br />
           {t('home_hero.title_2', 'Travel with soul.')}
         </h1>
 
         {/* Subtitle */}
         <p style={{
-          fontSize: '18px',
-          lineHeight: 1.65,
+          fontSize: '17px',
+          lineHeight: 1.6,
           color: '#FFFFFF',
           maxWidth: '620px',
-          margin: '0 auto 40px',
+          margin: '0 auto 28px',
           fontWeight: 500,
           textShadow: '0 2px 12px rgba(0,0,0,0.85), 0 0 6px rgba(0,0,0,0.7)',
         }}>
@@ -101,7 +103,7 @@ export function Hero() {
         </p>
 
         {/* Search box */}
-        <div className="max-w-2xl mx-auto mb-8">
+        <div className="max-w-2xl mx-auto mb-6">
           <div className="flex items-center rounded-full overflow-hidden"
             style={{
               background: 'white',
@@ -130,7 +132,7 @@ export function Hero() {
         </div>
 
         {/* Filter pills */}
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
+        <div className="flex flex-wrap justify-center gap-2 mb-8">
           {FILTER_KEYS.map((key, i) => (
             <button key={key} onClick={() => setActiveFilter(i)}
               className="px-4 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer"
