@@ -81,19 +81,30 @@ export default function Vision() {
         description="Why STAYLO exists: 22% commissions are killing hotel margins. We're building a hotelier-owned cooperative where members vote, share revenue, and pay 10% for life. Roadmap, milestones, and ownership model."
         path="/vision"
       />
-      {/* Hero — brand radiant (Option A) */}
-      <section
-        className="text-white py-10 sm:py-14 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF3CB4 45%, #6C5CE7 100%)' }}
-      >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 left-[20%] w-60 h-60 bg-white/15 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-[#FDCB6E]/25 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-        </div>
+      {/* Hero — EnjoyLife.png as background (consistent with the rest
+          of the artwork-backed brand surface across the site) */}
+      <section className="text-white py-16 sm:py-24 relative overflow-hidden">
+        <img
+          src="/EnjoyLife.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <Badge variant="golden" className="mb-3">{t('vision.title')}</Badge>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-3" style={{ textShadow: '0 2px 24px rgba(0,0,0,0.18)' }}>{t('vision.hero_title')}</h1>
-          <p className="text-lg text-white/85 max-w-2xl mx-auto mb-5">{t('vision.hero_subtitle')}</p>
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 tracking-tight"
+            style={{ textShadow: '0 2px 18px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
+            {t('vision.hero_title')}
+          </h1>
+          <p
+            className="text-lg sm:text-xl text-white max-w-2xl mx-auto mb-6 font-medium leading-relaxed"
+            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
+            {t('vision.hero_subtitle')}
+          </p>
           <Link to={user ? '/dashboard' : '/register'}>
             <button className="px-10 py-4 bg-white text-[#FF6B00] font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 inline-flex items-center gap-3 cursor-pointer animate-pulse-glow">
               <Sparkles size={22} />
