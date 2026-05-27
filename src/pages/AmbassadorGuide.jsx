@@ -146,19 +146,40 @@ export default function AmbassadorGuide() {
 
   return (
     <div>
-      {/* ── Hero — Option A brand radiant ── */}
+      {/* ── Hero — LaReveuse.png painting as background, uncropped ──
+          Section uses the painting's natural ~2.5:1 aspect ratio so
+          object-cover does no cropping. Side gradient matches the
+          painting's warm pink/red edges so any letterboxing blends. */}
       <section
-        className="text-white py-20 sm:py-28 relative overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF3CB4 50%, #6C5CE7 100%)' }}
+        className="text-white relative overflow-hidden"
+        style={{
+          aspectRatio: '2.5 / 1',
+          minHeight: '420px',
+          background: 'radial-gradient(ellipse 80% 100% at center, #E8836A 0%, #C8484A 60%, #A82F3A 100%)'
+        }}
       >
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-10 left-[20%] w-60 h-60 bg-white/15 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-[#FDCB6E]/25 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <Badge variant="golden" className="mb-6">{t('ambassador_guide.badge', 'Ambassador Program')}</Badge>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6">{t('ambassador_guide.hero_title', 'Ambassador Guide')}</h1>
-          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto">
+        <img
+          src="/LaReveuse.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Light scrim — keep headline + subtitle legible without muting
+            the warm palette of the painting */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/10 to-black/35" />
+
+        <div className="relative h-full max-w-4xl mx-auto px-4 sm:px-6 text-center flex flex-col items-center justify-center py-8">
+          <Badge variant="golden" className="mb-4 sm:mb-6">{t('ambassador_guide.badge', 'Ambassador Program')}</Badge>
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6 tracking-tight"
+            style={{ textShadow: '0 2px 18px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
+            {t('ambassador_guide.hero_title', 'Ambassador Guide')}
+          </h1>
+          <p
+            className="text-lg sm:text-xl text-white max-w-2xl mx-auto font-medium leading-relaxed"
+            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
             {t('ambassador_guide.hero_subtitle', 'Everything you need to know to earn passive income with Staylo.')}
           </p>
         </div>
