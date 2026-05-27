@@ -182,27 +182,31 @@ export default function OTASearch() {
 
       {/* ─── Hero Search ─────────────────────────────── */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#003580] via-[#00224f] to-[#003580]" />
-        <div className="absolute inset-0">
-          <div className="absolute -top-20 -right-20 w-[500px] h-[500px] bg-blue-400/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 -left-20 w-[400px] h-[400px] bg-indigo-400/10 rounded-full blur-3xl" />
-        </div>
+        {/* STAYLO brand banner as hero background */}
+        <img
+          src="/bannerSTAYLO.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark overlay for text legibility (banner is bright/colorful) */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/35 to-black/65" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 pb-20 sm:pb-24">
           <div className="text-center mb-8 sm:mb-10">
             {/* Logo */}
             <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="text-4xl sm:text-5xl font-extrabold text-white">stay</span>
-              <span className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-[#ffb700] to-[#ff8c00] bg-clip-text text-transparent">lo</span>
+              <span className="text-4xl sm:text-5xl font-extrabold text-white drop-shadow-lg">stay</span>
+              <span className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-[#ffb700] to-[#ff8c00] bg-clip-text text-transparent drop-shadow-lg">lo</span>
             </div>
             {/* Slogan */}
-            <p className="text-sm sm:text-base font-semibold text-[#ffb700] tracking-wider uppercase mb-4">
+            <p className="text-sm sm:text-base font-semibold text-[#ffb700] tracking-wider uppercase mb-4 drop-shadow-lg">
               {t('booking.slogan', 'Owned by Hoteliers, Built for Hospitality')}
             </p>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3 tracking-tight drop-shadow-lg">
               {t('booking.hero_title', 'Find deals on hotels, resorts & more')}
             </h1>
-            <p className="text-blue-200/70 text-sm sm:text-base max-w-2xl mx-auto">
+            <p className="text-white/90 text-sm sm:text-base max-w-2xl mx-auto drop-shadow-md">
               {t('booking.hero_subtitle', 'Book directly with hoteliers — 90% of every booking goes to them, not to Wall Street.')}
             </p>
           </div>
@@ -268,12 +272,12 @@ export default function OTASearch() {
 
           {/* Tagline */}
           <div className="mt-8 max-w-3xl mx-auto text-center">
-            <p className="text-white/90 text-sm sm:text-base font-medium leading-relaxed">
-              <span className="text-[#ffb700] font-bold">{t('booking.tagline_highlight', 'You are not just a partner — you are the platform.')}</span>
+            <p className="text-white/95 text-sm sm:text-base font-medium leading-relaxed drop-shadow-md">
+              <span className="text-[#ffb700] font-bold drop-shadow-lg">{t('booking.tagline_highlight', 'You are not just a partner — you are the platform.')}</span>
               <br />
               {t('booking.tagline_body', 'STAYLO is the only booking platform owned and run by hoteliers.')}
               <br />
-              <span className="text-[#ffb700]">{t('booking.tagline_cta', 'Book, share, earn — build ethical passive income while growing a community that puts hospitality first.')}</span>
+              <span className="text-[#ffb700] drop-shadow-lg">{t('booking.tagline_cta', 'Book, share, earn — build ethical passive income while growing a community that puts hospitality first.')}</span>
             </p>
           </div>
         </div>
