@@ -193,27 +193,15 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 3: WHAT HAPPENS NEXT ==================== */}
-      {/* Split layout:
-            • Banner sits at the top of the section as a clean header band
-              in its natural 2.5:1 aspect ratio — STAYLO wordmark and
-              "FROM ONE ISLAND TO THE WORLD" tagline are NEVER covered.
-            • Title + step cards live below the banner, on the matching
-              brand gradient that continues the banner's edge colors. */}
+      {/* Order: Roadmap title + step cards FIRST (on top), banner BELOW.
+            • Content sits at the top of the section on the brand gradient.
+            • Banner closes the section as a clean footer band — STAYLO
+              wordmark + "FROM ONE ISLAND TO THE WORLD" never covered. */}
       <section
         className="relative text-white overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
       >
-        {/* Banner header band — natural aspect ratio, nothing in front of it */}
-        <div className="relative w-full" style={{ aspectRatio: '2.5 / 1' }}>
-          <img
-            src="/bannerSTAYLO.png"
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-16 sm:pb-20 relative">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-16 sm:pt-20 pb-12 sm:pb-16 relative">
           <div className="text-center mb-10">
             <Badge variant="golden" className="mb-4">{t('splash.next_badge')}</Badge>
             <h2
@@ -279,6 +267,16 @@ export default function Splash() {
               )
             })}
           </div>
+        </div>
+
+        {/* Banner footer band — natural 2.5:1 aspect, nothing layered over it */}
+        <div className="relative w-full" style={{ aspectRatio: '2.5 / 1' }}>
+          <img
+            src="/bannerSTAYLO.png"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
         </div>
       </section>
 
