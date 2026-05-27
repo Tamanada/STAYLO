@@ -264,14 +264,14 @@ export default function Splash() {
                 <Link
                   key={item.key}
                   to={item.to}
-                  className={`group flex items-start gap-5 bg-black/25 backdrop-blur-md border border-${item.color}/40 rounded-2xl p-6 no-underline cursor-pointer transition-all hover:bg-black/35 hover:border-${item.color}/70 hover:shadow-xl hover:shadow-black/25 hover:-translate-y-0.5`}
+                  className={`group flex items-start gap-5 bg-black/65 backdrop-blur-xl border border-${item.color}/50 rounded-2xl p-6 no-underline cursor-pointer transition-all hover:bg-black/75 hover:border-${item.color}/80 hover:shadow-xl hover:shadow-black/40 hover:-translate-y-0.5`}
                 >
                   {inner}
                 </Link>
               ) : (
                 <div
                   key={item.key}
-                  className="flex items-start gap-5 bg-black/25 backdrop-blur-md border border-white/20 rounded-2xl p-6"
+                  className="flex items-start gap-5 bg-black/65 backdrop-blur-xl border border-white/25 rounded-2xl p-6"
                 >
                   {inner}
                 </div>
