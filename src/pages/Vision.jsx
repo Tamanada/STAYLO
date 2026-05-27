@@ -207,7 +207,7 @@ export default function Vision() {
         />
         {/* Dark scrim — lighter than before so more of the painting reads
             through, but still enough to keep body copy legible. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/40 to-black/55" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
         {/* One subtle brand orb pulled in front of the scrim to add a
             soft glow without competing with the painting's own light */}
         <div className="absolute inset-0 pointer-events-none">
@@ -920,7 +920,7 @@ export default function Vision() {
         />
         {/* Dark scrim — lighter pass so the artwork breathes more,
             still dark enough to keep the doc cards readable */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/40 to-black/55" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
         {/* Subtle warm glow top-right */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 right-[8%] w-64 h-64 bg-[#FFAB40]/12 rounded-full blur-3xl" />
