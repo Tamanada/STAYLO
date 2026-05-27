@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="STAYLO Ship — Staylo Hotelier Integrated Platform">
+  <!-- Same brand tile as the main STAYLO icon so they read as a family -->
+  <defs>
+    <linearGradient id="ship-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#FF6B00"/>
+      <stop offset="40%"  stop-color="#FF1F70"/>
+      <stop offset="100%" stop-color="#7E22CE"/>
+    </linearGradient>
+    <linearGradient id="ship-sail-shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"  stop-color="#FFFFFF" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.82"/>
+    </linearGradient>
+    <linearGradient id="ship-hull-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"  stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFE8D0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded-square tile -->
+  <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="url(#ship-bg)"/>
+
+  <!-- Subtle horizon glow -->
+  <ellipse cx="256" cy="380" rx="220" ry="40" fill="#FFFFFF" opacity="0.08"/>
+
+  <!-- Mast -->
+  <rect x="252" y="105" width="8" height="265" rx="4" fill="#FFFFFF" opacity="0.92"/>
+
+  <!-- Main sail (large triangle, leans slightly forward) -->
+  <path d="M 256 110 L 256 340 L 405 340 Z" fill="url(#ship-sail-shine)"/>
+  <!-- Sail seam detail -->
+  <line x1="256" y1="180" x2="358" y2="340" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2"/>
+  <line x1="256" y1="250" x2="318" y2="340" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="2"/>
+
+  <!-- Foresail (smaller, on the other side) -->
+  <path d="M 252 130 L 252 335 L 145 335 Z" fill="#FFFFFF" opacity="0.78"/>
+  <line x1="252" y1="200" x2="180" y2="335" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="2"/>
+
+  <!-- Pennant at the top -->
+  <path d="M 260 105 L 295 115 L 260 125 Z" fill="#FFE54C"/>
+
+  <!-- Hull — clean curved boat shape -->
+  <path d="M 95 345 L 417 345 Q 405 410 320 415 L 192 415 Q 107 410 95 345 Z"
+        fill="url(#ship-hull-grad)"/>
+  <!-- Hull stripe -->
+  <path d="M 105 360 L 407 360" stroke="#FF6B00" stroke-width="6" stroke-linecap="round" opacity="0.85"/>
+
+  <!-- Water — two wave lines under the hull -->
+  <path d="M 60 440 Q 130 425 200 440 T 340 440 T 470 440"
+        stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" fill="none" opacity="0.85"/>
+  <path d="M 80 470 Q 150 458 220 470 T 360 470 T 460 468"
+        stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" fill="none" opacity="0.55"/>
+</svg>
