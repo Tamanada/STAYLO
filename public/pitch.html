@@ -243,6 +243,27 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 }
 
 /* ── Slide: PAIN ── */
+/* Giant 1/5 fraction — punches the eye on the headline */
+.pain-fraction {
+  display: inline-block;
+  font-size: 1.15em;
+  font-weight: 900;
+  background: linear-gradient(135deg, #FF6B00 0%, #FF1F70 60%, #7E22CE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -3px;
+  padding: 0 8px;
+  position: relative;
+}
+.pain-fraction .pain-slash {
+  font-size: 0.85em;
+  margin: 0 -4px;
+  display: inline-block;
+  transform: skewX(-12deg);
+  font-weight: 800;
+}
+
 .pain-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -845,8 +866,8 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
     <div class="label en">The problem</div>
     <div class="label th">ปัญหา</div>
 
-    <h1 class="lg en">Every 5th booking —<br/>you work for <span class="accent">Booking.com.</span></h1>
-    <h1 class="lg th">ทุก 5 การจอง —<br/>คุณทำงานให้ <span class="accent">Booking.com</span></h1>
+    <h1 class="lg en">It costs you <span class="pain-fraction">1<span class="pain-slash">/</span>5</span><br/>of your sales.</h1>
+    <h1 class="lg th">มันทำให้คุณเสีย <span class="pain-fraction">1<span class="pain-slash">/</span>5</span><br/>ของยอดขาย</h1>
 
     <div class="pain-grid">
       <div class="pain-card">
