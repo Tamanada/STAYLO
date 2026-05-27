@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale, Wallet, X } from 'lucide-react'
+import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale, Wallet, X, Smartphone } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
@@ -12,26 +12,44 @@ import SEO from '../components/SEO'
 const phases = [
   {
     key: 'phase1', icon: Hotel, gradient: 'from-[#FF6B00] to-[#FF3CB4]', status: 'Alpha', timeline: 'Now',
+    title: 'Stay',
+    desc: 'Hotels, guesthouses, resorts — fair booking with low commissions',
     long: 'The foundation: book hotels, guesthouses, resorts and bungalows directly through STAYLO. 10% commission for life — versus 22% on Booking.com and Agoda. Hoteliers keep more revenue, guests pay fair prices, and Founding Partners own a piece of the platform itself.',
   },
   {
+    key: 'phase_ship', icon: Smartphone, gradient: 'from-[#00B894] to-[#6C5CE7]', status: 'Alpha', timeline: 'Now',
+    title: 'STAYLO Ship',
+    desc: 'The hotelier dashboard — manage your property from the palm of your hand',
+    long: 'STAYLO Ship is the hotelier-side cockpit: PMS, front desk, channel manager, housekeeping, F&B, payments, staff scheduling, and reporting. Run your whole operation from a smartphone instead of stitching together five different SaaS tools. Free for Founding Partners; low flat monthly fee for everyone else.',
+  },
+  {
     key: 'phase_wallet', icon: Wallet, gradient: 'from-[#F7931A] to-[#E8840F]', status: 'M03', timeline: 'M03',
+    title: 'BTC Wallet',
+    desc: 'Built-in Lightning wallet — load BTC, USDT, or pay by card',
     long: 'A built-in Bitcoin Lightning wallet for every user. Load BTC, USDT, or pay by card. Use it to settle bookings, collect dividend payouts as a Founding Partner, or claim 2% lifetime referral commissions as an Ambassador. Self-custodied, fast, and global by default.',
   },
   {
     key: 'phase2', icon: UtensilsCrossed, gradient: 'from-[#FF3CB4] to-[#6C5CE7]', status: 'V2', timeline: 'M6–M12',
+    title: 'Eat',
+    desc: 'Restaurants & dining — a fair alternative to TheFork and OpenTable',
     long: 'Restaurant and dining bookings — a fair alternative to TheFork and OpenTable. Hoteliers can cross-promote on-site F&B. Restaurants pay a flat low fee per cover instead of percentages. Guests discover authentic local food, including independent venues priced out by today\'s platforms.',
   },
   {
     key: 'phase3', icon: Compass, gradient: 'from-[#6C5CE7] to-[#FF3CB4]', status: 'V3', timeline: 'M12–M18',
+    title: 'Do',
+    desc: 'Activities, tours, wellness — experience booking reimagined',
     long: 'Activities, tours, wellness, and nightlife. Whatever guests want to do on their trip — from a Full Moon Party ticket to a Muay Thai class — booked alongside their stay. Operators set their own prices, keep direct customer relationships, and pay a single low fee. No more 30% bites from GetYourGuide.',
   },
   {
     key: 'phase4', icon: Plane, gradient: 'from-[#FDCB6E] to-[#FF6B00]', status: 'V4', timeline: 'M18–M24',
+    title: 'Fly',
+    desc: 'Flights and transfers — completing the travel journey',
     long: 'Flights and transfers to complete the travel journey. Search and book domestic and international routes side-by-side with hotels. Airport transfers, ferries, and inter-island taxis bookable from one trip view. The full stack of travel — owned by the people who run it.',
   },
   {
     key: 'phase5', icon: Globe, gradient: 'from-[#FF6B00] via-[#FF3CB4] to-[#6C5CE7]', status: 'V5', timeline: 'M24+',
+    title: 'Super App',
+    desc: 'Full platform with token governance and global provider ownership',
     long: 'Every layer of travel stitched into one platform. Stay, Eat, Do, Fly — plus token-based governance where Founding Partners and $STAY holders vote on roadmap, treasury, and policy. A global cooperative for hospitality, operated by its own community.',
   },
 ]
@@ -918,8 +936,8 @@ export default function Vision() {
               style={{ background: 'linear-gradient(90deg, #FF6B00, #F7931A, #FF3CB4, #6C5CE7, #FDCB6E, #FF3CB4)' }}
             />
 
-            {/* Horizontal scroll on mobile, even grid on desktop */}
-            <div className="flex md:grid md:grid-cols-6 gap-3 sm:gap-4 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
+            {/* Horizontal scroll on mobile, even grid on desktop (7 cards) */}
+            <div className="flex md:grid md:grid-cols-7 gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
               {phases.map((phase, i) => (
                 <button
                   key={phase.key}
@@ -936,7 +954,7 @@ export default function Vision() {
                     <phase.icon size={24} className="text-white" />
                   </div>
                   <h3 className="text-sm sm:text-base font-bold text-deep mb-1.5 line-clamp-1">
-                    {t(`vision.${phase.key}`)}
+                    {t(`vision.${phase.key}`, phase.title)}
                   </h3>
                   <div className="flex items-center justify-center mb-1.5">
                     <Badge variant={i === 0 ? 'green' : 'gray'} className="text-[10px]">
@@ -977,7 +995,7 @@ export default function Vision() {
               </div>
 
               <h3 id="phase-modal-title" className="text-2xl sm:text-3xl font-bold text-deep mb-2">
-                {t(`vision.${openPhase.key}`)}
+                {t(`vision.${openPhase.key}`, openPhase.title)}
               </h3>
 
               <div className="flex items-center gap-2 mb-5">
@@ -988,7 +1006,7 @@ export default function Vision() {
               </div>
 
               <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 font-medium">
-                {t(`vision.${openPhase.key}_desc`)}
+                {t(`vision.${openPhase.key}_desc`, openPhase.desc)}
               </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 {t(`vision.${openPhase.key}_long`, openPhase.long)}
