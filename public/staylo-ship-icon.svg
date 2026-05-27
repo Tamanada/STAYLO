@@ -11,18 +11,30 @@
   <!-- Rounded-square brand tile -->
   <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="url(#ship-bg)"/>
 
-  <!-- Origami paper boat — folded-paper aesthetic, very modern and
-       app-icon friendly. Two shapes (peak + hull) with a gap that
-       reveals the brand gradient as the fold line, plus one wave. -->
+  <!-- Sailboat — billowing single-sail interpretation. Instead of a
+       flat triangle, the sail curves outward as if filled with wind,
+       which reads more sculptural and luxe than the geometric versions
+       we tried earlier. -->
 
-  <!-- Top peak / sail (triangle pointing up) -->
-  <path d="M 256 122 L 380 282 L 132 282 Z" fill="#FFFFFF"/>
+  <!-- Mast — thin vertical, leaning slightly so the boat feels in motion -->
+  <line x1="216" y1="98" x2="232" y2="352"
+        stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
 
-  <!-- Hull (trapezoid — wider at top, narrower at bottom, like a boat
-       sitting on the water) -->
-  <path d="M 100 296 L 412 296 L 352 408 L 160 408 Z" fill="#FFFFFF"/>
+  <!-- Main sail — cubic-bezier curve that bulges out to the right,
+       suggesting wind catching the canvas -->
+  <path d="M 218 100
+           C 380 130, 396 268, 366 352
+           L 232 352 Z"
+        fill="#FFFFFF"/>
+
+  <!-- Tiny gold pennant at the masthead -->
+  <path d="M 220 96 L 252 104 L 220 112 Z" fill="#FFE54C"/>
+
+  <!-- Hull — sleek elongated curve, slim profile -->
+  <path d="M 88 362 L 424 362 Q 408 418 332 422 L 180 422 Q 104 418 88 362 Z"
+        fill="#FFFFFF"/>
 
   <!-- One stylized wave under the hull -->
-  <path d="M 70 452 Q 160 432 256 452 T 442 452"
-        stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" fill="none"/>
+  <path d="M 60 458 Q 160 438 256 458 T 452 458"
+        stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" fill="none"/>
 </svg>
