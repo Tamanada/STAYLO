@@ -467,11 +467,11 @@
       },
       "min_age_label": "Minimum age",
       "min_age": {
-        "all": "All ages welcome",
         "16": "16+ (teens & adults)",
         "18": "18+ (adults only)",
         "21": "21+ (party / adults)",
-        "25": "25+ (luxury)"
+        "25": "25+ (luxury)",
+        "all": "All ages welcome"
       }
     },
     "languages": {
@@ -1566,7 +1566,7 @@
     "search": "Search",
     "tagline_highlight": "You are not just a partner — you are the platform.",
     "tagline_body": "STAYLO is the only booking platform owned and run by hoteliers.",
-    "tagline_cta": "Book, share, earn — build ethical passive income while growing a community that puts hospitality first.",
+    "tagline_cta": "Book, share, earn — build <1>ethical passive income</1> while growing a community that puts hospitality first.",
     "popular_destinations": "Popular Destinations in Thailand",
     "explore_desc": "Explore our most booked cities by fellow travelers",
     "properties": "properties",

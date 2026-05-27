@@ -468,11 +468,11 @@
       },
       "min_age_label": "Âge minimum",
       "min_age": {
-        "all": "Tous âges bienvenus",
         "16": "16+ (ados et adultes)",
         "18": "18+ (adultes uniquement)",
         "21": "21+ (fête / adultes)",
-        "25": "25+ (luxe)"
+        "25": "25+ (luxe)",
+        "all": "Tous âges bienvenus"
       }
     },
     "languages": {
@@ -1569,7 +1569,7 @@
     "search": "Rechercher",
     "tagline_highlight": "Vous n'êtes pas juste un partenaire — vous êtes la plateforme.",
     "tagline_body": "STAYLO est la seule plateforme de booking détenue et gérée par les hôteliers.",
-    "tagline_cta": "Réservez, partagez, gagnez — construisez un revenu passif éthique tout en faisant grandir une communauté qui place l'hospitalité en premier.",
+    "tagline_cta": "Réservez, partagez, gagnez — construisez un <1>revenu passif éthique</1> tout en faisant grandir une communauté qui place l'hospitalité en premier.",
     "popular_destinations": "Destinations populaires en Thaïlande",
     "explore_desc": "Explorez les villes les plus réservées par les autres voyageurs",
     "properties": "propriétés",

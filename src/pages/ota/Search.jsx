@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslation, Trans } from 'react-i18next'
 import { Link, useSearchParams } from 'react-router-dom'
 import {
   MapPin, Star, Search, Calendar, Users, Heart, X,
@@ -272,7 +272,18 @@ export default function OTASearch() {
               <br />
               {t('booking.tagline_body', 'STAYLO is the only booking platform owned and run by hoteliers.')}
               <br />
-              <span className="text-[#ffb700] drop-shadow-lg">{t('booking.tagline_cta', 'Book, share, earn — build ethical passive income while growing a community that puts hospitality first.')}</span>
+              <span className="text-[#ffb700] drop-shadow-lg">
+                <Trans
+                  i18nKey="booking.tagline_cta"
+                  defaults="Book, share, earn — build <1>ethical passive income</1> while growing a community that puts hospitality first."
+                  components={{
+                    1: <Link
+                         to="/ambassador"
+                         className="underline decoration-2 underline-offset-4 hover:text-white transition-colors"
+                       />
+                  }}
+                />
+              </span>
             </p>
           </div>
         </div>
