@@ -65,28 +65,12 @@ export default function Splash() {
   return (
     <div>
       {/* ==================== SECTION 1: HERO ==================== */}
-      <section className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Brand-gradient backdrop — matches the banner edges so any
-            object-contain letterboxing blends invisibly */}
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
-        />
-        {/* STAYLO brand banner — object-contain so the full artwork
-            (STAY|LO wordmark + globe + "FROM ONE ISLAND TO THE WORLD")
-            stays uncropped */}
-        <img
-          src="/bannerSTAYLO.png"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-contain object-center"
-        />
-        {/* Dark scrim — keeps the headline (white) legible against the
-            bright orange/pink/purple banner artwork */}
-        <div className="absolute inset-0 bg-gradient-to-br from-black/65 via-black/50 to-black/70" />
-        {/* A single warm glow keeps the "alive" feel without competing
-            with the banner gradient */}
-        <div className="absolute bottom-[5%] right-[5%] w-96 h-96 bg-sunset/15 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '0.5s' }} />
+      {/* Pure STAYLO brand radiant — orange → pink → purple, no banner
+          image (would letterbox), no dark scrim filter. */}
+      <section
+        className="relative overflow-hidden min-h-screen flex items-center"
+        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
+      >
 
         <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center text-white">
           {/* Badge */}
