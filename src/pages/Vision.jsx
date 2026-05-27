@@ -121,7 +121,7 @@ export default function Vision() {
       />
       {/* Hero — EnjoyLife.png as background (consistent with the rest
           of the artwork-backed brand surface across the site) */}
-      <section className="text-white py-16 sm:py-24 relative overflow-hidden">
+      <section className="text-white relative overflow-hidden min-h-screen flex items-center">
         <img
           src="/EnjoyLife.png"
           alt=""

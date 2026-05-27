@@ -72,7 +72,7 @@ export default function AmbassadorLanding() {
           that picks up the painting's warm cream + red-orange splash tones,
           so the side "habillage" reads as an extension of the canvas. */}
       <section
-        className="text-white py-20 sm:py-28 relative overflow-hidden"
+        className="text-white relative overflow-hidden min-h-screen flex items-center"
         style={{
           // Radial cream → warm rust at the corners. The cream zone behind
           // the painting matches the painting's own background (#E8D5A0) so

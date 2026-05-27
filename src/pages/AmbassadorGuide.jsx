@@ -146,15 +146,12 @@ export default function AmbassadorGuide() {
 
   return (
     <div>
-      {/* ── Hero — LaReveuse.png painting as background, uncropped ──
-          Section uses the painting's natural ~2.5:1 aspect ratio so
-          object-cover does no cropping. Side gradient matches the
-          painting's warm pink/red edges so any letterboxing blends. */}
+      {/* ── Hero — LaReveuse.png painting as background, FULL SCREEN ──
+          Background gradient (warm pink/red) matches the painting's
+          warm edges so any letterboxing blends. */}
       <section
-        className="text-white relative overflow-hidden"
+        className="text-white relative overflow-hidden min-h-screen flex items-center"
         style={{
-          aspectRatio: '2.5 / 1',
-          minHeight: '420px',
           background: 'radial-gradient(ellipse 80% 100% at center, #E8836A 0%, #C8484A 60%, #A82F3A 100%)'
         }}
       >

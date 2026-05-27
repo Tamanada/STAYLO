@@ -180,8 +180,8 @@ export default function OTASearch() {
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
 
-      {/* ─── Hero Search ─────────────────────────────── */}
-      <div className="relative overflow-hidden">
+      {/* ─── Hero Search — full-screen banner ─── */}
+      <div className="relative overflow-hidden min-h-screen flex flex-col justify-end">
         {/* STAYLO brand banner as hero background */}
         <img
           src="/bannerSTAYLO.png"
@@ -192,7 +192,7 @@ export default function OTASearch() {
         {/* Soft bottom-gradient overlay only (keep banner art visible at top) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/45" />
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-32 sm:pt-40 pb-12 sm:pb-16">
+        <div className="relative max-w-6xl mx-auto w-full px-4 sm:px-6 pb-16 sm:pb-20">
           <div className="text-center mb-6 sm:mb-7">
             {/* Slogan */}
             <p className="text-xs sm:text-sm font-semibold text-[#ffb700] tracking-[0.18em] uppercase mb-3 drop-shadow-lg">
