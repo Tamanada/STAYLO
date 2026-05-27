@@ -66,12 +66,20 @@ export default function Splash() {
     <div>
       {/* ==================== SECTION 1: HERO ==================== */}
       <section className="relative overflow-hidden min-h-screen flex items-center">
-        {/* STAYLO brand banner as hero background */}
+        {/* Brand-gradient backdrop — matches the banner edges so any
+            object-contain letterboxing blends invisibly */}
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
+        />
+        {/* STAYLO brand banner — object-contain so the full artwork
+            (STAY|LO wordmark + globe + "FROM ONE ISLAND TO THE WORLD")
+            stays uncropped */}
         <img
           src="/bannerSTAYLO.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain object-center"
         />
         {/* Dark scrim — keeps the headline (white) legible against the
             bright orange/pink/purple banner artwork */}
