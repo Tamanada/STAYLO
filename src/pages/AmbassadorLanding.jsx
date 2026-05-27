@@ -66,32 +66,21 @@ export default function AmbassadorLanding() {
         description="Refer hotels to STAYLO and earn 2% in Bitcoin on every booking they receive — paid to your Lightning wallet, forever. Free to join. Lifetime commission."
         path="/ambassador"
       />
-      {/* ── Hero — JohnLenon.png painting as background ──
-          Full height visible (object-contain). The side panels left/right
-          of the contained painting are filled with a horizontal gradient
-          that picks up the painting's warm cream + red-orange splash tones,
-          so the side "habillage" reads as an extension of the canvas. */}
+      {/* ── Hero — LaReveuse.png painting as background ──
+          Warm pink/red/orange palette with gold/teal hair. Backdrop
+          gradient matches the painting's warm edge tones so any
+          letterboxing blends invisibly. */}
       <section
         className="text-white relative overflow-hidden min-h-screen flex items-center"
         style={{
-          // Radial cream → warm rust at the corners. The cream zone behind
-          // the painting matches the painting's own background (#E8D5A0) so
-          // there's no visible seam between the painting edges and the side
-          // habillage — the canvas just bleeds outward, warming gradually.
-          background: 'radial-gradient(ellipse 70% 100% at center, #E8D5A0 0%, #E8D5A0 45%, #D89A4F 75%, #B85C2B 100%)'
+          background: 'radial-gradient(ellipse 80% 100% at center, #E8836A 0%, #C8484A 60%, #A82F3A 100%)'
         }}
       >
         <img
-          src="/JohnLenon.png"
+          src="/LaReveuse.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-contain object-center"
-          // Feather the painting's left/right edges so it dissolves into the
-          // matched cream backdrop instead of cutting hard at the canvas edge.
-          style={{
-            maskImage: 'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
-          }}
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* Lighter scrim — painting + side panels stay vibrant, text-shadow
             halos on h1/p do the heavy lifting for legibility */}

@@ -146,20 +146,25 @@ export default function AmbassadorGuide() {
 
   return (
     <div>
-      {/* ── Hero — LaReveuse.png painting as background, FULL SCREEN ──
-          Background gradient (warm pink/red) matches the painting's
-          warm edges so any letterboxing blends. */}
+      {/* ── Hero — JohnLenon.png painting as background, FULL SCREEN ──
+          Full height visible (object-contain) so the portrait stays
+          intact. Side gradient picks up the painting's warm cream +
+          red-orange splash tones so any letterboxing blends. */}
       <section
         className="text-white relative overflow-hidden min-h-screen flex items-center"
         style={{
-          background: 'radial-gradient(ellipse 80% 100% at center, #E8836A 0%, #C8484A 60%, #A82F3A 100%)'
+          background: 'radial-gradient(ellipse 70% 100% at center, #E8D5A0 0%, #E8D5A0 45%, #D89A4F 75%, #B85C2B 100%)'
         }}
       >
         <img
-          src="/LaReveuse.png"
+          src="/JohnLenon.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-contain object-center"
+          style={{
+            maskImage: 'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+          }}
         />
         {/* Light scrim — keep headline + subtitle legible without muting
             the warm palette of the painting */}
