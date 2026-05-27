@@ -3,16 +3,15 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 
-const FILTER_KEYS = ['filter_all', 'filter_beach', 'filter_jungle', 'filter_wellness', 'filter_city', 'filter_luxury', 'filter_coowned', 'filter_bestvalue']
+const FILTER_KEYS = ['filter_beach', 'filter_jungle', 'filter_wellness', 'filter_city', 'filter_luxury', 'filter_coowned', 'filter_bestvalue']
 
-// Custom mini-SVG icons for the three categories the user explicitly asked
-// us to design (Beach / Jungle / Wellness). All use currentColor so they
-// inherit the pill's text color (white when active, gray when inactive).
+// Custom mini-SVG icons for every category. All use currentColor so they
+// inherit the pill's text color (white when active, white-translucent when
+// inactive). 16×16 viewBox, designed to read at 16px.
+
 const BeachIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    {/* Sun */}
     <circle cx="6" cy="6" r="2.4" fill="currentColor"/>
-    {/* Sun rays */}
     <g stroke="currentColor" strokeWidth="1.2" strokeLinecap="round">
       <line x1="6" y1="1.5" x2="6" y2="2.6"/>
       <line x1="1.5" y1="6" x2="2.6" y2="6"/>
@@ -20,25 +19,20 @@ const BeachIcon = ({ size = 16 }) => (
       <line x1="3" y1="3" x2="3.7" y2="3.7"/>
       <line x1="8.3" y1="3.7" x2="9" y2="3"/>
     </g>
-    {/* Palm trunk — gentle curve */}
     <path d="M 17 21 Q 16 14 18 7" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
-    {/* Palm fronds */}
     <g stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round">
       <path d="M 18 7 Q 13 5.5 10.5 7.5"/>
       <path d="M 18 7 Q 21.5 5 23 7"/>
       <path d="M 18 7 Q 16 9 14 11"/>
       <path d="M 18 7 Q 20 9 20.5 11.5"/>
     </g>
-    {/* Coconut */}
     <circle cx="17.4" cy="7.6" r="0.7" fill="currentColor"/>
-    {/* Waves */}
     <path d="M 1 21 Q 4 19.5 7 21 T 13 21" stroke="currentColor" strokeWidth="1.2" fill="none" strokeLinecap="round"/>
   </svg>
 )
 
 const JungleIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    {/* Big monstera leaf — central */}
     <path d="M 12 22 L 12 13" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"/>
     <path
       d="M 12 13
@@ -48,17 +42,8 @@ const JungleIcon = ({ size = 16 }) => (
          Q 19 11 12 13 Z"
       fill="currentColor"
     />
-    {/* Leaf veins */}
-    <g stroke="#FFFFFF" strokeOpacity="0.55" strokeWidth="0.6" fill="none" strokeLinecap="round">
-      <path d="M 12 13 L 8 8"/>
-      <path d="M 12 13 L 16 8"/>
-      <path d="M 12 13 L 6 6"/>
-      <path d="M 12 13 L 18 6"/>
-    </g>
-    {/* Small side leaves */}
     <path d="M 7 22 Q 4 20 3 17" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round"/>
     <path d="M 17 22 Q 20 20 21 17" stroke="currentColor" strokeWidth="1.4" fill="none" strokeLinecap="round"/>
-    {/* Small bud */}
     <circle cx="3" cy="17" r="0.9" fill="currentColor"/>
     <circle cx="21" cy="17" r="0.9" fill="currentColor"/>
   </svg>
@@ -66,25 +51,63 @@ const JungleIcon = ({ size = 16 }) => (
 
 const WellnessIcon = ({ size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    {/* Lotus — 5 petals around center */}
-    {/* Center petal (top) */}
     <path d="M 12 12 Q 11 6 12 3 Q 13 6 12 12 Z" fill="currentColor"/>
-    {/* Upper-right petal */}
     <path d="M 12 12 Q 17 8 20 7 Q 18 12 12 12 Z" fill="currentColor" opacity="0.85"/>
-    {/* Upper-left petal */}
     <path d="M 12 12 Q 7 8 4 7 Q 6 12 12 12 Z" fill="currentColor" opacity="0.85"/>
-    {/* Lower-right petal */}
     <path d="M 12 12 Q 19 13 21 16 Q 16 17 12 13 Z" fill="currentColor" opacity="0.7"/>
-    {/* Lower-left petal */}
     <path d="M 12 12 Q 5 13 3 16 Q 8 17 12 13 Z" fill="currentColor" opacity="0.7"/>
-    {/* Water line under lotus */}
     <path d="M 3 20 Q 8 19 12 20 T 21 20" stroke="currentColor" strokeWidth="1.1" fill="none" strokeLinecap="round"/>
   </svg>
 )
 
-// Map filter key → custom icon component (null = render the emoji fallback)
-const FILTER_ICONS = [null, BeachIcon, JungleIcon, WellnessIcon, null, null, null, null]
-const FILTER_EMOJIS = ['', '', '', '', '🌆', '💎', '🤝', '💰']
+const CityIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    {/* Three buildings of varying heights, clean geometric */}
+    <rect x="2" y="12" width="6" height="10" fill="currentColor"/>
+    <rect x="9" y="6" width="6" height="16" fill="currentColor"/>
+    <rect x="16" y="9" width="6" height="13" fill="currentColor"/>
+    {/* Antenna on tallest */}
+    <line x1="12" y1="6" x2="12" y2="2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    <circle cx="12" cy="2.2" r="0.7" fill="currentColor"/>
+  </svg>
+)
+
+const LuxuryIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    {/* Brilliant-cut diamond — top facets + pointed pavilion */}
+    <path
+      d="M 4 9 L 8 4 L 16 4 L 20 9 L 12 21 Z"
+      fill="currentColor"
+    />
+    {/* Facet seams — same color but barely darker stroke gives subtle 3D */}
+    <g stroke="currentColor" strokeOpacity="0.35" strokeWidth="0.8" fill="none">
+      <line x1="4" y1="9" x2="20" y2="9"/>
+      <line x1="8" y1="4" x2="12" y2="21"/>
+      <line x1="16" y1="4" x2="12" y2="21"/>
+    </g>
+  </svg>
+)
+
+const CoOwnedIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    {/* Two interlocked rings — partnership / co-ownership */}
+    <circle cx="9" cy="12" r="5.5" stroke="currentColor" strokeWidth="2.2" fill="none"/>
+    <circle cx="15" cy="12" r="5.5" stroke="currentColor" strokeWidth="2.2" fill="none"/>
+  </svg>
+)
+
+const BestValueIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    {/* Bold 5-point star — universal "value/rated" signal */}
+    <path
+      d="M 12 2.5 L 14.7 9.4 L 22 9.5 L 16.1 13.9 L 18.5 21 L 12 16.7 L 5.5 21 L 7.9 13.9 L 2 9.5 L 9.3 9.4 Z"
+      fill="currentColor"
+    />
+  </svg>
+)
+
+// Custom icon for every filter — no emoji fallbacks needed any more
+const FILTER_ICONS = [BeachIcon, JungleIcon, WellnessIcon, CityIcon, LuxuryIcon, CoOwnedIcon, BestValueIcon]
 
 export function Hero() {
   const { t } = useTranslation()
@@ -210,7 +233,7 @@ export function Hero() {
                   border: '1.5px solid rgba(255,255,255,0.55)',
                   textShadow: '0 1px 4px rgba(0,0,0,0.55)',
                 }}>
-                {Icon ? <Icon size={16} /> : (FILTER_EMOJIS[i] && <span>{FILTER_EMOJIS[i]}</span>)}
+                <Icon size={16} />
                 {t(`home_hero.${key}`, key)}
               </button>
             )
