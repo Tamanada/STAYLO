@@ -73,13 +73,25 @@ export default function AmbassadorLanding() {
           so the side "habillage" reads as an extension of the canvas. */}
       <section
         className="text-white py-20 sm:py-28 relative overflow-hidden"
-        style={{ background: 'linear-gradient(90deg, #B85C2B 0%, #D89A4F 18%, #E8D5A0 50%, #D89A4F 82%, #B85C2B 100%)' }}
+        style={{
+          // Radial cream → warm rust at the corners. The cream zone behind
+          // the painting matches the painting's own background (#E8D5A0) so
+          // there's no visible seam between the painting edges and the side
+          // habillage — the canvas just bleeds outward, warming gradually.
+          background: 'radial-gradient(ellipse 70% 100% at center, #E8D5A0 0%, #E8D5A0 45%, #D89A4F 75%, #B85C2B 100%)'
+        }}
       >
         <img
           src="/JohnLenon.png"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-contain object-center"
+          // Feather the painting's left/right edges so it dissolves into the
+          // matched cream backdrop instead of cutting hard at the canvas edge.
+          style={{
+            maskImage: 'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(90deg, transparent 0%, black 6%, black 94%, transparent 100%)',
+          }}
         />
         {/* Lighter scrim — painting + side panels stay vibrant, text-shadow
             halos on h1/p do the heavy lifting for legibility */}
@@ -91,7 +103,7 @@ export default function AmbassadorLanding() {
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 tracking-tight"
             style={{ textShadow: '0 2px 18px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
           >
-            {t('ambassador_landing.hero_title_prefix', 'Earn')} <span className="text-gradient-gold">{t('ambassador_landing.hero_title_highlight', '2%')}</span> {t('ambassador_landing.hero_title_suffix', 'for Life')}
+            {t('ambassador_landing.hero_title_prefix', 'Earn')} <span className="text-[#FFE54C]">{t('ambassador_landing.hero_title_highlight', '2%')}</span> {t('ambassador_landing.hero_title_suffix', 'for Life')}
           </h1>
           <p
             className="text-lg sm:text-xl text-white max-w-2xl mx-auto mb-10 font-medium leading-relaxed"
