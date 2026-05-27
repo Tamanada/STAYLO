@@ -980,22 +980,22 @@ export default function Vision() {
       </section>
 
       {/* Founding benefits — brand palette cycle */}
-      <section className="py-8 bg-white">
+      <section className="py-10 sm:py-12 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl font-bold text-deep text-center mb-5">
+          <h2 className="text-3xl sm:text-4xl font-bold text-deep text-center mb-8">
             {t('vision.founding_title')}
           </h2>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-2 gap-5">
             {(() => {
               const palette = ['#FF6B00', '#FF3CB4', '#6C5CE7', '#FDCB6E', '#00B894']
               return Object.entries(benefitIcons).map(([key, Icon], i) => {
                 const color = palette[i % palette.length]
                 return (
-                  <Card key={key} className="p-5 flex items-start gap-4 card-hover" style={{ borderColor: color + '33' }}>
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '1A' }}>
-                      <Icon size={20} style={{ color }} />
+                  <Card key={key} className="p-6 flex items-center gap-4 card-hover" style={{ borderColor: color + '33' }}>
+                    <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '1A' }}>
+                      <Icon size={26} style={{ color }} />
                     </div>
-                    <p className="text-sm text-gray-600">{t(`vision.founding_benefits.${key}`)}</p>
+                    <p className="text-base sm:text-lg text-gray-700 leading-relaxed font-medium">{t(`vision.founding_benefits.${key}`)}</p>
                   </Card>
                 )
               })
