@@ -193,21 +193,18 @@ export default function OTASearch() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/45" />
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 pt-32 sm:pt-40 pb-12 sm:pb-16">
-          {/* GLASS PANEL — sits below the banner's centered "stay lo" wordmark
-              so the UI doesn't overlap with the artwork text */}
-          <div className="bg-black/55 backdrop-blur-md border border-white/15 rounded-2xl shadow-2xl shadow-black/40 px-6 sm:px-10 py-7 sm:py-9 max-w-5xl mx-auto">
-            <div className="text-center mb-6 sm:mb-7">
-              {/* Slogan */}
-              <p className="text-xs sm:text-sm font-semibold text-[#ffb700] tracking-[0.18em] uppercase mb-3">
-                {t('booking.slogan', 'Owned by Hoteliers, Built for Hospitality')}
-              </p>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3 tracking-tight leading-tight">
-                {t('booking.hero_title', 'Where you stay shapes the world.')}
-              </h1>
-              <p className="text-white/85 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-                {t('booking.hero_subtitle', 'Travel directly with hoteliers — co-owners of the only platform built for hospitality. From one island to the world.')}
-              </p>
-            </div>
+          <div className="text-center mb-6 sm:mb-7">
+            {/* Slogan */}
+            <p className="text-xs sm:text-sm font-semibold text-[#ffb700] tracking-[0.18em] uppercase mb-3 drop-shadow-lg">
+              {t('booking.slogan', 'Owned by Hoteliers, Built for Hospitality')}
+            </p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3 tracking-tight leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)]">
+              {t('booking.hero_title', 'Where you stay shapes the world.')}
+            </h1>
+            <p className="text-white/95 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]">
+              {t('booking.hero_subtitle', 'Travel directly with hoteliers — co-owners of the only platform built for hospitality. From one island to the world.')}
+            </p>
+          </div>
 
           {/* Search bar */}
           <div className="bg-[#ffb700] p-1 rounded-xl max-w-5xl mx-auto shadow-2xl shadow-black/20">
@@ -268,9 +265,7 @@ export default function OTASearch() {
             </div>
           </div>
 
-          </div>{/* /glass panel */}
-
-          {/* Tagline — sits OUTSIDE the glass panel, below it on the gradient */}
+          {/* Tagline */}
           <div className="mt-6 max-w-3xl mx-auto text-center">
             <p className="text-white/95 text-sm sm:text-base font-medium leading-relaxed drop-shadow-md">
               <span className="text-[#ffb700] font-bold drop-shadow-lg">{t('booking.tagline_highlight', 'You are not just a partner — you are the platform.')}</span>

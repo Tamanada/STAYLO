@@ -64,10 +64,15 @@ export function Navbar() {
         }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-1 no-underline">
-              <span className="text-2xl font-black" style={{ color: '#2D3436' }}>Stay</span>
-              <span className="text-2xl font-black" style={{ color: '#FF6B00' }}>lo</span>
+            {/* Logo — rounded-square STAYLO icon */}
+            <Link to="/" className="flex items-center no-underline" aria-label="STAYLO">
+              <img
+                src="/staylo-icon.svg"
+                alt="STAYLO"
+                className="h-10 w-10 sm:h-11 sm:w-11"
+                width="44"
+                height="44"
+              />
             </Link>
 
             {/* Desktop nav */}

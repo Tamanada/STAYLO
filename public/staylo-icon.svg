@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="STAY|LO">
+  <!-- Brand gradient: orange → pink → purple (matches bannerSTAYLO.png) -->
+  <defs>
+    <linearGradient id="staylo-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#FF6B00"/>
+      <stop offset="40%"  stop-color="#FF1F70"/>
+      <stop offset="100%" stop-color="#7E22CE"/>
+    </linearGradient>
+    <linearGradient id="staylo-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"  stop-color="#FF6B00"/>
+      <stop offset="100%" stop-color="#FF1F70"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded-square tile -->
+  <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="url(#staylo-bg)"/>
+
+  <!-- STAY wordmark (top half) -->
+  <text x="256" y="240"
+        text-anchor="middle"
+        font-family="Inter, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif"
+        font-weight="900"
+        font-size="170"
+        fill="#FFFFFF"
+        letter-spacing="2">STAY</text>
+
+  <!-- LO wordmark — L white, O is a gradient ring (bottom half) -->
+  <text x="170" y="410"
+        text-anchor="middle"
+        font-family="Inter, system-ui, -apple-system, 'Segoe UI', Arial, sans-serif"
+        font-weight="900"
+        font-size="180"
+        fill="#FFFFFF">L</text>
+  <circle cx="330" cy="350" r="78" fill="none" stroke="url(#staylo-ring)" stroke-width="26"/>
+
+  <!-- Orange underline accent -->
+  <rect x="218" y="448" width="76" height="14" rx="7" fill="#FF6B00"/>
+</svg>
