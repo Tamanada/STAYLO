@@ -66,15 +66,24 @@ export default function AmbassadorLanding() {
         description="Refer hotels to STAYLO and earn 2% in Bitcoin on every booking they receive — paid to your Lightning wallet, forever. Free to join. Lifetime commission."
         path="/ambassador"
       />
-      {/* ── Hero — JohnLenon.png painting as background ── */}
-      <section className="text-white py-20 sm:py-28 relative overflow-hidden">
+      {/* ── Hero — JohnLenon.png painting as background ──
+          Full height visible (object-contain). The side panels left/right
+          of the contained painting are filled with a horizontal gradient
+          that picks up the painting's warm cream + red-orange splash tones,
+          so the side "habillage" reads as an extension of the canvas. */}
+      <section
+        className="text-white py-20 sm:py-28 relative overflow-hidden"
+        style={{ background: 'linear-gradient(90deg, #B85C2B 0%, #D89A4F 18%, #E8D5A0 50%, #D89A4F 82%, #B85C2B 100%)' }}
+      >
         <img
           src="/JohnLenon.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-contain object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
+        {/* Lighter scrim — painting + side panels stay vibrant, text-shadow
+            halos on h1/p do the heavy lifting for legibility */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/15 to-black/40" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <Badge variant="golden" className="mb-6">{t('ambassador_landing.badge', 'Ambassador Program')}</Badge>
