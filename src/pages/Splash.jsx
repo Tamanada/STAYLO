@@ -193,84 +193,121 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 3: WHAT HAPPENS NEXT ==================== */}
-      {/* Banner is the BACKGROUND. Content (title + cards) sits at the
-          bottom of the section so it never covers the STAYLO wordmark or
-          "FROM ONE ISLAND TO THE WORLD" tagline at the top of the banner. */}
+      {/* Banner is the BACKGROUND (its natural 2.5:1 aspect ratio so
+          nothing gets cropped). Cards overlay the RIGHT half of the
+          banner where there's no text — STAYLO wordmark + "FROM ONE
+          ISLAND TO THE WORLD" tagline on the left stay completely
+          uncovered. Mobile (<md): cards stack below the banner. */}
       <section
-        className="relative text-white overflow-hidden min-h-screen flex flex-col justify-end"
+        className="relative text-white overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
       >
-        <img
-          src="/bannerSTAYLO.png"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-top"
-        />
-        {/* Scrim — fully transparent at the top (banner wordmark + tagline
-            stay crisp and untouched), fading to a strong dark at the bottom
-            so the cards have proper contrast against the palm-sunset zone */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-50% to-black/70" />
+        {/* Banner band — natural aspect ratio, full visible */}
+        <div className="relative w-full" style={{ aspectRatio: '2.5 / 1' }}>
+          <img
+            src="/bannerSTAYLO.png"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
 
-        <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 pb-12 sm:pb-16 relative">
-          <div className="text-center mb-10">
-            <Badge variant="golden" className="mb-4">{t('splash.next_badge')}</Badge>
-            <h2
-              className="text-3xl sm:text-4xl font-bold mb-3"
-              style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
-            >
+          {/* Desktop overlay — cards in the right portion (world-map zone) */}
+          <div className="hidden md:flex absolute inset-y-0 right-0 left-[42%] flex-col justify-center px-4 lg:px-8 xl:px-12 py-4">
+            <div className="text-center mb-3 lg:mb-4">
+              <Badge variant="golden" className="mb-2 text-xs">{t('splash.next_badge')}</Badge>
+              <h2
+                className="text-lg lg:text-2xl xl:text-3xl font-bold"
+                style={{ textShadow: '0 2px 12px rgba(0,0,0,0.85), 0 0 6px rgba(0,0,0,0.8)' }}
+              >
+                {t('splash.next_title')}
+              </h2>
+            </div>
+            <div className="space-y-2 lg:space-y-3">
+              {timeline.map((item) => {
+                const Icon = item.icon
+                const inner = (
+                  <>
+                    <div className="flex items-center justify-center shrink-0 w-10 h-10 lg:w-11 lg:h-11 rounded-xl bg-white/20">
+                      <Icon size={20} className="text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] lg:text-xs font-bold text-white uppercase tracking-wider mb-0.5">
+                        {t(`splash.timeline_${item.key}_label`)}
+                      </p>
+                      <p className="text-white/95 text-xs lg:text-sm leading-snug">
+                        {t(`splash.timeline_${item.key}_desc`)}
+                      </p>
+                    </div>
+                    {item.to && (
+                      <ArrowRight size={18} className="hidden lg:block shrink-0 self-center text-white/80 group-hover:translate-x-1 transition-transform" />
+                    )}
+                  </>
+                )
+                return item.to ? (
+                  <Link
+                    key={item.key}
+                    to={item.to}
+                    className="group flex items-center gap-3 bg-white/[0.33] backdrop-blur-md border border-white rounded-xl px-3 py-2.5 lg:px-4 lg:py-3 no-underline cursor-pointer transition-all hover:bg-white/[0.42] hover:-translate-y-0.5"
+                  >
+                    {inner}
+                  </Link>
+                ) : (
+                  <div
+                    key={item.key}
+                    className="flex items-center gap-3 bg-white/[0.33] backdrop-blur-md border border-white rounded-xl px-3 py-2.5 lg:px-4 lg:py-3"
+                  >
+                    {inner}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile (<md): cards stack below the banner on the brand gradient */}
+        <div className="md:hidden max-w-4xl mx-auto w-full px-4 py-10 relative">
+          <div className="text-center mb-6">
+            <Badge variant="golden" className="mb-3">{t('splash.next_badge')}</Badge>
+            <h2 className="text-3xl font-bold" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.7)' }}>
               {t('splash.next_title')}
             </h2>
           </div>
-
-          <div className="space-y-6">
+          <div className="space-y-3">
             {timeline.map((item) => {
               const Icon = item.icon
-              // Shared inner layout — used both by the static card and the
-              // clickable card so the visual is identical except for the
-              // hover affordance + chevron.
               const inner = (
                 <>
-                  <div className={`flex items-center justify-center shrink-0 w-12 h-12 rounded-2xl bg-${item.color}/10`}>
-                    <Icon size={24} className={`text-${item.color}`} />
+                  <div className="flex items-center justify-center shrink-0 w-12 h-12 rounded-xl bg-white/20">
+                    <Icon size={22} className="text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-bold text-${item.color} uppercase tracking-wider mb-1`}>
+                    <p className="text-xs font-bold text-white uppercase tracking-wider mb-1">
                       {t(`splash.timeline_${item.key}_label`)}
                     </p>
-                    <p className="text-white/70 text-base">
+                    <p className="text-white text-sm">
                       {t(`splash.timeline_${item.key}_desc`)}
                     </p>
-                    {/* Inline CTA hint — only on the actionable "now" row */}
                     {item.to && (
-                      <p className={`mt-2 text-sm font-bold text-${item.color} inline-flex items-center gap-1`}>
-                        {t('splash.timeline_now_cta', 'Inscrivez-vous maintenant')}
-                        <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                      <p className="mt-1.5 text-xs font-bold text-white inline-flex items-center gap-1">
+                        {t('splash.timeline_now_cta', 'Register now')}
+                        <ArrowRight size={14} />
                       </p>
                     )}
                   </div>
-                  {/* Big right-side chevron — only on the actionable row.
-                      Mobile: hidden (we already show the inline CTA above). */}
-                  {item.to && (
-                    <ArrowRight
-                      size={22}
-                      className={`hidden sm:block shrink-0 self-center text-${item.color}/60 group-hover:text-${item.color} group-hover:translate-x-1 transition-all`}
-                    />
-                  )}
                 </>
               )
-              // Clickable row → <Link>; non-actionable rows → <div>
               return item.to ? (
                 <Link
                   key={item.key}
                   to={item.to}
-                  className={`group flex items-start gap-5 bg-black/65 backdrop-blur-xl border border-${item.color}/50 rounded-2xl p-6 no-underline cursor-pointer transition-all hover:bg-black/75 hover:border-${item.color}/80 hover:shadow-xl hover:shadow-black/40 hover:-translate-y-0.5`}
+                  className="group flex items-start gap-4 bg-white/[0.33] backdrop-blur-md border border-white rounded-xl p-4 no-underline"
                 >
                   {inner}
                 </Link>
               ) : (
                 <div
                   key={item.key}
-                  className="flex items-start gap-5 bg-black/65 backdrop-blur-xl border border-white/25 rounded-2xl p-6"
+                  className="flex items-start gap-4 bg-white/[0.33] backdrop-blur-md border border-white rounded-xl p-4"
                 >
                   {inner}
                 </div>
