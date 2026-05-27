@@ -211,8 +211,9 @@ export default function Splash() {
             className="absolute inset-0 w-full h-full object-cover"
           />
 
-          {/* Desktop overlay — cards in the right portion (world-map zone) */}
-          <div className="hidden md:flex absolute inset-y-0 right-0 left-[42%] flex-col justify-center px-4 lg:px-8 xl:px-12 py-4">
+          {/* Desktop overlay — cards centered horizontally on the page,
+              narrowed to ~2/3 of the previous width per user direction */}
+          <div className="hidden md:flex absolute inset-y-0 left-[31%] right-[31%] flex-col justify-center px-2 lg:px-4 py-4">
             <div className="text-center mb-3 lg:mb-4">
               <Badge variant="golden" className="mb-2 text-xs">{t('splash.next_badge')}</Badge>
               <h2
