@@ -38,22 +38,30 @@ export function Hero() {
 
   return (
     <section className="relative overflow-hidden" style={{
-      background: 'linear-gradient(160deg, #FFFDF8 0%, #FFF5E6 40%, #FFF0F8 70%, #F0F8FF 100%)',
       padding: '80px 5% 60px',
     }}>
-      {/* Floating blobs */}
-      <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] rounded-full opacity-35 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #FF6B00 0%, transparent 70%)', filter: 'blur(60px)' }} />
-      <div className="absolute bottom-[-50px] left-[-100px] w-[400px] h-[400px] rounded-full opacity-35 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #FF3CB4 0%, transparent 70%)', filter: 'blur(60px)' }} />
-      <div className="absolute top-[30%] right-[20%] w-[350px] h-[350px] rounded-full opacity-25 pointer-events-none"
-        style={{ background: 'radial-gradient(circle, #00B894 0%, transparent 70%)', filter: 'blur(60px)' }} />
+      {/* Samuii.png — starry-night beach painting as background.
+          Aligned to the rest of the site's artwork-backed surfaces. */}
+      <img
+        src="/Samuii.png"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover object-center"
+      />
+      {/* Light scrim — painting is already dark blue, just nudge contrast
+          for the white headline and cards */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45 pointer-events-none" />
 
       <div className="relative max-w-4xl mx-auto text-center">
-        {/* Tag pill */}
+        {/* Tag pill — bumped to translucent gold pill on dark painting */}
         <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full mb-8"
-          style={{ background: 'rgba(255,107,0,0.08)', border: '1.5px solid rgba(255,107,0,0.2)' }}>
-          <span style={{ color: '#FF6B00', fontSize: '11px', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+          style={{
+            background: 'rgba(253,203,110,0.15)',
+            border: '1.5px solid rgba(253,203,110,0.55)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+          }}>
+          <span style={{ color: '#FFE54C', fontSize: '12px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
             {t('home_hero.badge', '✦ Built with hoteliers, for hoteliers')}
           </span>
         </div>
@@ -64,12 +72,13 @@ export function Hero() {
           fontWeight: 900,
           letterSpacing: '-3px',
           lineHeight: 1.05,
-          color: '#2D3436',
+          color: '#FFFFFF',
           margin: '0 0 24px',
+          textShadow: '0 2px 18px rgba(0,0,0,0.85), 0 0 8px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.9)',
         }}>
           {t('home_hero.title_1', 'Book with ')}
           <span style={{
-            background: 'linear-gradient(135deg, #FF6B00, #FF3CB4, #6C5CE7)',
+            background: 'linear-gradient(135deg, #FFE54C, #FF6B00, #FF3CB4)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -82,9 +91,11 @@ export function Hero() {
         <p style={{
           fontSize: '18px',
           lineHeight: 1.65,
-          color: '#636E72',
+          color: '#FFFFFF',
           maxWidth: '620px',
           margin: '0 auto 40px',
+          fontWeight: 500,
+          textShadow: '0 2px 12px rgba(0,0,0,0.85), 0 0 6px rgba(0,0,0,0.7)',
         }}>
           {t('home_hero.subtitle', 'Every booking on Staylo goes back to the hoteliers who built it. Co-owned by worldwide hoteliers. 10% commission forever… and much more.')}
         </p>
