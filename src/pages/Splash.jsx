@@ -66,20 +66,19 @@ export default function Splash() {
     <div>
       {/* ==================== SECTION 1: HERO ==================== */}
       <section className="relative overflow-hidden min-h-screen flex items-center">
-        {/* Animated background with warm tropical tones */}
-        <div className="absolute inset-0 bg-gradient-to-br from-deep via-[#0d1f3c] to-[#0F3460]">
-          <div className="absolute top-[10%] left-[5%] w-64 h-64 bg-golden/20 rounded-full blur-3xl animate-float" />
-          <div className="absolute top-[40%] right-[10%] w-80 h-80 bg-ocean/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
-          <div className="absolute bottom-[15%] left-[30%] w-72 h-72 bg-electric/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-          <div className="absolute bottom-[5%] right-[5%] w-96 h-96 bg-sunset/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '0.5s' }} />
-          {/* Warm sunset glow at the horizon */}
-          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#FF6B35]/8 via-[#FFBE0B]/5 to-transparent" />
-          {/* Grid pattern */}
-          <div className="absolute inset-0 opacity-[0.03]" style={{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
-            backgroundSize: '60px 60px'
-          }} />
-        </div>
+        {/* STAYLO brand banner as hero background */}
+        <img
+          src="/bannerSTAYLO.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        {/* Dark scrim — keeps the headline (white) legible against the
+            bright orange/pink/purple banner artwork */}
+        <div className="absolute inset-0 bg-gradient-to-br from-black/65 via-black/50 to-black/70" />
+        {/* A single warm glow keeps the "alive" feel without competing
+            with the banner gradient */}
+        <div className="absolute bottom-[5%] right-[5%] w-96 h-96 bg-sunset/15 rounded-full blur-3xl animate-float pointer-events-none" style={{ animationDelay: '0.5s' }} />
 
         <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center text-white">
           {/* Badge */}
