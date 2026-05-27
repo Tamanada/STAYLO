@@ -205,10 +205,9 @@ export default function Vision() {
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        {/* Strong dark scrim — the painting is very saturated (bright sun
-            in the center), so we need enough darkening to keep every line
-            of body copy legible without killing the artwork. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/55 to-black/70" />
+        {/* Dark scrim — lighter than before so more of the painting reads
+            through, but still enough to keep body copy legible. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/40 to-black/55" />
         {/* One subtle brand orb pulled in front of the scrim to add a
             soft glow without competing with the painting's own light */}
         <div className="absolute inset-0 pointer-events-none">
@@ -919,9 +918,9 @@ export default function Vision() {
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        {/* Dark scrim — keep doc cards and "What You Need to Join"
-            headline crisp against the artwork */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/55 to-black/70" />
+        {/* Dark scrim — lighter pass so the artwork breathes more,
+            still dark enough to keep the doc cards readable */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/40 to-black/55" />
         {/* Subtle warm glow top-right */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 right-[8%] w-64 h-64 bg-[#FFAB40]/12 rounded-full blur-3xl" />
