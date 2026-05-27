@@ -98,7 +98,25 @@ export default function AmbassadorLanding() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/15 to-black/40" />
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
-          <Badge variant="golden" className="mb-6">{t('ambassador_landing.badge', 'Ambassador Program')}</Badge>
+          {/* Premium oversized pill — this is the headline framing, key info */}
+          <div
+            className="inline-flex items-center gap-2.5 px-6 sm:px-8 py-3 sm:py-3.5 rounded-full mb-8 animate-pulse-glow"
+            style={{
+              background: 'rgba(253,203,110,0.18)',
+              border: '2px solid rgba(253,203,110,0.7)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              boxShadow: '0 4px 28px rgba(0,0,0,0.45), 0 0 16px rgba(253,203,110,0.25)'
+            }}
+          >
+            <Sparkles size={22} className="text-[#FFE54C]" />
+            <span
+              className="text-base sm:text-lg lg:text-xl font-bold uppercase tracking-[0.15em] text-[#FFE54C]"
+              style={{ textShadow: '0 2px 10px rgba(0,0,0,0.85), 0 0 5px rgba(0,0,0,0.7)' }}
+            >
+              {t('ambassador_landing.badge', 'Ambassador Program')}
+            </span>
+          </div>
           <h1
             className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 tracking-tight"
             style={{ textShadow: '0 2px 18px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
