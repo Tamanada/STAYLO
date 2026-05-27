@@ -464,14 +464,34 @@ export default function Submit() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900 mb-2">{t('property.title', 'Register Your Property')}</h1>
-        <p className="text-gray-500">{t('property.subtitle', 'Join the STAYLO network — free registration, 10% commission only')}</p>
-      </div>
+    <>
+      {/* ─── Hero band — Topoftheworld painting as background ─── */}
+      <section className="relative overflow-hidden">
+        <img
+          src="/Topoftheworld.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
+        <div className="relative max-w-3xl mx-auto px-4 py-16 sm:py-20 text-center">
+          <h1
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white mb-3 tracking-tight"
+            style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
+            {t('property.title', 'List Your Property')}
+          </h1>
+          <p
+            className="text-lg sm:text-xl text-white font-medium max-w-xl mx-auto"
+            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
+            {t('property.subtitle', 'Register your property to secure your Founding Member position.')}
+          </p>
+        </div>
+      </section>
 
-      {/* Stepper */}
+      <div className="max-w-3xl mx-auto px-4 py-8 sm:py-12">
+        {/* Stepper */}
       <div className="flex items-center justify-center gap-1 mb-8 overflow-x-auto pb-2">
         {STEPS.map((s, i) => {
           const Icon = s.icon
@@ -883,6 +903,7 @@ export default function Submit() {
           </p>
         </form>
       </Card>
-    </div>
+      </div>
+    </>
   )
 }
