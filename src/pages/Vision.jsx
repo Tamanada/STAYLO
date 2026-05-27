@@ -882,13 +882,32 @@ export default function Vision() {
         </div>
       </section>
 
-      {/* Roadmap — horizontal timeline with click-to-expand popup */}
-      <section className="py-12 sm:py-16 bg-gradient-to-b from-white to-[#F8F6F0]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <h2 className="text-3xl sm:text-4xl font-bold text-deep text-center mb-3">
+      {/* Roadmap — horizontal timeline with click-to-expand popup
+          Background: UnVoyage.png (dreamy night-voyage painting) — the
+          journey metaphor pairs naturally with a phased roadmap. White
+          phase cards float as jewels above the dark artwork. */}
+      <section className="py-12 sm:py-16 relative overflow-hidden">
+        <img
+          src="/UnVoyage.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Light scrim — the painting is already dark, so we just nudge
+            the contrast a touch to ensure the title and subtitle read */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+          <h2
+            className="text-3xl sm:text-4xl font-bold text-white text-center mb-3"
+            style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
             {t('vision.roadmap_title', 'Roadmap')}
           </h2>
-          <p className="text-center text-gray-500 mb-10 max-w-2xl mx-auto text-sm sm:text-base">
+          <p
+            className="text-center text-white mb-10 max-w-2xl mx-auto text-sm sm:text-base font-medium"
+            style={{ textShadow: '0 2px 10px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}
+          >
             {t('vision.roadmap_subtitle', 'Click any step to see what we ship and when.')}
           </p>
 
