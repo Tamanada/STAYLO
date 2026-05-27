@@ -189,11 +189,12 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 3: WHAT HAPPENS NEXT ==================== */}
-      <section className="relative py-16 sm:py-24 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: 'linear-gradient(rgba(255,190,11,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,190,11,.3) 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }} />
+      {/* Background = exact STAYLO brand gradient (the radiant from the banner,
+          without the wordmark). 135deg orange → pink → purple. */}
+      <section
+        className="relative py-16 sm:py-24 text-white overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
+      >
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center mb-12">
@@ -244,14 +245,14 @@ export default function Splash() {
                 <Link
                   key={item.key}
                   to={item.to}
-                  className={`group flex items-start gap-5 bg-white/5 backdrop-blur-sm border border-${item.color}/30 rounded-2xl p-6 no-underline cursor-pointer transition-all hover:bg-white/10 hover:border-${item.color}/60 hover:shadow-lg hover:shadow-${item.color}/10 hover:-translate-y-0.5`}
+                  className={`group flex items-start gap-5 bg-black/25 backdrop-blur-md border border-${item.color}/40 rounded-2xl p-6 no-underline cursor-pointer transition-all hover:bg-black/35 hover:border-${item.color}/70 hover:shadow-xl hover:shadow-black/25 hover:-translate-y-0.5`}
                 >
                   {inner}
                 </Link>
               ) : (
                 <div
                   key={item.key}
-                  className="flex items-start gap-5 bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6"
+                  className="flex items-start gap-5 bg-black/25 backdrop-blur-md border border-white/20 rounded-2xl p-6"
                 >
                   {inner}
                 </div>
