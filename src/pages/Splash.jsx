@@ -93,24 +93,24 @@ export default function Splash() {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-xl sm:text-2xl font-semibold mb-6">
-            <span className="text-gradient">{t('splash.subtitle')}</span>
+          <p className="text-2xl sm:text-3xl font-bold mb-6 text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]">
+            {t('splash.subtitle')}
           </p>
 
           {/* Description */}
-          <p className="text-base sm:text-lg text-white/55 max-w-2xl mx-auto mb-8 leading-relaxed">
+          <p className="text-lg sm:text-xl text-white/95 max-w-2xl mx-auto mb-8 leading-relaxed drop-shadow-[0_2px_6px_rgba(0,0,0,0.6)]">
             {t('splash.description')}
           </p>
 
           {/* Glowing emphasized box */}
           <div className="inline-flex items-center gap-3 px-6 sm:px-8 py-4 rounded-2xl bg-gradient-to-r from-golden/15 via-sunrise/15 to-sunset/15 border border-golden/30 mb-6 animate-pulse-glow">
-            <span className="text-white font-bold text-lg sm:text-xl tracking-wide">
+            <span className="text-white font-bold text-xl sm:text-2xl tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
               {t('splash.types')}
             </span>
           </div>
 
           {/* Small text */}
-          <p className="text-white/40 text-sm mb-10">
+          <p className="text-white/90 text-base sm:text-lg mb-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]">
             {t('splash.license_note')}
           </p>
 
