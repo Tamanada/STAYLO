@@ -40,21 +40,21 @@ export default function AmbassadorLanding() {
       num: 1,
       title: t('ambassador_landing.step1_title', 'Stay & Discover'),
       desc: t('ambassador_landing.step1_desc', 'Visit a hotel on Staylo. Experience a platform that truly respects its partners — and see the difference firsthand.'),
-      gradient: 'from-ocean to-electric',
+      gradient: 'from-[#FF6B00] to-[#FF3CB4]',
       icon: Hotel,
     },
     {
       num: 2,
       title: t('ambassador_landing.step2_title', 'Recruit Hotels'),
       desc: t('ambassador_landing.step2_desc', 'Share your personal ambassador link with hotel owners you meet. When they join Staylo, you become their ambassador.'),
-      gradient: 'from-sunrise to-sunset',
+      gradient: 'from-[#FF3CB4] to-[#6C5CE7]',
       icon: Handshake,
     },
     {
       num: 3,
       title: t('ambassador_landing.step3_title', 'Earn Forever'),
       desc: t('ambassador_landing.step3_desc', 'Get 2% of all their online sales — every booking, every service, every transaction. For life.'),
-      gradient: 'from-libre to-libre/70',
+      gradient: 'from-[#FDCB6E] to-[#FF6B00]',
       icon: TrendingUp,
     },
   ]
@@ -66,11 +66,14 @@ export default function AmbassadorLanding() {
         description="Refer hotels to STAYLO and earn 2% in Bitcoin on every booking they receive — paid to your Lightning wallet, forever. Free to join. Lifetime commission."
         path="/ambassador"
       />
-      {/* ── Hero ── */}
-      <section className="bg-gradient-to-br from-deep via-electric/80 to-ocean text-white py-20 sm:py-28 relative overflow-hidden animate-gradient">
-        <div className="absolute inset-0">
-          <div className="absolute top-10 left-[20%] w-60 h-60 bg-golden/15 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-sunset/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+      {/* ── Hero — Option A brand radiant ── */}
+      <section
+        className="text-white py-20 sm:py-28 relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF3CB4 50%, #6C5CE7 100%)' }}
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 left-[20%] w-60 h-60 bg-white/15 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-[#FDCB6E]/25 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
         </div>
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
@@ -133,12 +136,12 @@ export default function AmbassadorLanding() {
             <p className="text-gray-500 text-lg">{t('ambassador_landing.calculator_subtitle', 'How many hotels could you bring to Staylo?')}</p>
           </div>
 
-          <Card className="p-8 sm:p-10 border-2 border-electric/20">
+          <Card className="p-8 sm:p-10 border-2" style={{ borderColor: 'rgba(255,107,0,0.25)' }}>
             {/* Hotels slider */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-semibold text-deep">{t('ambassador_landing.slider_hotels_label', 'Hotels you recruit')}</label>
-                <span className="text-3xl font-black text-electric">{hotelCount}</span>
+                <span className="text-3xl font-black" style={{ color: '#FF6B00' }}>{hotelCount}</span>
               </div>
               <input
                 type="range"
@@ -146,7 +149,8 @@ export default function AmbassadorLanding() {
                 max={50}
                 value={hotelCount}
                 onChange={(e) => setHotelCount(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-electric"
+                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
+                style={{ accentColor: '#FF6B00' }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>{t('ambassador_landing.slider_hotels_min', '1 hotel')}</span>
@@ -158,7 +162,7 @@ export default function AmbassadorLanding() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-semibold text-deep">{t('ambassador_landing.slider_rooms_label', 'Rooms per hotel')}</label>
-                <span className="text-2xl font-bold text-electric">{roomCount}</span>
+                <span className="text-2xl font-bold" style={{ color: '#FF3CB4' }}>{roomCount}</span>
               </div>
               <input
                 type="range"
@@ -166,7 +170,8 @@ export default function AmbassadorLanding() {
                 max={100}
                 value={roomCount}
                 onChange={(e) => setRoomCount(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-electric"
+                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
+                style={{ accentColor: '#FF3CB4' }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>{t('ambassador_landing.slider_rooms_min', '5 rooms')}</span>
@@ -178,7 +183,7 @@ export default function AmbassadorLanding() {
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-semibold text-deep">{t('ambassador_landing.slider_rate_label', 'Avg. nightly rate')}</label>
-                <span className="text-2xl font-bold text-sunset">${nightlyRate}</span>
+                <span className="text-2xl font-bold" style={{ color: '#6C5CE7' }}>${nightlyRate}</span>
               </div>
               <input
                 type="range"
@@ -187,7 +192,8 @@ export default function AmbassadorLanding() {
                 step={5}
                 value={nightlyRate}
                 onChange={(e) => setNightlyRate(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-sunset"
+                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
+                style={{ accentColor: '#6C5CE7' }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>{t('ambassador_landing.slider_rate_min', '$20/night')}</span>
@@ -199,7 +205,7 @@ export default function AmbassadorLanding() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-semibold text-deep">{t('ambassador_landing.slider_occupancy_label', 'Avg. occupancy')}</label>
-                <span className="text-2xl font-bold text-ocean">{occupancy}%</span>
+                <span className="text-2xl font-bold" style={{ color: '#FDCB6E' }}>{occupancy}%</span>
               </div>
               <input
                 type="range"
@@ -208,7 +214,8 @@ export default function AmbassadorLanding() {
                 step={5}
                 value={occupancy}
                 onChange={(e) => setOccupancy(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-ocean"
+                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
+                style={{ accentColor: '#FDCB6E' }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>20%</span>
@@ -217,7 +224,7 @@ export default function AmbassadorLanding() {
             </div>
 
             {/* Breakdown */}
-            <div className="bg-deep/5 rounded-2xl p-6 mb-6">
+            <div className="rounded-2xl p-6 mb-6" style={{ background: '#F8F6F0' }}>
               <h4 className="text-sm font-semibold text-deep mb-4">{t('ambassador_landing.breakdown_title', 'Per hotel calculation')}</h4>
               <div className="space-y-2 text-sm text-gray-500">
                 <div className="flex justify-between">
@@ -226,15 +233,21 @@ export default function AmbassadorLanding() {
                 </div>
                 <div className="flex justify-between">
                   <span>{t('ambassador_landing.breakdown_share', 'Your 2% ambassador share')}</span>
-                  <span className="font-semibold text-libre">~${perHotelIncome.toLocaleString()}/{t('ambassador_landing.breakdown_year', 'year')}</span>
+                  <span className="font-semibold" style={{ color: '#FF6B00' }}>~${perHotelIncome.toLocaleString()}/{t('ambassador_landing.breakdown_year', 'year')}</span>
                 </div>
               </div>
             </div>
 
-            {/* Total */}
-            <div className="bg-gradient-to-br from-libre/10 to-libre/20 border-2 border-libre/30 rounded-2xl p-6 text-center">
+            {/* Total — brand-gradient winner */}
+            <div
+              className="rounded-2xl p-6 text-center relative"
+              style={{
+                background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #FF6B00, #FF3CB4, #6C5CE7) border-box',
+                border: '2px solid transparent',
+              }}
+            >
               <p className="text-sm text-gray-500 mb-2">{t('ambassador_landing.total_label', 'Your total passive income')}</p>
-              <p className="text-5xl sm:text-6xl font-black text-libre mb-1">
+              <p className="text-5xl sm:text-6xl font-black text-gradient mb-1">
                 ${totalIncome.toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">{t('ambassador_landing.total_per_year', 'per year, from {{count}} hotel(s)', { count: hotelCount })}</p>
@@ -253,52 +266,52 @@ export default function AmbassadorLanding() {
             </p>
           </div>
 
-          <Card className="p-8 sm:p-10 border-2 border-electric/20 bg-gradient-to-br from-white to-electric/5">
-            {/* Triangle visual — larger circles + heavier labels for desktop legibility */}
+          <Card className="p-8 sm:p-10 border-2" style={{ borderColor: 'rgba(255,60,180,0.25)', background: 'linear-gradient(135deg, #FFFDF8 0%, rgba(255,60,180,0.04) 100%)' }}>
+            {/* Triangle visual — brand palette cycle (orange / pink / purple) */}
             <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap mb-10">
               <div className="text-center">
-                <div className="w-24 h-24 bg-ocean/10 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-ocean/30">
-                  <Globe size={36} className="text-ocean" />
+                <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-3 border-2" style={{ background: 'rgba(255,107,0,0.1)', borderColor: 'rgba(255,107,0,0.35)' }}>
+                  <Globe size={36} style={{ color: '#FF6B00' }} />
                 </div>
                 <p className="text-base sm:text-lg font-extrabold text-deep tracking-wide">{t('ambassador_landing.party_staylo', 'STAYLO')}</p>
                 <p className="text-sm sm:text-base text-gray-600 font-medium">{t('ambassador_landing.party_staylo_role', 'Platform')}</p>
               </div>
 
-              <div className="text-gray-400 text-4xl font-light hidden sm:block">&#x27F7;</div>
+              <div className="text-gray-300 text-4xl font-light hidden sm:block">&#x27F7;</div>
 
               <div className="text-center">
-                <div className="w-24 h-24 bg-libre/10 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-libre/30">
-                  <Hotel size={36} className="text-libre" />
+                <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-3 border-2" style={{ background: 'rgba(255,60,180,0.1)', borderColor: 'rgba(255,60,180,0.35)' }}>
+                  <Hotel size={36} style={{ color: '#FF3CB4' }} />
                 </div>
                 <p className="text-base sm:text-lg font-extrabold text-deep tracking-wide">{t('ambassador_landing.party_hotel', 'HOTEL')}</p>
                 <p className="text-sm sm:text-base text-gray-600 font-medium">{t('ambassador_landing.party_hotel_role', 'Partner')}</p>
               </div>
 
-              <div className="text-gray-400 text-4xl font-light hidden sm:block">&#x27F7;</div>
+              <div className="text-gray-300 text-4xl font-light hidden sm:block">&#x27F7;</div>
 
               <div className="text-center">
-                <div className="w-24 h-24 bg-sunset/10 rounded-full flex items-center justify-center mx-auto mb-3 border-2 border-sunset/30">
-                  <Users size={36} className="text-sunset" />
+                <div className="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-3 border-2" style={{ background: 'rgba(108,92,231,0.1)', borderColor: 'rgba(108,92,231,0.35)' }}>
+                  <Users size={36} style={{ color: '#6C5CE7' }} />
                 </div>
                 <p className="text-base sm:text-lg font-extrabold text-deep tracking-wide">{t('ambassador_landing.party_ambassador', 'AMBASSADOR')}</p>
                 <p className="text-sm sm:text-base text-gray-600 font-medium">{t('ambassador_landing.party_ambassador_role', 'Business Bringer')}</p>
               </div>
             </div>
 
-            {/* Contract details — bumped sizes + darker text for desktop reading */}
+            {/* Contract details — brand palette cycle */}
             <div className="grid sm:grid-cols-3 gap-4 text-center">
-              <div className="bg-ocean/5 rounded-2xl p-6">
-                <DollarSign size={24} className="text-ocean mx-auto mb-3" />
+              <div className="rounded-2xl p-6" style={{ background: 'rgba(255,107,0,0.06)' }}>
+                <DollarSign size={24} className="mx-auto mb-3" style={{ color: '#FF6B00' }} />
                 <p className="text-base sm:text-lg font-bold text-deep mb-2">{t('ambassador_landing.contract_guaranteed', 'Guaranteed 2%')}</p>
                 <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{t('ambassador_landing.contract_guaranteed_desc', 'Your share is locked into the contract between all parties.')}</p>
               </div>
-              <div className="bg-libre/5 rounded-2xl p-6">
-                <Handshake size={24} className="text-libre mx-auto mb-3" />
+              <div className="rounded-2xl p-6" style={{ background: 'rgba(255,60,180,0.06)' }}>
+                <Handshake size={24} className="mx-auto mb-3" style={{ color: '#FF3CB4' }} />
                 <p className="text-base sm:text-lg font-bold text-deep mb-2">{t('ambassador_landing.contract_binding', 'Legally Binding')}</p>
                 <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{t('ambassador_landing.contract_binding_desc', 'A formal agreement signed by Staylo, the hotel, and you.')}</p>
               </div>
-              <div className="bg-sunset/5 rounded-2xl p-6">
-                <TrendingUp size={24} className="text-sunset mx-auto mb-3" />
+              <div className="rounded-2xl p-6" style={{ background: 'rgba(108,92,231,0.06)' }}>
+                <TrendingUp size={24} className="mx-auto mb-3" style={{ color: '#6C5CE7' }} />
                 <p className="text-base sm:text-lg font-bold text-deep mb-2">{t('ambassador_landing.contract_lifetime', 'Lifetime Duration')}</p>
                 <p className="text-sm sm:text-base text-gray-700 leading-relaxed">{t('ambassador_landing.contract_lifetime_desc', 'Active for as long as the hotel remains on the Staylo platform.')}</p>
               </div>

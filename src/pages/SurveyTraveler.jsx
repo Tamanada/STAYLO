@@ -344,44 +344,51 @@ export default function SurveyTraveler() {
       {/* Step 5: The Hook — Ambassador CTA */}
       {step === 5 && (
         <div className="text-center">
-          <Card className="p-10 bg-gradient-to-br from-deep via-deep to-ocean/90 border-0 text-white">
-            <div className="w-20 h-20 bg-gradient-to-br from-golden to-sunrise rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
-              <Sparkles className="w-10 h-10 text-white" />
+          <Card className="p-10 border-0 text-white relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF3CB4 50%, #6C5CE7 100%)' }}>
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-0 left-[10%] w-72 h-72 bg-white/15 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 right-[10%] w-72 h-72 bg-[#FDCB6E]/20 rounded-full blur-3xl" />
             </div>
+            <div className="relative">
+              <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl animate-pulse-glow">
+                <Sparkles className="w-10 h-10" style={{ color: '#FF6B00' }} />
+              </div>
 
-            <h2 className="text-2xl sm:text-3xl font-extrabold mb-4">
-              {t('survey_traveler.hook_title', 'Thank you for your answers!')}
-            </h2>
+              <h2 className="text-2xl sm:text-3xl font-extrabold mb-4" style={{ textShadow: '0 2px 12px rgba(0,0,0,0.2)' }}>
+                {t('survey_traveler.hook_title', 'Thank you for your answers!')}
+              </h2>
 
-            <p className="text-white/70 text-lg mb-6">
-              {t('survey_traveler.hook_subtitle', 'You book hotels. You know good ones. You recommend them to friends.')}
-            </p>
-
-            <div className="bg-white/10 backdrop-blur rounded-2xl p-6 mb-8 border border-white/20">
-              <p className="text-2xl sm:text-3xl font-extrabold text-golden mb-2">
-                {t('survey_traveler.hook_question', 'What if you could earn lifetime passive income on every hotel you bring to Staylo?')}
+              <p className="text-white/85 text-lg mb-6">
+                {t('survey_traveler.hook_subtitle', 'You book hotels. You know good ones. You recommend them to friends.')}
               </p>
-              <p className="text-white/60 text-sm">
-                {t('survey_traveler.hook_detail', 'Earn 2% of all bookings, forever. No investment needed. Just spread the word.')}
-              </p>
-            </div>
 
-            <div className="space-y-4">
-              <button
-                onClick={() => navigate('/ambassador/register')}
-                className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-golden to-sunrise text-deep font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 inline-flex items-center justify-center gap-3 cursor-pointer"
-              >
-                {t('survey_traveler.cta_ambassador', 'Become an Ambassador')}
-                <ArrowRight size={20} />
-              </button>
+              <div className="bg-white/15 backdrop-blur-md rounded-2xl p-6 mb-8 border border-white/25">
+                <p className="text-2xl sm:text-3xl font-extrabold mb-2" style={{ color: '#FDCB6E', textShadow: '0 2px 8px rgba(0,0,0,0.18)' }}>
+                  {t('survey_traveler.hook_question', 'What if you could earn lifetime passive income on every hotel you bring to Staylo?')}
+                </p>
+                <p className="text-white/80 text-sm">
+                  {t('survey_traveler.hook_detail', 'Earn 2% of all bookings, forever. No investment needed. Just spread the word.')}
+                </p>
+              </div>
 
-              <div>
+              <div className="space-y-4">
                 <button
-                  onClick={() => navigate('/')}
-                  className="text-sm text-white/50 hover:text-white/80 transition-colors cursor-pointer"
+                  onClick={() => navigate('/ambassador/register')}
+                  className="w-full sm:w-auto px-10 py-4 bg-white font-bold text-lg rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 inline-flex items-center justify-center gap-3 cursor-pointer"
+                  style={{ color: '#FF6B00' }}
                 >
-                  {t('survey_traveler.cta_skip', 'Maybe later')}
+                  <span className="text-gradient">{t('survey_traveler.cta_ambassador', 'Become an Ambassador')}</span>
+                  <ArrowRight size={20} style={{ color: '#FF3CB4' }} />
                 </button>
+
+                <div>
+                  <button
+                    onClick={() => navigate('/')}
+                    className="text-sm text-white/65 hover:text-white transition-colors cursor-pointer"
+                  >
+                    {t('survey_traveler.cta_skip', 'Maybe later')}
+                  </button>
+                </div>
               </div>
             </div>
           </Card>

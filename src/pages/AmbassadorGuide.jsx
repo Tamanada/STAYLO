@@ -146,11 +146,14 @@ export default function AmbassadorGuide() {
 
   return (
     <div>
-      {/* ── Hero ── */}
-      <section className="bg-gradient-to-br from-deep via-[#0d1f3c] to-ocean/90 text-white py-20 sm:py-28 relative overflow-hidden animate-gradient">
-        <div className="absolute inset-0">
-          <div className="absolute top-10 left-[20%] w-60 h-60 bg-golden/15 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-sunset/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+      {/* ── Hero — Option A brand radiant ── */}
+      <section
+        className="text-white py-20 sm:py-28 relative overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF3CB4 50%, #6C5CE7 100%)' }}
+      >
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-10 left-[20%] w-60 h-60 bg-white/15 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-10 right-[10%] w-80 h-80 bg-[#FDCB6E]/25 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
         </div>
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center">
           <Badge variant="golden" className="mb-6">{t('ambassador_guide.badge', 'Ambassador Program')}</Badge>
@@ -295,12 +298,12 @@ export default function AmbassadorGuide() {
             <p className="text-gray-500 text-lg">{t('ambassador_guide.calculator_subtitle', 'See how much you could earn as an ambassador.')}</p>
           </div>
 
-          <Card className="p-8 sm:p-10 border-2 border-electric/20">
+          <Card className="p-8 sm:p-10 border-2" style={{ borderColor: 'rgba(255,107,0,0.25)' }}>
             {/* Slider */}
             <div className="mb-8">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-semibold text-deep">{t('ambassador_guide.slider_label', 'How many hotels can you bring?')}</label>
-                <span className="text-3xl font-black text-electric">{hotelCount}</span>
+                <span className="text-3xl font-black" style={{ color: '#FF6B00' }}>{hotelCount}</span>
               </div>
               <input
                 type="range"
@@ -308,7 +311,8 @@ export default function AmbassadorGuide() {
                 max={50}
                 value={hotelCount}
                 onChange={(e) => setHotelCount(Number(e.target.value))}
-                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer accent-electric"
+                className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
+                style={{ accentColor: '#FF6B00' }}
               />
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>{t('ambassador_guide.slider_min', '1 hotel')}</span>
@@ -317,7 +321,7 @@ export default function AmbassadorGuide() {
             </div>
 
             {/* Breakdown */}
-            <div className="bg-deep/5 rounded-2xl p-6 mb-6">
+            <div className="rounded-2xl p-6 mb-6" style={{ background: '#F8F6F0' }}>
               <h4 className="text-sm font-semibold text-deep mb-4">{t('ambassador_guide.breakdown_title', 'Average hotel calculation')}</h4>
               <div className="space-y-2 text-sm text-gray-500">
                 <div className="flex justify-between">
@@ -326,15 +330,21 @@ export default function AmbassadorGuide() {
                 </div>
                 <div className="flex justify-between">
                   <span>{t('ambassador_guide.breakdown_share', 'Your 2% ambassador share per hotel')}</span>
-                  <span className="font-semibold text-libre">~${PER_HOTEL.toLocaleString()}/{t('ambassador_guide.breakdown_year', 'year')}</span>
+                  <span className="font-semibold" style={{ color: '#FF6B00' }}>~${PER_HOTEL.toLocaleString()}/{t('ambassador_guide.breakdown_year', 'year')}</span>
                 </div>
               </div>
             </div>
 
-            {/* Total */}
-            <div className="bg-gradient-to-br from-libre/10 to-libre/20 border-2 border-libre/30 rounded-2xl p-6 text-center">
+            {/* Total — brand-gradient winner */}
+            <div
+              className="rounded-2xl p-6 text-center"
+              style={{
+                background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #FF6B00, #FF3CB4, #6C5CE7) border-box',
+                border: '2px solid transparent',
+              }}
+            >
               <p className="text-sm text-gray-500 mb-2">{t('ambassador_guide.total_label', 'Your total passive income')}</p>
-              <p className="text-5xl sm:text-6xl font-black text-libre mb-1">
+              <p className="text-5xl sm:text-6xl font-black text-gradient mb-1">
                 ${totalIncome.toLocaleString()}
               </p>
               <p className="text-sm text-gray-400">

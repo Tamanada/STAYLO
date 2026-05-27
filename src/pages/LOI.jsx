@@ -145,18 +145,18 @@ export default function LOI() {
             </div>
 
             <div className="grid sm:grid-cols-3 gap-4">
-              <div className="bg-ocean/5 rounded-2xl p-5 text-center">
-                <Users size={24} className="text-ocean mx-auto mb-2" />
+              <div className="rounded-2xl p-5 text-center" style={{ background: 'rgba(255,107,0,0.06)' }}>
+                <Users size={24} className="mx-auto mb-2" style={{ color: '#FF6B00' }} />
                 <p className="text-2xl font-bold text-deep">3,000</p>
                 <p className="text-xs text-gray-500">{t('loi.alpha_shares', 'Alpha shares available')}</p>
               </div>
-              <div className="bg-libre/5 rounded-2xl p-5 text-center">
-                <TrendingUp size={24} className="text-libre mx-auto mb-2" />
+              <div className="rounded-2xl p-5 text-center" style={{ background: 'rgba(255,60,180,0.06)' }}>
+                <TrendingUp size={24} className="mx-auto mb-2" style={{ color: '#FF3CB4' }} />
                 <p className="text-2xl font-bold text-deep">~5.9x</p>
                 <p className="text-xs text-gray-500">{t('loi.avg_roi', 'Average ROI year 1')}</p>
               </div>
-              <div className="bg-sunset/5 rounded-2xl p-5 text-center">
-                <Shield size={24} className="text-sunset mx-auto mb-2" />
+              <div className="rounded-2xl p-5 text-center" style={{ background: 'rgba(108,92,231,0.06)' }}>
+                <Shield size={24} className="mx-auto mb-2" style={{ color: '#6C5CE7' }} />
                 <p className="text-2xl font-bold text-deep">10%</p>
                 <p className="text-xs text-gray-500">{t('loi.commission_compare', 'Commission (vs 17-22%)')}</p>
               </div>
