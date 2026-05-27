@@ -200,7 +200,7 @@ export default function Vision() {
       <section className="py-8 text-white relative overflow-hidden">
         {/* Painting as full-bleed background */}
         <img
-          src="/elephants-sunset.jpg"
+          src="/3Elephants.png"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"
