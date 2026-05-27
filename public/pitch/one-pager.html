@@ -57,12 +57,12 @@ body {
   body { font-size: 8pt; background: var(--cream); }
   .page { padding-top: 0; }
   .hero-section { margin-bottom: 4mm; }
-  .benefits-row { gap: 2.5mm; margin-bottom: 4mm; }
-  .benefit-card { padding: 3mm 3.5mm; }
+  .orbital-section { margin-bottom: 4mm; }
   .columns { gap: 3mm; }
   .col { padding: 4mm 4mm; }
   .footer-band { padding: 3mm 5mm; }
   .quote-block { padding: 3.5mm 5mm; margin: 3mm 0; }
+  .hotel-scene { height: 42mm; }
 }
 
 /* ============================================================
@@ -138,10 +138,14 @@ body {
   font-weight: 900;
   letter-spacing: -1px;
   line-height: 1;
-  background: var(--grad-full);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+}
+
+.logo-wordmark .stay-part {
+  color: var(--dark);
+}
+
+.logo-wordmark .lo-part {
+  color: var(--orange);
 }
 
 .header-tagline {
@@ -303,77 +307,196 @@ body {
 }
 
 /* ============================================================
-   BENEFIT CARDS ROW
+   ORBITAL COMPOSITION
 ============================================================ */
-.benefits-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 3mm;
+.orbital-section {
   margin-bottom: 4mm;
-}
-
-.benefit-card {
-  background: var(--white);
-  border-radius: 8px;
-  padding: 3.5mm 4mm;
-  border: 1px solid var(--light-border);
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* fixed height so A4 stays predictable */
+  height: 64mm;
   position: relative;
-  overflow: hidden;
 }
 
-.benefit-card::after {
+.orbital-ring {
+  position: relative;
+  width: 56mm;
+  height: 56mm;
+  flex-shrink: 0;
+}
+
+/* SVG ring drawn via background trick — conic-gradient border */
+.orbital-ring::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  border-radius: 8px 8px 0 0;
+  inset: 0;
+  border-radius: 50%;
+  padding: 2.5px;
+  background: conic-gradient(
+    from 135deg,
+    #FF6B00 0deg,
+    #FF1F70 120deg,
+    #7E22CE 240deg,
+    #FF6B00 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
 }
 
-.benefit-card.bc-1::after { background: var(--orange); }
-.benefit-card.bc-2::after { background: var(--pink); }
-.benefit-card.bc-3::after { background: var(--purple); }
-.benefit-card.bc-4::after { background: var(--orange-hi); }
+/* Center app-icon block */
+.orbital-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32mm;
+  height: 32mm;
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 3px 14px rgba(255,107,0,0.18), 0 1px 4px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5px;
+  padding: 4px;
+}
 
-.benefit-icon-wrap {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  margin: 0 auto 2mm;
+.app-icons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.app-icon {
+  width: 13mm;
+  height: 13mm;
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.bc-1 .benefit-icon-wrap { background: linear-gradient(135deg, #FF6B00, #FFAB40); }
-.bc-2 .benefit-icon-wrap { background: linear-gradient(135deg, #FF1F70, #E91E63); }
-.bc-3 .benefit-icon-wrap { background: linear-gradient(135deg, #7E22CE, #6B21A8); }
-.bc-4 .benefit-icon-wrap { background: linear-gradient(135deg, #FFAB40, #FF6B00); }
+.app-icon.ai-1 { background: linear-gradient(135deg, #FF6B00, #FFAB40); }
+.app-icon.ai-2 { background: linear-gradient(135deg, #FF1F70, #E91E63); }
+.app-icon.ai-3 { background: linear-gradient(135deg, #7E22CE, #6B21A8); }
+.app-icon.ai-4 { background: linear-gradient(135deg, #FFAB40, #FF8C00); }
 
-.benefit-icon-svg {
-  width: 16px;
-  height: 16px;
+.center-wordmark {
+  font-size: 14pt;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
 }
 
-.benefit-label {
-  font-size: 7pt;
-  font-weight: 800;
-  letter-spacing: 0.8px;
+.center-wordmark .cw-stay { color: var(--dark); }
+.center-wordmark .cw-lo   { color: var(--orange); }
+
+.center-tagline {
+  font-size: 4.2pt;
+  font-weight: 700;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
-  margin-bottom: 1mm;
+  color: var(--mid);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 28mm;
 }
 
-.bc-1 .benefit-label { color: var(--orange); }
-.bc-2 .benefit-label { color: var(--pink); }
-.bc-3 .benefit-label { color: var(--purple); }
-.bc-4 .benefit-label { color: #CC8800; }
+/* Satellite nodes */
+.orbital-satellite {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
 
-.benefit-desc {
-  font-size: 7pt;
+/* connector lines drawn via ::before pseudos on satellite */
+.orbital-satellite::before {
+  content: '';
+  position: absolute;
+  background: linear-gradient(to center, rgba(255,107,0,0.3), rgba(255,31,112,0.3));
+  z-index: 0;
+}
+
+/* Satellite positions (ring radius ~28mm, satellite box ~20mm wide) */
+/* Top 12h */
+.sat-top {
+  top: -14mm;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Right 3h */
+.sat-right {
+  right: -22mm;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Bottom-right ~5h */
+.sat-bottom {
+  bottom: -14mm;
+  right: -8mm;
+}
+
+/* Left 9h */
+.sat-left {
+  left: -22mm;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.sat-icon {
+  width: 10mm;
+  height: 10mm;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+.sat-icon.si-orange  { background: linear-gradient(135deg, #FF6B00, #FFAB40); }
+.sat-icon.si-pink    { background: linear-gradient(135deg, #FF1F70, #E91E63); }
+.sat-icon.si-purple  { background: linear-gradient(135deg, #7E22CE, #FF1F70); }
+.sat-icon.si-orange2 { background: linear-gradient(135deg, #FFAB40, #FF6B00); }
+
+.sat-label {
+  font-size: 5.5pt;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--dark);
+  line-height: 1.1;
+}
+
+.sat-label.sl-orange  { color: var(--orange); }
+.sat-label.sl-pink    { color: var(--pink); }
+.sat-label.sl-purple  { color: var(--purple); }
+
+.sat-sub {
+  font-size: 4.8pt;
   color: var(--mid);
-  line-height: 1.3;
+  line-height: 1.2;
+  max-width: 20mm;
+}
+
+/* Connecting lines from orbital center to each satellite
+   Using absolutely positioned thin divs */
+.orbital-line {
+  position: absolute;
+  transform-origin: 0 50%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,107,0,0.4), rgba(126,34,206,0.2));
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* ============================================================
@@ -603,12 +726,28 @@ table.comp .rate-bad  { color: var(--pink-deep); font-weight: 600; }
 table.comp .rate-good { color: var(--orange); font-weight: 800; }
 
 /* ============================================================
+   HOTEL SCENE ILLUSTRATION
+============================================================ */
+.hotel-scene-wrap {
+  margin-top: 4mm;
+  margin-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.hotel-scene {
+  width: 100%;
+  height: 48mm;
+  display: block;
+}
+
+/* ============================================================
    FOOTER BAND — curved/gradient
 ============================================================ */
 .footer-band {
-  margin-top: 4mm;
   background: linear-gradient(135deg, #FF6B00 0%, #FF1F70 55%, #7E22CE 100%);
-  border-radius: 10px;
+  border-radius: 0 0 10px 10px;
   padding: 4mm 6mm;
   display: flex;
   justify-content: space-between;
@@ -629,11 +768,12 @@ table.comp .rate-good { color: var(--orange); font-weight: 800; }
 .footer-logo {
   font-size: 16pt;
   font-weight: 900;
-  color: var(--white);
   letter-spacing: -0.5px;
   line-height: 1;
-  opacity: 0.95;
 }
+
+.footer-logo .fl-stay { color: var(--white); }
+.footer-logo .fl-lo   { color: #FFAB40; }
 
 .footer-pills {
   display: flex;
@@ -713,7 +853,7 @@ table.comp .rate-good { color: var(--orange); font-weight: 800; }
   <!-- HEADER -->
   <div class="header">
     <div class="header-left">
-      <div class="logo-wordmark">STAYLO</div>
+      <div class="logo-wordmark"><span class="stay-part">STAY</span><span class="lo-part">LO</span></div>
       <div class="header-tagline">
         <span class="orange">By hoteliers.</span>&nbsp; <span class="pink">For hoteliers.</span>
       </div>
@@ -761,56 +901,131 @@ table.comp .rate-good { color: var(--orange); font-weight: 800; }
     </div>
   </div>
 
-  <!-- BENEFIT CARDS -->
-  <div class="benefits-row no-lang">
+  <!-- ORBITAL COMPOSITION — replaces flat benefit cards row -->
+  <div class="orbital-section">
 
-    <div class="benefit-card bc-1">
-      <div class="benefit-icon-wrap">
-        <svg class="benefit-icon-svg" viewBox="0 0 16 16" fill="none">
-          <rect x="1" y="7" width="3" height="8" rx="1" fill="white"/>
-          <rect x="6.5" y="4" width="3" height="11" rx="1" fill="white"/>
-          <rect x="12" y="1" width="3" height="14" rx="1" fill="white"/>
-        </svg>
+    <!-- Connecting lines (SVG layer, absolute) -->
+    <svg style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;" aria-hidden="true">
+      <!-- lines from center to each satellite; center approx 50%,50% of orbital-section -->
+      <!-- top -->
+      <line x1="50%" y1="50%" x2="50%" y2="4%" stroke="url(#lg1)" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+      <!-- right -->
+      <line x1="50%" y1="50%" x2="88%" y2="50%" stroke="url(#lg2)" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+      <!-- bottom-right -->
+      <line x1="50%" y1="50%" x2="72%" y2="92%" stroke="url(#lg3)" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+      <!-- left -->
+      <line x1="50%" y1="50%" x2="12%" y2="50%" stroke="url(#lg4)" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>
+      <defs>
+        <linearGradient id="lg1" x1="0%" y1="100%" x2="0%" y2="0%"><stop offset="0%" stop-color="#FF6B00" stop-opacity="0.6"/><stop offset="100%" stop-color="#FFAB40" stop-opacity="0.2"/></linearGradient>
+        <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#FF1F70" stop-opacity="0.6"/><stop offset="100%" stop-color="#FF6B00" stop-opacity="0.2"/></linearGradient>
+        <linearGradient id="lg3" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7E22CE" stop-opacity="0.6"/><stop offset="100%" stop-color="#FF1F70" stop-opacity="0.2"/></linearGradient>
+        <linearGradient id="lg4" x1="100%" y1="0%" x2="0%" y2="0%"><stop offset="0%" stop-color="#FF6B00" stop-opacity="0.6"/><stop offset="100%" stop-color="#FFAB40" stop-opacity="0.2"/></linearGradient>
+      </defs>
+    </svg>
+
+    <!-- Orbital ring + center -->
+    <div class="orbital-ring">
+
+      <!-- Center block -->
+      <div class="orbital-center">
+        <div class="app-icons-grid">
+          <!-- bed/lit icon -->
+          <div class="app-icon ai-1">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <rect x="3" y="10" width="16" height="7" rx="2" stroke="white" stroke-width="1.5"/>
+              <rect x="5" y="7" width="5" height="4" rx="1.5" fill="white" opacity="0.7"/>
+              <rect x="12" y="7" width="5" height="4" rx="1.5" fill="white" opacity="0.7"/>
+              <line x1="3" y1="17" x2="3" y2="20" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              <line x1="19" y1="17" x2="19" y2="20" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <!-- person icon -->
+          <div class="app-icon ai-2">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <circle cx="11" cy="7" r="3" stroke="white" stroke-width="1.5"/>
+              <path d="M4 19c0-3.87 3.13-7 7-7h0c3.87 0 7 3.13 7 7" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <!-- palm tree icon -->
+          <div class="app-icon ai-3">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <line x1="11" y1="20" x2="11" y2="8" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M11 8C9 5 5 5 4 7c3 0 5 1 7 1z" fill="white" opacity="0.85"/>
+              <path d="M11 8C13 5 17 5 18 7c-3 0-5 1-7 1z" fill="white" opacity="0.85"/>
+              <path d="M11 11C8 8 5 9 5 11c2.5 0 4.5 0.5 6 0z" fill="white" opacity="0.6"/>
+            </svg>
+          </div>
+          <!-- pin marker icon -->
+          <div class="app-icon ai-4">
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <path d="M11 3C8.24 3 6 5.24 6 8c0 4.25 5 11 5 11s5-6.75 5-11c0-2.76-2.24-5-5-5z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+              <circle cx="11" cy="8" r="2" fill="white" opacity="0.8"/>
+            </svg>
+          </div>
+        </div>
+        <div class="center-wordmark">
+          <span class="cw-stay">STAY</span><span class="cw-lo">LO</span>
+        </div>
+        <div class="center-tagline">A fair platform for hospitality professionals</div>
       </div>
-      <div class="benefit-label" id="bc-label-1">Your Margin</div>
-      <div class="benefit-desc" id="bc-desc-1">Keep more of what you earn</div>
-    </div>
 
-    <div class="benefit-card bc-2">
-      <div class="benefit-icon-wrap">
-        <svg class="benefit-icon-svg" viewBox="0 0 16 16" fill="none">
-          <ellipse cx="8" cy="8" rx="7" ry="5" stroke="white" stroke-width="1.4"/>
-          <circle cx="8" cy="8" r="2.5" stroke="white" stroke-width="1.4"/>
-          <circle cx="8" cy="8" r="1" fill="white"/>
-        </svg>
+      <!-- Satellite TOP (12h) — YOUR MARGIN -->
+      <div class="orbital-satellite sat-top">
+        <div class="sat-icon si-orange">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="1.5" y="9" width="3" height="7" rx="1" fill="white" opacity="0.9"/>
+            <rect x="7" y="6" width="3" height="10" rx="1" fill="white" opacity="0.9"/>
+            <rect x="12.5" y="3" width="3" height="13" rx="1" fill="white" opacity="0.9"/>
+            <polyline points="3,9 9,5 15,2" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+          </svg>
+        </div>
+        <div class="sat-label sl-orange" id="sat-label-top">Your Margin</div>
+        <div class="sat-sub">Keep more of what you earn</div>
       </div>
-      <div class="benefit-label" id="bc-label-2">Your Visibility</div>
-      <div class="benefit-desc" id="bc-desc-2">Be seen by the right guests</div>
-    </div>
 
-    <div class="benefit-card bc-3">
-      <div class="benefit-icon-wrap">
-        <svg class="benefit-icon-svg" viewBox="0 0 16 16" fill="none">
-          <path d="M8 1.5C4.96 1.5 2.5 3.7 2.5 6.4c0 1.7 1 3.1 2.6 4L4.5 13l3.5-2c0 0 0 0 0 0C11.04 11 13.5 8.9 13.5 6.4c0-2.7-2.46-4.9-5.5-4.9z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
-        </svg>
+      <!-- Satellite RIGHT (3h) — YOUR VISIBILITY -->
+      <div class="orbital-satellite sat-right">
+        <div class="sat-icon si-pink">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <ellipse cx="9" cy="9" rx="7.5" ry="5" stroke="white" stroke-width="1.4"/>
+            <circle cx="9" cy="9" r="2.8" stroke="white" stroke-width="1.3"/>
+            <circle cx="9" cy="9" r="1.2" fill="white"/>
+          </svg>
+        </div>
+        <div class="sat-label sl-pink" id="sat-label-right">Your Visibility</div>
+        <div class="sat-sub">Be seen by the right guests</div>
       </div>
-      <div class="benefit-label" id="bc-label-3">Your Voice</div>
-      <div class="benefit-desc" id="bc-desc-3">Be heard. Be respected.</div>
-    </div>
 
-    <div class="benefit-card bc-4">
-      <div class="benefit-icon-wrap">
-        <svg class="benefit-icon-svg" viewBox="0 0 16 16" fill="none">
-          <rect x="3" y="7" width="10" height="8" rx="1.5" stroke="white" stroke-width="1.4"/>
-          <path d="M5 7V5.5a3 3 0 0 1 6 0V7" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
-          <circle cx="8" cy="11" r="1" fill="white"/>
-        </svg>
+      <!-- Satellite BOTTOM-RIGHT (~5h) — YOUR VOICE -->
+      <div class="orbital-satellite sat-bottom">
+        <div class="sat-icon si-purple">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 2C5.69 2 3 4.46 3 7.5c0 1.9 1.05 3.6 2.7 4.65L5.25 15l4-2.3c-.08.01-.16.01-.25.01C8.67 12.71 8.34 12.7 9 12.71c3.31 0 6-2.46 6-5.5S12.31 2 9 2z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/>
+            <circle cx="6.5" cy="7.5" r="0.9" fill="white"/>
+            <circle cx="9" cy="7.5" r="0.9" fill="white"/>
+            <circle cx="11.5" cy="7.5" r="0.9" fill="white"/>
+          </svg>
+        </div>
+        <div class="sat-label sl-purple" id="sat-label-bottom">Your Voice</div>
+        <div class="sat-sub">Be heard. Be respected.</div>
       </div>
-      <div class="benefit-label" id="bc-label-4">Your Control</div>
-      <div class="benefit-desc" id="bc-desc-4">Run your business your way</div>
-    </div>
 
-  </div>
+      <!-- Satellite LEFT (9h) — YOUR CONTROL -->
+      <div class="orbital-satellite sat-left">
+        <div class="sat-icon si-orange2">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <rect x="3.5" y="8" width="11" height="8" rx="1.8" stroke="white" stroke-width="1.4"/>
+            <path d="M5.5 8V6.5a3.5 3.5 0 0 1 7 0V8" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="9" cy="12" r="1.2" fill="white"/>
+          </svg>
+        </div>
+        <div class="sat-label sl-orange" id="sat-label-left">Your Control</div>
+        <div class="sat-sub">Run your business your way</div>
+      </div>
+
+    </div><!-- /orbital-ring -->
+  </div><!-- /orbital-section -->
+
 
   <!-- LANGUAGE PANEL : ENGLISH -->
   <div class="lang-panel active" id="panel-en">
@@ -1214,9 +1429,188 @@ table.comp .rate-good { color: var(--orange); font-weight: 800; }
   </div><!-- /panel-th -->
 
 
+  <!-- HOTEL SCENE ILLUSTRATION — between columns and footer -->
+  <div class="hotel-scene-wrap">
+    <svg class="hotel-scene" viewBox="0 0 720 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <!-- Sky sunset gradient -->
+        <linearGradient id="sky" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#FF6B00" stop-opacity="0.9"/>
+          <stop offset="45%" stop-color="#FF1F70" stop-opacity="0.85"/>
+          <stop offset="100%" stop-color="#7E22CE" stop-opacity="0.9"/>
+        </linearGradient>
+        <!-- Building gradient warm -->
+        <linearGradient id="bldg1" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FF8C40"/>
+          <stop offset="100%" stop-color="#CC3366"/>
+        </linearGradient>
+        <linearGradient id="bldg2" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FF6B00"/>
+          <stop offset="100%" stop-color="#9B1F8A"/>
+        </linearGradient>
+        <linearGradient id="bldg3" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FFAB40"/>
+          <stop offset="100%" stop-color="#FF1F70"/>
+        </linearGradient>
+        <!-- Water reflection -->
+        <linearGradient id="water" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FF1F70" stop-opacity="0.35"/>
+          <stop offset="100%" stop-color="#7E22CE" stop-opacity="0.25"/>
+        </linearGradient>
+        <!-- Glow behind sun -->
+        <radialGradient id="sunglow" cx="50%" cy="40%" r="30%">
+          <stop offset="0%" stop-color="#FFDD88" stop-opacity="0.6"/>
+          <stop offset="100%" stop-color="#FF6B00" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+
+      <!-- Sky background -->
+      <rect width="720" height="180" fill="url(#sky)"/>
+
+      <!-- Sun glow -->
+      <ellipse cx="360" cy="70" rx="110" ry="70" fill="url(#sunglow)"/>
+
+      <!-- Sun disc -->
+      <circle cx="360" cy="82" r="18" fill="#FFDD88" opacity="0.75"/>
+
+      <!-- Horizon line + water -->
+      <rect x="0" y="128" width="720" height="52" fill="url(#water)"/>
+
+      <!-- Water shimmer lines -->
+      <line x1="60"  y1="140" x2="130" y2="140" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="200" y1="145" x2="290" y2="145" stroke="rgba(255,255,255,0.18)" stroke-width="1" stroke-linecap="round"/>
+      <line x1="400" y1="138" x2="500" y2="138" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" stroke-linecap="round"/>
+      <line x1="560" y1="150" x2="650" y2="150" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-linecap="round"/>
+      <line x1="100" y1="158" x2="170" y2="158" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-linecap="round"/>
+      <line x1="310" y1="155" x2="410" y2="155" stroke="rgba(255,255,255,0.13)" stroke-width="1" stroke-linecap="round"/>
+
+      <!-- BUILDING LEFT — tall modern with balconies -->
+      <rect x="55" y="52" width="68" height="80" fill="url(#bldg1)" rx="3" opacity="0.92"/>
+      <!-- balcony rows left building -->
+      <rect x="57" y="62"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
+      <rect x="71" y="62"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
+      <rect x="85" y="62"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
+      <rect x="99" y="62"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
+      <rect x="57" y="74"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.14)"/>
+      <rect x="71" y="74"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.14)"/>
+      <rect x="85" y="74"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.14)"/>
+      <rect x="99" y="74"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.14)"/>
+      <rect x="57" y="86"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.1)"/>
+      <rect x="71" y="86"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.1)"/>
+      <rect x="85" y="86"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.1)"/>
+      <rect x="99" y="86"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.1)"/>
+      <rect x="57" y="98"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
+      <rect x="71" y="98"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
+      <rect x="85" y="98"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
+      <rect x="99" y="98"  width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
+      <!-- roof accent -->
+      <rect x="55" y="49" width="68" height="5" rx="2" fill="#FFAB40" opacity="0.55"/>
+
+      <!-- BUILDING CENTER — flagship hotel, wider & taller -->
+      <rect x="275" y="30" width="170" height="100" fill="url(#bldg2)" rx="4" opacity="0.95"/>
+      <!-- balcony rows center -->
+      <rect x="278" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+      <rect x="298" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+      <rect x="318" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+      <rect x="338" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+      <rect x="358" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+      <rect x="378" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+      <rect x="398" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+      <rect x="418" y="42" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.2)"/>
+
+      <rect x="278" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+      <rect x="298" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+      <rect x="318" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+      <rect x="338" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+      <rect x="358" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+      <rect x="378" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+      <rect x="398" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+      <rect x="418" y="56" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.15)"/>
+
+      <rect x="278" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
+      <rect x="298" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
+      <rect x="318" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
+      <rect x="338" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
+      <rect x="358" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
+      <rect x="378" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
+      <rect x="398" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
+      <rect x="418" y="70" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.1)"/>
+
+      <rect x="278" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
+      <rect x="298" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
+      <rect x="318" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
+      <rect x="338" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
+      <rect x="358" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
+      <rect x="378" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
+      <rect x="398" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
+      <rect x="418" y="84" width="14" height="5" rx="1.5" fill="rgba(255,255,255,0.07)"/>
+
+      <!-- roof penthouse center -->
+      <rect x="310" y="20" width="100" height="12" rx="3" fill="url(#bldg3)" opacity="0.88"/>
+      <rect x="330" y="13" width="60" height="9" rx="2" fill="#FF8C40" opacity="0.7"/>
+
+      <!-- BUILDING RIGHT -->
+      <rect x="590" y="62" width="72" height="68" fill="url(#bldg1)" rx="3" opacity="0.88"/>
+      <rect x="593" y="72" width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
+      <rect x="607" y="72" width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
+      <rect x="621" y="72" width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
+      <rect x="635" y="72" width="10" height="4" rx="1" fill="rgba(255,255,255,0.18)"/>
+      <rect x="593" y="84" width="10" height="4" rx="1" fill="rgba(255,255,255,0.12)"/>
+      <rect x="607" y="84" width="10" height="4" rx="1" fill="rgba(255,255,255,0.12)"/>
+      <rect x="621" y="84" width="10" height="4" rx="1" fill="rgba(255,255,255,0.12)"/>
+      <rect x="635" y="84" width="10" height="4" rx="1" fill="rgba(255,255,255,0.12)"/>
+      <rect x="593" y="96" width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
+      <rect x="607" y="96" width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
+      <rect x="621" y="96" width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
+      <rect x="635" y="96" width="10" height="4" rx="1" fill="rgba(255,255,255,0.08)"/>
+      <rect x="590" y="59" width="72" height="5" rx="2" fill="#FFAB40" opacity="0.5"/>
+
+      <!-- PALM LEFT — silhouette -->
+      <line x1="168" y1="130" x2="175" y2="60" stroke="#1A1A2E" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+      <!-- fronds -->
+      <path d="M175 60 C165 48 145 50 140 58 C152 55 165 58 175 60z" fill="#1A1A2E" opacity="0.82"/>
+      <path d="M175 60 C185 48 205 50 210 58 C198 55 185 58 175 60z" fill="#1A1A2E" opacity="0.82"/>
+      <path d="M175 60 C168 44 162 40 155 44 C163 48 170 54 175 60z" fill="#1A1A2E" opacity="0.7"/>
+      <path d="M175 60 C182 44 188 40 195 44 C187 48 180 54 175 60z" fill="#1A1A2E" opacity="0.7"/>
+      <path d="M175 60 C174 44 172 38 168 37 C170 44 173 52 175 60z" fill="#1A1A2E" opacity="0.65"/>
+      <!-- coconuts -->
+      <circle cx="174" cy="63" r="3.5" fill="#2D1B1B" opacity="0.7"/>
+      <circle cx="179" cy="61" r="3"   fill="#2D1B1B" opacity="0.7"/>
+
+      <!-- PALM RIGHT — silhouette -->
+      <line x1="545" y1="130" x2="538" y2="55" stroke="#1A1A2E" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+      <path d="M538 55 C528 43 508 45 503 53 C515 50 528 53 538 55z" fill="#1A1A2E" opacity="0.82"/>
+      <path d="M538 55 C548 43 568 45 573 53 C561 50 548 53 538 55z" fill="#1A1A2E" opacity="0.82"/>
+      <path d="M538 55 C531 39 525 35 518 39 C526 43 533 49 538 55z" fill="#1A1A2E" opacity="0.7"/>
+      <path d="M538 55 C545 39 551 35 558 39 C550 43 543 49 538 55z" fill="#1A1A2E" opacity="0.7"/>
+      <path d="M538 55 C537 39 535 33 531 32 C533 39 536 47 538 55z" fill="#1A1A2E" opacity="0.6"/>
+      <circle cx="537" cy="58" r="3.5" fill="#2D1B1B" opacity="0.7"/>
+      <circle cx="542" cy="56" r="3"   fill="#2D1B1B" opacity="0.7"/>
+
+      <!-- LOW FOLIAGE / BUSHES -->
+      <ellipse cx="240" cy="128" rx="30" ry="10" fill="#1A1A2E" opacity="0.6"/>
+      <ellipse cx="480" cy="128" rx="25" ry="9"  fill="#1A1A2E" opacity="0.55"/>
+      <ellipse cx="50"  cy="130" rx="22" ry="7"  fill="#1A1A2E" opacity="0.5"/>
+      <ellipse cx="670" cy="130" rx="22" ry="7"  fill="#1A1A2E" opacity="0.5"/>
+
+      <!-- BIRDS (· · ·) -->
+      <!-- bird shape: simple M curve silhouette -->
+      <path d="M90  38 Q92  34 95  36 Q97  34 100 38" stroke="#1A1A2E" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.65"/>
+      <path d="M105 33 Q107 29 110 31 Q112 29 115 33" stroke="#1A1A2E" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.65"/>
+      <path d="M118 40 Q120 37 122 38.5 Q124 37 127 40" stroke="#1A1A2E" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+      <path d="M590 28 Q592 24 595 26 Q597 24 600 28" stroke="#1A1A2E" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.6"/>
+      <path d="M608 22 Q610 18 613 20 Q615 18 618 22" stroke="#1A1A2E" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.6"/>
+      <path d="M624 30 Q626 27 628 28.5 Q630 27 633 30" stroke="#1A1A2E" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.45"/>
+
+      <!-- Horizon fade overlay — soften top edge -->
+      <rect x="0" y="0" width="720" height="18" fill="url(#sky)" opacity="0.3"/>
+    </svg>
+  </div>
+
   <!-- FOOTER BAND -->
   <div class="footer-band">
-    <div class="footer-logo">STAYLO</div>
+    <div class="footer-logo"><span class="fl-stay">STAY</span><span class="fl-lo">LO</span></div>
     <div class="footer-pills">
       <div class="footer-pill">Built by hoteliers, for hoteliers</div>
       <div class="footer-pill">Fairer commissions. No more racket.</div>
@@ -1265,10 +1659,10 @@ function setLang(lang) {
       b3: '<strong>10% commission — locked.</strong> Not 15. Not 25. Ten.',
       quote: '"The money should <span class="stay-hi">STAY</span> in the industry — in your hands, not theirs."',
       attr: 'The founding principle of STAYLO',
-      bcl1:'Your Margin', bcd1:'Keep more of what you earn',
-      bcl2:'Your Visibility', bcd2:'Be seen by the right guests',
-      bcl3:'Your Voice', bcd3:'Be heard. Be respected.',
-      bcl4:'Your Control', bcd4:'Run your business your way'
+      satTop:    'Your Margin',
+      satRight:  'Your Visibility',
+      satBottom: 'Your Voice',
+      satLeft:   'Your Control'
     },
     fr: {
       headline: '<span class="dark">Les OTA&nbsp;?</span>&nbsp;<span class="pink">Assez.</span>',
@@ -1277,10 +1671,10 @@ function setLang(lang) {
       b3: '<strong>10% de commission — verrouillé.</strong> Pas 15. Pas 25. Dix.',
       quote: '"L\'argent devrait <span class="stay-hi">RESTER</span> dans l\'industrie — dans vos mains, pas les leurs."',
       attr: 'Le principe fondateur de STAYLO',
-      bcl1:'Votre Marge', bcd1:'Gardez plus de ce que vous gagnez',
-      bcl2:'Votre Visibilité', bcd2:'Soyez vu par les bons clients',
-      bcl3:'Votre Voix', bcd3:'Soyez entendu. Soyez respecté.',
-      bcl4:'Votre Contrôle', bcd4:'Gérez votre business à votre façon'
+      satTop:    'Votre Marge',
+      satRight:  'Votre Visibilité',
+      satBottom: 'Votre Voix',
+      satLeft:   'Votre Contrôle'
     },
     th: {
       headline: '<span class="dark">OTA&nbsp;?</span>&nbsp;<span class="pink">พอแล้ว.</span>',
@@ -1289,10 +1683,10 @@ function setLang(lang) {
       b3: '<strong>ค่าคอม 10% — ล็อคแน่น</strong> ไม่ใช่ 15 ไม่ใช่ 25 แค่สิบ',
       quote: '"เงินควร<span class="stay-hi">คง</span>อยู่ในอุตสาหกรรม — ในมือท่าน ไม่ใช่มือพวกเขา"',
       attr: 'หลักการก่อตั้ง STAYLO',
-      bcl1:'กำไรของท่าน', bcd1:'เก็บรายได้ไว้กับตัวมากขึ้น',
-      bcl2:'การมองเห็น', bcd2:'ให้นักท่องเที่ยวที่ใช่เจอท่าน',
-      bcl3:'เสียงของท่าน', bcd3:'ได้รับฟัง ได้รับการเคารพ',
-      bcl4:'การควบคุม', bcd4:'บริหารธุรกิจในแบบของท่าน'
+      satTop:    'กำไรของท่าน',
+      satRight:  'การมองเห็น',
+      satBottom: 'เสียงของท่าน',
+      satLeft:   'การควบคุม'
     }
   };
 
@@ -1312,13 +1706,14 @@ function setLang(lang) {
   var qa = document.getElementById('quote-attr');
   if (qa) qa.innerHTML = t.attr;
 
-  var ids = [
-    ['bc-label-1', t.bcl1], ['bc-desc-1', t.bcd1],
-    ['bc-label-2', t.bcl2], ['bc-desc-2', t.bcd2],
-    ['bc-label-3', t.bcl3], ['bc-desc-3', t.bcd3],
-    ['bc-label-4', t.bcl4], ['bc-desc-4', t.bcd4]
+  // Update satellite labels
+  var sats = [
+    ['sat-label-top',    t.satTop],
+    ['sat-label-right',  t.satRight],
+    ['sat-label-bottom', t.satBottom],
+    ['sat-label-left',   t.satLeft]
   ];
-  ids.forEach(function(pair) {
+  sats.forEach(function(pair) {
     var el2 = document.getElementById(pair[0]);
     if (el2) el2.textContent = pair[1];
   });
