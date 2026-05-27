@@ -193,17 +193,27 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 3: WHAT HAPPENS NEXT ==================== */}
-      {/* Background = exact STAYLO brand gradient (the radiant from the banner,
-          without the wordmark). 135deg orange → pink → purple. */}
-      <section
-        className="relative py-16 sm:py-24 text-white overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
-      >
+      {/* Background = bannerSTAYLO.png (STAYLO · FROM ONE ISLAND TO THE WORLD).
+          The "what happens next" steps narratively pair with the global-reach
+          banner — KP today, the world next. */}
+      <section className="relative py-16 sm:py-24 text-white overflow-hidden">
+        <img
+          src="/bannerSTAYLO.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Light scrim — banner is already vibrant, we just nudge the contrast
+            so the white headline + step cards read crisply */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative">
           <div className="text-center mb-12">
             <Badge variant="golden" className="mb-4">{t('splash.next_badge')}</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold mb-3">
+            <h2
+              className="text-3xl sm:text-4xl font-bold mb-3"
+              style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+            >
               {t('splash.next_title')}
             </h2>
           </div>
