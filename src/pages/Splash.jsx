@@ -193,15 +193,25 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 3: WHAT HAPPENS NEXT ==================== */}
-      {/* Order: Roadmap title + step cards FIRST (on top), banner BELOW.
-            • Content sits at the top of the section on the brand gradient.
-            • Banner closes the section as a clean footer band — STAYLO
-              wordmark + "FROM ONE ISLAND TO THE WORLD" never covered. */}
+      {/* Banner is the BACKGROUND. Content (title + cards) sits at the
+          bottom of the section so it never covers the STAYLO wordmark or
+          "FROM ONE ISLAND TO THE WORLD" tagline at the top of the banner. */}
       <section
-        className="relative text-white overflow-hidden"
+        className="relative text-white overflow-hidden min-h-screen flex flex-col justify-end"
         style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
       >
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-16 sm:pt-20 pb-12 sm:pb-16 relative">
+        <img
+          src="/bannerSTAYLO.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-top"
+        />
+        {/* Scrim — fully transparent at the top (banner wordmark + tagline
+            stay crisp and untouched), fading to a strong dark at the bottom
+            so the cards have proper contrast against the palm-sunset zone */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent via-50% to-black/70" />
+
+        <div className="max-w-4xl mx-auto w-full px-4 sm:px-6 pb-12 sm:pb-16 relative">
           <div className="text-center mb-10">
             <Badge variant="golden" className="mb-4">{t('splash.next_badge')}</Badge>
             <h2
@@ -267,16 +277,6 @@ export default function Splash() {
               )
             })}
           </div>
-        </div>
-
-        {/* Banner footer band — natural 2.5:1 aspect, nothing layered over it */}
-        <div className="relative w-full" style={{ aspectRatio: '2.5 / 1' }}>
-          <img
-            src="/bannerSTAYLO.png"
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover object-center"
-          />
         </div>
       </section>
 
