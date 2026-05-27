@@ -6,466 +6,772 @@
 <title>STAYLO — Assistant Cheat-Sheet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ============================================================
+   RESET & BASE
+============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --teal:       #0D7377;
-    --teal-light: #14A7A0;
-    --teal-pale:  #E8F7F6;
-    --orange:     #E8832A;
-    --orange-pale:#FEF3E8;
-    --dark:       #1A2433;
-    --mid:        #4A5568;
-    --light:      #F7FAFC;
-    --border:     #CBD5E0;
-    --white:      #FFFFFF;
-    --font-main:  'Inter', 'Noto Sans Thai', sans-serif;
-  }
+:root {
+  --orange:       #FF6B00;
+  --orange-hi:    #FFAB40;
+  --orange-pale:  #FFF3E8;
+  --pink:         #FF1F70;
+  --pink-deep:    #E91E63;
+  --pink-pale:    #FFF0F5;
+  --purple:       #7E22CE;
+  --purple-deep:  #6B21A8;
+  --cream:        #FFF9F4;
+  --cream-mid:    #FFF0E8;
+  --dark:         #1A1A2E;
+  --mid:          #5A4A5A;
+  --light-border: #F0E0EC;
+  --white:        #FFFFFF;
+  --font-main:    'Inter', 'Noto Sans Thai', sans-serif;
 
-  body {
-    font-family: var(--font-main);
-    font-size: 9pt;
-    line-height: 1.4;
-    color: var(--dark);
-    background: var(--white);
-  }
+  --grad-op:   linear-gradient(135deg, #FF6B00, #FF1F70);
+  --grad-full: linear-gradient(135deg, #FF6B00, #FF1F70, #7E22CE);
+}
 
-  @page {
-    size: A4 portrait;
-    margin: 11mm 10mm 8mm 10mm;
-  }
+body {
+  font-family: var(--font-main);
+  font-size: 8.5pt;
+  line-height: 1.42;
+  color: var(--dark);
+  background: var(--cream);
+}
 
-  @media print {
-    .no-print { display: none !important; }
-    body { font-size: 8.5pt; }
-  }
+/* ============================================================
+   PRINT SETUP — A4 portrait
+============================================================ */
+@page {
+  size: A4 portrait;
+  margin: 7mm 9mm 7mm 9mm;
+}
 
-  .controls {
-    position: fixed;
-    top: 16px;
-    right: 16px;
-    z-index: 100;
-  }
-  .controls button {
-    padding: 6px 14px;
-    border: 1.5px solid var(--orange);
-    background: var(--white);
-    color: var(--orange);
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: var(--font-main);
-    font-size: 8.5pt;
-    font-weight: 600;
-  }
-  .controls button:hover {
-    background: var(--orange);
-    color: var(--white);
-  }
+@media print {
+  .no-print { display: none !important; }
+  body { font-size: 8pt; background: var(--cream); }
+  .page { padding-top: 0; }
+}
 
-  .page {
-    max-width: 190mm;
-    margin: 0 auto;
-    padding: 8mm 0 0 0;
-  }
+/* ============================================================
+   SCREEN CONTROLS
+============================================================ */
+.controls {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 100;
+}
+.controls button {
+  padding: 6px 14px;
+  border: 1.5px solid var(--pink);
+  background: var(--white);
+  color: var(--pink);
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: all 0.15s;
+}
+.controls button:hover {
+  background: var(--grad-op);
+  border-color: transparent;
+  color: var(--white);
+}
 
-  .header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 4mm;
-    padding-bottom: 3mm;
-    border-bottom: 2.5px solid var(--teal);
-  }
+/* ============================================================
+   PAGE WRAPPER
+============================================================ */
+.page {
+  max-width: 190mm;
+  margin: 0 auto;
+  padding: 7mm 0 0;
+}
+@media screen {
+  body { padding: 8mm 5mm 20mm; }
+  .page { padding-top: 48px; }
+}
 
-  .logo-mark {
-    font-size: 22pt;
-    font-weight: 700;
-    color: var(--teal);
-    letter-spacing: -0.5px;
-    line-height: 1;
-  }
-  .logo-mark span { color: var(--orange); }
+/* ============================================================
+   HEADER
+============================================================ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 3.5mm;
+}
 
-  .tagline {
-    font-size: 8pt;
-    color: var(--mid);
-    margin-top: 2px;
-    font-weight: 400;
-  }
+.logo-wordmark {
+  font-size: 23pt;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  background: var(--grad-full);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-  .header-right { text-align: right; }
-  .doc-label {
-    font-size: 7pt;
-    font-weight: 600;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    color: var(--orange);
-    margin-bottom: 2px;
-  }
-  .doc-title {
-    font-size: 11pt;
-    font-weight: 700;
-    color: var(--dark);
-  }
-  .doc-sub {
-    font-size: 7.5pt;
-    color: var(--mid);
-    margin-top: 1px;
-  }
+.header-tagline {
+  font-size: 7pt;
+  color: var(--mid);
+  margin-top: 2px;
+  font-weight: 500;
+}
+.header-tagline .orange { color: var(--orange); font-weight: 700; }
+.header-tagline .pink   { color: var(--pink);   font-weight: 700; }
 
-  .intro {
-    background: var(--teal-pale);
-    border-left: 3px solid var(--teal);
-    padding: 4mm 5mm;
-    margin-bottom: 4mm;
-    border-radius: 2px;
-  }
-  .intro .en, .intro .th {
-    font-size: 9pt;
-    line-height: 1.5;
-  }
-  .intro .th {
-    margin-top: 3mm;
-    padding-top: 3mm;
-    border-top: 1px dashed var(--border);
-    font-family: 'Noto Sans Thai', sans-serif;
-  }
-  .intro strong { color: var(--teal); }
+.header-right { text-align: right; }
 
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5mm;
-    margin-bottom: 4mm;
-  }
+.doc-badge {
+  display: inline-block;
+  background: var(--grad-op);
+  color: var(--white);
+  font-size: 6pt;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-bottom: 2px;
+}
 
-  .block h3 {
-    font-size: 9pt;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--orange);
-    margin-bottom: 3mm;
-    padding-bottom: 2mm;
-    border-bottom: 1.5px solid var(--orange-pale);
-    font-weight: 700;
-  }
+.doc-title-text {
+  font-size: 9.5pt;
+  font-weight: 800;
+  color: var(--dark);
+  line-height: 1.2;
+}
 
-  .fact-row {
-    display: grid;
-    grid-template-columns: 14mm 1fr;
-    gap: 2mm;
-    padding: 2.5mm 0;
-    border-bottom: 1px dotted var(--border);
-    font-size: 8.5pt;
-  }
-  .fact-row:last-child { border-bottom: none; }
-  .fact-row .num {
-    font-size: 13pt;
-    font-weight: 700;
-    color: var(--teal);
-    line-height: 1;
-  }
-  .fact-row .text .en { color: var(--dark); font-weight: 600; }
-  .fact-row .text .th {
-    color: var(--mid);
-    font-family: 'Noto Sans Thai', sans-serif;
-    margin-top: 1mm;
-    font-weight: 400;
-    font-size: 8.5pt;
-  }
+.doc-sub {
+  font-size: 6.5pt;
+  color: var(--mid);
+  margin-top: 1px;
+}
 
-  .faq-item {
-    padding: 2mm 0;
-    border-bottom: 1px dotted var(--border);
-    font-size: 8.5pt;
-  }
-  .faq-item:last-child { border-bottom: none; }
-  .faq-item .q {
-    font-weight: 700;
-    color: var(--teal);
-    font-size: 8.5pt;
-  }
-  .faq-item .q-th {
-    font-family: 'Noto Sans Thai', sans-serif;
-    color: var(--teal);
-    font-weight: 600;
-    font-size: 8.5pt;
-    margin-top: 0.5mm;
-  }
-  .faq-item .a {
-    color: var(--dark);
-    margin-top: 1.5mm;
-    line-height: 1.4;
-  }
-  .faq-item .a-th {
-    font-family: 'Noto Sans Thai', sans-serif;
-    color: var(--mid);
-    margin-top: 1mm;
-    line-height: 1.45;
-    font-size: 8pt;
-  }
+/* ============================================================
+   INTRO BAND
+============================================================ */
+.intro-band {
+  background: linear-gradient(135deg, #FFF9F4 0%, #FFF0F5 100%);
+  border: 1px solid var(--light-border);
+  border-radius: 9px;
+  padding: 4mm 5mm;
+  margin-bottom: 3.5mm;
+  position: relative;
+  overflow: hidden;
+}
 
-  .pillars {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 3mm;
-    margin-bottom: 4mm;
-  }
-  .pillar {
-    background: var(--orange-pale);
-    border-radius: 4px;
-    padding: 3mm;
-    text-align: center;
-  }
-  .pillar .big {
-    font-size: 18pt;
-    font-weight: 700;
-    color: var(--orange);
-    line-height: 1;
-    margin-bottom: 1mm;
-  }
-  .pillar .lbl {
-    font-size: 7.5pt;
-    color: var(--dark);
-    font-weight: 600;
-    line-height: 1.3;
-  }
-  .pillar .lbl-th {
-    font-family: 'Noto Sans Thai', sans-serif;
-    color: var(--mid);
-    font-weight: 400;
-    margin-top: 1mm;
-    font-size: 7.5pt;
-  }
+.intro-band::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--grad-full);
+  border-radius: 9px 9px 0 0;
+}
 
-  .footer {
-    background: var(--dark);
-    color: var(--white);
-    padding: 3.5mm 5mm;
-    border-radius: 3px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 8pt;
-  }
-  .footer .left { font-weight: 600; }
-  .footer .left span { color: var(--orange); }
-  .footer .right {
-    font-family: 'Courier New', monospace;
-    font-size: 7.5pt;
-    opacity: 0.9;
-  }
+.intro-en {
+  font-size: 8pt;
+  line-height: 1.5;
+  color: var(--dark);
+}
+.intro-en strong { color: var(--orange); font-weight: 700; }
 
-  .legend {
-    font-size: 7pt;
-    color: var(--mid);
-    margin-top: 2.5mm;
-    text-align: center;
-    font-style: italic;
-  }
+.intro-divider {
+  border: none;
+  border-top: 1px dashed var(--light-border);
+  margin: 2.5mm 0;
+}
+
+.intro-th {
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 8pt;
+  line-height: 1.55;
+  color: var(--mid);
+}
+.intro-th strong { color: var(--pink); font-weight: 700; }
+
+/* ============================================================
+   PILLARS ROW
+============================================================ */
+.pillars {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 3mm;
+  margin-bottom: 3.5mm;
+}
+
+.pillar {
+  background: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--light-border);
+  padding: 3.5mm 4mm;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.pillar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 8px 8px 0 0;
+}
+.pillar.p1::after { background: var(--orange); }
+.pillar.p2::after { background: var(--pink); }
+.pillar.p3::after { background: var(--purple); }
+
+.pillar-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2mm;
+}
+.p1 .pillar-icon { background: linear-gradient(135deg, #FF6B00, #FFAB40); }
+.p2 .pillar-icon { background: linear-gradient(135deg, #FF1F70, #E91E63); }
+.p3 .pillar-icon { background: linear-gradient(135deg, #7E22CE, #6B21A8); }
+
+.pillar-big {
+  font-size: 17pt;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 1.5mm;
+}
+.p1 .pillar-big { color: var(--orange); }
+.p2 .pillar-big { color: var(--pink); }
+.p3 .pillar-big { color: var(--purple); }
+
+.pillar-lbl {
+  font-size: 7pt;
+  font-weight: 700;
+  color: var(--dark);
+  line-height: 1.3;
+}
+.pillar-lbl-th {
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 7pt;
+  color: var(--mid);
+  font-weight: 400;
+  margin-top: 1mm;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   TWO-COLUMN GRID
+============================================================ */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3mm;
+  margin-bottom: 3mm;
+}
+
+/* ============================================================
+   SECTION CARD
+============================================================ */
+.sec-card {
+  background: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--light-border);
+  padding: 4mm 4.5mm;
+  position: relative;
+  overflow: hidden;
+}
+
+.sec-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 8px 8px 0 0;
+}
+
+.sec-card.accent-orange::before { background: linear-gradient(90deg, #FF6B00, #FFAB40); }
+.sec-card.accent-pink::before   { background: linear-gradient(90deg, #FF1F70, #7E22CE); }
+
+.sec-header {
+  font-size: 6.5pt;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  margin-bottom: 3mm;
+  padding-bottom: 2mm;
+  border-bottom: 1px solid var(--light-border);
+}
+.accent-orange .sec-header { color: var(--orange); }
+.accent-pink   .sec-header { color: var(--pink-deep); }
+
+/* ============================================================
+   FACT ROWS
+============================================================ */
+.fact-row {
+  display: grid;
+  grid-template-columns: 11mm 1fr;
+  gap: 2mm;
+  padding: 2mm 0;
+  border-bottom: 1px dotted var(--light-border);
+}
+.fact-row:last-child { border-bottom: none; }
+
+.fact-num {
+  font-size: 12pt;
+  font-weight: 900;
+  line-height: 1;
+  padding-top: 1px;
+}
+.accent-orange .fact-num { color: var(--orange); }
+.accent-pink   .fact-num { color: var(--pink-deep); }
+
+.fact-en {
+  font-size: 7.5pt;
+  font-weight: 600;
+  color: var(--dark);
+  line-height: 1.35;
+}
+.fact-en strong { color: var(--orange); }
+
+.fact-th {
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 7.5pt;
+  color: var(--mid);
+  margin-top: 1mm;
+  line-height: 1.45;
+  font-weight: 400;
+}
+
+/* ============================================================
+   FAQ ITEMS
+============================================================ */
+.faq-item {
+  padding: 2mm 0;
+  border-bottom: 1px dotted var(--light-border);
+}
+.faq-item:last-child { border-bottom: none; }
+
+.faq-q {
+  font-size: 7.5pt;
+  font-weight: 800;
+  color: var(--pink-deep);
+  line-height: 1.3;
+}
+.faq-q-th {
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 7.5pt;
+  font-weight: 700;
+  color: var(--pink-deep);
+  line-height: 1.4;
+  margin-top: 0.5mm;
+}
+
+.faq-a {
+  font-size: 7.5pt;
+  color: var(--dark);
+  margin-top: 1.5mm;
+  line-height: 1.4;
+}
+.faq-a strong { color: var(--orange); font-weight: 700; }
+
+.faq-a-th {
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 7.5pt;
+  color: var(--mid);
+  margin-top: 1mm;
+  line-height: 1.45;
+}
+.faq-a-th strong { color: var(--orange); }
+
+/* ============================================================
+   NEVER SAY BOX
+============================================================ */
+.never-say {
+  background: linear-gradient(135deg, #FFF0F5, #FFF3E8);
+  border: 1.5px solid var(--pink);
+  border-radius: 8px;
+  padding: 3.5mm 4.5mm;
+  margin-bottom: 3.5mm;
+  position: relative;
+  overflow: hidden;
+}
+
+.never-say::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #FF1F70, #FF6B00);
+  border-radius: 8px 8px 0 0;
+}
+
+.never-header {
+  font-size: 6.5pt;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--pink-deep);
+  margin-bottom: 2.5mm;
+}
+
+.never-en {
+  font-size: 7.5pt;
+  color: var(--dark);
+  line-height: 1.5;
+}
+.never-en .phrase {
+  display: inline-block;
+  background: rgba(255, 31, 112, 0.08);
+  color: var(--pink-deep);
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 0 3px;
+  margin: 1px 1px;
+  font-size: 7pt;
+  white-space: nowrap;
+}
+
+.never-divider {
+  border: none;
+  border-top: 1px dashed var(--light-border);
+  margin: 2mm 0;
+}
+
+.never-th {
+  font-family: 'Noto Sans Thai', sans-serif;
+  font-size: 7.5pt;
+  color: var(--mid);
+  line-height: 1.55;
+}
+.never-th .phrase {
+  display: inline-block;
+  background: rgba(255, 31, 112, 0.08);
+  color: var(--pink-deep);
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 0 3px;
+  margin: 1px 1px;
+  font-size: 7pt;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   FOOTER BAND
+============================================================ */
+.footer-band {
+  background: linear-gradient(135deg, #FF6B00 0%, #FF1F70 55%, #7E22CE 100%);
+  border-radius: 9px;
+  padding: 3.5mm 5.5mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2mm;
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='60'%3E%3Cellipse cx='200' cy='75' rx='250' ry='55' fill='rgba(255,255,255,0.06)'/%3E%3C/svg%3E") no-repeat bottom center / cover;
+}
+
+.footer-band > * { position: relative; z-index: 1; }
+
+.footer-logo {
+  font-size: 14pt;
+  font-weight: 900;
+  color: var(--white);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.footer-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5mm;
+  flex: 1;
+  justify-content: center;
+}
+
+.footer-pill {
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
+  font-size: 6pt;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  border: 1px solid rgba(255,255,255,0.25);
+  line-height: 1.5;
+}
+
+.footer-contact {
+  text-align: right;
+  color: rgba(255,255,255,0.9);
+  font-size: 6.5pt;
+  line-height: 1.6;
+}
+.footer-contact a {
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.footer-note {
+  width: 100%;
+  font-size: 5.5pt;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+  padding-top: 1mm;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  position: relative;
+  z-index: 1;
+}
 </style>
 </head>
 <body>
 
 <div class="controls no-print">
-  <button onclick="window.print()">🖨 Print A4</button>
+  <button onclick="window.print()">Print / PDF</button>
 </div>
 
 <div class="page">
 
+  <!-- HEADER -->
   <div class="header">
-    <div class="header-left">
-      <div class="logo-mark">STAY<span>LO</span></div>
-      <div class="tagline">The hoteliers' booking platform</div>
+    <div>
+      <div class="logo-wordmark">STAYLO</div>
+      <div class="header-tagline">
+        <span class="orange">Built with hoteliers,</span>&nbsp;<span class="pink">for hoteliers.</span>
+      </div>
     </div>
     <div class="header-right">
-      <div class="doc-label">Assistant Cheat-Sheet · ทีมงาน</div>
-      <div class="doc-title">Everything you need to know · ทุกอย่างที่ต้องรู้</div>
-      <div class="doc-sub">Read in 5 minutes — be operational immediately</div>
+      <div class="doc-badge">Assistant Cheat-Sheet · ทีมงาน</div>
+      <div class="doc-title-text">Everything you need to know · ทุกอย่างที่ต้องรู้</div>
+      <div class="doc-sub">Read in 5 minutes — be operational immediately · อ่าน 5 นาที พร้อมทำงานทันที</div>
     </div>
   </div>
 
-  <!-- Intro -->
-  <div class="intro">
-    <div class="en">
-      <strong>STAYLO</strong> is a <strong>cooperative</strong> booking platform owned by the hoteliers themselves.
-      We charge <strong>10% commission for life</strong>, locked by the rules (impossible to raise without
-      a 90% vote of all member hotels). We launch when <strong>500 hotels</strong> have joined — Koh Phangan
-      first, then nationwide. Every hotelier who joins early gets one or more <strong>Founding Partner shares</strong>
-      ($1,000 each) — a piece of platform ownership and voting power they keep forever.
+  <!-- INTRO BAND -->
+  <div class="intro-band">
+    <div class="intro-en">
+      <strong>STAYLO</strong> is a <strong>cooperative</strong> booking platform <strong>owned by hoteliers themselves</strong>.
+      We charge <strong>10% commission for life</strong>, locked by the rules — impossible to raise without a <strong>90% vote</strong> of all member hotels.
+      We launch when <strong>500 hotels</strong> have joined — Koh Phangan first, then nationwide.
+      Every hotelier who joins early gets one or more <strong>Founding Partner shares ($1,000 each)</strong> — real platform ownership and voting power, kept forever.
     </div>
-    <div class="th">
-      <strong>STAYLO</strong> คือแพลตฟอร์มจองโรงแรมรูปแบบ <strong>สหกรณ์</strong> ที่ผู้ประกอบการโรงแรมเป็นเจ้าของเอง
-      เราคิดค่าคอมมิชชัน <strong>10% ตลอดชีพ</strong> ล็อคไว้ในข้อบังคับ (ต้องใช้เสียงโหวต 90% ของโรงแรมสมาชิกเพื่อเปลี่ยน)
-      เราจะเปิดตัวเมื่อมีโรงแรม <strong>500 แห่ง</strong> เข้าร่วม — เริ่มที่เกาะพะงันก่อน แล้วขยายทั่วประเทศ
-      ผู้ประกอบการที่เข้าร่วมตั้งแต่ต้นจะได้รับ <strong>หุ้น Founding Partner</strong> ($1,000 ต่อหุ้น) — สิทธิ์ความเป็นเจ้าของและสิทธิ์โหวตที่เก็บไว้ตลอดไป
+    <hr class="intro-divider">
+    <div class="intro-th">
+      <strong>STAYLO</strong> คือแพลตฟอร์มจองโรงแรมรูปแบบ <strong>สหกรณ์ที่ผู้ประกอบการโรงแรมเป็นเจ้าของเอง</strong>
+      เราคิดค่าคอมมิชชัน <strong>10% ตลอดชีพ</strong> ล็อคไว้ในข้อบังคับ ต้องใช้เสียงโหวต <strong>90%</strong> ของโรงแรมสมาชิกเพื่อเปลี่ยน
+      เราจะเปิดตัวเมื่อมีโรงแรม <strong>500 แห่ง</strong> เข้าร่วม เริ่มที่เกาะพะงันก่อน แล้วขยายทั่วประเทศ
+      ผู้ประกอบการที่เข้าร่วมตั้งแต่ต้นได้รับ <strong>หุ้น Founding Partner ($1,000 ต่อหุ้น)</strong> สิทธิ์ความเป็นเจ้าของจริงและสิทธิ์โหวต เก็บไว้ตลอดไป
     </div>
   </div>
 
-  <!-- Pillars -->
+  <!-- PILLARS -->
   <div class="pillars">
-    <div class="pillar">
-      <div class="big">10%</div>
-      <div class="lbl">Commission, locked for life</div>
-      <div class="lbl-th">ค่าคอม 10% ตลอดชีพ</div>
+
+    <div class="pillar p1">
+      <div class="pillar-icon">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <rect x="1" y="5" width="2.5" height="7" rx="0.6" fill="white"/>
+          <rect x="5.2" y="3" width="2.5" height="9" rx="0.6" fill="white"/>
+          <rect x="9.5" y="1" width="2.5" height="11" rx="0.6" fill="white"/>
+        </svg>
+      </div>
+      <div class="pillar-big">10%</div>
+      <div class="pillar-lbl">Commission, locked for life</div>
+      <div class="pillar-lbl-th">ค่าคอม 10% ตลอดชีพ</div>
     </div>
-    <div class="pillar">
-      <div class="big">500</div>
-      <div class="lbl">Hotels = launch threshold</div>
-      <div class="lbl-th">500 โรงแรม = เปิดตัว</div>
+
+    <div class="pillar p2">
+      <div class="pillar-icon">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <circle cx="6.5" cy="4.5" r="2.5" stroke="white" stroke-width="1.4"/>
+          <path d="M1.5 12c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="pillar-big">500</div>
+      <div class="pillar-lbl">Hotels = launch threshold</div>
+      <div class="pillar-lbl-th">500 โรงแรม = เปิดตัว</div>
     </div>
-    <div class="pillar">
-      <div class="big">$1,000</div>
-      <div class="lbl">One Founding Partner share</div>
-      <div class="lbl-th">หุ้น Founding Partner 1 หุ้น</div>
+
+    <div class="pillar p3">
+      <div class="pillar-icon">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+          <rect x="2.5" y="7" width="8" height="5.5" rx="1" stroke="white" stroke-width="1.3"/>
+          <path d="M4.5 7V5.5a2 2 0 0 1 4 0V7" stroke="white" stroke-width="1.3" stroke-linecap="round"/>
+          <circle cx="6.5" cy="9.5" r="0.9" fill="white"/>
+        </svg>
+      </div>
+      <div class="pillar-big">$1K</div>
+      <div class="pillar-lbl">One Founding Partner share</div>
+      <div class="pillar-lbl-th">หุ้น Founding Partner 1 หุ้น</div>
     </div>
+
   </div>
 
-  <!-- Two columns: Key facts + FAQ -->
-  <div class="grid">
+  <!-- TWO-COLUMN GRID -->
+  <div class="two-col">
 
-    <!-- LEFT: Key facts -->
-    <div class="block">
-      <h3>Key Facts · ข้อมูลสำคัญ</h3>
+    <!-- LEFT: KEY FACTS -->
+    <div class="sec-card accent-orange">
+      <div class="sec-header">Key Facts · ข้อมูลสำคัญ</div>
 
       <div class="fact-row">
-        <div class="num">01</div>
-        <div class="text">
-          <div class="en">Booking.com / Agoda take 15–25% per reservation.</div>
-          <div class="th">Booking.com / Agoda เก็บ 15–25% ต่อการจอง</div>
+        <div class="fact-num">01</div>
+        <div>
+          <div class="fact-en">Booking.com / Agoda take 15–25% per reservation.</div>
+          <div class="fact-th">Booking.com / Agoda เก็บ 15–25% ต่อการจอง</div>
         </div>
       </div>
 
       <div class="fact-row">
-        <div class="num">02</div>
-        <div class="text">
-          <div class="en">STAYLO charges 10% — and it's a cooperative rule, not a marketing promise.</div>
-          <div class="th">STAYLO เก็บ 10% — เป็นข้อบังคับสหกรณ์ ไม่ใช่แค่คำโฆษณา</div>
+        <div class="fact-num">02</div>
+        <div>
+          <div class="fact-en">STAYLO charges 10% — a cooperative rule, not a marketing promise.</div>
+          <div class="fact-th">STAYLO เก็บ 10% — ข้อบังคับสหกรณ์ ไม่ใช่แค่คำโฆษณา</div>
         </div>
       </div>
 
       <div class="fact-row">
-        <div class="num">03</div>
-        <div class="text">
-          <div class="en">Governance: <strong>1 hotel = 1 vote</strong>. Always. Regardless of size.</div>
-          <div class="th">การปกครอง: <strong>1 โรงแรม = 1 เสียง</strong> เสมอ ไม่ว่าโรงแรมเล็กหรือใหญ่</div>
+        <div class="fact-num">03</div>
+        <div>
+          <div class="fact-en">Governance: <strong>1 hotel = 1 vote</strong>. Always. Regardless of size.</div>
+          <div class="fact-th">การปกครอง: 1 โรงแรม = 1 เสียง เสมอ ไม่ว่าโรงแรมเล็กหรือใหญ่</div>
         </div>
       </div>
 
       <div class="fact-row">
-        <div class="num">04</div>
-        <div class="text">
-          <div class="en">Founding Partner shares: $1,000 each. 30% of total platform shares reserved for early hoteliers.</div>
-          <div class="th">หุ้น Founding Partner: $1,000 ต่อหุ้น สงวนไว้ 30% ของหุ้นทั้งหมดสำหรับโรงแรมที่เข้าร่วมตั้งแต่ต้น</div>
+        <div class="fact-num">04</div>
+        <div>
+          <div class="fact-en">Founding Partner shares: $1,000 each. Max 10 per property. 3,000 total (Koh Phangan Alpha).</div>
+          <div class="fact-th">หุ้น Founding Partner: $1,000 ต่อหุ้น สูงสุด 10 ต่อโรงแรม รวม 3,000 หุ้น (Koh Phangan Alpha)</div>
         </div>
       </div>
 
       <div class="fact-row">
-        <div class="num">05</div>
-        <div class="text">
-          <div class="en">$STAY token: 10 billion supply, Solana SPL Token-2022. TGE month 7 on Raydium at $0.10.</div>
-          <div class="th">โทเค็น $STAY: ทั้งหมด 10 พันล้าน Solana SPL Token-2022 เปิดตัวเดือนที่ 7 บน Raydium ที่ $0.10</div>
+        <div class="fact-num">05</div>
+        <div>
+          <div class="fact-en">$STAY token: 10 billion supply, Solana SPL. TGE month 7 on Raydium at $0.10.</div>
+          <div class="fact-th">โทเค็น $STAY: 10 พันล้าน Solana SPL เปิดตัวเดือน 7 บน Raydium ที่ $0.10</div>
         </div>
       </div>
 
       <div class="fact-row">
-        <div class="num">06</div>
-        <div class="text">
-          <div class="en">Hoteliers earn 10 $STAY per night booked. Can pay future commission with tokens (down to 5%).</div>
-          <div class="th">โรงแรมได้รับ 10 $STAY ต่อคืนการจอง สามารถใช้โทเค็นจ่ายค่าคอมในอนาคต (ลดเหลือ 5%)</div>
+        <div class="fact-num">06</div>
+        <div>
+          <div class="fact-en">Hoteliers earn $STAY per night booked. Can use tokens to reduce commission to 5%.</div>
+          <div class="fact-th">โรงแรมได้รับ $STAY ต่อคืนการจอง ใช้ลดค่าคอมเหลือ 5% ได้</div>
         </div>
       </div>
+
     </div>
 
     <!-- RIGHT: FAQ -->
-    <div class="block">
-      <h3>Common Questions · คำถามที่พบบ่อย</h3>
+    <div class="sec-card accent-pink">
+      <div class="sec-header">Common Questions · คำถามที่พบบ่อย</div>
 
       <div class="faq-item">
-        <div class="q">"Is this Bitcoin / risky crypto?"</div>
-        <div class="q-th">"นี่คือบิตคอยน์ / คริปโตเสี่ยงไหม?"</div>
-        <div class="a">No — STAYLO is a booking platform. The token is a loyalty reward, not the product. Hoteliers can ignore it.</div>
-        <div class="a-th">ไม่ใช่ — STAYLO เป็นแพลตฟอร์มจองโรงแรม โทเค็นเป็นเพียงรางวัลความภักดี ไม่ใช่ตัวสินค้า โรงแรมสามารถละเลยได้</div>
+        <div class="faq-q">"Is this Bitcoin / risky crypto?"</div>
+        <div class="faq-q-th">"นี่คือบิตคอยน์ / คริปโตเสี่ยงไหม?"</div>
+        <div class="faq-a">No — STAYLO is a booking platform. The token is a loyalty reward, not the product. Hoteliers can ignore it entirely.</div>
+        <div class="faq-a-th">ไม่ใช่ — STAYLO เป็นแพลตฟอร์มจองโรงแรม โทเค็นเป็นเพียงรางวัลความภักดี โรงแรมสามารถละเลยได้</div>
       </div>
 
       <div class="faq-item">
-        <div class="q">"What's STAYLO Ship?"</div>
-        <div class="q-th">"STAYLO Ship คืออะไร?"</div>
-        <div class="a"><strong>The free operational app</strong> that ships with every Founding Partner share — HR, schedule, tasks, fiches techniques, booking engine, guest bridge with ambassador onboarding. Comparable tools (Cloudbeds, Mews, Little Hotelier) cost $99-500/month. STAYLO Ship is $0/month, for life, no usage cap.</div>
-        <div class="a-th"><strong>แอปปฏิบัติการฟรี</strong> ที่มาพร้อมหุ้น Founding Partner ทุกหุ้น — HR ตารางงาน คู่มือเทคนิค เครื่องมือจอง สะพานแขกพร้อมระบบรับแอมบาสเดอร์ เครื่องมือเทียบเท่า (Cloudbeds, Mews, Little Hotelier) ราคา $99-500/เดือน STAYLO Ship $0/เดือน ตลอดชีพ ไม่จำกัดการใช้</div>
+        <div class="faq-q">"What's STAYLO Ship?"</div>
+        <div class="faq-q-th">"STAYLO Ship คืออะไร?"</div>
+        <div class="faq-a"><strong>Free operational app</strong> included with every Founding Partner share — HR, schedule, tasks, booking engine. Cloudbeds / Mews cost $99–500/month. STAYLO Ship: <strong>$0/month, for life</strong>.</div>
+        <div class="faq-a-th"><strong>แอปปฏิบัติการฟรี</strong> มาพร้อมหุ้น Founding Partner — HR ตารางงาน คู่มือ ระบบจอง เทียบ Cloudbeds/Mews ราคา $99–500/เดือน STAYLO Ship: <strong>$0/เดือน ตลอดชีพ</strong></div>
       </div>
 
       <div class="faq-item">
-        <div class="q">"Will my hotel listing be removed from Booking?"</div>
-        <div class="q-th">"โรงแรมของฉันจะถูกลบจาก Booking ไหม?"</div>
-        <div class="a">No. STAYLO is a parallel channel. Use both — and shift bookings over time as STAYLO grows.</div>
-        <div class="a-th">ไม่ STAYLO เป็นช่องทางคู่ขนาน ใช้ทั้งสองได้ — ค่อยๆ ย้ายการจองเมื่อ STAYLO เติบโต</div>
+        <div class="faq-q">"Will my Booking.com listing be removed?"</div>
+        <div class="faq-q-th">"โรงแรมจะถูกลบจาก Booking ไหม?"</div>
+        <div class="faq-a">No. STAYLO is a parallel channel. Use both — shift bookings over time as STAYLO grows.</div>
+        <div class="faq-a-th">ไม่ STAYLO เป็นช่องทางคู่ขนาน ใช้ทั้งสองได้ ค่อยๆ ย้ายการจองเมื่อ STAYLO เติบโต</div>
       </div>
 
       <div class="faq-item">
-        <div class="q">"Can a hotelier buy more than 1 share?"</div>
-        <div class="q-th">"โรงแรมซื้อมากกว่า 1 หุ้นได้ไหม?"</div>
-        <div class="a">Yes — up to <strong>10 shares max per property</strong> at $1,000 each ($10K maximum in Alpha). Beyond 10, they wait for the World round at $1,500. The cap keeps the platform owned by many, not few. <strong>One property = one vote</strong> regardless of share count — size never gives more power.</div>
-        <div class="a-th">ได้ — <strong>สูงสุด 10 หุ้นต่อโรงแรม</strong> ที่ราคา $1,000 ($10K สูงสุดใน Alpha) เกิน 10 หุ้นต้องรอรอบ World ที่ $1,500 ข้อจำกัดนี้ทำให้แพลตฟอร์มเป็นของหลายคน ไม่ใช่ของคนกลุ่มน้อย <strong>1 โรงแรม = 1 เสียง</strong> ไม่ว่าจะถือหุ้นเท่าไร — ขนาดไม่ได้ให้อำนาจมากกว่า</div>
+        <div class="faq-q">"Can a hotelier buy more than 1 share?"</div>
+        <div class="faq-q-th">"ซื้อมากกว่า 1 หุ้นได้ไหม?"</div>
+        <div class="faq-a">Yes — <strong>max 10 per property</strong> ($10K max in Alpha). <strong>1 property = 1 vote</strong> regardless of share count — more shares never means more power.</div>
+        <div class="faq-a-th">ได้ — <strong>สูงสุด 10 หุ้น/โรงแรม</strong> ($10K สูงสุดใน Alpha) <strong>1 โรงแรม = 1 เสียง</strong> เสมอ ไม่ว่าถือหุ้นเท่าไร</div>
       </div>
 
       <div class="faq-item">
-        <div class="q">"What if STAYLO fails? Do I lose the $1,000?"</div>
-        <div class="q-th">"ถ้า STAYLO ล้ม จะเสีย $1,000 ไหม?"</div>
-        <div class="a">Honest answer: yes — like any early-stage investment. We mitigate by launching only when 500 hotels are committed. No 500 = no launch = full refund.</div>
-        <div class="a-th">ตอบตรงๆ: ใช่ — เหมือนการลงทุนระยะแรกทั่วไป เราลดความเสี่ยงด้วยการเปิดตัวเมื่อมีโรงแรม 500 แห่งร่วมด้วยแล้วเท่านั้น ถ้าไม่ครบ 500 = ไม่เปิด = คืนเงินเต็มจำนวน</div>
+        <div class="faq-q">"What if STAYLO fails? Do I lose the $1,000?"</div>
+        <div class="faq-q-th">"ถ้า STAYLO ล้ม จะเสีย $1,000 ไหม?"</div>
+        <div class="faq-a">Honest answer: yes — like any early investment. We launch only when 500 hotels are committed. No 500 = no launch = full refund.</div>
+        <div class="faq-a-th">ตอบตรงๆ: ใช่ เหมือนการลงทุนระยะแรกทั่วไป เราเปิดตัวเมื่อมี 500 โรงแรมเท่านั้น ถ้าไม่ครบ = คืนเงินเต็มจำนวน</div>
       </div>
 
       <div class="faq-item">
-        <div class="q">"When do I see the money flowing back?"</div>
-        <div class="q-th">"เมื่อไหร่จะเห็นเงินกลับมา?"</div>
-        <div class="a">Commission savings start day 1 of launch. Dividend distributions from year 2 once the cooperative reserves are funded.</div>
-        <div class="a-th">เงินคืนจากค่าคอมเริ่มทันทีเมื่อเปิดตัว ส่วนแบ่งกำไรเริ่มปีที่ 2 หลังจากเงินสำรองสหกรณ์ครบ</div>
+        <div class="faq-q">"Will STAYLO expand beyond hotels?"</div>
+        <div class="faq-q-th">"STAYLO จะขยายเกินจากโรงแรมไหม?"</div>
+        <div class="faq-a">Yes — 4 phases: P1 hotels (live) → P2 restaurants &amp; F&amp;B M+12 ($TASTE) → P3 tours M+24 ($TOUR) → P4 SEA M+36. Phase 1 hoteliers get <strong>priority access</strong> to every future Alpha.</div>
+        <div class="faq-a-th">ใช่ — 4 เฟส: โรงแรม → ร้านอาหาร M+12 ($TASTE) → ทัวร์ M+24 ($TOUR) → อาเซียน M+36 โรงแรม Phase 1 ได้<strong>สิทธิ์ก่อน</strong>ในทุกรอบ Alpha</div>
       </div>
 
-      <div class="faq-item">
-        <div class="q">"Will STAYLO ever expand beyond hotels?"</div>
-        <div class="q-th">"STAYLO จะขยายเกินจากโรงแรมไหม?"</div>
-        <div class="a">Yes — 4 phases mapped. Phase 1 (hotels, live) → Phase 2 (restaurants &amp; F&amp;B, M+12, $TASTE token) → Phase 3 (tours &amp; experiences, M+24, $TOUR token) → Phase 4 (national/SEA, M+36, multi-token). Phase 1 hoteliers get <strong>priority access</strong> to every future Alpha round. Each token interoperable via Raydium swaps. See staylo.app/roadmap.html for the full Gantt.</div>
-        <div class="a-th">ใช่ — มีแผน 4 เฟส Phase 1 (โรงแรม เปิดอยู่) → Phase 2 (ร้านอาหารและ F&amp;B M+12 โทเค็น $TASTE) → Phase 3 (ทัวร์และประสบการณ์ M+24 โทเค็น $TOUR) → Phase 4 (ทั่วประเทศ/อาเซียน M+36 หลายโทเค็น) โรงแรม Phase 1 ได้ <strong>สิทธิ์เข้าถึงก่อน</strong> ในรอบ Alpha ทุกรอบที่จะมา โทเค็นแต่ละตัวสลับกันได้ผ่าน Raydium ดูแผน Gantt เต็มที่ staylo.app/roadmap.html</div>
-      </div>
-
-      <div class="faq-item">
-        <div class="q">"Who runs STAYLO? Is it Thai?"</div>
-        <div class="q-th">"ใครบริหาร STAYLO? เป็นบริษัทไทยไหม?"</div>
-        <div class="a">Founder is David Deveaux (France/Thailand-based). Cooperative legal entity will be Thai once 500 hotels join. Hoteliers run the cooperative — not David alone.</div>
-        <div class="a-th">ผู้ก่อตั้งคือ David Deveaux (ฝรั่งเศส/ไทย) นิติบุคคลสหกรณ์จะเป็นของไทยเมื่อโรงแรม 500 แห่งเข้าร่วม โรงแรมเป็นผู้บริหารสหกรณ์ — ไม่ใช่ David คนเดียว</div>
-      </div>
     </div>
 
   </div>
 
-  <!-- Closing block: things to never say -->
-  <div class="block" style="background:#FFF8F0;padding:4mm 5mm;border-radius:3px;margin-bottom:4mm">
-    <h3 style="color:var(--orange);margin-bottom:2.5mm">⚠ Never Say · ห้ามพูด</h3>
-    <div style="font-size:8.5pt;line-height:1.5">
-      <strong>EN:</strong>
-      "Guaranteed returns" · "100% safe" · "Better than Bitcoin" · "Get rich quick" · "Sign now or miss out" ·
-      "Bigger hotels get more votes" · "We compete with Booking" (we don't — we coexist).
-      <br><br>
-      <span style="font-family:'Noto Sans Thai',sans-serif">
-        <strong>TH:</strong>
-        "การันตีผลตอบแทน" · "ปลอดภัย 100%" · "ดีกว่าบิตคอยน์" · "รวยเร็ว" · "เซ็นเดี๋ยวนี้ไม่งั้นพลาด" ·
-        "โรงแรมใหญ่มีเสียงมากกว่า" · "เราแข่งกับ Booking" (เราไม่ได้แข่ง — เราอยู่ร่วมกัน)
-      </span>
+  <!-- NEVER SAY BOX -->
+  <div class="never-say">
+    <div class="never-header">Never Say · ห้ามพูดเด็ดขาด</div>
+    <div class="never-en">
+      <span class="phrase">"Guaranteed returns"</span>
+      <span class="phrase">"100% safe"</span>
+      <span class="phrase">"Better than Bitcoin"</span>
+      <span class="phrase">"Get rich quick"</span>
+      <span class="phrase">"Sign now or miss out"</span>
+      <span class="phrase">"Bigger hotels get more votes"</span>
+      <span class="phrase">"We compete with Booking"</span>
+      <span class="phrase">"Commission might change later"</span>
+    </div>
+    <hr class="never-divider">
+    <div class="never-th">
+      <span class="phrase">"การันตีผลตอบแทน"</span>
+      <span class="phrase">"ปลอดภัย 100%"</span>
+      <span class="phrase">"ดีกว่าบิตคอยน์"</span>
+      <span class="phrase">"รวยเร็ว"</span>
+      <span class="phrase">"เซ็นเดี๋ยวนี้ไม่งั้นพลาด"</span>
+      <span class="phrase">"โรงแรมใหญ่มีเสียงมากกว่า"</span>
+      <span class="phrase">"เราแข่งกับ Booking"</span>
+      <span class="phrase">"ค่าคอมอาจเปลี่ยนทีหลัง"</span>
     </div>
   </div>
 
-  <!-- Footer -->
-  <div class="footer">
-    <div class="left">Founder &amp; Contact · ผู้ก่อตั้งและติดต่อ — <span>David Deveaux</span></div>
-    <div class="right">contact@staylo.app · staylo.app</div>
-  </div>
-
-  <div class="legend">
-    Internal document — for STAYLO team use only · เอกสารภายใน — สำหรับทีม STAYLO เท่านั้น
+  <!-- FOOTER BAND -->
+  <div class="footer-band">
+    <div class="footer-logo">STAYLO</div>
+    <div class="footer-pills">
+      <div class="footer-pill">Built with hoteliers, for hoteliers</div>
+      <div class="footer-pill">1 property = 1 vote</div>
+      <div class="footer-pill">10% commission — locked for life</div>
+      <div class="footer-pill">Who owns the platform, makes the rules</div>
+    </div>
+    <div class="footer-contact">
+      David Deveaux — Founder<br>
+      <a href="mailto:contact@staylo.app">contact@staylo.app</a> · staylo.app
+    </div>
+    <div class="footer-note">
+      Internal document — for STAYLO team use only · เอกสารภายใน — สำหรับทีม STAYLO เท่านั้น
+    </div>
   </div>
 
 </div>
