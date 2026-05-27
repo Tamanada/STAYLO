@@ -62,7 +62,7 @@ body {
   .col { padding: 4mm 4mm; }
   .footer-band { padding: 3mm 5mm; }
   .quote-block { padding: 3.5mm 5mm; margin: 3mm 0; }
-  .hotel-scene { height: 42mm; }
+  .hotel-scene { height: 24mm; }
 }
 
 /* ============================================================
@@ -738,7 +738,7 @@ table.comp .rate-good { color: var(--orange); font-weight: 800; }
 
 .hotel-scene {
   width: 100%;
-  height: 48mm;
+  height: 28mm;
   display: block;
 }
 
@@ -1297,58 +1297,43 @@ table.comp .rate-good { color: var(--orange); font-weight: 800; }
   </div><!-- /panel-th -->
 
 
-  <!-- HOTEL SCENE ILLUSTRATION — clean & minimal, inspired by the reference brochure -->
+  <!-- WAVE RADIANT — invitation to ride the wave at the right momentum -->
   <div class="hotel-scene-wrap">
-    <svg class="hotel-scene" viewBox="0 0 720 180" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+    <svg class="hotel-scene" viewBox="0 0 720 110" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
       <defs>
-        <linearGradient id="sky-soft" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#FFE8D6"/>
-          <stop offset="55%" stop-color="#FFCBA8"/>
-          <stop offset="100%" stop-color="#FFB088"/>
+        <radialGradient id="radiant-glow" cx="75%" cy="50%" r="55%">
+          <stop offset="0%"  stop-color="#FFD580" stop-opacity="0.55"/>
+          <stop offset="45%" stop-color="#FF6B00" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#FF6B00" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="wave-1" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"  stop-color="#FF6B00" stop-opacity="0"/>
+          <stop offset="50%" stop-color="#FF6B00" stop-opacity="0.85"/>
+          <stop offset="100%" stop-color="#FF8C42" stop-opacity="0.95"/>
         </linearGradient>
-        <linearGradient id="bldg-soft" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#FFAB73"/>
-          <stop offset="100%" stop-color="#FF7A5C"/>
+        <linearGradient id="wave-2" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"  stop-color="#FF1F70" stop-opacity="0"/>
+          <stop offset="50%" stop-color="#FF1F70" stop-opacity="0.85"/>
+          <stop offset="100%" stop-color="#E91E63" stop-opacity="0.95"/>
+        </linearGradient>
+        <linearGradient id="wave-3" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"  stop-color="#7E22CE" stop-opacity="0"/>
+          <stop offset="50%" stop-color="#7E22CE" stop-opacity="0.85"/>
+          <stop offset="100%" stop-color="#6B21A8" stop-opacity="0.95"/>
         </linearGradient>
       </defs>
-      <!-- Soft sky -->
-      <rect width="720" height="180" fill="url(#sky-soft)"/>
-      <!-- Setting sun -->
-      <circle cx="230" cy="130" r="34" fill="#FFD580" opacity="0.95"/>
-      <!-- 3 birds in flight (V-marks) -->
-      <path d="M120 50 Q124 46 128 50 Q132 46 136 50" stroke="#1A1A2E" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.55"/>
-      <path d="M548 38 Q552 34 556 38 Q560 34 564 38" stroke="#1A1A2E" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.5"/>
-      <path d="M570 60 Q573 57 576 60 Q579 57 582 60" stroke="#1A1A2E" stroke-width="1.3" fill="none" stroke-linecap="round" opacity="0.4"/>
-      <!-- ONE clean modern hotel building (right side, like the reference) -->
-      <rect x="412" y="58" width="230" height="122" fill="url(#bldg-soft)" rx="4"/>
-      <!-- subtle balcony lines (3 horizontal bands only — minimal) -->
-      <rect x="412" y="86" width="230" height="2" fill="rgba(26,26,46,0.18)"/>
-      <rect x="412" y="116" width="230" height="2" fill="rgba(26,26,46,0.18)"/>
-      <rect x="412" y="146" width="230" height="2" fill="rgba(26,26,46,0.18)"/>
-      <!-- a few subtle windows (vertical accents, minimal) -->
-      <rect x="432" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
-      <rect x="462" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
-      <rect x="492" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
-      <rect x="522" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
-      <rect x="552" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
-      <rect x="582" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
-      <rect x="612" y="95" width="3" height="12" fill="rgba(255,255,255,0.35)"/>
-      <!-- Palm tree LEFT — thin silhouette -->
-      <path d="M340 180 L340 110 Q336 108 332 110 L332 180 Z" fill="#1A1A2E" opacity="0.85"/>
-      <!-- left palm fronds -->
-      <path d="M336 110 Q318 100 308 92 Q322 100 336 108 Z" fill="#1A1A2E" opacity="0.85"/>
-      <path d="M336 110 Q318 116 304 122 Q324 114 336 112 Z" fill="#1A1A2E" opacity="0.85"/>
-      <path d="M336 110 Q352 96 364 88 Q352 102 338 110 Z" fill="#1A1A2E" opacity="0.85"/>
-      <path d="M336 110 Q352 116 368 124 Q352 116 338 112 Z" fill="#1A1A2E" opacity="0.85"/>
-      <path d="M336 110 Q336 96 332 84 Q336 96 338 110 Z" fill="#1A1A2E" opacity="0.85"/>
-      <!-- Palm tree RIGHT (smaller, distant) -->
-      <path d="M390 180 L390 130 Q387 128 384 130 L384 180 Z" fill="#1A1A2E" opacity="0.75"/>
-      <path d="M388 130 Q374 122 366 116 Q378 124 388 128 Z" fill="#1A1A2E" opacity="0.75"/>
-      <path d="M388 130 Q374 134 364 138 Q378 132 388 130 Z" fill="#1A1A2E" opacity="0.75"/>
-      <path d="M388 130 Q400 120 410 114 Q400 124 390 130 Z" fill="#1A1A2E" opacity="0.75"/>
-      <path d="M388 130 Q400 134 412 138 Q400 132 390 130 Z" fill="#1A1A2E" opacity="0.75"/>
-      <!-- Ground/horizon line — subtle -->
-      <line x1="0" y1="178" x2="720" y2="178" stroke="#1A1A2E" stroke-width="1" opacity="0.25"/>
+      <!-- Soft radiant glow on the right (the "now" moment) -->
+      <rect width="720" height="110" fill="url(#radiant-glow)"/>
+      <!-- 3 flowing wave bands rising right (momentum) -->
+      <path d="M0 78 Q120 60 240 70 T480 60 T720 32 L720 110 L0 110 Z" fill="url(#wave-1)"/>
+      <path d="M0 90 Q150 78 300 82 T560 64 T720 44 L720 110 L0 110 Z" fill="url(#wave-2)"/>
+      <path d="M0 102 Q180 92 360 94 T620 76 T720 58 L720 110 L0 110 Z" fill="url(#wave-3)"/>
+      <!-- Small sparkle / sun marker at peak of right -->
+      <circle cx="640" cy="36" r="5" fill="#FFD580" opacity="0.9"/>
+      <circle cx="640" cy="36" r="11" fill="none" stroke="#FFD580" stroke-width="1" opacity="0.5"/>
+      <!-- Tagline overlay -->
+      <text x="42" y="50" font-family="Inter, sans-serif" font-size="22" font-weight="900" fill="#1A1A2E" letter-spacing="-0.5">Ride the wave.</text>
+      <text x="42" y="74" font-family="Inter, sans-serif" font-size="13" font-weight="600" fill="#5A4A5A" letter-spacing="0.2">The momentum is now. Koh Phangan is the start.</text>
     </svg>
   </div>
 
