@@ -11,30 +11,14 @@
   <!-- Rounded-square brand tile -->
   <rect x="16" y="16" width="480" height="480" rx="108" ry="108" fill="url(#ship-bg)"/>
 
-  <!-- Sailboat — billowing single-sail interpretation. Instead of a
-       flat triangle, the sail curves outward as if filled with wind,
-       which reads more sculptural and luxe than the geometric versions
-       we tried earlier. -->
+  <!-- Sail — right triangle. Vertical left edge acts as the implied
+       mast; hypotenuse sweeps down-right; base sits flush on the hull. -->
+  <path d="M 252 92 L 252 350 L 414 350 Z" fill="#FFFFFF"/>
 
-  <!-- Mast — thin vertical, leaning slightly so the boat feels in motion -->
-  <line x1="216" y1="98" x2="232" y2="352"
-        stroke="#FFFFFF" stroke-width="6" stroke-linecap="round"/>
+  <!-- Hull — capsule (rounded-end pill) -->
+  <rect x="76" y="360" width="360" height="66" rx="33" ry="33" fill="#FFFFFF"/>
 
-  <!-- Main sail — cubic-bezier curve that bulges out to the right,
-       suggesting wind catching the canvas -->
-  <path d="M 218 100
-           C 380 130, 396 268, 366 352
-           L 232 352 Z"
-        fill="#FFFFFF"/>
-
-  <!-- Tiny gold pennant at the masthead -->
-  <path d="M 220 96 L 252 104 L 220 112 Z" fill="#FFE54C"/>
-
-  <!-- Hull — sleek elongated curve, slim profile -->
-  <path d="M 88 362 L 424 362 Q 408 418 332 422 L 180 422 Q 104 418 88 362 Z"
-        fill="#FFFFFF"/>
-
-  <!-- One stylized wave under the hull -->
-  <path d="M 60 458 Q 160 438 256 458 T 452 458"
-        stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" fill="none"/>
+  <!-- Horizontal slot through the hull — reveals the brand gradient
+       as a deck/waterline detail without needing an extra stroke -->
+  <rect x="104" y="384" width="304" height="8" rx="4" ry="4" fill="url(#ship-bg)"/>
 </svg>
