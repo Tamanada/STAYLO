@@ -78,13 +78,23 @@ export function Hero() {
         }}>
           {t('home_hero.title_1', 'Book with ')}
           {/*
-            "purpose." was a gradient text-fill with transparent fill —
-            the parent h1's text-shadow was bleeding through the
-            transparent fill and making it look black against the
-            dark painting. Switched to a solid bright yellow that
-            inherits the same shadow halo, so it pops on any zone.
+            Brand gradient text per user reference (orange → pink → purple).
+            text-shadow is explicitly disabled here so the parent h1's halo
+            doesn't bleed through the transparent text-fill (which is what
+            made the gradient look black before). filter: drop-shadow adds
+            depth that works on the rendered gradient (not on text fill).
+            display: inline-block isolates the span so the gradient renders
+            crisply.
           */}
-          <span style={{ color: '#FFE54C' }}>{t('home_hero.title_highlight', 'purpose.')}</span>
+          <span style={{
+            display: 'inline-block',
+            background: 'linear-gradient(135deg, #FF6B00, #FF3CB4, #6C5CE7)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            textShadow: 'none',
+            filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.45)) drop-shadow(0 0 1px rgba(255,255,255,0.4))',
+          }}>{t('home_hero.title_highlight', 'purpose.')}</span>
           <br />
           {t('home_hero.title_2', 'Travel with soul.')}
         </h1>
