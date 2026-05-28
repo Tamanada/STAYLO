@@ -381,6 +381,26 @@ export default function Vision() {
           <Card className="p-6 max-w-3xl mx-auto">
             <h3 className="text-xl font-bold text-deep text-center mb-5">{t('vision.capital_table_title', 'Use of Alpha Capital — $3M')}</h3>
 
+            {/* 100% stacked bar — capital split at a glance. Segment widths
+                mirror the table %s below (which serves as the full legend). */}
+            <div className="flex w-full h-11 rounded-xl overflow-hidden mb-6 shadow-sm ring-1 ring-black/5">
+              {[
+                { id: 'btc',  pct: 20, color: '#F7931A' },
+                { id: 'acq',  pct: 25, color: '#FF6B00' },
+                { id: 'tech', pct: 22, color: '#6C5CE7' },
+                { id: 'ops',  pct: 23, color: '#00B894' },
+                { id: 'mktg', pct: 10, color: '#636E72' },
+              ].map((s) => (
+                <div
+                  key={s.id}
+                  className="flex items-center justify-center text-white text-[11px] sm:text-xs font-bold"
+                  style={{ width: `${s.pct}%`, background: s.color }}
+                >
+                  {s.pct}%
+                </div>
+              ))}
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
