@@ -85,6 +85,11 @@ export default function Vision() {
   // (10–35%); STAYLO is always 10%. "You keep" + "more revenue" recompute.
   const [otaCommission, setOtaCommission] = useState(22)
 
+  // Extruded side-wall for the 3D allocation pie: 22 stacked 1px dark
+  // layers (a deep-purple wall) + a soft ground shadow underneath.
+  const pieDepth = Array.from({ length: 22 }, (_, i) => `0 ${i + 1}px 0 #2e1d44`).join(', ')
+    + ', 0 30px 34px -8px rgba(0,0,0,0.4)'
+
   // Roadmap modal a11y: close on Escape, and move focus to the close
   // button when it opens so keyboard / screen-reader users aren't left
   // behind the dialog.
@@ -376,6 +381,26 @@ export default function Vision() {
 
           <Card className="p-6 max-w-3xl mx-auto">
             <h3 className="text-xl font-bold text-deep text-center mb-5">{t('vision.capital_table_title', 'Use of Alpha Capital — $3M')}</h3>
+
+            {/* 3D pie chart — each slice's share at a glance.
+                Conic-gradient disc tilted on X for perspective, with a
+                stacked-box-shadow side wall for the extruded 3D depth.
+                Stops mirror the table below (which doubles as the legend):
+                BTC 20 · Acquisitions 25 · Product&Tech 22 · Ops 23 · M&L 10. */}
+            <div className="flex justify-center items-center" style={{ perspective: '1100px', height: '188px', marginBottom: '12px' }}>
+              <div
+                aria-hidden="true"
+                style={{
+                  width: '226px',
+                  height: '226px',
+                  borderRadius: '50%',
+                  transform: 'rotateX(58deg)',
+                  background: 'conic-gradient(#F7931A 0% 20%, #FF6B00 20% 45%, #6C5CE7 45% 67%, #00B894 67% 90%, #636E72 90% 100%)',
+                  boxShadow: pieDepth,
+                }}
+              />
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
