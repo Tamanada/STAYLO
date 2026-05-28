@@ -2691,6 +2691,40 @@ body.view-profile .channels-pane{display:none}
 .ship-up:last-child{border-bottom:0}
 .ship-up-day{font-size:13px;font-weight:700;color:var(--navy);text-transform:capitalize}
 .ship-up-time{font-size:13px;font-weight:800;color:var(--orange);font-variant-numeric:tabular-nums}
+.ship-task-txt{cursor:pointer}
+.ship-task-chev{flex-shrink:0;color:var(--gray);font-size:22px;font-weight:700;line-height:1;padding:0 2px;cursor:pointer}
+
+/* SHIP full-screen fiche — follow a task / recipe step-by-step */
+.ship-fiche{position:fixed;inset:0;z-index:9500;background:#fff;display:flex;flex-direction:column;animation:fadeUp .2s ease-out}
+.ship-fiche-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0}
+.ship-fiche-close{width:38px;height:38px;border-radius:50%;background:var(--light);border:0;font-size:22px;color:var(--navy);cursor:pointer;flex-shrink:0;line-height:1}
+.ship-fiche-title{flex:1;font-size:17px;font-weight:800;color:var(--navy);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ship-fiche-wake{flex-shrink:0;background:var(--light);border:1px solid var(--border);border-radius:var(--r-pill);padding:8px 12px;font-size:12px;font-weight:700;color:var(--gray);cursor:pointer;transition:all var(--t-fast);white-space:nowrap}
+.ship-fiche-wake.on{background:linear-gradient(120deg,var(--orange),var(--pink));color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(255,31,112,.3)}
+.ship-fiche-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 18px 24px}
+.ship-fiche-inner{max-width:680px;margin:0 auto;width:100%}
+.ship-fiche-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.ship-fiche-desc{font-size:15px;line-height:1.6;color:#333;margin:0 0 16px;white-space:pre-wrap}
+.ship-fiche-photo{width:100%;max-height:300px;object-fit:cover;border-radius:16px;margin-bottom:14px;display:block}
+.ship-fiche-h4{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin:18px 0 8px;font-weight:800}
+.ship-fiche-times{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.ship-fiche-time{flex:1;min-width:70px;text-align:center;background:var(--light);border-radius:var(--r-md);padding:8px}
+.ship-fiche-time .lbl{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--gray);font-weight:700}
+.ship-fiche-time .val{font-size:15px;font-weight:900;color:var(--navy);margin-top:2px}
+.ship-fiche-equip{display:flex;flex-wrap:wrap;gap:6px}
+.ship-fiche-equip .e{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--light);border:1px solid var(--border);border-radius:var(--r-pill);font-size:13px;font-weight:600}
+.ship-fiche-ing{width:100%;border-collapse:collapse;font-size:14px}
+.ship-fiche-ing td{padding:9px 0;border-bottom:1px dashed var(--border)}
+.ship-fiche-ing td:last-child{text-align:right;color:var(--gray);white-space:nowrap;padding-left:12px}
+.ship-fiche-steps{padding-left:0;list-style:none;counter-reset:step;margin:0}
+.ship-fiche-steps li{position:relative;padding:13px 14px 13px 52px;margin-bottom:9px;background:var(--light);border-radius:14px;font-size:15px;line-height:1.55}
+.ship-fiche-steps li::before{counter-increment:step;content:counter(step);position:absolute;left:12px;top:11px;width:30px;height:30px;border-radius:50%;background:linear-gradient(120deg,var(--orange),var(--pink));color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center}
+.ship-fiche-warn{margin-top:14px;padding:10px 14px;background:#FFE5E5;border-radius:var(--r-md);font-size:13px;color:#A02020}
+.ship-fiche-note{margin-top:10px;font-size:13px;color:var(--gray);font-style:italic}
+.ship-fiche-foot{flex-shrink:0;padding:12px 16px calc(env(safe-area-inset-bottom,0) + 12px);border-top:1px solid var(--border);background:#fff}
+.ship-fiche-done{width:100%;max-width:680px;margin:0 auto;display:block;border:0;border-radius:var(--r-pill);padding:15px;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(120deg,#00B894,#0984E3);cursor:pointer;transition:transform var(--t-fast)}
+.ship-fiche-done:active{transform:translateY(1px)}
+.ship-fiche-done.done{background:var(--teal)}
 
 /* ============== TIMESHEET MODAL ============== */
 .timesheet-modal{position:fixed;inset:0;z-index:9000;background:rgba(20,20,30,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;animation:fadeUp .25s ease-out}
@@ -18845,19 +18879,26 @@ function renderShipHub(body, title, subtitle){
       const list = el('div',{class:'ship-task-list'});
       myTasks.forEach(tk => {
         const done = !!(tk.completions && tk.completions[today]);
-        const row = el('label',{class:'ship-task'+(done?' done':'')});
-        const cb = el('input',{type:'checkbox'});
+        const rec = tk.recipe_id ? findRecipe(tk.recipe_id) : null;
+        const row = el('div',{class:'ship-task'+(done?' done':'')});
+        // Checkbox = quick-complete; tapping the body opens the full-screen fiche.
+        const cb = el('input',{type:'checkbox', 'aria-label':'done'});
         cb.checked = done;
         cb.addEventListener('change', ()=>{ setTaskCompletion(tk.id, today, cb.checked); row.classList.toggle('done', cb.checked); });
         row.appendChild(cb);
-        const txt = el('div',{class:'ship-task-txt'});
+        const txt = el('div',{class:'ship-task-txt', onclick:()=>showShipFiche(tk)});
         txt.appendChild(el('div',{class:'ship-task-title'}, tk.title));
-        if(tk.due_time) txt.appendChild(el('div',{class:'ship-task-meta'}, tk.due_time + (tk.zone ? ' · ' + tk.zone : '')));
+        const metaBits = [];
+        if(tk.due_time) metaBits.push(tk.due_time);
+        if(tk.zone) metaBits.push(tk.zone);
+        if(rec) metaBits.push('📔 ' + rec.name);
+        if(metaBits.length) txt.appendChild(el('div',{class:'ship-task-meta'}, metaBits.join(' · ')));
         row.appendChild(txt);
         if(tk.priority && tk.priority !== 'normal'){
           row.appendChild(el('span',{class:'chip ' + (tk.priority==='urgent' ? 'red' : 'amber')},
             shipT('app.ship.prio_' + tk.priority, tk.priority)));
         }
+        row.appendChild(el('span',{class:'ship-task-chev', onclick:()=>showShipFiche(tk)}, '›'));
         list.appendChild(row);
       });
       tcard.appendChild(list);
@@ -18890,6 +18931,151 @@ function renderShipHub(body, title, subtitle){
   }
 
   body.appendChild(wrap);
+}
+
+/* ============================================================================
+ * SHIP FICHE — full-screen, scrollable task / recipe viewer with Wake Lock
+ * ============================================================================
+ * Tapping a task in the SHIP hub opens this. If the task is linked to a
+ * recipe (tk.recipe_id), the full fiche technique renders here (hero photo,
+ * times, equipment, ingredients, numbered steps) so a cook can follow it
+ * step by step. A "Keep screen on" toggle uses the Screen Wake Lock API so
+ * the phone never sleeps mid-recipe. The lock auto-releases when the tab is
+ * hidden, so we re-acquire on visibilitychange while the fiche is open. */
+let _wakeLock = null;
+let _ficheWakeWanted = false;
+async function shipAcquireWakeLock(){
+  try { if('wakeLock' in navigator){ _wakeLock = await navigator.wakeLock.request('screen'); _wakeLock.addEventListener('release', ()=>{ _wakeLock = null; }); return true; } } catch(e){}
+  return false;
+}
+async function shipReleaseWakeLock(){ try { if(_wakeLock){ await _wakeLock.release(); } } catch(e){} _wakeLock = null; }
+
+function showShipFiche(tk){
+  const ex = document.getElementById('ship-fiche'); if(ex) ex.remove();
+  const rec = tk.recipe_id ? findRecipe(tk.recipe_id) : null;
+  const today = new Date().toISOString().slice(0,10);
+
+  const overlay = el('div',{class:'ship-fiche', id:'ship-fiche'});
+
+  // ── visibility re-acquire (wake lock drops when the tab is backgrounded) ──
+  const onVis = () => { if(document.visibilityState === 'visible' && _ficheWakeWanted) shipAcquireWakeLock(); };
+  document.addEventListener('visibilitychange', onVis);
+
+  const close = async () => {
+    _ficheWakeWanted = false;
+    await shipReleaseWakeLock();
+    document.removeEventListener('visibilitychange', onVis);
+    overlay.remove();
+    // Reflect any completion toggled inside the fiche back in the hub list.
+    if(State.activeView === 'ship'){ try { renderShipHub($('#cv-body'), $('#cv-title'), $('#cv-subtitle')); } catch(e){} }
+  };
+
+  // ── header: back · title · keep-screen-on toggle ──
+  const head = el('div',{class:'ship-fiche-head'});
+  head.appendChild(el('button',{class:'ship-fiche-close', onclick:close, 'aria-label':'Close'}, '←'));
+  head.appendChild(el('div',{class:'ship-fiche-title'}, rec ? rec.name : tk.title));
+  if('wakeLock' in navigator){
+    const wakeBtn = el('button',{class:'ship-fiche-wake', type:'button'}, '🔆 ' + shipT('app.ship.screen_on', 'Keep screen on'));
+    wakeBtn.addEventListener('click', async () => {
+      if(_ficheWakeWanted){
+        _ficheWakeWanted = false; await shipReleaseWakeLock();
+        wakeBtn.classList.remove('on'); wakeBtn.textContent = '🔆 ' + shipT('app.ship.screen_on', 'Keep screen on');
+      } else {
+        const ok = await shipAcquireWakeLock();
+        _ficheWakeWanted = ok;
+        wakeBtn.classList.toggle('on', ok);
+        wakeBtn.textContent = '🔆 ' + (ok ? shipT('app.ship.screen_on_active', 'Screen stays on') : shipT('app.ship.screen_on', 'Keep screen on'));
+      }
+    });
+    head.appendChild(wakeBtn);
+  }
+  overlay.appendChild(head);
+
+  // ── scrollable body ──
+  const body = el('div',{class:'ship-fiche-body'});
+  const inner = el('div',{class:'ship-fiche-inner'});
+  body.appendChild(inner);
+
+  // meta chips
+  const meta = el('div',{class:'ship-fiche-meta'});
+  if(tk.due_time) meta.appendChild(el('span',{class:'chip time'}, '⏰ ' + tk.due_time));
+  if(tk.zone)     meta.appendChild(el('span',{class:'chip'}, '📍 ' + tk.zone));
+  if(tk.priority && tk.priority !== 'normal') meta.appendChild(el('span',{class:'chip ' + (tk.priority==='urgent'?'red':'amber')}, shipT('app.ship.prio_' + tk.priority, tk.priority)));
+  if(meta.childNodes.length) inner.appendChild(meta);
+
+  if(tk.description) inner.appendChild(el('p',{class:'ship-fiche-desc'}, tk.description));
+
+  // ── recipe content (when the task links a fiche technique) ──
+  if(rec){
+    const photos = (typeof recipePhotos === 'function') ? recipePhotos(rec) : [];
+    if(photos.length) inner.appendChild(el('img',{class:'ship-fiche-photo', src:photos[0], alt:rec.name}));
+
+    const p = parseInt(rec.prep_minutes)||0, c = parseInt(rec.cook_minutes)||0, rest = parseInt(rec.rest_minutes)||0;
+    if(p || c || rest){
+      const t1 = (em,lbl,mn)=>el('div',{class:'ship-fiche-time'}, el('div',{class:'lbl'}, em+' '+lbl), el('div',{class:'val'}, mn>0?mn+' min':'—'));
+      inner.appendChild(el('div',{class:'ship-fiche-times'},
+        t1('⏱️', shipT('app.ship.prep','Prep'), p),
+        t1('🔥', shipT('app.ship.cook','Cook'), c),
+        t1('🧊', shipT('app.ship.rest','Rest'), rest),
+      ));
+    }
+
+    const equip = (rec.equipment||[]).filter(e => e.name && e.name.trim());
+    if(equip.length){
+      inner.appendChild(el('div',{class:'ship-fiche-h4'}, '🍳 ' + shipT('app.ship.equipment','Equipment')));
+      const wrap = el('div',{class:'ship-fiche-equip'});
+      equip.forEach(e => {
+        const chip = el('span',{class:'e'});
+        if(e.image_url){
+          const img = document.createElement('img');
+          img.src = e.image_url; img.alt = ''; img.referrerPolicy = 'no-referrer';
+          img.style.cssText = 'width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#fff';
+          img.addEventListener('error', () => { img.style.display = 'none'; });
+          chip.appendChild(img);
+        }
+        chip.appendChild(document.createTextNode((e.qty && e.qty>1) ? `${e.qty}× ${e.name}` : e.name));
+        wrap.appendChild(chip);
+      });
+      inner.appendChild(wrap);
+    }
+
+    const ings = (rec.ingredients||[]).filter(i => i.name && i.name.trim());
+    if(ings.length){
+      inner.appendChild(el('div',{class:'ship-fiche-h4'}, shipT('app.ship.ingredients','Ingredients')));
+      inner.appendChild(el('table',{class:'ship-fiche-ing'},
+        ...ings.map(i => el('tr',{}, el('td',{}, i.name), el('td',{}, `${i.qty||''} ${i.unit||''}`.trim())))
+      ));
+    }
+
+    const steps = (rec.steps||[]).filter(s => (s.instruction||'').trim());
+    if(steps.length){
+      inner.appendChild(el('div',{class:'ship-fiche-h4'}, shipT('app.ship.preparation','Preparation')));
+      inner.appendChild(el('ol',{class:'ship-fiche-steps'}, ...steps.map(s => el('li',{}, s.instruction))));
+    }
+
+    if(rec.allergens) inner.appendChild(el('div',{class:'ship-fiche-warn'}, '⚠️ ' + shipT('app.ship.allergens','Allergens') + ': ' + rec.allergens));
+    if(rec.notes)     inner.appendChild(el('div',{class:'ship-fiche-note'}, rec.notes));
+  } else if(!tk.description){
+    inner.appendChild(el('p',{class:'ship-muted'}, shipT('app.ship.no_detail', 'No extra details for this task.')));
+  }
+
+  overlay.appendChild(body);
+
+  // ── footer: mark done / completed ──
+  const foot = el('div',{class:'ship-fiche-foot'});
+  const isDone = () => !!(tk.completions && tk.completions[today]);
+  const doneBtn = el('button',{class:'ship-fiche-done' + (isDone()?' done':'')},
+    isDone() ? '✓ ' + shipT('app.ship.completed','Completed') : shipT('app.ship.mark_done','Mark done'));
+  doneBtn.addEventListener('click', () => {
+    const next = !isDone();
+    setTaskCompletion(tk.id, today, next);
+    doneBtn.classList.toggle('done', next);
+    doneBtn.textContent = next ? '✓ ' + shipT('app.ship.completed','Completed') : shipT('app.ship.mark_done','Mark done');
+  });
+  foot.appendChild(doneBtn);
+  overlay.appendChild(foot);
+
+  document.body.appendChild(overlay);
 }
 
 /* ============================================================================

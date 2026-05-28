@@ -4418,7 +4418,19 @@
       "manager_note": "Le pointage est réservé au personnel planifié. Ouvrez le planning pour voir qui est en service aujourd’hui.",
       "open_schedule": "Ouvrir le planning →",
       "prio_high": "Haute",
-      "prio_urgent": "Urgent"
+      "prio_urgent": "Urgent",
+      "screen_on": "Garder l’écran allumé",
+      "screen_on_active": "Écran maintenu allumé",
+      "mark_done": "Marquer terminé",
+      "completed": "Terminé",
+      "prep": "Prépa",
+      "cook": "Cuisson",
+      "rest": "Repos",
+      "equipment": "Matériel",
+      "ingredients": "Ingrédients",
+      "preparation": "Préparation",
+      "allergens": "Allergènes",
+      "no_detail": "Pas de détails supplémentaires pour cette tâche."
     }
   },
   "verify": {

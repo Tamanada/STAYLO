@@ -3942,7 +3942,19 @@
       "manager_note": "Clock-in is for scheduled staff. Open the schedule to see who is on shift today.",
       "open_schedule": "Open schedule →",
       "prio_high": "High",
-      "prio_urgent": "Urgent"
+      "prio_urgent": "Urgent",
+      "screen_on": "Keep screen on",
+      "screen_on_active": "Screen stays on",
+      "mark_done": "Mark done",
+      "completed": "Completed",
+      "prep": "Prep",
+      "cook": "Cook",
+      "rest": "Rest",
+      "equipment": "Equipment",
+      "ingredients": "Ingredients",
+      "preparation": "Preparation",
+      "allergens": "Allergens",
+      "no_detail": "No extra details for this task."
     }
   },
   "verify": {
