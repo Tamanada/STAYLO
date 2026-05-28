@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Bitcoin">
+  <!-- Official Bitcoin mark: orange coin + white ₿ -->
+  <circle cx="256" cy="256" r="256" fill="#F7931A"/>
+  <g fill="#FFFFFF">
+    <!-- top ascender ticks -->
+    <rect x="206" y="86"  width="28" height="64" rx="7"/>
+    <rect x="268" y="86"  width="28" height="64" rx="7"/>
+    <!-- bottom descender ticks -->
+    <rect x="206" y="362" width="28" height="64" rx="7"/>
+    <rect x="268" y="362" width="28" height="64" rx="7"/>
+    <!-- B body with two bowl counters knocked out (even-odd) -->
+    <path fill-rule="evenodd" d="
+      M 160 134
+      L 300 134
+      C 352 134 384 164 384 206
+      C 384 234 369 256 345 266
+      C 377 275 398 300 398 336
+      C 398 380 362 410 304 410
+      L 160 410 Z
+      M 214 184 L 214 244 L 298 244 C 320 244 333 231 333 214 C 333 197 320 184 298 184 Z
+      M 214 292 L 214 360 L 306 360 C 330 360 345 346 345 326 C 345 306 330 292 306 292 Z
+    "/>
+  </g>
+</svg>

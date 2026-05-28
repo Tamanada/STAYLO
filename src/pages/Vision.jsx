@@ -11,19 +11,20 @@ import SEO from '../components/SEO'
 
 const phases = [
   {
-    key: 'phase1', icon: Hotel, gradient: 'from-[#FF6B00] to-[#FF3CB4]', status: 'Alpha', timeline: 'Now',
+    key: 'phase1', icon: Hotel, iconSrc: '/staylo-icon.svg', gradient: 'from-[#FF6B00] to-[#FF3CB4]', status: 'Alpha', timeline: 'Now',
     title: 'Stay',
     desc: 'Hotels, guesthouses, resorts — fair booking with low commissions',
     long: 'The foundation: book hotels, guesthouses, resorts and bungalows directly through STAYLO. 10% commission for life — versus 22% on Booking.com and Agoda. Hoteliers keep more revenue, guests pay fair prices, and Founding Partners own a piece of the platform itself.',
   },
   {
     key: 'phase_ship', icon: Smartphone, iconSrc: '/SHIP_LOGO.png', gradient: 'from-[#00B894] to-[#6C5CE7]', status: 'Alpha', timeline: 'Now',
-    title: 'STAYLO Ship',
+    title: 'SHIP',
+    byline: 'by STAYLO',
     desc: 'The hotelier dashboard — manage your property from the palm of your hand',
     long: 'SHIP — Staylo Hotelier In-Pocket. The hotelier-side cockpit: PMS, front desk, channel manager, housekeeping, F&B, payments, staff scheduling, and reporting. Run your whole operation from a smartphone instead of stitching together five different SaaS tools. Free for Founding Partners; low flat monthly fee for everyone else.',
   },
   {
-    key: 'phase_wallet', icon: Wallet, gradient: 'from-[#F7931A] to-[#E8840F]', status: 'M03', timeline: 'M03',
+    key: 'phase_wallet', icon: Wallet, iconSrc: '/bitcoin-logo.svg', gradient: 'from-[#F7931A] to-[#E8840F]', status: 'M03', timeline: 'M03',
     title: 'BTC Wallet',
     desc: 'Built-in Lightning wallet — load BTC, USDT, or pay by card',
     long: 'A built-in Bitcoin Lightning wallet for every user. Load BTC, USDT, or pay by card. Use it to settle bookings, collect dividend payouts as a Founding Partner, or claim 2% lifetime referral commissions as an Ambassador. Self-custodied, fast, and global by default.',
@@ -1030,9 +1031,12 @@ export default function Vision() {
                       <phase.icon size={24} className="text-white" />
                     </div>
                   )}
-                  <h3 className="text-sm sm:text-base font-bold text-deep mb-1.5 line-clamp-1">
+                  <h3 className="text-sm sm:text-base font-extrabold text-deep mb-0.5 line-clamp-1 tracking-tight">
                     {t(`vision.${phase.key}`, phase.title)}
                   </h3>
+                  {phase.byline && (
+                    <p className="text-[10px] text-gray-500 font-semibold mb-1.5 -mt-0.5">{phase.byline}</p>
+                  )}
                   <div className="flex items-center justify-center mb-1.5">
                     <Badge variant={i === 0 ? 'green' : 'gray'} className="text-[10px]">
                       {phase.status}
@@ -1080,9 +1084,12 @@ export default function Vision() {
                 </div>
               )}
 
-              <h3 id="phase-modal-title" className="text-2xl sm:text-3xl font-bold text-deep mb-2">
+              <h3 id="phase-modal-title" className="text-2xl sm:text-3xl font-extrabold text-deep mb-0.5 tracking-tight">
                 {t(`vision.${openPhase.key}`, openPhase.title)}
               </h3>
+              {openPhase.byline && (
+                <p className="text-sm text-gray-500 font-semibold mb-2">{openPhase.byline}</p>
+              )}
 
               <div className="flex items-center gap-2 mb-5">
                 <Badge variant={openPhase.timeline === 'Now' ? 'green' : 'gray'} className="text-xs">
