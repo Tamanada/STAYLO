@@ -1010,13 +1010,13 @@ export default function Vision() {
                 items-start keeps every card top-aligned, so the logo tiles
                 line up across the row even though the SHIP card is taller
                 (it carries the "by STAYLO" byline). */}
-            <div className="flex items-start md:grid md:grid-cols-7 md:items-start gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
+            <div className="flex items-stretch md:grid md:grid-cols-7 md:items-stretch gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
               {phases.map((phase, i) => (
                 <button
                   key={phase.key}
                   type="button"
                   onClick={() => setOpenPhase(phase)}
-                  className={`relative flex-shrink-0 w-[180px] md:w-auto snap-start text-center bg-white/[0.66] backdrop-blur-md rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer ${
+                  className={`relative flex-shrink-0 w-[180px] md:w-auto snap-start flex flex-col items-center text-center bg-white/[0.66] backdrop-blur-md rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer ${
                     i === 0
                       ? 'border-libre/50 shadow-lg shadow-libre/15 hover:shadow-xl hover:bg-white/80 hover:-translate-y-1'
                       : 'border-white/50 hover:border-white/70 hover:bg-white/80 hover:shadow-xl hover:-translate-y-1'
@@ -1043,7 +1043,7 @@ export default function Vision() {
                   {phase.byline && (
                     <p className="text-[10px] text-gray-500 font-semibold mb-1.5 -mt-0.5">{phase.byline}</p>
                   )}
-                  <div className="flex items-center justify-center mb-1.5">
+                  <div className="flex items-center justify-center mb-1.5 mt-auto pt-2">
                     <Badge variant={i === 0 ? 'green' : 'gray'} className="text-[10px]">
                       {phase.status}
                     </Badge>
