@@ -1153,7 +1153,19 @@
     "nav_roadmap": "Roadmap",
     "nav_growth": "Growth",
     "nav_join": "Join",
-    "nav_faq": "FAQ"
+    "nav_faq": "FAQ",
+    "nav_moat": "Edge",
+    "moat_badge": "The unfair advantage",
+    "moat_title": "What no OTA can copy",
+    "moat_subtitle": "Four advantages baked into who owns STAYLO — not features a competitor can ship.",
+    "moat_delist_title": "You can’t be delisted",
+    "moat_delist_body": "An OTA algorithm can bury or delist you overnight. STAYLO’s rules only change with a 67% vote of the hotelier DAO. You’re an owner — not a listing.",
+    "moat_data_title": "Your guests stay yours",
+    "moat_data_body": "OTAs sit between you and your guest and keep the relationship. STAYLO is your platform — the guest relationship, and the data, stay inside the cooperative.",
+    "moat_assoc_title": "Your association leads it",
+    "moat_assoc_body": "OTAs went around hotelier associations. STAYLO is built with them — your association takes a Founding seat and its members co-own the platform.",
+    "moat_align_title": "You can’t be out-competed",
+    "moat_align_body": "A rival can’t poach hoteliers off a platform they already own. The bigger the cooperative grows, the harder it is to displace — alignment, not lock-in."
   },
   "footer": {
     "tagline": "Book everything. Own the experience.",

@@ -1156,7 +1156,19 @@
     "nav_roadmap": "Roadmap",
     "nav_growth": "Croissance",
     "nav_join": "Rejoindre",
-    "nav_faq": "FAQ"
+    "nav_faq": "FAQ",
+    "nav_moat": "Atouts",
+    "moat_badge": "L’avantage imbattable",
+    "moat_title": "Ce qu’aucun OTA ne peut copier",
+    "moat_subtitle": "Quatre avantages inscrits dans la propriété même de STAYLO — pas des fonctionnalités qu’un concurrent peut copier.",
+    "moat_delist_title": "Impossible de vous délister",
+    "moat_delist_body": "Un algorithme d’OTA peut vous enterrer ou vous délister du jour au lendemain. Les règles de STAYLO ne changent qu’avec 67 % des votes de la DAO hôtelière. Vous êtes propriétaire — pas une simple annonce.",
+    "moat_data_title": "Vos clients restent les vôtres",
+    "moat_data_body": "Les OTA s’intercalent entre vous et vos clients et gardent la relation. STAYLO est votre plateforme — la relation client, et les données, restent dans la coopérative.",
+    "moat_assoc_title": "Votre association la dirige",
+    "moat_assoc_body": "Les OTA ont contourné les associations hôtelières. STAYLO se construit avec elles — votre association prend un siège fondateur et ses membres co-possèdent la plateforme.",
+    "moat_align_title": "Impossible de vous concurrencer",
+    "moat_align_body": "Un rival ne peut pas débaucher des hôteliers d’une plateforme qu’ils possèdent déjà. Plus la coopérative grandit, plus elle est indéboulonnable — alignement, pas verrouillage."
   },
   "footer": {
     "tagline": "Réservez tout. Vivez l'expérience.",

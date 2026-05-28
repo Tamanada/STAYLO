@@ -213,6 +213,38 @@ export default function Vision() {
         </div>
       </section>
 
+      {/* What no OTA can copy — structural moats that flow from WHO owns
+          STAYLO (ownership, guest data, association alliance, alignment).
+          Deliberately avoids the BTC-floor / +30%-spend points already made
+          in the Bitcoin section below. */}
+      <section id="v-moat" className="py-8 sm:py-12 bg-gradient-to-br from-[#FF3CB4]/5 via-white to-[#6C5CE7]/5">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8">
+            <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FF3CB4' }}>
+              {t('vision.moat_badge', 'The unfair advantage')}
+            </p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-3">{t('vision.moat_title', 'What no OTA can copy')}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.moat_subtitle', 'Four advantages baked into who owns STAYLO — not features a competitor can ship.')}</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[
+              { Icon: Shield, color: '#FF6B00', tk: 'moat_delist', tt: 'You can’t be delisted',       bd: 'An OTA algorithm can bury or delist you overnight. STAYLO’s rules only change with a 67% vote of the hotelier DAO. You’re an owner — not a listing.' },
+              { Icon: Users,  color: '#FF3CB4', tk: 'moat_data',   tt: 'Your guests stay yours',       bd: 'OTAs sit between you and your guest and keep the relationship. STAYLO is your platform — the guest relationship, and the data, stay inside the cooperative.' },
+              { Icon: Scale,  color: '#6C5CE7', tk: 'moat_assoc',  tt: 'Your association leads it',     bd: 'OTAs went around hotelier associations. STAYLO is built with them — your association takes a Founding seat and its members co-own the platform.' },
+              { Icon: Target, color: '#00B894', tk: 'moat_align',  tt: 'You can’t be out-competed',     bd: 'A rival can’t poach hoteliers off a platform they already own. The bigger the cooperative grows, the harder it is to displace — alignment, not lock-in.' },
+            ].map((c) => (
+              <Card key={c.tk} className="p-6">
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: c.color + '1A' }}>
+                  <c.Icon size={28} style={{ color: c.color }} />
+                </div>
+                <h3 className="text-lg font-bold text-deep mb-2">{t(`vision.${c.tk}_title`, c.tt)}</h3>
+                <p className="text-sm text-gray-500">{t(`vision.${c.tk}_body`, c.bd)}</p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Bitcoin Strategy */}
       <section id="v-bitcoin" className="py-8 sm:py-12 bg-gradient-to-br from-[#F7931A]/5 via-white to-[#F7931A]/10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
