@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { useHashScroll } from '../hooks/useHashScroll'
 import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale, Wallet, X, Smartphone } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -100,20 +101,7 @@ export default function Vision() {
     return () => window.removeEventListener('keydown', onKey)
   }, [openPhase])
 
-  // Deep-link scroll: arriving at /vision#v-roadmap (e.g. from the navbar
-  // "Vision" dropdown) smooth-scrolls to that section, offset for the navbar.
-  const location = useLocation()
-  useEffect(() => {
-    const id = (location.hash || '').replace('#', '')
-    if (!id) return
-    const el = document.getElementById(id)
-    if (!el) return
-    const tmr = setTimeout(() => {
-      const y = el.getBoundingClientRect().top + window.scrollY - 80
-      window.scrollTo({ top: y, behavior: 'smooth' })
-    }, 80)
-    return () => clearTimeout(tmr)
-  }, [location.hash])
+  useHashScroll()   // deep-link scroll to /vision#v-... from the navbar dropdown
 
   const totalAlphaShares = 3000
   const totalShares = 500000

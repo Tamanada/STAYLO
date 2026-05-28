@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { useAuth } from '../hooks/useAuth'
+import { useHashScroll } from '../hooks/useHashScroll'
 import SEO from '../components/SEO'
 import { supabase } from '../lib/supabase'
 
@@ -19,6 +20,7 @@ const PER_HOTEL = Math.round(AVG_ANNUAL * AMBASSADOR_PCT)
 export default function AmbassadorLanding() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  useHashScroll()   // jump to a section when arriving at /ambassador#a-...
   const [isAmbassador, setIsAmbassador] = useState(false)
   const [hotelCount, setHotelCount] = useState(5)
 
@@ -134,7 +136,7 @@ export default function AmbassadorLanding() {
       </section>
 
       {/* ── How It Works ── */}
-      <section className="py-16 sm:py-24">
+      <section id="a-how" className="py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('ambassador_landing.how_it_works_title', 'How It Works')}</h2>
@@ -158,7 +160,7 @@ export default function AmbassadorLanding() {
       </section>
 
       {/* ── Earnings Calculator ── */}
-      <section className="py-16 sm:py-24 bg-gradient-to-br from-electric/5 via-white to-sunset/5">
+      <section id="a-calc" className="py-16 sm:py-24 bg-gradient-to-br from-electric/5 via-white to-sunset/5">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('ambassador_landing.calculator_title', 'Earnings Calculator')}</h2>
@@ -286,7 +288,7 @@ export default function AmbassadorLanding() {
       </section>
 
       {/* ── The Contract ── */}
-      <section className="py-16 sm:py-24">
+      <section id="a-contract" className="py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('ambassador_landing.contract_title', 'The Tripartite Agreement')}</h2>

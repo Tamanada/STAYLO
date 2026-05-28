@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
+import { useHashScroll } from '../hooks/useHashScroll'
 import {
   Shield, MapPin, Building2, Users, CheckCircle, XCircle,
   Clock, TrendingUp, Award, Star, Vote, ArrowRight, Zap,
@@ -15,6 +16,7 @@ import { supabase } from '../lib/supabase'
 export default function Splash() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  useHashScroll()   // jump to a section when arriving at /splash#s-...
   // Real partner count from platform_stats() RPC. We start at 0 (honest)
   // instead of a hardcoded fallback that lied (was 12). Renders nothing
   // misleading until the real number lands.
@@ -138,7 +140,7 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 2: WHAT YOU CAN DO RIGHT NOW ==================== */}
-      <section className="relative py-16 sm:py-24">
+      <section id="s-now" className="relative py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <Badge variant="green" className="mb-4">{t('splash.right_now_badge')}</Badge>
@@ -184,7 +186,7 @@ export default function Splash() {
           banner where there's no text — STAYLO wordmark + "FROM ONE
           ISLAND TO THE WORLD" tagline on the left stay completely
           uncovered. Mobile (<md): cards stack below the banner. */}
-      <section
+      <section id="s-next"
         className="relative text-white overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
       >
@@ -307,7 +309,7 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 4: WHY KOH PHANGAN FIRST ==================== */}
-      <section className="relative py-16 sm:py-24">
+      <section id="s-why" className="relative py-16 sm:py-24">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12 relative">
             <Badge variant="golden" className="mb-4">{t('splash.why_badge')}</Badge>
@@ -366,7 +368,7 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 5: THE DEAL ==================== */}
-      <section className="relative py-16 sm:py-24 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white overflow-hidden">
+      <section id="s-deal" className="relative py-16 sm:py-24 bg-gradient-to-br from-deep via-[#0d1f3c] to-deep text-white overflow-hidden">
         <div className="absolute inset-0 opacity-[0.02]" style={{
           backgroundImage: 'linear-gradient(rgba(255,190,11,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,190,11,.3) 1px, transparent 1px)',
           backgroundSize: '50px 50px'
@@ -467,7 +469,7 @@ export default function Splash() {
       </section>
 
       {/* ==================== SECTION 6: WHO CAN APPLY ==================== */}
-      <section className="relative py-16 sm:py-24">
+      <section id="s-who" className="relative py-16 sm:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('splash.who_title')}</h2>
