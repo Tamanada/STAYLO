@@ -13,7 +13,7 @@
      Whitelisted: Supabase SDK CDN, Supabase API, Google fonts gstatic.
      Image sources: Supabase Storage, Pixabay, Unsplash, Pexels, Wikimedia
      (free-photo CDNs used by the equipment image picker). -->
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net; img-src 'self' data: blob: https://*.supabase.co https://cdn.pixabay.com https://images.unsplash.com https://images.pexels.com https://upload.wikimedia.org; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.supabase.co https://cdn.jsdelivr.net; img-src 'self' data: blob: https://*.supabase.co https://pixabay.com https://*.pixabay.com https://images.unsplash.com https://images.pexels.com https://upload.wikimedia.org; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'">
 <title>STAYLO Ship — Your hotel. Connected.</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <style>
@@ -15463,6 +15463,35 @@ function renderRecipesTab(){
   root.appendChild(list);
 }
 
+/* Equipment image fallback — most recipe equipment (esp. the seeded demo
+ * fiches) has no picked image_url. Resolve a stock photo by name keyword so
+ * both the staff fiche and the manager recipe view show a thumbnail. URLs are
+ * Pixabay (CSP-allowed); if one fails to load the chip just falls back to
+ * text. Keyword order matters (specific before generic, e.g. saucepan>pan). */
+const EQUIP_IMG = [
+  ['wok',           'https://pixabay.com/get/g7bd891c7906a0f31bd8c18e39ad764838298fc2f25cb00d00691598b7426d61e72ee97b5bcf262dfcd25d400c70c3d1f3be32ee803fc6106626e0938610c5370_640.jpg'],
+  ['steamer',       'https://pixabay.com/get/g1f8aa544bc8666dd4710d0c01a143177f43dfc455dfcb900ea949fd46f6727821950975b1d44f4e14511a27f0db14664e5b6b8efe656c9dc7811dce3ca365734_640.jpg'],
+  ['saucepan',      'https://pixabay.com/get/g852adf094f205ffe809366fb889256c81a2214e190e9ce3f91e08ad7f49d668f963d7362a05f3f615ac4134e1da0c3ab877c706f8c10ff1224950c96e7651974_640.png'],
+  ['mise-en-place', 'https://pixabay.com/get/g1069e233834e67c4d353631f5060ea5468219a7e7e0c36930c9fb3d358d9924b0a4b1eefcb5a8f38733c1cba0f8ee5adf46c3acc4de5752b249ac7c2eaf431f3_640.jpg'],
+  ['bowl',          'https://pixabay.com/get/g1069e233834e67c4d353631f5060ea5468219a7e7e0c36930c9fb3d358d9924b0a4b1eefcb5a8f38733c1cba0f8ee5adf46c3acc4de5752b249ac7c2eaf431f3_640.jpg'],
+  ['tong',          'https://pixabay.com/get/g2073b9cbbc580d272f7f83dd62d8b60d617f950582ab4513e4cf3082fe37a0e1d1351d788df50039556eeb99fc01fdd58848d78a5ebfe9cd6262f9eed90ff6e5_640.jpg'],
+  ['strainer',      'https://pixabay.com/get/g16c62c431e8439ed230f7fd884e9e439336e92792081b0101d7a567270321a246cb95bd629b758393385726792998b7c3040f521c9ef79384497d75be4c6a7f8_640.jpg'],
+  ['colander',      'https://pixabay.com/get/g16c62c431e8439ed230f7fd884e9e439336e92792081b0101d7a567270321a246cb95bd629b758393385726792998b7c3040f521c9ef79384497d75be4c6a7f8_640.jpg'],
+  ['spatula',       'https://pixabay.com/get/g6d6d4bbd8475dd8922808e3349682641ecfca70f9a4caa73d87b928e945a2cdc29991f31ed5a1f7334b47a13838d4612592f6ae2adeac8df35525cfb43bd77e0_640.jpg'],
+  ['ladle',         'https://pixabay.com/get/g35229201a4cba3784b5b2a1bdd62359ba0bfabad3c61f0b43783825d40b4b7c329594e196aabf657f35b882588ae89e9_640.jpg'],
+  ['knife',         'https://pixabay.com/get/gc8ce09d947be1751785984534e66c1846d5761c5b88041e9ddafd3e8f79e3f0eb4e39630f92b348df7fde91591750642ba6f6f7809890fb046c592f54939d6d4_640.jpg'],
+  ['whisk',         'https://pixabay.com/get/g099389ea21384d215a8740199fc03fe98e2ec6ae22993dd677ceff97f3b345c277bee6bf87ee7c8210ba88f889fba766a4ad00e9f6a4b01e9a9239d536d5538a_640.jpg'],
+  ['cutting board', 'https://pixabay.com/get/gc85e3cc27239e2cde8be132bf168d71d70f3bb4328e6b01cacaa9c63ef7e57e644a25b10866f4b78287120fb1185f601_640.jpg'],
+  ['chopping board','https://pixabay.com/get/gc85e3cc27239e2cde8be132bf168d71d70f3bb4328e6b01cacaa9c63ef7e57e644a25b10866f4b78287120fb1185f601_640.jpg'],
+  ['pan',           'https://pixabay.com/get/g852adf094f205ffe809366fb889256c81a2214e190e9ce3f91e08ad7f49d668f963d7362a05f3f615ac4134e1da0c3ab877c706f8c10ff1224950c96e7651974_640.png'],
+  ['pot',           'https://pixabay.com/get/g852adf094f205ffe809366fb889256c81a2214e190e9ce3f91e08ad7f49d668f963d7362a05f3f615ac4134e1da0c3ab877c706f8c10ff1224950c96e7651974_640.png'],
+];
+function resolveEquipImg(name){
+  const n = (name || '').toLowerCase();
+  for(const [kw, url] of EQUIP_IMG){ if(n.includes(kw)) return url; }
+  return null;
+}
+
 function showRecipeView(r){
   const ex = $('#recipe-view'); if(ex) ex.remove();
   // CRITICAL: do NOT name this `t` — it would shadow the global i18n t()
@@ -15561,12 +15590,13 @@ function showRecipeView(r){
       el('h4',{style:'font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray)'},'🍳 Equipment / matériel'),
       el('div',{style:'display:flex;flex-wrap:wrap;gap:6px'},
         ...(r.equipment||[]).filter(e => e.name?.trim()).map(e => {
+          const imgUrl = e.image_url || resolveEquipImg(e.name);
           const chip = el('span',{
-            style:'display:inline-flex;align-items:center;gap:6px;padding:'+(e.image_url?'2px 10px 2px 2px':'4px 10px')+';background:#F5F1EA;border:1px solid var(--border);border-radius:var(--r-pill);font-size:12px;font-weight:600',
+            style:'display:inline-flex;align-items:center;gap:6px;padding:'+(imgUrl?'2px 10px 2px 2px':'4px 10px')+';background:#F5F1EA;border:1px solid var(--border);border-radius:var(--r-pill);font-size:12px;font-weight:600',
           });
-          if(e.image_url){
+          if(imgUrl){
             const thumb = document.createElement('img');
-            thumb.src = e.image_url; thumb.alt = '';
+            thumb.src = imgUrl; thumb.alt = '';
             thumb.referrerPolicy = 'no-referrer';
             thumb.style.cssText = 'width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#fff';
             thumb.addEventListener('error', () => { thumb.style.display='none'; });
@@ -19209,10 +19239,11 @@ function showShipFiche(tk){
       const wrap = el('div',{class:'ship-fiche-equip'});
       equip.forEach(e => {
         const chip = el('span',{class:'e'});
-        if(e.image_url){
+        const imgUrl = e.image_url || resolveEquipImg(e.name);
+        if(imgUrl){
           const img = document.createElement('img');
-          img.src = e.image_url; img.alt = ''; img.referrerPolicy = 'no-referrer';
-          img.style.cssText = 'width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0;background:#fff';
+          img.src = imgUrl; img.alt = ''; img.referrerPolicy = 'no-referrer'; img.loading = 'lazy';
+          img.style.cssText = 'width:30px;height:30px;border-radius:8px;object-fit:cover;flex-shrink:0;background:#fff';
           img.addEventListener('error', () => { img.style.display = 'none'; });
           chip.appendChild(img);
         }
