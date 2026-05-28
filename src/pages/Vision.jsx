@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale, Wallet, X, Smartphone } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
@@ -68,18 +68,6 @@ const foundingBenefits = [
 
 const faqKeys = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']
 
-// In-page anchor nav — a sticky pill bar that scroll-jumps between the long
-// /vision sections and highlights the one currently in view (scrollspy).
-const SECTION_NAV = [
-  { id: 'v-structure', key: 'vision.nav_structure', fallback: 'Model' },
-  { id: 'v-bitcoin',   key: 'vision.nav_bitcoin',   fallback: 'Bitcoin' },
-  { id: 'v-invest',    key: 'vision.nav_invest',    fallback: 'Investment' },
-  { id: 'v-roadmap',   key: 'vision.nav_roadmap',   fallback: 'Roadmap' },
-  { id: 'v-growth',    key: 'vision.nav_growth',    fallback: 'Growth' },
-  { id: 'v-join',      key: 'vision.nav_join',      fallback: 'Join' },
-  { id: 'v-faq',       key: 'vision.nav_faq',       fallback: 'FAQ' },
-]
-
 export default function Vision() {
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -100,8 +88,6 @@ export default function Vision() {
   // Interactive "$100 booked" comparison — OTA commission is a live slider
   // (10–35%); STAYLO is always 10%. "You keep" + "more revenue" recompute.
   const [otaCommission, setOtaCommission] = useState(22)
-  // Sticky in-page section nav — which section is currently in view.
-  const [activeSec, setActiveSec] = useState(SECTION_NAV[0].id)
 
   // Roadmap modal a11y: close on Escape, and move focus to the close
   // button when it opens so keyboard / screen-reader users aren't left
@@ -114,26 +100,20 @@ export default function Vision() {
     return () => window.removeEventListener('keydown', onKey)
   }, [openPhase])
 
-  // Sticky section-nav: smooth-scroll jump (offset for the main navbar 64px
-  // + this bar ~46px) and a scrollspy that highlights the active section.
-  const scrollToSection = (id) => {
+  // Deep-link scroll: arriving at /vision#v-roadmap (e.g. from the navbar
+  // "Vision" dropdown) smooth-scrolls to that section, offset for the navbar.
+  const location = useLocation()
+  useEffect(() => {
+    const id = (location.hash || '').replace('#', '')
+    if (!id) return
     const el = document.getElementById(id)
     if (!el) return
-    const y = el.getBoundingClientRect().top + window.scrollY - 110
-    window.scrollTo({ top: y, behavior: 'smooth' })
-  }
-  useEffect(() => {
-    const els = SECTION_NAV.map(s => document.getElementById(s.id)).filter(Boolean)
-    if (!els.length) return
-    const obs = new IntersectionObserver((entries) => {
-      const vis = entries.filter(e => e.isIntersecting)
-      if (!vis.length) return
-      vis.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-      setActiveSec(vis[0].target.id)
-    }, { rootMargin: '-120px 0px -65% 0px', threshold: 0 })
-    els.forEach(el => obs.observe(el))
-    return () => obs.disconnect()
-  }, [])
+    const tmr = setTimeout(() => {
+      const y = el.getBoundingClientRect().top + window.scrollY - 80
+      window.scrollTo({ top: y, behavior: 'smooth' })
+    }, 80)
+    return () => clearTimeout(tmr)
+  }, [location.hash])
 
   const totalAlphaShares = 3000
   const totalShares = 500000
@@ -207,36 +187,6 @@ export default function Vision() {
           </Link>
         </div>
       </section>
-
-      {/* Sticky in-page section nav — quick-jump pills + scrollspy. Sits just
-          below the main navbar (top-16) once the hero scrolls past; scrolls
-          horizontally on mobile (hidden scrollbar). */}
-      <nav
-        aria-label="Vision sections"
-        className="sticky top-16 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200/80"
-      >
-        <div className="max-w-6xl mx-auto px-3 sm:px-6">
-          <div className="flex gap-2 overflow-x-auto py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {SECTION_NAV.map(s => {
-              const active = activeSec === s.id
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => { setActiveSec(s.id); scrollToSection(s.id) }}
-                  aria-current={active ? 'true' : undefined}
-                  className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
-                    active ? 'text-white shadow-md' : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
-                  }`}
-                  style={active ? { background: 'linear-gradient(120deg,#FF6B00,#FF3CB4)' } : undefined}
-                >
-                  {t(s.key, s.fallback)}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </nav>
 
       {/* Company Structure — Option B (light brand cards, orange→pink→purple cycle) */}
       <section id="v-structure" className="py-8 sm:py-12 bg-[#FFFDF8]">

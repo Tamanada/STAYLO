@@ -23,12 +23,26 @@ const languages = [
   { code: 'it', label: 'Italiano', flag: '🇮🇹' },
 ]
 
+// Sections of the (long) /vision page — surfaced as a dropdown under "Vision"
+// so visitors can jump straight to a part. Each links to /vision#<id>; the
+// Vision page reads the hash and smooth-scrolls there.
+const visionSections = [
+  { id: 'v-structure', key: 'vision.nav_structure', fallback: 'Model' },
+  { id: 'v-bitcoin',   key: 'vision.nav_bitcoin',   fallback: 'Bitcoin' },
+  { id: 'v-invest',    key: 'vision.nav_invest',    fallback: 'Investment' },
+  { id: 'v-roadmap',   key: 'vision.nav_roadmap',   fallback: 'Roadmap' },
+  { id: 'v-growth',    key: 'vision.nav_growth',    fallback: 'Growth' },
+  { id: 'v-join',      key: 'vision.nav_join',      fallback: 'Join' },
+  { id: 'v-faq',       key: 'vision.nav_faq',       fallback: 'FAQ' },
+]
+
 export function Navbar() {
   const { t, i18n } = useTranslation()
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
+  const [visionOpen, setVisionOpen] = useState(false)
 
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0]
   const flags = getFeatureFlags()
@@ -89,12 +103,34 @@ export function Navbar() {
                 onMouseLeave={e => e.target.style.color = '#636E72'}>
                 {t('nav.book', 'Book')}
               </Link>
-              <Link to="/vision" className="text-sm font-medium no-underline transition-colors"
-                style={{ color: '#636E72' }}
-                onMouseEnter={e => e.target.style.color = '#FF6B00'}
-                onMouseLeave={e => e.target.style.color = '#636E72'}>
-                {t('nav.vision', 'About')}
-              </Link>
+              {/* Vision — dropdown of in-page sections (jump straight to a part) */}
+              <div className="relative"
+                onMouseEnter={() => setVisionOpen(true)}
+                onMouseLeave={() => setVisionOpen(false)}>
+                <Link to="/vision"
+                  className="flex items-center gap-1 text-sm font-medium no-underline transition-colors"
+                  style={{ color: visionOpen ? '#FF6B00' : '#636E72' }}>
+                  {t('nav.vision', 'About')}
+                  <ChevronDown size={13} className={`transition-transform ${visionOpen ? 'rotate-180' : ''}`} />
+                </Link>
+                {visionOpen && (
+                  <div className="absolute left-0 top-full pt-2 z-50">
+                    <div className="w-52 bg-white rounded-2xl shadow-lg py-2"
+                      style={{ border: '1.5px solid #E8E0D8' }}>
+                      {visionSections.map(s => (
+                        <Link key={s.id} to={`/vision#${s.id}`}
+                          onClick={() => setVisionOpen(false)}
+                          className="block px-4 py-2 text-sm no-underline transition-colors"
+                          style={{ color: '#636E72' }}
+                          onMouseEnter={e => { e.currentTarget.style.color = '#FF6B00'; e.currentTarget.style.background = 'rgba(255,107,0,0.05)' }}
+                          onMouseLeave={e => { e.currentTarget.style.color = '#636E72'; e.currentTarget.style.background = 'transparent' }}>
+                          {t(s.key, s.fallback)}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
               <Link to="/submit" className="text-sm font-medium no-underline transition-colors"
                 style={{ color: '#636E72' }}
                 onMouseEnter={e => e.target.style.color = '#FF6B00'}
@@ -213,6 +249,15 @@ export function Navbar() {
               <Link to="/splash" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.home', 'Stay')}</Link>
               <Link to="/ota" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.book', 'Book')}</Link>
               <Link to="/vision" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.vision', 'About')}</Link>
+              {/* Vision sub-sections — quick jump on mobile */}
+              <div className="pl-4 -mt-1 mb-1 space-y-0.5" style={{ borderLeft: '2px solid #F0E8DE' }}>
+                {visionSections.map(s => (
+                  <Link key={s.id} to={`/vision#${s.id}`} onClick={() => setMobileOpen(false)}
+                    className="block py-1.5 text-sm no-underline" style={{ color: '#9AA0A6' }}>
+                    {t(s.key, s.fallback)}
+                  </Link>
+                ))}
+              </div>
               <Link to="/submit" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.submit', 'For Hoteliers')}</Link>
               <Link to="/ambassador" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.ambassador', 'Ambassador')}</Link>
               <a href="mailto:contact@staylo.app" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.contact', 'Contact')}</a>
