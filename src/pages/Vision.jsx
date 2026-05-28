@@ -30,19 +30,19 @@ const phases = [
     long: 'A built-in Bitcoin Lightning wallet for every user. Load BTC, USDT, or pay by card. Use it to settle bookings, collect dividend payouts as a Founding Partner, or claim 2% lifetime referral commissions as an Ambassador. Self-custodied, fast, and global by default.',
   },
   {
-    key: 'phase2', icon: UtensilsCrossed, gradient: 'from-[#FF3CB4] to-[#6C5CE7]', status: 'V2', timeline: 'M6–M12',
+    key: 'phase2', icon: UtensilsCrossed, gradient: 'from-[#FF6B00] via-[#FF3CB4] to-[#6C5CE7]', status: 'V2', timeline: 'M6–M12',
     title: 'Eat',
     desc: 'Restaurants & dining — a fair alternative to TheFork and OpenTable',
     long: 'Restaurant and dining bookings — a fair alternative to TheFork and OpenTable. Hoteliers can cross-promote on-site F&B. Restaurants pay a flat low fee per cover instead of percentages. Guests discover authentic local food, including independent venues priced out by today\'s platforms.',
   },
   {
-    key: 'phase3', icon: Compass, gradient: 'from-[#6C5CE7] to-[#FF3CB4]', status: 'V3', timeline: 'M12–M18',
+    key: 'phase3', icon: Compass, gradient: 'from-[#FF6B00] via-[#FF3CB4] to-[#6C5CE7]', status: 'V3', timeline: 'M12–M18',
     title: 'Do',
     desc: 'Activities, tours, wellness — experience booking reimagined',
     long: 'Activities, tours, wellness, and nightlife. Whatever guests want to do on their trip — from a Full Moon Party ticket to a Muay Thai class — booked alongside their stay. Operators set their own prices, keep direct customer relationships, and pay a single low fee. No more 30% bites from GetYourGuide.',
   },
   {
-    key: 'phase4', icon: Plane, gradient: 'from-[#FDCB6E] to-[#FF6B00]', status: 'V4', timeline: 'M18–M24',
+    key: 'phase4', icon: Plane, gradient: 'from-[#FF6B00] via-[#FF3CB4] to-[#6C5CE7]', status: 'V4', timeline: 'M18–M24',
     title: 'Fly',
     desc: 'Flights and transfers — completing the travel journey',
     long: 'Flights and transfers to complete the travel journey. Search and book domestic and international routes side-by-side with hotels. Airport transfers, ferries, and inter-island taxis bookable from one trip view. The full stack of travel — owned by the people who run it.',
@@ -1024,7 +1024,7 @@ export default function Vision() {
                     <img
                       src={phase.iconSrc}
                       alt={phase.title}
-                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl shadow-md mb-3 block"
+                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl shadow-md mb-3 block object-cover object-center"
                     />
                   ) : (
                     <div className={`relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center shadow-md mb-3`}>
