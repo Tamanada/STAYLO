@@ -1006,8 +1006,11 @@ export default function Vision() {
               style={{ background: 'linear-gradient(90deg, #FF6B00, #F7931A, #FF3CB4, #6C5CE7, #FDCB6E, #FF3CB4)' }}
             />
 
-            {/* Horizontal scroll on mobile, even grid on desktop (7 cards) */}
-            <div className="flex md:grid md:grid-cols-7 gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
+            {/* Horizontal scroll on mobile, even grid on desktop (7 cards).
+                items-start keeps every card top-aligned, so the logo tiles
+                line up across the row even though the SHIP card is taller
+                (it carries the "by STAYLO" byline). */}
+            <div className="flex items-start md:grid md:grid-cols-7 md:items-start gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
               {phases.map((phase, i) => (
                 <button
                   key={phase.key}
