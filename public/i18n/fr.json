@@ -3865,7 +3865,8 @@
       "weekday_thu": "Jeudi",
       "weekday_fri": "Vendredi",
       "weekday_sat": "Samedi",
-      "weekday_sun": "Dimanche"
+      "weekday_sun": "Dimanche",
+      "track_exec": "Chronométrer cette tâche (Démarrer / Terminer + photo)"
     },
     "tasks_tab": {
       "date_label": "📅 Tâches du",

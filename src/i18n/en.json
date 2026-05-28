@@ -3321,7 +3321,8 @@
       "weekday_thu": "Thursday",
       "weekday_fri": "Friday",
       "weekday_sat": "Saturday",
-      "weekday_sun": "Sunday"
+      "weekday_sun": "Sunday",
+      "track_exec": "Time this task (Start / End + photo)"
     },
     "tasks_tab": {
       "date_label": "📅 Tasks for",

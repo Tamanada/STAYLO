@@ -17323,6 +17323,16 @@ function showTaskEditor(task){
       const opts = [{value:'', label:t('app.tasks_editor.none_option')}, ...recs.map(r => ({value:r.id, label:`📔 ${r.name}`+(r.pos_sku?` (POS: ${r.pos_sku})`:'')}))];
       return el('div',{class:'fld'}, el('label',{},t('app.tasks_editor.linked_recipe')), sel('tk-recipe', opts, tk.recipe_id||''));
     })(),
+    // Manager opt-in: require staff to Start/End the task (captures execution
+    // time) and snap an end-of-task photo for evaluation. OFF by default —
+    // most tasks just need a simple checkbox in the SHIP fiche.
+    (() => {
+      const cb = el('input',{type:'checkbox', id:'tk-track-exec'});
+      cb.checked = !!tk.track_exec;
+      return el('div',{class:'fld'},
+        el('label',{style:'display:flex;align-items:center;gap:9px;cursor:pointer;font-weight:600'},
+          cb, el('span',{}, t('app.tasks_editor.track_exec'))));
+    })(),
     el('div',{class:'row-actions'},
       isEdit ? el('button',{class:'btn-danger',onclick:()=>{
         if(confirm(t('app.dialogs.delete_task'))){ deleteTask(tk.id); modal.remove(); renderTasksTab(); }
@@ -17344,6 +17354,8 @@ function showTaskEditor(task){
           due_time: $('#tk-time').value,
           priority: $('#tk-priority').value,
           recipe_id: $('#tk-recipe')?.value || '',
+          // Manager opt-in: SHIP fiche shows Start/End timer + end photo.
+          track_exec: $('#tk-track-exec')?.checked || false,
           // Service field — only meaningful for unassigned library templates.
           // For other kinds, kept as-is (preserves any existing value).
           service: ($('#tk-service')?.value) || tk.service || '',
@@ -19165,6 +19177,25 @@ function showShipFiche(tk){
   function repaintFoot(){
     clearExecTick();
     foot.innerHTML = '';
+
+    // Simple mode (default): no manager-required timing → just a done toggle.
+    if(!tk.track_exec){
+      const doneBtn = el('button',{class:'ship-fiche-done' + (isDone()?' done':'')},
+        isDone() ? '✓ ' + shipT('app.ship.completed','Completed') : shipT('app.ship.mark_done','Mark done'));
+      doneBtn.addEventListener('click', () => {
+        const next = !isDone();
+        setTaskCompletion(tk.id, today, next);
+        tk.completions = tk.completions || {};
+        if(next) tk.completions[today] = { by:(State.user&&State.user.name)||'', at:new Date().toISOString() };
+        else delete tk.completions[today];
+        doneBtn.classList.toggle('done', next);
+        doneBtn.textContent = next ? '✓ ' + shipT('app.ship.completed','Completed') : shipT('app.ship.mark_done','Mark done');
+      });
+      foot.appendChild(doneBtn);
+      return;
+    }
+
+    // Tracked mode (manager opted in): Start → live timer → End → end photo.
     const exec = getTaskExecOne(tk.id, today);
 
     if(isDone()){
