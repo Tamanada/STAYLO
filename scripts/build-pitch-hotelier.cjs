@@ -187,7 +187,7 @@ function rewriteFooterResources(src) {
         <div style="font-size:14px; color:rgba(255,255,255,0.6); line-height:1.4;"><span class="en">Print, share, hand to your team · EN / FR / TH</span><span class="th">พิมพ์ แชร์ แจกทีมงาน · EN / FR / TH</span></div>
       </a>
 
-      <a href="/messenger.html" target="_blank" style="background:linear-gradient(135deg, rgba(255,31,112,0.10), rgba(126,34,206,0.10)); border:1px solid rgba(255,31,112,0.35); border-radius:12px; padding:22px 24px; text-decoration:none; color:white;">
+      <a href="/ship.html" target="_blank" style="background:linear-gradient(135deg, rgba(255,31,112,0.10), rgba(126,34,206,0.10)); border:1px solid rgba(255,31,112,0.35); border-radius:12px; padding:22px 24px; text-decoration:none; color:white;">
         <div style="display:flex; align-items:center; gap:8px; font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:#FF1F70; margin-bottom:6px;">
           <img src="/SHIP_LOGO.png" alt="" width="22" height="22" style="border-radius:5px; display:block;" />
           Try STAYLO Ship

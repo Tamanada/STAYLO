@@ -210,7 +210,7 @@ export function DashboardSidebar() {
           </div>
         )}
 
-        {/* Messenger — opens the static single-file app (public/messenger.html)
+        {/* Messenger — opens the static single-file app (public/ship.html)
             in a new tab. Visible to every signed-in user for now (matches the
             demo flow); we can tighten visibility behind hasProperties later
             once the messenger has real auth wired to Supabase. The path is
@@ -221,7 +221,7 @@ export function DashboardSidebar() {
           </p>
         </div>
         <a
-          href="/messenger.html"
+          href="/ship.html"
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => setMobileOpen(false)}

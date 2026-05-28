@@ -51,14 +51,14 @@ This is the most-confused area. **Memorize this table.**
 |---|---|---|---|
 | **Marketing site + Hotelier dashboard** | `staylo.app` | React 19 / Vite, Supabase | Public visitors + signed-up hoteliers |
 | **Guest PWA** | `app.staylo.app` | Same React build, separate entry (`guest.html`), routed via Edge Middleware | Hotel guests (mobile-first, PWA-installable) |
-| **Staff Messenger** | `staylo.app/messenger.html` | Single-file vanilla JS (~17,800 lines), localStorage in demo, Supabase-bound in prod | Hotelier teams (managers, front desk, F&B, housekeeping…) |
+| **Staff Messenger** | `staylo.app/ship.html` | Single-file vanilla JS (~17,800 lines), localStorage in demo, Supabase-bound in prod | Hotelier teams (managers, front desk, F&B, housekeeping…) |
 
 ### How to refer to each (in copy)
 
 - ✅ "the STAYLO app" → ambiguous, prefer one of the specific names below.
 - ✅ "the **guest app**" / "**l'app guest**" / "**app.staylo.app**" — for the PWA at app.staylo.app
 - ✅ "the **hotelier dashboard**" / "**le dashboard hôtelier**" — for the React dashboard at staylo.app/dashboard
-- ✅ "the **staff messenger**" / "**le messenger**" — for the messenger.html app
+- ✅ "the **staff messenger**" / "**le messenger**" — for the ship.html app
 - ❌ "the booking platform" — too generic, doesn't distinguish from competitors
 - ❌ "our website" — too small, undersells the product
 
@@ -246,7 +246,7 @@ across the app makes the product feel half-finished.
 | `/dashboard/kit` | **My Kit** | Mon kit | ชุดของฉัน |
 | `/dashboard/referrals` | **Referrals** | Parrainages | การแนะนำ |
 
-### 11.2 — Staff messenger modules (`staylo.app/messenger.html`)
+### 11.2 — Staff messenger modules (`staylo.app/ship.html`)
 
 | Module | EN canonical | FR canonical | What it does |
 |---|---|---|---|

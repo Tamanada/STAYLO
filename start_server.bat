@@ -5,7 +5,7 @@ REM  Double-click this file to start the static server.
 REM  Leave the window open as long as you're testing the app.
 REM ============================================================
 
-REM Serve from public/ — the messenger now lives at public/messenger.html
+REM Serve from public/ — the messenger now lives at public/ship.html
 REM alongside public/i18n/*.json (synced from src/i18n by the prebuild hook).
 REM Reaching it from the repo root would require a longer path AND the i18n
 REM fetch would 404 because src/i18n is no longer accessible relative to it.
@@ -16,7 +16,7 @@ echo ============================================================
 echo   STAYLO Messenger — local server
 echo ============================================================
 echo.
-echo   URL : http://localhost:8000/messenger.html
+echo   URL : http://localhost:8000/ship.html
 echo.
 echo   Keep this window open. Close it to stop the server.
 echo.

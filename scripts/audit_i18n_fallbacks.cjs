@@ -25,7 +25,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 const SRC_DIRS   = [path.join(ROOT, 'src')];
-const EXTRA_FILES = [path.join(ROOT, 'public', 'messenger.html')];
+const EXTRA_FILES = [path.join(ROOT, 'public', 'ship.html')];
 
 const I18N_DIR = path.join(ROOT, 'src', 'i18n');
 const LANGS = ['en', 'fr', 'th'];

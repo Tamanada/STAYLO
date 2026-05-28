@@ -19,9 +19,9 @@
 // What it does NOT touch:
 //   - Static assets (`/assets/*`, anything with a file extension): served as
 //     usual so the React app can load its JS/CSS chunks.
-//   - The staff messenger (`/messenger.html`): only deployed under the root
-//     domain `staylo.app`, never under `app.staylo.app`. Excluded by the
-//     matcher just in case someone bookmarks `app.staylo.app/messenger.html`.
+//   - The hotelier app / STAYLO Ship (`/ship.html`): only deployed under the
+//     root domain `staylo.app`, never under `app.staylo.app`. Excluded by the
+//     matcher just in case someone bookmarks `app.staylo.app/ship.html`.
 //   - The i18n JSON bundles (`/i18n/*`): shared between both apps, fetched
 //     at runtime by the messenger. Excluded so they always resolve to the
 //     real file, not the guest HTML.
@@ -38,7 +38,7 @@ export const config = {
   // Vite asset folder, and anything that looks like a static file (has
   // a `.ext` suffix). Negative lookaheads in a single regex keep this
   // fast at the edge — no per-request string checks needed.
-  matcher: '/((?!_vercel|api|messenger\\.html|i18n/|assets/|.*\\.\\w+).*)',
+  matcher: '/((?!_vercel|api|ship\\.html|i18n/|assets/|.*\\.\\w+).*)',
 };
 
 export default function middleware(request) {
