@@ -137,8 +137,8 @@ export function Hero() {
   ]
 
   return (
-    <section className="relative overflow-hidden min-h-[700px] flex items-center justify-center" style={{
-      padding: '48px 5%',
+    <section className="relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center justify-center" style={{
+      padding: '32px 5%',
     }}>
       {/* Samuii.png — starry-night beach painting as background.
           Aligned to the rest of the site's artwork-backed surfaces. */}
@@ -154,26 +154,26 @@ export function Hero() {
 
       <div className="relative max-w-4xl mx-auto text-center">
         {/* Tag pill — bumped to translucent gold pill on dark painting */}
-        <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full mb-5"
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-3"
           style={{
             background: 'rgba(253,203,110,0.15)',
             border: '1.5px solid rgba(253,203,110,0.55)',
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
           }}>
-          <span style={{ color: '#FFE54C', fontSize: '12px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
+          <span style={{ color: '#FFE54C', fontSize: '11px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
             {t('home_hero.badge', '✦ Built with hoteliers, for hoteliers')}
           </span>
         </div>
 
         {/* Headline */}
         <h1 style={{
-          fontSize: 'clamp(40px, 5.5vw, 76px)',
+          fontSize: 'clamp(32px, 4.4vw, 60px)',
           fontWeight: 900,
-          letterSpacing: '-3px',
+          letterSpacing: '-2px',
           lineHeight: 1.05,
           color: '#FFFFFF',
-          margin: '0 0 20px',
+          margin: '0 0 14px',
           textShadow: '0 2px 18px rgba(0,0,0,0.85), 0 0 8px rgba(0,0,0,0.7), 0 0 2px rgba(0,0,0,0.9)',
         }}>
           {t('home_hero.title_1', 'Book with ')}
@@ -201,11 +201,11 @@ export function Hero() {
 
         {/* Subtitle */}
         <p style={{
-          fontSize: '17px',
-          lineHeight: 1.6,
+          fontSize: '15px',
+          lineHeight: 1.55,
           color: '#FFFFFF',
-          maxWidth: '620px',
-          margin: '0 auto 28px',
+          maxWidth: '600px',
+          margin: '0 auto 18px',
           fontWeight: 500,
           textShadow: '0 2px 12px rgba(0,0,0,0.85), 0 0 6px rgba(0,0,0,0.7)',
         }}>
@@ -214,7 +214,7 @@ export function Hero() {
 
         {/* Filter pills — 30% white frosted glass, white text (active state
             keeps the brand-gradient bg) */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8">
+        <div className="flex flex-wrap justify-center gap-2 mb-5">
           {FILTER_KEYS.map((key, i) => {
             const Icon = FILTER_ICONS[i]
             const isActive = activeFilter === i
@@ -243,14 +243,14 @@ export function Hero() {
         {/* Stats row — 30% white frosted glass cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
           {STATS.map(stat => (
-            <div key={stat.labelKey} className="card-hover rounded-3xl p-5 text-center backdrop-blur-md"
+            <div key={stat.labelKey} className="card-hover rounded-2xl p-3 text-center backdrop-blur-md"
               style={{
                 background: 'rgba(255,255,255,0.30)',
                 border: '1.5px solid rgba(255,255,255,0.55)',
                 boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
               }}>
               <p
-                className="text-3xl font-black mb-1"
+                className="text-2xl font-black mb-0.5"
                 style={{ color: stat.color, textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
               >{stat.value}</p>
               <p
