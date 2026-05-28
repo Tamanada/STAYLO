@@ -2699,7 +2699,10 @@ body.view-profile .channels-pane{display:none}
 .ship-task-chev{flex-shrink:0;color:var(--gray);font-size:22px;font-weight:700;line-height:1;padding:0 2px;cursor:pointer}
 
 /* SHIP full-screen fiche — follow a task / recipe step-by-step */
-.ship-fiche{position:fixed;inset:0;z-index:9500;background:#fff;display:flex;flex-direction:column;animation:fadeUp .2s ease-out}
+/* height:100dvh (dynamic viewport) keeps the sticky footer button ABOVE the
+   mobile browser toolbar — with inset:0 alone the footer sits behind the URL
+   bar on phones, so taps on "Start task" land on the browser chrome. */
+.ship-fiche{position:fixed;top:0;left:0;right:0;bottom:0;height:100vh;height:100dvh;max-height:100dvh;z-index:9500;background:#fff;display:flex;flex-direction:column;animation:fadeUp .2s ease-out}
 .ship-fiche-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border);background:#fff;flex-shrink:0}
 .ship-fiche-close{width:38px;height:38px;border-radius:50%;background:var(--light);border:0;font-size:22px;color:var(--navy);cursor:pointer;flex-shrink:0;line-height:1}
 .ship-fiche-title{flex:1;font-size:17px;font-weight:800;color:var(--navy);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
