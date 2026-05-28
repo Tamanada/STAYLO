@@ -68,6 +68,18 @@ const foundingBenefits = [
 
 const faqKeys = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']
 
+// In-page anchor nav — a sticky pill bar that scroll-jumps between the long
+// /vision sections and highlights the one currently in view (scrollspy).
+const SECTION_NAV = [
+  { id: 'v-structure', key: 'vision.nav_structure', fallback: 'Model' },
+  { id: 'v-bitcoin',   key: 'vision.nav_bitcoin',   fallback: 'Bitcoin' },
+  { id: 'v-invest',    key: 'vision.nav_invest',    fallback: 'Investment' },
+  { id: 'v-roadmap',   key: 'vision.nav_roadmap',   fallback: 'Roadmap' },
+  { id: 'v-growth',    key: 'vision.nav_growth',    fallback: 'Growth' },
+  { id: 'v-join',      key: 'vision.nav_join',      fallback: 'Join' },
+  { id: 'v-faq',       key: 'vision.nav_faq',       fallback: 'FAQ' },
+]
+
 export default function Vision() {
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -88,6 +100,8 @@ export default function Vision() {
   // Interactive "$100 booked" comparison — OTA commission is a live slider
   // (10–35%); STAYLO is always 10%. "You keep" + "more revenue" recompute.
   const [otaCommission, setOtaCommission] = useState(22)
+  // Sticky in-page section nav — which section is currently in view.
+  const [activeSec, setActiveSec] = useState(SECTION_NAV[0].id)
 
   // Roadmap modal a11y: close on Escape, and move focus to the close
   // button when it opens so keyboard / screen-reader users aren't left
@@ -99,6 +113,27 @@ export default function Vision() {
     phaseCloseRef.current?.focus()
     return () => window.removeEventListener('keydown', onKey)
   }, [openPhase])
+
+  // Sticky section-nav: smooth-scroll jump (offset for the main navbar 64px
+  // + this bar ~46px) and a scrollspy that highlights the active section.
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id)
+    if (!el) return
+    const y = el.getBoundingClientRect().top + window.scrollY - 110
+    window.scrollTo({ top: y, behavior: 'smooth' })
+  }
+  useEffect(() => {
+    const els = SECTION_NAV.map(s => document.getElementById(s.id)).filter(Boolean)
+    if (!els.length) return
+    const obs = new IntersectionObserver((entries) => {
+      const vis = entries.filter(e => e.isIntersecting)
+      if (!vis.length) return
+      vis.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+      setActiveSec(vis[0].target.id)
+    }, { rootMargin: '-120px 0px -65% 0px', threshold: 0 })
+    els.forEach(el => obs.observe(el))
+    return () => obs.disconnect()
+  }, [])
 
   const totalAlphaShares = 3000
   const totalShares = 500000
@@ -173,8 +208,38 @@ export default function Vision() {
         </div>
       </section>
 
+      {/* Sticky in-page section nav — quick-jump pills + scrollspy. Sits just
+          below the main navbar (top-16) once the hero scrolls past; scrolls
+          horizontally on mobile (hidden scrollbar). */}
+      <nav
+        aria-label="Vision sections"
+        className="sticky top-16 z-30 bg-white/90 backdrop-blur-md border-b border-gray-200/80"
+      >
+        <div className="max-w-6xl mx-auto px-3 sm:px-6">
+          <div className="flex gap-2 overflow-x-auto py-2.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {SECTION_NAV.map(s => {
+              const active = activeSec === s.id
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => { setActiveSec(s.id); scrollToSection(s.id) }}
+                  aria-current={active ? 'true' : undefined}
+                  className={`whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold transition-colors ${
+                    active ? 'text-white shadow-md' : 'text-gray-600 bg-gray-100 hover:bg-gray-200'
+                  }`}
+                  style={active ? { background: 'linear-gradient(120deg,#FF6B00,#FF3CB4)' } : undefined}
+                >
+                  {t(s.key, s.fallback)}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </nav>
+
       {/* Company Structure — Option B (light brand cards, orange→pink→purple cycle) */}
-      <section className="py-8 sm:py-12 bg-[#FFFDF8]">
+      <section id="v-structure" className="py-8 sm:py-12 bg-[#FFFDF8]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
             <p className="section-label mb-3">{t('vision.structure_label', 'Structure')}</p>
@@ -211,7 +276,7 @@ export default function Vision() {
       </section>
 
       {/* Bitcoin Strategy */}
-      <section className="py-8 sm:py-12 bg-gradient-to-br from-[#F7931A]/5 via-white to-[#F7931A]/10">
+      <section id="v-bitcoin" className="py-8 sm:py-12 bg-gradient-to-br from-[#F7931A]/5 via-white to-[#F7931A]/10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <Badge variant="golden" className="mb-3">{t('vision.btc_badge', 'Bitcoin-Native')}</Badge>
@@ -371,7 +436,7 @@ export default function Vision() {
           slice of the raise. BTC carries 3 illustrative charts, the
           others carry icon-grid breakdowns.
           One row open at a time (setExpandedAlloc) keeps mobile clean. */}
-      <section className="py-8 bg-white">
+      <section id="v-invest" className="py-8 bg-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.fund_title', 'Founders, discover how you will invest in STAYLO')}</h2>
@@ -477,7 +542,7 @@ export default function Vision() {
           Background: UnVoyage.png (dreamy night-voyage painting) — the
           journey metaphor pairs naturally with a phased roadmap. White
           phase cards float as jewels above the dark artwork. */}
-      <section className="py-12 sm:py-16 relative overflow-hidden">
+      <section id="v-roadmap" className="py-12 sm:py-16 relative overflow-hidden">
         <img
           src="/UnVoyage.png"
           alt=""
@@ -732,7 +797,7 @@ export default function Vision() {
       </section>
 
       {/* Detailed Projections — Option C deep brand-purple, premium/financial */}
-      <section className="py-8 sm:py-12 text-white relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #1a0d2e 0%, #2a1148 60%, #1a0d2e 100%)' }}>
+      <section id="v-growth" className="py-8 sm:py-12 text-white relative overflow-hidden" style={{ background: 'linear-gradient(160deg, #1a0d2e 0%, #2a1148 60%, #1a0d2e 100%)' }}>
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-20 right-[5%] w-96 h-96 bg-[#FF6B00]/12 rounded-full blur-3xl" />
           <div className="absolute bottom-20 left-[5%] w-96 h-96 bg-[#FF3CB4]/12 rounded-full blur-3xl" />
@@ -1148,7 +1213,7 @@ export default function Vision() {
       </section>
 
       {/* Required Documents — Bob.png as background (brand-aligned artwork) */}
-      <section className="py-8 text-white relative overflow-hidden">
+      <section id="v-join" className="py-8 text-white relative overflow-hidden">
         {/* Bob.png as full-bleed background */}
         <img
           src="/Bob.png"
@@ -1213,7 +1278,7 @@ export default function Vision() {
       </section>
 
       {/* FAQ — Accordion */}
-      <section className="py-8 sm:py-12">
+      <section id="v-faq" className="py-8 sm:py-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl font-bold text-deep text-center mb-5">
             {t('vision.faq_title')}

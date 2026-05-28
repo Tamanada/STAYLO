@@ -1149,7 +1149,14 @@
     "doc_contract": "Contrat Founding Partner",
     "doc_contract_desc": "Accord de partenariat officiel — signé à l'achat des parts",
     "doc_required": "Requis",
-    "docs_note": "Le processus officiel de partenariat démarrera lorsque les 3 000 parts alpha seront toutes réservées. Réservez vos parts maintenant — les documents arrivent plus tard."
+    "docs_note": "Le processus officiel de partenariat démarrera lorsque les 3 000 parts alpha seront toutes réservées. Réservez vos parts maintenant — les documents arrivent plus tard.",
+    "nav_structure": "Modèle",
+    "nav_bitcoin": "Bitcoin",
+    "nav_invest": "Investissement",
+    "nav_roadmap": "Roadmap",
+    "nav_growth": "Croissance",
+    "nav_join": "Rejoindre",
+    "nav_faq": "FAQ"
   },
   "footer": {
     "tagline": "Réservez tout. Vivez l'expérience.",
