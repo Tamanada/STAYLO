@@ -1495,7 +1495,7 @@ function TechDetail({ t }) {
   const items = [
     { title: t('vision.tech_web_title',    'Web platform & guest PWA'), body: t('vision.tech_web_body',    'The booking site, the hotelier dashboard, and the guest PWA (app.staylo.app) — all React, all installable, all reaching 14 languages on day one.') },
     { title: t('vision.tech_mobile_title', 'Native mobile apps'),       body: t('vision.tech_mobile_body', 'iOS + Android wraps via Capacitor for BLE room keys, NFC payments, push notifications, and biometric auth. Phase 2 priority once the PWA is validated.') },
-    { title: t('vision.tech_pms_title',    'PMS + staff messenger'),   body: t('vision.tech_pms_body',    'A full property management system + staff messenger — replaces 6-8 separate SaaS subscriptions hoteliers currently juggle. 17,800+ lines of UI shipped.') },
+    { title: t('vision.tech_pms_title',    'STAYLO Ship — all-in-one hotelier app'),   body: t('vision.tech_pms_body',    'STAYLO Ship (SHIP): PMS, front desk, housekeeping, F&B, and team chat — one app that replaces the 6-8 separate SaaS subscriptions hoteliers currently juggle. 17,800+ lines of UI shipped.') },
     { title: t('vision.tech_chain_title',  'Blockchain & $STAY token'), body: t('vision.tech_chain_body',  'Solana SPL Token-2022 deployment, NFT booking proofs, escrow smart contracts, Lightning Network payment rail integration. Security audits included.') },
   ]
   return (
