@@ -473,10 +473,9 @@ export default function Submit() {
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        {/* Very light scrim — the painting is already a dark night scene,
-            so let it shine; the title/subtitle text-shadow halos carry
-            legibility on their own */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/30" />
+        {/* Minimal scrim — barely there. The painting carries the scene;
+            the title/subtitle text-shadow halos carry legibility. */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
         <div className="relative max-w-3xl mx-auto w-full px-4 sm:px-6 py-16 sm:py-20 text-center">
           <h1
             className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-4 tracking-tight"
