@@ -4436,7 +4436,10 @@
       "end_task": "Terminer la tâche",
       "completed_in": "Terminé en {dur}",
       "add_end_photo": "📷 Ajouter une photo de fin",
-      "fullscreen": "Plein écran"
+      "fullscreen": "Plein écran",
+      "alert_task_done": "Tâche terminée",
+      "alert_completions": "Tâches terminées",
+      "alert_view_photo": "📷 Vérifier"
     }
   },
   "verify": {

@@ -3960,7 +3960,10 @@
       "end_task": "End task",
       "completed_in": "Completed in {dur}",
       "add_end_photo": "📷 Add end photo",
-      "fullscreen": "Fullscreen"
+      "fullscreen": "Fullscreen",
+      "alert_task_done": "Task completed",
+      "alert_completions": "Task completions",
+      "alert_view_photo": "📷 Verify"
     }
   },
   "verify": {

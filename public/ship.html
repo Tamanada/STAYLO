@@ -2741,6 +2741,18 @@ body.view-profile .channels-pane{display:none}
 .ship-exec-photo{display:block;width:100%;max-width:680px;max-height:220px;object-fit:cover;border-radius:14px;margin:0 auto 4px;cursor:pointer}
 .ship-fiche-fs{padding:8px 11px!important;font-size:15px}
 
+/* Task-completion alerts in the Alerts tab */
+.ship-alert-head{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);padding:14px 16px 8px}
+.ship-alert{display:flex;align-items:center;gap:12px;padding:11px 13px;margin:0 12px 8px;background:#fff;border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:background var(--t-fast)}
+.ship-alert:hover{background:var(--light)}
+.ship-alert.unread{border-color:var(--orange);box-shadow:inset 0 0 0 1px var(--orange),0 2px 8px rgba(255,107,0,.12)}
+.ship-alert-thumb{width:48px;height:48px;border-radius:10px;object-fit:cover;flex-shrink:0}
+.ship-alert-ic{width:48px;height:48px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;background:rgba(0,184,148,.12)}
+.ship-alert-txt{flex:1;min-width:0}
+.ship-alert-title{font-size:14px;font-weight:700;color:var(--navy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ship-alert-meta{font-size:12px;color:var(--gray);margin-top:2px}
+.ship-alert-btn{flex-shrink:0;background:linear-gradient(120deg,var(--orange),var(--pink));color:#fff;border:0;border-radius:var(--r-pill);padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer}
+
 /* ============== TIMESHEET MODAL ============== */
 .timesheet-modal{position:fixed;inset:0;z-index:9000;background:rgba(20,20,30,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;animation:fadeUp .25s ease-out}
 .timesheet-modal .panel{background:#fff;border-radius:24px;padding:24px;max-width:540px;width:100%;box-shadow:var(--shadow-lg);margin:auto}
@@ -6195,35 +6207,78 @@ function renderStockView(body){
 }
 
 function renderAlertsView(body){
-  const list = el('div',{class:'alerts-list'});
+  const taskAlerts = (typeof getTaskAlerts === 'function') ? getTaskAlerts() : [];
   const entries = [];
   for(const k in State.unread){
     const ct = State.unread[k] || 0;
     if(ct > 0) entries.push({channelId:k, ct});
   }
-  if(!entries.length){
+
+  if(!taskAlerts.length && !entries.length){
     body.appendChild(el('div',{class:'alerts-empty'}, t('app.alerts_view.empty')));
+    try { markTaskAlertsRead(); refreshAlerts(); } catch(e){}
     return;
   }
-  entries.sort((a,b) => b.ct - a.ct);
-  for(const e of entries){
-    const msgs = State.messages[e.channelId] || [];
-    const last = msgs[msgs.length-1];
-    const preview = last ? `${last.name}: ${textPreview(last)}` : '';
-    list.appendChild(el('div',{
-      class:'alert-row',
-      onclick:()=>{
-        setView('channel');
-        try { switchChannel(e.channelId); } catch {}
-      },
-    },
-      el('span',{class:'em'}, '#'),
-      el('div',{class:'nm'}, e.channelId),
-      el('div',{class:'preview'}, preview),
-      el('div',{class:'ct'}, String(e.ct)),
-    ));
+
+  // ── Task-completion alerts: a staff member finished a tracked task. The
+  //    manager can verify the end photo or walk to the zone. Newest first. ──
+  if(taskAlerts.length){
+    body.appendChild(el('div',{class:'ship-alert-head'}, shipT('app.ship.alert_completions','Task completions')));
+    const tlist = el('div');
+    for(const a of taskAlerts){
+      const card = el('div',{class:'ship-alert' + (a.read ? '' : ' unread')});
+      if(a.photo){
+        card.appendChild(el('img',{class:'ship-alert-thumb', src:a.photo, alt:'',
+          onclick:e=>{ e.stopPropagation(); try{ showPhotoLightbox(a.photo); }catch(err){} }}));
+      } else {
+        card.appendChild(el('div',{class:'ship-alert-ic'}, '✅'));
+      }
+      const txt = el('div',{class:'ship-alert-txt'});
+      txt.appendChild(el('div',{class:'ship-alert-title'}, a.title));
+      const bits = [];
+      if(a.by) bits.push(a.by);
+      if(a.duration_min != null) bits.push('⏱ ' + (a.duration_min < 60 ? a.duration_min + ' min' : fmtDuration(a.duration_min)));
+      if(a.zone) bits.push('📍 ' + a.zone);
+      txt.appendChild(el('div',{class:'ship-alert-meta'}, bits.join(' · ')));
+      card.appendChild(txt);
+      if(a.photo){
+        card.appendChild(el('button',{class:'ship-alert-btn',
+          onclick:e=>{ e.stopPropagation(); try{ showPhotoLightbox(a.photo); }catch(err){} }},
+          shipT('app.ship.alert_view_photo','📷 Verify')));
+      }
+      // Tap the card → open the task fiche for the full picture.
+      card.addEventListener('click', () => {
+        const tk = getTasks().find(x => x.id === a.taskId);
+        if(tk) showShipFiche(tk);
+      });
+      tlist.appendChild(card);
+    }
+    body.appendChild(tlist);
   }
-  body.appendChild(list);
+
+  // ── Channel unread (existing chat alerts) ──
+  if(entries.length){
+    entries.sort((a,b) => b.ct - a.ct);
+    const list = el('div',{class:'alerts-list'});
+    for(const e of entries){
+      const msgs = State.messages[e.channelId] || [];
+      const last = msgs[msgs.length-1];
+      const preview = last ? `${last.name}: ${textPreview(last)}` : '';
+      list.appendChild(el('div',{
+        class:'alert-row',
+        onclick:()=>{ setView('channel'); try { switchChannel(e.channelId); } catch {} },
+      },
+        el('span',{class:'em'}, '#'),
+        el('div',{class:'nm'}, e.channelId),
+        el('div',{class:'preview'}, preview),
+        el('div',{class:'ct'}, String(e.ct)),
+      ));
+    }
+    body.appendChild(list);
+  }
+
+  // Viewing the Alerts tab clears the task-completion badge.
+  try { markTaskAlertsRead(); refreshAlerts(); } catch(e){}
 }
 
 /* Hook the back arrow in the content-view header. Smart back-target:
@@ -6822,6 +6877,7 @@ function persistMessages(){
 function refreshAlerts(){
   let total = 0;
   for(const k in State.unread) total += State.unread[k]||0;
+  try { total += unreadTaskAlerts(); } catch(e){}
   // Only #rail-alerts exists now (#tab-alerts was on the removed mobile-tabs).
   const badge = $('#rail-alerts');
   if(!badge) return;
@@ -9459,6 +9515,16 @@ function setTaskExec(taskId, date, patch){
   lsSet(_hkey('staylo_task_exec'), all);
   return all[k];
 }
+/* Task-completion alerts — when a staff member ends a tracked task, push a
+ * notification here so the manager sees it in the Alerts tab (with the end
+ * photo + location to verify or walk over). Newest first, capped at 50.
+ * Demo-local (single localStorage); in production these'd target managers. */
+function getTaskAlerts(){ return lsGet(_hkey('staylo_task_alerts'), []); }
+function saveTaskAlerts(a){ lsSet(_hkey('staylo_task_alerts'), a); }
+function pushTaskAlert(a){ const all = getTaskAlerts(); all.unshift(a); saveTaskAlerts(all.slice(0,50)); try{ refreshAlerts(); }catch(e){} }
+function updateTaskAlert(id, patch){ const all = getTaskAlerts(); const x = all.find(z=>z.id===id); if(x){ Object.assign(x, patch); saveTaskAlerts(all); } }
+function unreadTaskAlerts(){ return getTaskAlerts().filter(a=>!a.read).length; }
+function markTaskAlertsRead(){ const all = getTaskAlerts(); let ch=false; for(const a of all){ if(!a.read){ a.read=true; ch=true; } } if(ch) saveTaskAlerts(all); }
 function upsertTask(t){
   const all = getTasks();
   if(!t.id){
@@ -19161,13 +19227,18 @@ function showShipFiche(tk){
   overlay.appendChild(foot);
   const isDone = () => !!(tk.completions && tk.completions[today]);
   const fmtMin = (m) => (m < 60 ? `${m} min` : fmtDuration(m));
+  let _lastAlertId = null;   // the manager alert raised when this task ended
 
   // Hidden camera/file input — opened to capture the end-of-task photo.
   const photoInput = el('input',{type:'file', accept:'image/*', capture:'environment', style:'display:none'});
   photoInput.addEventListener('change', async () => {
     const f = photoInput.files && photoInput.files[0]; photoInput.value = ''; if(!f) return;
     const data = await shipDownscaleImage(f, 1024);
-    if(data){ setTaskExec(tk.id, today, { photo: data }); repaintFoot(); }
+    if(data){
+      setTaskExec(tk.id, today, { photo: data });
+      if(_lastAlertId) updateTaskAlert(_lastAlertId, { photo: data });   // attach to the manager alert
+      repaintFoot();
+    }
   });
   overlay.appendChild(photoInput);
 
@@ -19232,6 +19303,17 @@ function showShipFiche(tk){
         // re-parsed storage copy, not this object), so isDone() reflects it.
         tk.completions = tk.completions || {};
         tk.completions[today] = { by: (State.user && State.user.name) || '', at: new Date(ended).toISOString() };
+        // Notify the manager (Alerts tab) — they can verify the end photo or
+        // walk to the zone without waiting. Photo attaches once captured.
+        _lastAlertId = 'ta-' + ended + '-' + Math.random().toString(36).slice(2,6);
+        pushTaskAlert({ id:_lastAlertId, taskId:tk.id, title:tk.title, by:(State.user&&State.user.name)||'',
+          date:today, duration_min, zone:tk.zone||'', recipe_id:tk.recipe_id||'', photo:null, ts:ended, read:false });
+        try {
+          if(typeof Notification!=='undefined' && Notification.permission==='granted'){
+            new Notification('✅ ' + shipT('app.ship.alert_task_done','Task completed'),
+              { body: `${tk.title} — ${(State.user&&State.user.name)||''} · ${fmtMin(duration_min)}` });
+          }
+        } catch(e){}
         repaintFoot();
         photoInput.click();   // prompt for the end photo right away
       });

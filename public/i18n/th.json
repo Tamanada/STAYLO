@@ -3962,7 +3962,10 @@
       "end_task": "จบงาน",
       "completed_in": "เสร็จใน {dur}",
       "add_end_photo": "📷 เพิ่มรูปตอนจบงาน",
-      "fullscreen": "เต็มจอ"
+      "fullscreen": "เต็มจอ",
+      "alert_task_done": "งานเสร็จแล้ว",
+      "alert_completions": "งานที่เสร็จ",
+      "alert_view_photo": "📷 ตรวจสอบ"
     }
   },
   "verify": {
