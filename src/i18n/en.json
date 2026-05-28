@@ -3322,7 +3322,8 @@
       "weekday_fri": "Friday",
       "weekday_sat": "Saturday",
       "weekday_sun": "Sunday",
-      "track_exec": "Time this task (Start / End + photo)"
+      "track_exec": "Time this task (Start / End + photo)",
+      "track_exec_hint": "Staff must Start & End it and snap a photo — you get notified."
     },
     "tasks_tab": {
       "date_label": "📅 Tasks for",

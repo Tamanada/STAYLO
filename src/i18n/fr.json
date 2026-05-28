@@ -3866,7 +3866,8 @@
       "weekday_fri": "Vendredi",
       "weekday_sat": "Samedi",
       "weekday_sun": "Dimanche",
-      "track_exec": "Chronométrer cette tâche (Démarrer / Terminer + photo)"
+      "track_exec": "Chronométrer cette tâche (Démarrer / Terminer + photo)",
+      "track_exec_hint": "Le staff doit la démarrer, la terminer et prendre une photo — vous êtes notifié."
     },
     "tasks_tab": {
       "date_label": "📅 Tâches du",
