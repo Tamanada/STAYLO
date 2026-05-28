@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 760" role="img" aria-label="STAYLO SHIP — Staylo Hotelier In-Pocket">
+  <defs>
+    <linearGradient id="shipLogoGrad" x1="0" y1="0" x2="1024" y2="760" gradientUnits="userSpaceOnUse">
+      <stop offset="0"    stop-color="#FF6B00"/>
+      <stop offset="0.45" stop-color="#FF1F70"/>
+      <stop offset="1"    stop-color="#7E22CE"/>
+    </linearGradient>
+  </defs>
+
+  <g fill="url(#shipLogoGrad)">
+    <!-- Mainsail — tall, pointed top, curved leech, leaning into the wind -->
+    <path d="M 452 64
+             L 470 392
+             L 332 392
+             C 366 256 404 156 452 64 Z"/>
+
+    <!-- Jib (foresail) — shorter, to the right; thin white mast gap between -->
+    <path d="M 580 116
+             L 660 392
+             L 504 392
+             C 530 296 552 202 580 116 Z"/>
+
+    <!-- Hull — long pointed crescent that sweeps to sharp tips both sides -->
+    <path d="M 60 600
+             C 256 560 410 578 512 606
+             C 614 578 768 560 964 600
+             C 826 706 620 728 512 710
+             C 404 728 198 706 60 600 Z"/>
+  </g>
+
+  <!-- SHIP wordmark — heavy italic, sits in the band between sails and hull -->
+  <text x="512" y="552"
+        text-anchor="middle"
+        font-family="'Arial Black', 'Helvetica Neue', Helvetica, Arial, sans-serif"
+        font-weight="900"
+        font-style="italic"
+        font-size="188"
+        letter-spacing="-6"
+        fill="url(#shipLogoGrad)">SHIP</text>
+</svg>
