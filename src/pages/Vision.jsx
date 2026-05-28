@@ -55,13 +55,16 @@ const phases = [
   },
 ]
 
-const benefitIcons = {
-  lowest_commission: Shield,
-  revenue_share: Sparkles,
-  governance: Vote,
-  guest_relationships: Users,
-  badge: BadgeCheck,
-}
+const foundingBenefits = [
+  { key: 'lowest_commission',  icon: Shield,     text: 'Locked-in lowest commission rate forever' },
+  { key: 'revenue_share',      icon: Sparkles,   text: 'Share of platform revenue proportional to contribution' },
+  { key: 'governance',         icon: Vote,       text: 'Vote on platform decisions and feature priorities' },
+  { key: 'guest_relationships',icon: Users,      text: 'Direct Guest Relationships — Keep your guest data and build loyalty' },
+  { key: 'badge',              icon: BadgeCheck, text: 'Founding Member badge on your property listing' },
+  // SHIP — the operational app, free for Founding Partners. Uses the SHIP
+  // logo tile as its icon instead of a generic glyph.
+  { key: 'ship', iconSrc: '/SHIP_LOGO.png',      text: 'STAYLO Ship (SHIP) — the full operational app, free for life. Run your whole hotel from your pocket.' },
+]
 
 const faqKeys = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']
 
@@ -1117,15 +1120,19 @@ export default function Vision() {
           </h2>
           <div className="grid sm:grid-cols-2 gap-5">
             {(() => {
-              const palette = ['#FF6B00', '#FF3CB4', '#6C5CE7', '#FDCB6E', '#00B894']
-              return Object.entries(benefitIcons).map(([key, Icon], i) => {
+              const palette = ['#FF6B00', '#FF3CB4', '#6C5CE7', '#FDCB6E', '#00B894', '#FF6B00']
+              return foundingBenefits.map((b, i) => {
                 const color = palette[i % palette.length]
                 return (
-                  <Card key={key} className="p-6 flex items-center gap-4 card-hover" style={{ borderColor: color + '33' }}>
-                    <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '1A' }}>
-                      <Icon size={26} style={{ color }} />
-                    </div>
-                    <p className="text-base sm:text-lg text-gray-700 leading-relaxed font-medium">{t(`vision.founding_benefits.${key}`)}</p>
+                  <Card key={b.key} className="p-6 flex items-center gap-4 card-hover" style={{ borderColor: color + '33' }}>
+                    {b.iconSrc ? (
+                      <img src={b.iconSrc} alt="" className="w-14 h-14 rounded-xl shrink-0 object-cover object-center shadow-sm" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '1A' }}>
+                        <b.icon size={26} style={{ color }} />
+                      </div>
+                    )}
+                    <p className="text-base sm:text-lg text-gray-700 leading-relaxed font-medium">{t(`vision.founding_benefits.${b.key}`, b.text)}</p>
                   </Card>
                 )
               })
