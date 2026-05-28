@@ -364,6 +364,151 @@ export default function Vision() {
         </div>
       </section>
 
+      {/* Roadmap — horizontal timeline with click-to-expand popup
+          Background: UnVoyage.png (dreamy night-voyage painting) — the
+          journey metaphor pairs naturally with a phased roadmap. White
+          phase cards float as jewels above the dark artwork. */}
+      <section className="py-12 sm:py-16 relative overflow-hidden">
+        <img
+          src="/UnVoyage.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Light scrim — the painting is already dark, so we just nudge
+            the contrast a touch to ensure the title and subtitle read */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+          <h2
+            className="text-3xl sm:text-4xl font-bold text-white text-center mb-3"
+            style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+          >
+            {t('vision.roadmap_title', 'Roadmap')}
+          </h2>
+          <p
+            className="text-center text-white mb-10 max-w-2xl mx-auto text-sm sm:text-base font-medium"
+            style={{ textShadow: '0 2px 10px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}
+          >
+            {t('vision.roadmap_subtitle', 'Click any step to see what we ship and when.')}
+          </p>
+
+          <div className="relative">
+            {/* Connecting line behind the cards — brand-gradient bar, desktop only */}
+            <div
+              className="hidden md:block absolute top-9 left-[8%] right-[8%] h-1 rounded-full opacity-40 pointer-events-none"
+              style={{ background: 'linear-gradient(90deg, #FF6B00, #F7931A, #FF3CB4, #6C5CE7, #FDCB6E, #FF3CB4)' }}
+            />
+
+            {/* Horizontal scroll on mobile, even grid on desktop (7 cards).
+                items-start keeps every card top-aligned, so the logo tiles
+                line up across the row even though the SHIP card is taller
+                (it carries the "by STAYLO" byline). */}
+            <div className="flex items-stretch md:grid md:grid-cols-7 md:items-stretch gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
+              {phases.map((phase, i) => (
+                <button
+                  key={phase.key}
+                  type="button"
+                  onClick={() => setOpenPhase(phase)}
+                  className={`relative flex-shrink-0 w-[180px] md:w-auto snap-start flex flex-col items-center text-center bg-white/[0.66] backdrop-blur-md rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer ${
+                    i === 0
+                      ? 'border-libre/50 shadow-lg shadow-libre/15 hover:shadow-xl hover:bg-white/80 hover:-translate-y-1'
+                      : 'border-white/50 hover:border-white/70 hover:bg-white/80 hover:shadow-xl hover:-translate-y-1'
+                  }`}
+                >
+                  {/* Icon tile sits ON the connecting line at the top.
+                      For phases that supply a brand-tile iconSrc (e.g. STAYLO Ship),
+                      render the SVG full-tile — its rounded-square brand gradient
+                      is already baked in, so we skip the gradient wrapper. */}
+                  {phase.iconSrc ? (
+                    <img
+                      src={phase.iconSrc}
+                      alt={phase.title}
+                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl shadow-md mb-3 block object-cover object-center"
+                    />
+                  ) : (
+                    <div className={`relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center shadow-md mb-3`}>
+                      <phase.icon size={24} className="text-white" />
+                    </div>
+                  )}
+                  <h3 className="text-sm sm:text-base font-extrabold text-deep mb-0.5 line-clamp-1 tracking-tight">
+                    {t(`vision.${phase.key}`, phase.title)}
+                  </h3>
+                  {phase.byline && (
+                    <p className="text-[10px] text-gray-500 font-semibold mb-1.5 -mt-0.5">{phase.byline}</p>
+                  )}
+                  <div className="flex items-center justify-center mb-1.5 mt-auto pt-2">
+                    <Badge variant={i === 0 ? 'green' : 'gray'} className="text-[10px]">
+                      {phase.status}
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-gray-600 font-medium">{phase.timeline}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Popup modal — opens when a phase card is clicked */}
+        {openPhase && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+            onClick={() => setOpenPhase(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="phase-modal-title"
+          >
+            <div
+              className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                ref={phaseCloseRef}
+                type="button"
+                onClick={() => setOpenPhase(null)}
+                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+
+              {openPhase.iconSrc ? (
+                <img
+                  src={openPhase.iconSrc}
+                  alt={openPhase.title}
+                  className="w-16 h-16 rounded-2xl shadow-lg mb-4 block"
+                />
+              ) : (
+                <div className={`w-16 h-16 bg-gradient-to-br ${openPhase.gradient} rounded-2xl flex items-center justify-center shadow-lg mb-4`}>
+                  <openPhase.icon size={32} className="text-white" />
+                </div>
+              )}
+
+              <h3 id="phase-modal-title" className="text-2xl sm:text-3xl font-extrabold text-deep mb-0.5 tracking-tight">
+                {t(`vision.${openPhase.key}`, openPhase.title)}
+              </h3>
+              {openPhase.byline && (
+                <p className="text-sm text-gray-500 font-semibold mb-2">{openPhase.byline}</p>
+              )}
+
+              <div className="flex items-center gap-2 mb-5">
+                <Badge variant={openPhase.timeline === 'Now' ? 'green' : 'gray'} className="text-xs">
+                  {openPhase.status}
+                </Badge>
+                <span className="text-sm text-gray-500 font-medium">{openPhase.timeline}</span>
+              </div>
+
+              <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 font-medium">
+                {t(`vision.${openPhase.key}_desc`, openPhase.desc)}
+              </p>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                {t(`vision.${openPhase.key}_long`, openPhase.long)}
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
+
       {/* Fund Allocation — Founders, discover how you will invest in STAYLO
           ────────────────────────────────────────────────────────────────
           Each row in the allocation table expands inline to reveal a
@@ -971,151 +1116,6 @@ export default function Vision() {
             </div>
           </Card>
         </div>
-      </section>
-
-      {/* Roadmap — horizontal timeline with click-to-expand popup
-          Background: UnVoyage.png (dreamy night-voyage painting) — the
-          journey metaphor pairs naturally with a phased roadmap. White
-          phase cards float as jewels above the dark artwork. */}
-      <section className="py-12 sm:py-16 relative overflow-hidden">
-        <img
-          src="/UnVoyage.png"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
-        {/* Light scrim — the painting is already dark, so we just nudge
-            the contrast a touch to ensure the title and subtitle read */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
-
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
-          <h2
-            className="text-3xl sm:text-4xl font-bold text-white text-center mb-3"
-            style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
-          >
-            {t('vision.roadmap_title', 'Roadmap')}
-          </h2>
-          <p
-            className="text-center text-white mb-10 max-w-2xl mx-auto text-sm sm:text-base font-medium"
-            style={{ textShadow: '0 2px 10px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}
-          >
-            {t('vision.roadmap_subtitle', 'Click any step to see what we ship and when.')}
-          </p>
-
-          <div className="relative">
-            {/* Connecting line behind the cards — brand-gradient bar, desktop only */}
-            <div
-              className="hidden md:block absolute top-9 left-[8%] right-[8%] h-1 rounded-full opacity-40 pointer-events-none"
-              style={{ background: 'linear-gradient(90deg, #FF6B00, #F7931A, #FF3CB4, #6C5CE7, #FDCB6E, #FF3CB4)' }}
-            />
-
-            {/* Horizontal scroll on mobile, even grid on desktop (7 cards).
-                items-start keeps every card top-aligned, so the logo tiles
-                line up across the row even though the SHIP card is taller
-                (it carries the "by STAYLO" byline). */}
-            <div className="flex items-stretch md:grid md:grid-cols-7 md:items-stretch gap-3 overflow-x-auto pb-4 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory">
-              {phases.map((phase, i) => (
-                <button
-                  key={phase.key}
-                  type="button"
-                  onClick={() => setOpenPhase(phase)}
-                  className={`relative flex-shrink-0 w-[180px] md:w-auto snap-start flex flex-col items-center text-center bg-white/[0.66] backdrop-blur-md rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer ${
-                    i === 0
-                      ? 'border-libre/50 shadow-lg shadow-libre/15 hover:shadow-xl hover:bg-white/80 hover:-translate-y-1'
-                      : 'border-white/50 hover:border-white/70 hover:bg-white/80 hover:shadow-xl hover:-translate-y-1'
-                  }`}
-                >
-                  {/* Icon tile sits ON the connecting line at the top.
-                      For phases that supply a brand-tile iconSrc (e.g. STAYLO Ship),
-                      render the SVG full-tile — its rounded-square brand gradient
-                      is already baked in, so we skip the gradient wrapper. */}
-                  {phase.iconSrc ? (
-                    <img
-                      src={phase.iconSrc}
-                      alt={phase.title}
-                      className="relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-2xl shadow-md mb-3 block object-cover object-center"
-                    />
-                  ) : (
-                    <div className={`relative z-10 w-12 h-12 sm:w-14 sm:h-14 mx-auto bg-gradient-to-br ${phase.gradient} rounded-2xl flex items-center justify-center shadow-md mb-3`}>
-                      <phase.icon size={24} className="text-white" />
-                    </div>
-                  )}
-                  <h3 className="text-sm sm:text-base font-extrabold text-deep mb-0.5 line-clamp-1 tracking-tight">
-                    {t(`vision.${phase.key}`, phase.title)}
-                  </h3>
-                  {phase.byline && (
-                    <p className="text-[10px] text-gray-500 font-semibold mb-1.5 -mt-0.5">{phase.byline}</p>
-                  )}
-                  <div className="flex items-center justify-center mb-1.5 mt-auto pt-2">
-                    <Badge variant={i === 0 ? 'green' : 'gray'} className="text-[10px]">
-                      {phase.status}
-                    </Badge>
-                  </div>
-                  <p className="text-[11px] text-gray-600 font-medium">{phase.timeline}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Popup modal — opens when a phase card is clicked */}
-        {openPhase && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
-            onClick={() => setOpenPhase(null)}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="phase-modal-title"
-          >
-            <div
-              className="relative bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                ref={phaseCloseRef}
-                type="button"
-                onClick={() => setOpenPhase(null)}
-                className="absolute top-3 right-3 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"
-                aria-label="Close"
-              >
-                <X size={18} />
-              </button>
-
-              {openPhase.iconSrc ? (
-                <img
-                  src={openPhase.iconSrc}
-                  alt={openPhase.title}
-                  className="w-16 h-16 rounded-2xl shadow-lg mb-4 block"
-                />
-              ) : (
-                <div className={`w-16 h-16 bg-gradient-to-br ${openPhase.gradient} rounded-2xl flex items-center justify-center shadow-lg mb-4`}>
-                  <openPhase.icon size={32} className="text-white" />
-                </div>
-              )}
-
-              <h3 id="phase-modal-title" className="text-2xl sm:text-3xl font-extrabold text-deep mb-0.5 tracking-tight">
-                {t(`vision.${openPhase.key}`, openPhase.title)}
-              </h3>
-              {openPhase.byline && (
-                <p className="text-sm text-gray-500 font-semibold mb-2">{openPhase.byline}</p>
-              )}
-
-              <div className="flex items-center gap-2 mb-5">
-                <Badge variant={openPhase.timeline === 'Now' ? 'green' : 'gray'} className="text-xs">
-                  {openPhase.status}
-                </Badge>
-                <span className="text-sm text-gray-500 font-medium">{openPhase.timeline}</span>
-              </div>
-
-              <p className="text-sm sm:text-base text-gray-700 leading-relaxed mb-3 font-medium">
-                {t(`vision.${openPhase.key}_desc`, openPhase.desc)}
-              </p>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                {t(`vision.${openPhase.key}_long`, openPhase.long)}
-              </p>
-            </div>
-          </div>
-        )}
       </section>
 
       {/* Founding benefits — brand palette cycle */}
