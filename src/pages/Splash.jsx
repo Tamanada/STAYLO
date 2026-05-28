@@ -133,20 +133,6 @@ export default function Splash() {
           </Link>
         </div>
 
-        {/* Bottom shoreline — hand-drawn wave edge */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full" preserveAspectRatio="none" style={{ height: '80px', pointerEvents: 'none' }}>
-            <path
-              d="M0 58 C40 52 90 60 150 54 C210 48 270 56 340 50 C410 44 470 58 540 52 C610 46 670 54 740 48 C810 42 870 56 940 50 C1010 44 1070 52 1140 48 C1210 44 1280 54 1360 50 L1440 52 V100 H0 Z"
-              fill="var(--color-cream, #FFFCF5)"
-              opacity="0.4"
-            />
-            <path
-              d="M0 42 C70 50 150 56 250 48 C350 40 450 54 560 46 C670 38 770 50 880 44 C990 38 1090 48 1200 42 C1310 36 1380 46 1440 44 V100 H0 Z"
-              fill="var(--color-cream, #FFFCF5)"
-            />
-          </svg>
-        </div>
       </section>
 
       {/* ==================== SECTION 2: WHAT YOU CAN DO RIGHT NOW ==================== */}
