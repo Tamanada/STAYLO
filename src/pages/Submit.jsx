@@ -481,7 +481,7 @@ export default function Submit() {
             className="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-4 tracking-tight"
             style={{ textShadow: '0 2px 18px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.95)' }}
           >
-            {t('property.title', 'List Your Property')}
+            {t('property.title', 'Your Property. Your Platform.')}
           </h1>
           <p
             className="text-lg sm:text-xl lg:text-2xl text-white font-medium max-w-xl mx-auto leading-relaxed"

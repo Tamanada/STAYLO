@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Hotel, UtensilsCrossed, Compass, Plane, Globe, ArrowRight, Shield, Vote, Sparkles, BadgeCheck, Rocket, TrendingUp, PieChart, Users, Building2, Lock, DollarSign, Target, ChevronDown, ChevronUp, Search, Megaphone, Coins, FileText, FileCheck, CreditCard, MapPin, Scale, Wallet, X, Smartphone } from 'lucide-react'
@@ -80,6 +80,19 @@ export default function Vision() {
   const [expandedAlloc, setExpandedAlloc] = useState(null)
   // Roadmap popup: which phase is the user inspecting (null = closed)
   const [openPhase, setOpenPhase] = useState(null)
+  const phaseCloseRef = useRef(null)
+
+  // Roadmap modal a11y: close on Escape, and move focus to the close
+  // button when it opens so keyboard / screen-reader users aren't left
+  // behind the dialog.
+  useEffect(() => {
+    if (!openPhase) return
+    const onKey = (e) => { if (e.key === 'Escape') setOpenPhase(null) }
+    window.addEventListener('keydown', onKey)
+    phaseCloseRef.current?.focus()
+    return () => window.removeEventListener('keydown', onKey)
+  }, [openPhase])
+
   const totalAlphaShares = 3000
   const totalShares = 500000
   const sharePrice = 1000
@@ -379,12 +392,14 @@ export default function Vision() {
                   ].map((row) => {
                     const isOpen = expandedAlloc === row.id
                     return (
-                      <>
+                      <Fragment key={row.id}>
                         <tr
-                          key={row.id}
                           className="border-b border-gray-100 cursor-pointer hover:bg-orange/5 transition-colors"
                           onClick={() => setExpandedAlloc(isOpen ? null : row.id)}
+                          role="button"
+                          tabIndex={0}
                           aria-expanded={isOpen}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedAlloc(isOpen ? null : row.id) } }}
                         >
                           <td className="py-3 pr-4 font-medium">
                             <div className="flex items-center gap-2">
@@ -407,7 +422,7 @@ export default function Vision() {
                             </td>
                           </tr>
                         )}
-                      </>
+                      </Fragment>
                     )
                   })}
                   <tr className="border-t-2 border-gray-300 font-black text-deep">
@@ -993,6 +1008,7 @@ export default function Vision() {
               onClick={(e) => e.stopPropagation()}
             >
               <button
+                ref={phaseCloseRef}
                 type="button"
                 onClick={() => setOpenPhase(null)}
                 className="absolute top-3 right-3 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors"

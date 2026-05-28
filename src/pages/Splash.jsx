@@ -19,7 +19,6 @@ export default function Splash() {
   // instead of a hardcoded fallback that lied (was 12). Renders nothing
   // misleading until the real number lands.
   const [partnerCount, setPartnerCount] = useState(0)
-  const [statsLoaded, setStatsLoaded]   = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -37,7 +36,6 @@ export default function Splash() {
           .eq('status', 'live')
         if (!cancelled && typeof count === 'number') setPartnerCount(count)
       }
-      setStatsLoaded(true)
     }
     fetchStats()
     return () => { cancelled = true }
