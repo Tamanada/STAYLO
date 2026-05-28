@@ -18787,7 +18787,7 @@ function renderShipHub(body, title, subtitle){
                : shipT('app.ship.on_break', 'On break · {n} min left', {n: bs.remaining})));
         clockZone.appendChild(el('button',{class:'ship-clock break', onclick:async()=>{
           const ok = await clockEvent(empId,'break_end',shift?.id); if(ok) paintClock();
-        }}, shipT('app.ship.resume', 'Resume shift')));
+        }}, shipT('app.ship.resume', 'End break')));
         return;
       }
       if(bs.state === 'on_shift'){
@@ -18799,12 +18799,15 @@ function renderShipHub(body, title, subtitle){
         clockZone.appendChild(el('button',{class:'ship-clock out', onclick:async()=>{
           const ok = await clockEvent(empId,'out',shift?.id); if(ok) paintClock();
         }}, shipT('app.ship.clock_out', 'Clock out')));
-        if(shift && shift.id && shift.break_skip_status !== 'approved'){
-          const bm = (shift.break_minutes)||60;
+        /* Break punch — available whether or not a shift is planned (ad-hoc
+           clocking still gets a break). Hidden only when a shift has an
+           approved break-skip. */
+        if(!shift || shift.break_skip_status !== 'approved'){
+          const bm = (shift && shift.break_minutes) || 60;
           clockZone.appendChild(el('button',{class:'ship-break-btn', onclick:async()=>{
             if(!confirm(shipT('app.ship.break_confirm', 'Start your {n}-min break now?', {n: bm}))) return;
             const ok = await clockEvent(empId,'break_start',shift?.id); if(ok) paintClock();
-          }}, '🍱 ' + shipT('app.ship.take_break', 'Break')));
+          }}, '🍱 ' + shipT('app.ship.take_break', 'Start break')));
         }
         return;
       }
