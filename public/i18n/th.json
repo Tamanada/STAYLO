@@ -3956,7 +3956,12 @@
       "ingredients": "ส่วนผสม",
       "preparation": "วิธีทำ",
       "allergens": "สารก่อภูมิแพ้",
-      "no_detail": "ไม่มีรายละเอียดเพิ่มเติมสำหรับงานนี้"
+      "no_detail": "ไม่มีรายละเอียดเพิ่มเติมสำหรับงานนี้",
+      "start_task": "เริ่มงาน",
+      "end_task": "จบงาน",
+      "completed_in": "เสร็จใน {dur}",
+      "add_end_photo": "📷 เพิ่มรูปตอนจบงาน",
+      "fullscreen": "เต็มจอ"
     }
   },
   "verify": {

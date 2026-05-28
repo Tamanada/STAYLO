@@ -199,8 +199,12 @@ input,textarea,select{font:inherit;color:inherit;outline:none;border:0;backgroun
 }
 /* SHIP flagship tab — the brand tile reads as an app icon sitting in the rail */
 .rail-btn .ship-rail-icon{
-  width:30px;height:30px;border-radius:9px;display:block;object-fit:cover;
-  box-shadow:0 0 0 1.5px rgba(255,255,255,.55), 0 2px 6px rgba(0,0,0,.3);
+  /* Flagship tab — bigger than the 22px line icons so it pops as the "beau
+     bouton". Negative vertical margins keep the label baseline aligned with
+     the other tabs despite the larger tile. */
+  width:40px;height:40px;border-radius:11px;display:block;object-fit:cover;
+  margin:-6px 0 -3px;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.6), 0 2px 8px rgba(0,0,0,.35);
   transition:transform var(--t-fast);
 }
 .rail-btn.active .ship-rail-icon{transform:scale(1.06)}
@@ -2725,6 +2729,14 @@ body.view-profile .channels-pane{display:none}
 .ship-fiche-done{width:100%;max-width:680px;margin:0 auto;display:block;border:0;border-radius:var(--r-pill);padding:15px;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(120deg,#00B894,#0984E3);cursor:pointer;transition:transform var(--t-fast)}
 .ship-fiche-done:active{transform:translateY(1px)}
 .ship-fiche-done.done{background:var(--teal)}
+.ship-fiche-done.ship-start{background:linear-gradient(120deg,var(--orange),var(--pink))}
+.ship-fiche-done.ship-end{background:linear-gradient(120deg,#E74C3C,#C0392B)}
+.ship-exec-timer{text-align:center;font-size:26px;font-weight:900;color:var(--orange);font-variant-numeric:tabular-nums;margin-bottom:10px;letter-spacing:.5px}
+.ship-exec-done{text-align:center;font-size:15px;font-weight:800;color:var(--teal);margin-bottom:10px}
+.ship-photo-btn{display:block;width:100%;max-width:680px;margin:0 auto;background:var(--light);border:1.5px dashed var(--border);border-radius:var(--r-pill);padding:13px;font-size:15px;font-weight:700;color:var(--gray);cursor:pointer}
+.ship-photo-btn:hover{border-color:var(--orange);color:var(--orange)}
+.ship-exec-photo{display:block;width:100%;max-width:680px;max-height:220px;object-fit:cover;border-radius:14px;margin:0 auto 4px;cursor:pointer}
+.ship-fiche-fs{padding:8px 11px!important;font-size:15px}
 
 /* ============== TIMESHEET MODAL ============== */
 .timesheet-modal{position:fixed;inset:0;z-index:9000;background:rgba(20,20,30,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;animation:fadeUp .25s ease-out}
@@ -9431,6 +9443,19 @@ function recipeTotals(r){
  * ============================================================================ */
 function getTasks(){ return lsGet(_hkey('staylo_tasks'), []); }
 function saveTasks(arr){ lsSet(_hkey('staylo_tasks'), arr); }
+/* Task execution log — Start/End timing + end photo captured from the SHIP
+ * fiche, so the manager can see how long a task took and a photo of the
+ * finished work. Keyed by "taskId|date" → {started_at, ended_at, duration_min,
+ * photo (data URL), by}. Separate from completions[] so the existing
+ * done-detection (=!!completions[date]) is untouched. */
+function getTaskExec(){ return lsGet(_hkey('staylo_task_exec'), {}); }
+function getTaskExecOne(taskId, date){ return getTaskExec()[taskId + '|' + date] || null; }
+function setTaskExec(taskId, date, patch){
+  const all = getTaskExec(); const k = taskId + '|' + date;
+  all[k] = Object.assign({}, all[k], patch);
+  lsSet(_hkey('staylo_task_exec'), all);
+  return all[k];
+}
 function upsertTask(t){
   const all = getTasks();
   if(!t.id){
@@ -17007,6 +17032,23 @@ function renderTasksTab(){
               `📔 ${rec.name}`);
           })(),
           done ? el('span',{class:'chip',style:'background:var(--teal);color:#fff'}, t('app.tasks_tab.done_by').replace('{name}', tk.completions[_tasksDate].by)) : null,
+          // Execution time + end photo captured by staff in the SHIP fiche —
+          // lets the manager evaluate how long the job took and see the result.
+          (() => {
+            if(!done) return null;
+            const ex = getTaskExecOne(tk.id, _tasksDate);
+            if(!ex || (ex.duration_min == null && !ex.photo)) return null;
+            const bits = el('span',{style:'display:contents'});
+            if(ex.duration_min != null){
+              bits.appendChild(el('span',{class:'chip',style:'background:#FFF1E0;color:var(--orange)'},
+                '⏱ ' + (ex.duration_min < 60 ? ex.duration_min + ' min' : fmtDuration(ex.duration_min))));
+            }
+            if(ex.photo){
+              bits.appendChild(el('span',{class:'chip',style:'background:var(--navy);color:#fff;cursor:pointer',
+                onclick:e=>{ e.stopPropagation(); try{ showPhotoLightbox(ex.photo); }catch(err){} }}, '📷'));
+            }
+            return bits;
+          })(),
         ),
       ),
       isMgr ? el('div',{class:'t-actions'},
@@ -18870,7 +18912,13 @@ function renderShipHub(body, title, subtitle){
   /* ---- MY TASKS TODAY ---------------------------------------------- */
   if(emp){
     const tcard = el('div',{class:'ship-card'});
-    const myTasks = tasksAssignedToEmployee(getTasksForDate(today), emp);
+    // Urgent first, then high, then normal — within a tier, earliest due_time first.
+    const _prioRank = { urgent: 0, high: 1, normal: 2 };
+    const myTasks = tasksAssignedToEmployee(getTasksForDate(today), emp)
+      .slice()
+      .sort((a, b) =>
+        ((_prioRank[a.priority] ?? 2) - (_prioRank[b.priority] ?? 2)) ||
+        ((a.due_time || '99:99').localeCompare(b.due_time || '99:99')));
     tcard.appendChild(el('div',{class:'ship-card-h'},
       shipT('app.ship.my_tasks', 'My tasks') + (myTasks.length ? ` (${myTasks.length})` : '')));
     if(!myTasks.length){
@@ -18949,6 +18997,23 @@ async function shipAcquireWakeLock(){
   return false;
 }
 async function shipReleaseWakeLock(){ try { if(_wakeLock){ await _wakeLock.release(); } } catch(e){} _wakeLock = null; }
+/* Downscale a camera/photo file to a JPEG data URL (keeps localStorage light). */
+function shipDownscaleImage(file, maxPx){
+  return new Promise(resolve => {
+    const img = new Image(); const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if(w > h && w > maxPx){ h = Math.round(h * maxPx / w); w = maxPx; }
+      else if(h > maxPx){ w = Math.round(w * maxPx / h); h = maxPx; }
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      try { resolve(c.toDataURL('image/jpeg', 0.72)); } catch(e){ resolve(null); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(null); };
+    img.src = url;
+  });
+}
 
 function showShipFiche(tk){
   const ex = document.getElementById('ship-fiche'); if(ex) ex.remove();
@@ -18956,6 +19021,8 @@ function showShipFiche(tk){
   const today = new Date().toISOString().slice(0,10);
 
   const overlay = el('div',{class:'ship-fiche', id:'ship-fiche'});
+  let _execTick = null;
+  const clearExecTick = () => { if(_execTick){ clearInterval(_execTick); _execTick = null; } };
 
   // ── visibility re-acquire (wake lock drops when the tab is backgrounded) ──
   const onVis = () => { if(document.visibilityState === 'visible' && _ficheWakeWanted) shipAcquireWakeLock(); };
@@ -18963,7 +19030,9 @@ function showShipFiche(tk){
 
   const close = async () => {
     _ficheWakeWanted = false;
+    clearExecTick();
     await shipReleaseWakeLock();
+    try { if(document.fullscreenElement) await document.exitFullscreen(); } catch(e){}
     document.removeEventListener('visibilitychange', onVis);
     overlay.remove();
     // Reflect any completion toggled inside the fiche back in the hub list.
@@ -18988,6 +19057,17 @@ function showShipFiche(tk){
       }
     });
     head.appendChild(wakeBtn);
+  }
+  // ── true fullscreen (hide browser chrome) — handy hands-free at the stove ──
+  if(overlay.requestFullscreen){
+    const fsBtn = el('button',{class:'ship-fiche-wake ship-fiche-fs', type:'button', title: shipT('app.ship.fullscreen','Fullscreen')}, '⛶');
+    fsBtn.addEventListener('click', async () => {
+      try {
+        if(!document.fullscreenElement){ await overlay.requestFullscreen(); fsBtn.classList.add('on'); }
+        else { await document.exitFullscreen(); fsBtn.classList.remove('on'); }
+      } catch(e){}
+    });
+    head.appendChild(fsBtn);
   }
   overlay.appendChild(head);
 
@@ -19061,19 +19141,79 @@ function showShipFiche(tk){
 
   overlay.appendChild(body);
 
-  // ── footer: mark done / completed ──
+  // ── footer: Start → live timer → End → end photo (manager evaluation) ──
   const foot = el('div',{class:'ship-fiche-foot'});
-  const isDone = () => !!(tk.completions && tk.completions[today]);
-  const doneBtn = el('button',{class:'ship-fiche-done' + (isDone()?' done':'')},
-    isDone() ? '✓ ' + shipT('app.ship.completed','Completed') : shipT('app.ship.mark_done','Mark done'));
-  doneBtn.addEventListener('click', () => {
-    const next = !isDone();
-    setTaskCompletion(tk.id, today, next);
-    doneBtn.classList.toggle('done', next);
-    doneBtn.textContent = next ? '✓ ' + shipT('app.ship.completed','Completed') : shipT('app.ship.mark_done','Mark done');
-  });
-  foot.appendChild(doneBtn);
   overlay.appendChild(foot);
+  const isDone = () => !!(tk.completions && tk.completions[today]);
+  const fmtMin = (m) => (m < 60 ? `${m} min` : fmtDuration(m));
+
+  // Hidden camera/file input — opened to capture the end-of-task photo.
+  const photoInput = el('input',{type:'file', accept:'image/*', capture:'environment', style:'display:none'});
+  photoInput.addEventListener('change', async () => {
+    const f = photoInput.files && photoInput.files[0]; photoInput.value = ''; if(!f) return;
+    const data = await shipDownscaleImage(f, 1024);
+    if(data){ setTaskExec(tk.id, today, { photo: data }); repaintFoot(); }
+  });
+  overlay.appendChild(photoInput);
+
+  function photoBtn(){
+    const b = el('button',{class:'ship-photo-btn'}, shipT('app.ship.add_end_photo', '📷 Add end photo'));
+    b.addEventListener('click', () => photoInput.click());
+    return b;
+  }
+
+  function repaintFoot(){
+    clearExecTick();
+    foot.innerHTML = '';
+    const exec = getTaskExecOne(tk.id, today);
+
+    if(isDone()){
+      const dur = exec && exec.duration_min != null ? exec.duration_min : null;
+      foot.appendChild(el('div',{class:'ship-exec-done'},
+        '✓ ' + (dur != null ? shipT('app.ship.completed_in','Completed in {dur}',{dur:fmtMin(dur)}) : shipT('app.ship.completed','Completed'))));
+      if(exec && exec.photo){
+        foot.appendChild(el('img',{class:'ship-exec-photo', src:exec.photo, alt:'', onclick:()=>{ try{ showPhotoLightbox(exec.photo); }catch(e){} }}));
+      } else {
+        foot.appendChild(photoBtn());
+      }
+      return;
+    }
+
+    if(exec && exec.started_at && !exec.ended_at){
+      // in progress — live MM:SS timer + End button
+      const timer = el('div',{class:'ship-exec-timer'}, '⏱ 00:00');
+      foot.appendChild(timer);
+      const tick = () => {
+        const s = Math.max(0, Math.floor((Date.now() - exec.started_at) / 1000));
+        timer.textContent = '⏱ ' + String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+      };
+      tick(); _execTick = setInterval(tick, 1000);
+      const endBtn = el('button',{class:'ship-fiche-done ship-end'}, '■ ' + shipT('app.ship.end_task','End task'));
+      endBtn.addEventListener('click', () => {
+        const ended = Date.now();
+        const duration_min = Math.max(0, Math.round((ended - exec.started_at) / 60000));
+        setTaskExec(tk.id, today, { ended_at: ended, duration_min });
+        setTaskCompletion(tk.id, today, true);
+        // Keep our in-memory task ref in sync (setTaskCompletion writes to a
+        // re-parsed storage copy, not this object), so isDone() reflects it.
+        tk.completions = tk.completions || {};
+        tk.completions[today] = { by: (State.user && State.user.name) || '', at: new Date(ended).toISOString() };
+        repaintFoot();
+        photoInput.click();   // prompt for the end photo right away
+      });
+      foot.appendChild(endBtn);
+      return;
+    }
+
+    // not started
+    const startBtn = el('button',{class:'ship-fiche-done ship-start'}, '▶ ' + shipT('app.ship.start_task','Start task'));
+    startBtn.addEventListener('click', () => {
+      setTaskExec(tk.id, today, { started_at: Date.now(), by: (State.user && State.user.name) || '' });
+      repaintFoot();
+    });
+    foot.appendChild(startBtn);
+  }
+  repaintFoot();
 
   document.body.appendChild(overlay);
 }

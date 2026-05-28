@@ -4430,7 +4430,12 @@
       "ingredients": "Ingrédients",
       "preparation": "Préparation",
       "allergens": "Allergènes",
-      "no_detail": "Pas de détails supplémentaires pour cette tâche."
+      "no_detail": "Pas de détails supplémentaires pour cette tâche.",
+      "start_task": "Démarrer la tâche",
+      "end_task": "Terminer la tâche",
+      "completed_in": "Terminé en {dur}",
+      "add_end_photo": "📷 Ajouter une photo de fin",
+      "fullscreen": "Plein écran"
     }
   },
   "verify": {

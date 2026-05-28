@@ -3954,7 +3954,12 @@
       "ingredients": "Ingredients",
       "preparation": "Preparation",
       "allergens": "Allergens",
-      "no_detail": "No extra details for this task."
+      "no_detail": "No extra details for this task.",
+      "start_task": "Start task",
+      "end_task": "End task",
+      "completed_in": "Completed in {dur}",
+      "add_end_photo": "📷 Add end photo",
+      "fullscreen": "Fullscreen"
     }
   },
   "verify": {
