@@ -181,13 +181,19 @@ export default function OTASearch() {
     <div className="min-h-screen bg-[#f5f6fa]">
 
       {/* ─── Hero Search — full-screen banner ─── */}
-      <div className="relative overflow-hidden min-h-screen flex flex-col justify-end">
-        {/* STAYLO brand banner as hero background */}
+      {/* Brand gradient backdrop (matches the banner edges) so the
+          object-contain letterboxing blends invisibly — banner never
+          cropped (STAYLO wordmark + KOH PHANGAN both stay intact). */}
+      <div
+        className="relative overflow-hidden min-h-screen flex flex-col justify-end"
+        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
+      >
+        {/* STAYLO brand banner — object-contain, whole banner visible */}
         <img
           src="/bannerSTAYLO.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-contain object-center"
         />
         {/* Soft bottom-gradient overlay only (keep banner art visible at top) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/45" />
