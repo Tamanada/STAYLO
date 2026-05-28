@@ -81,9 +81,9 @@ export default function Splash() {
             letting the artwork breathe (same level as Vision sections) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
 
-        <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center text-white">
+        <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 text-center text-white">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-sm font-semibold mb-8 animate-pulse-glow">
+          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-sm font-semibold mb-5 animate-pulse-glow">
             <Zap size={16} className="text-golden" />
             <span className="text-golden">{t('splash.badge')}</span>
           </div>
@@ -103,7 +103,7 @@ export default function Splash() {
 
           {/* Description */}
           <p
-            className="text-xl sm:text-2xl text-white max-w-2xl mx-auto mb-8 leading-relaxed font-medium"
+            className="text-xl sm:text-2xl text-white max-w-2xl mx-auto mb-6 leading-relaxed font-medium"
             style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
           >
             {t('splash.description')}
