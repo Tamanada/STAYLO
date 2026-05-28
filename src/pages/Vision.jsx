@@ -17,7 +17,7 @@ const phases = [
     long: 'The foundation: book hotels, guesthouses, resorts and bungalows directly through STAYLO. 10% commission for life — versus 22% on Booking.com and Agoda. Hoteliers keep more revenue, guests pay fair prices, and Founding Partners own a piece of the platform itself.',
   },
   {
-    key: 'phase_ship', icon: Smartphone, iconSrc: '/staylo-ship-icon.svg', gradient: 'from-[#00B894] to-[#6C5CE7]', status: 'Alpha', timeline: 'Now',
+    key: 'phase_ship', icon: Smartphone, iconSrc: '/SHIP_LOGO.png', gradient: 'from-[#00B894] to-[#6C5CE7]', status: 'Alpha', timeline: 'Now',
     title: 'STAYLO Ship',
     desc: 'The hotelier dashboard — manage your property from the palm of your hand',
     long: 'SHIP — Staylo Hotelier Integrated Platform. The hotelier-side cockpit: PMS, front desk, channel manager, housekeeping, F&B, payments, staff scheduling, and reporting. Run your whole operation from a smartphone instead of stitching together five different SaaS tools. Free for Founding Partners; low flat monthly fee for everyone else.',
