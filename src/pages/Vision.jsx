@@ -81,6 +81,9 @@ export default function Vision() {
   // Roadmap popup: which phase is the user inspecting (null = closed)
   const [openPhase, setOpenPhase] = useState(null)
   const phaseCloseRef = useRef(null)
+  // Interactive "$100 booked" comparison — OTA commission is a live slider
+  // (10–35%); STAYLO is always 10%. "You keep" + "more revenue" recompute.
+  const [otaCommission, setOtaCommission] = useState(22)
 
   // Roadmap modal a11y: close on Escape, and move focus to the close
   // button when it opens so keyboard / screen-reader users aren't left
@@ -451,6 +454,29 @@ export default function Vision() {
             <p className="text-center text-sm text-gray-500 mb-2 uppercase tracking-wider font-semibold">{t('vision.flow_label', 'For every')}</p>
             <p className="text-center text-5xl sm:text-6xl font-black mb-4 text-deep">$100 <span className="text-2xl font-normal text-gray-400">{t('vision.flow_booked', 'booked')}</span></p>
 
+            {/* Interactive slider — drag your OTA commission rate (10–35%) */}
+            <div className="max-w-md mx-auto mb-8 px-1">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-500 font-medium">{t('vision.flow_slider_label', 'Your current OTA commission')}</span>
+                <span className="text-2xl font-black" style={{ color: '#dc2626' }}>{otaCommission}%</span>
+              </div>
+              <input
+                type="range"
+                min="10"
+                max="35"
+                step="1"
+                value={otaCommission}
+                onChange={(e) => setOtaCommission(Number(e.target.value))}
+                className="w-full cursor-pointer h-2 rounded-full"
+                style={{ accentColor: '#FF3CB4' }}
+                aria-label={t('vision.flow_slider_label', 'Your current OTA commission')}
+              />
+              <div className="flex justify-between text-[11px] text-gray-400 mt-1">
+                <span>10%</span>
+                <span>35%</span>
+              </div>
+            </div>
+
             <div className="grid sm:grid-cols-2 gap-6">
               {/* OTA side — muted "loser" treatment */}
               <div className="bg-gray-50 rounded-2xl p-6 border border-gray-200">
@@ -461,7 +487,7 @@ export default function Vision() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-gray-500 text-sm">{t('vision.flow_ota_commission', 'Commission')}</span>
-                    <span className="text-2xl font-bold" style={{ color: '#dc2626' }}>−$22</span>
+                    <span className="text-2xl font-bold transition-all" style={{ color: '#dc2626' }}>−${otaCommission}</span>
                   </div>
                   <div className="h-px bg-gray-200" />
                   <div className="flex items-center justify-between">
@@ -475,7 +501,7 @@ export default function Vision() {
                   <div className="h-px bg-gray-200" />
                   <div className="flex items-center justify-between">
                     <span className="text-gray-600 font-medium">{t('vision.flow_you_keep', 'You keep')}</span>
-                    <span className="text-2xl font-bold text-gray-500">$78</span>
+                    <span className="text-2xl font-bold text-gray-500 transition-all">${100 - otaCommission}</span>
                   </div>
                 </div>
               </div>
@@ -515,7 +541,7 @@ export default function Vision() {
                     <span className="text-2xl font-black text-gradient">$90</span>
                   </div>
                   <div className="text-center mt-3 rounded-lg py-2" style={{ background: 'linear-gradient(135deg, rgba(255,107,0,0.1), rgba(255,60,180,0.1), rgba(108,92,231,0.1))' }}>
-                    <span className="font-black text-lg" style={{ color: '#FF6B00' }}>+15.4% </span>
+                    <span className="font-black text-lg transition-all" style={{ color: '#FF6B00' }}>+{(((90 - (100 - otaCommission)) / (100 - otaCommission)) * 100).toFixed(1)}% </span>
                     <span className="text-gray-600 text-sm">{t('vision.flow_more_revenue', 'more revenue vs OTAs')}</span>
                   </div>
                 </div>
