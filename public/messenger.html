@@ -197,12 +197,20 @@ input,textarea,select{font:inherit;color:inherit;outline:none;border:0;backgroun
   padding:0 4px;border-radius:8px;display:flex;align-items:center;justify-content:center;
   box-shadow:0 0 0 2px rgba(255,255,255,.85);
 }
+/* SHIP flagship tab — the brand tile reads as an app icon sitting in the rail */
+.rail-btn .ship-rail-icon{
+  width:30px;height:30px;border-radius:9px;display:block;object-fit:cover;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.55), 0 2px 6px rgba(0,0,0,.3);
+  transition:transform var(--t-fast);
+}
+.rail-btn.active .ship-rail-icon{transform:scale(1.06)}
 
 /* Hide channels-pane when active view is not Chat — the bottom bar is the
    single source of top-level nav, channels list only appears inside Chat. */
 body.view-team .channels-pane,
 body.view-me .channels-pane,
 body.view-alerts .channels-pane,
+body.view-ship .channels-pane,
 body.view-settings .channels-pane,
 body.view-timesheet .channels-pane,
 body.view-profile .channels-pane{display:none}
@@ -2630,6 +2638,60 @@ body.view-profile .channels-pane{display:none}
   .clock-btn{display:none}
 }
 
+/* ============== SHIP HUB — staff home / "access page" ============== */
+.ship-hub{max-width:620px;margin:0 auto;padding:16px 16px 40px;display:flex;flex-direction:column;gap:14px}
+.ship-hero{display:flex;align-items:center;gap:14px;color:#fff;border-radius:20px;padding:18px 20px;
+  background:linear-gradient(120deg,var(--orange),var(--pink) 55%,#7E22CE);
+  box-shadow:0 8px 24px rgba(255,31,112,.28)}
+.ship-hero-logo{width:56px;height:56px;border-radius:14px;flex-shrink:0;object-fit:cover;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.35),0 4px 12px rgba(0,0,0,.35)}
+.ship-hero-txt{min-width:0}
+.ship-greet{font-size:20px;font-weight:800;line-height:1.15}
+.ship-tag{font-size:11px;font-weight:600;opacity:.88;margin-top:2px;letter-spacing:.2px}
+.ship-card{background:#fff;border:1px solid var(--border);border-radius:18px;padding:16px 18px;
+  box-shadow:0 2px 10px rgba(20,20,40,.05)}
+.ship-card-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--gray);margin-bottom:10px}
+.ship-muted{color:var(--gray);font-size:13px;line-height:1.5;margin:0}
+.ship-clock-card{text-align:center}
+.ship-shift-sum{margin-bottom:14px}
+.ship-shift-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px;color:var(--gray)}
+.ship-shift-val{font-size:19px;font-weight:800;color:var(--navy);margin-top:3px}
+.ship-clock-zone{display:flex;flex-direction:column;align-items:center;gap:10px}
+.ship-status{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700}
+.ship-status.on{color:var(--teal)}
+.ship-status.off{color:var(--gray)}
+.ship-status.break{color:#8B6F00}
+.ship-timer{font-variant-numeric:tabular-nums;font-weight:800;color:var(--navy)}
+.ship-dot{width:10px;height:10px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite}
+.ship-clock{width:100%;max-width:340px;border:0;border-radius:var(--r-pill);padding:16px 20px;
+  font-size:17px;font-weight:800;color:#fff;cursor:pointer;transition:transform var(--t-fast),box-shadow var(--t-fast)}
+.ship-clock.in{background:linear-gradient(120deg,var(--orange),var(--pink));box-shadow:0 8px 20px rgba(255,31,112,.32)}
+.ship-clock.out{background:linear-gradient(120deg,#00B894,#0984E3);box-shadow:0 8px 20px rgba(0,184,148,.3)}
+.ship-clock.break{background:linear-gradient(120deg,#FDCB6E,#E17055);color:#3a2400;box-shadow:0 8px 20px rgba(253,203,110,.35)}
+.ship-clock:hover{transform:translateY(-1px)}
+.ship-clock:active{transform:translateY(0)}
+.ship-clock.locked,.ship-clock:disabled{background:var(--light);color:var(--gray);cursor:not-allowed;
+  box-shadow:none;border:1px solid var(--border)}
+.ship-gate{font-size:14px;font-weight:800;color:var(--orange)}
+.ship-gate-hint{font-size:11px;color:var(--gray)}
+.ship-break-btn{background:#FFF4D2;color:#8B6F00;border:1px solid #FDCB6E;border-radius:var(--r-pill);
+  padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:all var(--t-fast)}
+.ship-break-btn:hover{background:#FDCB6E;color:#fff}
+.ship-link-btn{margin-top:10px;background:transparent;border:0;color:var(--orange);font-weight:800;font-size:14px;cursor:pointer;padding:0}
+.ship-task-list{display:flex;flex-direction:column;gap:6px}
+.ship-task{display:flex;align-items:center;gap:11px;padding:10px;border-radius:12px;background:var(--light);cursor:pointer;transition:background var(--t-fast)}
+.ship-task:hover{background:#FFE9D6}
+.ship-task input{width:20px;height:20px;flex-shrink:0;accent-color:var(--orange);cursor:pointer}
+.ship-task-txt{flex:1;min-width:0}
+.ship-task-title{font-size:14px;font-weight:700;color:var(--navy)}
+.ship-task-meta{font-size:11px;color:var(--gray);margin-top:1px}
+.ship-task.done .ship-task-title{text-decoration:line-through;color:var(--gray)}
+.ship-up-list{display:flex;flex-direction:column}
+.ship-up{display:flex;align-items:center;justify-content:space-between;padding:10px 2px;border-bottom:1px solid var(--border)}
+.ship-up:last-child{border-bottom:0}
+.ship-up-day{font-size:13px;font-weight:700;color:var(--navy);text-transform:capitalize}
+.ship-up-time{font-size:13px;font-weight:800;color:var(--orange);font-variant-numeric:tabular-nums}
+
 /* ============== TIMESHEET MODAL ============== */
 .timesheet-modal{position:fixed;inset:0;z-index:9000;background:rgba(20,20,30,.6);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;animation:fadeUp .25s ease-out}
 .timesheet-modal .panel{background:#fff;border-radius:24px;padding:24px;max-width:540px;width:100%;box-shadow:var(--shadow-lg);margin:auto}
@@ -3107,6 +3169,12 @@ body.off-shift .quick-actions{display:none !important}
          · stay crisp at any zoom level (vector)
        Each <svg class="rail-icon"> mirrors the size set in CSS (22×22). -->
   <nav class="rail" id="bottom-nav">
+    <button class="rail-btn rail-btn-ship" data-pane="ship" title="STAYLO Ship">
+      <!-- Flagship tab: the SHIP brand tile (our "beau bouton") opens the
+           staff home / access page (clock-in, today's shift, tasks). -->
+      <img class="ship-rail-icon" src="/SHIP_LOGO.png" alt="STAYLO Ship">
+      <span class="rail-lbl">SHIP</span>
+    </button>
     <button class="rail-btn active" data-pane="channels" data-i18n-title="app.shell.bottom.chat">
       <!-- MessageCircle (Lucide) -->
       <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -4446,6 +4514,7 @@ function setView(view, args){
   try { pulseCleanupIfNeeded(State.activeView, State.activeViewArgs); } catch {}
   try { stockCleanupIfNeeded(State.activeView, State.activeViewArgs); } catch {}
   try { scoreCleanupIfNeeded(State.activeView, State.activeViewArgs); } catch {}
+  try { shipCleanupIfNeeded(State.activeView); } catch {}
   State.activeView = view || 'channel';
   State.activeViewArgs = args || null;
   const chat = document.querySelector('main.chat');
@@ -4462,13 +4531,13 @@ function setView(view, args){
   // Body class drives CSS visibility (e.g. hide channels-pane when not on Chat)
   // and lets the bottom-bar reflect the active tab.
   document.body.classList.remove(
-    'view-channel','view-team','view-me','view-alerts',
+    'view-channel','view-team','view-me','view-alerts','view-ship',
     'view-settings','view-timesheet','view-profile'
   );
   document.body.classList.add('view-' + State.activeView);
   // Sync the bottom-bar active state (channel → channels button)
   try {
-    const map = {channel:'channels', team:'team', me:'me', alerts:'alerts',
+    const map = {channel:'channels', team:'team', me:'me', alerts:'alerts', ship:'ship',
                  settings:'me', timesheet:'me', profile:'me'};
     const pane = map[State.activeView] || 'channels';
     document.querySelectorAll('.rail-btn').forEach(b => {
@@ -4579,6 +4648,8 @@ function renderActiveView(){
     title.textContent = t('app.me.head_title_profile');
     subtitle.textContent = State.user.name || '';
     renderProfileView(body);
+  } else if(v === 'ship'){
+    renderShipHub(body, title, subtitle);
   } else {
     title.textContent = v;
     body.appendChild(el('div',{style:'padding:24px;color:var(--gray)'}, t('app.common.view_not_implemented')));
@@ -18614,6 +18685,210 @@ function renderClockWidget(){
     }}, shift ? t('app.shell.clock_in_with_window', {start: shift.start_time, end: shift.end_time}) : t('app.shell.clock_in')));
   }
 }
+
+/* ============================================================================
+ * STAYLO SHIP — staff home / "access page"   [the SHIP tab]
+ * ============================================================================
+ * The flagship tab. A personal home screen for the logged-in staff member:
+ *   • today's planned shift (start–end · role)
+ *   • a big clock-in / clock-out button, GATED so clock-in only unlocks
+ *     15 minutes before the planned shift start (per spec)
+ *   • a live "hours worked" timer once clocked in
+ *   • today's tasks (tap to complete)
+ *   • upcoming shifts this week
+ * Reuses the existing time-clock engine (clockEvent / getBreakState /
+ * todaysHours / getTodayShift) so punches flow into the SAME timesheets the
+ * manager reviews. A 1s ticker keeps the timer + "available in N min"
+ * countdown live; it is torn down on navigate-away via shipCleanupIfNeeded(),
+ * which setView() calls before switching views. */
+const SHIP_GATE_MIN = 15;            // clock-in unlocks 15 min before shift start
+let _shipTick = null;
+function _clearShipTick(){ if(_shipTick){ clearInterval(_shipTick); _shipTick = null; } }
+function shipCleanupIfNeeded(prevView){ if(prevView === 'ship') _clearShipTick(); }
+/* Local i18n with inline EN fallback (mirrors the tFb idiom at the onboarding
+ * step) so a missing app.ship.* key never renders as a raw key on screen. */
+function shipT(key, fb, params){
+  let v = t(key, params);
+  if(typeof v !== 'string' || v.indexOf('app.ship.') === 0){
+    v = (fb || '').replace(/\{(\w+)\}/g, (m,p)=> (params && params[p]!=null) ? String(params[p]) : m);
+  }
+  return v;
+}
+
+function renderShipHub(body, title, subtitle){
+  _clearShipTick();
+  const u = State.user || {};
+  const firstName = (u.name||'').trim().split(/\s+/)[0] || '';
+  const today = new Date().toISOString().slice(0,10);
+
+  title.textContent = shipT('app.ship.title', 'STAYLO Ship');
+  try { subtitle.textContent = fmtDayHeader(today); } catch { subtitle.textContent = ''; }
+
+  const emp = (typeof getMyEmployee === 'function') ? getMyEmployee() : null;
+  const empId = emp ? emp.id : null;
+  const wrap = el('div',{class:'ship-hub'});
+
+  /* ---- HERO: brand tile + greeting --------------------------------- */
+  const hero = el('div',{class:'ship-hero'});
+  hero.appendChild(el('img',{class:'ship-hero-logo', src:'/SHIP_LOGO.png', alt:'STAYLO Ship', loading:'lazy'}));
+  const heroTxt = el('div',{class:'ship-hero-txt'});
+  heroTxt.appendChild(el('div',{class:'ship-greet'}, shipT('app.ship.greeting', 'Hi, {name}', {name: firstName})));
+  heroTxt.appendChild(el('div',{class:'ship-tag'}, shipT('app.ship.tagline', 'Staylo Hotelier In-Pocket')));
+  hero.appendChild(heroTxt);
+  wrap.appendChild(hero);
+
+  const shift = empId ? getTodayShift(empId) : null;
+  const isWork = !!(shift && shift.kind === 'work');
+  const isAbsence = !!(shift && shift.kind === 'absence');
+
+  if(!emp){
+    /* Non-staff (unbound manager, guest, ambassador) — honest explainer. */
+    const card = el('div',{class:'ship-card'});
+    card.appendChild(el('div',{class:'ship-card-h'}, shipT('app.ship.today_shift', "Today's shift")));
+    card.appendChild(el('p',{class:'ship-muted'},
+      shipT('app.ship.manager_note', 'Clock-in is for scheduled staff. Open the schedule to see who is on shift today.')));
+    card.appendChild(el('button',{class:'ship-link-btn', onclick:()=>setView('team','schedule')},
+      shipT('app.ship.open_schedule', 'Open schedule →')));
+    wrap.appendChild(card);
+  } else {
+    /* ---- CLOCK CARD ------------------------------------------------ */
+    const card = el('div',{class:'ship-card ship-clock-card'});
+    const sumRow = el('div',{class:'ship-shift-sum'});
+    sumRow.appendChild(el('div',{class:'ship-shift-label'}, shipT('app.ship.today_shift', "Today's shift")));
+    let shiftValue;
+    if(isWork){
+      const role = (typeof translateRole==='function') ? translateRole(emp.role) : (emp.role||'');
+      shiftValue = `${shift.start_time}–${shift.end_time}` + (role ? ' · ' + role : '');
+    } else if(isAbsence){
+      shiftValue = shipT('app.ship.on_leave', 'On leave today');
+    } else {
+      shiftValue = shipT('app.ship.no_shift', 'No shift scheduled today');
+    }
+    sumRow.appendChild(el('div',{class:'ship-shift-val'}, shiftValue));
+    card.appendChild(sumRow);
+
+    const clockZone = el('div',{class:'ship-clock-zone'});
+    card.appendChild(clockZone);
+    wrap.appendChild(card);
+
+    /* Repainted every second so the worked-time timer and the
+       "available in N min" countdown stay live. */
+    const paintClock = () => {
+      clockZone.innerHTML = '';
+      if(isAbsence){
+        clockZone.appendChild(el('div',{class:'ship-status off'}, shipT('app.ship.enjoy_leave', 'Enjoy your day off 🌴')));
+        return;
+      }
+      const bs = getBreakState(empId);              // 'off' | 'on_shift' | 'on_break'
+      if(bs.state === 'on_break'){
+        const over = bs.remaining === 0;
+        clockZone.appendChild(el('div',{class:'ship-status break'},
+          over ? shipT('app.ship.break_over', 'Break over — tap to resume')
+               : shipT('app.ship.on_break', 'On break · {n} min left', {n: bs.remaining})));
+        clockZone.appendChild(el('button',{class:'ship-clock break', onclick:async()=>{
+          const ok = await clockEvent(empId,'break_end',shift?.id); if(ok) paintClock();
+        }}, shipT('app.ship.resume', 'Resume shift')));
+        return;
+      }
+      if(bs.state === 'on_shift'){
+        clockZone.appendChild(el('div',{class:'ship-status on'},
+          el('span',{class:'ship-dot'}),
+          el('span',{}, shipT('app.ship.on_shift', 'On shift')),
+          el('span',{class:'ship-timer'}, '⏱ ' + fmtDuration(todaysHours(empId))),
+        ));
+        clockZone.appendChild(el('button',{class:'ship-clock out', onclick:async()=>{
+          const ok = await clockEvent(empId,'out',shift?.id); if(ok) paintClock();
+        }}, shipT('app.ship.clock_out', 'Clock out')));
+        if(shift && shift.id && shift.break_skip_status !== 'approved'){
+          const bm = (shift.break_minutes)||60;
+          clockZone.appendChild(el('button',{class:'ship-break-btn', onclick:async()=>{
+            if(!confirm(shipT('app.ship.break_confirm', 'Start your {n}-min break now?', {n: bm}))) return;
+            const ok = await clockEvent(empId,'break_start',shift?.id); if(ok) paintClock();
+          }}, '🍱 ' + shipT('app.ship.take_break', 'Break')));
+        }
+        return;
+      }
+      /* state 'off' → clock IN (gated 15 min before a planned work shift) */
+      const nowMin = minutesNow();
+      if(isWork && nowMin < timeToMinutes(shift.start_time) - SHIP_GATE_MIN){
+        const mins = timeToMinutes(shift.start_time) - SHIP_GATE_MIN - nowMin;
+        clockZone.appendChild(el('button',{class:'ship-clock locked', disabled:true}, shipT('app.ship.clock_in', 'Clock in')));
+        clockZone.appendChild(el('div',{class:'ship-gate'}, shipT('app.ship.available_in', '🔒 Available in {n} min', {n: mins})));
+        clockZone.appendChild(el('div',{class:'ship-gate-hint'}, shipT('app.ship.gate_hint', 'Clock-in opens 15 min before your shift.')));
+        return;
+      }
+      clockZone.appendChild(el('div',{class:'ship-status off'}, shipT('app.ship.off_shift', 'Off shift')));
+      clockZone.appendChild(el('button',{class:'ship-clock in', onclick:async()=>{
+        const ok = await clockEvent(empId,'in',shift?.id); if(ok) paintClock();
+      }}, isWork ? shipT('app.ship.clock_in_at', 'Clock in · {time}', {time: shift.start_time})
+                 : shipT('app.ship.clock_in', 'Clock in')));
+    };
+    paintClock();
+    _shipTick = setInterval(()=>{
+      if(State.activeView !== 'ship'){ _clearShipTick(); return; }
+      paintClock();
+    }, 1000);
+  }
+
+  /* ---- MY TASKS TODAY ---------------------------------------------- */
+  if(emp){
+    const tcard = el('div',{class:'ship-card'});
+    const myTasks = tasksAssignedToEmployee(getTasksForDate(today), emp);
+    tcard.appendChild(el('div',{class:'ship-card-h'},
+      shipT('app.ship.my_tasks', 'My tasks') + (myTasks.length ? ` (${myTasks.length})` : '')));
+    if(!myTasks.length){
+      tcard.appendChild(el('p',{class:'ship-muted'}, shipT('app.ship.no_tasks', 'No tasks today 🎉')));
+    } else {
+      const list = el('div',{class:'ship-task-list'});
+      myTasks.forEach(tk => {
+        const done = !!(tk.completions && tk.completions[today]);
+        const row = el('label',{class:'ship-task'+(done?' done':'')});
+        const cb = el('input',{type:'checkbox'});
+        cb.checked = done;
+        cb.addEventListener('change', ()=>{ setTaskCompletion(tk.id, today, cb.checked); row.classList.toggle('done', cb.checked); });
+        row.appendChild(cb);
+        const txt = el('div',{class:'ship-task-txt'});
+        txt.appendChild(el('div',{class:'ship-task-title'}, tk.title));
+        if(tk.due_time) txt.appendChild(el('div',{class:'ship-task-meta'}, tk.due_time + (tk.zone ? ' · ' + tk.zone : '')));
+        row.appendChild(txt);
+        if(tk.priority && tk.priority !== 'normal'){
+          row.appendChild(el('span',{class:'chip ' + (tk.priority==='urgent' ? 'red' : 'amber')},
+            shipT('app.ship.prio_' + tk.priority, tk.priority)));
+        }
+        list.appendChild(row);
+      });
+      tcard.appendChild(list);
+    }
+    wrap.appendChild(tcard);
+  }
+
+  /* ---- UPCOMING SHIFTS --------------------------------------------- */
+  if(emp){
+    const ucard = el('div',{class:'ship-card'});
+    ucard.appendChild(el('div',{class:'ship-card-h'}, shipT('app.ship.upcoming', 'Upcoming shifts')));
+    const upcoming = getSchedules()
+      .filter(s => s.employee_id === emp.id && s.date > today && s.kind === 'work')
+      .sort((a,b)=> a.date.localeCompare(b.date))
+      .slice(0,5);
+    if(!upcoming.length){
+      ucard.appendChild(el('p',{class:'ship-muted'}, shipT('app.ship.no_upcoming', 'No upcoming shifts scheduled.')));
+    } else {
+      const list = el('div',{class:'ship-up-list'});
+      upcoming.forEach(s => {
+        let dayLabel; try { dayLabel = fmtDayHeader(s.date); } catch { dayLabel = s.date; }
+        const row = el('div',{class:'ship-up'});
+        row.appendChild(el('div',{class:'ship-up-day'}, dayLabel));
+        row.appendChild(el('div',{class:'ship-up-time'}, `${s.start_time}–${s.end_time}`));
+        list.appendChild(row);
+      });
+      ucard.appendChild(list);
+    }
+    wrap.appendChild(ucard);
+  }
+
+  body.appendChild(wrap);
+}
+
 /* ============================================================================
  * SKIP BREAK — staff request modal + manager review modal
  * ============================================================================ */
@@ -20228,6 +20503,8 @@ function initShell(){
     } else if(pane === 'me'){
       if(State.activeView === 'me' && State.activeViewArgs) setView('me', null);
       else setView('me', null);
+    } else if(pane === 'ship'){
+      setView('ship', null);
     } else if(pane === 'alerts'){
       setView('alerts');
     }

@@ -3916,6 +3916,35 @@
       "time": {
         "now": "ตอนนี้"
       }
+    },
+    "ship": {
+      "title": "STAYLO Ship",
+      "greeting": "สวัสดี {name}",
+      "tagline": "Staylo Hotelier In-Pocket",
+      "today_shift": "กะวันนี้",
+      "no_shift": "ไม่มีกะที่กำหนดไว้วันนี้",
+      "on_leave": "ลาวันนี้",
+      "enjoy_leave": "ขอให้สนุกกับวันหยุด 🌴",
+      "on_shift": "กำลังเข้ากะ",
+      "off_shift": "นอกเวลางาน",
+      "clock_in": "ลงเวลาเข้า",
+      "clock_in_at": "ลงเวลาเข้า · {time}",
+      "clock_out": "ลงเวลาออก",
+      "available_in": "🔒 พร้อมใน {n} นาที",
+      "gate_hint": "ลงเวลาเข้าได้ 15 นาทีก่อนเริ่มกะ",
+      "on_break": "พักอยู่ · เหลือ {n} นาที",
+      "break_over": "หมดเวลาพัก — แตะเพื่อกลับเข้างาน",
+      "resume": "กลับเข้างาน",
+      "take_break": "พัก",
+      "break_confirm": "เริ่มพัก {n} นาทีเลยไหม?",
+      "my_tasks": "งานของฉัน",
+      "no_tasks": "ไม่มีงานวันนี้ 🎉",
+      "upcoming": "กะถัดไป",
+      "no_upcoming": "ไม่มีกะที่กำหนดไว้",
+      "manager_note": "การลงเวลาสำหรับพนักงานที่มีกะ เปิดตารางกะเพื่อดูว่าใครเข้างานวันนี้",
+      "open_schedule": "เปิดตารางกะ →",
+      "prio_high": "สูง",
+      "prio_urgent": "ด่วน"
     }
   },
   "verify": {

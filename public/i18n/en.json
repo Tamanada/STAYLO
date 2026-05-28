@@ -3914,6 +3914,35 @@
       "time": {
         "now": "now"
       }
+    },
+    "ship": {
+      "title": "STAYLO Ship",
+      "greeting": "Hi, {name}",
+      "tagline": "Staylo Hotelier In-Pocket",
+      "today_shift": "Today's shift",
+      "no_shift": "No shift scheduled today",
+      "on_leave": "On leave today",
+      "enjoy_leave": "Enjoy your day off 🌴",
+      "on_shift": "On shift",
+      "off_shift": "Off shift",
+      "clock_in": "Clock in",
+      "clock_in_at": "Clock in · {time}",
+      "clock_out": "Clock out",
+      "available_in": "🔒 Available in {n} min",
+      "gate_hint": "Clock-in opens 15 min before your shift.",
+      "on_break": "On break · {n} min left",
+      "break_over": "Break over — tap to resume",
+      "resume": "Resume shift",
+      "take_break": "Break",
+      "break_confirm": "Start your {n}-min break now?",
+      "my_tasks": "My tasks",
+      "no_tasks": "No tasks today 🎉",
+      "upcoming": "Upcoming shifts",
+      "no_upcoming": "No upcoming shifts scheduled.",
+      "manager_note": "Clock-in is for scheduled staff. Open the schedule to see who is on shift today.",
+      "open_schedule": "Open schedule →",
+      "prio_high": "High",
+      "prio_urgent": "Urgent"
     }
   },
   "verify": {
