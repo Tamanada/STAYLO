@@ -195,18 +195,20 @@ export default function Splash() {
             className="absolute inset-0 w-full h-full object-cover"
           />
 
+          {/* Desktop title — anchored near the TOP of the banner, large */}
+          <div className="hidden md:block absolute top-6 lg:top-10 left-0 right-0 text-center px-4 z-10">
+            <Badge variant="golden" className="mb-3 text-sm">{t('splash.next_badge')}</Badge>
+            <h2
+              className="text-3xl lg:text-4xl xl:text-5xl font-extrabold tracking-tight"
+              style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
+            >
+              {t('splash.next_title')}
+            </h2>
+          </div>
+
           {/* Desktop overlay — cards centered horizontally on the page,
               narrowed to ~2/3 of the previous width per user direction */}
-          <div className="hidden md:flex absolute inset-y-0 left-[31%] right-[31%] flex-col justify-center px-2 lg:px-4 py-4">
-            <div className="text-center mb-3 lg:mb-4">
-              <Badge variant="golden" className="mb-2 text-xs">{t('splash.next_badge')}</Badge>
-              <h2
-                className="text-lg lg:text-2xl xl:text-3xl font-bold"
-                style={{ textShadow: '0 2px 12px rgba(0,0,0,0.85), 0 0 6px rgba(0,0,0,0.8)' }}
-              >
-                {t('splash.next_title')}
-              </h2>
-            </div>
+          <div className="hidden md:flex absolute inset-y-0 left-[31%] right-[31%] flex-col justify-center px-2 lg:px-4 pt-20 lg:pt-24">
             <div className="space-y-2 lg:space-y-3">
               {timeline.map((item) => {
                 const Icon = item.icon
