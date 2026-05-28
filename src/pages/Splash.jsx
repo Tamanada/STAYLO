@@ -66,10 +66,9 @@ export default function Splash() {
       {/* ThePath artwork as full-bleed background — same scrim treatment
           as the artwork-backed sections on /vision so the page feels
           like one consistent brand surface. */}
-      {/* Content-heavy hero: min-height (not a hard aspect lock) so the
-          big headline + CTA never get clipped. object-cover keeps it
-          band-like and free of letterbox bands. */}
-      <section className="relative overflow-hidden min-h-[700px] py-12 flex items-center">
+      {/* Same 2.5:1 banner-height band as every other hero. Type scale
+          tuned so the whole stack fits inside it without clipping. */}
+      <section className="relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center">
         {/* Painting background */}
         <img
           src="/ThePath.png"
@@ -83,19 +82,19 @@ export default function Splash() {
 
         <div className="relative w-full max-w-4xl mx-auto px-4 sm:px-6 py-6 text-center text-white">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-sm font-semibold mb-5 animate-pulse-glow">
-            <Zap size={16} className="text-golden" />
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-golden/10 backdrop-blur-sm border border-golden/30 text-xs sm:text-sm font-semibold mb-3 animate-pulse-glow">
+            <Zap size={14} className="text-golden" />
             <span className="text-golden">{t('splash.badge')}</span>
           </div>
 
           {/* Big dramatic title */}
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-[1.05] mb-4 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold leading-[1.05] mb-3 tracking-tight">
             {t('splash.title_line1')}
           </h1>
 
           {/* Subtitle */}
           <p
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 text-white"
+            className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 text-white"
             style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.95)' }}
           >
             {t('splash.subtitle')}
@@ -103,16 +102,16 @@ export default function Splash() {
 
           {/* Description */}
           <p
-            className="text-xl sm:text-2xl text-white max-w-2xl mx-auto mb-6 leading-relaxed font-medium"
+            className="text-base sm:text-lg text-white max-w-2xl mx-auto mb-4 leading-relaxed font-medium"
             style={{ textShadow: '0 2px 14px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
           >
             {t('splash.description')}
           </p>
 
           {/* Glowing emphasized box */}
-          <div className="inline-flex items-center gap-3 px-6 sm:px-8 py-4 rounded-2xl bg-black/35 backdrop-blur-md border border-golden/40 mb-6 animate-pulse-glow">
+          <div className="inline-flex items-center gap-3 px-5 sm:px-7 py-2.5 rounded-2xl bg-black/35 backdrop-blur-md border border-golden/40 mb-3 animate-pulse-glow">
             <span
-              className="text-white font-bold text-xl sm:text-2xl tracking-wide"
+              className="text-white font-bold text-base sm:text-lg tracking-wide"
               style={{ textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}
             >
               {t('splash.types')}
@@ -121,7 +120,7 @@ export default function Splash() {
 
           {/* Small text */}
           <p
-            className="text-white text-lg sm:text-xl mb-10 font-medium"
+            className="text-white text-sm sm:text-base mb-5 font-medium"
             style={{ textShadow: '0 2px 12px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.85)' }}
           >
             {t('splash.license_note')}
@@ -129,7 +128,7 @@ export default function Splash() {
 
           {/* CTA */}
           <Link to={user ? '/dashboard' : '/register'}>
-            <button className="group relative px-10 py-4 bg-gradient-to-r from-golden via-sunrise to-sunset text-white font-bold text-lg rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[280px] inline-flex items-center justify-center gap-3 cursor-pointer animate-pulse-glow">
+            <button className="group relative px-8 py-3 bg-gradient-to-r from-golden via-sunrise to-sunset text-white font-bold text-base rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer animate-pulse-glow">
               <span>{t('splash.cta')}</span>
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </button>
