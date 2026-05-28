@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAYLO — Fiche Objections · Démo Association KP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;600;700;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root{
+  --orange:#FF6B00; --pink:#FF1F70; --purple:#7E22CE;
+  --cream:#FFF9F4; --dark:#1A1A2E; --mid:#5A4A5A; --border:#F0E0EC; --red:#C53030;
+  --font:'Inter','Noto Sans Thai',sans-serif;
+  --grad:linear-gradient(135deg,#FF6B00,#FF1F70,#7E22CE);
+}
+body{ font-family:var(--font); font-size:9pt; line-height:1.4; color:var(--dark); background:var(--cream); }
+@page{ size:A4 portrait; margin:8mm; }
+@media print{ .no-print{ display:none !important; } body{ font-size:8.4pt; } }
+
+.page{ max-width:200mm; margin:0 auto; padding:8mm; }
+.toolbar{ text-align:center; margin-bottom:6mm; }
+.toolbar button{ background:var(--grad); color:#fff; border:0; border-radius:99px; padding:9px 22px; font-family:var(--font); font-size:10pt; font-weight:800; cursor:pointer; }
+
+.head{ display:flex; align-items:flex-end; justify-content:space-between; gap:10mm;
+  border-bottom:2.5px solid transparent; border-image:var(--grad) 1; padding-bottom:3mm; margin-bottom:5mm; }
+.brand{ font-size:21pt; font-weight:900; letter-spacing:-.5px; }
+.brand .lo{ background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.head h1{ font-size:12.5pt; font-weight:800; text-align:right; line-height:1.2; }
+.head h1 small{ display:block; font-size:8pt; font-weight:600; color:var(--mid); text-transform:uppercase; letter-spacing:1.5px; margin-bottom:1mm; }
+
+.note{ background:#FFF0F5; border:1px solid var(--border); border-left:3px solid var(--pink); border-radius:6px;
+  padding:2.5mm 3.5mm; font-size:8pt; color:var(--mid); margin-bottom:5mm; }
+.note b{ color:var(--red); }
+
+.grid{ display:grid; grid-template-columns:1fr 1fr; gap:3.5mm; }
+.obj{ border:1px solid var(--border); border-left:3px solid var(--orange); border-radius:8px; padding:3mm 3.5mm; background:#fff; break-inside:avoid; }
+.obj:nth-child(4n+2){ border-left-color:var(--pink); }
+.obj:nth-child(4n+3){ border-left-color:var(--purple); }
+.obj:nth-child(4n){ border-left-color:#00B894; }
+.obj .q{ font-weight:800; font-size:9pt; margin-bottom:1.5mm; display:flex; gap:2mm; }
+.obj .q .n{ flex:0 0 auto; width:5mm; height:5mm; border-radius:50%; background:var(--grad); color:#fff;
+  font-size:7.5pt; font-weight:900; display:flex; align-items:center; justify-content:center; }
+.obj .a{ font-size:8.4pt; color:#2a2a3a; }
+.obj .a b{ color:var(--dark); }
+.flag{ color:var(--red); font-weight:700; }
+
+.closers{ margin-top:5mm; background:var(--dark); color:#fff; border-radius:10px; padding:4mm 5mm; break-inside:avoid; }
+.closers h2{ font-size:10pt; font-weight:900; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:2.5mm;
+  background:linear-gradient(135deg,#FFAB40,#FF1F70); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.closers ul{ list-style:none; display:grid; gap:2mm; }
+.closers li{ font-size:8.6pt; padding-left:5mm; position:relative; }
+.closers li::before{ content:'▸'; position:absolute; left:0; color:var(--orange); font-weight:900; }
+.closers .th{ font-family:'Noto Sans Thai',sans-serif; color:#FFD9A0; font-weight:600; }
+
+.foot{ margin-top:4mm; text-align:center; font-size:7.5pt; color:var(--mid); }
+.foot .th{ font-family:'Noto Sans Thai',sans-serif; font-weight:600; color:var(--dark); }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="toolbar no-print"><button onclick="window.print()">🖨️ Imprimer / PDF</button></div>
+
+  <div class="head">
+    <div class="brand">STAY<span class="lo">LO</span></div>
+    <h1><small>Fiche réponses · usage interne</small>Gérer les objections — Démo Association KP</h1>
+  </div>
+
+  <div class="note">
+    Antisèche personnelle (FR). Ton : direct, respectueux, jamais sur la défensive.
+    <b>⚠️</b> = chiffre ou fait à <b>confirmer</b> avant de le citer en public.
+  </div>
+
+  <div class="grid">
+    <div class="obj">
+      <div class="q"><span class="n">1</span>« Booking marche pour moi. Pourquoi changer ? »</div>
+      <div class="a">Booking prend <b>15-25%</b> sur chaque réservation. STAYLO : <b>10% verrouillé à vie</b>, et tu es <b>actionnaire</b> — tu touches les dividendes au lieu de les payer. La vraie question : combien tu perds chaque année à rester locataire de Booking ? <span class="flag">⚠️ Si tu cites « ~$6,3M/an quittent KP », confirme le chiffre du dossier.</span></div>
+    </div>
+
+    <div class="obj">
+      <div class="q"><span class="n">2</span>« Et si STAYLO échoue dans 2 ans ? »</div>
+      <div class="a">Hôtel <b>Property</b> : inscription gratuite, zéro risque. <b>Founding Partner</b> ($1 000) : lock-up 12 mois + clause de rachat ; si la masse critique n'est pas atteinte, le capital restant est <b>redistribué</b> aux actionnaires. Contrats régis par Singapour + arbitrage SIAC — pas une parole en l'air.</div>
+    </div>
+
+    <div class="obj">
+      <div class="q"><span class="n">3</span>« Le Bitcoin, c'est trop risqué, ça fluctue »</div>
+      <div class="a">Tes clients paient comme ils veulent (carte, virement, Lightning) ; <b>tu encaisses en THB</b> ou USD si tu préfères. Le BTC est en <b>réserve de trésorerie</b>, pas dans ton compte courant — une assurance long terme, pas une spéculation.</div>
+    </div>
+
+    <div class="obj">
+      <div class="q"><span class="n">4</span>« Le token $STAY, c'est encore une arnaque crypto ? »</div>
+      <div class="a">Outil de <b>gouvernance et de récompense</b>, pas une promesse de rendement. Offre <b>fixe</b> (10 Mds), aucune création surprise (90% de vote requis). KYC obligatoire. Tu n'es <b>jamais obligé</b> d'en détenir pour utiliser la plateforme.</div>
+    </div>
+
+    <div class="obj">
+      <div class="q"><span class="n">5</span>« Mes clients ne paient jamais en crypto »</div>
+      <div class="a">Aujourd'hui &lt;1% paient en crypto — mais ce 1% dépense <b>+30%</b> (CoinsPaid). STAYLO ouvre l'option <b>sans rien changer</b> à ta caisse actuelle. C'est un bonus, pas une migration forcée.</div>
+    </div>
+
+    <div class="obj">
+      <div class="q"><span class="n">6</span>« Qui contrôle vraiment la plateforme ? »</div>
+      <div class="a">La DAO : <b>1 hôtel = 1 vote</b>. Les 3 piliers Bitcoin sont inscrits dans les statuts (90% de supermajorité pour les changer). Aucun investisseur — <b>David inclus</b> — ne décide seul.</div>
+    </div>
+
+    <div class="obj">
+      <div class="q"><span class="n">7</span>« Combien ça coûte vraiment ? »</div>
+      <div class="a">Inscription Property : <b>0</b>. Commission : <b>10%</b> sur les réservations via STAYLO (vs 15-25% OTA). Founding Partner : <b>$1 000 une fois</b> → vote + dividendes + badge + part de l'allocation $STAY. Aucun frais caché — tout est dans le contrat.</div>
+    </div>
+
+    <div class="obj">
+      <div class="q"><span class="n">8</span>« C'est légal en Thaïlande ? »</div>
+      <div class="a">Société opérante <b>Thai Co., Ltd.</b>, filiale d'une holding Singapour. Contrats Founding Partner <b>bilingues EN/TH</b>, médiation locale d'abord. <span class="flag">⚠️ Cabinet juridique / statut d'incorporation : à confirmer avant de les citer.</span></div>
+    </div>
+
+    <div class="obj">
+      <div class="q"><span class="n">9</span>« Pourquoi maintenant ? Le produit n'est pas fini »</div>
+      <div class="a">Les 1ers Founding Partners de KP ont le <b>prix Alpha</b> ($1 000 vs $1 500 ensuite), le badge fondateur <b>permanent</b> et une voix sur le produit <b>avant</b> le lancement mondial. Entrer maintenant = moins cher et plus d'influence.</div>
+    </div>
+
+    <div class="obj">
+      <div class="q"><span class="n">10</span>« L'association peut-elle avoir un rôle formel ? »</div>
+      <div class="a"><b>Oui.</b> L'association peut devenir <b>Ambassador collectif</b> : <b>2% du GMV en BTC à vie</b> sur chaque hôtel référé. Elle peut porter un <b>vote de bloc</b> à la DAO. On peut parler d'un <b>MOU dès aujourd'hui</b>.</div>
+    </div>
+  </div>
+
+  <div class="closers">
+    <h2>★ Phrases qui ferment la discussion</h2>
+    <ul>
+      <li><b>« Vous ne payez plus une commission — vous la touchez. »</b></li>
+      <li><b>« On ne quitte pas une plateforme qu'on possède. »</b> C'est pour ça que Booking ne peut pas copier ce modèle.</li>
+      <li><b>« Votre association ne nous rejoint pas — elle nous dirige. »</b> <span class="th">ค่าคอมมิชชัน 10% ตลอดไป · เป็นเจ้าของแพลตฟอร์มจริง</span></li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    Phrases-clés en thaï dans <b>demo-script-th.md</b> · <span class="th">10% ตลอดไป · 1 โรงแรม = 1 เสียง</span> · contact@staylo.app
+  </div>
+</div>
+</body>
+</html>
