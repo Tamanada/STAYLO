@@ -137,8 +137,8 @@ export function Hero() {
   ]
 
   return (
-    <section className="relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center justify-center" style={{
-      padding: '40px 5%',
+    <section className="relative overflow-hidden min-h-[700px] flex items-center justify-center" style={{
+      padding: '48px 5%',
     }}>
       {/* Samuii.png — starry-night beach painting as background.
           Aligned to the rest of the site's artwork-backed surfaces. */}
