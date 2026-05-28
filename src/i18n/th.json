@@ -3965,7 +3965,8 @@
       "fullscreen": "เต็มจอ",
       "alert_task_done": "งานเสร็จแล้ว",
       "alert_completions": "งานที่เสร็จ",
-      "alert_view_photo": "📷 ตรวจสอบ"
+      "alert_view_photo": "📷 ตรวจสอบ",
+      "task_success": "ทำงานสำเร็จเรียบร้อย"
     }
   },
   "verify": {

@@ -4439,7 +4439,8 @@
       "fullscreen": "Plein écran",
       "alert_task_done": "Tâche terminée",
       "alert_completions": "Tâches terminées",
-      "alert_view_photo": "📷 Vérifier"
+      "alert_view_photo": "📷 Vérifier",
+      "task_success": "Tâche accomplie avec succès"
     }
   },
   "verify": {

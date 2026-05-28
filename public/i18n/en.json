@@ -3963,7 +3963,8 @@
       "fullscreen": "Fullscreen",
       "alert_task_done": "Task completed",
       "alert_completions": "Task completions",
-      "alert_view_photo": "📷 Verify"
+      "alert_view_photo": "📷 Verify",
+      "task_success": "Task accomplished successfully"
     }
   },
   "verify": {

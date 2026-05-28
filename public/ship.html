@@ -2736,6 +2736,9 @@ body.view-profile .channels-pane{display:none}
 .ship-fiche-done.ship-end{background:linear-gradient(120deg,#E74C3C,#C0392B)}
 .ship-exec-timer{text-align:center;font-size:26px;font-weight:900;color:var(--orange);font-variant-numeric:tabular-nums;margin-bottom:10px;letter-spacing:.5px}
 .ship-exec-done{text-align:center;font-size:15px;font-weight:800;color:var(--teal);margin-bottom:10px}
+.ship-done-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:10px}
+.ship-done-thumb{width:64px;height:64px;border-radius:12px;object-fit:cover;cursor:pointer;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.ship-fiche-done.ship-success{background:linear-gradient(120deg,#00B894,#0E9F6E)}
 .ship-photo-btn{display:block;width:100%;max-width:680px;margin:0 auto;background:var(--light);border:1.5px dashed var(--border);border-radius:var(--r-pill);padding:13px;font-size:15px;font-weight:700;color:var(--gray);cursor:pointer}
 .ship-photo-btn:hover{border-color:var(--orange);color:var(--orange)}
 .ship-exec-photo{display:block;width:100%;max-width:680px;max-height:220px;object-fit:cover;border-radius:14px;margin:0 auto 4px;cursor:pointer}
@@ -19274,11 +19277,18 @@ function showShipFiche(tk){
 
     if(isDone()){
       const dur = exec && exec.duration_min != null ? exec.duration_min : null;
-      foot.appendChild(el('div',{class:'ship-exec-done'},
-        '✓ ' + (dur != null ? shipT('app.ship.completed_in','Completed in {dur}',{dur:fmtMin(dur)}) : shipT('app.ship.completed','Completed'))));
+      const statusTxt = '✓ ' + (dur != null ? shipT('app.ship.completed_in','Completed in {dur}',{dur:fmtMin(dur)}) : shipT('app.ship.completed','Completed'));
       if(exec && exec.photo){
-        foot.appendChild(el('img',{class:'ship-exec-photo', src:exec.photo, alt:'', onclick:()=>{ try{ showPhotoLightbox(exec.photo); }catch(e){} }}));
+        // Photo captured → compact status + thumbnail, then the final CTA.
+        foot.appendChild(el('div',{class:'ship-done-row'},
+          el('img',{class:'ship-done-thumb', src:exec.photo, alt:'', onclick:()=>{ try{ showPhotoLightbox(exec.photo); }catch(e){} }}),
+          el('div',{class:'ship-exec-done', style:'margin:0'}, statusTxt),
+        ));
+        const okBtn = el('button',{class:'ship-fiche-done ship-success'}, '✓ ' + shipT('app.ship.task_success','Task accomplished successfully'));
+        okBtn.addEventListener('click', () => close());
+        foot.appendChild(okBtn);
       } else {
+        foot.appendChild(el('div',{class:'ship-exec-done'}, statusTxt));
         foot.appendChild(photoBtn());
       }
       return;
