@@ -381,23 +381,30 @@ export default function Vision() {
           <Card className="p-6 max-w-3xl mx-auto">
             <h3 className="text-xl font-bold text-deep text-center mb-5">{t('vision.capital_table_title', 'Use of Alpha Capital — $3M')}</h3>
 
-            {/* 100% stacked bar — capital split at a glance. Segment widths
-                mirror the table %s below (which serves as the full legend). */}
+            {/* 100% stacked bar — capital split at a glance. Each segment is
+                clickable: it toggles the matching line's detail row in the
+                table below (ids mirror the table row ids exactly). Widths
+                mirror the table %s, which doubles as the full legend. */}
             <div className="flex w-full h-11 rounded-xl overflow-hidden mb-6 shadow-sm ring-1 ring-black/5">
               {[
-                { id: 'btc',  pct: 20, color: '#F7931A' },
-                { id: 'acq',  pct: 25, color: '#FF6B00' },
-                { id: 'tech', pct: 22, color: '#6C5CE7' },
-                { id: 'ops',  pct: 23, color: '#00B894' },
-                { id: 'mktg', pct: 10, color: '#636E72' },
+                { id: 'btc',          pct: 20, color: '#F7931A' },
+                { id: 'acquisitions', pct: 25, color: '#FF6B00' },
+                { id: 'tech',         pct: 22, color: '#6C5CE7' },
+                { id: 'operations',   pct: 23, color: '#00B894' },
+                { id: 'marketing',    pct: 10, color: '#636E72' },
               ].map((s) => (
-                <div
+                <button
                   key={s.id}
-                  className="flex items-center justify-center text-white text-[11px] sm:text-xs font-bold"
+                  type="button"
+                  onClick={() => setExpandedAlloc(prev => prev === s.id ? null : s.id)}
+                  aria-label={`${s.pct}% — open details`}
+                  className={`flex items-center justify-center text-white text-[11px] sm:text-xs font-bold cursor-pointer transition-all hover:brightness-110 focus:outline-none ${
+                    expandedAlloc === s.id ? 'brightness-110 ring-2 ring-white ring-inset' : ''
+                  }`}
                   style={{ width: `${s.pct}%`, background: s.color }}
                 >
                   {s.pct}%
-                </div>
+                </button>
               ))}
             </div>
 
