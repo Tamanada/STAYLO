@@ -137,7 +137,7 @@ export default function Vision() {
       />
       {/* Hero — EnjoyLife.png as background (consistent with the rest
           of the artwork-backed brand surface across the site) */}
-      <section className="text-white relative overflow-hidden min-h-screen flex items-center">
+      <section className="text-white relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center">
         <img
           src="/EnjoyLife.png"
           alt=""

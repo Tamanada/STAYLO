@@ -66,7 +66,7 @@ export default function Splash() {
       {/* ThePath artwork as full-bleed background — same scrim treatment
           as the artwork-backed sections on /vision so the page feels
           like one consistent brand surface. */}
-      <section className="relative overflow-hidden min-h-screen flex items-center">
+      <section className="relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center">
         {/* Painting background */}
         <img
           src="/ThePath.png"

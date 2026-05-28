@@ -465,8 +465,8 @@ export default function Submit() {
 
   return (
     <>
-      {/* ─── Hero — Topoftheworld painting, FULL SCREEN ─── */}
-      <section className="relative overflow-hidden min-h-screen flex items-center">
+      {/* ─── Hero — Topoftheworld painting, banner-height band ─── */}
+      <section className="relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center">
         <img
           src="/Topoftheworld.png"
           alt=""

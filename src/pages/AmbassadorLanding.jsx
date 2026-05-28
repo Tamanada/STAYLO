@@ -70,12 +70,7 @@ export default function AmbassadorLanding() {
           Warm pink/red/orange palette with gold/teal hair. Backdrop
           gradient matches the painting's warm edge tones so any
           letterboxing blends invisibly. */}
-      <section
-        className="text-white relative overflow-hidden min-h-screen flex items-center"
-        style={{
-          background: 'radial-gradient(ellipse 80% 100% at center, #E8836A 0%, #C8484A 60%, #A82F3A 100%)'
-        }}
-      >
+      <section className="text-white relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center">
         <img
           src="/LaReveuse.png"
           alt=""

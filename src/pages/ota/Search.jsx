@@ -180,25 +180,21 @@ export default function OTASearch() {
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
 
-      {/* ─── Hero Search — full-screen banner ─── */}
-      {/* Brand gradient backdrop (matches the banner edges) so the
-          object-contain letterboxing blends invisibly — banner never
-          cropped (STAYLO wordmark + KOH PHANGAN both stay intact). */}
-      <div
-        className="relative overflow-hidden min-h-screen flex flex-col justify-end"
-        style={{ background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 45%, #7E22CE 100%)' }}
-      >
-        {/* STAYLO brand banner — object-contain, whole banner visible */}
+      {/* ─── Hero Search — banner at its native 2.5:1 ratio ─── */}
+      {/* aspect-[2.5/1] = the banner's exact ratio, so object-cover fills
+          it perfectly: no crop, no letterbox bands. min-h floor for phones. */}
+      <div className="relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex flex-col justify-end">
+        {/* STAYLO brand banner */}
         <img
           src="/bannerSTAYLO.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-contain object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* Soft bottom-gradient overlay only (keep banner art visible at top) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/45" />
 
-        <div className="relative max-w-6xl mx-auto w-full px-4 sm:px-6 pb-16 sm:pb-20">
+        <div className="relative max-w-6xl mx-auto w-full px-4 sm:px-6 pb-8 sm:pb-10">
           <div className="text-center mb-6 sm:mb-7">
             {/* Slogan */}
             <p className="text-xs sm:text-sm font-semibold text-[#ffb700] tracking-[0.18em] uppercase mb-3 drop-shadow-lg">
