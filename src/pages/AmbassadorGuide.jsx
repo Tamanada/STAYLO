@@ -148,12 +148,18 @@ export default function AmbassadorGuide() {
     <div>
       {/* ── Hero — JohnLenon.png painting, banner-height band ── */}
       <section className="text-white relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center">
-        <img
-          src="/JohnLenon.png"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+        {/* Responsive hero art — JohnLenon on mobile, the wide
+            Make-Love-Not-War poster on desktop. <picture>/<source media>
+            ensures the browser fetches only the matching image. */}
+        <picture>
+          <source media="(min-width: 640px)" srcSet="/MakeLoveNotWarPoster.png" />
+          <img
+            src="/JohnLenon.png"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </picture>
         {/* Light scrim — keep headline + subtitle legible without muting
             the warm palette of the painting */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-black/10 to-black/35" />
@@ -379,7 +385,7 @@ export default function AmbassadorGuide() {
             </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-6">
+          <div className="grid sm:grid-cols-2 gap-6 [&>*]:min-w-0">
             {/* Unique link */}
             <Card className="p-6 border-2 border-ocean/20">
               <div className="flex items-center gap-3 mb-3">
@@ -389,7 +395,7 @@ export default function AmbassadorGuide() {
                 <h3 className="font-bold text-deep">{t('ambassador_guide.toolkit_link_title', 'Your Unique Link')}</h3>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 flex items-center justify-between gap-2">
-                <code className="text-sm text-ocean font-mono truncate">{ambLink}</code>
+                <code className="text-sm text-ocean font-mono truncate min-w-0">{ambLink}</code>
                 <button
                   onClick={() => handleCopy(ambLink, setCopiedLink)}
                   className="shrink-0 p-2 hover:bg-gray-200 rounded-lg transition-colors"
