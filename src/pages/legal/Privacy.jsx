@@ -2,7 +2,7 @@
 // /legal/privacy — Privacy Policy (Alpha placeholder)
 // ============================================
 // Minimal but legally present. To be replaced with a full GDPR/PDPA
-// privacy policy drafted by Drew & Napier (Singapore) once incorporated.
+// privacy policy drafted with qualified Singapore counsel once incorporated.
 // ============================================
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
@@ -86,7 +86,7 @@ export default function Privacy() {
           <h2 className="text-xl font-bold text-deep">7. Updates</h2>
           <p>
             This policy may evolve as STAYLO incorporates Staylo Holdings Pte. Ltd. and as we
-            implement full GDPR/PDPA compliance with our Singapore counsel (Drew &amp; Napier). Material
+            implement full GDPR/PDPA compliance with our Singapore counsel. Material
             changes will be announced by email.
           </p>
         </section>

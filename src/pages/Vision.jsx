@@ -229,6 +229,7 @@ export default function Vision() {
           src="/EnjoyLife.png"
           alt=""
           aria-hidden="true"
+          fetchPriority="high"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/45" />
@@ -301,7 +302,7 @@ export default function Vision() {
         {/* BuddhaBanner.png — vibrant brand-palette artwork. Fixed-height band
             (h-[576px]) so every section painting renders at an identical size;
             the scrim matches the image height. */}
-        <img src="/BuddhaBanner.png" alt="" aria-hidden="true"
+        <img src="/BuddhaBanner.png" alt="" aria-hidden="true" loading="lazy"
           className="absolute top-0 left-0 w-full h-[576px] object-cover object-center" />
         <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
         <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
@@ -395,6 +396,7 @@ export default function Vision() {
           src="/3Elephants.png"
           alt=""
           aria-hidden="true"
+          loading="lazy"
           className="absolute top-0 left-0 w-full h-[576px] object-cover object-center"
         />
         {/* Dark scrim — lighter than before so more of the painting reads
@@ -440,10 +442,10 @@ export default function Vision() {
             {/* Urgency message */}
             <div className="rounded-2xl p-4 mt-4 mb-4 text-center" style={{ background: 'rgba(255,107,0,0.12)', border: '1px solid rgba(255,107,0,0.35)' }}>
               <p className="text-white font-bold text-lg mb-1">
-                {t('vision.urgency_title', '600 hotels. 3,000 shares. Do the math.')}
+                {t('vision.urgency_title', '500 hotels. 3,000 shares. Do the math.')}
               </p>
               <p className="text-white/80 text-base leading-relaxed">
-                {t('vision.urgency_line1', "That's ~5 shares per hotel.")}<br />
+                {t('vision.urgency_line1', "That's ~6 shares per hotel.")}<br />
                 {t('vision.urgency_line2', 'Max 10 per property at Alpha price.')}<br />
                 {t('vision.urgency_line3', 'Not everyone will get theirs.')}
               </p>
@@ -594,7 +596,7 @@ export default function Vision() {
                 </tbody>
               </table>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-3 italic">{t('vision.capital_note', 'Acquisitions = signing 100 flagship hoteliers KP before M06. Commission = 10% revenue per booking (separate).')}</p>
+            <p className="text-xs text-gray-400 text-center mt-3 italic">{t('vision.capital_note', 'Acquisitions = signing 500 flagship hoteliers KP before M06. Commission = 10% revenue per booking (separate).')}</p>
           </Card>
         </UniformBand>
       </section>
@@ -608,6 +610,7 @@ export default function Vision() {
           src="/UnVoyage.png"
           alt=""
           aria-hidden="true"
+          loading="lazy"
           className="absolute top-0 left-0 w-full h-[576px] object-cover object-center"
         />
         {/* Light scrim — the painting is already dark, so we just nudge
@@ -904,7 +907,7 @@ export default function Vision() {
                     <tr className="bg-libre/10"><td className="py-2 pr-4 font-bold text-libre">{t('vision.proj_alpha_roi', 'Alpha ROI')}</td><td className="text-right px-2 font-bold">1x</td><td className="text-right px-2 font-bold">~5x</td><td className="text-right px-2 font-bold">~20x</td><td className="text-right px-2 font-bold">~90x</td><td className="text-right px-2 font-bold">~206x</td><td className="text-right px-2 font-bold text-libre">~351x</td></tr>
                   </tbody>
                 </table>
-                <p className="text-xs text-white/30 mt-4 text-center italic">{t('vision.proj_disclaimer', 'Base case projections. Not guaranteed. Revenue = GMV x 10% commission.')}</p>
+                <p className="text-sm text-amber-300/90 font-semibold mt-4 text-center">{t('vision.proj_disclaimer', '⚠ Illustrative scenario only — not a forecast, offer, or guarantee of returns. Revenue = GMV × 10% commission.')}</p>
               </div>
             )}
           </div>
@@ -1054,7 +1057,7 @@ export default function Vision() {
             {showInvestorRights && (
               <div className="mt-2 bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
                 <p className="text-sm text-white/70 italic mb-4">
-                  {t('vision.pi_intro', 'Private Investors put up cash without operating hotels. They get voice + protection on their financial stake, but cannot take control of day-to-day operations (which would defeat the cooperative purpose). The 5 mechanisms below are formalized in the Shareholders Agreement (Drew & Napier counsel, post-Singapore incorporation).')}
+                  {t('vision.pi_intro', 'Private Investors put up cash without operating hotels. They get voice + protection on their financial stake, but cannot take control of day-to-day operations (which would defeat the cooperative purpose). The 5 mechanisms below are formalized in the Shareholders Agreement, prepared with qualified Singapore counsel after incorporation.')}
                 </p>
 
                 <div className="space-y-3">
@@ -1133,7 +1136,7 @@ export default function Vision() {
                 </div>
 
                 <p className="text-xs text-white/30 text-center italic mt-4">
-                  {t('vision.pi_footer', 'Standard structure for cooperative platforms with mixed shareholder classes. Drafted by Drew & Napier (Singapore counsel) post-incorporation.')}
+                  {t('vision.pi_footer', 'Standard structure for cooperative platforms with mixed shareholder classes. Drafted with qualified Singapore counsel post-incorporation.')}
                 </p>
               </div>
             )}
@@ -1281,6 +1284,7 @@ export default function Vision() {
           src="/Bob.png"
           alt=""
           aria-hidden="true"
+          loading="lazy"
           className="absolute top-0 left-0 w-full h-[576px] object-cover object-center"
         />
         {/* Dark scrim — lighter pass so the artwork breathes more,
@@ -1335,7 +1339,7 @@ export default function Vision() {
             })()}
           </div>
 
-          <p className="text-center text-xs text-white/65 mt-4">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
+          <p className="text-center text-xs text-white/65 mt-4">{t('vision.docs_note', 'Founding Partner onboarding is open now — reserve your Alpha shares today and submit your documents as you join.')}</p>
         </UniformBand>
       </section>
 

@@ -1,8 +1,8 @@
 // ============================================
 // /legal/terms — Terms of Service (Alpha placeholder)
 // ============================================
-// Minimal but legally present. To be replaced with full T&C drafted by
-// Drew & Napier (Singapore) once Staylo Holdings Pte. Ltd. is incorporated.
+// Minimal but legally present. To be replaced with full T&C drafted with
+// qualified Singapore counsel once Staylo Holdings Pte. Ltd. is incorporated.
 // ============================================
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'

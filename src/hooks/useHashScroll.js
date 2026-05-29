@@ -18,5 +18,7 @@ export function useHashScroll(offset = 80) {
       window.scrollTo({ top: y, behavior: 'smooth' })
     }, 80)
     return () => clearTimeout(tmr)
-  }, [location.hash, offset])
+    // location.key changes on every navigation, so re-scrolling works even
+    // when the user re-selects the same #anchor they're already on.
+  }, [location.hash, location.key, offset])
 }

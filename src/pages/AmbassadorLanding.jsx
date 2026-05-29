@@ -165,6 +165,7 @@ export default function AmbassadorLanding() {
             text legible; the calculator card below stays solid white so the
             sliders and figures remain readable. */}
         <img src="/2sides.png" alt="" aria-hidden="true"
+          loading="lazy"
           className="absolute inset-0 w-full h-full object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/55" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
