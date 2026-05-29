@@ -44,7 +44,7 @@ export default function ShipLanding() {
           src="/SHIP_LOGO.webp"
           alt=""
           aria-hidden="true"
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-none object-contain opacity-30"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-30"
         />
         <div
           className="absolute inset-0"
