@@ -44,11 +44,11 @@ export default function ShipLanding() {
           src="/SHIP_LOGO.webp"
           alt=""
           aria-hidden="true"
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[135%] max-w-none object-contain opacity-70 blur-[1px]"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-none object-contain opacity-30"
         />
         <div
           className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse at center, rgba(10,6,20,0.35) 0%, rgba(10,6,20,0.70) 55%, rgba(10,6,20,0.92) 100%)' }}
+          style={{ background: 'radial-gradient(ellipse at center, rgba(10,6,20,0.20) 0%, rgba(10,6,20,0.50) 60%, rgba(10,6,20,0.82) 100%)' }}
         />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
           <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0' }}>
