@@ -789,6 +789,8 @@
       "guest_relationships": "Relations directes avec les clients — Gardez vos données clients et fidélisez",
       "badge": "Badge de membre fondateur sur votre fiche d'établissement"
     },
+    "see_more": "Voir plus",
+    "see_less": "Voir moins",
     "faq_title": "Questions fréquentes",
     "faq": {
       "q1": "En quoi Staylo est-il différent de Booking.com ?",

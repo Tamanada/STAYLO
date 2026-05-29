@@ -69,6 +69,86 @@ const foundingBenefits = [
 
 const faqKeys = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']
 
+/* ════════════════════════════════════════════════════════════════════════
+ *  UniformBand — equal-height section content wrapper
+ *  ────────────────────────────────────────────────────────────────────────
+ *  Every /vision section (below the hero) clamps its content to a single
+ *  banner height (BAND) so the page reads as a rhythmic stack of equal-height
+ *  bands — matching the hero. When the content is taller than the band it is
+ *  hidden behind a "See more" control that expands the section downward
+ *  (accordion). Short content is padded up to the band so nothing looks
+ *  cramped. The wrapper replaces each section's inner content <div>, so the
+ *  full-bleed background image / scrim (siblings on the <section>) still
+ *  cover the whole band. */
+const BAND = 480
+
+function UniformBand({ children, className = '', dark = false }) {
+  const { t } = useTranslation()
+  const ref = useRef(null)
+  const [measured, setMeasured] = useState(false)
+  const [overflowing, setOverflowing] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+
+  useEffect(() => {
+    const node = ref.current
+    if (!node) return
+    const check = () => {
+      setOverflowing(node.scrollHeight > BAND + 24)
+      setMeasured(true)
+    }
+    check()
+    const ro = new ResizeObserver(check)
+    ro.observe(node)
+    window.addEventListener('resize', check)
+    return () => { ro.disconnect(); window.removeEventListener('resize', check) }
+  }, [])
+
+  // Clamp before the first measurement too, so a tall section never flashes
+  // its full height on mount before snapping shut.
+  const collapsed = !measured || (overflowing && !expanded)
+  const showToggle = measured && overflowing
+  const fadeBg = dark
+    ? 'linear-gradient(to top, rgba(10,6,20,0.85), rgba(10,6,20,0))'
+    : 'linear-gradient(to top, #FFFDF8, rgba(255,253,248,0))'
+
+  return (
+    <>
+      <div
+        ref={ref}
+        className={className}
+        style={{
+          position: 'relative',
+          minHeight: BAND,
+          maxHeight: collapsed ? BAND : undefined,
+          overflow: collapsed ? 'hidden' : undefined,
+        }}
+      >
+        {children}
+        {collapsed && overflowing && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28" style={{ background: fadeBg }} />
+        )}
+      </div>
+      {showToggle && (
+        <div className="relative z-10 flex justify-center mt-5">
+          <button
+            type="button"
+            onClick={() => setExpanded(e => !e)}
+            aria-expanded={expanded}
+            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold cursor-pointer transition-all ${
+              dark
+                ? 'bg-white/15 text-white hover:bg-white/25 border border-white/25 backdrop-blur-sm'
+                : 'bg-deep/5 text-deep hover:bg-deep/10 border border-deep/10'
+            }`}
+          >
+            {expanded ? t('vision.see_less', 'See less') : t('vision.see_more', 'See more')}
+            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+        </div>
+      )}
+    </>
+  )
+}
+
 export default function Vision() {
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -178,7 +258,7 @@ export default function Vision() {
 
       {/* Company Structure — Option B (light brand cards, orange→pink→purple cycle) */}
       <section id="v-structure" className="py-8 sm:py-12 bg-[#FFFDF8]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <UniformBand className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
             <p className="section-label mb-3">{t('vision.structure_label', 'Structure')}</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.structure_title', 'The Staylo Structure')}</h2>
@@ -210,7 +290,7 @@ export default function Vision() {
               <p className="text-sm text-gray-500">{t('vision.structure_transfer_desc', 'Shares are freely transferable. Voting rights stay with the active property registration, not the shares themselves.')}</p>
             </Card>
           </div>
-        </div>
+        </UniformBand>
       </section>
 
       {/* What no OTA can copy — structural moats that flow from WHO owns
@@ -223,7 +303,7 @@ export default function Vision() {
         <img src="/BuddhaBanner.png" alt="" aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+        <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
               {t('vision.moat_badge', 'The unfair advantage')}
@@ -248,12 +328,12 @@ export default function Vision() {
               </Card>
             ))}
           </div>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Bitcoin Strategy */}
       <section id="v-bitcoin" className="py-8 sm:py-12 bg-gradient-to-br from-[#F7931A]/5 via-white to-[#F7931A]/10">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <UniformBand className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <Badge variant="golden" className="mb-3">{t('vision.btc_badge', 'Bitcoin-Native')}</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-3">{t('vision.btc_title', 'Bitcoin at the Core')}</h2>
@@ -301,7 +381,7 @@ export default function Vision() {
             ))}
           </div>
           <p className="text-[10px] text-gray-400 text-center mt-3 italic">{t('vision.btc_sources', 'Sources: CoinsPaid, Triple-A, Travala, PhocusWire')}</p>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Live Share Counter — emotional brand moment: elephants at sunset
@@ -323,7 +403,7 @@ export default function Vision() {
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-[15%] right-[8%] w-64 h-64 bg-[#FFAB40]/15 rounded-full blur-3xl" />
         </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
+        <UniformBand dark={true} className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-5">
             <h2 className="text-3xl sm:text-4xl font-bold mb-3">{t('vision.share_sale_title', 'Alpha Share Whitelisting')}</h2>
             <p className="text-white/70">{t('vision.share_sale_subtitle', 'Phase Alpha — Founding Partners only. Limited to 3,000 shares.')}</p>
@@ -402,7 +482,7 @@ export default function Vision() {
               <p className="text-sm text-white/50">{t('vision.commission_forever', 'Commission — forever')}</p>
             </div>
           </div>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Fund Allocation — Founders, discover how you will invest in STAYLO
@@ -413,7 +493,7 @@ export default function Vision() {
           others carry icon-grid breakdowns.
           One row open at a time (setExpandedAlloc) keeps mobile clean. */}
       <section id="v-invest" className="py-8 bg-white">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <UniformBand className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.fund_title', 'Founders, discover how you will invest in STAYLO')}</h2>
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency. Click any line to discover the strategy behind it.')}</p>
@@ -511,7 +591,7 @@ export default function Vision() {
             </div>
             <p className="text-xs text-gray-400 text-center mt-3 italic">{t('vision.capital_note', 'Acquisitions = signing 100 flagship hoteliers KP before M06. Commission = 10% revenue per booking (separate).')}</p>
           </Card>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Roadmap — horizontal timeline with click-to-expand popup
@@ -529,7 +609,7 @@ export default function Vision() {
             the contrast a touch to ensure the title and subtitle read */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+        <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <h2
             className="text-3xl sm:text-4xl font-bold text-white text-center mb-3"
             style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
@@ -597,7 +677,7 @@ export default function Vision() {
               ))}
             </div>
           </div>
-        </div>
+        </UniformBand>
 
         {/* Popup modal — opens when a phase card is clicked */}
         {openPhase && (
@@ -661,7 +741,7 @@ export default function Vision() {
 
       {/* Revenue Distribution */}
       <section className="py-8 sm:py-12">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <UniformBand className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.revenue_distribution_title', 'Where The Money Goes')}</h2>
             <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.revenue_distribution_subtitle', 'Full transparency. Every dollar accounted for.')}</p>
@@ -769,7 +849,7 @@ export default function Vision() {
             <p className="text-center text-xs text-gray-400 mt-3">{t('vision.flow_disclaimer', 'Based on average 22% OTA commission. Actual savings depend on your current platform and rates.')}</p>
           </div>
 
-        </div>
+        </UniformBand>
       </section>
 
       {/* Detailed Projections — Option C deep brand-purple, premium/financial */}
@@ -778,7 +858,7 @@ export default function Vision() {
           <div className="absolute top-20 right-[5%] w-96 h-96 bg-[#FF6B00]/12 rounded-full blur-3xl" />
           <div className="absolute bottom-20 left-[5%] w-96 h-96 bg-[#FF3CB4]/12 rounded-full blur-3xl" />
         </div>
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6">
+        <UniformBand dark={true} className="relative max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <Badge variant="golden" className="mb-4">{t('vision.projections_badge', 'Financial Projections')}</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold mb-3"><span className="text-gradient">{t('vision.projections_title', 'The Roadmap to $1B')}</span></h2>
@@ -1053,12 +1133,12 @@ export default function Vision() {
               </div>
             )}
           </div>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Ambassador Program */}
       <section className="py-8 bg-gradient-to-br from-electric/5 via-white to-sunset/5">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <UniformBand className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
             <Badge variant="golden" className="mb-4">{t('vision.marketing_badge', 'Passive Income Program')}</Badge>
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.marketing_title', 'Become an Ambassador')}</h2>
@@ -1156,12 +1236,12 @@ export default function Vision() {
               <p className="text-[10px] text-gray-400 text-center mt-3">{t('vision.example_disclaimer', 'Based on 20 rooms × $60/night × 365 days × 100% online booking rate. Actual results vary.')}</p>
             </div>
           </Card>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Founding benefits — brand palette cycle */}
       <section className="py-10 sm:py-12 bg-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <UniformBand className="max-w-4xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl sm:text-4xl font-bold text-deep text-center mb-8">
             {t('vision.founding_title')}
           </h2>
@@ -1185,7 +1265,7 @@ export default function Vision() {
               })
             })()}
           </div>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Required Documents — Bob.png as background (brand-aligned artwork) */}
@@ -1204,7 +1284,7 @@ export default function Vision() {
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 right-[8%] w-64 h-64 bg-[#FFAB40]/12 rounded-full blur-3xl" />
         </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
+        <UniformBand dark={true} className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
             <Badge variant="golden" className="mb-4 text-sm sm:text-base">{t('vision.docs_badge', 'Registration Process')}</Badge>
             <h2 className="text-4xl sm:text-5xl font-bold mb-4"><span className="text-gradient">{t('vision.docs_title', 'What You Need to Join')}</span></h2>
@@ -1250,12 +1330,12 @@ export default function Vision() {
           </div>
 
           <p className="text-center text-sm text-white/65 mt-6">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
-        </div>
+        </UniformBand>
       </section>
 
       {/* FAQ — Accordion */}
       <section id="v-faq" className="py-8 sm:py-12">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <UniformBand className="max-w-3xl mx-auto px-4 sm:px-6">
           <h2 className="text-3xl font-bold text-deep text-center mb-5">
             {t('vision.faq_title')}
           </h2>
@@ -1280,7 +1360,7 @@ export default function Vision() {
               )
             })}
           </div>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Founder Section — Option C deep brand-purple */}
@@ -1289,7 +1369,7 @@ export default function Vision() {
           <div className="absolute top-0 left-[15%] w-[420px] h-[420px] bg-[#FF6B00]/10 rounded-full blur-3xl" />
           <div className="absolute bottom-0 right-[15%] w-[420px] h-[420px] bg-[#6C5CE7]/15 rounded-full blur-3xl" />
         </div>
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6">
+        <UniformBand dark={true} className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-6">
             <Badge variant="golden" className="mb-4">{t('vision.founder_badge', 'The Founder')}</Badge>
           </div>
@@ -1328,12 +1408,12 @@ export default function Vision() {
               </p>
             </div>
           </div>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Bottom CTA */}
       <section className="py-8 sm:py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <UniformBand className="max-w-4xl mx-auto px-4 sm:px-6">
           <div className="relative bg-gradient-to-br from-electric via-sunset to-sunrise rounded-3xl p-10 sm:p-14 text-center text-white overflow-hidden animate-gradient">
             <Sparkles size={24} className="absolute top-6 left-8 text-golden/50 animate-float" />
             <Sparkles size={18} className="absolute bottom-8 right-10 text-white/30 animate-float" style={{ animationDelay: '1s' }} />
@@ -1346,7 +1426,7 @@ export default function Vision() {
               </button>
             </Link>
           </div>
-        </div>
+        </UniformBand>
       </section>
 
       {/* Company footer */}

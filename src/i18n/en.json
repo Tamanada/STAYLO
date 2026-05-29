@@ -788,6 +788,8 @@
       "guest_relationships": "Direct Guest Relationships — Keep your guest data and build loyalty",
       "badge": "Founding Member badge on your property listing"
     },
+    "see_more": "See more",
+    "see_less": "See less",
     "faq_title": "Frequently Asked Questions",
     "faq": {
       "q1": "How is Staylo different from Booking.com?",
