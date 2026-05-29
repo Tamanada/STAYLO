@@ -628,7 +628,7 @@ export default function Vision() {
             {t('vision.roadmap_subtitle', 'Click any step to see what we ship and when.')}
           </p>
 
-          <div className="relative">
+          <div className="relative mt-12 sm:mt-24">
             {/* Connecting line behind the cards — brand-gradient bar, desktop only */}
             <div
               className="hidden md:block absolute top-9 left-[8%] right-[8%] h-1 rounded-full opacity-40 pointer-events-none"
