@@ -217,14 +217,19 @@ export default function Vision() {
           STAYLO (ownership, guest data, association alliance, alignment).
           Deliberately avoids the BTC-floor / +30%-spend points already made
           in the Bitcoin section below. */}
-      <section id="v-moat" className="py-8 sm:py-12 bg-gradient-to-br from-[#FF3CB4]/5 via-white to-[#6C5CE7]/5">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <section id="v-moat" className="py-10 sm:py-16 relative overflow-hidden">
+        {/* BuddhaBanner.png — vibrant brand-palette artwork. Scrim darkens it
+            so the white heading reads and the white cards pop on top. */}
+        <img src="/BuddhaBanner.png" alt="" aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/60" />
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
-            <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FF3CB4' }}>
+            <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
               {t('vision.moat_badge', 'The unfair advantage')}
             </p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-3">{t('vision.moat_title', 'What no OTA can copy')}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.moat_subtitle', 'Four advantages baked into who owns STAYLO — not features a competitor can ship.')}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>{t('vision.moat_title', 'What no OTA can copy')}</h2>
+            <p className="text-white/90 max-w-2xl mx-auto text-lg" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>{t('vision.moat_subtitle', 'Four advantages baked into who owns STAYLO — not features a competitor can ship.')}</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {[
