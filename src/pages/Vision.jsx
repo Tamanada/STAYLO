@@ -463,7 +463,7 @@ export default function Vision() {
                 {t('vision.urgency_line2', 'Max 10 per property at Alpha price.')}<br />
                 {t('vision.urgency_line3', 'Not everyone will get theirs.')}
               </p>
-              <p className="font-black text-sm uppercase tracking-wider mt-2" style={{ color: '#FF6B00' }}>
+              <p className="font-black text-sm uppercase tracking-wider mt-2" style={{ color: '#fff', textShadow: '0 0 12px rgba(255,107,0,0.95), 0 2px 6px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9)' }}>
                 {t('vision.urgency_cta', 'First come, first served. No exceptions.')}
               </p>
             </div>
