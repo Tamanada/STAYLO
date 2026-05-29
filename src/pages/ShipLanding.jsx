@@ -36,19 +36,18 @@ export default function ShipLanding() {
       />
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden text-white" style={{ background: '#0a0614' }}>
-        {/* SHIP logo as the hero background — large, centered and clearly
-            recognizable. object-contain shows the whole mark; a soft radial
-            scrim darkens the edges so the headline stays crisp. */}
+      <section className="relative overflow-hidden text-white" style={{ background: 'linear-gradient(135deg, #241048 0%, #150a2e 100%)' }}>
+        {/* SHIP logo fills the hero edge-to-edge. A light radial scrim keeps
+            the headline readable without dimming the brand colors too much. */}
         <img
           src="/SHIP_LOGO.webp"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center opacity-30"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-55"
         />
         <div
           className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse at center, rgba(10,6,20,0.20) 0%, rgba(10,6,20,0.50) 60%, rgba(10,6,20,0.82) 100%)' }}
+          style={{ background: 'radial-gradient(ellipse at center, rgba(20,10,46,0.05) 0%, rgba(20,10,46,0.28) 60%, rgba(20,10,46,0.55) 100%)' }}
         />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
           <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0' }}>
