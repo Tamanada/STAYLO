@@ -162,7 +162,7 @@ export function Hero() {
             WebkitBackdropFilter: 'blur(8px)',
           }}>
           <span style={{ color: '#FFE54C', fontSize: '11px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
-            {t('home_hero.badge', '✦ Built with hoteliers, for hoteliers')}
+            {t('home_hero.badge', '✦ Built with hoteliers, for hoteliers ✦')}
           </span>
         </div>
 
