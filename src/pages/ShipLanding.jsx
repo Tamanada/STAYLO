@@ -37,14 +37,19 @@ export default function ShipLanding() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden text-white" style={{ background: 'linear-gradient(135deg, #241048 0%, #150a2e 100%)' }}>
-        {/* SHIP logo fills the hero edge-to-edge. A light radial scrim keeps
-            the headline readable without dimming the brand colors too much. */}
-        <img
-          src="/SHIP_LOGO.webp"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center opacity-55"
-        />
+        {/* Hero background fills edge-to-edge. A light radial scrim keeps the
+            headline readable without dimming the brand colors too much.
+            Desktop gets the wide SHIP banner; mobile keeps the square logo
+            (the 2.5:1 banner would crop to a sliver on a tall phone hero). */}
+        <picture>
+          <source media="(min-width: 640px)" srcSet="/ShipBanner.webp" />
+          <img
+            src="/SHIP_LOGO.webp"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-55"
+          />
+        </picture>
         <div
           className="absolute inset-0"
           style={{ background: 'radial-gradient(ellipse at center, rgba(20,10,46,0.05) 0%, rgba(20,10,46,0.28) 60%, rgba(20,10,46,0.55) 100%)' }}
