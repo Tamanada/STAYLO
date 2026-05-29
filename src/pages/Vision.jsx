@@ -413,11 +413,14 @@ export default function Vision() {
 
           {/* Big counter */}
           <div className="bg-white/8 backdrop-blur-md border border-[#FF6B00]/30 rounded-3xl p-8 sm:p-10 mb-4">
-            <div className="flex items-center justify-center gap-2 mb-3">
-              <span className="text-6xl sm:text-7xl font-black text-gradient">{sharesSold}</span>
-              <span className="text-2xl text-white/40 font-medium">/ {totalAlphaShares.toLocaleString()}</span>
+            {/* Counter + label on a single baseline-aligned line
+                (e.g. "0 / 3,000 parts alpha réservées"). Wraps only on very
+                narrow phones. */}
+            <div className="flex flex-wrap items-baseline justify-center gap-x-3 gap-y-1 mb-4">
+              <span className="text-6xl sm:text-7xl font-black text-gradient leading-none">{sharesSold}</span>
+              <span className="text-3xl sm:text-4xl text-white/40 font-medium">/ {totalAlphaShares.toLocaleString()}</span>
+              <span className="text-2xl sm:text-3xl text-white/75 font-semibold">{t('vision.shares_claimed', 'alpha shares claimed')}</span>
             </div>
-            <p className="text-center text-white/60 text-base mb-3">{t('vision.shares_claimed', 'alpha shares claimed')}</p>
 
             {/* Progress bar */}
             <div className="w-full bg-white/10 rounded-full h-4 mb-4 overflow-hidden">
