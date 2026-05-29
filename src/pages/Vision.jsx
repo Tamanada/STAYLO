@@ -64,7 +64,7 @@ const foundingBenefits = [
   { key: 'badge',              icon: BadgeCheck, text: 'Founding Member badge on your property listing' },
   // SHIP — the operational app, free for Founding Partners. Uses the SHIP
   // logo tile as its icon instead of a generic glyph.
-  { key: 'ship', iconSrc: '/SHIP_LOGO.webp',      text: 'STAYLO Ship (SHIP) — the full operational app, free for life. Run your whole hotel from your pocket.' },
+  { key: 'ship', iconSrc: '/SHIP_LOGO.webp',      text: 'STAYLO Ship (Staylo Hotelier In-Pocket) — the full operational app, free for life. Run your whole hotel from your pocket.' },
 ]
 
 const faqKeys = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']
@@ -1640,7 +1640,7 @@ function TechDetail({ t }) {
   const items = [
     { title: t('vision.tech_web_title',    'Web platform & guest PWA'), body: t('vision.tech_web_body',    'The booking site, the hotelier dashboard, and the guest PWA (app.staylo.app) — all React, all installable, all reaching 14 languages on day one.') },
     { title: t('vision.tech_mobile_title', 'Native mobile apps'),       body: t('vision.tech_mobile_body', 'iOS + Android wraps via Capacitor for BLE room keys, NFC payments, push notifications, and biometric auth. Phase 2 priority once the PWA is validated.') },
-    { title: t('vision.tech_pms_title',    'STAYLO Ship — all-in-one hotelier app'),   body: t('vision.tech_pms_body',    'STAYLO Ship (SHIP): PMS, front desk, housekeeping, F&B, and team chat — one app that replaces the 6-8 separate SaaS subscriptions hoteliers currently juggle. 17,800+ lines of UI shipped.') },
+    { title: t('vision.tech_pms_title',    'STAYLO Ship — all-in-one hotelier app'),   body: t('vision.tech_pms_body',    'STAYLO Ship (Staylo Hotelier In-Pocket): PMS, front desk, housekeeping, F&B, and team chat — one app that replaces the 6-8 separate SaaS subscriptions hoteliers currently juggle. 17,800+ lines of UI shipped.') },
     { title: t('vision.tech_chain_title',  'Blockchain & $STAY token'), body: t('vision.tech_chain_body',  'Solana SPL Token-2022 deployment, NFT booking proofs, escrow smart contracts, Lightning Network payment rail integration. Security audits included.') },
   ]
   return (

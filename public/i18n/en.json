@@ -60,7 +60,7 @@
     "deal_commission_sub": "Locked forever — vs 17–22% OTA",
     "deal_founding": "Founding Partner",
     "deal_founding_sub": "Status — forever",
-    "deal_ship": "STAYLO Ship (SHIP)",
+    "deal_ship": "STAYLO Ship (Staylo Hotelier In-Pocket)",
     "deal_ship_sub": "The full operational app — free for life. Run your whole hotel from your pocket.",
     "deal_limited": "Only 3,000 alpha shares available",
     "who_title": "Who Can Apply",
@@ -789,7 +789,7 @@
       "governance": "Vote on platform decisions and feature priorities",
       "guest_relationships": "Direct Guest Relationships — Keep your guest data and build loyalty",
       "badge": "Founding Member badge on your property listing",
-      "ship": "STAYLO Ship (SHIP) — the full operational app, free for life. Run your whole hotel from your pocket."
+      "ship": "STAYLO Ship (Staylo Hotelier In-Pocket) — the full operational app, free for life. Run your whole hotel from your pocket."
     },
     "see_more": "See more",
     "see_less": "See less",
@@ -877,7 +877,7 @@
     "tech_mobile_title": "Native mobile apps",
     "tech_mobile_body": "iOS + Android wraps via Capacitor for BLE room keys, NFC payments, push notifications, and biometric auth. Phase 2 priority once the PWA is validated.",
     "tech_pms_title": "STAYLO Ship — all-in-one hotelier app",
-    "tech_pms_body": "STAYLO Ship (SHIP): PMS, front desk, housekeeping, staff scheduling, tasks, F&B and team chat — one app that replaces the 6-8 separate SaaS subscriptions hoteliers juggle today. 17,800+ lines of UI shipped.",
+    "tech_pms_body": "STAYLO Ship (Staylo Hotelier In-Pocket): PMS, front desk, housekeeping, staff scheduling, tasks, F&B and team chat — one app that replaces the 6-8 separate SaaS subscriptions hoteliers juggle today. 17,800+ lines of UI shipped.",
     "tech_chain_title": "Blockchain & $STAY token",
     "tech_chain_body": "Solana SPL Token-2022 deployment, NFT booking proofs, escrow smart contracts, Lightning Network payment rail integration. Security audits included.",
     "ops_detail_title": "Operations Runway — $690K, the people",

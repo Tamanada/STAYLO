@@ -60,7 +60,7 @@
     "deal_commission_sub": "Verrouillé à vie — contre 17–22 % chez les OTA",
     "deal_founding": "Partenaire Fondateur",
     "deal_founding_sub": "Statut — pour toujours",
-    "deal_ship": "STAYLO Ship (SHIP)",
+    "deal_ship": "STAYLO Ship (Staylo Hotelier In-Pocket)",
     "deal_ship_sub": "L'app opérationnelle complète — gratuite à vie. Gérez tout votre hôtel depuis votre poche.",
     "deal_limited": "Seulement 3 000 parts alpha disponibles",
     "who_title": "Qui peut postuler",
@@ -790,7 +790,7 @@
       "governance": "Votez sur les décisions et les priorités de la plateforme",
       "guest_relationships": "Relations directes avec les clients — Gardez vos données clients et fidélisez",
       "badge": "Badge de membre fondateur sur votre fiche d'établissement",
-      "ship": "STAYLO Ship (SHIP) — l'application opérationnelle complète, gratuite à vie. Gérez tout votre hôtel depuis votre poche."
+      "ship": "STAYLO Ship (Staylo Hotelier In-Pocket) — l'application opérationnelle complète, gratuite à vie. Gérez tout votre hôtel depuis votre poche."
     },
     "see_more": "Voir plus",
     "see_less": "Voir moins",
@@ -878,7 +878,7 @@
     "tech_mobile_title": "Apps mobiles natives",
     "tech_mobile_body": "Wraps iOS + Android via Capacitor pour clés de chambre BLE, paiements NFC, push notifications et auth biométrique. Priorité phase 2 une fois la PWA validée.",
     "tech_pms_title": "STAYLO Ship — l'app hôtelière tout-en-un",
-    "tech_pms_body": "STAYLO Ship (SHIP) : PMS, réception, housekeeping, planning du staff, tâches, F&B et messagerie d'équipe — une seule app qui remplace les 6 à 8 abonnements SaaS séparés que les hôteliers jonglent aujourd'hui. 17 800+ lignes d'UI livrées.",
+    "tech_pms_body": "STAYLO Ship (Staylo Hotelier In-Pocket) : PMS, réception, housekeeping, planning du staff, tâches, F&B et messagerie d'équipe — une seule app qui remplace les 6 à 8 abonnements SaaS séparés que les hôteliers jonglent aujourd'hui. 17 800+ lignes d'UI livrées.",
     "tech_chain_title": "Blockchain & token $STAY",
     "tech_chain_body": "Déploiement Solana SPL Token-2022, preuves de réservation en NFT, smart contracts escrow, intégration Lightning Network. Audits de sécurité inclus.",
     "ops_detail_title": "Operations Runway — 690 000$, les humains",
