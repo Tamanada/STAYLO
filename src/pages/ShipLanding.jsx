@@ -33,11 +33,16 @@ export default function ShipLanding() {
       />
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden text-white" style={{ background: 'linear-gradient(160deg, #0a0614 0%, #1a0d2e 55%, #0a0614 100%)' }}>
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-[10%] w-96 h-96 bg-[#00B894]/15 rounded-full blur-3xl" />
-          <div className="absolute bottom-[-10%] right-[10%] w-96 h-96 bg-[#6C5CE7]/20 rounded-full blur-3xl" />
-        </div>
+      <section className="relative overflow-hidden text-white" style={{ background: '#0a0614' }}>
+        {/* SHIP logo as an ambient full-bleed background — blurred + scaled
+            so its brand gradient washes the hero; scrim keeps text crisp. */}
+        <img
+          src="/SHIP_LOGO.webp"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center scale-125 blur-2xl opacity-60"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0614]/70 via-[#0a0614]/55 to-[#0a0614]/80" />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
           <img
             src="/SHIP_LOGO.webp"
