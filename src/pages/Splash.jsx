@@ -70,7 +70,7 @@ export default function Splash() {
           like one consistent brand surface. */}
       {/* Same 2.5:1 banner-height band as every other hero. Type scale
           tuned so the whole stack fits inside it without clipping. */}
-      <section className="relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center">
+      <section className="relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center">
         {/* Painting background */}
         <img
           src="/ThePath.png"
@@ -130,7 +130,7 @@ export default function Splash() {
 
           {/* CTA */}
           <Link to={user ? '/dashboard' : '/register'}>
-            <button className="group relative px-8 py-3 bg-gradient-to-r from-golden via-sunrise to-sunset text-white font-bold text-base rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer animate-pulse-glow">
+            <button className="group relative px-8 py-3 bg-gradient-to-r from-golden via-sunrise to-sunset text-white font-bold text-base rounded-2xl shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 w-full sm:w-auto sm:min-w-[260px] inline-flex items-center justify-center gap-3 cursor-pointer animate-pulse-glow">
               <span>{t('splash.cta')}</span>
               <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </button>

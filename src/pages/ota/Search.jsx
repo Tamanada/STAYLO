@@ -183,7 +183,7 @@ export default function OTASearch() {
       {/* ─── Hero Search — banner at its native 2.5:1 ratio ─── */}
       {/* aspect-[2.5/1] = the banner's exact ratio, so object-cover fills
           it perfectly: no crop, no letterbox bands. min-h floor for phones. */}
-      <div className="relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex flex-col justify-end">
+      <div className="relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex flex-col justify-end">
         {/* STAYLO brand banner */}
         <img
           src="/bannerSTAYLO.png"

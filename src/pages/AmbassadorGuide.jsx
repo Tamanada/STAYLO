@@ -147,7 +147,7 @@ export default function AmbassadorGuide() {
   return (
     <div>
       {/* ── Hero — JohnLenon.png painting, banner-height band ── */}
-      <section className="text-white relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center">
+      <section className="text-white relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center">
         <img
           src="/JohnLenon.png"
           alt=""

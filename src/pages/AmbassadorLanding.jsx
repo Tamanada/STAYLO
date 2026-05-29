@@ -72,7 +72,7 @@ export default function AmbassadorLanding() {
           Warm pink/red/orange palette with gold/teal hair. Backdrop
           gradient matches the painting's warm edge tones so any
           letterboxing blends invisibly. */}
-      <section className="text-white relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center">
+      <section className="text-white relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center">
         <img
           src="/LaReveuse.png"
           alt=""
@@ -265,7 +265,7 @@ export default function AmbassadorLanding() {
             <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}>
               <h4 className="text-base font-semibold text-white mb-2" style={{ textShadow: '0 1px 5px rgba(0,0,0,0.5)' }}>{t('ambassador_landing.breakdown_title', 'Per hotel calculation')}</h4>
               <div className="space-y-1.5 text-sm text-white/85" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.45)' }}>
-                <div className="flex justify-between">
+                <div className="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-2">
                   <span>{roomCount} {t('ambassador_landing.breakdown_rooms', 'rooms')} × ${nightlyRate}/{t('ambassador_landing.breakdown_night', 'night')} × {occupancy}% {t('ambassador_landing.breakdown_occupancy', 'occupancy')}</span>
                   <span className="font-semibold text-white">~${Math.round(annualPerHotel / 1000)}K/{t('ambassador_landing.breakdown_year', 'year')}</span>
                 </div>
