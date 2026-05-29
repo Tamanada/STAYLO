@@ -174,7 +174,7 @@ export function Navbar() {
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm transition-colors"
                   style={{ color: '#636E72' }}>
                   <Globe size={15} />
-                  <span>{currentLang.flag} {currentLang.code.toUpperCase()}</span>
+                  <span>{currentLang.code.toUpperCase()}</span>
                   <ChevronDown size={13} />
                 </button>
                 {langOpen && (
@@ -232,7 +232,7 @@ export function Navbar() {
                 <button onClick={() => setLangOpen(!langOpen)}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm"
                   style={{ background: '#F8F6F0', color: '#636E72' }}>
-                  <span>{currentLang.flag}</span>
+                  <Globe size={14} />
                   <span className="text-xs font-bold">{currentLang.code.toUpperCase()}</span>
                 </button>
                 {langOpen && (
