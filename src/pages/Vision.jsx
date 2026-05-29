@@ -238,12 +238,13 @@ export default function Vision() {
               { Icon: Scale,  color: '#6C5CE7', tk: 'moat_assoc',  tt: 'Your association leads it',     bd: 'OTAs went around hotelier associations. STAYLO is built with them — your association takes a Founding seat and its members co-own the platform.' },
               { Icon: Target, color: '#00B894', tk: 'moat_align',  tt: 'You can’t be out-competed',     bd: 'A rival can’t poach hoteliers off a platform they already own. The bigger the cooperative grows, the harder it is to displace — alignment, not lock-in.' },
             ].map((c) => (
-              <Card key={c.tk} className="p-6">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: c.color + '1A' }}>
-                  <c.Icon size={28} style={{ color: c.color }} />
+              <Card key={c.tk} className="p-6"
+                style={{ background: 'rgba(255,255,255,0.30)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.35)' }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: c.color + '40' }}>
+                  <c.Icon size={28} className="text-white" />
                 </div>
-                <h3 className="text-lg font-bold text-deep mb-2">{t(`vision.${c.tk}_title`, c.tt)}</h3>
-                <p className="text-sm text-gray-500">{t(`vision.${c.tk}_body`, c.bd)}</p>
+                <h3 className="text-lg font-bold text-white mb-2" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.5)' }}>{t(`vision.${c.tk}_title`, c.tt)}</h3>
+                <p className="text-sm text-white/85" style={{ textShadow: '0 1px 5px rgba(0,0,0,0.45)' }}>{t(`vision.${c.tk}_body`, c.bd)}</p>
               </Card>
             ))}
           </div>
