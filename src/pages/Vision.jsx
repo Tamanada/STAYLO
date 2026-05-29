@@ -412,7 +412,7 @@ export default function Vision() {
           </div>
 
           {/* Big counter */}
-          <div className="bg-white/8 backdrop-blur-md border border-[#FF6B00]/30 rounded-3xl p-8 sm:p-10 mb-4">
+          <div className="bg-white/30 backdrop-blur-md border border-[#FF6B00]/30 rounded-3xl p-8 sm:p-10 mb-4">
             {/* Counter + label on a single baseline-aligned line
                 (e.g. "0 / 3,000 parts alpha réservées"). Wraps only on very
                 narrow phones. */}
@@ -470,19 +470,19 @@ export default function Vision() {
 
           {/* Key numbers */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
+            <div className="bg-white/30 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black text-white">{totalShares.toLocaleString()}</p>
               <p className="text-sm text-white/50">{t('vision.total_shares', 'Total shares')}</p>
             </div>
-            <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
+            <div className="bg-white/30 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black" style={{ color: '#FDCB6E' }}>$1,000</p>
               <p className="text-sm text-white/50">{t('vision.per_share_alpha', 'Per share (alpha)')}</p>
             </div>
-            <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
+            <div className="bg-white/30 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black text-white">1–10</p>
               <p className="text-sm text-white/50">{t('vision.shares_per_property', '1 to 10 shares per property')}</p>
             </div>
-            <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
+            <div className="bg-white/30 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black" style={{ color: '#FF6B00' }}>10%</p>
               <p className="text-sm text-white/50">{t('vision.commission_forever', 'Commission — forever')}</p>
             </div>
@@ -645,10 +645,10 @@ export default function Vision() {
                   key={phase.key}
                   type="button"
                   onClick={() => setOpenPhase(phase)}
-                  className={`relative flex-shrink-0 w-[180px] md:w-auto snap-start flex flex-col items-center text-center bg-white/[0.66] backdrop-blur-md rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer ${
+                  className={`relative flex-shrink-0 w-[180px] md:w-auto snap-start flex flex-col items-center text-center bg-white/30 backdrop-blur-md rounded-2xl p-4 sm:p-5 border transition-all duration-200 cursor-pointer ${
                     i === 0
-                      ? 'border-libre/50 shadow-lg shadow-libre/15 hover:shadow-xl hover:bg-white/80 hover:-translate-y-1'
-                      : 'border-white/50 hover:border-white/70 hover:bg-white/80 hover:shadow-xl hover:-translate-y-1'
+                      ? 'border-libre/50 shadow-lg shadow-libre/15 hover:shadow-xl hover:bg-white/45 hover:-translate-y-1'
+                      : 'border-white/50 hover:border-white/70 hover:bg-white/45 hover:shadow-xl hover:-translate-y-1'
                   }`}
                 >
                   {/* Icon tile sits ON the connecting line at the top.
@@ -666,18 +666,18 @@ export default function Vision() {
                       <phase.icon size={24} className="text-white" />
                     </div>
                   )}
-                  <h3 className="text-sm sm:text-base font-extrabold text-deep mb-0.5 line-clamp-1 tracking-tight">
+                  <h3 className="text-sm sm:text-base font-extrabold text-white mb-0.5 line-clamp-1 tracking-tight" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.55)' }}>
                     {t(`vision.${phase.key}`, phase.title)}
                   </h3>
                   {phase.byline && (
-                    <p className="text-[10px] text-gray-500 font-semibold mb-1.5 -mt-0.5">{phase.byline}</p>
+                    <p className="text-[10px] text-white/75 font-semibold mb-1.5 -mt-0.5">{phase.byline}</p>
                   )}
                   <div className="flex items-center justify-center mb-1.5 mt-auto pt-2">
                     <Badge variant={i === 0 ? 'green' : 'gray'} className="text-[10px]">
                       {phase.status}
                     </Badge>
                   </div>
-                  <p className="text-[11px] text-gray-600 font-medium">{phase.timeline}</p>
+                  <p className="text-[11px] text-white/80 font-medium" style={{ textShadow: '0 1px 5px rgba(0,0,0,0.5)' }}>{phase.timeline}</p>
                 </button>
               ))}
             </div>
@@ -1311,7 +1311,7 @@ export default function Vision() {
               return docs.map((doc, i) => {
                 const color = palette[i % palette.length]
                 return (
-                  <div key={i} className="bg-white/8 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex gap-3 hover:bg-white/12 transition-all" style={{ borderColor: color + '33' }}>
+                  <div key={i} className="bg-white/30 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex gap-3 hover:bg-white/40 transition-all" style={{ borderColor: color + '33' }}>
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '20' }}>
                       <doc.icon size={20} style={{ color }} />
                     </div>
