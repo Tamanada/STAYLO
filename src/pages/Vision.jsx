@@ -745,7 +745,7 @@ export default function Vision() {
       </section>
 
       {/* Revenue Distribution */}
-      <section className="py-8 sm:py-12">
+      <section id="v-revenue" className="py-8 sm:py-12">
         <UniformBand className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-3">
             <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.revenue_distribution_title', 'Where The Money Goes')}</h2>
