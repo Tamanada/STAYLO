@@ -224,7 +224,7 @@ export default function Vision() {
       />
       {/* Hero — EnjoyLife.png as background (consistent with the rest
           of the artwork-backed brand surface across the site) */}
-      <section className="text-white relative overflow-hidden aspect-[2.5/1] min-h-[440px] flex items-center">
+      <section className="text-white relative overflow-hidden h-[576px] flex items-center bg-[#0a0614]">
         <img
           src="/EnjoyLife.png"
           alt=""
@@ -297,12 +297,13 @@ export default function Vision() {
           STAYLO (ownership, guest data, association alliance, alignment).
           Deliberately avoids the BTC-floor / +30%-spend points already made
           in the Bitcoin section below. */}
-      <section id="v-moat" className="py-10 sm:py-16 relative overflow-hidden">
-        {/* BuddhaBanner.png — vibrant brand-palette artwork. Scrim darkens it
-            so the white heading reads and the white cards pop on top. */}
+      <section id="v-moat" className="py-12 relative overflow-hidden bg-[#0a0614]">
+        {/* BuddhaBanner.png — vibrant brand-palette artwork. Fixed-height band
+            (h-[576px]) so every section painting renders at an identical size;
+            the scrim matches the image height. */}
         <img src="/BuddhaBanner.png" alt="" aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
+          className="absolute top-0 left-0 w-full h-[576px] object-cover object-center" />
+        <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
         <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
@@ -387,17 +388,18 @@ export default function Vision() {
       {/* Live Share Counter — emotional brand moment: elephants at sunset
           (the painting literally IS our brand palette: orange-pink-purple sky,
           rooted in Koh Phangan with palm silhouettes). */}
-      <section id="v-alpha" className="py-8 text-white relative overflow-hidden">
-        {/* Painting as full-bleed background */}
+      <section id="v-alpha" className="py-12 text-white relative overflow-hidden bg-[#0a0614]">
+        {/* Painting as a fixed-height band (h-[576px]) — identical size across
+            every section image. Scrim matches. */}
         <img
           src="/3Elephants.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute top-0 left-0 w-full h-[576px] object-cover object-center"
         />
         {/* Dark scrim — lighter than before so more of the painting reads
             through, but still enough to keep body copy legible. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
+        <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
         {/* One subtle brand orb pulled in front of the scrim to add a
             soft glow without competing with the painting's own light */}
         <div className="absolute inset-0 pointer-events-none">
@@ -598,16 +600,16 @@ export default function Vision() {
           Background: UnVoyage.png (dreamy night-voyage painting) — the
           journey metaphor pairs naturally with a phased roadmap. White
           phase cards float as jewels above the dark artwork. */}
-      <section id="v-roadmap" className="py-12 sm:py-16 relative overflow-hidden">
+      <section id="v-roadmap" className="py-12 relative overflow-hidden bg-[#0a0614]">
         <img
           src="/UnVoyage.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute top-0 left-0 w-full h-[576px] object-cover object-center"
         />
         {/* Light scrim — the painting is already dark, so we just nudge
             the contrast a touch to ensure the title and subtitle read */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
+        <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
 
         <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <h2
@@ -1269,17 +1271,18 @@ export default function Vision() {
       </section>
 
       {/* Required Documents — Bob.png as background (brand-aligned artwork) */}
-      <section id="v-join" className="py-8 text-white relative overflow-hidden">
-        {/* Bob.png as full-bleed background */}
+      <section id="v-join" className="py-12 text-white relative overflow-hidden bg-[#0a0614]">
+        {/* Bob.png as a fixed-height band (h-[576px]) — identical size across
+            every section image. Scrim matches. */}
         <img
           src="/Bob.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute top-0 left-0 w-full h-[576px] object-cover object-center"
         />
         {/* Dark scrim — lighter pass so the artwork breathes more,
             still dark enough to keep the doc cards readable */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
+        <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
         {/* Subtle warm glow top-right */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 right-[8%] w-64 h-64 bg-[#FFAB40]/12 rounded-full blur-3xl" />
