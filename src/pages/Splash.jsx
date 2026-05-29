@@ -455,6 +455,15 @@ export default function Splash() {
                   <p className="text-xs text-white/40">{t('splash.deal_founding_sub')}</p>
                 </div>
               </div>
+
+              {/* STAYLO Ship — full-width highlight: the free operational app */}
+              <div className="flex items-start gap-3 bg-white/5 rounded-2xl p-4 sm:col-span-2">
+                <img src="/SHIP_LOGO.webp" alt="" className="w-10 h-10 rounded-xl object-cover object-center shrink-0" />
+                <div>
+                  <p className="font-semibold text-white">{t('splash.deal_ship', 'STAYLO Ship (SHIP)')}</p>
+                  <p className="text-xs text-white/40">{t('splash.deal_ship_sub', 'The full operational app — free for life. Run your whole hotel from your pocket.')}</p>
+                </div>
+              </div>
             </div>
 
             {/* Alpha shares badge */}
