@@ -111,6 +111,22 @@ function UniformBand({ children, className = '', dark = false }) {
     ? 'linear-gradient(to top, rgba(10,6,20,0.85), rgba(10,6,20,0))'
     : 'linear-gradient(to top, #FFFDF8, rgba(255,253,248,0))'
 
+  const toggleBtn = (
+    <button
+      type="button"
+      onClick={() => setExpanded(e => !e)}
+      aria-expanded={expanded}
+      className={`pointer-events-auto inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold cursor-pointer transition-all ${
+        dark
+          ? 'bg-white/15 text-white hover:bg-white/25 border border-white/25 backdrop-blur-sm'
+          : 'bg-deep/5 text-deep hover:bg-deep/10 border border-deep/10'
+      }`}
+    >
+      {expanded ? t('vision.see_less', 'See less') : t('vision.see_more', 'See more')}
+      {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+    </button>
+  )
+
   return (
     <>
       <div
@@ -127,22 +143,20 @@ function UniformBand({ children, className = '', dark = false }) {
         {collapsed && overflowing && (
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28" style={{ background: fadeBg }} />
         )}
+        {/* Collapsed: the toggle floats over the fade so it adds NO flow
+            height — the section keeps the standard band height and the
+            full-bleed background image fills it exactly. */}
+        {showToggle && collapsed && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center pb-4">
+            {toggleBtn}
+          </div>
+        )}
       </div>
-      {showToggle && (
+      {/* Expanded: the toggle sits in flow below the now-full content, and
+          the section (and its background image) have grown to match. */}
+      {showToggle && !collapsed && (
         <div className="relative z-10 flex justify-center mt-5">
-          <button
-            type="button"
-            onClick={() => setExpanded(e => !e)}
-            aria-expanded={expanded}
-            className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold cursor-pointer transition-all ${
-              dark
-                ? 'bg-white/15 text-white hover:bg-white/25 border border-white/25 backdrop-blur-sm'
-                : 'bg-deep/5 text-deep hover:bg-deep/10 border border-deep/10'
-            }`}
-          >
-            {expanded ? t('vision.see_less', 'See less') : t('vision.see_more', 'See more')}
-            {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-          </button>
+          {toggleBtn}
         </div>
       )}
     </>
@@ -303,8 +317,8 @@ export default function Vision() {
             (h-[576px]) so every section painting renders at an identical size;
             the scrim matches the image height. */}
         <img src="/BuddhaBanner.webp" alt="" aria-hidden="true" loading="lazy"
-          className="absolute top-0 left-0 w-full h-[576px] object-cover object-center" />
-        <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
+          className="absolute inset-0 w-full h-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
         <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
@@ -397,11 +411,11 @@ export default function Vision() {
           alt=""
           aria-hidden="true"
           loading="lazy"
-          className="absolute top-0 left-0 w-full h-[576px] object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* Dark scrim — lighter than before so more of the painting reads
             through, but still enough to keep body copy legible. */}
-        <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
         {/* One subtle brand orb pulled in front of the scrim to add a
             soft glow without competing with the painting's own light */}
         <div className="absolute inset-0 pointer-events-none">
@@ -611,11 +625,11 @@ export default function Vision() {
           alt=""
           aria-hidden="true"
           loading="lazy"
-          className="absolute top-0 left-0 w-full h-[576px] object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* Light scrim — the painting is already dark, so we just nudge
             the contrast a touch to ensure the title and subtitle read */}
-        <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
 
         <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <h2
@@ -1285,11 +1299,11 @@ export default function Vision() {
           alt=""
           aria-hidden="true"
           loading="lazy"
-          className="absolute top-0 left-0 w-full h-[576px] object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center"
         />
         {/* Dark scrim — lighter pass so the artwork breathes more,
             still dark enough to keep the doc cards readable */}
-        <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
         {/* Subtle warm glow top-right */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-10 right-[8%] w-64 h-64 bg-[#FFAB40]/12 rounded-full blur-3xl" />
