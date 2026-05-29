@@ -222,7 +222,7 @@ export default function Vision() {
             so the white heading reads and the white cards pop on top. */}
         <img src="/BuddhaBanner.png" alt="" aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
             <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
