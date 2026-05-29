@@ -32,6 +32,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import LOI from './pages/LOI'
 import AmbassadorLanding from './pages/AmbassadorLanding'
+import ShipLanding from './pages/ShipLanding'
 import AmbassadorRegister from './pages/AmbassadorRegister'
 import AmbassadorDashboard from './pages/AmbassadorDashboard'
 import AmbassadorGuide from './pages/AmbassadorGuide'
@@ -130,6 +131,7 @@ export default function App() {
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/splash" element={<Splash />} />
+            <Route path="/ship" element={<ShipLanding />} />
             <Route path="/ambassador" element={<AmbassadorLanding />} />
             <Route path="/ambassador/register" element={<AmbassadorRegister />} />
             <Route path="/ambassador/guide" element={<AmbassadorGuide />} />

@@ -154,6 +154,12 @@ export function Navbar() {
                 onMouseLeave={e => e.target.style.color = '#636E72'}>
                 {t('nav.submit', 'For Hoteliers')}
               </Link>
+              <Link to="/ship" className="text-sm font-bold no-underline transition-colors"
+                style={{ color: '#636E72' }}
+                onMouseEnter={e => e.target.style.color = '#00B894'}
+                onMouseLeave={e => e.target.style.color = '#636E72'}>
+                {t('nav.ship', 'SHIP')}
+              </Link>
               <NavDropdown to="/ambassador" label={t('nav.ambassador', 'Ambassador')} sections={ambassadorSections} t={t} />
 
               {/* (Review-mode shortcuts Dashboard/Messenger/Guest App/Admin
@@ -279,6 +285,7 @@ export function Navbar() {
                 ))}
               </div>
               <Link to="/submit" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.submit', 'For Hoteliers')}</Link>
+              <Link to="/ship" className="block py-2 text-sm font-bold no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.ship', 'SHIP')}</Link>
               <Link to="/ambassador" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.ambassador', 'Ambassador')}</Link>
               <div className="pl-4 -mt-1 mb-1 space-y-0.5" style={{ borderLeft: '2px solid #F0E8DE' }}>
                 {ambassadorSections.map(s => (
