@@ -132,7 +132,7 @@ export function Hero() {
   const STATS = [
     { value: hotelCount === null ? '…' : (hotelCount > 0 ? `${hotelCount}+` : 'Soon'), labelKey: 'stat_hotels', color: '#FF6B00' },
     { value: '10%', labelKey: 'stat_commission', color: '#00B894' },
-    { value: '$STAY', labelKey: 'stat_earn', color: '#6C5CE7' },
+    { value: '$STAY', labelKey: 'stat_earn', color: '#A29BFE' },
     { value: '1 vote', labelKey: 'stat_vote', color: '#FF3CB4' },
   ]
 

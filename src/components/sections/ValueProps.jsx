@@ -39,6 +39,11 @@ export function ValueProps() {
       <div className="max-w-6xl mx-auto">
         {/* Section header */}
         <div className="text-center mb-14">
+          {/* Attention hook — speaks directly to hoteliers so they know
+              this platform is built for them, not just another OTA. */}
+          <p className="text-lg sm:text-2xl font-extrabold mb-3" style={{ color: '#FF6B00' }}>
+            {t('home_value.hotelier_hook', 'Hoteliers — STAYLO can become YOUR platform.')}
+          </p>
           <p className="section-label mb-3">{t('home_value.section_label', 'Why Staylo')}</p>
           <h2 style={{
             fontSize: 'clamp(28px, 3.5vw, 46px)',

@@ -1830,6 +1830,7 @@
     "stat_vote": "per property"
   },
   "home_value": {
+    "hotelier_hook": "Hoteliers — STAYLO can become YOUR platform.",
     "section_label": "Why Staylo",
     "title_1": "More than a booking platform.",
     "title_2": "It's ",
