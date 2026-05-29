@@ -307,7 +307,7 @@ export default function Vision() {
       {/* Live Share Counter — emotional brand moment: elephants at sunset
           (the painting literally IS our brand palette: orange-pink-purple sky,
           rooted in Koh Phangan with palm silhouettes). */}
-      <section className="py-8 text-white relative overflow-hidden">
+      <section id="v-alpha" className="py-8 text-white relative overflow-hidden">
         {/* Painting as full-bleed background */}
         <img
           src="/3Elephants.png"
@@ -335,7 +335,7 @@ export default function Vision() {
               <span className="text-6xl sm:text-7xl font-black text-gradient">{sharesSold}</span>
               <span className="text-2xl text-white/40 font-medium">/ {totalAlphaShares.toLocaleString()}</span>
             </div>
-            <p className="text-center text-white/60 text-sm mb-3">{t('vision.shares_claimed', 'alpha shares claimed')}</p>
+            <p className="text-center text-white/60 text-base mb-3">{t('vision.shares_claimed', 'alpha shares claimed')}</p>
 
             {/* Progress bar */}
             <div className="w-full bg-white/10 rounded-full h-4 mb-4 overflow-hidden">
@@ -346,7 +346,7 @@ export default function Vision() {
                 <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full" />
               </div>
             </div>
-            <div className="flex justify-between text-xs text-white/50">
+            <div className="flex justify-between text-sm text-white/50">
               <span>0</span>
               <span>{pctSold}% {t('vision.sold', 'sold')}</span>
               <span>{totalAlphaShares.toLocaleString()}</span>
@@ -357,12 +357,12 @@ export default function Vision() {
               <p className="text-white font-bold text-lg mb-1">
                 {t('vision.urgency_title', '600 hotels. 3,000 shares. Do the math.')}
               </p>
-              <p className="text-white/80 text-sm leading-relaxed">
+              <p className="text-white/80 text-base leading-relaxed">
                 {t('vision.urgency_line1', "That's ~5 shares per hotel.")}<br />
                 {t('vision.urgency_line2', 'Max 10 per property at Alpha price.')}<br />
                 {t('vision.urgency_line3', 'Not everyone will get theirs.')}
               </p>
-              <p className="font-black text-xs uppercase tracking-wider mt-2" style={{ color: '#FF6B00' }}>
+              <p className="font-black text-sm uppercase tracking-wider mt-2" style={{ color: '#FF6B00' }}>
                 {t('vision.urgency_cta', 'First come, first served. No exceptions.')}
               </p>
             </div>
@@ -370,15 +370,15 @@ export default function Vision() {
             {/* Share pricing — Alpha vs World */}
             <div className="grid sm:grid-cols-2 gap-4 mt-4">
               <div className="rounded-2xl p-5 text-center" style={{ background: 'rgba(253,203,110,0.12)', border: '1px solid rgba(253,203,110,0.35)' }}>
-                <p className="text-xs uppercase tracking-wider font-semibold mb-2" style={{ color: '#FDCB6E' }}>{t('vision.tier_alpha', 'Alpha (Now)')}</p>
+                <p className="text-sm uppercase tracking-wider font-semibold mb-2" style={{ color: '#FDCB6E' }}>{t('vision.tier_alpha', 'Alpha (Now)')}</p>
                 <p className="text-4xl font-black" style={{ color: '#FDCB6E' }}>$1,000</p>
-                <p className="text-xs text-white/50 mt-1">{t('vision.per_share', 'per share')}</p>
-                <p className="text-xs mt-2" style={{ color: 'rgba(253,203,110,0.75)' }}>{t('vision.tier_alpha_note', 'For KP. Best price. Forever.')}</p>
+                <p className="text-sm text-white/50 mt-1">{t('vision.per_share', 'per share')}</p>
+                <p className="text-sm mt-2" style={{ color: 'rgba(253,203,110,0.75)' }}>{t('vision.tier_alpha_note', 'For KP. Best price. Forever.')}</p>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-5 text-center opacity-60">
-                <p className="text-xs text-white/50 uppercase tracking-wider font-semibold mb-2">{t('vision.tier_world', 'World (Next)')}</p>
+                <p className="text-sm text-white/50 uppercase tracking-wider font-semibold mb-2">{t('vision.tier_world', 'World (Next)')}</p>
                 <p className="text-4xl font-black text-white/60">$1,500</p>
-                <p className="text-xs text-white/40 mt-1">{t('vision.tier_world_note', 'Opens after Alpha round closes')}</p>
+                <p className="text-sm text-white/40 mt-1">{t('vision.tier_world_note', 'Opens after Alpha round closes')}</p>
               </div>
             </div>
           </div>
@@ -387,19 +387,19 @@ export default function Vision() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black text-white">{totalShares.toLocaleString()}</p>
-              <p className="text-xs text-white/50">{t('vision.total_shares', 'Total shares')}</p>
+              <p className="text-sm text-white/50">{t('vision.total_shares', 'Total shares')}</p>
             </div>
             <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black" style={{ color: '#FDCB6E' }}>$1,000</p>
-              <p className="text-xs text-white/50">{t('vision.per_share_alpha', 'Per share (alpha)')}</p>
+              <p className="text-sm text-white/50">{t('vision.per_share_alpha', 'Per share (alpha)')}</p>
             </div>
             <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black text-white">1–10</p>
-              <p className="text-xs text-white/50">{t('vision.shares_per_property', '1 to 10 shares per property')}</p>
+              <p className="text-sm text-white/50">{t('vision.shares_per_property', '1 to 10 shares per property')}</p>
             </div>
             <div className="bg-white/8 backdrop-blur-md rounded-2xl p-5 text-center border border-white/10">
               <p className="text-2xl font-black" style={{ color: '#FF6B00' }}>10%</p>
-              <p className="text-xs text-white/50">{t('vision.commission_forever', 'Commission — forever')}</p>
+              <p className="text-sm text-white/50">{t('vision.commission_forever', 'Commission — forever')}</p>
             </div>
           </div>
         </div>

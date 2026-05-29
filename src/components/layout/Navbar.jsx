@@ -30,6 +30,7 @@ const visionSections = [
   { id: 'v-structure', key: 'vision.nav_structure', fallback: 'Model' },
   { id: 'v-moat',      key: 'vision.nav_moat',      fallback: 'Edge' },
   { id: 'v-bitcoin',   key: 'vision.nav_bitcoin',   fallback: 'Bitcoin' },
+  { id: 'v-alpha',     key: 'vision.nav_alpha',     fallback: 'Alpha shares' },
   { id: 'v-invest',    key: 'vision.nav_invest',    fallback: 'Investment' },
   { id: 'v-roadmap',   key: 'vision.nav_roadmap',   fallback: 'Roadmap' },
   { id: 'v-growth',    key: 'vision.nav_growth',    fallback: 'Growth' },
