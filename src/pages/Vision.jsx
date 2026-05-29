@@ -631,7 +631,7 @@ export default function Vision() {
             the contrast a touch to ensure the title and subtitle read */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
 
-        <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
+        <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6 flex flex-col">
           <h2
             className="text-3xl sm:text-4xl font-bold text-white text-center mb-3"
             style={{ textShadow: '0 2px 16px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.95)' }}
@@ -645,7 +645,7 @@ export default function Vision() {
             {t('vision.roadmap_subtitle', 'Click any step to see what we ship and when.')}
           </p>
 
-          <div className="relative mt-12 sm:mt-24">
+          <div className="relative mt-auto">
             {/* Connecting line behind the cards — brand-gradient bar, desktop only */}
             <div
               className="hidden md:block absolute top-9 left-[8%] right-[8%] h-1 rounded-full opacity-40 pointer-events-none"
