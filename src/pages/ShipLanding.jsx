@@ -67,11 +67,11 @@ export default function ShipLanding() {
           <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto mb-8 leading-relaxed">
             {t('ship_page.hero_sub', 'Staylo Hotelier In-Pocket — one app that replaces the five SaaS tools you stitch together today. Front desk, channel manager, housekeeping, F&B, staff, payments and reports.')}
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8 sm:mt-12">
             <Link to={user ? '/dashboard' : '/register'} className="w-full sm:w-auto">
-              <button className="w-full px-8 py-4 bg-white font-bold text-base rounded-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 inline-flex items-center justify-center gap-2 cursor-pointer">
+              <button className="w-full px-8 py-4 bg-white/30 backdrop-blur-md border border-white/40 font-bold text-base rounded-2xl shadow-xl hover:shadow-2xl hover:bg-white/40 hover:scale-105 transition-all duration-300 inline-flex items-center justify-center gap-2 cursor-pointer">
                 <Sparkles size={20} className="text-[#FF6B00]" />
-                <span className="text-gradient">{user ? t('nav.dashboard', 'Go to Dashboard') : t('ship_page.cta_primary', 'Become a Founding Partner — SHIP free for life')}</span>
+                <span className="text-white">{user ? t('nav.dashboard', 'Go to Dashboard') : t('ship_page.cta_primary', 'Become a Founding Partner — SHIP free for life')}</span>
               </button>
             </Link>
             <a href="/ship.html" className="w-full sm:w-auto">
