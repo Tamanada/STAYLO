@@ -1291,13 +1291,13 @@ export default function Vision() {
           <div className="absolute top-10 right-[8%] w-64 h-64 bg-[#FFAB40]/12 rounded-full blur-3xl" />
         </div>
         <UniformBand dark={true} className="relative max-w-4xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-3">
-            <Badge variant="golden" className="mb-4 text-sm sm:text-base">{t('vision.docs_badge', 'Registration Process')}</Badge>
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4"><span className="text-gradient">{t('vision.docs_title', 'What You Need to Join')}</span></h2>
-            <p className="text-white/85 text-base sm:text-lg max-w-2xl mx-auto">{t('vision.docs_subtitle', 'To become an official Staylo Founding Partner, your business must be legally registered. Here\'s what we require:')}</p>
+          <div className="text-center mb-4">
+            <Badge variant="golden" className="mb-2 text-xs sm:text-sm">{t('vision.docs_badge', 'Registration Process')}</Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-2"><span className="text-gradient">{t('vision.docs_title', 'What You Need to Join')}</span></h2>
+            <p className="text-white/85 text-xs sm:text-sm max-w-2xl mx-auto">{t('vision.docs_subtitle', 'To become an official Staylo Founding Partner, your business must be legally registered. Here\'s what we require:')}</p>
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-5">
+          <div className="grid sm:grid-cols-2 gap-3">
             {(() => {
               const palette = ['#FF6B00', '#FF3CB4', '#6C5CE7', '#FDCB6E', '#FF6B00', '#FF3CB4']
               const docs = [
@@ -1311,13 +1311,13 @@ export default function Vision() {
               return docs.map((doc, i) => {
                 const color = palette[i % palette.length]
                 return (
-                  <div key={i} className="bg-white/8 backdrop-blur-md rounded-2xl p-6 border border-white/10 flex gap-4 hover:bg-white/12 transition-all" style={{ borderColor: color + '33' }}>
-                    <div className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '20' }}>
-                      <doc.icon size={26} style={{ color }} />
+                  <div key={i} className="bg-white/8 backdrop-blur-md rounded-2xl p-3 border border-white/10 flex gap-3 hover:bg-white/12 transition-all" style={{ borderColor: color + '33' }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: color + '20' }}>
+                      <doc.icon size={20} style={{ color }} />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-semibold text-white text-base sm:text-lg">{doc.title}</h4>
+                        <h4 className="font-semibold text-white text-sm sm:text-base">{doc.title}</h4>
                         {doc.required && (
                           <span
                             className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
@@ -1327,7 +1327,7 @@ export default function Vision() {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-white/75 mt-1.5 leading-relaxed">{doc.desc}</p>
+                      <p className="text-xs text-white/75 mt-1 leading-relaxed">{doc.desc}</p>
                     </div>
                   </div>
                 )
@@ -1335,7 +1335,7 @@ export default function Vision() {
             })()}
           </div>
 
-          <p className="text-center text-sm text-white/65 mt-6">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
+          <p className="text-center text-xs text-white/65 mt-4">{t('vision.docs_note', 'The official partnership process will start when all 3,000 alpha shares are booked. Reserve your shares now — submit documents later.')}</p>
         </UniformBand>
       </section>
 
