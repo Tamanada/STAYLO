@@ -168,16 +168,16 @@ export default function AmbassadorLanding() {
           className="absolute inset-0 w-full h-full object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/55" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-10">
+          <div className="text-center mb-6">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>{t('ambassador_landing.calculator_title', 'Earnings Calculator')}</h2>
             <p className="text-white/90 text-lg" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>{t('ambassador_landing.calculator_subtitle', 'How many hotels could you bring to Staylo?')}</p>
           </div>
 
-          <Card className="p-8 sm:p-10 border-2" style={{ borderColor: 'rgba(255,107,0,0.25)' }}>
+          <Card className="p-5 sm:p-6 border-2" style={{ background: 'rgba(255,255,255,0.30)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderColor: 'rgba(255,255,255,0.35)' }}>
             {/* Hotels slider */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-semibold text-deep">{t('ambassador_landing.slider_hotels_label', 'Hotels you recruit')}</label>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-base font-semibold text-white">{t('ambassador_landing.slider_hotels_label', 'Hotels you recruit')}</label>
                 <span className="text-3xl font-black" style={{ color: '#FF6B00' }}>{hotelCount}</span>
               </div>
               <input
@@ -189,16 +189,16 @@ export default function AmbassadorLanding() {
                 className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
                 style={{ accentColor: '#FF6B00' }}
               />
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <div className="flex justify-between text-sm text-white/70 mt-1">
                 <span>{t('ambassador_landing.slider_hotels_min', '1 hotel')}</span>
                 <span>{t('ambassador_landing.slider_hotels_max', '50 hotels')}</span>
               </div>
             </div>
 
             {/* Rooms slider */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-semibold text-deep">{t('ambassador_landing.slider_rooms_label', 'Rooms per hotel')}</label>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-base font-semibold text-white">{t('ambassador_landing.slider_rooms_label', 'Rooms per hotel')}</label>
                 <span className="text-2xl font-bold" style={{ color: '#FF3CB4' }}>{roomCount}</span>
               </div>
               <input
@@ -210,16 +210,16 @@ export default function AmbassadorLanding() {
                 className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
                 style={{ accentColor: '#FF3CB4' }}
               />
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <div className="flex justify-between text-sm text-white/70 mt-1">
                 <span>{t('ambassador_landing.slider_rooms_min', '5 rooms')}</span>
                 <span>{t('ambassador_landing.slider_rooms_max', '100 rooms')}</span>
               </div>
             </div>
 
             {/* Rate slider */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-semibold text-deep">{t('ambassador_landing.slider_rate_label', 'Avg. nightly rate')}</label>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-base font-semibold text-white">{t('ambassador_landing.slider_rate_label', 'Avg. nightly rate')}</label>
                 <span className="text-2xl font-bold" style={{ color: '#6C5CE7' }}>${nightlyRate}</span>
               </div>
               <input
@@ -232,16 +232,16 @@ export default function AmbassadorLanding() {
                 className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
                 style={{ accentColor: '#6C5CE7' }}
               />
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <div className="flex justify-between text-sm text-white/70 mt-1">
                 <span>{t('ambassador_landing.slider_rate_min', '$20/night')}</span>
                 <span>{t('ambassador_landing.slider_rate_max', '$300/night')}</span>
               </div>
             </div>
 
             {/* Occupancy slider */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-semibold text-deep">{t('ambassador_landing.slider_occupancy_label', 'Avg. occupancy')}</label>
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-base font-semibold text-white">{t('ambassador_landing.slider_occupancy_label', 'Avg. occupancy')}</label>
                 <span className="text-2xl font-bold" style={{ color: '#FDCB6E' }}>{occupancy}%</span>
               </div>
               <input
@@ -254,19 +254,19 @@ export default function AmbassadorLanding() {
                 className="w-full h-2 bg-gray-200 rounded-full appearance-none cursor-pointer"
                 style={{ accentColor: '#FDCB6E' }}
               />
-              <div className="flex justify-between text-xs text-gray-400 mt-1">
+              <div className="flex justify-between text-sm text-white/70 mt-1">
                 <span>20%</span>
                 <span>95%</span>
               </div>
             </div>
 
             {/* Breakdown */}
-            <div className="rounded-2xl p-6 mb-6" style={{ background: '#F8F6F0' }}>
-              <h4 className="text-sm font-semibold text-deep mb-4">{t('ambassador_landing.breakdown_title', 'Per hotel calculation')}</h4>
-              <div className="space-y-2 text-sm text-gray-500">
+            <div className="rounded-2xl p-4 mb-4" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}>
+              <h4 className="text-base font-semibold text-white mb-2" style={{ textShadow: '0 1px 5px rgba(0,0,0,0.5)' }}>{t('ambassador_landing.breakdown_title', 'Per hotel calculation')}</h4>
+              <div className="space-y-1.5 text-sm text-white/85" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.45)' }}>
                 <div className="flex justify-between">
                   <span>{roomCount} {t('ambassador_landing.breakdown_rooms', 'rooms')} × ${nightlyRate}/{t('ambassador_landing.breakdown_night', 'night')} × {occupancy}% {t('ambassador_landing.breakdown_occupancy', 'occupancy')}</span>
-                  <span className="font-semibold text-deep">~${Math.round(annualPerHotel / 1000)}K/{t('ambassador_landing.breakdown_year', 'year')}</span>
+                  <span className="font-semibold text-white">~${Math.round(annualPerHotel / 1000)}K/{t('ambassador_landing.breakdown_year', 'year')}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>{t('ambassador_landing.breakdown_share', 'Your 2% ambassador share')}</span>
@@ -277,7 +277,7 @@ export default function AmbassadorLanding() {
 
             {/* Total — brand-gradient winner */}
             <div
-              className="rounded-2xl p-6 text-center relative"
+              className="rounded-2xl p-5 text-center relative"
               style={{
                 background: 'linear-gradient(white, white) padding-box, linear-gradient(135deg, #FF6B00, #FF3CB4, #6C5CE7) border-box',
                 border: '2px solid transparent',
