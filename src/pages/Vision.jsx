@@ -18,7 +18,7 @@ const phases = [
     long: 'The foundation: book hotels, guesthouses, resorts and bungalows directly through STAYLO. 10% commission for life — versus 22% on Booking.com and Agoda. Hoteliers keep more revenue, guests pay fair prices, and Founding Partners own a piece of the platform itself.',
   },
   {
-    key: 'phase_ship', icon: Smartphone, iconSrc: '/SHIP_LOGO.png', gradient: 'from-[#00B894] to-[#6C5CE7]', status: 'Alpha', timeline: 'Now',
+    key: 'phase_ship', icon: Smartphone, iconSrc: '/SHIP_LOGO.webp', gradient: 'from-[#00B894] to-[#6C5CE7]', status: 'Alpha', timeline: 'Now',
     title: 'SHIP',
     byline: 'by STAYLO',
     desc: 'The hotelier dashboard — manage your property from the palm of your hand',
@@ -64,7 +64,7 @@ const foundingBenefits = [
   { key: 'badge',              icon: BadgeCheck, text: 'Founding Member badge on your property listing' },
   // SHIP — the operational app, free for Founding Partners. Uses the SHIP
   // logo tile as its icon instead of a generic glyph.
-  { key: 'ship', iconSrc: '/SHIP_LOGO.png',      text: 'STAYLO Ship (SHIP) — the full operational app, free for life. Run your whole hotel from your pocket.' },
+  { key: 'ship', iconSrc: '/SHIP_LOGO.webp',      text: 'STAYLO Ship (SHIP) — the full operational app, free for life. Run your whole hotel from your pocket.' },
 ]
 
 const faqKeys = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8']
@@ -222,11 +222,11 @@ export default function Vision() {
         description="Why STAYLO exists: 22% commissions are killing hotel margins. We're building a hotelier-owned cooperative where members vote, share revenue, and pay 10% for life. Roadmap, milestones, and ownership model."
         path="/vision"
       />
-      {/* Hero — EnjoyLife.png as background (consistent with the rest
+      {/* Hero — EnjoyLife.webp as background (consistent with the rest
           of the artwork-backed brand surface across the site) */}
       <section className="text-white relative overflow-hidden h-[576px] flex items-center bg-[#0a0614]">
         <img
-          src="/EnjoyLife.png"
+          src="/EnjoyLife.webp"
           alt=""
           aria-hidden="true"
           fetchPriority="high"
@@ -299,10 +299,10 @@ export default function Vision() {
           Deliberately avoids the BTC-floor / +30%-spend points already made
           in the Bitcoin section below. */}
       <section id="v-moat" className="py-12 relative overflow-hidden bg-[#0a0614]">
-        {/* BuddhaBanner.png — vibrant brand-palette artwork. Fixed-height band
+        {/* BuddhaBanner.webp — vibrant brand-palette artwork. Fixed-height band
             (h-[576px]) so every section painting renders at an identical size;
             the scrim matches the image height. */}
-        <img src="/BuddhaBanner.png" alt="" aria-hidden="true" loading="lazy"
+        <img src="/BuddhaBanner.webp" alt="" aria-hidden="true" loading="lazy"
           className="absolute top-0 left-0 w-full h-[576px] object-cover object-center" />
         <div className="absolute top-0 left-0 w-full h-[576px] bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
         <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
@@ -393,7 +393,7 @@ export default function Vision() {
         {/* Painting as a fixed-height band (h-[576px]) — identical size across
             every section image. Scrim matches. */}
         <img
-          src="/3Elephants.png"
+          src="/3Elephants.webp"
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -602,12 +602,12 @@ export default function Vision() {
       </section>
 
       {/* Roadmap — horizontal timeline with click-to-expand popup
-          Background: UnVoyage.png (dreamy night-voyage painting) — the
+          Background: UnVoyage.webp (dreamy night-voyage painting) — the
           journey metaphor pairs naturally with a phased roadmap. White
           phase cards float as jewels above the dark artwork. */}
       <section id="v-roadmap" className="py-12 relative overflow-hidden bg-[#0a0614]">
         <img
-          src="/UnVoyage.png"
+          src="/UnVoyage.webp"
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -1276,12 +1276,12 @@ export default function Vision() {
         </UniformBand>
       </section>
 
-      {/* Required Documents — Bob.png as background (brand-aligned artwork) */}
+      {/* Required Documents — Bob.webp as background (brand-aligned artwork) */}
       <section id="v-join" className="py-12 text-white relative overflow-hidden bg-[#0a0614]">
-        {/* Bob.png as a fixed-height band (h-[576px]) — identical size across
+        {/* Bob.webp as a fixed-height band (h-[576px]) — identical size across
             every section image. Scrim matches. */}
         <img
-          src="/Bob.png"
+          src="/Bob.webp"
           alt=""
           aria-hidden="true"
           loading="lazy"
@@ -1388,7 +1388,7 @@ export default function Vision() {
             {/* Photo placeholder */}
             <div className="flex-shrink-0">
               <div className="w-40 h-40 md:w-48 md:h-48 rounded-2xl border-2 border-golden/20 overflow-hidden shadow-2xl">
-                <img src="/founder.png" alt="David Deveaux — Founder of STAYLO" className="w-full h-full object-cover object-[center_30%]" />
+                <img src="/founder.webp" alt="David Deveaux — Founder of STAYLO" className="w-full h-full object-cover object-[center_30%]" />
               </div>
             </div>
 

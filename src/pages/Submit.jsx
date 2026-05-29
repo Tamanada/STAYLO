@@ -468,7 +468,7 @@ export default function Submit() {
       {/* ─── Hero — Topoftheworld painting, banner-height band ─── */}
       <section className="relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center">
         <img
-          src="/Topoftheworld.png"
+          src="/Topoftheworld.webp"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"

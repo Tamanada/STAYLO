@@ -146,15 +146,15 @@ export default function AmbassadorGuide() {
 
   return (
     <div>
-      {/* ── Hero — JohnLenon.png painting, banner-height band ── */}
+      {/* ── Hero — JohnLenon.webp painting, banner-height band ── */}
       <section className="text-white relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center">
         {/* Responsive hero art — JohnLenon on mobile, the wide
             Make-Love-Not-War poster on desktop. <picture>/<source media>
             ensures the browser fetches only the matching image. */}
         <picture>
-          <source media="(min-width: 640px)" srcSet="/MakeLoveNotWarPoster.png" />
+          <source media="(min-width: 640px)" srcSet="/MakeLoveNotWarPoster.webp" />
           <img
-            src="/JohnLenon.png"
+            src="/JohnLenon.webp"
             alt=""
             aria-hidden="true"
             className="absolute inset-0 w-full h-full object-cover object-center"

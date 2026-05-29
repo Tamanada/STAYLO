@@ -140,10 +140,10 @@ export function Hero() {
     <section className="relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center justify-center" style={{
       padding: '32px 5%',
     }}>
-      {/* Samuii.png — starry-night beach painting as background.
+      {/* Samuii.webp — starry-night beach painting as background.
           Aligned to the rest of the site's artwork-backed surfaces. */}
       <img
-        src="/Samuii.png"
+        src="/Samuii.webp"
         alt=""
         aria-hidden="true"
         className="absolute inset-0 w-full h-full object-cover object-center"

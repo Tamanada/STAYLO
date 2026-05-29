@@ -68,13 +68,13 @@ export default function AmbassadorLanding() {
         description="Refer hotels to STAYLO and earn 2% in Bitcoin on every booking they receive — paid to your Lightning wallet, forever. Free to join. Lifetime commission."
         path="/ambassador"
       />
-      {/* ── Hero — LaReveuse.png painting as background ──
+      {/* ── Hero — LaReveuse.webp painting as background ──
           Warm pink/red/orange palette with gold/teal hair. Backdrop
           gradient matches the painting's warm edge tones so any
           letterboxing blends invisibly. */}
       <section className="text-white relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center">
         <img
-          src="/LaReveuse.png"
+          src="/LaReveuse.webp"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"
@@ -161,10 +161,10 @@ export default function AmbassadorLanding() {
 
       {/* ── Earnings Calculator ── */}
       <section id="a-calc" className="py-16 sm:py-24 relative overflow-hidden bg-[#0a0614]">
-        {/* 2sides.png — day/night brand painting. Scrim keeps the white header
+        {/* 2sides.webp — day/night brand painting. Scrim keeps the white header
             text legible; the calculator card below stays solid white so the
             sliders and figures remain readable. */}
-        <img src="/2sides.png" alt="" aria-hidden="true"
+        <img src="/2sides.webp" alt="" aria-hidden="true"
           loading="lazy"
           className="absolute inset-0 w-full h-full object-cover object-center" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/55" />

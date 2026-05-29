@@ -3246,7 +3246,7 @@ body.off-shift .quick-actions{display:none !important}
     <button class="rail-btn rail-btn-ship" data-pane="ship" title="STAYLO Ship">
       <!-- Flagship tab: the SHIP brand tile (our "beau bouton") opens the
            staff home / access page (clock-in, today's shift, tasks). -->
-      <img class="ship-rail-icon" src="/SHIP_LOGO.png" alt="STAYLO Ship">
+      <img class="ship-rail-icon" src="/SHIP_LOGO.webp" alt="STAYLO Ship">
       <span class="rail-lbl">SHIP</span>
     </button>
     <button class="rail-btn active" data-pane="channels" data-i18n-title="app.shell.bottom.chat">
@@ -18939,7 +18939,7 @@ function renderShipHub(body, title, subtitle){
 
   /* ---- HERO: brand tile + greeting --------------------------------- */
   const hero = el('div',{class:'ship-hero'});
-  hero.appendChild(el('img',{class:'ship-hero-logo', src:'/SHIP_LOGO.png', alt:'STAYLO Ship', loading:'lazy'}));
+  hero.appendChild(el('img',{class:'ship-hero-logo', src:'/SHIP_LOGO.webp', alt:'STAYLO Ship', loading:'lazy'}));
   const heroTxt = el('div',{class:'ship-hero-txt'});
   heroTxt.appendChild(el('div',{class:'ship-greet'}, shipT('app.ship.greeting', 'Hi, {name}', {name: firstName})));
   heroTxt.appendChild(el('div',{class:'ship-tag'}, shipT('app.ship.tagline', 'Staylo Hotelier In-Pocket')));

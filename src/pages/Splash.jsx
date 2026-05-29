@@ -73,7 +73,7 @@ export default function Splash() {
       <section className="relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center">
         {/* Painting background */}
         <img
-          src="/ThePath.png"
+          src="/ThePath.webp"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"
@@ -193,7 +193,7 @@ export default function Splash() {
         {/* Banner band — natural aspect ratio, full visible */}
         <div className="relative w-full" style={{ aspectRatio: '2.5 / 1' }}>
           <img
-            src="/bannerSTAYLO.png"
+            src="/bannerSTAYLO.webp"
             alt=""
             aria-hidden="true"
             className="absolute inset-0 w-full h-full object-cover"

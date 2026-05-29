@@ -186,7 +186,7 @@ export default function OTASearch() {
       <div className="relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex flex-col justify-end">
         {/* STAYLO brand banner */}
         <img
-          src="/bannerSTAYLO.png"
+          src="/bannerSTAYLO.webp"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover object-center"
