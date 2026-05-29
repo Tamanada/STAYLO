@@ -160,11 +160,17 @@ export default function AmbassadorLanding() {
       </section>
 
       {/* ── Earnings Calculator ── */}
-      <section id="a-calc" className="py-16 sm:py-24 bg-gradient-to-br from-electric/5 via-white to-sunset/5">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+      <section id="a-calc" className="py-16 sm:py-24 relative overflow-hidden bg-[#0a0614]">
+        {/* 2sides.png — day/night brand painting. Scrim keeps the white header
+            text legible; the calculator card below stays solid white so the
+            sliders and figures remain readable. */}
+        <img src="/2sides.png" alt="" aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover object-center" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/55" />
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
-            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('ambassador_landing.calculator_title', 'Earnings Calculator')}</h2>
-            <p className="text-gray-500 text-lg">{t('ambassador_landing.calculator_subtitle', 'How many hotels could you bring to Staylo?')}</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>{t('ambassador_landing.calculator_title', 'Earnings Calculator')}</h2>
+            <p className="text-white/90 text-lg" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.8)' }}>{t('ambassador_landing.calculator_subtitle', 'How many hotels could you bring to Staylo?')}</p>
           </div>
 
           <Card className="p-8 sm:p-10 border-2" style={{ borderColor: 'rgba(255,107,0,0.25)' }}>
