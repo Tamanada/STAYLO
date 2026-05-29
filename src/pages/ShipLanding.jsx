@@ -37,21 +37,20 @@ export default function ShipLanding() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden text-white" style={{ background: '#0a0614' }}>
-        {/* SHIP logo as an ambient full-bleed background — blurred + scaled
-            so its brand gradient washes the hero; scrim keeps text crisp. */}
+        {/* SHIP logo as the hero background — large, centered and clearly
+            recognizable. object-contain shows the whole mark; a soft radial
+            scrim darkens the edges so the headline stays crisp. */}
         <img
           src="/SHIP_LOGO.webp"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center scale-125 blur-2xl opacity-60"
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[135%] max-w-none object-contain opacity-70 blur-[1px]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0a0614]/70 via-[#0a0614]/55 to-[#0a0614]/80" />
+        <div
+          className="absolute inset-0"
+          style={{ background: 'radial-gradient(ellipse at center, rgba(10,6,20,0.35) 0%, rgba(10,6,20,0.70) 55%, rgba(10,6,20,0.92) 100%)' }}
+        />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
-          <img
-            src="/SHIP_LOGO.webp"
-            alt="STAYLO Ship"
-            className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl mx-auto mb-6 shadow-2xl object-cover object-center"
-          />
           <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0' }}>
             {t('ship_page.eyebrow', 'by STAYLO · Free for Founding Partners')}
           </p>
