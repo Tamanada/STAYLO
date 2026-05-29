@@ -1,23 +1,26 @@
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
-  CalendarCheck, Share2, BedDouble, ChefHat, CalendarClock, Wallet,
-  BarChart3, QrCode, Smartphone, ArrowRight, Check, Sparkles,
+  MessageSquare, CalendarClock, ListChecks, BookOpen, Banknote,
+  BarChart3, Activity, Boxes, Trophy, Smartphone, ArrowRight, Check, Sparkles,
 } from 'lucide-react'
 import { Card } from '../components/ui/Card'
 import { useAuth } from '../hooks/useAuth'
 import SEO from '../components/SEO'
 
-// The operational modules SHIP bundles into one app. Brand-palette cycle.
+// The real SHIP app modules (mirrors the in-app tabs). `img` points to a
+// screenshot in /public/ship/<tk>.webp once added — until then the card
+// renders icon + copy only (no broken image).
 const MODULES = [
-  { icon: CalendarCheck, color: '#00B894', tk: 'front_desk' },
-  { icon: Share2,        color: '#6C5CE7', tk: 'channel' },
-  { icon: BedDouble,     color: '#FF6B00', tk: 'housekeeping' },
-  { icon: ChefHat,       color: '#FF3CB4', tk: 'fnb' },
-  { icon: CalendarClock, color: '#00B894', tk: 'staff' },
-  { icon: Wallet,        color: '#F7931A', tk: 'payments' },
-  { icon: BarChart3,     color: '#6C5CE7', tk: 'reports' },
-  { icon: QrCode,        color: '#FF6B00', tk: 'checkin' },
+  { icon: MessageSquare, color: '#00B894', tk: 'chat',     img: null },
+  { icon: CalendarClock, color: '#6C5CE7', tk: 'schedule', img: null },
+  { icon: ListChecks,    color: '#FF6B00', tk: 'tasks',    img: null },
+  { icon: BookOpen,      color: '#FF3CB4', tk: 'fiches',   img: null },
+  { icon: Banknote,      color: '#00B894', tk: 'payroll',  img: null },
+  { icon: BarChart3,     color: '#FDCB6E', tk: 'charges',  img: null },
+  { icon: Activity,      color: '#6C5CE7', tk: 'pulse',    img: null },
+  { icon: Boxes,         color: '#FF6B00', tk: 'stock',    img: null },
+  { icon: Trophy,        color: '#FDCB6E', tk: 'score',    img: null },
 ]
 
 export default function ShipLanding() {
@@ -97,14 +100,21 @@ export default function ShipLanding() {
             <p className="section-label mb-3">{t('ship_page.modules_label', 'Everything included')}</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-deep">{t('ship_page.modules_title', 'One app. Every job.')}</h2>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {MODULES.map((m) => (
-              <Card key={m.tk} className="p-6 card-hover border-2" style={{ borderColor: m.color + '22' }}>
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: m.color + '14' }}>
-                  <m.icon size={26} style={{ color: m.color }} />
+              <Card key={m.tk} className="p-0 card-hover border-2 overflow-hidden" style={{ borderColor: m.color + '22' }}>
+                {m.img && (
+                  <div className="border-b" style={{ borderColor: m.color + '1A' }}>
+                    <img src={m.img} alt="" loading="lazy" className="w-full h-44 object-cover object-top" />
+                  </div>
+                )}
+                <div className="p-6">
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: m.color + '14' }}>
+                    <m.icon size={26} style={{ color: m.color }} />
+                  </div>
+                  <h3 className="text-lg font-bold text-deep mb-2">{t(`ship_page.mod_${m.tk}_title`)}</h3>
+                  <p className="text-sm text-gray-500 leading-relaxed">{t(`ship_page.mod_${m.tk}_desc`)}</p>
                 </div>
-                <h3 className="text-lg font-bold text-deep mb-2">{t(`ship_page.mod_${m.tk}_title`)}</h3>
-                <p className="text-sm text-gray-500 leading-relaxed">{t(`ship_page.mod_${m.tk}_desc`)}</p>
               </Card>
             ))}
           </div>
