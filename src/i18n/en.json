@@ -1867,12 +1867,14 @@
     "governance_vote": "Governance vote",
     "annual_dividends": "Annual dividends",
     "token_rewards": "Token rewards",
+    "management_app": "Hotel management app",
     "commission_fixed": "Commission fixed?",
     "staylo_commission": "10% locked forever",
     "staylo_shares": "Real shares ✓",
     "staylo_vote": "1 property = 1 vote ✓",
     "staylo_dividends": "20% net profit ✓",
     "staylo_tokens": "$STAY per night ✓",
+    "staylo_ship": "SHIP — free for life ✓",
     "staylo_fixed": "✓ 90% vote only"
   },
   "home_cta": {

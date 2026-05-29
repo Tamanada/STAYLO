@@ -1869,12 +1869,14 @@
     "governance_vote": "สิทธิ์โหวต",
     "annual_dividends": "เงินปันผลประจำปี",
     "token_rewards": "รางวัลโทเค็น",
+    "management_app": "แอปจัดการโรงแรม",
     "commission_fixed": "คอมมิชชั่นคงที่?",
     "staylo_commission": "10% ตลอดไป",
     "staylo_shares": "หุ้นจริง ✓",
     "staylo_vote": "1 ที่พัก = 1 โหวต ✓",
     "staylo_dividends": "20% กำไรสุทธิ ✓",
     "staylo_tokens": "$STAY ต่อคืน ✓",
+    "staylo_ship": "SHIP — ฟรีตลอดชีพ ✓",
     "staylo_fixed": "✓ โหวต 90% เท่านั้น"
   },
   "home_cta": {

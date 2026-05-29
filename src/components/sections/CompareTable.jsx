@@ -27,6 +27,11 @@ const ROW_KEYS = [
     stayloKey: 'staylo_tokens',
   },
   {
+    featureKey: 'management_app',
+    booking: '✗', agoda: '✗', airbnb: '✗',
+    stayloKey: 'staylo_ship',
+  },
+  {
     featureKey: 'commission_fixed',
     booking: '✗ No', agoda: '✗ No', airbnb: '✗ No',
     stayloKey: 'staylo_fixed',

@@ -1870,12 +1870,14 @@
     "governance_vote": "Vote de gouvernance",
     "annual_dividends": "Dividendes annuels",
     "token_rewards": "Récompenses en tokens",
+    "management_app": "App de gestion hôtelière",
     "commission_fixed": "Commission fixe ?",
     "staylo_commission": "10 % fixe pour toujours",
     "staylo_shares": "Actions réelles ✓",
     "staylo_vote": "1 établissement = 1 vote ✓",
     "staylo_dividends": "20 % bénéfice net ✓",
     "staylo_tokens": "$STAY par nuit ✓",
+    "staylo_ship": "SHIP — gratuit à vie ✓",
     "staylo_fixed": "✓ Vote de 90 % uniquement"
   },
   "home_cta": {
