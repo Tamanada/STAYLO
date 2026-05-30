@@ -6141,15 +6141,39 @@ const PULSE_RESOURCES = [
 function pulseSearchText(kind, row){
   const parts = [];
   switch(kind){
-    case 'items':      parts.push(row.name, row.category_name, row.sku, row.barcode); break;
-    case 'customers':  parts.push(row.first_name, row.last_name, row.email, row.phone_number); break;
-    case 'employees':  parts.push(row.first_name, row.last_name, row.email, row.role); break;
+    // Loyverse uses `item_name` for items, not `name`. Variants carry the SKU/barcode.
+    case 'items':      parts.push(row.item_name, row.name, row.category_name, row.reference_id,
+                                  ...(row.variants||[]).flatMap(v=>[v.sku, v.barcode])); break;
+    case 'customers':  parts.push(row.name, row.email, row.phone_number, row.customer_code); break;
+    case 'employees':  parts.push(row.name, row.email, row.phone_number); break;
     case 'receipts':   parts.push(row.receipt_number, row.note, row.customer_name); break;
-    case 'inventory_levels': parts.push(row.item_id, row.store_id); break;
+    case 'inventory_levels': parts.push(row.item_id, row.variant_id, row.store_id); break;
     case 'shifts':     parts.push(row.employee_id, row.store_id, row.shift_number); break;
     default:           parts.push(row.name, row.title, row.email);
   }
   return parts.filter(Boolean).join(' ').toLowerCase();
+}
+
+/* Categories cache — Loyverse items only carry `category_id`, so we
+ * pre-fetch the categories index and join client-side to display the
+ * category name + colour on each item card. Refreshed every 5 minutes. */
+const _loyverseCategoriesCache = { stamp: 0, map: {} };
+async function loyverseGetCategoriesMap(force){
+  const now = Date.now();
+  if(!force && now - _loyverseCategoriesCache.stamp < 5 * 60 * 1000) {
+    return _loyverseCategoriesCache.map;
+  }
+  try {
+    const data = await loyverseAPI('categories', { limit: '250' });
+    const map = {};
+    for(const c of (data.categories || [])) map[c.id] = c;
+    _loyverseCategoriesCache.map = map;
+    _loyverseCategoriesCache.stamp = now;
+    return map;
+  } catch (err) {
+    console.warn('Could not load categories', err);
+    return _loyverseCategoriesCache.map || {};
+  }
 }
 
 /* Receipt date filter — returns the Loyverse query for a preset window.   */
@@ -6348,6 +6372,17 @@ async function pulseOpenResourceModal(resource){
       if(state.cursor) q.cursor = state.cursor;
       const data = await loyverseAPI(resource.path, q);
       const list = data[resource.key] || data.list || [];
+      // For items, join the category_id → category.name/color client-side
+      // since Loyverse only ships the id in the items payload.
+      if(resource.id === 'items' && list.length){
+        const catMap = await loyverseGetCategoriesMap();
+        for(const it of list){
+          if(it.category_id && catMap[it.category_id]){
+            it.category_name = catMap[it.category_id].name;
+            if(!it.color) it.color = catMap[it.category_id].color;
+          }
+        }
+      }
       state.rows = state.rows.concat(list);
       state.cursor = data.cursor || null;
       renderList();
@@ -6388,7 +6423,10 @@ async function pulseOpenResourceModal(resource){
    Office until we surface them in a "Variants" sub-editor. */
 async function pulseOpenItemEditor(item, onSaved, kind){
   const isNew = !item || !item.id;
-  const titleText = isNew ? 'New item' : 'Edit · ' + (item.name || 'item');
+  // Loyverse uses item_name (with `name` as a legacy fallback some
+  // accounts still expose). Read both, write item_name.
+  const itemName = (item && (item.item_name || item.name)) || '';
+  const titleText = isNew ? 'New item' : 'Edit · ' + (itemName || 'item');
 
   const bg = el('div',{class:'pulse-wiz-bg', onclick:(e)=>{ if(e.target===bg) bg.remove(); }});
   const card = el('div',{class:'pulse-wiz-card', onclick:(e)=>e.stopPropagation(), style:'max-width:520px'});
@@ -6403,7 +6441,7 @@ async function pulseOpenItemEditor(item, onSaved, kind){
 
   const variant = (item && item.variants && item.variants[0]) || { default_price: 0 };
   const body = el('div',{class:'pulse-wiz-body'});
-  const fName = el('input',{type:'text', class:'pulse-wiz-input', value: item?.name || '', placeholder:'Item name (e.g. Pad Thai)'});
+  const fName = el('input',{type:'text', class:'pulse-wiz-input', value: itemName, placeholder:'Item name (e.g. Pad Thai)'});
   const fCat = el('select',{class:'pulse-wiz-input', style:'background:#FAFBFC'},
     el('option',{value:''}, '— Uncategorized —')
   );
@@ -6431,7 +6469,7 @@ async function pulseOpenItemEditor(item, onSaved, kind){
     foot.appendChild(el('button',{
       class:'btn-secondary', style:'background:#FFE5E5;color:#8B0036',
       onclick: async () => {
-        if(!confirm('Delete "' + (item.name || 'this item') + '"? This cannot be undone.')) return;
+        if(!confirm('Delete "' + (itemName || 'this item') + '"? This cannot be undone.')) return;
         try { await loyverseWrite('DELETE', 'items/' + item.id); bg.remove(); if(onSaved) onSaved(); }
         catch (err) { errBox.style.display = ''; errBox.textContent = 'Delete failed: ' + (err.message||err); }
       }
@@ -6445,7 +6483,7 @@ async function pulseOpenItemEditor(item, onSaved, kind){
     const priceNum = parseFloat(fPrice.value) || 0;
 
     const payload = {
-      name,
+      item_name: name,
       category_id: fCat.value || null,
       image_url: fImg.value.trim() || null,
       track_stock: fTrack.checked,
@@ -6522,7 +6560,7 @@ function pulseRenderResourceRow(kind, row){
         }}, '✎'),
         el('button',{class:'pulse-item-act del', title:'Delete', onclick:async (e)=>{
           e.stopPropagation();
-          if(!confirm('Delete "' + (row.name || 'this item') + '"? This cannot be undone.')) return;
+          if(!confirm('Delete "' + (row.item_name || row.name || 'this item') + '"? This cannot be undone.')) return;
           try {
             await loyverseWrite('DELETE', 'items/' + row.id);
             alert('Item deleted in Loyverse.');
@@ -6539,7 +6577,7 @@ function pulseRenderResourceRow(kind, row){
         }}, '🗑'),
       ),
       el('div',{class:'pulse-item-body'},
-        el('div',{class:'pulse-item-name'}, row.name || 'Unnamed item'),
+        el('div',{class:'pulse-item-name'}, row.item_name || row.name || 'Unnamed item'),
         el('div',{class:'pulse-item-cat',
           style: row.category_name ? 'background:'+color+'22;color:var(--navy)' : 'color:var(--gray)'},
           row.category_name || 'Uncategorized'),
@@ -6585,8 +6623,9 @@ function pulseRenderResourceRow(kind, row){
   }
 
   // ── CUSTOMERS — name + contact + visits + total spent ──
+  // Loyverse ships a single `name` field for customers (full display name).
   if(kind === 'customers'){
-    const name = [row.first_name, row.last_name].filter(Boolean).join(' ') || row.email || 'Unnamed';
+    const name = row.name || row.email || row.customer_code || 'Unnamed';
     return el('div',{class:'pulse-resource-row'},
       el('div',{class:'pulse-resource-row-name'}, '👤 ' + name),
       el('div',{class:'pulse-resource-row-sub'},
@@ -6597,13 +6636,16 @@ function pulseRenderResourceRow(kind, row){
     );
   }
 
-  // ── EMPLOYEES — name + role + email ──
+  // ── EMPLOYEES — name + email + phone ──
+  // Loyverse ships a single `name` field for employees too.
   if(kind === 'employees'){
-    const name = [row.first_name, row.last_name].filter(Boolean).join(' ') || row.email || 'Unnamed';
+    const name = row.name || row.email || 'Unnamed';
     return el('div',{class:'pulse-resource-row'},
       el('div',{class:'pulse-resource-row-name'}, '👤 ' + name),
       el('div',{class:'pulse-resource-row-sub'},
-        [row.role, row.email, row.phone_number].filter(Boolean).join(' · ')),
+        [row.email, row.phone_number,
+         row.stores?.length ? row.stores.length + ' store access' : null
+        ].filter(Boolean).join(' · ')),
     );
   }
 
