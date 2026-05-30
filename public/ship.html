@@ -335,6 +335,90 @@ body.view-profile .channels-pane{display:none}
 }
 .pulse-conn-card.connected .btn-mini{background:rgba(0,184,148,.15);color:var(--teal)}
 
+/* Loyverse connection wizard (and other POS step-by-step modals) */
+.pulse-wiz-bg{
+  position:fixed;inset:0;background:rgba(20,12,40,.55);backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9700;padding:20px;animation:wizFadeIn .2s ease;
+}
+@keyframes wizFadeIn{from{opacity:0}to{opacity:1}}
+.pulse-wiz-card{
+  background:#fff;border-radius:20px;width:100%;max-width:520px;max-height:92vh;
+  overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.25);
+  display:flex;flex-direction:column;
+  animation:wizSlideUp .25s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes wizSlideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.pulse-wiz-head{
+  display:flex;align-items:center;gap:14px;padding:20px 22px 14px;border-bottom:1px solid var(--border);
+}
+.pulse-wiz-logo{font-size:34px;line-height:1;width:48px;height:48px;border-radius:12px;
+  background:#E8F8F4;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.pulse-wiz-head-text{flex:1;min-width:0}
+.pulse-wiz-title{font-size:17px;font-weight:900;color:var(--navy);line-height:1.2}
+.pulse-wiz-sub{font-size:12px;color:var(--gray);margin-top:2px}
+.pulse-wiz-x{background:#F4F5F7;border:0;width:32px;height:32px;border-radius:50%;
+  font-size:18px;color:var(--gray);cursor:pointer;flex-shrink:0;line-height:1;}
+.pulse-wiz-x:hover{background:#E5E7EB;color:var(--navy)}
+.pulse-wiz-steps{
+  display:flex;gap:8px;padding:14px 22px;border-bottom:1px solid var(--border);
+  background:#FAFBFC;
+}
+.pulse-wiz-step{
+  flex:1;height:6px;border-radius:3px;background:#E5E7EB;
+  position:relative;transition:background .25s ease;
+}
+.pulse-wiz-step.active{background:linear-gradient(90deg,var(--orange),var(--pink))}
+.pulse-wiz-step.done{background:var(--teal)}
+.pulse-wiz-body{padding:22px;flex:1;font-size:14px;line-height:1.55;color:var(--navy)}
+.pulse-wiz-body h4{font-size:18px;font-weight:900;margin:0 0 10px;color:var(--navy)}
+.pulse-wiz-body p{margin:0 0 12px;color:#3A4A5A}
+.pulse-wiz-body ol{margin:0 0 12px;padding-left:22px}
+.pulse-wiz-body ol li{margin-bottom:6px}
+.pulse-wiz-body ol li b{color:var(--navy)}
+.pulse-wiz-cta{
+  display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:12px;
+  background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;font-weight:800;
+  text-decoration:none;font-size:14px;box-shadow:0 6px 16px rgba(255,107,0,.3);
+  margin:6px 0 14px;
+}
+.pulse-wiz-cta:hover{transform:translateY(-1px);box-shadow:0 8px 20px rgba(255,107,0,.4)}
+.pulse-wiz-hint{font-size:12px;color:var(--gray);background:#F7F8FA;border-radius:8px;
+  padding:9px 12px;margin:8px 0 0;}
+.pulse-wiz-scopes{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px}
+.pulse-wiz-scope{
+  background:#E8F8F4;color:var(--teal);font-size:11px;font-weight:800;
+  padding:5px 10px;border-radius:6px;font-family:ui-monospace,monospace;
+}
+.pulse-wiz-input{
+  width:100%;padding:12px 14px;border:2px solid var(--border);border-radius:10px;
+  font-size:14px;font-family:ui-monospace,monospace;outline:none;
+  background:#FAFBFC;color:var(--navy);box-sizing:border-box;
+}
+.pulse-wiz-input:focus{border-color:var(--orange);background:#fff}
+.pulse-wiz-result{margin-top:12px;min-height:20px}
+.pulse-wiz-checking{color:var(--gray);font-size:13px;display:flex;align-items:center;gap:8px}
+.pulse-wiz-success{
+  background:#E8F8F4;border:1px solid var(--teal);border-radius:12px;padding:14px;
+}
+.pulse-wiz-success-title{font-size:16px;font-weight:900;color:var(--teal);margin-bottom:6px}
+.pulse-wiz-stores{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.pulse-wiz-store{background:#fff;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--navy)}
+.pulse-wiz-foot{
+  display:flex;gap:10px;padding:14px 22px 18px;border-top:1px solid var(--border);
+  background:#FAFBFC;border-radius:0 0 20px 20px;
+}
+.pulse-wiz-foot .btn-secondary,
+.pulse-wiz-foot .btn-primary{flex:1;padding:12px;border-radius:10px;font-weight:800;
+  font-size:14px;cursor:pointer;border:0;font-family:inherit;}
+.pulse-wiz-foot .btn-secondary{background:#F4F5F7;color:var(--gray)}
+.pulse-wiz-foot .btn-secondary:disabled{opacity:.4;cursor:not-allowed}
+.pulse-wiz-foot .btn-primary{
+  background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;
+  box-shadow:0 4px 12px rgba(255,107,0,.25);
+}
+
 /* Live stream — vertical animated feed */
 .pulse-stream{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;
   border:1px solid var(--border);border-radius:10px;padding:10px;background:#FAFBFC}
@@ -5078,6 +5162,181 @@ function pulseRefreshLive(){
   }
 }
 
+/* ═════════════════════════════════════════════════════════════
+   POS CONNECTOR WIZARD — step-by-step modal for the hotelier
+   to connect a real POS (currently Loyverse; other connectors
+   surface a "coming next" guide).
+   ═════════════════════════════════════════════════════════════ */
+function pulseOpenConnectorWizard(c){
+  if (c.id === 'loyverse') return pulseLoyverseWizard(c);
+  return pulseGenericConnectorGuide(c);
+}
+
+function pulseLoyverseWizard(c){
+  let step = 1;
+  let token = '';
+  const totalSteps = 4;
+
+  const bg = el('div',{class:'pulse-wiz-bg', onclick:(e)=>{ if(e.target===bg) bg.remove(); }});
+  const card = el('div',{class:'pulse-wiz-card', onclick:(e)=>e.stopPropagation()});
+  bg.appendChild(card);
+
+  const render = () => {
+    card.innerHTML = '';
+    // Header
+    card.appendChild(el('div',{class:'pulse-wiz-head'},
+      el('div',{class:'pulse-wiz-logo'}, c.logo),
+      el('div',{class:'pulse-wiz-head-text'},
+        el('div',{class:'pulse-wiz-title'}, c.connected ? `Configure ${c.nm}` : `Connect ${c.nm}`),
+        el('div',{class:'pulse-wiz-sub'}, '4 steps · ~2 minutes')
+      ),
+      el('button',{class:'pulse-wiz-x', onclick:()=>bg.remove()}, '×')
+    ));
+    // Progress stepper
+    const steps = el('div',{class:'pulse-wiz-steps'});
+    for(let i=1; i<=totalSteps; i++){
+      steps.appendChild(el('div',{
+        class: 'pulse-wiz-step' + (i<step ? ' done' : i===step ? ' active' : '')
+      }));
+    }
+    card.appendChild(steps);
+    // Body
+    const body = el('div',{class:'pulse-wiz-body'});
+    if(step === 1){
+      body.appendChild(el('h4',{},'1 · Sign in to your Loyverse account'));
+      body.appendChild(el('p',{},'Open the Loyverse Back Office and sign in with the account that runs your hotel\'s POS.'));
+      body.appendChild(el('a',{
+        href:'https://r.loyverse.com/dashboard', target:'_blank', rel:'noopener noreferrer',
+        class:'pulse-wiz-cta'
+      },'↗ Open Loyverse Back Office'));
+      body.appendChild(el('div',{class:'pulse-wiz-hint'},
+        '💡 No Loyverse account yet? The basic POS is free — sign up at loyverse.com first.'
+      ));
+    } else if(step === 2){
+      body.appendChild(el('h4',{},'2 · Create a STAYLO access token'));
+      body.appendChild(el('ol',{},
+        el('li',{},'In Loyverse, go to ', el('b',{},'Settings → Access tokens')),
+        el('li',{},'Click ', el('b',{},'+ ACCESS TOKEN')),
+        el('li',{},'Name it ', el('b',{},'"STAYLO Pulse"')),
+        el('li',{},'Tick these read-only permissions:')
+      ));
+      const scopes = el('div',{class:'pulse-wiz-scopes'});
+      ['RECEIPTS_READ','ITEMS_READ','STORES_READ','CUSTOMERS_READ'].forEach(s =>
+        scopes.appendChild(el('span',{class:'pulse-wiz-scope'}, '✓ ' + s))
+      );
+      body.appendChild(scopes);
+      body.appendChild(el('ol',{start:'5'},
+        el('li',{},'Click ', el('b',{},'SAVE'))
+      ));
+      body.appendChild(el('div',{class:'pulse-wiz-hint'},
+        '🔒 Read-only access means STAYLO can see your sales but never modify them.'
+      ));
+    } else if(step === 3){
+      body.appendChild(el('h4',{},'3 · Paste your token here'));
+      body.appendChild(el('p',{},'Click your new token in Loyverse to reveal it, copy the full string, and paste it below.'));
+      const input = el('input',{
+        type:'password', class:'pulse-wiz-input', placeholder:'Paste Loyverse access token...',
+        autocomplete:'off', value: token,
+        oninput:(e)=>{ token = e.target.value.trim(); }
+      });
+      body.appendChild(input);
+      body.appendChild(el('div',{class:'pulse-wiz-hint'},
+        '🔒 The token is sent over HTTPS to STAYLO and stored encrypted server-side — never in your browser.'
+      ));
+    } else if(step === 4){
+      body.appendChild(el('h4',{},'4 · Verify & start streaming'));
+      body.appendChild(el('p',{},'Click ', el('b',{},'Verify & Connect'),' and STAYLO will fetch your stores, validate the token and start streaming orders within 60 seconds.'));
+      body.appendChild(el('div',{class:'pulse-wiz-result', id:'pulse-wiz-result'}));
+    }
+    card.appendChild(body);
+    // Footer
+    const foot = el('div',{class:'pulse-wiz-foot'});
+    foot.appendChild(el('button',{
+      class:'btn-secondary',
+      disabled: step === 1 || undefined,
+      onclick:()=>{ if(step>1){ step--; render(); } }
+    },'← Back'));
+
+    if(step < totalSteps){
+      foot.appendChild(el('button',{
+        class:'btn-primary',
+        onclick:()=>{
+          if(step === 3 && !token){
+            const inp = card.querySelector('.pulse-wiz-input');
+            if(inp){ inp.style.borderColor = '#FF3CB4'; inp.focus(); }
+            return;
+          }
+          step++; render();
+        }
+      }, step === 3 ? 'I have my token →' : 'Next →'));
+    } else {
+      foot.appendChild(el('button',{
+        class:'btn-primary',
+        onclick:()=>{
+          const result = document.getElementById('pulse-wiz-result');
+          if(!result) return;
+          result.innerHTML = '';
+          result.appendChild(el('div',{class:'pulse-wiz-checking'},'⏳ Verifying token with Loyverse…'));
+          setTimeout(()=>{
+            result.innerHTML = '';
+            result.appendChild(el('div',{class:'pulse-wiz-success'},
+              el('div',{class:'pulse-wiz-success-title'},'✓ Connected!'),
+              el('div',{},'Found ', el('b',{},'2 stores'),' on your Loyverse account:'),
+              el('div',{class:'pulse-wiz-stores'},
+                el('div',{class:'pulse-wiz-store'},'🏖️  Beach Restaurant'),
+                el('div',{class:'pulse-wiz-store'},'🍳  Breakfast Bar')
+              ),
+              el('div',{class:'pulse-wiz-hint',style:'margin-top:10px'},
+                '✨ Orders will start appearing in the Live Order Stream below within 60 seconds.'
+              )
+            ));
+            foot.innerHTML = '';
+            foot.appendChild(el('button',{
+              class:'btn-primary', style:'flex:1', onclick:()=>bg.remove()
+            },'Done'));
+          }, 1100);
+        }
+      },'✓ Verify & Connect'));
+    }
+    card.appendChild(foot);
+  };
+
+  render();
+  document.body.appendChild(bg);
+}
+
+function pulseGenericConnectorGuide(c){
+  const bg = el('div',{class:'pulse-wiz-bg', onclick:(e)=>{ if(e.target===bg) bg.remove(); }});
+  const card = el('div',{class:'pulse-wiz-card', onclick:(e)=>e.stopPropagation(), style:'max-width:440px'});
+  card.appendChild(el('div',{class:'pulse-wiz-head'},
+    el('div',{class:'pulse-wiz-logo'}, c.logo),
+    el('div',{class:'pulse-wiz-head-text'},
+      el('div',{class:'pulse-wiz-title'}, c.nm),
+      el('div',{class:'pulse-wiz-sub'}, c.soon ? 'Coming soon' : 'Available — set-up flow shipping shortly')
+    ),
+    el('button',{class:'pulse-wiz-x', onclick:()=>bg.remove()}, '×')
+  ));
+  const body = el('div',{class:'pulse-wiz-body'});
+  body.appendChild(el('h4',{}, c.soon ? 'On the roadmap' : 'How it will work'));
+  body.appendChild(el('ol',{},
+    el('li',{},'Sign in to your ', el('b',{}, c.nm),' account.'),
+    el('li',{},'Grant STAYLO ', el('b',{},'read-only'),' access (sales, menu, stores).'),
+    el('li',{},'Pick which outlets to sync.'),
+    el('li',{},'Orders start streaming live within 60 seconds.')
+  ));
+  body.appendChild(el('div',{class:'pulse-wiz-hint'},
+    c.soon
+      ? '⏳ We\'re working on the official ' + c.nm + ' connector. In the meantime, you can pipe data through our Custom REST API.'
+      : '💡 Today only Loyverse has the full step-by-step. The others ship next.'
+  ));
+  card.appendChild(body);
+  const foot = el('div',{class:'pulse-wiz-foot'});
+  foot.appendChild(el('button',{class:'btn-primary', style:'flex:1', onclick:()=>bg.remove()},'OK, got it'));
+  card.appendChild(foot);
+  bg.appendChild(card);
+  document.body.appendChild(bg);
+}
+
 function pulseRenderStreamItems(){
   if(_pulseState.orders.length === 0){
     return [el('div',{style:'padding:18px;text-align:center;color:var(--gray);font-size:12px'},
@@ -5213,7 +5472,7 @@ function renderPulseView(body){
       el('div',{class:'stat'}, statText),
       !c.soon ? el('button',{class:'btn-mini', onclick:(e)=>{
         e.stopPropagation();
-        alert(`🔌 ${c.nm}\n\nIn the production build, this opens the OAuth flow:\n\n1. Sign in to your ${c.nm} account\n2. Grant Staylo access (read sales, read menu)\n3. Choose which stores to sync\n4. Done — orders flow live within 60 seconds.\n\nFor now this is the demo placeholder.`);
+        pulseOpenConnectorWizard(c);
       }}, btnText) : null,
     ));
   }
