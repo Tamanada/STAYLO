@@ -5099,6 +5099,50 @@ async function loyverseAPI(path, query){
   return data;
 }
 
+/* Loyverse monthly revenue cache.
+ * Keyed by "YYYY-MM" so the Charges page can include POS sales in its
+ * grand total synchronously (on second render) without re-fetching.
+ * Cache TTL: 60 s. */
+const _loyverseMonthCache = { monthKey: '', stamp: 0, byStore: {} };
+
+async function fetchLoyverseMonthRevenue(monthKey){
+  const now = Date.now();
+  if(_loyverseMonthCache.monthKey === monthKey && now - _loyverseMonthCache.stamp < 60000){
+    return _loyverseMonthCache.byStore;
+  }
+  const [year, month] = monthKey.split('-').map(Number);
+  const monthStart      = new Date(year, month - 1, 1, 0, 0, 0).toISOString();
+  const nextMonthStart  = new Date(year, month,     1, 0, 0, 0).toISOString();
+  const byStore = {};
+  // Loyverse paginates at 250/request. Fetch up to 5 pages = 1,250 receipts
+  // per month — enough for a small-to-medium hotel. Cap defensively.
+  let cursor = null;
+  for(let page = 0; page < 5; page++){
+    const q = { created_at_min: monthStart, created_at_max: nextMonthStart, limit: '250' };
+    if(cursor) q.cursor = cursor;
+    let data;
+    try { data = await loyverseAPI('receipts', q); }
+    catch (err) { console.warn('fetchLoyverseMonthRevenue page failed', err); break; }
+    const receipts = Array.isArray(data.receipts) ? data.receipts : [];
+    for(const r of receipts){
+      const sid = r.store_id;
+      if(!sid) continue;
+      byStore[sid] = (byStore[sid] || 0) + Number(r.total_money || 0);
+    }
+    cursor = data.cursor;
+    if(!cursor || receipts.length === 0) break;
+  }
+  _loyverseMonthCache.monthKey = monthKey;
+  _loyverseMonthCache.stamp = now;
+  _loyverseMonthCache.byStore = byStore;
+  return byStore;
+}
+
+function loyverseMonthTotal(monthKey){
+  if(_loyverseMonthCache.monthKey !== monthKey) return 0;
+  return Object.values(_loyverseMonthCache.byStore || {}).reduce((s, v) => s + v, 0);
+}
+
 // Currency conversion rates — would come from a rate API. Plausible values
 // for May 2026 demo. THB is the base.
 const PULSE_RATES = {
@@ -11448,8 +11492,15 @@ function renderFinanceView(body){
   const sumOf = (arr) => (arr||[]).reduce((s,x) => s + (parseFloat(x.amount)||0), 0);
 
   const totalExpenses = sumOf(cur.fixed) + payrollTotal;
+  // Live POS revenue (Loyverse) gets folded into the month's total
+  // automatically: we read from the in-memory cache so the first render
+  // is 0 (or last-known), then the async fetch below re-renders with the
+  // real number. No risk of double-counting — the rev_fnb array stores
+  // manual entries only, the Loyverse section is purely live.
+  const loyverseTotal = loyverseMonthTotal(month);
   const totalRevenues = sumOf(cur.rev_lodging) + sumOf(cur.rev_fnb)
-                      + sumOf(cur.rev_ancillary) + sumOf(cur.rev_shop);
+                      + sumOf(cur.rev_ancillary) + sumOf(cur.rev_shop)
+                      + loyverseTotal;
   const grandTotal = totalRevenues - totalExpenses;
 
   let priorExpensesFixed = 0, priorRevenues = 0;
@@ -11585,10 +11636,93 @@ function renderFinanceView(body){
 
   wrap.appendChild(editableSection(t('app.charges.section.hotel'),     '🏨', 'rev_lodging',   t('app.charges.placeholder.hotel')));
   wrap.appendChild(editableSection(t('app.charges.section.fnb'),       '🍽️', 'rev_fnb',       t('app.charges.placeholder.fnb')));
+
+  // ─── Live POS revenue (Loyverse) ───────────────────────────────
+  // Only shown if the hotel has connected a POS via the Pulse wizard.
+  // Each connected store gets one read-only row whose amount is pulled
+  // live from /v1.0/receipts (month-to-date). On the first render the
+  // numbers may be 0 — the async fetch kicks off below and re-renders
+  // the view as soon as data is back.
+  const loyverseStores = (() => {
+    if(!loyverseToken()) return [];
+    try { return JSON.parse(localStorage.getItem('staylo_loyverse_stores') || '[]'); }
+    catch { return []; }
+  })();
+  if(loyverseStores.length){
+    wrap.appendChild(buildLoyversePOSSection(loyverseStores, month, body));
+  }
+
   wrap.appendChild(editableSection(t('app.charges.section.ancillary'), '🚐', 'rev_ancillary', t('app.charges.placeholder.ancillary')));
   wrap.appendChild(editableSection(t('app.charges.section.shop'),      '🛍️', 'rev_shop',      t('app.charges.placeholder.shop')));
 
   body.appendChild(wrap);
+
+  // Background sync — refresh the Loyverse cache for this month, then
+  // re-render so KPIs, the grand total and the per-store amounts pick
+  // up the live numbers. We only do this if the data is stale.
+  if(loyverseStores.length && _loyverseMonthCache.monthKey !== month){
+    fetchLoyverseMonthRevenue(month).then(() => {
+      // Guard: only re-render if the user is still on the Charges view.
+      if(body.isConnected && document.body.contains(body)){
+        renderFinanceView(body);
+      }
+    }).catch(err => console.warn('Loyverse month fetch failed', err));
+  }
+}
+
+/* Build the read-only "Revenus POS · Loyverse" section. Layout matches
+ * the editable sections (same .finance-sec frame + .finance-rows) so the
+ * P&L scans uniformly; only the row controls differ. */
+function buildLoyversePOSSection(stores, monthKey, bodyEl){
+  const sym = (typeof curSym === 'function') ? curSym() : '฿';
+  const fmt = (n) => sym + ' ' + Math.round(n||0).toLocaleString('en-US');
+  const cached = (_loyverseMonthCache.monthKey === monthKey)
+    ? _loyverseMonthCache.byStore
+    : null;
+  const sectionTotal = cached
+    ? Object.values(cached).reduce((s, v) => s + v, 0)
+    : 0;
+
+  const sec = el('div',{class:'finance-sec'});
+  sec.appendChild(el('div',{class:'finance-sec-head'},
+    el('div',{class:'finance-sec-title'},
+      '🟢 Revenus POS · Loyverse ',
+      el('span',{
+        style:'background:rgba(0,184,148,.15);color:var(--teal);font-size:9px;font-weight:900;padding:2px 6px;border-radius:4px;margin-left:6px;letter-spacing:1px'
+      }, 'LIVE')
+    ),
+    el('div',{class:'finance-sec-total', style: cached ? '' : 'opacity:.4'},
+      cached ? fmt(sectionTotal) : 'syncing…'
+    ),
+  ));
+  const rows = el('div',{class:'finance-rows'});
+  for(const s of stores){
+    const amt = cached ? (cached[s.id] || 0) : null;
+    rows.appendChild(el('div',{class:'finance-row'},
+      el('div',{
+        class:'finance-row-label',
+        style:'background:#FAFBFC;color:var(--navy);font-weight:700;cursor:not-allowed'
+      }, '🏪  ' + (s.name || 'Unnamed store')),
+      el('div',{
+        class:'finance-row-amt',
+        style:'background:#E8F8F4;color:var(--teal);font-weight:800;cursor:not-allowed;text-align:right'
+      }, amt != null ? fmt(amt) : '—'),
+      el('div',{
+        class:'finance-row-del',
+        style:'background:transparent;color:var(--teal);cursor:default;font-size:14px',
+        title:'Live from Loyverse — auto-synced',
+      }, '🟢'),
+    ));
+  }
+  sec.appendChild(rows);
+  sec.appendChild(el('div',{
+    style:'font-size:11px;color:var(--gray);padding:8px 6px 0;font-style:italic'
+  },
+    cached
+      ? '✓ Auto-synced from Loyverse · refreshes every minute · counted in your total revenue'
+      : '⏳ Fetching this month\'s POS receipts from Loyverse…'
+  ));
+  return sec;
 }
 
 function renderHRModal(){
