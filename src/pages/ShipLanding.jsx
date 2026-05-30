@@ -55,16 +55,16 @@ export default function ShipLanding() {
           style={{ background: 'radial-gradient(ellipse at center, rgba(10,5,20,0) 0%, rgba(10,5,20,0.15) 60%, rgba(10,5,20,0.35) 100%)' }}
         />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
-          <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0' }}>
+          <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
             {t('ship_page.eyebrow', 'by STAYLO · Free for Founding Partners')}
           </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-3">
-            STAYLO <span className="text-gradient">Ship</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-3" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85)' }}>
+            STAYLO Ship
           </h1>
-          <p className="text-xl sm:text-2xl font-bold mb-3">
+          <p className="text-xl sm:text-2xl font-bold mb-3" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
             {t('ship_page.hero_tagline', 'Run your whole hotel from your pocket.')}
           </p>
-          <p className="text-base sm:text-lg text-white/70 max-w-2xl mx-auto mb-8 leading-relaxed">
+          <p className="text-base sm:text-lg text-white max-w-2xl mx-auto mb-8 leading-relaxed" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
             {t('ship_page.hero_sub', 'Staylo Hotelier In-Pocket — one app that replaces the five SaaS tools you stitch together today. Front desk, channel manager, housekeeping, F&B, staff, payments and reports.')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8 sm:mt-12">
