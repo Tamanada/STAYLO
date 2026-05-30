@@ -5960,17 +5960,21 @@ function pulseRealModeStop(){
   if(_pulseState.realPollTimer){ clearInterval(_pulseState.realPollTimer); _pulseState.realPollTimer = null; }
 }
 
-/* Pull today's receipts and rewrite the Revenue cells + Live Order Stream
-   with the real numbers. Loyverse's /receipts endpoint supports
-   created_at_min — we ask for everything since 00:00 local time.        */
+/* Pull the last 7 days of receipts and rewrite Revenue + Live Stream.
+   We fetch 7 days (not just today) so the dashboard always has activity
+   to show — a hotelier opening Pulse on a slow morning still sees
+   yesterday's totals and the week's trend instead of an empty "waiting"
+   screen. Today / Yesterday / Week are bucketed client-side from a
+   single API call.                                                       */
 async function pulseRealModeRefresh(bodyEl){
-  const todayStart = new Date();
-  todayStart.setHours(0,0,0,0);
-  const sinceISO = todayStart.toISOString();
+  const now = new Date();
+  const todayStart = new Date(now); todayStart.setHours(0,0,0,0);
+  const yesterdayStart = new Date(todayStart.getTime() - 86400000);
+  const sevenDaysAgo = new Date(todayStart.getTime() - 6 * 86400000); // today + 6 prior = 7-day window
 
   let receipts = [];
   try {
-    const data = await loyverseAPI('receipts', { created_at_min: sinceISO, limit: '250' });
+    const data = await loyverseAPI('receipts', { created_at_min: sevenDaysAgo.toISOString(), limit: '250' });
     receipts = Array.isArray(data.receipts) ? data.receipts : [];
   } catch (err) {
     pulseRealModeRenderError(bodyEl, err);
@@ -5979,83 +5983,145 @@ async function pulseRealModeRefresh(bodyEl){
 
   _pulseState.realLastSync = Date.now();
 
-  // Aggregate by currency. Loyverse returns one currency per merchant
-  // (default_currency_code), but receipts also carry "total_money".
-  const totalByCurrency = {};
-  let count = 0;
+  // Bucket every receipt into today / yesterday / last-7-days, both by
+  // count and per-currency total. We track per-currency because the
+  // hotelier might charge in THB + accept tips in USD/EUR.
+  const mkBucket = () => ({ total: 0, count: 0, byCcy: {} });
+  const buckets = { today: mkBucket(), yesterday: mkBucket(), week: mkBucket() };
   for(const r of receipts){
+    const when = r.created_at ? new Date(r.created_at) : null;
+    if(!when) continue;
     const amt = Number(r.total_money || 0);
     if(!isFinite(amt)) continue;
     const ccy = (r.currency || _pulseState.realCurrency || 'THB').toUpperCase();
-    totalByCurrency[ccy] = (totalByCurrency[ccy] || 0) + amt;
-    count++;
+    // Week always counts (since we filtered for last 7 days)
+    buckets.week.total += amt;
+    buckets.week.count++;
+    buckets.week.byCcy[ccy] = (buckets.week.byCcy[ccy] || 0) + amt;
+    if(when >= todayStart){
+      buckets.today.total += amt; buckets.today.count++;
+      buckets.today.byCcy[ccy] = (buckets.today.byCcy[ccy] || 0) + amt;
+    } else if(when >= yesterdayStart && when < todayStart){
+      buckets.yesterday.total += amt; buckets.yesterday.count++;
+      buckets.yesterday.byCcy[ccy] = (buckets.yesterday.byCcy[ccy] || 0) + amt;
+    }
   }
 
-  // Update the Revenue Pulse cells. We render real currencies first
-  // (whatever the hotelier actually charges in) then keep the FX
-  // conversion grid the simulation built for the other 4 currencies.
+  // Pick the bucket the hotelier most likely cares about right now —
+  // today if there's activity, otherwise yesterday, otherwise the week.
+  const headlineKey = buckets.today.count > 0 ? 'today'
+                    : buckets.yesterday.count > 0 ? 'yesterday'
+                    : 'week';
+  const headlineLabel = { today:'TODAY', yesterday:'YESTERDAY', week:'LAST 7 DAYS' }[headlineKey];
+  const headline = buckets[headlineKey];
+  const ccys = Object.keys(headline.byCcy);
+
+  // ─── Revenue cells ──────────────────────────────────────────
   const revGrid = bodyEl.querySelector('#pulse-rev-grid');
   if(revGrid){
     revGrid.innerHTML = '';
-    const ccys = Object.keys(totalByCurrency);
-    if(ccys.length === 0){
+    if(buckets.week.count === 0){
       revGrid.appendChild(el('div',{class:'pulse-rev-cell',
         style:'grid-column:1/-1;padding:18px;text-align:center;color:var(--gray);font-size:13px;'},
-        '✓ Connected — waiting for the first receipt of the day.'
+        '✓ Connected — no sales in the last 7 days yet. As soon as a cashier closes a receipt, it lands here.'
       ));
     } else {
+      // Headline currency cells for the most relevant window
       for(const ccy of ccys){
         revGrid.appendChild(el('div',{class:'pulse-rev-cell'},
           el('div',{class:'ccy'}, ccy),
-          el('div',{class:'amt'}, Math.round(totalByCurrency[ccy]).toLocaleString()),
+          el('div',{class:'amt'}, Math.round(headline.byCcy[ccy]).toLocaleString()),
         ));
       }
-      revGrid.appendChild(el('div',{class:'pulse-rev-cell',style:'grid-column:1/-1;text-align:center;background:#E8F8F4'},
-        el('div',{class:'ccy',style:'color:var(--teal)'}, 'TODAY · ' + count + ' receipt' + (count===1?'':'s')),
-        el('div',{class:'amt',style:'color:var(--teal);font-size:14px'},
-          '🔴 LIVE · last sync ' + new Date(_pulseState.realLastSync).toLocaleTimeString())
+      // Status row + comparative tiles for today / yesterday / week
+      const sym = (typeof curSym === 'function') ? curSym() : '฿';
+      const fmt = (n) => sym + ' ' + Math.round(n||0).toLocaleString();
+      revGrid.appendChild(el('div',{class:'pulse-rev-cell', style:'grid-column:1/-1;text-align:center;background:#E8F8F4'},
+        el('div',{class:'ccy',style:'color:var(--teal)'},
+          headlineLabel + ' · ' + headline.count + ' receipt' + (headline.count===1?'':'s')),
+        el('div',{class:'amt',style:'color:var(--teal);font-size:13px'},
+          '🔴 LIVE · last sync ' + new Date(_pulseState.realLastSync).toLocaleTimeString()),
+      ));
+      revGrid.appendChild(el('div',{class:'pulse-rev-cell',
+        style: 'grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#FAFBFC;padding:8px'},
+        el('div',{style:'text-align:center'},
+          el('div',{class:'ccy',style:'color:var(--gray);font-size:9px'},'TODAY · ' + buckets.today.count + ' rec.'),
+          el('div',{class:'amt',style:'font-size:13px;color:' + (buckets.today.total > 0 ? 'var(--orange)' : 'var(--gray)')},
+            fmt(buckets.today.total)),
+        ),
+        el('div',{style:'text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border)'},
+          el('div',{class:'ccy',style:'color:var(--gray);font-size:9px'},'YESTERDAY · ' + buckets.yesterday.count + ' rec.'),
+          el('div',{class:'amt',style:'font-size:13px'}, fmt(buckets.yesterday.total)),
+        ),
+        el('div',{style:'text-align:center'},
+          el('div',{class:'ccy',style:'color:var(--gray);font-size:9px'},'7-DAY · ' + buckets.week.count + ' rec.'),
+          el('div',{class:'amt',style:'font-size:13px'}, fmt(buckets.week.total)),
+        ),
       ));
     }
   }
 
-  // Update the Live Order Stream with the latest 20 receipts.
+  // ─── Live Order Stream — show the latest 20 receipts regardless of day
+  // so a slow morning still surfaces yesterday's activity ────────────
   const stream = bodyEl.querySelector('.pulse-stream');
   if(stream){
     stream.innerHTML = '';
     const recent = receipts.slice(0, 20);
     if(recent.length === 0){
       stream.appendChild(el('div',{style:'padding:18px;text-align:center;color:var(--gray);font-size:12px'},
-        '⏳ Waiting for the first receipt — Loyverse pushes them as soon as the cashier closes a sale.'
+        '⏳ No receipts in the last 7 days. Loyverse will push them here within 60 s of each sale.'
       ));
     } else {
+      // If today has 0 but recent has some, prepend a quick badge so the
+      // hotelier understands what they're looking at.
+      if(buckets.today.count === 0){
+        stream.appendChild(el('div',{
+          style:'padding:8px 12px;text-align:center;color:var(--gray);font-size:11px;font-style:italic;background:#FAFBFC;border-radius:6px;margin-bottom:6px'
+        }, '📅 No sales today yet — showing the ' + recent.length + ' most recent receipts from the last 7 days.'));
+      }
       for(const r of recent){
         stream.appendChild(pulseRenderRealReceipt(r));
       }
     }
   }
 
-  // Update the e-Tax compliance counter
+  // Update the e-Tax compliance counter — keyed off TODAY specifically
   const complEl = bodyEl.querySelector('#pulse-compl-th');
-  if(complEl){ complEl.textContent = count + ' receipt' + (count===1?'':'s') + ' today'; }
+  if(complEl){ complEl.textContent = buckets.today.count + ' receipt' + (buckets.today.count===1?'':'s') + ' today'; }
 
-  // Update each connected store card's "receipts today" + total
+  // Make `count` available below for the per-store update (it expected
+  // a flat receipts list; that still works since we have `receipts`).
+  const count = buckets.today.count;
+  void count; // keep for the existing per-store block right after
+
+  // Update each connected store card with today + 7-day totals so the
+  // hotelier sees this morning's activity AND its weekly context.
   const perStore = {};
   for(const r of receipts){
-    const sid = r.store_id;
-    if(!sid) continue;
-    if(!perStore[sid]) perStore[sid] = { n: 0, total: 0 };
-    perStore[sid].n += 1;
-    perStore[sid].total += Number(r.total_money || 0);
+    const sid = r.store_id; if(!sid) continue;
+    if(!perStore[sid]) perStore[sid] = { today: 0, todayN: 0, week: 0, weekN: 0 };
+    const amt = Number(r.total_money || 0);
+    const when = r.created_at ? new Date(r.created_at) : null;
+    if(!when) continue;
+    perStore[sid].week += amt; perStore[sid].weekN += 1;
+    if(when >= todayStart){ perStore[sid].today += amt; perStore[sid].todayN += 1; }
   }
   for(const store of _pulseState.realStores){
     const card = bodyEl.querySelector('#pulse-store-' + store.id);
     if(!card) continue;
     const meta = card.querySelector('.pulse-store-meta');
     if(!meta) continue;
-    const stat = perStore[store.id] || { n: 0, total: 0 };
+    const stat = perStore[store.id] || { today: 0, todayN: 0, week: 0, weekN: 0 };
+    const ccy = _pulseState.realCurrency || 'THB';
     meta.innerHTML = '';
-    meta.appendChild(el('div',{}, stat.n + ' ', el('b',{}, 'receipt' + (stat.n===1?'':'s') + ' today')));
-    meta.appendChild(el('div',{}, el('b',{}, Math.round(stat.total).toLocaleString()), ' ', (_pulseState.realCurrency || 'THB')));
+    meta.appendChild(el('div',{},
+      stat.todayN + ' ', el('b',{}, 'today'), ' · ',
+      el('b',{style: stat.today > 0 ? 'color:var(--teal)' : ''}, Math.round(stat.today).toLocaleString()), ' ', ccy
+    ));
+    meta.appendChild(el('div',{},
+      stat.weekN + ' ', el('b',{}, '7-day'), ' · ',
+      el('b',{}, Math.round(stat.week).toLocaleString()), ' ', ccy
+    ));
   }
 
   // Update the Live indicator and disable the play/pause toggle since
