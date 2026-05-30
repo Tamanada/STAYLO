@@ -36,7 +36,7 @@ export default function ShipLanding() {
       />
 
       {/* ── Hero ── */}
-      <section className="relative overflow-hidden text-white" style={{ background: 'linear-gradient(135deg, #241048 0%, #150a2e 100%)' }}>
+      <section className="relative overflow-hidden text-white w-full min-h-[440px] sm:aspect-[2.5/1] flex items-stretch" style={{ background: 'linear-gradient(135deg, #241048 0%, #150a2e 100%)' }}>
         {/* Hero background fills edge-to-edge. A light radial scrim keeps the
             headline readable without dimming the brand colors too much.
             Desktop gets the wide SHIP banner; mobile keeps the square logo
@@ -54,14 +54,30 @@ export default function ShipLanding() {
           className="absolute inset-0"
           style={{ background: 'radial-gradient(ellipse at center, rgba(10,5,20,0) 0%, rgba(10,5,20,0.15) 60%, rgba(10,5,20,0.35) 100%)' }}
         />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 min-h-[620px] sm:min-h-[720px] flex flex-col justify-between text-center w-full">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col justify-between text-center w-full">
           {/* Top — above the SHIP mark in the banner */}
           <div>
             <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
               {t('ship_page.eyebrow', 'by STAYLO · Free for Founding Partners')}
             </p>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight mb-4 text-white" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85)' }}>
-              STAYLO SHIP
+            {/* STAYLO SHIP wordmark — Inter 900 like the canonical STAYLO
+                brand mark (pitch.html slide 1). The "O" of STAYLO gets the
+                brand gradient as in the official wordmark. */}
+            <h1
+              className="text-5xl sm:text-6xl lg:text-7xl tracking-tight mb-4 text-white"
+              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 900, letterSpacing: '-0.02em', textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85)' }}
+            >
+              <span>STAYL</span>
+              <span
+                style={{
+                  background: 'linear-gradient(135deg, #FF6B00, #FF1F70)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  color: 'transparent',
+                  WebkitTextStroke: '1px rgba(255,255,255,0.85)',
+                }}
+              >O</span>
+              <span> SHIP</span>
             </h1>
             {/* Brand accent bar — matches the canonical STAYLO wordmark
                 underline (pitch.html slide 1): 2-stop orange→hot-pink
