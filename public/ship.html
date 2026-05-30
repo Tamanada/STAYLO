@@ -531,6 +531,38 @@ body.view-profile .channels-pane{display:none}
   padding:2px 0;
 }
 
+/* "+ New" button in the explorer toolbar */
+.pulse-explorer-newbtn{
+  background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;
+  border:0;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:800;
+  cursor:pointer;font-family:inherit;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(255,107,0,.25);
+}
+.pulse-explorer-newbtn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(255,107,0,.35)}
+
+/* Item card hover-revealed actions (Edit / Delete) */
+.pulse-item-card{position:relative}
+.pulse-item-actions{
+  position:absolute;top:6px;right:6px;display:flex;gap:4px;opacity:0;
+  transition:opacity .15s ease;z-index:2;
+}
+.pulse-item-card:hover .pulse-item-actions{opacity:1}
+.pulse-item-act{
+  width:28px;height:28px;border-radius:50%;border:0;cursor:pointer;
+  font-size:14px;line-height:28px;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.15);
+  font-family:inherit;
+}
+.pulse-item-act.edit{background:rgba(255,255,255,.95);color:var(--navy)}
+.pulse-item-act.edit:hover{background:var(--orange);color:#fff}
+.pulse-item-act.del{background:rgba(255,255,255,.95);color:#8B0036}
+.pulse-item-act.del:hover{background:#8B0036;color:#fff}
+
+/* Form labels inside the editor modal */
+.pulse-wiz-label{
+  display:block;font-size:11px;font-weight:800;color:var(--gray);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;
+}
+
 /* Live stream — vertical animated feed */
 .pulse-stream{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;
   border:1px solid var(--border);border-radius:10px;padding:10px;background:#FAFBFC}
@@ -5142,7 +5174,8 @@ function loyverseClearToken(){
     localStorage.removeItem('staylo_loyverse_merchant');
   } catch {}
 }
-async function loyverseAPI(path, query){
+async function loyverseAPI(path, query, opts){
+  // opts = { method: 'POST'|'PUT'|'DELETE', payload: {...} }
   const token = loyverseToken();
   if(!token) throw new Error('Not connected to Loyverse — open the Connect wizard.');
   const resp = await fetch(`${SUPABASE_URL}/functions/v1/loyverse-proxy`, {
@@ -5152,7 +5185,13 @@ async function loyverseAPI(path, query){
       apikey: SUPABASE_ANON_KEY,
       Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     },
-    body: JSON.stringify({ token, path, query: query || {} }),
+    body: JSON.stringify({
+      token,
+      path,
+      query: query || {},
+      method: (opts && opts.method) || 'GET',
+      payload: opts && opts.payload,
+    }),
   });
   const data = await resp.json().catch(() => ({ error: 'Server returned invalid JSON' }));
   if(!resp.ok){
@@ -5162,6 +5201,8 @@ async function loyverseAPI(path, query){
   }
   return data;
 }
+// Sugar for write calls — keeps the call sites short.
+const loyverseWrite = (method, path, payload) => loyverseAPI(path, {}, { method, payload });
 
 /* Loyverse monthly revenue cache.
  * Keyed by "YYYY-MM" so the Charges page can include POS sales in its
@@ -5423,15 +5464,22 @@ function pulseLoyverseWizard(c){
         el('li',{},'Tick these read-only permissions:')
       ));
       const scopes = el('div',{class:'pulse-wiz-scopes'});
-      ['RECEIPTS_READ','ITEMS_READ','STORES_READ','CUSTOMERS_READ'].forEach(s =>
+      ['RECEIPTS_READ','ITEMS_READ','STORES_READ','CUSTOMERS_READ','EMPLOYEES_READ','INVENTORY_READ'].forEach(s =>
         scopes.appendChild(el('span',{class:'pulse-wiz-scope'}, '✓ ' + s))
       );
       body.appendChild(scopes);
+      body.appendChild(el('div',{style:'margin:8px 0 4px;font-size:13px;color:var(--navy);font-weight:700'},
+        '+ optional · to manage Loyverse from STAYLO:'));
+      const writeScopes = el('div',{class:'pulse-wiz-scopes'});
+      ['ITEMS_WRITE','CUSTOMERS_WRITE','INVENTORY_WRITE','MODIFIERS_WRITE'].forEach(s =>
+        writeScopes.appendChild(el('span',{class:'pulse-wiz-scope', style:'background:#FFF1E0;color:var(--orange)'}, '✎ ' + s))
+      );
+      body.appendChild(writeScopes);
       body.appendChild(el('ol',{start:'5'},
         el('li',{},'Click ', el('b',{},'SAVE'))
       ));
       body.appendChild(el('div',{class:'pulse-wiz-hint'},
-        '🔒 Read-only access means STAYLO can see your sales but never modify them.'
+        '🔒 With READ-only scopes STAYLO can see your data; add the WRITE scopes if you want to edit items/customers/stock from STAYLO without opening Loyverse.'
       ));
     } else if(step === 3){
       body.appendChild(el('h4',{},'3 · Paste your token here'));
@@ -6180,14 +6228,24 @@ async function pulseOpenResourceModal(resource){
     el('button',{class:'pulse-wiz-x', onclick:()=>bg.remove()},'×')
   ));
 
-  // Sticky toolbar: search + (receipts only) date range chips
+  // Sticky toolbar: search + (receipts only) date range chips + optional "+ New"
   const toolbar = el('div',{class:'pulse-explorer-toolbar'});
+  const searchRow = el('div',{style:'display:flex;gap:8px;align-items:center'});
   const searchInput = el('input',{
-    type:'search', class:'pulse-explorer-search',
+    type:'search', class:'pulse-explorer-search', style:'flex:1',
     placeholder: '🔍 Search ' + resource.label.toLowerCase() + '…',
     oninput:(e)=>{ state.search = e.target.value.trim().toLowerCase(); renderList(); }
   });
-  toolbar.appendChild(searchInput);
+  searchRow.appendChild(searchInput);
+  // Resources that support creating new entries get a "+ New" button.
+  const CREATABLE = { items: true, customers: true, categories: true, discounts: true, modifiers: true, suppliers: true };
+  if(CREATABLE[resource.id]){
+    searchRow.appendChild(el('button',{
+      class:'pulse-explorer-newbtn',
+      onclick:()=>pulseOpenItemEditor(null, async () => { state.rows = []; state.cursor = null; await loadMore(); }, resource.id)
+    }, '+ New'));
+  }
+  toolbar.appendChild(searchRow);
   if(wantsDate){
     const chipsRow = el('div',{class:'pulse-explorer-chips'});
     const presets = [['7d','7 days'],['30d','30 days'],['90d','90 days'],['all','All time']];
@@ -6298,8 +6356,124 @@ async function pulseOpenResourceModal(resource){
  * Returns a card with thumbnail for items, an expandable row for
  * receipts, and a clean two-line row for everything else.
  */
+/* ════════════════════════════════════════════════════════════════
+   ITEM EDITOR — create / edit / delete a Loyverse item from STAYLO
+   ════════════════════════════════════════════════════════════════
+   Opens a small form modal. On save, POSTs (new) or PUTs (existing)
+   the payload to the loyverse-proxy edge function. Category dropdown
+   is lazy-loaded from /v1.0/categories. The form covers the 80%
+   case — name, category, default-variant price, image URL — which
+   is enough for a hotelier to keep their menu tidy without leaving
+   STAYLO. Variants, modifiers and recipes stay in the Loyverse Back
+   Office until we surface them in a "Variants" sub-editor. */
+async function pulseOpenItemEditor(item, onSaved, kind){
+  const isNew = !item || !item.id;
+  const titleText = isNew ? 'New item' : 'Edit · ' + (item.name || 'item');
+
+  const bg = el('div',{class:'pulse-wiz-bg', onclick:(e)=>{ if(e.target===bg) bg.remove(); }});
+  const card = el('div',{class:'pulse-wiz-card', onclick:(e)=>e.stopPropagation(), style:'max-width:520px'});
+  card.appendChild(el('div',{class:'pulse-wiz-head'},
+    el('div',{class:'pulse-wiz-logo'},'🍔'),
+    el('div',{class:'pulse-wiz-head-text'},
+      el('div',{class:'pulse-wiz-title'}, titleText),
+      el('div',{class:'pulse-wiz-sub'}, 'Saved directly to Loyverse'),
+    ),
+    el('button',{class:'pulse-wiz-x', onclick:()=>bg.remove()},'×')
+  ));
+
+  const variant = (item && item.variants && item.variants[0]) || { default_price: 0 };
+  const body = el('div',{class:'pulse-wiz-body'});
+  const fName = el('input',{type:'text', class:'pulse-wiz-input', value: item?.name || '', placeholder:'Item name (e.g. Pad Thai)'});
+  const fCat = el('select',{class:'pulse-wiz-input', style:'background:#FAFBFC'},
+    el('option',{value:''}, '— Uncategorized —')
+  );
+  const fPrice = el('input',{type:'number', class:'pulse-wiz-input', value: variant.default_price || 0, placeholder:'Default price', min:'0', step:'0.01'});
+  const fImg = el('input',{type:'url', class:'pulse-wiz-input', value: item?.image_url || '', placeholder:'Image URL (https://…)'});
+  const fTrack = el('input',{type:'checkbox', style:'width:18px;height:18px;margin-right:6px;', checked: !!item?.track_stock});
+
+  body.appendChild(el('label',{class:'pulse-wiz-label'},'Name'));
+  body.appendChild(fName);
+  body.appendChild(el('label',{class:'pulse-wiz-label', style:'margin-top:10px'},'Category'));
+  body.appendChild(fCat);
+  body.appendChild(el('label',{class:'pulse-wiz-label', style:'margin-top:10px'},'Default price'));
+  body.appendChild(fPrice);
+  body.appendChild(el('label',{class:'pulse-wiz-label', style:'margin-top:10px'},'Image URL (optional)'));
+  body.appendChild(fImg);
+  body.appendChild(el('label',{style:'display:flex;align-items:center;margin-top:14px;font-size:13px;color:var(--navy);cursor:pointer'},
+    fTrack, ' Track stock for this item'));
+
+  const errBox = el('div',{style:'margin-top:10px;display:none;background:#FFF0F0;border:1px solid #FF3CB4;border-radius:8px;padding:10px;color:#8B0036;font-size:12px'});
+  body.appendChild(errBox);
+  card.appendChild(body);
+
+  const foot = el('div',{class:'pulse-wiz-foot'});
+  if(!isNew){
+    foot.appendChild(el('button',{
+      class:'btn-secondary', style:'background:#FFE5E5;color:#8B0036',
+      onclick: async () => {
+        if(!confirm('Delete "' + (item.name || 'this item') + '"? This cannot be undone.')) return;
+        try { await loyverseWrite('DELETE', 'items/' + item.id); bg.remove(); if(onSaved) onSaved(); }
+        catch (err) { errBox.style.display = ''; errBox.textContent = 'Delete failed: ' + (err.message||err); }
+      }
+    },'🗑 Delete'));
+  }
+  foot.appendChild(el('button',{class:'btn-secondary', onclick:()=>bg.remove()},'Cancel'));
+  const saveBtn = el('button',{class:'btn-primary', onclick: async () => {
+    errBox.style.display = 'none';
+    const name = fName.value.trim();
+    if(!name){ errBox.style.display=''; errBox.textContent='Name is required'; return; }
+    const priceNum = parseFloat(fPrice.value) || 0;
+
+    const payload = {
+      name,
+      category_id: fCat.value || null,
+      image_url: fImg.value.trim() || null,
+      track_stock: fTrack.checked,
+      variants: [{
+        ...(variant.id ? { variant_id: variant.id } : {}),
+        default_price: priceNum,
+        default_pricing_type: 'FIXED',
+        sku: variant.sku || undefined,
+      }],
+    };
+
+    saveBtn.disabled = true; saveBtn.textContent = '⏳ Saving…';
+    try {
+      if(isNew){
+        await loyverseWrite('POST', 'items', payload);
+      } else {
+        await loyverseWrite('PUT', 'items/' + item.id, payload);
+      }
+      bg.remove();
+      if(onSaved) onSaved();
+    } catch (err) {
+      saveBtn.disabled = false; saveBtn.textContent = isNew ? '+ Create' : '✓ Save';
+      errBox.style.display = '';
+      errBox.textContent = (err.status === 401)
+        ? 'Loyverse refused the write. Your token needs the ITEMS_WRITE permission — regenerate it via the Connect wizard with that scope ticked.'
+        : 'Save failed: ' + (err.message || err);
+    }
+  }}, isNew ? '+ Create' : '✓ Save');
+  foot.appendChild(saveBtn);
+  card.appendChild(foot);
+  bg.appendChild(card);
+  document.body.appendChild(bg);
+
+  // Lazy-load categories for the dropdown
+  loyverseAPI('categories', { limit: '250' }).then(data => {
+    const cats = data.categories || [];
+    for(const c of cats){
+      const opt = el('option',{value: c.id}, c.name + (c.color ? ' ●' : ''));
+      if(item?.category_id === c.id) opt.selected = true;
+      fCat.appendChild(opt);
+    }
+  }).catch(err => {
+    console.warn('Could not load categories', err);
+  });
+}
+
 function pulseRenderResourceRow(kind, row){
-  // ── ITEMS — grid card with image ──
+  // ── ITEMS — grid card with image + Edit/Delete on hover ──
   if(kind === 'items'){
     const img = row.image_url
       ? el('div',{class:'pulse-item-img', style:'background-image:url("' + row.image_url + '")'})
@@ -6312,6 +6486,38 @@ function pulseRenderResourceRow(kind, row){
     const color = row.color || '#E5E7EB';
     return el('div',{class:'pulse-item-card'},
       img,
+      el('div',{class:'pulse-item-actions'},
+        el('button',{class:'pulse-item-act edit', title:'Edit', onclick:(e)=>{
+          e.stopPropagation();
+          // Find the open modal body so we can re-trigger a reload on save
+          pulseOpenItemEditor(row, () => {
+            const closeBtn = document.querySelector('.pulse-wiz-bg .pulse-wiz-x');
+            if(closeBtn){
+              // simulate close + reopen items modal so list reflects edits
+              closeBtn.click();
+              const itemsResource = PULSE_RESOURCES.find(r=>r.id==='items');
+              if(itemsResource) pulseOpenResourceModal(itemsResource);
+            }
+          }, 'items');
+        }}, '✎'),
+        el('button',{class:'pulse-item-act del', title:'Delete', onclick:async (e)=>{
+          e.stopPropagation();
+          if(!confirm('Delete "' + (row.name || 'this item') + '"? This cannot be undone.')) return;
+          try {
+            await loyverseWrite('DELETE', 'items/' + row.id);
+            alert('Item deleted in Loyverse.');
+            // Reload the modal
+            const closeBtn = document.querySelector('.pulse-wiz-bg .pulse-wiz-x');
+            if(closeBtn){
+              closeBtn.click();
+              const itemsResource = PULSE_RESOURCES.find(r=>r.id==='items');
+              if(itemsResource) pulseOpenResourceModal(itemsResource);
+            }
+          } catch (err) {
+            alert('Could not delete: ' + (err.message || err));
+          }
+        }}, '🗑'),
+      ),
       el('div',{class:'pulse-item-body'},
         el('div',{class:'pulse-item-name'}, row.name || 'Unnamed item'),
         el('div',{class:'pulse-item-cat',
