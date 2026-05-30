@@ -577,6 +577,20 @@ body.view-profile .channels-pane{display:none}
   text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;
 }
 
+/* Recipe-sync wizard — per-ingredient mapping row */
+.pulse-rsync-row{
+  display:grid;grid-template-columns:1fr 1.5fr;gap:8px;align-items:center;
+  padding:8px 10px;background:#FAFBFC;border:1px solid var(--border);
+  border-radius:8px;margin-bottom:6px;
+}
+.pulse-rsync-name{font-size:13px;color:var(--navy);line-height:1.3}
+.pulse-rsync-name b{color:var(--navy)}
+.pulse-rsync-pick{
+  width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;
+  font-size:12px;background:#fff;color:var(--navy);font-family:inherit;
+}
+.pulse-rsync-pick:focus{outline:none;border-color:var(--orange)}
+
 /* Live stream — vertical animated feed */
 .pulse-stream{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;
   border:1px solid var(--border);border-radius:10px;padding:10px;background:#FAFBFC}
@@ -5262,6 +5276,69 @@ function loyverseMonthTotal(monthKey){
   return Object.values(_loyverseMonthCache.byStore || {}).reduce((s, v) => s + v, 0);
 }
 
+/* All-items index — populated by the recipe-sync wizard so we can
+ * fuzzy-match recipe ingredient names against the Loyverse catalogue.
+ * Paginated fetch (cursor) up to a hard cap of 1000 items per hotelier.
+ * Re-fetched if older than 10 min.                                       */
+const _loyverseItemsCache = { stamp: 0, items: [] };
+async function loyverseGetAllItems(force){
+  const now = Date.now();
+  if(!force && now - _loyverseItemsCache.stamp < 10 * 60 * 1000 && _loyverseItemsCache.items.length){
+    return _loyverseItemsCache.items;
+  }
+  const all = [];
+  let cursor = null;
+  for(let page = 0; page < 5; page++){
+    const q = { limit: '250' };
+    if(cursor) q.cursor = cursor;
+    let data;
+    try { data = await loyverseAPI('items', q); }
+    catch (err){ console.warn('loyverseGetAllItems page', page, 'failed', err); break; }
+    const list = data.items || [];
+    all.push(...list);
+    cursor = data.cursor;
+    if(!cursor || list.length === 0) break;
+  }
+  _loyverseItemsCache.items = all;
+  _loyverseItemsCache.stamp = now;
+  return all;
+}
+
+/* Quick & dirty fuzzy match for ingredient → Loyverse item lookup.
+ * Score: 100 if names are equal after normalize, drops with substring,
+ * word-overlap and Dice-coefficient (bigrams). Returns top-N matches
+ * sorted descending. Good enough for "200g chicken" → "Chicken breast".  */
+function _norm(s){
+  return String(s||'').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')   // strip accents
+    .replace(/[^a-z0-9 ]+/g,' ').trim().replace(/\s+/g,' ');
+}
+function _bigrams(s){ const out=new Set(); for(let i=0;i<s.length-1;i++) out.add(s.slice(i,i+2)); return out; }
+function _diceScore(a,b){
+  const A=_bigrams(a), B=_bigrams(b);
+  if(!A.size || !B.size) return 0;
+  let inter=0; for(const g of A) if(B.has(g)) inter++;
+  return (2*inter) / (A.size + B.size);
+}
+function fuzzyMatchItem(query, items, topN){
+  const qn = _norm(query); if(!qn) return [];
+  const scored = items.map(it => {
+    const nm = _norm(it.item_name || it.name || '');
+    if(!nm) return { item: it, score: 0 };
+    let s = 0;
+    if(nm === qn) s = 100;
+    else if(nm.includes(qn) || qn.includes(nm)) s = 80 + 20 * Math.min(qn.length, nm.length) / Math.max(qn.length, nm.length);
+    else s = 100 * _diceScore(qn, nm);
+    // Tiny word-overlap kicker
+    const qw = qn.split(' '), nw = nm.split(' ');
+    const overlap = qw.filter(w => nw.includes(w)).length;
+    s += overlap * 5;
+    return { item: it, score: s };
+  });
+  scored.sort((a,b) => b.score - a.score);
+  return scored.slice(0, topN || 8);
+}
+
 // Currency conversion rates — would come from a rate API. Plausible values
 // for May 2026 demo. THB is the base.
 const PULSE_RATES = {
@@ -6590,6 +6667,192 @@ async function pulseAutoImageAll(items, onProgress, onDone){
     } catch { fail++; }
   }
   onDone && onDone(ok, fail, targets.length);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   RECIPE → LOYVERSE COMPOSITE ITEM SYNC
+   ════════════════════════════════════════════════════════════════
+   Lets the chef push a STAYLO fiche recette into Loyverse as a
+   "composite item with production" — the dish is sold from the POS,
+   and each sale auto-deducts the ingredient quantities from stock
+   exactly like a Loyverse Back Office composite recipe would.
+
+   Flow:
+     1. Fetch the hotelier's full Loyverse item list (cached 10 min).
+     2. Fuzzy-match the recipe name against existing items → either
+        update one or create a new one.
+     3. Fuzzy-match each ingredient against existing items → render a
+        per-row dropdown where the chef can override the suggestion.
+     4. On confirm: POST one composite item with `is_composite: true`,
+        `use_production: true` and variants[0].composite_items[] built
+        from the chosen mappings + raw recipe quantities.
+
+   Out of scope for v1 (acknowledged in the UI):
+     • Unit conversion (recipe 200g vs Loyverse 1kg stock unit). We
+       send the raw recipe qty and warn the chef to set the stocking
+       unit in Loyverse Back Office once per ingredient.
+     • Modifiers (extras / options) — those are a separate Loyverse
+       concept; the wizard skips them today.
+   ════════════════════════════════════════════════════════════════ */
+async function pulseOpenRecipeSyncModal(recipe){
+  if(!loyverseToken()){
+    alert('Connect Loyverse via Pulse first — the wizard needs your POS catalogue to map ingredients.');
+    return;
+  }
+  const ingredients = (recipe.ingredients || []).filter(i => i.name && i.name.trim());
+  if(ingredients.length === 0){
+    alert('This fiche has no ingredients yet. Add at least one before syncing.');
+    return;
+  }
+
+  const bg = el('div',{class:'pulse-wiz-bg', onclick:(e)=>{ if(e.target===bg) bg.remove(); }});
+  const card = el('div',{class:'pulse-wiz-card', onclick:(e)=>e.stopPropagation(), style:'max-width:680px'});
+  card.appendChild(el('div',{class:'pulse-wiz-head'},
+    el('div',{class:'pulse-wiz-logo'},'🔗'),
+    el('div',{class:'pulse-wiz-head-text'},
+      el('div',{class:'pulse-wiz-title'},'Sync to Loyverse'),
+      el('div',{class:'pulse-wiz-sub'},'"' + recipe.name + '" → POS composite item with auto stock deduction')
+    ),
+    el('button',{class:'pulse-wiz-x', onclick:()=>bg.remove()},'×')
+  ));
+  const body = el('div',{class:'pulse-wiz-body'});
+  body.appendChild(el('div',{class:'pulse-wiz-checking',style:'padding:18px 0'},
+    '⏳ Loading your Loyverse catalogue…'));
+  card.appendChild(body);
+  const foot = el('div',{class:'pulse-wiz-foot'});
+  foot.appendChild(el('button',{class:'btn-secondary', style:'flex:1', onclick:()=>bg.remove()},'Cancel'));
+  card.appendChild(foot);
+  bg.appendChild(card);
+  document.body.appendChild(bg);
+
+  // Pre-fetch items (cached)
+  let items = [];
+  try { items = await loyverseGetAllItems(); }
+  catch (err){
+    body.innerHTML = '';
+    body.appendChild(el('div',{style:'background:#FFF0F0;border:1px solid #FF3CB4;border-radius:10px;padding:14px;color:#8B0036;font-size:13px;'},
+      'Could not load Loyverse items: ' + (err.message||err)));
+    return;
+  }
+
+  // ─── Build dish target dropdown (existing item to update OR create) ──
+  const dishMatches = fuzzyMatchItem(recipe.name, items, 5);
+  const dishSelect = el('select',{class:'pulse-wiz-input',id:'rsync-dish'});
+  dishSelect.appendChild(el('option',{value:'__new'}, '➕ Create new item "' + recipe.name + '"'));
+  for(const m of dishMatches){
+    if(m.score < 20) break;
+    dishSelect.appendChild(el('option',{value: m.item.id},
+      '↻ Update existing: ' + (m.item.item_name||m.item.name) + ' (' + Math.round(m.score) + '% match)'));
+  }
+
+  // ─── Build per-ingredient mapping rows ──────────────────────────────
+  const ingredientMappings = ingredients.map(ing => {
+    const matches = fuzzyMatchItem(ing.name, items, 6);
+    const best = matches[0];
+    return { ingredient: ing, matches, selectedVariantId: best && best.score >= 20 ? (best.item.variants?.[0]?.id || '') : '' };
+  });
+
+  body.innerHTML = '';
+
+  // Dish row
+  body.appendChild(el('label',{class:'pulse-wiz-label'},'POS dish'));
+  body.appendChild(dishSelect);
+  body.appendChild(el('label',{class:'pulse-wiz-label', style:'margin-top:14px'},
+    'Ingredients → Loyverse stock items'));
+  body.appendChild(el('div',{style:'font-size:11px;color:var(--gray);margin-bottom:8px'},
+    'Each unmatched ingredient must point to a Loyverse stock item with track_stock = true.'));
+
+  for(const map of ingredientMappings){
+    const row = el('div',{class:'pulse-rsync-row'});
+    row.appendChild(el('div',{class:'pulse-rsync-name'},
+      el('b',{}, map.ingredient.name),
+      el('span',{style:'color:var(--gray)'}, ' · ', String(map.ingredient.qty || 0), ' ', (map.ingredient.unit || 'unit'))));
+    const sel = el('select',{class:'pulse-rsync-pick', oninput:(e)=>{ map.selectedVariantId = e.target.value; }});
+    sel.appendChild(el('option',{value:''}, '— Skip (don\'t deduct from stock) —'));
+    // Use top 8 matches as suggestions, then everything else alphabetical
+    const topIds = new Set(map.matches.map(m => m.item.id));
+    for(const m of map.matches){
+      if(m.score < 5) break;
+      const vid = m.item.variants?.[0]?.id || '';
+      const opt = el('option',{value: vid},
+        (m.item.item_name||m.item.name||'?') + (m.score >= 80 ? '  ✓' : '  · ' + Math.round(m.score) + '%'));
+      if(vid === map.selectedVariantId) opt.selected = true;
+      sel.appendChild(opt);
+    }
+    const others = items.filter(i => !topIds.has(i.id)).sort((a,b) =>
+      (a.item_name||a.name||'').localeCompare(b.item_name||b.name||''));
+    if(others.length){
+      const og = el('optgroup',{label:'Other items'});
+      for(const it of others){
+        const vid = it.variants?.[0]?.id || '';
+        og.appendChild(el('option',{value: vid}, it.item_name||it.name||'?'));
+      }
+      sel.appendChild(og);
+    }
+    row.appendChild(sel);
+    body.appendChild(row);
+  }
+
+  body.appendChild(el('div',{class:'pulse-wiz-hint', style:'margin-top:14px'},
+    '⚠ Recipe quantities are sent as-is (e.g. "200" for "200g"). In Loyverse you can configure how 1 stock unit maps to your recipe units — do this once per ingredient.'));
+
+  // Footer Confirm button
+  foot.innerHTML = '';
+  foot.appendChild(el('button',{class:'btn-secondary', onclick:()=>bg.remove()},'Cancel'));
+  const confirmBtn = el('button',{class:'btn-primary', onclick: async () => {
+    confirmBtn.disabled = true; confirmBtn.textContent = '⏳ Pushing to Loyverse…';
+    try {
+      await pulsePushRecipeToLoyverse(recipe, dishSelect.value, ingredientMappings, items);
+      bg.remove();
+      alert('✓ Recipe synced to Loyverse — try a sale at the POS, the ingredients will deduct automatically.');
+    } catch (err) {
+      confirmBtn.disabled = false; confirmBtn.textContent = '🔗 Sync now';
+      alert('Sync failed: ' + (err.message || err));
+    }
+  }}, '🔗 Sync now');
+  foot.appendChild(confirmBtn);
+}
+
+async function pulsePushRecipeToLoyverse(recipe, dishTargetId, ingredientMappings, items){
+  // Build the composite_items list from the chosen mappings
+  const composite_items = ingredientMappings
+    .filter(m => m.selectedVariantId)
+    .map(m => ({
+      id: m.selectedVariantId,
+      quantity: Number(m.ingredient.qty) || 0,
+    }));
+
+  // If the user picked an existing Loyverse item to update, preserve its
+  // current variant pricing; otherwise build a fresh minimal item.
+  let payload;
+  if(dishTargetId && dishTargetId !== '__new'){
+    const existing = items.find(it => it.id === dishTargetId);
+    if(!existing) throw new Error('Selected dish item disappeared from the catalogue');
+    payload = pulseItemToWritePayload(existing, {
+      is_composite: true,
+      use_production: true,
+    });
+    // Inject composite_items into the first variant
+    if(!payload.variants[0]) payload.variants[0] = { default_price: 0, default_pricing_type: 'FIXED' };
+    payload.variants[0].composite_items = composite_items;
+  } else {
+    payload = {
+      item_name: recipe.name,
+      is_composite: true,
+      use_production: true,
+      track_stock: false,
+      variants: [{
+        default_price: Number(recipe.selling_price_thb) || 0,
+        default_pricing_type: 'FIXED',
+        composite_items,
+      }],
+    };
+  }
+
+  await loyverseWrite('POST', 'items', payload);
+  // Invalidate the items cache so the next open of the wizard sees the
+  // freshly created/updated composite item.
+  _loyverseItemsCache.stamp = 0;
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -17707,6 +17970,22 @@ function showRecipeEditor(rec){
       isEdit ? el('button',{class:'btn-danger',onclick:()=>{
         if(confirm(t('app.dialogs.delete_recipe'))){ deleteRecipe(r.id); modal.remove(); renderRecipesTab(); }
       }}, t('app.common.delete')) : null,
+      // 🔗 Sync to Loyverse — only when a token is connected; the wizard
+      // builds the composite-item payload from the live form values.
+      loyverseToken() ? el('button',{
+        class:'btn-secondary',
+        style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0',
+        onclick:()=>{
+          const live = {
+            ...r,
+            name: $('#rec-name').value.trim() || r.name,
+            selling_price_thb: parseFloat($('#rec-sell').value) || r.selling_price_thb || 0,
+            ingredients: (r.ingredients || []).filter(i => i.name?.trim()),
+          };
+          if(!live.name){ alert(t('app.dialogs.recipe_name_required')); return; }
+          pulseOpenRecipeSyncModal(live);
+        }
+      }, '🔗 Sync to Loyverse') : null,
       el('button',{class:'btn-secondary',onclick:()=>modal.remove()}, t('app.common.cancel')),
       el('button',{class:'btn-primary',onclick:()=>{
         const next = {
