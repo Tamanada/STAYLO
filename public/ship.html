@@ -419,6 +419,25 @@ body.view-profile .channels-pane{display:none}
   box-shadow:0 4px 12px rgba(255,107,0,.25);
 }
 
+/* Live-from-Loyverse resource tiles (shown only when a token is connected) */
+.pulse-resources{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:10px}
+.pulse-resource-tile{
+  background:linear-gradient(135deg,#fff,#FAFBFC);border:1px solid var(--border);
+  border-radius:12px;padding:14px 12px;text-align:center;cursor:pointer;
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.pulse-resource-tile:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.08);border-color:var(--orange)}
+.pulse-resource-icon{font-size:30px;line-height:1;margin-bottom:6px}
+.pulse-resource-label{font-size:13px;font-weight:800;color:var(--navy)}
+.pulse-resource-desc{font-size:10px;color:var(--gray);margin-top:2px;line-height:1.3}
+.pulse-resource-list{display:flex;flex-direction:column;gap:6px}
+.pulse-resource-row{
+  background:#FAFBFC;border:1px solid var(--border);border-radius:8px;padding:10px 12px;
+  display:flex;flex-direction:column;gap:2px;
+}
+.pulse-resource-row-name{font-size:13px;font-weight:700;color:var(--navy)}
+.pulse-resource-row-sub{font-size:11px;color:var(--gray)}
+
 /* Live stream — vertical animated feed */
 .pulse-stream{display:flex;flex-direction:column;gap:8px;max-height:340px;overflow-y:auto;
   border:1px solid var(--border);border-radius:10px;padding:10px;background:#FAFBFC}
@@ -5003,7 +5022,53 @@ const _pulseState = {
   rateLastUpdate: 0,     // seconds since last "rate refresh"
   rateAge: 0,
   topEarnerId: null,
+  // Real-data mode (set by pulseRealModeInit once a Loyverse token is found)
+  realMode: false,
+  realStores: [],
+  realCurrency: 'THB',   // overridden from merchant.default_currency_code if present
+  realPollTimer: null,
+  realLastSync: 0,
 };
+
+// ════════════════════════════════════════════════════════════════
+// LOYVERSE REAL-API CLIENT
+// ════════════════════════════════════════════════════════════════
+// Talks to the loyverse-proxy edge function. Token lives in
+// localStorage under 'staylo_loyverse_token' (written by the Connect
+// wizard on success). All Loyverse fetches in Pulse and beyond go
+// through this single helper so adding telemetry, retries, or a
+// circuit-breaker later is a one-line change.
+function loyverseToken(){
+  try { return localStorage.getItem('staylo_loyverse_token') || ''; }
+  catch { return ''; }
+}
+function loyverseClearToken(){
+  try {
+    localStorage.removeItem('staylo_loyverse_token');
+    localStorage.removeItem('staylo_loyverse_stores');
+    localStorage.removeItem('staylo_loyverse_merchant');
+  } catch {}
+}
+async function loyverseAPI(path, query){
+  const token = loyverseToken();
+  if(!token) throw new Error('Not connected to Loyverse — open the Connect wizard.');
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/loyverse-proxy`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({ token, path, query: query || {} }),
+  });
+  const data = await resp.json().catch(() => ({ error: 'Server returned invalid JSON' }));
+  if(!resp.ok){
+    const err = new Error(data.error || `HTTP ${resp.status}`);
+    err.status = resp.status;
+    throw err;
+  }
+  return data;
+}
 
 // Currency conversion rates — would come from a rate API. Plausible values
 // for May 2026 demo. THB is the base.
@@ -5306,8 +5371,17 @@ function pulseLoyverseWizard(c){
               verifyBtn.style.cursor = '';
               return;
             }
-            // Success — render the real stores returned by Loyverse
+            // Success — persist the token + stores list so the rest of
+            // Pulse can fetch real data on every page load, and render the
+            // store list right here so the hotelier sees which outlets
+            // STAYLO is about to start streaming from.
             const stores = Array.isArray(data.stores) ? data.stores : [];
+            try {
+              localStorage.setItem('staylo_loyverse_token', token);
+              localStorage.setItem('staylo_loyverse_stores', JSON.stringify(stores));
+            } catch (storageErr) {
+              console.warn('Could not persist Loyverse token', storageErr);
+            }
             result.innerHTML = '';
             result.appendChild(el('div',{class:'pulse-wiz-success'},
               el('div',{class:'pulse-wiz-success-title'},'✓ Connected!'),
@@ -5318,13 +5392,24 @@ function pulseLoyverseWizard(c){
                 ))
               ),
               el('div',{class:'pulse-wiz-hint',style:'margin-top:10px'},
-                '✨ Orders will start appearing in the Live Order Stream below within 60 seconds.'
+                '✨ Live receipts and revenue will start appearing in Pulse within 60 seconds.'
               )
             ));
             foot.innerHTML = '';
             foot.appendChild(el('button',{
-              class:'btn-primary', style:'flex:1', onclick:()=>bg.remove()
-            },'Done'));
+              class:'btn-primary', style:'flex:1',
+              onclick:()=>{
+                bg.remove();
+                // Re-render Pulse so it picks up the new token and switches to real mode.
+                try {
+                  const body = document.getElementById('cv-body');
+                  if(body && typeof renderPulseView === 'function'){
+                    body.innerHTML = '';
+                    renderPulseView(body);
+                  }
+                } catch (e) { console.warn(e); }
+              }
+            },'Done — see live data'));
           } catch (err) {
             console.error('loyverse verify failed', err);
             result.innerHTML = '';
@@ -5599,24 +5684,327 @@ function renderPulseView(body){
 
   body.appendChild(wrap);
 
-  // Auto-start the stream after a short delay so the user actually SEES
-  // the page paint first, then orders start dropping in. This is what
-  // makes the demo feel alive.
-  setTimeout(() => {
-    if(!_pulseState.playing){
-      pulseStart();
-      // Update the play button state too
-      const btn = body.querySelector('.pulse-stream-toggle');
-      if(btn){ btn.classList.add('playing'); btn.textContent = t('app.pulse.stream_pause'); }
+  // If the hotelier has connected Loyverse, the simulation is replaced by
+  // a real polling loop against the Loyverse API. Otherwise we keep the
+  // existing demo: stream simulated orders so the page feels alive.
+  if(loyverseToken()){
+    pulseRealModeInit(body, wrap);
+  } else {
+    setTimeout(() => {
+      if(!_pulseState.playing){
+        pulseStart();
+        const btn = body.querySelector('.pulse-stream-toggle');
+        if(btn){ btn.classList.add('playing'); btn.textContent = t('app.pulse.stream_pause'); }
+      }
+    }, 1200);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PULSE — REAL-DATA MODE (live Loyverse polling)
+   ════════════════════════════════════════════════════════════════
+   When a Loyverse token is present we:
+     1. Hide the "Demo mode" banner.
+     2. Tag the Loyverse connector card as LIVE with the real store count.
+     3. Mount a "Loyverse Resources" tiles grid with click-to-list
+        modals for items / customers / employees / inventory / shifts.
+     4. Replace the simulated Live Order Stream + Revenue cells with
+        real Loyverse receipts, refreshed every 30 s.
+   ──────────────────────────────────────────────────────────────── */
+function pulseRealModeInit(bodyEl, wrap){
+  _pulseState.realMode = true;
+  // Stop any leftover simulation timers if the user reconnects mid-session
+  pulseStop();
+
+  // 1. Hide demo banner
+  const demo = bodyEl.querySelector('.pulse-demo-note');
+  if(demo) demo.style.display = 'none';
+
+  // 2. Stamp the Loyverse connector card as "LIVE · N stores" using the
+  // store list cached by the wizard (no extra round-trip needed).
+  let stores = [];
+  try { stores = JSON.parse(localStorage.getItem('staylo_loyverse_stores') || '[]'); } catch {}
+  _pulseState.realStores = stores;
+  const loyCard = [...bodyEl.querySelectorAll('.pulse-conn-card')]
+    .find(c => /loyverse/i.test(c.querySelector('.nm')?.textContent || ''));
+  if(loyCard){
+    loyCard.classList.add('connected');
+    const stat = loyCard.querySelector('.stat');
+    if(stat) stat.textContent = '✓ LIVE · ' + stores.length + ' store' + (stores.length===1?'':'s');
+    const btn = loyCard.querySelector('.btn-mini');
+    if(btn) btn.textContent = 'Manage';
+  }
+
+  // 3. Mount the resources tiles grid at the end of the pulse wrap
+  wrap.appendChild(pulseBuildResourcesSection());
+
+  // 4. Boot the polling loop — first refresh now, then every 30 s
+  pulseRealModeRefresh(bodyEl).catch(err => console.warn('pulse real refresh', err));
+  if(_pulseState.realPollTimer) clearInterval(_pulseState.realPollTimer);
+  _pulseState.realPollTimer = setInterval(() => {
+    pulseRealModeRefresh(bodyEl).catch(err => console.warn('pulse real refresh', err));
+  }, 30000);
+}
+
+function pulseRealModeStop(){
+  _pulseState.realMode = false;
+  if(_pulseState.realPollTimer){ clearInterval(_pulseState.realPollTimer); _pulseState.realPollTimer = null; }
+}
+
+/* Pull today's receipts and rewrite the Revenue cells + Live Order Stream
+   with the real numbers. Loyverse's /receipts endpoint supports
+   created_at_min — we ask for everything since 00:00 local time.        */
+async function pulseRealModeRefresh(bodyEl){
+  const todayStart = new Date();
+  todayStart.setHours(0,0,0,0);
+  const sinceISO = todayStart.toISOString();
+
+  let receipts = [];
+  try {
+    const data = await loyverseAPI('receipts', { created_at_min: sinceISO, limit: '250' });
+    receipts = Array.isArray(data.receipts) ? data.receipts : [];
+  } catch (err) {
+    pulseRealModeRenderError(bodyEl, err);
+    return;
+  }
+
+  _pulseState.realLastSync = Date.now();
+
+  // Aggregate by currency. Loyverse returns one currency per merchant
+  // (default_currency_code), but receipts also carry "total_money".
+  const totalByCurrency = {};
+  let count = 0;
+  for(const r of receipts){
+    const amt = Number(r.total_money || 0);
+    if(!isFinite(amt)) continue;
+    const ccy = (r.currency || _pulseState.realCurrency || 'THB').toUpperCase();
+    totalByCurrency[ccy] = (totalByCurrency[ccy] || 0) + amt;
+    count++;
+  }
+
+  // Update the Revenue Pulse cells. We render real currencies first
+  // (whatever the hotelier actually charges in) then keep the FX
+  // conversion grid the simulation built for the other 4 currencies.
+  const revGrid = bodyEl.querySelector('#pulse-rev-grid');
+  if(revGrid){
+    revGrid.innerHTML = '';
+    const ccys = Object.keys(totalByCurrency);
+    if(ccys.length === 0){
+      revGrid.appendChild(el('div',{class:'pulse-rev-cell',
+        style:'grid-column:1/-1;padding:18px;text-align:center;color:var(--gray);font-size:13px;'},
+        '✓ Connected — waiting for the first receipt of the day.'
+      ));
+    } else {
+      for(const ccy of ccys){
+        revGrid.appendChild(el('div',{class:'pulse-rev-cell'},
+          el('div',{class:'ccy'}, ccy),
+          el('div',{class:'amt'}, Math.round(totalByCurrency[ccy]).toLocaleString()),
+        ));
+      }
+      revGrid.appendChild(el('div',{class:'pulse-rev-cell',style:'grid-column:1/-1;text-align:center;background:#E8F8F4'},
+        el('div',{class:'ccy',style:'color:var(--teal)'}, 'TODAY · ' + count + ' receipt' + (count===1?'':'s')),
+        el('div',{class:'amt',style:'color:var(--teal);font-size:14px'},
+          '🔴 LIVE · last sync ' + new Date(_pulseState.realLastSync).toLocaleTimeString())
+      ));
     }
-  }, 1200);
+  }
+
+  // Update the Live Order Stream with the latest 20 receipts.
+  const stream = bodyEl.querySelector('.pulse-stream');
+  if(stream){
+    stream.innerHTML = '';
+    const recent = receipts.slice(0, 20);
+    if(recent.length === 0){
+      stream.appendChild(el('div',{style:'padding:18px;text-align:center;color:var(--gray);font-size:12px'},
+        '⏳ Waiting for the first receipt — Loyverse pushes them as soon as the cashier closes a sale.'
+      ));
+    } else {
+      for(const r of recent){
+        stream.appendChild(pulseRenderRealReceipt(r));
+      }
+    }
+  }
+
+  // Update the e-Tax compliance counter
+  const complEl = bodyEl.querySelector('#pulse-compl-th');
+  if(complEl){ complEl.textContent = count + ' receipt' + (count===1?'':'s') + ' today'; }
+
+  // Update the Live indicator and disable the play/pause toggle since
+  // the simulation is no longer running in real mode.
+  const streamHead = bodyEl.querySelector('.pulse-stream-head');
+  if(streamHead){
+    const toggle = streamHead.querySelector('.pulse-stream-toggle');
+    if(toggle && !toggle.dataset.realTagged){
+      toggle.dataset.realTagged = '1';
+      toggle.classList.add('playing');
+      toggle.textContent = '🔴 LIVE';
+      toggle.disabled = true;
+      toggle.style.cursor = 'default';
+    }
+  }
+}
+
+function pulseRenderRealReceipt(r){
+  const when = r.created_at ? new Date(r.created_at) : new Date();
+  const total = Number(r.total_money || 0);
+  const ccy = (r.currency || _pulseState.realCurrency || 'THB').toUpperCase();
+  const lines = Array.isArray(r.line_items) ? r.line_items : [];
+  const items = lines.slice(0,3).map(li => (li.quantity ? li.quantity + '× ' : '') + (li.item_name || 'item')).join(', ');
+  const extra = lines.length > 3 ? ' +' + (lines.length-3) + ' more' : '';
+  return el('div',{class:'pulse-order'},
+    el('div',{},
+      el('div',{style:'font-weight:800'}, r.receipt_number || '—'),
+      el('div',{style:'color:var(--gray);font-size:11px'},
+        items || 'No items', extra),
+    ),
+    el('div',{style:'text-align:right'},
+      el('div',{style:'font-weight:800'}, Math.round(total).toLocaleString() + ' ' + ccy),
+      el('div',{style:'color:var(--gray);font-size:11px'}, when.toLocaleTimeString()),
+    ),
+  );
+}
+
+function pulseRealModeRenderError(bodyEl, err){
+  // If the token went bad (401), surface a sticky banner so the hotelier
+  // re-runs the wizard. Other errors are transient — log and move on.
+  const stream = bodyEl.querySelector('.pulse-stream');
+  if(err && err.status === 401){
+    if(stream){
+      stream.innerHTML = '';
+      stream.appendChild(el('div',{
+        style:'background:#FFF0F0;border:1px solid #FF3CB4;border-radius:10px;padding:14px;color:#8B0036;font-size:13px;'
+      },
+        el('div',{style:'font-weight:900;margin-bottom:4px'},'⚠ Loyverse token rejected'),
+        el('div',{style:'margin-bottom:8px'},'Re-open the wizard to paste a fresh token.'),
+        el('button',{
+          class:'btn-mini', style:'background:var(--orange);color:#fff;padding:6px 14px;',
+          onclick:()=>{
+            loyverseClearToken();
+            pulseRealModeStop();
+            const loy = (typeof PULSE_CONNECTORS!=='undefined') && PULSE_CONNECTORS.find(c=>c.id==='loyverse');
+            if(loy) pulseOpenConnectorWizard(loy);
+          }
+        },'Reconnect Loyverse')
+      ));
+    }
+  } else {
+    console.warn('Loyverse refresh transient error', err);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   PULSE RESOURCES — tiles that open list modals for every Loyverse
+   resource the hotelier can read. Each tile does a lazy fetch on
+   click, so we don't hammer Loyverse on page load just to populate
+   counters that aren't visible yet.
+   ════════════════════════════════════════════════════════════════ */
+const PULSE_RESOURCES = [
+  { id:'items',            label:'Items',          icon:'🍔', desc:'Full menu / catalogue', path:'items',           key:'items' },
+  { id:'categories',       label:'Categories',     icon:'🗂️', desc:'How items group',       path:'categories',      key:'categories' },
+  { id:'customers',        label:'Customers',      icon:'👥', desc:'Guest CRM',             path:'customers',       key:'customers' },
+  { id:'employees',        label:'Employees',      icon:'👷', desc:'POS users',             path:'employees',       key:'employees' },
+  { id:'inventory_levels', label:'Inventory',      icon:'📦', desc:'Stock on hand',         path:'inventory_levels',key:'inventory_levels' },
+  { id:'payment_types',    label:'Payment types',  icon:'💳', desc:'Cash, card, wallet…',   path:'payment_types',   key:'payment_types' },
+  { id:'shifts',           label:'Shifts',         icon:'📋', desc:'Z-reports',             path:'shifts',          key:'shifts' },
+  { id:'discounts',        label:'Discounts',      icon:'🏷️', desc:'Live promos',           path:'discounts',       key:'discounts' },
+  { id:'taxes',            label:'Taxes',          icon:'🧾', desc:'VAT, service charge',   path:'taxes',           key:'taxes' },
+  { id:'suppliers',        label:'Suppliers',      icon:'🚚', desc:'Vendor list',           path:'suppliers',       key:'suppliers' },
+];
+
+function pulseBuildResourcesSection(){
+  const sec = el('div',{class:'pulse-section'});
+  sec.appendChild(el('h3',{}, '📡 Live from Loyverse'));
+  sec.appendChild(el('div',{class:'pulse-sub'},
+    'Every read-only Loyverse resource is one click away. Click a tile to load the live list.'));
+  const grid = el('div',{class:'pulse-resources'});
+  for(const r of PULSE_RESOURCES){
+    grid.appendChild(el('div',{
+      class:'pulse-resource-tile',
+      onclick:()=>pulseOpenResourceModal(r),
+    },
+      el('div',{class:'pulse-resource-icon'}, r.icon),
+      el('div',{class:'pulse-resource-label'}, r.label),
+      el('div',{class:'pulse-resource-desc'}, r.desc),
+    ));
+  }
+  sec.appendChild(grid);
+  return sec;
+}
+
+async function pulseOpenResourceModal(resource){
+  const bg = el('div',{class:'pulse-wiz-bg', onclick:(e)=>{ if(e.target===bg) bg.remove(); }});
+  const card = el('div',{class:'pulse-wiz-card', onclick:(e)=>e.stopPropagation(), style:'max-width:720px'});
+  card.appendChild(el('div',{class:'pulse-wiz-head'},
+    el('div',{class:'pulse-wiz-logo'}, resource.icon),
+    el('div',{class:'pulse-wiz-head-text'},
+      el('div',{class:'pulse-wiz-title'}, resource.label + ' · Loyverse'),
+      el('div',{class:'pulse-wiz-sub'}, resource.desc + ' · live')
+    ),
+    el('button',{class:'pulse-wiz-x', onclick:()=>bg.remove()},'×')
+  ));
+  const body = el('div',{class:'pulse-wiz-body',id:'pulse-resource-body',style:'max-height:60vh;overflow-y:auto'});
+  body.appendChild(el('div',{class:'pulse-wiz-checking',style:'padding:12px 0'},'⏳ Loading ' + resource.label.toLowerCase() + '…'));
+  card.appendChild(body);
+  const foot = el('div',{class:'pulse-wiz-foot'});
+  foot.appendChild(el('button',{class:'btn-primary',style:'flex:1',onclick:()=>bg.remove()},'Close'));
+  card.appendChild(foot);
+  bg.appendChild(card);
+  document.body.appendChild(bg);
+
+  try {
+    const data = await loyverseAPI(resource.path, { limit: '100' });
+    const list = data[resource.key] || data.list || [];
+    body.innerHTML = '';
+    body.appendChild(el('div',{style:'font-size:12px;color:var(--gray);margin-bottom:10px'},
+      list.length + ' result' + (list.length===1?'':'s') + ' · showing up to 100'));
+    if(list.length === 0){
+      body.appendChild(el('div',{style:'padding:24px;text-align:center;color:var(--gray);font-size:13px'},
+        'No ' + resource.label.toLowerCase() + ' on this Loyverse account yet.'));
+      return;
+    }
+    const wrap = el('div',{class:'pulse-resource-list'});
+    for(const row of list){
+      wrap.appendChild(pulseRenderResourceRow(resource.id, row));
+    }
+    body.appendChild(wrap);
+  } catch (err) {
+    body.innerHTML = '';
+    body.appendChild(el('div',{
+      style:'background:#FFF0F0;border:1px solid #FF3CB4;border-radius:10px;padding:14px;color:#8B0036;font-size:13px;'
+    },
+      el('div',{style:'font-weight:900;margin-bottom:4px'}, '⚠ Could not load ' + resource.label.toLowerCase()),
+      el('div',{}, err.message || 'Unknown error')
+    ));
+  }
+}
+
+function pulseRenderResourceRow(kind, row){
+  const fmtName = (r) => r.name || r.first_name || r.email || r.title || r.receipt_number || r.id || 'Unnamed';
+  const fmtSub = (r) => {
+    if(kind === 'items') return [r.category_name, r.variants?.length ? r.variants.length + ' variant(s)' : null].filter(Boolean).join(' · ');
+    if(kind === 'customers') return [r.email, r.phone_number, (r.total_visits||0)+' visits'].filter(Boolean).join(' · ');
+    if(kind === 'employees') return [r.email, r.role].filter(Boolean).join(' · ');
+    if(kind === 'inventory_levels') return 'In stock: ' + (r.in_stock ?? '?') + ' · store ' + (r.store_id || '').slice(0,8);
+    if(kind === 'payment_types') return r.type || '';
+    if(kind === 'shifts') return [r.opened_at && new Date(r.opened_at).toLocaleString(), r.total_sales!=null ? (Math.round(r.total_sales).toLocaleString()+' total') : null].filter(Boolean).join(' · ');
+    if(kind === 'discounts') return (r.discount_type === 'PERCENTAGE' ? r.discount_percent + '%' : r.discount_amount) + ' off';
+    if(kind === 'taxes') return r.rate + '% · ' + (r.type || 'tax');
+    return r.address || r.description || r.email || '';
+  };
+  return el('div',{class:'pulse-resource-row'},
+    el('div',{class:'pulse-resource-row-name'}, fmtName(row)),
+    el('div',{class:'pulse-resource-row-sub'}, fmtSub(row)),
+  );
 }
 
 /* Cleanup: stop the live timer when the user navigates AWAY from Pulse,
  * otherwise the interval keeps firing in the background and burns CPU. */
 function pulseCleanupIfNeeded(prevView, prevArg){
   const wasPulse = prevView === 'me' && prevArg === 'pulse';
-  if(wasPulse) pulseStop();
+  if(wasPulse){
+    pulseStop();
+    pulseRealModeStop();
+  }
 }
 
 /* =============================================================
