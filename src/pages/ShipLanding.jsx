@@ -74,17 +74,17 @@ export default function ShipLanding() {
                 aria-label="O"
                 style={{
                   display: 'inline-block',
-                  width: '0.74em',
-                  height: '0.74em',
+                  width: '0.88em',
+                  height: '0.88em',
                   borderRadius: '50%',
-                  border: '0.14em solid transparent',
+                  border: '0.17em solid transparent',
                   background: 'linear-gradient(135deg, #FF6B00, #FF1F70) border-box',
                   WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
                   WebkitMaskComposite: 'xor',
                   maskComposite: 'exclude',
                   verticalAlign: 'baseline',
                   position: 'relative',
-                  top: '0.04em',
+                  top: '0.10em',
                   margin: '0 0.04em',
                 }}
               />
