@@ -47,12 +47,12 @@ export default function ShipLanding() {
             src="/SHIP_LOGO.webp"
             alt=""
             aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover object-center opacity-55"
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-55 sm:opacity-100"
           />
         </picture>
         <div
           className="absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse at center, rgba(20,10,46,0.05) 0%, rgba(20,10,46,0.28) 60%, rgba(20,10,46,0.55) 100%)' }}
+          style={{ background: 'radial-gradient(ellipse at center, rgba(10,5,20,0) 0%, rgba(10,5,20,0.15) 60%, rgba(10,5,20,0.35) 100%)' }}
         />
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
           <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0' }}>
