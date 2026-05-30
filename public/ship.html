@@ -5270,21 +5270,52 @@ function pulseLoyverseWizard(c){
         }
       }, step === 3 ? 'I have my token →' : 'Next →'));
     } else {
-      foot.appendChild(el('button',{
+      const verifyBtn = el('button',{
         class:'btn-primary',
-        onclick:()=>{
+        onclick: async ()=>{
           const result = document.getElementById('pulse-wiz-result');
           if(!result) return;
+          // Lock the UI while we hit the edge function
+          verifyBtn.disabled = true;
+          verifyBtn.style.opacity = '0.6';
+          verifyBtn.style.cursor = 'wait';
           result.innerHTML = '';
           result.appendChild(el('div',{class:'pulse-wiz-checking'},'⏳ Verifying token with Loyverse…'));
-          setTimeout(()=>{
+          try {
+            const resp = await fetch(`${SUPABASE_URL}/functions/v1/loyverse-stores`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                apikey: SUPABASE_ANON_KEY,
+                Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+              },
+              body: JSON.stringify({ token }),
+            });
+            const data = await resp.json().catch(()=>({ error: 'Server returned invalid JSON' }));
+            if (!resp.ok) {
+              // Error path — show the real message from the function
+              result.innerHTML = '';
+              result.appendChild(el('div',{
+                style:'background:#FFF0F0;border:1px solid #FF3CB4;border-radius:12px;padding:14px;color:#8B0036;font-size:13px;'
+              },
+                el('div',{style:'font-weight:900;margin-bottom:4px'}, '⚠ ' + (resp.status === 401 ? 'Token rejected' : 'Verification failed')),
+                el('div',{}, data.error || `HTTP ${resp.status}`)
+              ));
+              verifyBtn.disabled = false;
+              verifyBtn.style.opacity = '';
+              verifyBtn.style.cursor = '';
+              return;
+            }
+            // Success — render the real stores returned by Loyverse
+            const stores = Array.isArray(data.stores) ? data.stores : [];
             result.innerHTML = '';
             result.appendChild(el('div',{class:'pulse-wiz-success'},
               el('div',{class:'pulse-wiz-success-title'},'✓ Connected!'),
-              el('div',{},'Found ', el('b',{},'2 stores'),' on your Loyverse account:'),
+              el('div',{},'Found ', el('b',{}, String(stores.length)), ' store' + (stores.length === 1 ? '' : 's') + ' on your Loyverse account:'),
               el('div',{class:'pulse-wiz-stores'},
-                el('div',{class:'pulse-wiz-store'},'🏖️  Beach Restaurant'),
-                el('div',{class:'pulse-wiz-store'},'🍳  Breakfast Bar')
+                ...stores.map(s => el('div',{class:'pulse-wiz-store'},
+                  '🏪  ' + s.name + (s.address ? ' · ' + s.address : '')
+                ))
               ),
               el('div',{class:'pulse-wiz-hint',style:'margin-top:10px'},
                 '✨ Orders will start appearing in the Live Order Stream below within 60 seconds.'
@@ -5294,9 +5325,22 @@ function pulseLoyverseWizard(c){
             foot.appendChild(el('button',{
               class:'btn-primary', style:'flex:1', onclick:()=>bg.remove()
             },'Done'));
-          }, 1100);
+          } catch (err) {
+            console.error('loyverse verify failed', err);
+            result.innerHTML = '';
+            result.appendChild(el('div',{
+              style:'background:#FFF0F0;border:1px solid #FF3CB4;border-radius:12px;padding:14px;color:#8B0036;font-size:13px;'
+            },
+              el('div',{style:'font-weight:900;margin-bottom:4px'}, '⚠ Network error'),
+              el('div',{}, 'Could not reach STAYLO\'s server. Check your connection and try again.')
+            ));
+            verifyBtn.disabled = false;
+            verifyBtn.style.opacity = '';
+            verifyBtn.style.cursor = '';
+          }
         }
-      },'✓ Verify & Connect'));
+      },'✓ Verify & Connect');
+      foot.appendChild(verifyBtn);
     }
     card.appendChild(foot);
   };
