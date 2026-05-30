@@ -54,20 +54,25 @@ export default function ShipLanding() {
           className="absolute inset-0"
           style={{ background: 'radial-gradient(ellipse at center, rgba(10,5,20,0) 0%, rgba(10,5,20,0.15) 60%, rgba(10,5,20,0.35) 100%)' }}
         />
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-20 sm:py-28 text-center">
-          <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
-            {t('ship_page.eyebrow', 'by STAYLO · Free for Founding Partners')}
-          </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-3" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85)' }}>
-            STAYLO Ship
-          </h1>
-          <p className="text-xl sm:text-2xl font-bold mb-3" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
-            {t('ship_page.hero_tagline', 'Run your whole hotel from your pocket.')}
-          </p>
-          <p className="text-base sm:text-lg text-white max-w-2xl mx-auto mb-8 leading-relaxed" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
-            {t('ship_page.hero_sub', 'Staylo Hotelier In-Pocket — one app that replaces the five SaaS tools you stitch together today. Front desk, channel manager, housekeeping, F&B, staff, payments and reports.')}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8 sm:mt-12">
+        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-10 min-h-[620px] sm:min-h-[720px] flex flex-col justify-between text-center w-full">
+          {/* Top — above the SHIP mark in the banner */}
+          <div>
+            <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
+              {t('ship_page.eyebrow', 'by STAYLO · Free for Founding Partners')}
+            </p>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-3 text-gradient" style={{ filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.85)) drop-shadow(0 0 4px rgba(0,0,0,0.8))' }}>
+              STAYLO SHIP
+            </h1>
+            <p className="text-xl sm:text-2xl font-bold" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
+              {t('ship_page.hero_tagline', 'Run your whole hotel from your pocket.')}
+            </p>
+          </div>
+          {/* Bottom — below the SHIP mark, sub copy + CTAs */}
+          <div>
+            <p className="text-base sm:text-lg text-white max-w-2xl mx-auto mb-6 leading-relaxed" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
+              {t('ship_page.hero_sub', 'Staylo Hotelier In-Pocket — one app that replaces the five SaaS tools you stitch together today. Front desk, channel manager, housekeeping, F&B, staff, payments and reports.')}
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link to={user ? '/dashboard' : '/register'} className="w-full sm:w-auto">
               <button className="w-full px-8 py-4 bg-white/30 backdrop-blur-md border border-white/40 font-bold text-base rounded-2xl shadow-xl hover:shadow-2xl hover:bg-white/40 hover:scale-105 transition-all duration-300 inline-flex items-center justify-center gap-2 cursor-pointer">
                 <Sparkles size={20} className="text-[#FF6B00]" />
@@ -80,6 +85,7 @@ export default function ShipLanding() {
                 {t('ship_page.cta_secondary', 'Open the app')}
               </button>
             </a>
+            </div>
           </div>
         </div>
       </section>
