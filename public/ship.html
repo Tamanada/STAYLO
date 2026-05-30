@@ -419,6 +419,35 @@ body.view-profile .channels-pane{display:none}
   box-shadow:0 4px 12px rgba(255,107,0,.25);
 }
 
+/* Connected-stores grid (real outlets that are actively streaming to STAYLO) */
+.pulse-stores-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px}
+.pulse-store-card{
+  background:linear-gradient(135deg,#fff 0%,#E8F8F4 100%);
+  border:1.5px solid var(--teal);border-radius:14px;padding:14px 16px;position:relative;
+  box-shadow:0 2px 8px rgba(0,184,148,.10);
+}
+.pulse-store-status{
+  display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:900;
+  color:var(--teal);letter-spacing:1.5px;margin-bottom:8px;text-transform:uppercase;
+}
+.pulse-store-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--teal);
+  box-shadow:0 0 0 0 rgba(0,184,148,.6);
+  animation:storePulse 1.8s ease-in-out infinite;
+}
+@keyframes storePulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(0,184,148,.6)}
+  50%{box-shadow:0 0 0 10px rgba(0,184,148,0)}
+}
+.pulse-store-name{font-size:15px;font-weight:900;color:var(--navy);line-height:1.2}
+.pulse-store-addr{font-size:11px;color:var(--gray);margin-top:4px;line-height:1.4}
+.pulse-store-meta{
+  margin-top:10px;padding-top:8px;border-top:1px dashed rgba(0,184,148,.25);
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:11px;color:var(--gray);
+}
+.pulse-store-meta b{color:var(--navy);font-weight:800}
+
 /* Live-from-Loyverse resource tiles (shown only when a token is connected) */
 .pulse-resources{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:10px}
 .pulse-resource-tile{
@@ -5735,7 +5764,17 @@ function pulseRealModeInit(bodyEl, wrap){
     if(btn) btn.textContent = 'Manage';
   }
 
-  // 3. Mount the resources tiles grid at the end of the pulse wrap
+  // 3. Insert a "Connected stores" section right after the Connectors
+  // grid so the hotelier sees at a glance WHICH outlets are streaming.
+  if(stores.length){
+    const connectorsSection = bodyEl.querySelector('.pulse-connectors')?.closest('.pulse-section');
+    if(connectorsSection){
+      const storesSec = pulseBuildConnectedStoresSection(stores);
+      connectorsSection.parentNode.insertBefore(storesSec, connectorsSection.nextSibling);
+    }
+  }
+
+  // 4. Mount the resources tiles grid at the end of the pulse wrap
   wrap.appendChild(pulseBuildResourcesSection());
 
   // 4. Boot the polling loop — first refresh now, then every 30 s
@@ -5829,6 +5868,26 @@ async function pulseRealModeRefresh(bodyEl){
   const complEl = bodyEl.querySelector('#pulse-compl-th');
   if(complEl){ complEl.textContent = count + ' receipt' + (count===1?'':'s') + ' today'; }
 
+  // Update each connected store card's "receipts today" + total
+  const perStore = {};
+  for(const r of receipts){
+    const sid = r.store_id;
+    if(!sid) continue;
+    if(!perStore[sid]) perStore[sid] = { n: 0, total: 0 };
+    perStore[sid].n += 1;
+    perStore[sid].total += Number(r.total_money || 0);
+  }
+  for(const store of _pulseState.realStores){
+    const card = bodyEl.querySelector('#pulse-store-' + store.id);
+    if(!card) continue;
+    const meta = card.querySelector('.pulse-store-meta');
+    if(!meta) continue;
+    const stat = perStore[store.id] || { n: 0, total: 0 };
+    meta.innerHTML = '';
+    meta.appendChild(el('div',{}, stat.n + ' ', el('b',{}, 'receipt' + (stat.n===1?'':'s') + ' today')));
+    meta.appendChild(el('div',{}, el('b',{}, Math.round(stat.total).toLocaleString()), ' ', (_pulseState.realCurrency || 'THB')));
+  }
+
   // Update the Live indicator and disable the play/pause toggle since
   // the simulation is no longer running in real mode.
   const streamHead = bodyEl.querySelector('.pulse-stream-head');
@@ -5910,6 +5969,35 @@ const PULSE_RESOURCES = [
   { id:'taxes',            label:'Taxes',          icon:'🧾', desc:'VAT, service charge',   path:'taxes',           key:'taxes' },
   { id:'suppliers',        label:'Suppliers',      icon:'🚚', desc:'Vendor list',           path:'suppliers',       key:'suppliers' },
 ];
+
+/* "Connected stores" section — shown only in real mode, lists the actual
+   Loyverse outlets that are currently streaming receipts to STAYLO. Pulled
+   from localStorage (cached by the wizard) so there's no extra fetch.    */
+function pulseBuildConnectedStoresSection(stores){
+  const sec = el('div',{class:'pulse-section'});
+  sec.appendChild(el('h3',{},'🏪 Connected stores'));
+  sec.appendChild(el('div',{class:'pulse-sub'},
+    stores.length + ' Loyverse outlet' + (stores.length===1?'':'s') +
+    ' streaming live to STAYLO Pulse'));
+  const grid = el('div',{class:'pulse-stores-grid'});
+  for(const s of stores){
+    const card = el('div',{class:'pulse-store-card', id:'pulse-store-' + s.id},
+      el('div',{class:'pulse-store-status'},
+        el('span',{class:'pulse-store-dot'}),
+        el('span',{}, 'LIVE'),
+      ),
+      el('div',{class:'pulse-store-name'}, s.name || 'Unnamed store'),
+      el('div',{class:'pulse-store-addr'}, s.address || 'No address set in Loyverse'),
+      el('div',{class:'pulse-store-meta'},
+        el('div',{}, '0 ', el('b',{}, 'receipts today')),
+        el('div',{}, 'ID ', el('b',{}, (s.id || '').slice(0, 6) + '…')),
+      )
+    );
+    grid.appendChild(card);
+  }
+  sec.appendChild(grid);
+  return sec;
+}
 
 function pulseBuildResourcesSection(){
   const sec = el('div',{class:'pulse-section'});
