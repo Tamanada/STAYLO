@@ -103,19 +103,9 @@ export function Navbar() {
 
   return (
     <>
-      {/* ── Investor Bar ── */}
-      <div className="w-full py-4 px-4 text-center border-b"
-        style={{
-          background: 'linear-gradient(90deg, rgba(255,107,0,0.08), rgba(255,60,180,0.06))',
-          borderColor: 'rgba(255,107,0,0.15)'
-        }}>
-        <p className="text-xl font-bold tracking-wide" style={{ color: '#FF6B00' }}>
-          ✦ ALPHA ROUND OPEN · KOH PHANGAN
-        </p>
-        <p className="text-base mt-1" style={{ color: '#636E72' }}>
-          3,000 shares · $1,000/share · World Round opens at $1,500
-        </p>
-      </div>
+      {/* Investor "ALPHA ROUND OPEN" bar moved out of the navbar — see
+          AlphaBanner.jsx (rendered via a Portal in Layout so it lands
+          below each page's hero image instead of above the nav). */}
 
       {/* ── Main Nav ── */}
       <nav className="sticky top-0 z-40 border-b"
