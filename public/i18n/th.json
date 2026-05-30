@@ -4324,5 +4324,9 @@
     "pricing_mode": "รูปแบบการกำหนดราคา",
     "pricing_type": "ประเภทการกำหนดราคา",
     "remove_photo": "ลบรูป"
+  },
+  "alpha_banner": {
+    "headline": "เปิดรอบ ALPHA · เกาะพะงัน",
+    "subline": "3,000 หุ้น · 1,000 USD/หุ้น · รอบ World เปิดที่ 1,500 USD"
   }
 }

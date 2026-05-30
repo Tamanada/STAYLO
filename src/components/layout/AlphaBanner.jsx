@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 /**
  * The "ALPHA ROUND OPEN · KOH PHANGAN" announcement bar.
@@ -11,6 +12,7 @@ import { useLocation } from 'react-router-dom'
  * page having to import or render anything.
  */
 export function AlphaBanner() {
+  const { t } = useTranslation()
   const [host, setHost] = useState(null)
   const location = useLocation()
 
@@ -42,10 +44,10 @@ export function AlphaBanner() {
       }}
     >
       <p className="text-xl font-bold tracking-wide" style={{ color: '#FF6B00' }}>
-        ✦ ALPHA ROUND OPEN · KOH PHANGAN ✦
+        ✦ {t('alpha_banner.headline', 'ALPHA ROUND OPEN · KOH PHANGAN')} ✦
       </p>
       <p className="text-base mt-1" style={{ color: '#636E72' }}>
-        3,000 shares · $1,000/share · World Round opens at $1,500
+        {t('alpha_banner.subline', '3,000 shares · $1,000/share · World Round opens at $1,500')}
       </p>
     </div>,
     host

@@ -4798,5 +4798,9 @@
     "pricing_mode": "Mode de tarification",
     "pricing_type": "Type de tarification",
     "remove_photo": "Supprimer la photo"
+  },
+  "alpha_banner": {
+    "headline": "TOUR ALPHA OUVERT · KOH PHANGAN",
+    "subline": "3 000 parts · 1 000 $/part · Le Tour Mondial ouvre à 1 500 $"
   }
 }
