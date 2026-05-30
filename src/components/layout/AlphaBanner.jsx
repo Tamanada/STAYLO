@@ -12,9 +12,12 @@ import { useTranslation } from 'react-i18next'
  * page having to import or render anything.
  */
 export function AlphaBanner() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [host, setHost] = useState(null)
   const location = useLocation()
+  // Thai script renders visually smaller than Latin at the same px size —
+  // bump the headline and subline one notch when the active locale is th.
+  const isThai = (i18n.language || '').toLowerCase().startsWith('th')
 
   useEffect(() => {
     // Defer one frame so the new route has had time to mount its first section.
@@ -43,10 +46,10 @@ export function AlphaBanner() {
         borderColor: 'rgba(255,107,0,0.15)',
       }}
     >
-      <p className="text-xl font-bold tracking-wide" style={{ color: '#FF6B00' }}>
+      <p className={`${isThai ? 'text-2xl sm:text-3xl' : 'text-xl'} font-bold tracking-wide`} style={{ color: '#FF6B00' }}>
         ✦ {t('alpha_banner.headline', 'ALPHA ROUND OPEN · KOH PHANGAN')} ✦
       </p>
-      <p className="text-base mt-1" style={{ color: '#636E72' }}>
+      <p className={`${isThai ? 'text-lg sm:text-xl' : 'text-base'} mt-1`} style={{ color: '#636E72' }}>
         {t('alpha_banner.subline', '3,000 shares · $1,000/share · World Round opens at $1,500')}
       </p>
     </div>,
