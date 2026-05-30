@@ -68,15 +68,26 @@ export default function ShipLanding() {
               style={{ fontFamily: "'Inter', sans-serif", fontWeight: 900, letterSpacing: '-0.02em', textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85)' }}
             >
               <span>STAYL</span>
+              {/* "O" as a hollow gradient ring — same technique as the
+                  canonical STAYLO wordmark in pitch.html slide 1 */}
               <span
+                aria-label="O"
                 style={{
-                  background: 'linear-gradient(135deg, #FF6B00, #FF1F70)',
-                  WebkitBackgroundClip: 'text',
-                  backgroundClip: 'text',
-                  color: 'transparent',
-                  WebkitTextStroke: '1px rgba(255,255,255,0.85)',
+                  display: 'inline-block',
+                  width: '0.74em',
+                  height: '0.74em',
+                  borderRadius: '50%',
+                  border: '0.14em solid transparent',
+                  background: 'linear-gradient(135deg, #FF6B00, #FF1F70) border-box',
+                  WebkitMask: 'linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)',
+                  WebkitMaskComposite: 'xor',
+                  maskComposite: 'exclude',
+                  verticalAlign: 'baseline',
+                  position: 'relative',
+                  top: '0.04em',
+                  margin: '0 0.04em',
                 }}
-              >O</span>
+              />
               <span> SHIP</span>
             </h1>
             {/* Brand accent bar — matches the canonical STAYLO wordmark
