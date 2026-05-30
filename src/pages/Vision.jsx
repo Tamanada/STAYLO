@@ -370,7 +370,7 @@ export default function Vision() {
                 <Lock size={28} className="text-[#F7931A]" />
               </div>
               <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_treasury_title', 'BTC as Treasury Reserve')}</h3>
-              <p className="text-sm text-gray-500">{t('vision.btc_treasury_desc', '20% of ALL capital raised goes to a permanent Bitcoin reserve. Written into company statutes. 90% shareholder vote to change. At full scale: $149.7M in BTC. Never sold.')}</p>
+              <p className="text-sm text-gray-500">{t('vision.btc_treasury_desc', '20% of ALL capital raised goes to a permanent Bitcoin reserve. Written into company statutes. 90% shareholder vote to change. At full scale: $134.7M in BTC. Never sold.')}</p>
             </Card>
 
             <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
@@ -385,10 +385,10 @@ export default function Vision() {
           {/* Market stats */}
           <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { stat: '<1% → 15%', label: t('vision.btc_stat1', 'Hotel bookings paid in crypto by 2027') },
-              { stat: '+30%', label: t('vision.btc_stat2', 'Higher booking value vs fiat') },
-              { stat: '3x', label: t('vision.btc_stat3', 'Higher customer LTV') },
-              { stat: '14%', label: t('vision.btc_stat4', 'Of all crypto transactions = travel') },
+              { stat: '15%', label: t('vision.btc_stat1', 'Bookings paid in crypto · emerging markets · 2027') },
+              { stat: '+30%', label: t('vision.btc_stat2', 'Higher order value, crypto vs fiat (Triple-A)') },
+              { stat: '2.5×', label: t('vision.btc_stat3', 'Crypto travelers spend per booking (Travala)') },
+              { stat: '$8.7B', label: t('vision.btc_stat4', 'Crypto travel payments by 2033 · 24.6% CAGR') },
             ].map((item, i) => (
               <div key={i} className="text-center p-4 bg-white rounded-2xl border border-[#F7931A]/10 shadow-sm">
                 <p className="text-2xl font-black text-[#F7931A]">{item.stat}</p>
@@ -396,7 +396,7 @@ export default function Vision() {
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-gray-400 text-center mt-3 italic">{t('vision.btc_sources', 'Sources: CoinsPaid, Triple-A, Travala, PhocusWire')}</p>
+          <p className="text-[10px] text-gray-400 text-center mt-3 italic">{t('vision.btc_sources', 'Sources: CoinsPaid (2025), Triple-A (2024), Travala (2024), MarketIntelo (2024)')}</p>
         </UniformBand>
       </section>
 
@@ -952,7 +952,7 @@ export default function Vision() {
                     <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.shs_private', 'Private Investors (non-hotelier)')}</td><td className="text-right px-2">100,000</td><td className="text-right px-2">20%</td><td className="text-right px-2">$1,500</td><td className="px-2 text-xs">{t('vision.shs_private_cond', 'Vote · Dividends · BTC treasury benefit')}</td></tr>
                     <tr className="border-b border-white/5 bg-golden/10"><td className="py-2 pr-4 font-bold text-golden">{t('vision.shs_alpha', 'Alpha — Koh Phangan')}</td><td className="text-right px-2">3,000</td><td className="text-right px-2">0.6%</td><td className="text-right px-2 font-bold text-golden">$1,000</td><td className="px-2 text-xs">{t('vision.shs_alpha_cond', 'KP hoteliers only — limited')}</td></tr>
                     <tr className="border-b border-white/5"><td className="py-2 pr-4 font-medium">{t('vision.shs_world', 'World Round — Global Hotels')}</td><td className="text-right px-2">347,000</td><td className="text-right px-2">69.4%</td><td className="text-right px-2">$1,500</td><td className="px-2 text-xs">{t('vision.shs_world_cond', 'Hotel owners worldwide — open')}</td></tr>
-                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">{t('vision.shs_total', 'TOTAL')}</td><td className="text-right px-2">500,000</td><td className="text-right px-2 text-golden">100%</td><td className="text-right px-2">—</td><td className="px-2 text-xs italic">{t('vision.shs_total_note', '~$748.5M raised at FDV · ~$149.7M to BTC treasury')}</td></tr>
+                    <tr className="bg-white/5 font-bold"><td className="py-2 pr-4">{t('vision.shs_total', 'TOTAL')}</td><td className="text-right px-2">500,000</td><td className="text-right px-2 text-golden">100%</td><td className="text-right px-2">—</td><td className="px-2 text-xs italic">{t('vision.shs_total_note', '~$673.5M cash raised · ~$134.7M to BTC treasury (20%)')}</td></tr>
                   </tbody>
                 </table>
                 <p className="text-xs text-white/30 mt-4 text-center italic">{t('vision.shs_footer', 'Alpha partners get the best price — forever. 20% of ALL capital raised goes to permanent Bitcoin reserve (90% shareholder vote to change). Source: STAYLO IP Protection Document (originstamp.org, 2026-04-25).')}</p>

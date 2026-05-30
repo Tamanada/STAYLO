@@ -68,13 +68,13 @@ That money leaves Thailand forever. Staylo proposes:
 **2 Rounds:**
 - Alpha (now): $1,000/share — 3,000 shares — Koh Phangan founding partners — $3M
 - World (next): $1,500/share — 497,000 shares — Worldwide — $745.5M
-- Total capital: $748.5M · BTC reserve (20%): $149.7M
+- Total capital: $673.5M · BTC reserve (20%): $134.7M
 
 ### Bitcoin Strategy
 
 **BTC as Payment Rail:** Travelers pay card/PayPal/bank OR Bitcoin. Lightning Network at M03. Hotelier receives THB, USD, EUR, or BTC — their choice.
 
-**BTC as Treasury Reserve:** 20% of ALL capital raised → permanent Bitcoin reserve. Written into company statutes. 90% shareholder vote to change. At full scale: $149.7M in BTC. Never sold.
+**BTC as Treasury Reserve:** 20% of ALL capital raised → permanent Bitcoin reserve. Written into company statutes. 90% shareholder vote to change. At full scale: $134.7M in BTC. Never sold.
 
 **BTC as Investment Currency:** Founding Partners buy shares WITH Bitcoin. $1,000 in BTC = 1 Alpha share. Annual dividends claimable in BTC.
 
