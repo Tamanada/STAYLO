@@ -564,6 +564,12 @@ body.view-profile .channels-pane{display:none}
 .pulse-item-act.edit:hover{background:var(--orange);color:#fff}
 .pulse-item-act.del{background:rgba(255,255,255,.95);color:#8B0036}
 .pulse-item-act.del:hover{background:#8B0036;color:#fff}
+.pulse-item-act.sparkle{
+  background:linear-gradient(135deg,#6C5CE7,#FF3CB4);color:#fff;
+  box-shadow:0 2px 8px rgba(108,92,231,.4);
+}
+.pulse-item-act.sparkle:hover{transform:scale(1.1)}
+.pulse-item-act:disabled{opacity:.5;cursor:wait}
 
 /* Form labels inside the editor modal */
 .pulse-wiz-label{
@@ -6289,6 +6295,31 @@ async function pulseOpenResourceModal(resource){
       onclick:()=>pulseOpenItemEditor(null, async () => { state.rows = []; state.cursor = null; await loadMore(); }, resource.id)
     }, '+ New'));
   }
+  // Bulk auto-image: only on the items modal
+  if(resource.id === 'items'){
+    const autoImgBtn = el('button',{
+      class:'pulse-explorer-newbtn',
+      style:'background:linear-gradient(135deg,#6C5CE7,#FF3CB4)',
+      onclick: async (e)=>{
+        const btn = e.currentTarget;
+        const missing = state.rows.filter(r => !r.image_url).length;
+        if(missing === 0){ alert('All loaded items already have an image.'); return; }
+        if(!confirm('Auto-image ' + missing + ' item(s) using Pixabay? This sends one POST per item to Loyverse.')) return;
+        btn.disabled = true; const origLabel = btn.textContent; btn.textContent = '⏳ 0 / ' + missing;
+        await pulseAutoImageAll(state.rows,
+          (i,total,name) => { btn.textContent = '⏳ ' + i + ' / ' + total; },
+          (ok, fail, total) => {
+            btn.disabled = false; btn.textContent = origLabel;
+            alert('Auto-image done: ' + ok + ' updated, ' + fail + ' failed (out of ' + total + ').');
+            // Reload the modal to see the new images
+            const closeBtn = document.querySelector('.pulse-wiz-bg .pulse-wiz-x');
+            if(closeBtn){ closeBtn.click(); pulseOpenResourceModal(resource); }
+          }
+        );
+      }
+    }, '✨ Auto-image all');
+    searchRow.appendChild(autoImgBtn);
+  }
   toolbar.appendChild(searchRow);
   if(wantsDate){
     const chipsRow = el('div',{class:'pulse-explorer-chips'});
@@ -6411,6 +6442,90 @@ async function pulseOpenResourceModal(resource){
  * Returns a card with thumbnail for items, an expandable row for
  * receipts, and a clean two-line row for everything else.
  */
+/* ════════════════════════════════════════════════════════════════
+   AUTO-IMAGE — pull a stock photo from Pixabay and push it to
+   Loyverse as the item's image_url. Re-uses the pixabay-search
+   edge function already shipped for the recipe-form image picker.
+
+   Loyverse's "Save Item" endpoint is POST /v1.0/items with the id
+   in the body (NOT PUT /items/{id}); we send the full item back so
+   variants/track_stock/etc. aren't wiped. The variant `id` from
+   the GET response becomes `variant_id` on write — that's a known
+   Loyverse asymmetry.
+   ════════════════════════════════════════════════════════════════ */
+async function pulseFetchItemImage(query){
+  const params = new URLSearchParams({ q: query, per_page: '6' });
+  const resp = await fetch(`${SUPABASE_URL}/functions/v1/pixabay-search?${params.toString()}`, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+  });
+  if(!resp.ok) throw new Error('Pixabay search failed (' + resp.status + ')');
+  const data = await resp.json();
+  return (data.results || []).map(r => r.preview || r.thumb).filter(Boolean);
+}
+
+function pulseItemToWritePayload(item, overrides){
+  // Loyverse POST /items needs the full item back, with variants carrying
+  // variant_id (not id). Skip server-managed timestamps.
+  const variants = (item.variants || []).map(v => ({
+    variant_id: v.id,
+    default_price: v.default_price ?? 0,
+    default_pricing_type: v.default_pricing_type || 'FIXED',
+    sku: v.sku || undefined,
+    barcode: v.barcode || undefined,
+    cost: v.cost || 0,
+    purchase_cost: v.purchase_cost || 0,
+  }));
+  return {
+    id: item.id,
+    item_name: item.item_name || item.name || 'Item',
+    category_id: item.category_id || null,
+    image_url: item.image_url || null,
+    track_stock: !!item.track_stock,
+    sold_by_weight: !!item.sold_by_weight,
+    is_composite: !!item.is_composite,
+    color: item.color || undefined,
+    variants,
+    ...(overrides || {}),
+  };
+}
+
+async function pulseAutoImageItem(item, onSaved){
+  const name = item.item_name || item.name;
+  if(!name) { alert('Item has no name — set a name first.'); return; }
+  try {
+    const urls = await pulseFetchItemImage(name);
+    if(!urls.length){ alert('Pixabay had no match for "' + name + '"'); return; }
+    const payload = pulseItemToWritePayload(item, { image_url: urls[0] });
+    await loyverseWrite('POST', 'items', payload);
+    if(onSaved) onSaved();
+  } catch (err) {
+    if(err.status === 401){
+      alert('Your token can\'t write items. Re-create it in Loyverse with ITEMS_WRITE ticked.');
+    } else if(err.status === 503){
+      alert('Image search not configured (PIXABAY_API_KEY missing on the server).');
+    } else {
+      alert('Auto-image failed: ' + (err.message || err));
+    }
+  }
+}
+
+async function pulseAutoImageAll(items, onProgress, onDone){
+  const targets = items.filter(it => !it.image_url);
+  let ok = 0, fail = 0;
+  for(let i = 0; i < targets.length; i++){
+    const it = targets[i];
+    onProgress && onProgress(i + 1, targets.length, it.item_name || it.name);
+    try {
+      const urls = await pulseFetchItemImage(it.item_name || it.name || 'food');
+      if(!urls.length){ fail++; continue; }
+      const payload = pulseItemToWritePayload(it, { image_url: urls[0] });
+      await loyverseWrite('POST', 'items', payload);
+      ok++;
+    } catch { fail++; }
+  }
+  onDone && onDone(ok, fail, targets.length);
+}
+
 /* ════════════════════════════════════════════════════════════════
    ITEM EDITOR — create / edit / delete a Loyverse item from STAYLO
    ════════════════════════════════════════════════════════════════
@@ -6545,6 +6660,24 @@ function pulseRenderResourceRow(kind, row){
     return el('div',{class:'pulse-item-card'},
       img,
       el('div',{class:'pulse-item-actions'},
+        // ✨ Auto-image — only when the item has no picture yet
+        row.image_url ? null : el('button',{
+          class:'pulse-item-act sparkle', title:'Auto-image from Pixabay',
+          onclick: async (e)=>{
+            e.stopPropagation();
+            const btn = e.currentTarget;
+            btn.disabled = true; btn.textContent = '⏳';
+            await pulseAutoImageItem(row, () => {
+              const closeBtn = document.querySelector('.pulse-wiz-bg .pulse-wiz-x');
+              if(closeBtn){
+                closeBtn.click();
+                const itemsResource = PULSE_RESOURCES.find(r=>r.id==='items');
+                if(itemsResource) pulseOpenResourceModal(itemsResource);
+              }
+            });
+            btn.disabled = false; btn.textContent = '✨';
+          }
+        }, '✨'),
         el('button',{class:'pulse-item-act edit', title:'Edit', onclick:(e)=>{
           e.stopPropagation();
           // Find the open modal body so we can re-trigger a reload on save
