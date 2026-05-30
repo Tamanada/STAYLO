@@ -6746,10 +6746,18 @@ async function pulseOpenRecipeSyncModal(recipe){
   }
 
   // ─── Build per-ingredient mapping rows ──────────────────────────────
+  // Loyverse exposes the variant id under either `id` or `variant_id`
+  // depending on the endpoint flavour — handle both.
+  const variantIdOf = (it) => it?.variants?.[0]?.id || it?.variants?.[0]?.variant_id || '';
+  // Threshold below which we DON'T auto-pick the best match — the chef
+  // confirms manually. 35 = "Sticky rice" matching "Steamed rice" but
+  // not "Chicken Byriani" matching "Ripe mango".
+  const AUTO_PICK_MIN = 35;
   const ingredientMappings = ingredients.map(ing => {
-    const matches = fuzzyMatchItem(ing.name, items, 6);
+    const matches = fuzzyMatchItem(ing.name, items, 8);
     const best = matches[0];
-    return { ingredient: ing, matches, selectedVariantId: best && best.score >= 20 ? (best.item.variants?.[0]?.id || '') : '' };
+    const auto = best && best.score >= AUTO_PICK_MIN ? variantIdOf(best.item) : '';
+    return { ingredient: ing, matches, selectedVariantId: auto };
   });
 
   body.innerHTML = '';
@@ -6768,12 +6776,15 @@ async function pulseOpenRecipeSyncModal(recipe){
       el('b',{}, map.ingredient.name),
       el('span',{style:'color:var(--gray)'}, ' · ', String(map.ingredient.qty || 0), ' ', (map.ingredient.unit || 'unit'))));
     const sel = el('select',{class:'pulse-rsync-pick', oninput:(e)=>{ map.selectedVariantId = e.target.value; }});
-    sel.appendChild(el('option',{value:''}, '— Skip (don\'t deduct from stock) —'));
-    // Use top 8 matches as suggestions, then everything else alphabetical
+    const skipOpt = el('option',{value:''}, '— Skip (don\'t deduct from stock) —');
+    if(!map.selectedVariantId) skipOpt.selected = true;
+    sel.appendChild(skipOpt);
+    // Use top suggestions, then everything else alphabetical
     const topIds = new Set(map.matches.map(m => m.item.id));
     for(const m of map.matches){
       if(m.score < 5) break;
-      const vid = m.item.variants?.[0]?.id || '';
+      const vid = variantIdOf(m.item);
+      if(!vid) continue;  // skip items without a usable variant id
       const opt = el('option',{value: vid},
         (m.item.item_name||m.item.name||'?') + (m.score >= 80 ? '  ✓' : '  · ' + Math.round(m.score) + '%'));
       if(vid === map.selectedVariantId) opt.selected = true;
@@ -6784,7 +6795,8 @@ async function pulseOpenRecipeSyncModal(recipe){
     if(others.length){
       const og = el('optgroup',{label:'Other items'});
       for(const it of others){
-        const vid = it.variants?.[0]?.id || '';
+        const vid = variantIdOf(it);
+        if(!vid) continue;
         og.appendChild(el('option',{value: vid}, it.item_name||it.name||'?'));
       }
       sel.appendChild(og);
@@ -6796,10 +6808,24 @@ async function pulseOpenRecipeSyncModal(recipe){
   body.appendChild(el('div',{class:'pulse-wiz-hint', style:'margin-top:14px'},
     '⚠ Recipe quantities are sent as-is (e.g. "200" for "200g"). In Loyverse you can configure how 1 stock unit maps to your recipe units — do this once per ingredient.'));
 
+  // Inline error panel (replaces brittle alert())
+  const errBox = el('div',{
+    style:'margin-top:12px;display:none;background:#FFF0F0;border:1px solid #FF3CB4;border-radius:10px;padding:12px;color:#8B0036;font-size:12px;line-height:1.5;'
+  });
+  body.appendChild(errBox);
+
   // Footer Confirm button
   foot.innerHTML = '';
   foot.appendChild(el('button',{class:'btn-secondary', onclick:()=>bg.remove()},'Cancel'));
   const confirmBtn = el('button',{class:'btn-primary', onclick: async () => {
+    errBox.style.display = 'none'; errBox.innerHTML = '';
+    const mapped = ingredientMappings.filter(m => m.selectedVariantId).length;
+    if(mapped === 0){
+      errBox.style.display = '';
+      errBox.appendChild(el('div',{style:'font-weight:900;margin-bottom:4px'},'⚠ No ingredient mapped'));
+      errBox.appendChild(el('div',{},'Pick at least one Loyverse stock item before syncing — otherwise the composite has nothing to deduct.'));
+      return;
+    }
     confirmBtn.disabled = true; confirmBtn.textContent = '⏳ Pushing to Loyverse…';
     try {
       await pulsePushRecipeToLoyverse(recipe, dishSelect.value, ingredientMappings, items);
@@ -6807,7 +6833,20 @@ async function pulseOpenRecipeSyncModal(recipe){
       alert('✓ Recipe synced to Loyverse — try a sale at the POS, the ingredients will deduct automatically.');
     } catch (err) {
       confirmBtn.disabled = false; confirmBtn.textContent = '🔗 Sync now';
-      alert('Sync failed: ' + (err.message || err));
+      errBox.style.display = '';
+      errBox.appendChild(el('div',{style:'font-weight:900;margin-bottom:4px'},
+        err.status === 401 ? '⚠ Token rejected'
+        : err.status === 400 ? '⚠ Loyverse rejected the recipe'
+        : '⚠ Sync failed'
+      ));
+      errBox.appendChild(el('div',{}, String(err.message || err)));
+      if(err.status === 401){
+        errBox.appendChild(el('div',{style:'margin-top:6px;font-size:11px'},
+          '→ Your Loyverse Personal Access Token needs full account scopes. Re-generate via the Connect wizard.'));
+      } else if(err.status === 400){
+        errBox.appendChild(el('div',{style:'margin-top:6px;font-size:11px'},
+          '→ Often: a chosen ingredient is not track_stock=true in Loyverse, or its stocking unit isn\'t set. Open the item in Loyverse Back Office and enable "Track stock".'));
+      }
     }
   }}, '🔗 Sync now');
   foot.appendChild(confirmBtn);
