@@ -60,9 +60,11 @@ export default function ShipLanding() {
             <p className="text-sm font-bold tracking-widest uppercase mb-3" style={{ color: '#FFD9A0', textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
               {t('ship_page.eyebrow', 'by STAYLO · Free for Founding Partners')}
             </p>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-3 text-gradient" style={{ filter: 'drop-shadow(0 2px 10px rgba(0,0,0,0.85)) drop-shadow(0 0 4px rgba(0,0,0,0.8))' }}>
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-3 text-white" style={{ textShadow: '0 2px 20px rgba(0,0,0,0.9), 0 0 6px rgba(0,0,0,0.85)' }}>
               STAYLO SHIP
             </h1>
+            {/* Brand accent bar — same gradient as the STAYLO wordmark underline */}
+            <div className="w-28 sm:w-36 h-1.5 mx-auto mb-4 rounded-full bg-gradient-to-r from-[#FF6B00] via-[#FF3CB4] to-[#6C5CE7]" />
             <p className="text-xl sm:text-2xl font-bold" style={{ textShadow: '0 2px 16px rgba(0,0,0,0.85), 0 0 4px rgba(0,0,0,0.8)' }}>
               {t('ship_page.hero_tagline', 'Run your whole hotel from your pocket.')}
             </p>
