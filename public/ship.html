@@ -18146,6 +18146,11 @@ function showRecipeEditor(rec){
         [{value:'starter',label:'🥗 Starter'},{value:'main',label:'🍽️ Main'},{value:'dessert',label:'🍰 Dessert'},
          {value:'cocktail',label:'🍹 Cocktail'},{value:'wine',label:'🍷 Wine'},{value:'beer',label:'🍺 Beer'},{value:'soft',label:'🥤 Soft drink'},{value:'side',label:'🍚 Side'}],
         r.category)),
+      // ⚠ The hardcoded options above are a fallback. When Loyverse is
+      // connected, the post-mount hook below swaps them for the real POS
+      // categories pulled from /v1.0/categories so a recipe always sits in
+      // the same bucket the cashiers see at the till. Match by pos_category
+      // (Loyverse category_id) first, then by category name.
       el('div',{class:'fld'}, el('label',{},'POS SKU'), inp('rec-sku','text', r.pos_sku, 'e.g. PT-001')),
       el('div',{class:'fld'}, el('label',{},'Yield (portions)'), inp('rec-yield','number', r.yield_portions, '4')),
     ),
@@ -18239,13 +18244,20 @@ function showRecipeEditor(rec){
       }, '🔗 Sync to Loyverse') : null,
       el('button',{class:'btn-secondary',onclick:()=>modal.remove()}, t('app.common.cancel')),
       el('button',{class:'btn-primary',onclick:()=>{
+        // When the dropdown was repopulated with Loyverse categories the
+        // selected option carries dataset.name (the human name) and value
+        // (the Loyverse category_id). Store the id in pos_category for
+        // sync-back fidelity, and the human name in category for display.
+        const catSel = $('#rec-cat');
+        const catOpt = catSel?.selectedOptions?.[0];
+        const isLoyverseCat = !!catOpt?.dataset?.name;
         const next = {
           ...r,
           name: $('#rec-name').value.trim(),
           fiche_category: $('#rec-fiche-cat')?.value || r.fiche_category || 'cuisine',
-          category: $('#rec-cat').value,
+          category: isLoyverseCat ? (catOpt.dataset.name || '') : catSel.value,
           pos_sku: $('#rec-sku').value.trim(),
-          pos_category: $('#rec-cat').value,
+          pos_category: isLoyverseCat ? catSel.value : (catSel.value === r.category ? (r.pos_category || '') : ''),
           yield_portions: parseInt($('#rec-yield').value)||1,
           selling_price_thb: parseFloat($('#rec-sell').value)||0,
           prep_minutes: parseInt($('#rec-prep').value)||0,
@@ -18271,6 +18283,38 @@ function showRecipeEditor(rec){
   modal.appendChild(panel);
   document.body.appendChild(modal);
   rebuildIngredients(); rebuildEquipment(); rebuildSteps(); recalcTotals();
+
+  // ── Loyverse categories — replace the hardcoded menu category list ──
+  // We pull the live POS categories (cached 5 min) and rebuild the
+  // dropdown so the chef picks the same buckets the cashiers see.
+  // Pre-selection priority: pos_category (Loyverse id) → category-by-name.
+  if(typeof loyverseToken === 'function' && loyverseToken() && typeof loyverseGetCategoriesMap === 'function'){
+    loyverseGetCategoriesMap().then(catMap => {
+      const sel = $('#rec-cat'); if(!sel) return;
+      const cats = Object.values(catMap || {});
+      if(!cats.length) return;  // keep the fallback list
+      // Build new option set
+      const wantId = (r.pos_category && catMap[r.pos_category]) ? r.pos_category : '';
+      const wantName = (r.category || '').toLowerCase().trim();
+      sel.innerHTML = '';
+      const blank = document.createElement('option');
+      blank.value = ''; blank.textContent = '— Uncategorized —';
+      sel.appendChild(blank);
+      cats.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+      let matched = false;
+      for(const c of cats){
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = (c.color ? '● ' : '') + (c.name || '?');
+        opt.dataset.name = c.name || '';
+        if(c.id === wantId || (c.name || '').toLowerCase().trim() === wantName){
+          opt.selected = true; matched = true;
+        }
+        sel.appendChild(opt);
+      }
+      if(!matched) blank.selected = true;
+    }).catch(err => console.warn('Loyverse categories fetch failed', err));
+  }
 
   // ── Conditional cuisine-only fields ──
   // The CSS rule `.recipe-form.non-cuisine .cuisine-only { display:none }`
