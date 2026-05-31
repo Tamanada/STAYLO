@@ -1214,9 +1214,13 @@ body.view-profile .channels-pane{display:none}
 .cv-head{
   display:flex;align-items:center;justify-content:space-between;
   padding:14px 22px;border-bottom:1px solid var(--border);
-  gap:12px;flex-wrap:wrap;background:#fff;flex-shrink:0;
+  gap:12px;flex-wrap:nowrap;background:#fff;flex-shrink:0;
+  overflow:hidden;
 }
-.cv-title-wrap{display:flex;align-items:center;gap:10px;min-width:0}
+.cv-title-wrap{display:flex;align-items:center;gap:10px;min-width:0;flex-shrink:1}
+.cv-title-wrap > div{min-width:0;overflow:hidden}
+.cv-title-wrap .cv-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cv-title-wrap .cv-subtitle{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cv-back-to-chat{
   width:36px;height:36px;border-radius:50%;
   background:var(--light);color:var(--gray);
@@ -1226,11 +1230,20 @@ body.view-profile .channels-pane{display:none}
 .cv-back-to-chat:hover{background:#FFE9D6;color:var(--orange)}
 .cv-title{font-size:18px;font-weight:800;color:var(--navy);line-height:1.1}
 .cv-subtitle{font-size:11px;color:var(--gray);margin-top:2px;font-weight:600}
-.cv-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.cv-tabs{display:flex;gap:4px;flex-wrap:nowrap;flex-shrink:0}
+/* On narrow screens (mobile), allow horizontal scroll instead of wrapping
+   so the top row never grows tall — keeps cv-head a predictable height
+   on every page. */
+@media (max-width: 900px){
+  .cv-tabs{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+  .cv-tabs::-webkit-scrollbar{height:0}
+}
 /* View-specific action slot in the cv-head (e.g. Print on Schedule). Sits
    to the left of the user badge — populated per-view, cleared on switch. */
-.cv-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cv-actions{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;flex-shrink:1;min-width:0}
 .cv-actions:empty{display:none}
+/* Inputs / selects inside cv-actions auto-shrink so the row stays one line */
+.cv-actions input,.cv-actions select{min-width:0}
 .cv-action-btn{
   padding:8px 14px;border-radius:var(--r-pill);
   background:var(--navy);color:#fff;font-size:12px;font-weight:700;
@@ -13774,17 +13787,6 @@ function renderPayrollTab(){
     ),
   ));
 
-  // ── Pierre Martin badge drops onto the header row ──
-  // Re-parent #cv-user into the LAST top-level element we just appended
-  // (the header row). renderActiveView puts it back into .cv-head on
-  // tab/view switch so other tabs see the default layout.
-  const _payrollHeadRow = root.lastElementChild;
-  const _cvUserBadgePayroll = $('#cv-user');
-  if(_payrollHeadRow && _cvUserBadgePayroll){
-    _cvUserBadgePayroll.style.marginLeft = '0';
-    _cvUserBadgePayroll.style.flexShrink = '0';
-    _payrollHeadRow.appendChild(_cvUserBadgePayroll);
-  }
   // Payroll has no "+ New" button — make sure the cv-actions slot is
   // empty so a stale button from another tab doesn't linger.
   const _actionsSlotPayroll = $('#cv-actions');
@@ -15387,22 +15389,13 @@ function renderRosterTab(){
     return sel;
   })() : null;
 
-  // Header row — count + filter on the left, Pierre Martin badge pinned
-  // on the right (same layout pattern as the Fiches tab so the chef's
-  // identity sits at the same y as the screen's primary count).
-  const headLeft = el('div',{
-    style:'display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1;min-width:0'
-  }, el('div',{}, scopeLabel), deptFilterSel);
-  const headRow = el('div',{
-    class:'roster-head',
-    style:'display:flex;gap:12px;align-items:center'
-  }, headLeft);
-  const _cvUserBadgeRoster = $('#cv-user');
-  if(_cvUserBadgeRoster){
-    _cvUserBadgeRoster.style.marginLeft = '0';
-    _cvUserBadgeRoster.style.flexShrink = '0';
-    headRow.appendChild(_cvUserBadgeRoster);
-  }
+  // Header row — count + filter. Pierre Martin stays in .cv-head
+  // (new cv-head CSS keeps everything on one line across the app).
+  const headRow = el('div',{class:'roster-head'},
+    el('div',{
+      style:'display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1;min-width:0'
+    }, el('div',{}, scopeLabel), deptFilterSel),
+  );
   root.appendChild(headRow);
 
   // "+ Nouvel employé" moves into the top-nav action slot so it lives in
@@ -17736,19 +17729,6 @@ function renderScheduleTab(){
     ),
   ));
 
-  // Pierre Martin badge dropped onto the sched-nav row — matches the
-  // Fiches / Roster / Tasks / Payroll pattern. The last child of
-  // stickyHead at this point IS the sched-nav row we just appended.
-  // sched-spacer (flex:1) already pushes the right cluster to the right,
-  // so we just append next to it (marginLeft:0).
-  const _schedNavRow = stickyHead.lastElementChild;
-  const _cvUserBadgeSched = $('#cv-user');
-  if(_schedNavRow && _cvUserBadgeSched){
-    _cvUserBadgeSched.style.marginLeft = '0';
-    _cvUserBadgeSched.style.flexShrink = '0';
-    _schedNavRow.appendChild(_cvUserBadgeSched);
-  }
-
   // Print button lives in the cv-head action slot (left of the user badge),
   // not inside the sched-nav row — keeps the period/filter row tighter and
   // the Print action stays near the manager's eye on every render.
@@ -18374,23 +18354,18 @@ function renderRecipesTab(){
     onchange:(e)=>{ _fichesPosCat = e.target.value; renderRecipesTab(); },
   });
   posCatSelect.appendChild(el('option',{value:'all'}, 'POS: All categories'));
-  // ── Body header — single row with count + chip strip + Pierre Martin ──
+  // ── Body header — single row with count + chip strip ──
   // The action buttons (search · POS · Import · New fiche) live in
-  // #cv-actions (top nav). The Pierre Martin badge (#cv-user) is
-  // re-parented to the END of this chip strip so it aligns with the
-  // "85 fiches techniques" row — the cv-head gets one fewer thing
-  // wrapping onto its own line. renderActiveView puts the badge back
-  // into .cv-head on every view switch so other tabs are unaffected.
+  // #cv-actions (top nav). Pierre Martin stays in .cv-head — the
+  // updated cv-head CSS (flex-wrap:nowrap + overflow:hidden) keeps
+  // the whole top row on one line, so the badge no longer wraps to
+  // a second row on any page.
   const headWrap = el('div',{
     style:'display:flex;flex-direction:column;gap:10px;margin-bottom:14px'
   });
-  // Outer row uses two children: a scrollable strip on the left and
-  // the Pierre Martin badge pinned on the right. This way the badge
-  // stays put even when the chips overflow horizontally.
-  const chipsScroll = el('div',{
+  const chipsRow = el('div',{
     style:`display:flex;gap:8px;align-items:center;overflow-x:auto;
-      overflow-y:hidden;padding-bottom:4px;scrollbar-width:thin;
-      flex:1;min-width:0;`
+      overflow-y:hidden;padding-bottom:4px;scrollbar-width:thin;`
   },
     el('div',{
       style:'white-space:nowrap;flex-shrink:0;font-size:13px;font-weight:800;color:var(--navy)'
@@ -18400,19 +18375,6 @@ function renderRecipesTab(){
   // Make sure chip buttons themselves never shrink (the flex container
   // would otherwise squeeze them into ovals).
   for(const c of chipButtons){ c.style.flexShrink = '0'; }
-  const chipsRow = el('div',{
-    style:'display:flex;gap:12px;align-items:center;'
-  }, chipsScroll);
-  // Re-parent the user badge to sit at the far right of this row, OUTSIDE
-  // the scrollable chip strip so it never moves when chips scroll.
-  const _cvUserBadge = $('#cv-user');
-  if(_cvUserBadge){
-    // Drop the default margin-left:auto since the parent flex already
-    // gives the chipsScroll flex:1 to claim leftover space.
-    _cvUserBadge.style.marginLeft = '0';
-    _cvUserBadge.style.flexShrink = '0';
-    chipsRow.appendChild(_cvUserBadge);
-  }
   headWrap.appendChild(chipsRow);
   root.appendChild(headWrap);
 
@@ -20398,26 +20360,14 @@ function renderTasksTab(){
   })();
 
   // ── Render the unified nav row (mirrors Schedule's `.sched-nav`) ──
-  // Pierre Martin badge is appended at the end so it sits at the same y
-  // as the date range pill — same pattern as Fiches' chip row.
-  const _tasksNavRight = el('div',{class:'sched-nav-right'},
-    rangeToggle,
-    deptDropdown,
-    zoneDropdown,
-  );
-  const _cvUserBadgeTasks = $('#cv-user');
-  if(_cvUserBadgeTasks){
-    _cvUserBadgeTasks.style.marginLeft = '0';
-    _cvUserBadgeTasks.style.flexShrink = '0';
-    _tasksNavRight.appendChild(_cvUserBadgeTasks);
-  }
+  // Pierre Martin lives in .cv-head (kept consistent across all views).
   root.appendChild(el('div',{class:'sched-nav'},
     el('button',{class:'nav-btn',onclick:()=>shiftTaskRange(-1)},t('app.tasks_tab.past') || '← Past'),
     el('button',{class:'nav-btn',onclick:()=>{_tasksDate=new Date().toISOString().slice(0,10);renderTasksTab();}},t('app.tasks_tab.today')),
     el('button',{class:'nav-btn',onclick:()=>shiftTaskRange(1)},t('app.tasks_tab.future') || 'Future →'),
     el('span',{class:'sched-week-label'}, rangeLabel),
     el('span',{class:'sched-spacer'}),
-    _tasksNavRight,
+    el('div',{class:'sched-nav-right'}, rangeToggle, deptDropdown, zoneDropdown),
   ));
 
   // ── "+ New task" moves into the top-nav action slot ──
