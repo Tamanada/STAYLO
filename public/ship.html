@@ -7111,6 +7111,96 @@ async function pulseOpenLoyverseImportModal(){
 }
 
 /* ════════════════════════════════════════════════════════════════
+   CATEGORY CREATE — quick "+ New category" dialog used by the recipe
+   editor's POS Menu Category dropdown. POSTs to /v1.0/categories with
+   { name, color } and invokes onCreated({ id, name, color }) so the
+   caller can refresh its dropdown and auto-select the new entry.
+
+   Loyverse accepts these 8 color tokens, matching the swatches in
+   their Back Office: GREY, RED, PINK, ORANGE, YELLOW, GREEN, BLUE,
+   PURPLE. We mirror them as labeled swatches.
+   ════════════════════════════════════════════════════════════════ */
+const LOYVERSE_CATEGORY_COLORS = [
+  { token:'GREY',   hex:'#9CA3AF' },
+  { token:'RED',    hex:'#EF4444' },
+  { token:'PINK',   hex:'#EC4899' },
+  { token:'ORANGE', hex:'#F97316' },
+  { token:'YELLOW', hex:'#EAB308' },
+  { token:'GREEN',  hex:'#10B981' },
+  { token:'BLUE',   hex:'#3B82F6' },
+  { token:'PURPLE', hex:'#A855F7' },
+];
+
+function pulseOpenCategoryCreateModal(onCreated){
+  let pickedColor = 'GREY';
+
+  const bg = el('div',{class:'pulse-wiz-bg', onclick:(e)=>{ if(e.target===bg) bg.remove(); }});
+  const card = el('div',{class:'pulse-wiz-card', onclick:(e)=>e.stopPropagation(), style:'max-width:440px'});
+  card.appendChild(el('div',{class:'pulse-wiz-head'},
+    el('div',{class:'pulse-wiz-logo'},'🗂️'),
+    el('div',{class:'pulse-wiz-head-text'},
+      el('div',{class:'pulse-wiz-title'},'New POS category'),
+      el('div',{class:'pulse-wiz-sub'},'Saved directly to Loyverse'),
+    ),
+    el('button',{class:'pulse-wiz-x', onclick:()=>bg.remove()},'×'),
+  ));
+
+  const body = el('div',{class:'pulse-wiz-body'});
+  const fName = el('input',{type:'text', class:'pulse-wiz-input', placeholder:'e.g. Vegan dishes'});
+  body.appendChild(el('label',{class:'pulse-wiz-label'},'Name'));
+  body.appendChild(fName);
+  body.appendChild(el('label',{class:'pulse-wiz-label', style:'margin-top:14px'},'Color'));
+  const swatchRow = el('div',{style:'display:flex;gap:6px;flex-wrap:wrap'});
+  function paintSwatches(){
+    swatchRow.innerHTML = '';
+    for(const c of LOYVERSE_CATEGORY_COLORS){
+      const w = el('button',{
+        type:'button',
+        style:`width:34px;height:34px;border-radius:50%;border:3px solid ${pickedColor===c.token?'var(--navy)':'transparent'};background:${c.hex};cursor:pointer;outline:none;padding:0`,
+        title: c.token,
+        onclick: () => { pickedColor = c.token; paintSwatches(); },
+      });
+      swatchRow.appendChild(w);
+    }
+  }
+  paintSwatches();
+  body.appendChild(swatchRow);
+  const errBox = el('div',{
+    style:'margin-top:10px;display:none;background:#FFF0F0;border:1px solid #FF3CB4;border-radius:8px;padding:10px;color:#8B0036;font-size:12px;'
+  });
+  body.appendChild(errBox);
+  card.appendChild(body);
+
+  const foot = el('div',{class:'pulse-wiz-foot'});
+  foot.appendChild(el('button',{class:'btn-secondary', onclick:()=>bg.remove()},'Cancel'));
+  const saveBtn = el('button',{class:'btn-primary', onclick: async () => {
+    const name = fName.value.trim();
+    if(!name){ errBox.style.display=''; errBox.textContent='Name is required'; return; }
+    saveBtn.disabled = true; saveBtn.textContent = '⏳ Saving…';
+    try {
+      const resp = await loyverseWrite('POST', 'categories', { name, color: pickedColor });
+      // Loyverse responds with the created category object including id
+      const created = (resp && resp.id) ? resp
+        : (resp && Array.isArray(resp.categories) && resp.categories[0]) ? resp.categories[0]
+        : null;
+      bg.remove();
+      if(onCreated) onCreated(created || { id: null, name, color: pickedColor });
+    } catch (err) {
+      saveBtn.disabled = false; saveBtn.textContent = '+ Create';
+      errBox.style.display = '';
+      errBox.textContent = err.status === 401
+        ? 'Your Loyverse token needs CATEGORIES_WRITE permission.'
+        : 'Could not create: ' + (err.message || err);
+    }
+  }}, '+ Create');
+  foot.appendChild(saveBtn);
+  card.appendChild(foot);
+  bg.appendChild(card);
+  document.body.appendChild(bg);
+  setTimeout(()=>fName.focus(), 50);
+}
+
+/* ════════════════════════════════════════════════════════════════
    ITEM EDITOR — create / edit / delete a Loyverse item from STAYLO
    ════════════════════════════════════════════════════════════════
    Opens a small form modal. On save, POSTs (new) or PUTs (existing)
@@ -18327,31 +18417,60 @@ function showRecipeEditor(rec){
   // We pull the live POS categories (cached 5 min) and rebuild the
   // dropdown so the chef picks the same buckets the cashiers see.
   // Pre-selection priority: pos_category (Loyverse id) → category-by-name.
+  // The last option is "+ Nouvelle catégorie" — selecting it opens a small
+  // create modal that POSTs to Loyverse and refreshes the dropdown.
+  function _populateCategoryDropdown(catMap){
+    const sel = $('#rec-cat'); if(!sel) return;
+    const cats = Object.values(catMap || {});
+    if(!cats.length) return;
+    const wantId = (r.pos_category && catMap[r.pos_category]) ? r.pos_category : '';
+    const wantName = (r.category || '').toLowerCase().trim();
+    sel.innerHTML = '';
+    const blank = document.createElement('option');
+    blank.value = ''; blank.textContent = '— Uncategorized —';
+    sel.appendChild(blank);
+    cats.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    let matched = false;
+    for(const c of cats){
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = (c.color ? '● ' : '') + (c.name || '?');
+      opt.dataset.name = c.name || '';
+      if(c.id === wantId || (c.name || '').toLowerCase().trim() === wantName){
+        opt.selected = true; matched = true;
+      }
+      sel.appendChild(opt);
+    }
+    if(!matched) blank.selected = true;
+    // "+ Create new" sentinel — always last
+    const newOpt = document.createElement('option');
+    newOpt.value = '__new_loy_cat';
+    newOpt.textContent = '➕  Create new category in Loyverse…';
+    newOpt.style.fontWeight = '700';
+    sel.appendChild(newOpt);
+  }
+
   if(typeof loyverseToken === 'function' && loyverseToken() && typeof loyverseGetCategoriesMap === 'function'){
     loyverseGetCategoriesMap().then(catMap => {
+      _populateCategoryDropdown(catMap);
       const sel = $('#rec-cat'); if(!sel) return;
-      const cats = Object.values(catMap || {});
-      if(!cats.length) return;  // keep the fallback list
-      // Build new option set
-      const wantId = (r.pos_category && catMap[r.pos_category]) ? r.pos_category : '';
-      const wantName = (r.category || '').toLowerCase().trim();
-      sel.innerHTML = '';
-      const blank = document.createElement('option');
-      blank.value = ''; blank.textContent = '— Uncategorized —';
-      sel.appendChild(blank);
-      cats.sort((a,b) => (a.name||'').localeCompare(b.name||''));
-      let matched = false;
-      for(const c of cats){
-        const opt = document.createElement('option');
-        opt.value = c.id;
-        opt.textContent = (c.color ? '● ' : '') + (c.name || '?');
-        opt.dataset.name = c.name || '';
-        if(c.id === wantId || (c.name || '').toLowerCase().trim() === wantName){
-          opt.selected = true; matched = true;
-        }
-        sel.appendChild(opt);
-      }
-      if(!matched) blank.selected = true;
+      // Handle "+ Create new" selection — opens a tiny inline create modal.
+      sel.addEventListener('change', () => {
+        if(sel.value !== '__new_loy_cat') return;
+        // Revert selection while the modal is open so we never save the
+        // sentinel as the recipe's category.
+        sel.value = '';
+        pulseOpenCategoryCreateModal(async (created) => {
+          // Invalidate cache + re-fetch so the new category appears
+          _loyverseCategoriesCache.stamp = 0;
+          const fresh = await loyverseGetCategoriesMap();
+          _populateCategoryDropdown(fresh);
+          // Auto-select the freshly-created category
+          if(created && created.id){
+            sel.value = created.id;
+          }
+        });
+      });
     }).catch(err => console.warn('Loyverse categories fetch failed', err));
   }
 
