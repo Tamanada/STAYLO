@@ -6862,11 +6862,15 @@ async function pulseOpenRecipeSyncModal(recipe){
 }
 
 async function pulsePushRecipeToLoyverse(recipe, dishTargetId, ingredientMappings, items){
-  // Build the composite_items list from the chosen mappings
-  const composite_items = ingredientMappings
+  // Loyverse's composite recipe lives at the ROOT of the item payload
+  // under `components` (NOT inside variants). Each entry is
+  // { variant_id, quantity }. Validated from the API error message:
+  //   "Components must be set if `is_composite` is set to `true`
+  //    · object.components"
+  const components = ingredientMappings
     .filter(m => m.selectedVariantId)
     .map(m => ({
-      id: m.selectedVariantId,
+      variant_id: m.selectedVariantId,
       quantity: Number(m.ingredient.qty) || 0,
     }));
 
@@ -6879,20 +6883,18 @@ async function pulsePushRecipeToLoyverse(recipe, dishTargetId, ingredientMapping
     payload = pulseItemToWritePayload(existing, {
       is_composite: true,
       use_production: true,
+      components,
     });
-    // Inject composite_items into the first variant
-    if(!payload.variants[0]) payload.variants[0] = { default_price: 0, default_pricing_type: 'FIXED' };
-    payload.variants[0].composite_items = composite_items;
   } else {
     payload = {
       item_name: recipe.name,
       is_composite: true,
       use_production: true,
       track_stock: false,
+      components,
       variants: [{
         default_price: Number(recipe.selling_price_thb) || 0,
         default_pricing_type: 'FIXED',
-        composite_items,
       }],
     };
   }
