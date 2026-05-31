@@ -6906,6 +6906,147 @@ async function pulsePushRecipeToLoyverse(recipe, dishTargetId, ingredientMapping
 }
 
 /* ════════════════════════════════════════════════════════════════
+   LOYVERSE → STAYLO IMPORT — pull composite items + their components
+   into the STAYLO recipes UI so the chef can edit them like any other
+   fiche. Cost data (variant.cost × quantity) becomes the ingredient
+   purchase price, so food-cost % calculations work immediately.
+   ════════════════════════════════════════════════════════════════ */
+async function pulseOpenLoyverseImportModal(){
+  if(!loyverseToken()){ alert('Connect Loyverse first.'); return; }
+
+  const bg = el('div',{class:'pulse-wiz-bg', onclick:(e)=>{ if(e.target===bg) bg.remove(); }});
+  const card = el('div',{class:'pulse-wiz-card', onclick:(e)=>e.stopPropagation(), style:'max-width:720px'});
+  card.appendChild(el('div',{class:'pulse-wiz-head'},
+    el('div',{class:'pulse-wiz-logo'},'📥'),
+    el('div',{class:'pulse-wiz-head-text'},
+      el('div',{class:'pulse-wiz-title'},'Import from Loyverse'),
+      el('div',{class:'pulse-wiz-sub'},'Pull every composite POS item into your fiches recettes')
+    ),
+    el('button',{class:'pulse-wiz-x', onclick:()=>bg.remove()},'×')
+  ));
+  const body = el('div',{class:'pulse-wiz-body', style:'max-height:65vh;overflow-y:auto'});
+  body.appendChild(el('div',{class:'pulse-wiz-checking',style:'padding:18px 0'},
+    '⏳ Scanning your Loyverse catalogue for composite items…'));
+  card.appendChild(body);
+  const foot = el('div',{class:'pulse-wiz-foot'});
+  foot.appendChild(el('button',{class:'btn-primary',style:'flex:1',onclick:()=>bg.remove()},'Close'));
+  card.appendChild(foot);
+  bg.appendChild(card);
+  document.body.appendChild(bg);
+
+  let items = [];
+  try { items = await loyverseGetAllItems(true); /* force refresh */ }
+  catch (err) {
+    body.innerHTML = '';
+    body.appendChild(el('div',{
+      style:'background:#FFF0F0;border:1px solid #FF3CB4;border-radius:10px;padding:14px;color:#8B0036;font-size:13px;'
+    }, 'Could not load Loyverse items: ' + (err.message || err)));
+    return;
+  }
+
+  // Variant lookup: variant_id → { item, variant } (used to resolve
+  // component references in composite items)
+  const variantMap = new Map();
+  for(const it of items){
+    for(const v of (it.variants || [])){
+      const vid = v.id || v.variant_id;
+      if(vid) variantMap.set(vid, { item: it, variant: v });
+    }
+  }
+
+  const composites = items.filter(it => it.is_composite);
+  body.innerHTML = '';
+  if(composites.length === 0){
+    body.appendChild(el('div',{style:'padding:24px;text-align:center;color:var(--gray);font-size:13px'},
+      'No composite items in Loyverse yet. Compose a dish there or create one from a STAYLO recipe via "🔗 Sync to Loyverse" — then come back here to import others.'));
+    return;
+  }
+
+  body.appendChild(el('div',{style:'font-size:12px;color:var(--gray);margin-bottom:12px'},
+    composites.length + ' composite ' + (composites.length===1?'item':'items') + ' found · click ⬇ to import as a STAYLO fiche'));
+
+  // Index existing STAYLO recipe names so we mark duplicates
+  const existingNames = new Set(getRecipes().map(r => (r.name||'').toLowerCase().trim()));
+
+  for(const it of composites){
+    const components = it.components || [];
+    const ingredients = components.map(c => {
+      const ref = variantMap.get(c.variant_id);
+      const name = ref ? (ref.item.item_name || ref.item.name) : '(unknown ingredient)';
+      const cost = ref ? Number(ref.variant.cost || ref.variant.purchase_cost || 0) : 0;
+      return { name, qty: Number(c.quantity) || 0, unit: 'unit', cost, price_amount: cost, price_per_unit: 'unit', loyverse_variant_id: c.variant_id };
+    });
+    const price = Number(it.variants?.[0]?.default_price) || 0;
+    const totalCost = ingredients.reduce((s,i) => s + (i.qty * i.cost), 0);
+    const alreadyImported = existingNames.has((it.item_name || '').toLowerCase().trim());
+
+    const row = el('div',{
+      style:'display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 12px;background:#FAFBFC;border:1px solid var(--border);border-radius:10px;margin-bottom:8px'
+    });
+    // Thumb
+    const img = it.image_url
+      ? el('div',{style:'width:44px;height:44px;border-radius:8px;background:url("'+it.image_url+'") center/cover'})
+      : el('div',{style:'width:44px;height:44px;border-radius:8px;background:#F4F5F7;display:flex;align-items:center;justify-content:center;font-size:22px'},'🍔');
+    row.appendChild(img);
+    // Body
+    row.appendChild(el('div',{},
+      el('div',{style:'font-weight:800;color:var(--navy);font-size:14px'}, it.item_name || it.name || 'Unnamed'),
+      el('div',{style:'font-size:11px;color:var(--gray);margin-top:2px'},
+        components.length + ' ingredient' + (components.length===1?'':'s') + ' · ' +
+        Math.round(price).toLocaleString() + ' (sell) · cost ' + Math.round(totalCost).toLocaleString()
+      ),
+      alreadyImported ? el('div',{
+        style:'font-size:10px;color:var(--teal);font-weight:700;margin-top:2px;letter-spacing:.5px'
+      }, '✓ ALREADY IN STAYLO') : null,
+    ));
+    // Action
+    const btn = el('button',{
+      class:'btn-primary', style:'padding:8px 14px',
+      onclick: () => {
+        const recipe = {
+          name: it.item_name || it.name || 'Imported dish',
+          category: 'main',
+          fiche_category: 'cuisine',
+          pos_sku: it.id || '',
+          pos_category: it.category_id || '',
+          yield_portions: 1,
+          selling_price_thb: price,
+          prep_minutes: 0, cook_minutes: 0, rest_minutes: 0,
+          ingredients,
+          equipment: [],
+          steps: [],
+          allergens: '',
+          notes: 'Imported from Loyverse ' + new Date().toISOString().slice(0,10) + ' · Loyverse item id ' + (it.id||''),
+          photos: [],
+          loyverse_item_id: it.id,
+        };
+        upsertRecipe(recipe);
+        btn.disabled = true; btn.textContent = '✓ Imported';
+        existingNames.add(recipe.name.toLowerCase().trim());
+        try { renderRecipesTab(); } catch {}
+      }
+    }, alreadyImported ? '↻ Re-import' : '⬇ Import');
+    row.appendChild(btn);
+    body.appendChild(row);
+  }
+
+  // "Import all" footer action
+  foot.innerHTML = '';
+  foot.appendChild(el('button',{class:'btn-secondary',onclick:()=>bg.remove()},'Close'));
+  foot.appendChild(el('button',{
+    class:'btn-primary',
+    style:'flex:1;background:linear-gradient(135deg,#00B894,#6C5CE7)',
+    onclick: () => {
+      let n = 0;
+      for(const btn of body.querySelectorAll('button.btn-primary')){
+        if(!btn.disabled){ btn.click(); n++; }
+      }
+      alert('Imported ' + n + ' new recipe' + (n===1?'':'s') + '.');
+    }
+  },'⬇ Import all new'));
+}
+
+/* ════════════════════════════════════════════════════════════════
    ITEM EDITOR — create / edit / delete a Loyverse item from STAYLO
    ════════════════════════════════════════════════════════════════
    Opens a small form modal. On save, POSTs (new) or PUTs (existing)
@@ -17378,6 +17519,13 @@ function renderRecipesTab(){
 
   root.appendChild(el('div',{class:'roster-head'},
     el('div',{}, t('app.recipes.header_count', {n: visibleRecipes.length})),
+    // Import composite items + their recipes from Loyverse — only visible
+    // when the hotelier has linked a POS, and only to managers.
+    isMgr && loyverseToken() ? el('button',{
+      class:'btn-secondary',
+      style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0;margin-right:8px',
+      onclick: () => pulseOpenLoyverseImportModal()
+    }, '📥 Import from Loyverse') : null,
     isMgr ? el('button',{class:'btn-primary',onclick:()=>showRecipeEditor(null)}, t('app.recipes.btn_new')) : null,
   ));
 
