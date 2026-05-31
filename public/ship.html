@@ -6622,16 +6622,45 @@ async function pulseFetchItemImage(query){
 function pulseItemToWritePayload(item, overrides){
   // Loyverse POST /items needs the full item back, with variants carrying
   // variant_id (not id). Skip server-managed timestamps.
-  const variants = (item.variants || []).map(v => ({
-    variant_id: v.id,
-    default_price: v.default_price ?? 0,
-    default_pricing_type: v.default_pricing_type || 'FIXED',
-    sku: v.sku || undefined,
-    barcode: v.barcode || undefined,
-    cost: v.cost || 0,
-    purchase_cost: v.purchase_cost || 0,
-  }));
-  return {
+  // CRITICAL #1: Loyverse's GET /items returns variants with `id` in some
+  // accounts and `variant_id` in others (asymmetric — see variantIdOf
+  // helper). If we send `variant_id: undefined` Loyverse treats the
+  // variant as "new" and the whole POST cascades into a duplicate item.
+  // Always resolve the id from both possible fields.
+  // CRITICAL #2: Loyverse REJECTS the entire POST with
+  //   "INVALID_VALUE · `purchase_cost` must not be set if `track_stock`
+  //    is set to `false` or `null`"
+  // when we send cost/purchase_cost on a non-tracked variant. So we only
+  // include those fields when track_stock is true.
+  const tracksStock = !!item.track_stock;
+  const variants = (item.variants || []).map(v => {
+    const out = {
+      variant_id: v.variant_id || v.id,
+      default_price: v.default_price ?? 0,
+      default_pricing_type: v.default_pricing_type || 'FIXED',
+      sku: v.sku || undefined,
+      barcode: v.barcode || undefined,
+    };
+    if(tracksStock){
+      // Only include cost fields when the item is stock-tracked — Loyverse
+      // forbids them otherwise (see above). Use ?? 0 so an explicit 0 is
+      // preserved (the user wrote "this costs nothing"), but null/undef
+      // doesn't end up serialized.
+      out.cost = v.cost ?? 0;
+      out.purchase_cost = v.purchase_cost ?? 0;
+    }
+    return out;
+  }).filter(v => !!v.variant_id); // never send a variant without an id
+  // If the item is composite, Loyverse REQUIRES `components` on every
+  // update. We preserve the existing components so a metadata-only push
+  // (e.g. category change) doesn't wipe the recipe.
+  const components = item.is_composite && Array.isArray(item.components)
+    ? item.components.map(c => ({
+        variant_id: c.variant_id || c.id,
+        quantity: Number(c.quantity) || 0,
+      })).filter(c => !!c.variant_id)
+    : undefined;
+  const base = {
     id: item.id,
     item_name: item.item_name || item.name || 'Item',
     category_id: item.category_id || null,
@@ -6643,6 +6672,13 @@ function pulseItemToWritePayload(item, overrides){
     variants,
     ...(overrides || {}),
   };
+  // Only include `components` if composite + we actually have some, OR
+  // if overrides explicitly set them (the sync wizard).
+  if(components && !('components' in (overrides || {}))){
+    base.components = components;
+    if(item.use_production !== undefined) base.use_production = !!item.use_production;
+  }
+  return base;
 }
 
 async function pulseAutoImageItem(item, onSaved){
@@ -6683,38 +6719,32 @@ async function pulseAutoImageAll(items, onProgress, onDone){
 }
 
 /* ════════════════════════════════════════════════════════════════
-   RECIPE → LOYVERSE COMPOSITE ITEM SYNC
+   RECIPE → LOYVERSE ITEM SYNC
    ════════════════════════════════════════════════════════════════
-   Lets the chef push a STAYLO fiche recette into Loyverse as a
-   "composite item with production" — the dish is sold from the POS,
-   and each sale auto-deducts the ingredient quantities from stock
-   exactly like a Loyverse Back Office composite recipe would.
+   Pushes a STAYLO fiche to Loyverse as a POS-sellable item. STAYLO
+   owns the stock, so Loyverse only needs the dish itself (name,
+   category, price) to ring up the sale — we do NOT force composite
+   mode or ingredient-mapping. If the chef wants Loyverse to also
+   deduct stock at the POS they can opt in to ingredient mapping,
+   but it's optional and not the headline path.
 
    Flow:
-     1. Fetch the hotelier's full Loyverse item list (cached 10 min).
-     2. Fuzzy-match the recipe name against existing items → either
-        update one or create a new one.
-     3. Fuzzy-match each ingredient against existing items → render a
-        per-row dropdown where the chef can override the suggestion.
-     4. On confirm: POST one composite item with `is_composite: true`,
-        `use_production: true` and variants[0].composite_items[] built
-        from the chosen mappings + raw recipe quantities.
-
-   Out of scope for v1 (acknowledged in the UI):
-     • Unit conversion (recipe 200g vs Loyverse 1kg stock unit). We
-       send the raw recipe qty and warn the chef to set the stocking
-       unit in Loyverse Back Office once per ingredient.
-     • Modifiers (extras / options) — those are a separate Loyverse
-       concept; the wizard skips them today.
+     1. Fetch live Loyverse items + categories (forced fresh).
+     2. Fuzzy-match the recipe name against existing items → if a
+        strong match exists offer "Update existing", else default
+        to "Create new".
+     3. Show the category dropdown (live from Loyverse) so the chef
+        can confirm / change it before syncing.
+     4. (Optional, collapsed) Per-ingredient stock-deduction mapping.
+        Default = none. Chef can expand if they DO want Loyverse to
+        deduct stock too.
+     5. On confirm: POST a single item. Includes `components` +
+        `is_composite: true` ONLY when at least one ingredient is
+        mapped; otherwise sends a plain item.
    ════════════════════════════════════════════════════════════════ */
 async function pulseOpenRecipeSyncModal(recipe){
   if(!loyverseToken()){
-    alert('Connect Loyverse via Pulse first — the wizard needs your POS catalogue to map ingredients.');
-    return;
-  }
-  const ingredients = (recipe.ingredients || []).filter(i => i.name && i.name.trim());
-  if(ingredients.length === 0){
-    alert('This fiche has no ingredients yet. Add at least one before syncing.');
+    alert('Connect Loyverse via Pulse first.');
     return;
   }
 
@@ -6724,7 +6754,7 @@ async function pulseOpenRecipeSyncModal(recipe){
     el('div',{class:'pulse-wiz-logo'},'🔗'),
     el('div',{class:'pulse-wiz-head-text'},
       el('div',{class:'pulse-wiz-title'},'Sync to Loyverse'),
-      el('div',{class:'pulse-wiz-sub'},'"' + recipe.name + '" → POS composite item with auto stock deduction')
+      el('div',{class:'pulse-wiz-sub'},'"' + recipe.name + '" → POS item (name · category · price)')
     ),
     el('button',{class:'pulse-wiz-x', onclick:()=>bg.remove()},'×')
   ));
@@ -6738,97 +6768,141 @@ async function pulseOpenRecipeSyncModal(recipe){
   bg.appendChild(card);
   document.body.appendChild(bg);
 
-  // Pre-fetch items (cached)
+  // Pre-fetch items (force fresh to avoid stale variant_ids — see the
+  // duplicate-creation bug we fixed in pulseItemToWritePayload).
   let items = [];
-  try { items = await loyverseGetAllItems(); }
-  catch (err){
+  let catMap = {};
+  try {
+    items = await loyverseGetAllItems(true);
+    catMap = await loyverseGetCategoriesMap();
+  } catch (err){
     body.innerHTML = '';
     body.appendChild(el('div',{style:'background:#FFF0F0;border:1px solid #FF3CB4;border-radius:10px;padding:14px;color:#8B0036;font-size:13px;'},
-      'Could not load Loyverse items: ' + (err.message||err)));
+      'Could not load Loyverse data: ' + (err.message||err)));
     return;
   }
+
+  const ingredients = (recipe.ingredients || []).filter(i => i.name && i.name.trim());
 
   // ─── Build dish target dropdown ──
   // Default behaviour: CREATE NEW. The chef shouldn't have to pre-create
   // the dish in Loyverse Back Office — STAYLO does it in one shot.
-  // We still offer "Update existing" as an option when a high-quality
-  // match (≥ 70%) exists, but creation is the headline path.
+  // We still offer "Update existing" as an option when a strong match
+  // exists, and we pre-pick it if recipe.loyverse_item_id is set
+  // (imported fiche). That's the key fix: a fiche that was imported
+  // from Loyverse always updates the SAME item, never creates a duplicate.
   const dishMatches = fuzzyMatchItem(recipe.name, items, 5);
   const dishSelect = el('select',{class:'pulse-wiz-input',id:'rsync-dish'});
   const createOpt = el('option',{value:'__new'},
-    '➕ Create new POS item "' + recipe.name + '"  ← recommended');
-  createOpt.selected = true;
+    '➕ Create new POS item "' + recipe.name + '"');
   dishSelect.appendChild(createOpt);
+  // Always include the directly-linked item at the top of the list
+  // (even if fuzzy match missed it), and pre-select it.
+  const linkedItem = recipe.loyverse_item_id ? items.find(it => it.id === recipe.loyverse_item_id) : null;
+  if(linkedItem){
+    const opt = el('option',{value: linkedItem.id},
+      '↻ Update linked item: ' + (linkedItem.item_name||linkedItem.name) + '  ← recommended');
+    opt.selected = true;
+    dishSelect.appendChild(opt);
+  } else {
+    createOpt.textContent += '  ← recommended';
+    createOpt.selected = true;
+  }
   for(const m of dishMatches){
     if(m.score < 20) break;
+    if(linkedItem && m.item.id === linkedItem.id) continue; // dedupe
     dishSelect.appendChild(el('option',{value: m.item.id},
       '↻ Update existing: ' + (m.item.item_name||m.item.name) + ' (' + Math.round(m.score) + '% match)'));
   }
 
-  // ─── Build per-ingredient mapping rows ──────────────────────────────
-  // Loyverse exposes the variant id under either `id` or `variant_id`
-  // depending on the endpoint flavour — handle both.
+  // ─── Build category dropdown (live from Loyverse) ─────────────────
+  const catSelect = el('select',{class:'pulse-wiz-input',id:'rsync-cat'});
+  catSelect.appendChild(el('option',{value:''},'— No category —'));
+  const cats = Object.values(catMap || {}).sort((a,b) =>
+    (a.name||'').localeCompare(b.name||''));
+  for(const c of cats){
+    const opt = el('option',{value: c.id},
+      (c.color ? '● ' : '') + (c.name || '?'));
+    if(c.id === recipe.pos_category) opt.selected = true;
+    catSelect.appendChild(opt);
+  }
+
+  // ─── Build per-ingredient mapping rows (OPTIONAL) ─────────────────
+  // STAYLO owns the stock — Loyverse only needs the dish to ring up
+  // the sale. Mapping ingredients is now a power-user opt-in (open the
+  // collapsed section), not a hard requirement.
   const variantIdOf = (it) => it?.variants?.[0]?.id || it?.variants?.[0]?.variant_id || '';
-  // Threshold below which we DON'T auto-pick the best match — the chef
-  // confirms manually. 35 = "Sticky rice" matching "Steamed rice" but
-  // not "Chicken Byriani" matching "Ripe mango".
-  const AUTO_PICK_MIN = 35;
-  const ingredientMappings = ingredients.map(ing => {
-    const matches = fuzzyMatchItem(ing.name, items, 8);
-    const best = matches[0];
-    const auto = best && best.score >= AUTO_PICK_MIN ? variantIdOf(best.item) : '';
-    return { ingredient: ing, matches, selectedVariantId: auto };
-  });
+  const ingredientMappings = ingredients.map(ing => ({
+    ingredient: ing, matches: fuzzyMatchItem(ing.name, items, 8), selectedVariantId: ''
+  }));
 
   body.innerHTML = '';
 
   // Dish row
   body.appendChild(el('label',{class:'pulse-wiz-label'},'POS dish'));
   body.appendChild(dishSelect);
-  body.appendChild(el('label',{class:'pulse-wiz-label', style:'margin-top:14px'},
-    'Ingredients → Loyverse stock items'));
-  body.appendChild(el('div',{style:'font-size:11px;color:var(--gray);margin-bottom:8px'},
-    'Each unmatched ingredient must point to a Loyverse stock item with track_stock = true.'));
 
-  for(const map of ingredientMappings){
-    const row = el('div',{class:'pulse-rsync-row'});
-    row.appendChild(el('div',{class:'pulse-rsync-name'},
-      el('b',{}, map.ingredient.name),
-      el('span',{style:'color:var(--gray)'}, ' · ', String(map.ingredient.qty || 0), ' ', (map.ingredient.unit || 'unit'))));
-    const sel = el('select',{class:'pulse-rsync-pick', oninput:(e)=>{ map.selectedVariantId = e.target.value; }});
-    const skipOpt = el('option',{value:''}, '— Skip (don\'t deduct from stock) —');
-    if(!map.selectedVariantId) skipOpt.selected = true;
-    sel.appendChild(skipOpt);
-    // Use top suggestions, then everything else alphabetical
-    const topIds = new Set(map.matches.map(m => m.item.id));
-    for(const m of map.matches){
-      if(m.score < 5) break;
-      const vid = variantIdOf(m.item);
-      if(!vid) continue;  // skip items without a usable variant id
-      const opt = el('option',{value: vid},
-        (m.item.item_name||m.item.name||'?') + (m.score >= 80 ? '  ✓' : '  · ' + Math.round(m.score) + '%'));
-      if(vid === map.selectedVariantId) opt.selected = true;
-      sel.appendChild(opt);
-    }
-    const others = items.filter(i => !topIds.has(i.id)).sort((a,b) =>
-      (a.item_name||a.name||'').localeCompare(b.item_name||b.name||''));
-    if(others.length){
-      const og = el('optgroup',{label:'Other items'});
-      for(const it of others){
-        const vid = variantIdOf(it);
+  // Category row
+  body.appendChild(el('label',{class:'pulse-wiz-label', style:'margin-top:14px'},'POS category'));
+  body.appendChild(catSelect);
+  body.appendChild(el('div',{style:'font-size:11px;color:var(--gray);margin-top:4px'},
+    'The dish appears under this category on the till. Pulled live from your Loyverse Back Office.'));
+
+  // Price preview
+  const priceLine = el('div',{style:'margin-top:14px;padding:10px 12px;background:#F4F5F7;border-radius:8px;font-size:12px;color:var(--navy)'},
+    el('span',{style:'font-weight:700'}, 'POS price: '),
+    el('span',{}, (Number(recipe.selling_price_thb) || 0).toLocaleString() + ' THB'),
+    el('span',{style:'color:var(--gray);margin-left:8px'},
+      '(from "Sell price" in the fiche)'));
+  body.appendChild(priceLine);
+
+  // ─── Optional advanced section: ingredient → stock mapping ────────
+  if(ingredients.length){
+    const advWrap = el('details',{style:'margin-top:16px;border:1px solid var(--border);border-radius:10px;padding:0'});
+    const advSummary = el('summary',{
+      style:'cursor:pointer;padding:10px 12px;font-size:12px;font-weight:800;color:var(--navy);background:#FAFBFC;border-radius:10px;'
+    },
+      '⚙️ Advanced: also deduct stock from Loyverse (optional)');
+    advWrap.appendChild(advSummary);
+    const advBody = el('div',{style:'padding:12px'});
+    advBody.appendChild(el('div',{style:'font-size:11px;color:var(--gray);margin-bottom:8px'},
+      'STAYLO already manages your stock. Only map ingredients here if you ALSO want Loyverse to deduct from POS sales — usually unnecessary.'));
+    for(const map of ingredientMappings){
+      const row = el('div',{class:'pulse-rsync-row'});
+      row.appendChild(el('div',{class:'pulse-rsync-name'},
+        el('b',{}, map.ingredient.name),
+        el('span',{style:'color:var(--gray)'}, ' · ', String(map.ingredient.qty || 0), ' ', (map.ingredient.unit || 'unit'))));
+      const sel = el('select',{class:'pulse-rsync-pick', oninput:(e)=>{ map.selectedVariantId = e.target.value; }});
+      const skipOpt = el('option',{value:''}, '— Skip —');
+      skipOpt.selected = true;
+      sel.appendChild(skipOpt);
+      const topIds = new Set(map.matches.map(m => m.item.id));
+      for(const m of map.matches){
+        if(m.score < 5) break;
+        const vid = variantIdOf(m.item);
         if(!vid) continue;
-        og.appendChild(el('option',{value: vid}, it.item_name||it.name||'?'));
+        sel.appendChild(el('option',{value: vid},
+          (m.item.item_name||m.item.name||'?') + (m.score >= 80 ? '  ✓' : '  · ' + Math.round(m.score) + '%')));
       }
-      sel.appendChild(og);
+      const others = items.filter(i => !topIds.has(i.id)).sort((a,b) =>
+        (a.item_name||a.name||'').localeCompare(b.item_name||b.name||''));
+      if(others.length){
+        const og = el('optgroup',{label:'Other items'});
+        for(const it of others){
+          const vid = variantIdOf(it);
+          if(!vid) continue;
+          og.appendChild(el('option',{value: vid}, it.item_name||it.name||'?'));
+        }
+        sel.appendChild(og);
+      }
+      row.appendChild(sel);
+      advBody.appendChild(row);
     }
-    row.appendChild(sel);
-    body.appendChild(row);
+    advWrap.appendChild(advBody);
+    body.appendChild(advWrap);
   }
 
-  body.appendChild(el('div',{class:'pulse-wiz-hint', style:'margin-top:14px'},
-    '⚠ Recipe quantities are sent as-is (e.g. "200" for "200g"). In Loyverse you can configure how 1 stock unit maps to your recipe units — do this once per ingredient.'));
-
-  // Inline error panel (replaces brittle alert())
+  // Inline error panel
   const errBox = el('div',{
     style:'margin-top:12px;display:none;background:#FFF0F0;border:1px solid #FF3CB4;border-radius:10px;padding:12px;color:#8B0036;font-size:12px;line-height:1.5;'
   });
@@ -6839,81 +6913,106 @@ async function pulseOpenRecipeSyncModal(recipe){
   foot.appendChild(el('button',{class:'btn-secondary', onclick:()=>bg.remove()},'Cancel'));
   const confirmBtn = el('button',{class:'btn-primary', onclick: async () => {
     errBox.style.display = 'none'; errBox.innerHTML = '';
-    const mapped = ingredientMappings.filter(m => m.selectedVariantId).length;
-    if(mapped === 0){
-      errBox.style.display = '';
-      errBox.appendChild(el('div',{style:'font-weight:900;margin-bottom:4px'},'⚠ No ingredient mapped'));
-      errBox.appendChild(el('div',{},'Pick at least one Loyverse stock item before syncing — otherwise the composite has nothing to deduct.'));
-      return;
-    }
     confirmBtn.disabled = true; confirmBtn.textContent = '⏳ Pushing to Loyverse…';
     try {
-      await pulsePushRecipeToLoyverse(recipe, dishSelect.value, ingredientMappings, items);
+      const newId = await pulsePushRecipeToLoyverse(
+        recipe,
+        dishSelect.value,
+        ingredientMappings,
+        items,
+        catSelect.value || null
+      );
+      // Stamp the linked item id back onto the fiche so subsequent
+      // saves always update the same Loyverse item.
+      if(newId && newId !== recipe.loyverse_item_id){
+        recipe.loyverse_item_id = newId;
+        try { upsertRecipe(recipe); } catch (e) { console.warn(e); }
+      }
       bg.remove();
-      alert('✓ Recipe synced to Loyverse — try a sale at the POS, the ingredients will deduct automatically.');
+      pulseShowToast('✓ Pushed to Loyverse · name, category & price live at the till');
     } catch (err) {
+      console.warn('Loyverse sync failed', err);
       confirmBtn.disabled = false; confirmBtn.textContent = '🔗 Sync now';
       errBox.style.display = '';
       errBox.appendChild(el('div',{style:'font-weight:900;margin-bottom:4px'},
         err.status === 401 ? '⚠ Token rejected'
-        : err.status === 400 ? '⚠ Loyverse rejected the recipe'
+        : err.status === 400 ? '⚠ Loyverse rejected the dish'
         : '⚠ Sync failed'
       ));
       errBox.appendChild(el('div',{}, String(err.message || err)));
       if(err.status === 401){
         errBox.appendChild(el('div',{style:'margin-top:6px;font-size:11px'},
-          '→ Your Loyverse Personal Access Token needs full account scopes. Re-generate via the Connect wizard.'));
-      } else if(err.status === 400){
-        errBox.appendChild(el('div',{style:'margin-top:6px;font-size:11px'},
-          '→ Often: a chosen ingredient is not track_stock=true in Loyverse, or its stocking unit isn\'t set. Open the item in Loyverse Back Office and enable "Track stock".'));
+          '→ Your Loyverse Personal Access Token needs ITEMS_WRITE. Re-generate via the Connect wizard.'));
       }
     }
   }}, '🔗 Sync now');
   foot.appendChild(confirmBtn);
 }
 
-async function pulsePushRecipeToLoyverse(recipe, dishTargetId, ingredientMappings, items){
-  // Loyverse's composite recipe lives at the ROOT of the item payload
-  // under `components` (NOT inside variants). Each entry is
-  // { variant_id, quantity }. Validated from the API error message:
-  //   "Components must be set if `is_composite` is set to `true`
-  //    · object.components"
-  const components = ingredientMappings
+async function pulsePushRecipeToLoyverse(recipe, dishTargetId, ingredientMappings, items, categoryId){
+  // Composite mode is OPTIONAL — only build the components array if
+  // the chef opted into ingredient mapping. STAYLO owns the stock by
+  // default; Loyverse just sells the dish.
+  const components = (ingredientMappings || [])
     .filter(m => m.selectedVariantId)
     .map(m => ({
       variant_id: m.selectedVariantId,
       quantity: Number(m.ingredient.qty) || 0,
     }));
+  const wantComposite = components.length > 0;
 
-  // If the user picked an existing Loyverse item to update, preserve its
-  // current variant pricing; otherwise build a fresh minimal item.
   let payload;
   if(dishTargetId && dishTargetId !== '__new'){
     const existing = items.find(it => it.id === dishTargetId);
     if(!existing) throw new Error('Selected dish item disappeared from the catalogue');
-    payload = pulseItemToWritePayload(existing, {
-      is_composite: true,
-      use_production: true,
-      components,
-    });
+    // Update path — preserve everything we know about the existing item,
+    // then override the fields the chef just edited in STAYLO.
+    const overrides = {
+      item_name: recipe.name || existing.item_name,
+      category_id: categoryId || null,
+    };
+    if(wantComposite){
+      overrides.is_composite = true;
+      overrides.use_production = true;
+      overrides.components = components;
+    }
+    payload = pulseItemToWritePayload(existing, overrides);
+    // Update the first variant's price if the chef set one (don't
+    // overwrite a meaningful POS price with 0).
+    const newPrice = Number(recipe.selling_price_thb) || 0;
+    if(newPrice > 0 && payload.variants?.[0]){
+      payload.variants[0].default_price = newPrice;
+    }
   } else {
     payload = {
       item_name: recipe.name,
-      is_composite: true,
-      use_production: true,
+      category_id: categoryId || null,
+      is_composite: wantComposite,
+      use_production: wantComposite,
       track_stock: false,
-      components,
       variants: [{
         default_price: Number(recipe.selling_price_thb) || 0,
         default_pricing_type: 'FIXED',
       }],
     };
+    if(wantComposite) payload.components = components;
   }
 
-  await loyverseWrite('POST', 'items', payload);
+  console.log('[STAYLO→Loyverse] sync recipe', {
+    target: dishTargetId,
+    payload_id: payload.id || '(new)',
+    payload_item_name: payload.item_name,
+    payload_category_id: payload.category_id,
+    composite: wantComposite,
+    component_count: components.length,
+  });
+  const resp = await loyverseWrite('POST', 'items', payload);
+  console.log('[STAYLO→Loyverse] sync response', resp);
   // Invalidate the items cache so the next open of the wizard sees the
-  // freshly created/updated composite item.
+  // freshly created/updated item.
   _loyverseItemsCache.stamp = 0;
+  // Return the resulting item id so the caller can stamp it on the fiche.
+  return (resp && resp.id) || payload.id || null;
 }
 
 /* Push the metadata-only changes from a saved STAYLO fiche to its
@@ -6924,18 +7023,24 @@ async function pulsePushRecipeToLoyverse(recipe, dishTargetId, ingredientMapping
  * editing the menu category in STAYLO immediately re-buckets the item
  * at the till.                                                          */
 async function pulsePushFicheUpdateToLoyverse(recipe){
-  // Force a fresh fetch so a newly-imported item is visible even before
-  // the 10-minute cache rotates.
-  const items = await loyverseGetAllItems();
+  // ALWAYS force a fresh fetch. The cache (10 min TTL) can return a
+  // stale snapshot from before a previous save, which means our lookup
+  // by loyverse_item_id can return an item with outdated variant ids —
+  // and an outdated variant id makes Loyverse treat the POST as "new
+  // variant", which cascades into a duplicate item creation. Pulling
+  // fresh is cheap (one paginated GET) and bulletproof.
+  const items = await loyverseGetAllItems(true);
   let existing = recipe.loyverse_item_id
     ? items.find(it => it.id === recipe.loyverse_item_id)
     : null;
+  let matchedBy = existing ? 'id' : '';
   // Fallback: match by exact (case-insensitive) name. Useful when the
   // fiche pre-dates the Import flow (no loyverse_item_id stamped) or
   // when the chef just hand-typed a fiche whose name matches a POS item.
   if(!existing && recipe.name){
     const wantName = recipe.name.toLowerCase().trim();
     existing = items.find(it => (it.item_name||it.name||'').toLowerCase().trim() === wantName);
+    if(existing) matchedBy = 'name';
   }
   if(!existing){
     throw new Error('No Loyverse item matches "' + (recipe.name||'this fiche')
@@ -6947,9 +7052,10 @@ async function pulsePushFicheUpdateToLoyverse(recipe){
     recipe.loyverse_item_id = existing.id;
     try { upsertRecipe(recipe); } catch (e) { console.warn(e); }
   }
+  const wantCategoryId = recipe.pos_category || null;
   const payload = pulseItemToWritePayload(existing, {
     item_name: recipe.name || existing.item_name,
-    category_id: recipe.pos_category || null,
+    category_id: wantCategoryId,
   });
   // Refresh the first variant's price if the chef changed it. Don't
   // overwrite if they left it 0 — the existing POS price stays.
@@ -6957,10 +7063,70 @@ async function pulsePushFicheUpdateToLoyverse(recipe){
   if(newPrice > 0 && payload.variants?.[0]){
     payload.variants[0].default_price = newPrice;
   }
-  await loyverseWrite('POST', 'items', payload);
+  // Diagnostic: log exactly what we're sending so the chef (or me) can
+  // confirm via DevTools that id + category_id are non-null before the
+  // POST. If Loyverse still creates a duplicate after this, the issue
+  // is server-side, not ours.
+  console.log('[STAYLO→Loyverse] update item · request', {
+    matched_by: matchedBy,
+    payload_id: payload.id,
+    payload_item_name: payload.item_name,
+    payload_category_id: payload.category_id,
+    payload_existing_category_id: existing.category_id,
+    variant_count: payload.variants?.length,
+    first_variant_id: payload.variants?.[0]?.variant_id,
+    has_components: Array.isArray(payload.components),
+    full_payload: payload,
+  });
+  const writeResp = await loyverseWrite('POST', 'items', payload);
+  console.log('[STAYLO→Loyverse] update item · response', writeResp);
   // Bust the local items cache so the next fiche save / sync sees the
   // updated category_id immediately.
   _loyverseItemsCache.stamp = 0;
+  // Verify the write actually took. If Loyverse returned a DIFFERENT
+  // id than we sent, it created a new item — surface that loudly so we
+  // know the bug isn't masked.
+  if(writeResp && writeResp.id && writeResp.id !== existing.id){
+    throw new Error('Loyverse created a duplicate (id ' + writeResp.id.slice(0,8)
+      + '… instead of updating ' + existing.id.slice(0,8) + '…). Open the 🔗 Sync wizard.');
+  }
+  // POST-WRITE VERIFICATION — fetch the item back and confirm category_id
+  // actually stuck. Loyverse's POST /items can return 200 OK but silently
+  // drop fields when the payload shape is off (e.g. variant_id mismatch
+  // → variant rebuild → category_id dropped). Surfacing the truth here
+  // is the only way to catch that class of bug. We use the bulk GET +
+  // local find so we don't depend on the (less-documented) GET /items/{id}.
+  try {
+    const fresh = await loyverseGetAllItems(true);
+    const verifyItem = fresh.find(it => it.id === existing.id);
+    const got = verifyItem ? (verifyItem.category_id || null) : null;
+    const want = wantCategoryId || null;
+    console.log('[STAYLO→Loyverse] update item · verify', {
+      item_id: existing.id,
+      want_category_id: want,
+      got_category_id: got,
+      match: got === want,
+      verify_item_found: !!verifyItem,
+      verify_item_name: verifyItem ? (verifyItem.item_name || verifyItem.name) : null,
+    });
+    if(verifyItem && want !== got){
+      // The POST succeeded but Loyverse did NOT apply the category change.
+      // This is the bug the user is hitting. Throw with the truth so the
+      // toast in showRecipeEditor surfaces it instead of a false success.
+      const catMap = await loyverseGetCategoriesMap();
+      const wantLabel = want ? (catMap[want]?.name || want.slice(0,8) + '…') : '(none)';
+      const gotLabel = got ? (catMap[got]?.name || got.slice(0,8) + '…') : '(none)';
+      throw new Error('Loyverse accepted the save but did not apply the category. '
+        + 'Sent "' + wantLabel + '", stored "' + gotLabel + '". '
+        + 'Likely cause: your Personal Access Token is missing ITEMS_WRITE — regenerate via Pulse → POS Connectors → Loyverse → tick ITEMS write scope.');
+    }
+  } catch (verifyErr){
+    // If the verify itself failed (network, 404), don't mask the original
+    // success — just log and continue. The user will see if Loyverse UI
+    // doesn't reflect the change.
+    if(/did not apply/i.test(verifyErr.message || '')) throw verifyErr;
+    console.warn('Post-write verify failed (ignored)', verifyErr);
+  }
   return existing.id;
 }
 
@@ -18479,10 +18645,18 @@ function showRecipeEditor(rec){
         class:'btn-secondary',
         style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0',
         onclick:()=>{
+          // Read the live form values so the wizard sees what the chef
+          // sees on screen (including any unsaved category change).
+          const catSel = $('#rec-cat');
+          const catOpt = catSel?.selectedOptions?.[0];
+          const catVal = catSel?.value || '';
+          const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(catVal);
+          const isLoyverseCat = looksLikeUuid || !!catOpt?.dataset?.name;
           const live = {
             ...r,
             name: $('#rec-name').value.trim() || r.name,
             selling_price_thb: parseFloat($('#rec-sell').value) || r.selling_price_thb || 0,
+            pos_category: isLoyverseCat ? catVal : (r.pos_category || ''),
             ingredients: (r.ingredients || []).filter(i => i.name?.trim()),
           };
           if(!live.name){ alert(t('app.dialogs.recipe_name_required')); return; }
@@ -18493,18 +18667,28 @@ function showRecipeEditor(rec){
       el('button',{class:'btn-primary',onclick:()=>{
         // When the dropdown was repopulated with Loyverse categories the
         // selected option carries dataset.name (the human name) and value
-        // (the Loyverse category_id). Store the id in pos_category for
-        // sync-back fidelity, and the human name in category for display.
+        // (the Loyverse category_id, a UUID). Store the id in pos_category
+        // for sync-back fidelity, and the human name in category for
+        // display. We detect "this is a Loyverse cat" by checking that
+        // the option's value looks like a Loyverse UUID and exists in the
+        // catMap — dataset.name alone is fragile (a category with an
+        // empty name slipped through as isLoyverseCat=false on a real
+        // user account, blanking pos_category on save).
         const catSel = $('#rec-cat');
         const catOpt = catSel?.selectedOptions?.[0];
-        const isLoyverseCat = !!catOpt?.dataset?.name;
+        const catVal = catSel?.value || '';
+        // A Loyverse category UUID is 36 chars with dashes. The hardcoded
+        // legacy values are short slugs ('main','dessert',...). Treat
+        // anything UUID-shaped as a Loyverse category id.
+        const looksLikeUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(catVal);
+        const isLoyverseCat = looksLikeUuid || !!catOpt?.dataset?.name;
         const next = {
           ...r,
           name: $('#rec-name').value.trim(),
           fiche_category: $('#rec-fiche-cat')?.value || r.fiche_category || 'cuisine',
-          category: isLoyverseCat ? (catOpt.dataset.name || '') : catSel.value,
+          category: isLoyverseCat ? (catOpt?.dataset?.name || catOpt?.textContent?.replace(/^●\s*/,'') || '') : catVal,
           pos_sku: $('#rec-sku').value.trim(),
-          pos_category: isLoyverseCat ? catSel.value : (catSel.value === r.category ? (r.pos_category || '') : ''),
+          pos_category: isLoyverseCat ? catVal : (catVal === r.category ? (r.pos_category || '') : ''),
           yield_portions: parseInt($('#rec-yield').value)||1,
           selling_price_thb: parseFloat($('#rec-sell').value)||0,
           prep_minutes: parseInt($('#rec-prep').value)||0,
@@ -18531,7 +18715,7 @@ function showRecipeEditor(rec){
         // chef always knows whether it reached the till.
         if(typeof loyverseToken === 'function' && loyverseToken()){
           pulsePushFicheUpdateToLoyverse(next).then(() => {
-            pulseShowToast('✓ Pushed to Loyverse · category & price updated at the till');
+            pulseShowToast('✓ Pushed to Loyverse · refresh your Loyverse Back Office tab to see the change');
           }).catch(err => {
             const msg = (err && (err.message || err)) + '';
             console.warn('Loyverse sync after save failed', err);
