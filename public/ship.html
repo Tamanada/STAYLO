@@ -17581,23 +17581,13 @@ function renderRecipesTab(){
     ? visibleRecipes
     : visibleRecipes.filter(r => (r.fiche_category || 'cuisine') === _fichesCatFilter);
 
-  root.appendChild(el('div',{class:'roster-head'},
-    el('div',{}, t('app.recipes.header_count', {n: visibleRecipes.length})),
-    // Import composite items + their recipes from Loyverse — only visible
-    // when the hotelier has linked a POS, and only to managers.
-    isMgr && loyverseToken() ? el('button',{
-      class:'btn-secondary',
-      style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0;margin-right:8px',
-      onclick: () => pulseOpenLoyverseImportModal()
-    }, '📥 Import from Loyverse') : null,
-    isMgr ? el('button',{class:'btn-primary',onclick:()=>showRecipeEditor(null)}, t('app.recipes.btn_new')) : null,
-  ));
-
-  // ── Category filter chips — shown only when there's > 1 category in scope ──
+  // ── Category filter chips — built first so we can inline them into the
+  // header row, side by side with the count and the action buttons.
   // For dept users with access to a single category, the row would be useless
   // ("All" + one chip). HR/GM always see the chips since they span categories.
-  if(canManageHR() || catCounts.size > 1){
-    const chipRow = el('div',{style:'display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px 0;align-items:center'});
+  const chipButtons = [];
+  const showChips = canManageHR() || catCounts.size > 1;
+  if(showChips){
     const mkChip = (slug, label, count, isActive) => {
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -17610,16 +17600,33 @@ function renderRecipesTab(){
       });
       return btn;
     };
-    chipRow.appendChild(mkChip('all', t('app.fiches.all_categories') || '📂 All', visibleRecipes.length, _fichesCatFilter==='all'));
+    chipButtons.push(mkChip('all', t('app.fiches.all_categories') || '📂 All', visibleRecipes.length, _fichesCatFilter==='all'));
     for(const cat of FICHE_CATEGORIES){
       const n = catCounts.get(cat.slug) || 0;
       // HR/GM see every category chip even when empty (so they can create
       // a "first" fiche for a dept). Other users see only non-empty chips.
       if(n === 0 && !canManageHR()) continue;
-      chipRow.appendChild(mkChip(cat.slug, `${cat.emoji} ${ficheCategoryLabel(cat.slug)}`, n, _fichesCatFilter===cat.slug));
+      chipButtons.push(mkChip(cat.slug, `${cat.emoji} ${ficheCategoryLabel(cat.slug)}`, n, _fichesCatFilter===cat.slug));
     }
-    root.appendChild(chipRow);
   }
+
+  // Single header row: [count + chips] left | [Import + Nouvelle] right.
+  // The left group has flex:1 so chips wrap naturally on narrow screens,
+  // while the action buttons stay glued to the right with flex-shrink:0.
+  root.appendChild(el('div',{class:'roster-head'},
+    el('div',{style:'display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1;min-width:0'},
+      el('div',{style:'white-space:nowrap'}, t('app.recipes.header_count', {n: visibleRecipes.length})),
+      ...chipButtons,
+    ),
+    el('div',{style:'display:flex;gap:8px;align-items:center;flex-shrink:0'},
+      isMgr && loyverseToken() ? el('button',{
+        class:'btn-secondary',
+        style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0',
+        onclick: () => pulseOpenLoyverseImportModal()
+      }, '📥 Import from Loyverse') : null,
+      isMgr ? el('button',{class:'btn-primary',onclick:()=>showRecipeEditor(null)}, t('app.recipes.btn_new')) : null,
+    ),
+  ));
 
   if(!filtered.length){
     if(visibleRecipes.length === 0){
