@@ -11954,11 +11954,17 @@ function evaluationStats(empId){
  * matching their own department (via FICHE_CATEGORIES dept mapping).
  * ============================================================================ */
 
-// Fiche categories — single source of truth.
-// `dept` is the messenger department string used elsewhere in this file
-// (ROLE_GROUPS / employee.department / MGMT_ROLES). Add a new category here
-// + add its label to en/fr/th.json under app.fiches.cat_<slug> and it
-// automatically appears in the editor + the filter dropdown.
+// Fiche categories — built-in set (single source of truth for the
+// stock categories). `dept` is the messenger department string used
+// elsewhere in this file (ROLE_GROUPS / employee.department /
+// MGMT_ROLES). Add a new built-in category here + add its label to
+// en/fr/th.json under app.fiches.cat_<slug> and it automatically
+// appears in the editor + the filter dropdown.
+//
+// Hoteliers can also add CUSTOM categories at runtime via the recipe
+// form. Those live in localStorage under _hkey('staylo_fiche_categories_custom')
+// as an array of { slug, emoji, dept, label }. See getAllFicheCategories()
+// for the merged view used everywhere downstream.
 const FICHE_CATEGORIES = [
   { slug:'cuisine',     emoji:'🍳', dept:'F&B'          },
   { slug:'maintenance', emoji:'🔧', dept:'Maintenance'  },
@@ -11969,12 +11975,49 @@ const FICHE_CATEGORIES = [
   { slug:'general',     emoji:'📋', dept:null            },  // null = visible to all
 ];
 
+// Per-hotel custom categories (persisted in localStorage). Stored as
+// { slug, emoji, dept, label, custom:true }. `slug` is generated from
+// the label + a short random suffix so a hotel can have e.g. two
+// "Bakery" categories pointing to different depts if they want.
+function getCustomFicheCategories(){
+  return lsGet(_hkey('staylo_fiche_categories_custom'), []);
+}
+function saveCustomFicheCategories(arr){
+  lsSet(_hkey('staylo_fiche_categories_custom'), arr);
+}
+function addCustomFicheCategory({ label, emoji, dept }){
+  const all = getCustomFicheCategories();
+  // Slugify: lowercase, ascii-only, hyphens, plus a 4-char suffix to
+  // guarantee uniqueness even across "Bakery" / "bakery" / "BAKERY".
+  const base = String(label || 'category').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0, 24) || 'cat';
+  const suffix = Math.random().toString(36).slice(2, 6);
+  const slug = 'c-' + base + '-' + suffix;
+  const cat = {
+    slug, label: String(label||'').trim() || 'Category',
+    emoji: String(emoji||'📂').trim() || '📂',
+    dept: dept || null, custom: true,
+  };
+  all.push(cat);
+  saveCustomFicheCategories(all);
+  return cat;
+}
+
+// Merged view of built-in + custom categories. Use this everywhere
+// (filter chips, editor dropdown, lookup helpers) instead of touching
+// FICHE_CATEGORIES directly so custom categories Just Work.
+function getAllFicheCategories(){
+  return FICHE_CATEGORIES.concat(getCustomFicheCategories());
+}
+
 // Resolve a fiche category record by slug. Falls back to 'cuisine' for
 // legacy fiches saved before the field existed (they're virtually all
 // recipes anyway).
 function ficheCategory(slug){
-  return FICHE_CATEGORIES.find(c => c.slug === (slug || 'cuisine'))
-      || FICHE_CATEGORIES.find(c => c.slug === 'cuisine');
+  const list = getAllFicheCategories();
+  return list.find(c => c.slug === (slug || 'cuisine'))
+      || list.find(c => c.slug === 'cuisine');
 }
 
 // Can the current user see fiches in `categorySlug`?
@@ -11988,12 +12031,18 @@ function canSeeFicheCategory(categorySlug){
   return State.user.department === cat.dept;
 }
 
-// Lookup the display label for a category. Reads i18n with sensible
-// EN fallback so a missing key doesn't crash the UI.
+// Lookup the display label for a category. Reads i18n for built-in
+// slugs (with EN fallback so a missing key doesn't crash the UI), or
+// uses the hotel-provided label for custom categories.
 function ficheCategoryLabel(slug){
   const FALLBACK = { cuisine:'Cuisine', maintenance:'Maintenance', garden:'Garden',
                      spa:'Spa', housekeeping:'Housekeeping', frontoffice:'Front Office',
                      general:'General' };
+  // Custom slugs are prefixed with 'c-' (see addCustomFicheCategory).
+  if(slug && slug.startsWith('c-')){
+    const cat = getCustomFicheCategories().find(c => c.slug === slug);
+    if(cat) return cat.label || slug;
+  }
   return t(`app.fiches.cat_${slug}`) || FALLBACK[slug] || slug;
 }
 
@@ -18066,11 +18115,13 @@ function renderRecipesTab(){
       return btn;
     };
     chipButtons.push(mkChip('all', t('app.fiches.all_categories') || '📂 All', visibleRecipes.length, _fichesCatFilter==='all'));
-    for(const cat of FICHE_CATEGORIES){
+    for(const cat of getAllFicheCategories()){
       const n = catCounts.get(cat.slug) || 0;
       // HR/GM see every category chip even when empty (so they can create
       // a "first" fiche for a dept). Other users see only non-empty chips.
-      if(n === 0 && !canManageHR()) continue;
+      // Custom categories ALWAYS show (so the hotelier sees the one they
+      // just created even before adding fiches to it).
+      if(n === 0 && !canManageHR() && !cat.custom) continue;
       chipButtons.push(mkChip(cat.slug, `${cat.emoji} ${ficheCategoryLabel(cat.slug)}`, n, _fichesCatFilter===cat.slug));
     }
   }
@@ -18090,23 +18141,43 @@ function renderRecipesTab(){
     onchange:(e)=>{ _fichesPosCat = e.target.value; renderRecipesTab(); },
   });
   posCatSelect.appendChild(el('option',{value:'all'}, 'POS: All categories'));
-  // Header row
-  root.appendChild(el('div',{class:'roster-head'},
-    el('div',{style:'display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1;min-width:0'},
-      el('div',{style:'white-space:nowrap'}, t('app.recipes.header_count', {n: visibleRecipes.length})),
-      ...chipButtons,
-    ),
-    el('div',{style:'display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap'},
-      searchInput,
-      posCatSelect,
-      isMgr && loyverseToken() ? el('button',{
-        class:'btn-secondary',
-        style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0',
-        onclick: () => pulseOpenLoyverseImportModal()
-      }, '📥 Import from Loyverse') : null,
-      isMgr ? el('button',{class:'btn-primary',onclick:()=>showRecipeEditor(null)}, t('app.recipes.btn_new')) : null,
-    ),
-  ));
+  // ── Header — two clean rows so nothing wraps onto a third ──
+  // Row 1: count + chips, scrollable horizontally if the chef has
+  //   many categories (custom ones + the 7 built-ins can overflow).
+  // Row 2: search · POS filter · Import · New fiche
+  const headWrap = el('div',{
+    style:'display:flex;flex-direction:column;gap:10px;margin-bottom:14px'
+  });
+  // ↳ Row 1 — count + chip strip (no wrap, x-scroll on overflow)
+  const chipsRow = el('div',{
+    style:`display:flex;gap:8px;align-items:center;overflow-x:auto;
+      overflow-y:hidden;padding-bottom:4px;scrollbar-width:thin;`
+  },
+    el('div',{
+      style:'white-space:nowrap;flex-shrink:0;font-size:13px;font-weight:800;color:var(--navy)'
+    }, t('app.recipes.header_count', {n: visibleRecipes.length})),
+    ...chipButtons,
+  );
+  // Make sure chip buttons themselves never shrink (the flex container
+  // would otherwise squeeze them into ovals).
+  for(const c of chipButtons){ c.style.flexShrink = '0'; }
+  headWrap.appendChild(chipsRow);
+  // ↳ Row 2 — actions, right-aligned on wide screens, wraps cleanly on mobile
+  const actionsRow = el('div',{
+    style:`display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+      justify-content:flex-end;`
+  },
+    searchInput,
+    posCatSelect,
+    isMgr && loyverseToken() ? el('button',{
+      class:'btn-secondary',
+      style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0',
+      onclick: () => pulseOpenLoyverseImportModal()
+    }, '📥 Import from Loyverse') : null,
+    isMgr ? el('button',{class:'btn-primary',onclick:()=>showRecipeEditor(null)}, t('app.recipes.btn_new')) : null,
+  );
+  headWrap.appendChild(actionsRow);
+  root.appendChild(headWrap);
 
   // Populate the POS category dropdown async from the Loyverse cache.
   // Counts per category come from visibleRecipes so the chef sees which
@@ -18659,10 +18730,16 @@ function showRecipeEditor(rec){
         el('span',{style:'font-size:10px;color:var(--gray);font-weight:600'}, t('app.fiches.lbl_category_hint') || '— determines which department sees this fiche'),
       ),
       sel('rec-fiche-cat',
-        FICHE_CATEGORIES.map(c => ({
-          value: c.slug,
-          label: `${c.emoji} ${ficheCategoryLabel(c.slug)}${c.dept ? ` · ${c.dept}` : ' · everyone'}`,
-        })),
+        [
+          ...getAllFicheCategories().map(c => ({
+            value: c.slug,
+            label: `${c.emoji} ${ficheCategoryLabel(c.slug)}${c.dept ? ` · ${c.dept}` : ' · everyone'}`,
+          })),
+          // Sentinel — handled by the change listener below to open the
+          // create-category modal. We revert the selection so this value
+          // never gets persisted onto the fiche.
+          { value: '__new_fiche_cat', label: '➕  Nouvelle catégorie de fiche…' },
+        ],
         r.fiche_category || 'cuisine'),
     ),
     // Name — always visible (works as a recipe title OR a fiche title).
@@ -18809,7 +18886,13 @@ function showRecipeEditor(rec){
         const next = {
           ...r,
           name: $('#rec-name').value.trim(),
-          fiche_category: $('#rec-fiche-cat')?.value || r.fiche_category || 'cuisine',
+          // Never persist the "+ Nouvelle catégorie" sentinel — fall back
+          // to the fiche's original category if the dropdown somehow has it.
+          fiche_category: (() => {
+            const v = $('#rec-fiche-cat')?.value;
+            if(!v || v === '__new_fiche_cat') return r.fiche_category || 'cuisine';
+            return v;
+          })(),
           category: isLoyverseCat ? (catOpt?.dataset?.name || catOpt?.textContent?.replace(/^●\s*/,'') || '') : catVal,
           pos_sku: $('#rec-sku').value.trim(),
           pos_category: isLoyverseCat ? catVal : (catVal === r.category ? (r.pos_category || '') : ''),
@@ -18949,7 +19032,155 @@ function showRecipeEditor(rec){
     panel.classList.toggle('non-cuisine', !isCuisine);
   };
   applyCuisineMask();
-  if(ficheCatSel) ficheCatSel.addEventListener('change', applyCuisineMask);
+  // Track the previous selection so we can revert when the chef opens
+  // the "+ Nouvelle catégorie" picker but cancels out of the modal.
+  let _prevFicheCatValue = ficheCatSel?.value || 'cuisine';
+  if(ficheCatSel){
+    ficheCatSel.addEventListener('change', () => {
+      if(ficheCatSel.value === '__new_fiche_cat'){
+        // Sentinel — open the create modal, then either auto-select the
+        // newly-created category or revert to the previous one.
+        ficheCatSel.value = _prevFicheCatValue;
+        openFicheCategoryCreateModal((created) => {
+          // Rebuild the dropdown with the new category included.
+          const newOptions = [
+            ...getAllFicheCategories().map(c => ({
+              value: c.slug,
+              label: `${c.emoji} ${ficheCategoryLabel(c.slug)}${c.dept ? ` · ${c.dept}` : ' · everyone'}`,
+            })),
+            { value: '__new_fiche_cat', label: '➕  Nouvelle catégorie de fiche…' },
+          ];
+          ficheCatSel.innerHTML = '';
+          for(const o of newOptions){
+            const opt = document.createElement('option');
+            opt.value = o.value; opt.textContent = o.label;
+            ficheCatSel.appendChild(opt);
+          }
+          if(created && created.slug){
+            ficheCatSel.value = created.slug;
+            _prevFicheCatValue = created.slug;
+          }
+          applyCuisineMask();
+        });
+        return;
+      }
+      _prevFicheCatValue = ficheCatSel.value;
+      applyCuisineMask();
+    });
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   FICHE CATEGORY CREATE MODAL
+   ════════════════════════════════════════════════════════════════
+   Small inline form that lets a manager add a custom fiche category
+   (label · emoji · routed-to department). Persists to localStorage
+   under _hkey('staylo_fiche_categories_custom'); the new category
+   shows up immediately in the filter chips on Fiches and in the
+   editor's Catégorie dropdown.
+
+   Dept = which messenger department gets to see fiches in this
+   category. Empty/null = visible to everyone (the "Général" pattern).  */
+function openFicheCategoryCreateModal(onCreated){
+  // Pull the unique department names from ROLE_GROUPS so we never
+  // drift from the canonical list (Management, Front Office, F&B,
+  // Maintenance, Spa, Housekeeping, …).
+  const allDepts = Array.from(new Set(
+    (typeof ROLE_GROUPS !== 'undefined' ? ROLE_GROUPS : [])
+      .map(g => g.dept).filter(Boolean)
+  ));
+  // Common emoji shortcuts so the chef doesn't have to remember the
+  // OS emoji picker shortcut on every device.
+  const QUICK_EMOJIS = ['🍞','🍷','☕','🍣','🍕','🥗','🍦','🌶️','🍰','🥐','🥯','🥖','🧁','🍳','🥖','🍤'];
+
+  const bg = el('div',{
+    style:`position:fixed;inset:0;background:rgba(20,20,40,.55);z-index:99998;
+      display:flex;align-items:center;justify-content:center;padding:16px;
+      backdrop-filter:blur(4px);`,
+    onclick:(e)=>{ if(e.target===bg) bg.remove(); }
+  });
+  const card = el('div',{
+    style:`background:#fff;border-radius:18px;max-width:440px;width:100%;
+      padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:inherit;`,
+    onclick:(e)=>e.stopPropagation()
+  });
+  card.appendChild(el('div',{
+    style:'font-size:13px;font-weight:800;color:var(--orange);letter-spacing:1.2px;margin-bottom:6px;text-transform:uppercase'
+  }, '➕ Nouvelle catégorie de fiche'));
+  card.appendChild(el('div',{
+    style:'font-size:12px;color:var(--gray);line-height:1.5;margin-bottom:14px'
+  }, 'Crée une catégorie sur mesure (ex. Boulangerie, Sommelier, Pâtisserie). Elle apparaîtra immédiatement dans les filtres de la page Fiches.'));
+
+  // ── Emoji input + quick-pick row ──
+  card.appendChild(el('label',{style:'font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.5px;display:block;margin-bottom:4px'},'EMOJI'));
+  const emojiInput = el('input',{
+    type:'text', value:'📂', maxlength:'4',
+    style:'width:80px;text-align:center;font-size:24px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border);outline:none;margin-bottom:6px',
+  });
+  card.appendChild(emojiInput);
+  const quickRow = el('div',{style:'display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px'});
+  for(const e of QUICK_EMOJIS){
+    const b = el('button',{
+      type:'button',
+      style:'border:1px solid var(--border);background:#FAFBFC;border-radius:8px;padding:6px 8px;cursor:pointer;font-size:18px',
+      onclick:()=>{ emojiInput.value = e; }
+    }, e);
+    quickRow.appendChild(b);
+  }
+  card.appendChild(quickRow);
+
+  // ── Label input ──
+  card.appendChild(el('label',{style:'font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.5px;display:block;margin-bottom:4px'},'NOM'));
+  const labelInput = el('input',{
+    type:'text', placeholder:'ex. Boulangerie',
+    style:'width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;outline:none;margin-bottom:14px;font-family:inherit',
+  });
+  card.appendChild(labelInput);
+
+  // ── Department dropdown ──
+  card.appendChild(el('label',{style:'font-size:11px;font-weight:700;color:var(--gray);letter-spacing:.5px;display:block;margin-bottom:4px'},'DÉPARTEMENT (qui voit ces fiches)'));
+  const deptSel = el('select',{
+    style:'width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;background:#fff;outline:none;margin-bottom:18px;font-family:inherit'
+  });
+  deptSel.appendChild(el('option',{value:''}, '🌍 Tout le monde (Général)'));
+  for(const d of allDepts){
+    deptSel.appendChild(el('option',{value: d}, '• ' + d));
+  }
+  card.appendChild(deptSel);
+
+  // ── Footer buttons ──
+  const footer = el('div',{style:'display:flex;gap:8px;justify-content:flex-end'});
+  footer.appendChild(el('button',{
+    style:'background:transparent;border:0;color:var(--gray);font-weight:700;padding:10px 14px;cursor:pointer;font:inherit',
+    onclick:()=>bg.remove()
+  }, 'Annuler'));
+  const createBtn = el('button',{
+    class:'btn-primary',
+    onclick:()=>{
+      const label = labelInput.value.trim();
+      if(!label){
+        labelInput.style.borderColor = '#FF3CB4';
+        labelInput.focus();
+        return;
+      }
+      const cat = addCustomFicheCategory({
+        label,
+        emoji: emojiInput.value.trim() || '📂',
+        dept: deptSel.value || null,
+      });
+      bg.remove();
+      if(typeof pulseShowToast === 'function'){
+        pulseShowToast('✓ Catégorie créée · ' + cat.emoji + ' ' + cat.label);
+      }
+      onCreated && onCreated(cat);
+    }
+  }, '✓ Créer la catégorie');
+  footer.appendChild(createBtn);
+  card.appendChild(footer);
+
+  bg.appendChild(card);
+  document.body.appendChild(bg);
+  setTimeout(() => labelInput.focus(), 50);
 }
 
 /* ============================================================================
