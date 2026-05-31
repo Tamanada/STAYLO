@@ -6920,14 +6920,32 @@ async function pulsePushRecipeToLoyverse(recipe, dishTargetId, ingredientMapping
  * linked Loyverse item: name, category_id, default price. We DON'T
  * touch the components array here — the chef must use the full
  * 🔗 Sync wizard to rewrite ingredients. This handler runs after every
- * fiche save when loyverse_item_id is set, so editing the menu
- * category in STAYLO immediately re-buckets the item at the till.    */
+ * fiche save when the fiche can be matched to a Loyverse item, so
+ * editing the menu category in STAYLO immediately re-buckets the item
+ * at the till.                                                          */
 async function pulsePushFicheUpdateToLoyverse(recipe){
+  // Force a fresh fetch so a newly-imported item is visible even before
+  // the 10-minute cache rotates.
   const items = await loyverseGetAllItems();
-  const existing = items.find(it => it.id === recipe.loyverse_item_id);
+  let existing = recipe.loyverse_item_id
+    ? items.find(it => it.id === recipe.loyverse_item_id)
+    : null;
+  // Fallback: match by exact (case-insensitive) name. Useful when the
+  // fiche pre-dates the Import flow (no loyverse_item_id stamped) or
+  // when the chef just hand-typed a fiche whose name matches a POS item.
+  if(!existing && recipe.name){
+    const wantName = recipe.name.toLowerCase().trim();
+    existing = items.find(it => (it.item_name||it.name||'').toLowerCase().trim() === wantName);
+  }
   if(!existing){
-    throw new Error('Loyverse item ' + (recipe.loyverse_item_id||'').slice(0,8)
-      + '… no longer exists (deleted in Loyverse?)');
+    throw new Error('No Loyverse item matches "' + (recipe.name||'this fiche')
+      + '". Open the 🔗 Sync wizard to push it as a new item.');
+  }
+  // Persist the link back into the local fiche so the next save knows
+  // exactly which Loyverse item to update (no more name lookups).
+  if(!recipe.loyverse_item_id){
+    recipe.loyverse_item_id = existing.id;
+    try { upsertRecipe(recipe); } catch (e) { console.warn(e); }
   }
   const payload = pulseItemToWritePayload(existing, {
     item_name: recipe.name || existing.item_name,
@@ -6943,6 +6961,25 @@ async function pulsePushFicheUpdateToLoyverse(recipe){
   // Bust the local items cache so the next fiche save / sync sees the
   // updated category_id immediately.
   _loyverseItemsCache.stamp = 0;
+  return existing.id;
+}
+
+/* Lightweight non-blocking toast — used to confirm a Loyverse push so
+ * the chef knows the change reached the POS without an intrusive
+ * alert(). Auto-dismisses after 3 s; click to dismiss early.            */
+function pulseShowToast(msg, kind){
+  const t = document.createElement('div');
+  const bg = kind === 'error' ? 'linear-gradient(135deg,#FF3CB4,#8B0036)'
+    : kind === 'warn' ? 'linear-gradient(135deg,#FDCB6E,#FF6B00)'
+    : 'linear-gradient(135deg,#00B894,#6C5CE7)';
+  t.style.cssText = `position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+    background:${bg};color:#fff;padding:11px 20px;border-radius:24px;
+    font-weight:800;font-size:13px;z-index:99999;box-shadow:0 6px 20px rgba(0,0,0,.25);
+    cursor:pointer;max-width:90vw;text-align:center;animation:fadeUp .3s ease;`;
+  t.textContent = msg;
+  t.onclick = () => t.remove();
+  document.body.appendChild(t);
+  setTimeout(() => { try { t.remove(); } catch {} }, 3500);
 }
 
 /* ════════════════════════════════════════════════════════════════
@@ -18487,16 +18524,20 @@ function showRecipeEditor(rec){
         upsertRecipe(next);
         modal.remove();
         renderRecipesTab();
-        // If this fiche is linked to a Loyverse item, propagate the
-        // metadata changes (name / category / sell price) to the POS so
-        // the cashier sees the same data. Fire-and-forget — saving
-        // locally already succeeded, the POS sync is a best-effort
-        // background update with a toast on failure.
-        if(next.loyverse_item_id && typeof loyverseToken === 'function' && loyverseToken()){
-          pulsePushFicheUpdateToLoyverse(next).catch(err => {
+        // If Loyverse is connected, try to propagate the metadata
+        // changes (name / category / sell price) to the matching POS
+        // item — by id if linked, otherwise by exact name. Best-effort
+        // background sync with a toast for success AND failure so the
+        // chef always knows whether it reached the till.
+        if(typeof loyverseToken === 'function' && loyverseToken()){
+          pulsePushFicheUpdateToLoyverse(next).then(() => {
+            pulseShowToast('✓ Pushed to Loyverse · category & price updated at the till');
+          }).catch(err => {
             const msg = (err && (err.message || err)) + '';
             console.warn('Loyverse sync after save failed', err);
-            alert('Saved locally. Could not push to Loyverse: ' + msg);
+            // "No Loyverse item matches" is informational, not an error
+            const kind = /No Loyverse item matches/i.test(msg) ? 'warn' : 'error';
+            pulseShowToast((kind==='warn'?'ℹ ':'⚠ ') + 'Saved locally. ' + msg, kind);
           });
         }
       }},isEdit ? t('app.common.save') : (t('app.recipes.btn_create') || '+ Create')),
