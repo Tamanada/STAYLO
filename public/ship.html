@@ -4901,6 +4901,20 @@ function renderActiveView(){
   // on view switch so stale buttons from a previous view don't leak.
   const actions = $('#cv-actions');
   if(actions) actions.innerHTML = '';
+  // The Pierre Martin badge (#cv-user) can be re-parented by a sub-tab
+  // (e.g. Fiches drops it into the chip strip so it aligns with the
+  // "85 fiches techniques" row). Restore it to its canonical home in
+  // .cv-head on every view switch + clear the inline overrides we set
+  // when it was in the chip row, so .cv-user's CSS regains control.
+  const _cvUser = $('#cv-user');
+  const _cvHead = document.querySelector('.cv-head');
+  if(_cvUser && _cvHead){
+    if(_cvUser.parentElement !== _cvHead){
+      _cvHead.appendChild(_cvUser);
+    }
+    _cvUser.style.marginLeft = '';
+    _cvUser.style.flexShrink = '';
+  }
   const v = State.activeView;
   if(v === 'team'){
     // Drill-down: no args = landing tiles, args set = open that sub-view
@@ -18308,16 +18322,23 @@ function renderRecipesTab(){
     onchange:(e)=>{ _fichesPosCat = e.target.value; renderRecipesTab(); },
   });
   posCatSelect.appendChild(el('option',{value:'all'}, 'POS: All categories'));
-  // ── Body header — single row with count + chip strip ──
-  // The action buttons (search · POS · Import · New fiche) now live
-  // in #cv-actions (top nav, between the tab pills and Pierre Martin)
-  // so they're always within reach without scrolling.
+  // ── Body header — single row with count + chip strip + Pierre Martin ──
+  // The action buttons (search · POS · Import · New fiche) live in
+  // #cv-actions (top nav). The Pierre Martin badge (#cv-user) is
+  // re-parented to the END of this chip strip so it aligns with the
+  // "85 fiches techniques" row — the cv-head gets one fewer thing
+  // wrapping onto its own line. renderActiveView puts the badge back
+  // into .cv-head on every view switch so other tabs are unaffected.
   const headWrap = el('div',{
     style:'display:flex;flex-direction:column;gap:10px;margin-bottom:14px'
   });
-  const chipsRow = el('div',{
+  // Outer row uses two children: a scrollable strip on the left and
+  // the Pierre Martin badge pinned on the right. This way the badge
+  // stays put even when the chips overflow horizontally.
+  const chipsScroll = el('div',{
     style:`display:flex;gap:8px;align-items:center;overflow-x:auto;
-      overflow-y:hidden;padding-bottom:4px;scrollbar-width:thin;`
+      overflow-y:hidden;padding-bottom:4px;scrollbar-width:thin;
+      flex:1;min-width:0;`
   },
     el('div',{
       style:'white-space:nowrap;flex-shrink:0;font-size:13px;font-weight:800;color:var(--navy)'
@@ -18327,6 +18348,19 @@ function renderRecipesTab(){
   // Make sure chip buttons themselves never shrink (the flex container
   // would otherwise squeeze them into ovals).
   for(const c of chipButtons){ c.style.flexShrink = '0'; }
+  const chipsRow = el('div',{
+    style:'display:flex;gap:12px;align-items:center;'
+  }, chipsScroll);
+  // Re-parent the user badge to sit at the far right of this row, OUTSIDE
+  // the scrollable chip strip so it never moves when chips scroll.
+  const _cvUserBadge = $('#cv-user');
+  if(_cvUserBadge){
+    // Drop the default margin-left:auto since the parent flex already
+    // gives the chipsScroll flex:1 to claim leftover space.
+    _cvUserBadge.style.marginLeft = '0';
+    _cvUserBadge.style.flexShrink = '0';
+    chipsRow.appendChild(_cvUserBadge);
+  }
   headWrap.appendChild(chipsRow);
   root.appendChild(headWrap);
 
