@@ -6916,6 +6916,35 @@ async function pulsePushRecipeToLoyverse(recipe, dishTargetId, ingredientMapping
   _loyverseItemsCache.stamp = 0;
 }
 
+/* Push the metadata-only changes from a saved STAYLO fiche to its
+ * linked Loyverse item: name, category_id, default price. We DON'T
+ * touch the components array here — the chef must use the full
+ * 🔗 Sync wizard to rewrite ingredients. This handler runs after every
+ * fiche save when loyverse_item_id is set, so editing the menu
+ * category in STAYLO immediately re-buckets the item at the till.    */
+async function pulsePushFicheUpdateToLoyverse(recipe){
+  const items = await loyverseGetAllItems();
+  const existing = items.find(it => it.id === recipe.loyverse_item_id);
+  if(!existing){
+    throw new Error('Loyverse item ' + (recipe.loyverse_item_id||'').slice(0,8)
+      + '… no longer exists (deleted in Loyverse?)');
+  }
+  const payload = pulseItemToWritePayload(existing, {
+    item_name: recipe.name || existing.item_name,
+    category_id: recipe.pos_category || null,
+  });
+  // Refresh the first variant's price if the chef changed it. Don't
+  // overwrite if they left it 0 — the existing POS price stays.
+  const newPrice = Number(recipe.selling_price_thb) || 0;
+  if(newPrice > 0 && payload.variants?.[0]){
+    payload.variants[0].default_price = newPrice;
+  }
+  await loyverseWrite('POST', 'items', payload);
+  // Bust the local items cache so the next fiche save / sync sees the
+  // updated category_id immediately.
+  _loyverseItemsCache.stamp = 0;
+}
+
 /* ════════════════════════════════════════════════════════════════
    LOYVERSE → STAYLO IMPORT — pull composite items + their components
    into the STAYLO recipes UI so the chef can edit them like any other
@@ -18458,6 +18487,18 @@ function showRecipeEditor(rec){
         upsertRecipe(next);
         modal.remove();
         renderRecipesTab();
+        // If this fiche is linked to a Loyverse item, propagate the
+        // metadata changes (name / category / sell price) to the POS so
+        // the cashier sees the same data. Fire-and-forget — saving
+        // locally already succeeded, the POS sync is a best-effort
+        // background update with a toast on failure.
+        if(next.loyverse_item_id && typeof loyverseToken === 'function' && loyverseToken()){
+          pulsePushFicheUpdateToLoyverse(next).catch(err => {
+            const msg = (err && (err.message || err)) + '';
+            console.warn('Loyverse sync after save failed', err);
+            alert('Saved locally. Could not push to Loyverse: ' + msg);
+          });
+        }
       }},isEdit ? t('app.common.save') : (t('app.recipes.btn_create') || '+ Create')),
     ),
   );
