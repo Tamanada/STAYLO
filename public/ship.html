@@ -7223,16 +7223,25 @@ function pulseConfirmDeleteRecipe(recipe, onDone){
         onDone && onDone();
       } catch (err){
         console.warn('Loyverse delete failed', err);
+        // 404 = the Loyverse item is already gone (manual cleanup, stale
+        // link, etc.). Nothing to keep in sync — just finish the STAYLO
+        // delete and tell the chef. Saves them an extra click.
+        if(err && err.status === 404){
+          _loyverseItemsCache.stamp = 0;
+          deleteRecipe(recipe.id);
+          bg.remove();
+          pulseShowToast('ℹ Already deleted on Loyverse · cleaned up STAYLO too', 'warn');
+          onDone && onDone();
+          return;
+        }
+        // Any other failure: restore the button and surface the cause.
         everywhereBtn.disabled = false;
         everywhereBtn.style.opacity = '1';
         everywhereBtn.querySelector('.label').textContent = '🗑 Delete in STAYLO AND Loyverse';
-        // Surface the real cause so the chef can react
         const msg = err && err.message ? err.message : String(err);
         const hint = err && err.status === 401
           ? ' — your token may lack ITEMS_WRITE/DELETE scope'
-          : err && err.status === 404
-            ? ' — Loyverse already deleted that item; you can use "STAYLO only"'
-            : '';
+          : '';
         alert('Could not delete on Loyverse: ' + msg + hint);
       }
     }
