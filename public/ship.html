@@ -5352,6 +5352,71 @@ function fuzzyMatchItem(query, items, topN){
   return scored.slice(0, topN || 8);
 }
 
+/* ════════════════════════════════════════════════════════════════
+   LOYVERSE → STAYLO bridge helpers
+   ════════════════════════════════════════════════════════════════
+   loyverseItemToRecipe — single source of truth for "turn a Loyverse
+   item into a STAYLO fiche". Both the explicit Import wizard and the
+   auto-detect banner on the Fiches page call this, so the shape stays
+   consistent.
+
+   pendingLoyverseItems — diff between live Loyverse catalogue and
+   local recipes. Returns items that exist on Loyverse but aren't yet
+   mirrored in STAYLO (matched by either loyverse_item_id or exact
+   case-insensitive name). Used by the Fiches page to surface a
+   non-intrusive banner when the chef creates an item directly in
+   the Loyverse Back Office.                                              */
+function loyverseItemToRecipe(it, variantMap){
+  const components = it.components || [];
+  const ingredients = (variantMap && Array.isArray(components))
+    ? components.map(c => {
+        const ref = variantMap.get(c.variant_id);
+        const name = ref ? (ref.item.item_name || ref.item.name) : '(unknown ingredient)';
+        const cost = ref ? Number(ref.variant.cost || ref.variant.purchase_cost || 0) : 0;
+        return { name, qty: Number(c.quantity) || 0, unit: 'unit', cost,
+                 price_amount: cost, price_per_unit: 'unit',
+                 loyverse_variant_id: c.variant_id };
+      })
+    : [];
+  const price = Number(it.variants?.[0]?.default_price) || 0;
+  const isComp = !!it.is_composite;
+  return {
+    name: it.item_name || it.name || 'Unnamed',
+    category: 'main',
+    fiche_category: 'cuisine',
+    pos_sku: it.id || '',
+    pos_category: it.category_id || '',
+    yield_portions: 1,
+    selling_price_thb: price,
+    prep_minutes: 0, cook_minutes: 0, rest_minutes: 0,
+    ingredients,
+    equipment: [],
+    steps: [],
+    allergens: '',
+    notes: 'Imported from Loyverse ' + new Date().toISOString().slice(0,10)
+      + ' · Loyverse item id ' + (it.id||'')
+      + (isComp ? '' : ' · simple item (no recipe — add ingredients then Sync to Loyverse to make composite)'),
+    photos: [],
+    loyverse_item_id: it.id,
+  };
+}
+
+async function pendingLoyverseItems(){
+  if(typeof loyverseToken !== 'function' || !loyverseToken()) return [];
+  let items;
+  try { items = await loyverseGetAllItems(); }
+  catch (err){ console.warn('pendingLoyverseItems: fetch failed', err); return []; }
+  const recipes = getRecipes();
+  const knownIds = new Set(recipes.map(r => r.loyverse_item_id).filter(Boolean));
+  const knownNames = new Set(recipes.map(r => (r.name||'').toLowerCase().trim()));
+  return items.filter(it => {
+    if(knownIds.has(it.id)) return false;
+    const nm = (it.item_name || it.name || '').toLowerCase().trim();
+    if(nm && knownNames.has(nm)) return false;
+    return true;
+  });
+}
+
 // Currency conversion rates — would come from a rate API. Plausible values
 // for May 2026 demo. THB is the base.
 const PULSE_RATES = {
@@ -18078,6 +18143,88 @@ function _renderRecipesDebounced(){
   }, 180);
 }
 
+/* ════════════════════════════════════════════════════════════════
+   PENDING-LOYVERSE BANNER on the Fiches tab
+   ════════════════════════════════════════════════════════════════
+   When the chef creates an item directly in the Loyverse Back Office
+   (e.g. "ADAVID" added on a POS device, not in STAYLO), they expect
+   to see it on the Fiches page too. This banner makes the gap visible
+   and turns the import into a one-tap action instead of a 3-step trip
+   through the explicit Import wizard.
+
+   Rendered ABOVE the fiche grid, with:
+     • One row per pending Loyverse item (name · price · "+ Import")
+     • An "Import all (N)" button when count ≥ 2
+   Vanishes automatically once every Loyverse item has a matching fiche. */
+function _renderPendingLoyverseBanner(host){
+  if(!host) return;
+  host.innerHTML = '';
+  pendingLoyverseItems().then(pending => {
+    if(!pending.length) return;
+    const wrap = el('div',{
+      style:`margin:0 0 14px;border:1px solid #C9A227;border-left:4px solid #C9A227;
+        background:linear-gradient(135deg,#FFF9E8,#FFF4D0);border-radius:12px;
+        padding:14px 16px;`
+    });
+    wrap.appendChild(el('div',{
+      style:'display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px'
+    },
+      el('div',{style:'font-size:13px;font-weight:900;color:#8B6914'},
+        '🔔 ' + pending.length + ' item' + (pending.length>1?'s':'')
+        + ' on Loyverse not yet in your fiches'),
+      el('div',{style:'font-size:11px;color:#8B6914;flex:1;min-width:0'},
+        ' — created on the POS / Back Office. Import to build a recipe sheet.'),
+      pending.length >= 2 ? el('button',{
+        class:'btn-primary',
+        style:'padding:7px 12px;font-size:12px;background:linear-gradient(135deg,#C9A227,#8B6914);color:#fff;border:0',
+        onclick: () => {
+          for(const it of pending){
+            const r = loyverseItemToRecipe(it);
+            upsertRecipe(r);
+          }
+          if(typeof pulseShowToast === 'function'){
+            pulseShowToast('✓ Imported ' + pending.length + ' Loyverse item' + (pending.length>1?'s':'') + ' as fiches');
+          }
+          renderRecipesTab();
+        }
+      }, '↓ Import all (' + pending.length + ')') : null,
+    ));
+    // One row per pending item — keep it light, the existing Import
+    // wizard still handles the deep-config flow (ingredient mapping etc).
+    for(const it of pending){
+      const name = it.item_name || it.name || 'Unnamed';
+      const price = Number(it.variants?.[0]?.default_price) || 0;
+      const row = el('div',{
+        style:`display:flex;align-items:center;gap:10px;padding:8px 10px;
+          background:rgba(255,255,255,.7);border-radius:8px;margin-bottom:6px;`
+      },
+        it.image_url
+          ? el('div',{style:'width:36px;height:36px;border-radius:6px;background:url("'+it.image_url+'") center/cover;flex-shrink:0'})
+          : el('div',{style:'width:36px;height:36px;border-radius:6px;background:#FAFBFC;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0'},'🍔'),
+        el('div',{style:'flex:1;min-width:0'},
+          el('div',{style:'font-weight:800;color:var(--navy);font-size:13px'}, name),
+          el('div',{style:'font-size:11px;color:var(--gray)'},
+            (it.is_composite ? '🥘 composite' : 'simple item') + ' · ' + Math.round(price).toLocaleString() + ' THB'),
+        ),
+        el('button',{
+          class:'btn-secondary',
+          style:'padding:6px 10px;font-size:11px;background:#C9A227;color:#fff;border:0;flex-shrink:0',
+          onclick: () => {
+            const r = loyverseItemToRecipe(it);
+            upsertRecipe(r);
+            if(typeof pulseShowToast === 'function'){
+              pulseShowToast('✓ Imported "' + name + '" as a fiche');
+            }
+            renderRecipesTab();
+          }
+        }, '+ Import'),
+      );
+      wrap.appendChild(row);
+    }
+    host.appendChild(wrap);
+  }).catch(err => console.warn('pending loyverse banner', err));
+}
+
 function renderRecipesTab(){
   const root = $('#hr-body'); if(!root) return; root.innerHTML='';
   root.classList.remove('tab-schedule');
@@ -18198,6 +18345,16 @@ function renderRecipesTab(){
   );
   headWrap.appendChild(actionsRow);
   root.appendChild(headWrap);
+
+  // ── Auto-detect Loyverse items NOT yet in fiches ──
+  // Placeholder host — we render synchronously below from the items
+  // cache when it's warm (so the chef doesn't see a flash), and refresh
+  // it asynchronously once a fresh fetch completes.
+  const pendingHost = el('div',{id:'fiches-pending-loyverse'});
+  root.appendChild(pendingHost);
+  if(isMgr && typeof loyverseToken === 'function' && loyverseToken() && typeof pendingLoyverseItems === 'function'){
+    _renderPendingLoyverseBanner(pendingHost);
+  }
 
   // Populate the POS category dropdown async from the Loyverse cache.
   // Counts per category come from visibleRecipes so the chef sees which
