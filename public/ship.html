@@ -5333,6 +5333,8 @@ function fuzzyMatchItem(query, items, topN){
     const qw = qn.split(' '), nw = nm.split(' ');
     const overlap = qw.filter(w => nw.includes(w)).length;
     s += overlap * 5;
+    // Cap at 100 — scores >100 looked silly ("105% match")
+    if(s > 100) s = 100;
     return { item: it, score: s };
   });
   scored.sort((a,b) => b.score - a.score);
@@ -6735,10 +6737,17 @@ async function pulseOpenRecipeSyncModal(recipe){
     return;
   }
 
-  // ─── Build dish target dropdown (existing item to update OR create) ──
+  // ─── Build dish target dropdown ──
+  // Default behaviour: CREATE NEW. The chef shouldn't have to pre-create
+  // the dish in Loyverse Back Office — STAYLO does it in one shot.
+  // We still offer "Update existing" as an option when a high-quality
+  // match (≥ 70%) exists, but creation is the headline path.
   const dishMatches = fuzzyMatchItem(recipe.name, items, 5);
   const dishSelect = el('select',{class:'pulse-wiz-input',id:'rsync-dish'});
-  dishSelect.appendChild(el('option',{value:'__new'}, '➕ Create new item "' + recipe.name + '"'));
+  const createOpt = el('option',{value:'__new'},
+    '➕ Create new POS item "' + recipe.name + '"  ← recommended');
+  createOpt.selected = true;
+  dishSelect.appendChild(createOpt);
   for(const m of dishMatches){
     if(m.score < 20) break;
     dishSelect.appendChild(el('option',{value: m.item.id},

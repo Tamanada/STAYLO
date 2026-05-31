@@ -154,8 +154,30 @@ serve(async (req: Request) => {
   }
   if (!resp.ok) {
     const text = await resp.text().catch(() => '')
-    console.error('loyverse-proxy upstream', resp.status, text.slice(0, 300))
-    return jsonResponse({ error: 'Loyverse returned an error', status: resp.status }, 502)
+    console.error('loyverse-proxy upstream', resp.status, text.slice(0, 500))
+    // Propagate the actual Loyverse message so the client can show it.
+    // Loyverse returns JSON like { "errors": [{ "code": "...", "details": "..." }] }
+    // — we surface the first one and fall back to the raw text.
+    let loyverseMsg = ''
+    try {
+      const j = JSON.parse(text)
+      if (Array.isArray(j.errors) && j.errors.length) {
+        const e0 = j.errors[0]
+        loyverseMsg = [e0.code, e0.details, e0.field].filter(Boolean).join(' · ')
+      } else if (j.error) {
+        loyverseMsg = String(j.error)
+      } else if (j.message) {
+        loyverseMsg = String(j.message)
+      }
+    } catch {
+      loyverseMsg = text.slice(0, 240)
+    }
+    return jsonResponse({
+      error: loyverseMsg || `Loyverse returned HTTP ${resp.status}`,
+      status: resp.status,
+      loyverse_status: resp.status,
+      raw: text.slice(0, 240),
+    }, resp.status >= 400 && resp.status < 500 ? resp.status : 502)
   }
 
   // 204 No Content is the standard Loyverse response on DELETE — no body.
