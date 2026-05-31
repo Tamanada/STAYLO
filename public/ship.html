@@ -17640,6 +17640,26 @@ function recipePhotos(r){
  * ============================================================================ */
 // Persisted UI state for the Fiches tab — category filter survives tab switches
 let _fichesCatFilter = null;   // 'all' | one of FICHE_CATEGORIES[*].slug
+let _fichesSearch = '';        // free-text filter on recipe name
+let _fichesPosCat = 'all';     // 'all' | Loyverse category_id
+
+/* Debounced re-render of the fiches tab — used by the search input so
+ * typing doesn't redraw the whole grid on every keystroke + we restore
+ * focus + cursor position after the rerender so the chef doesn't have
+ * to click the field again between keys.                                 */
+let _renderRecipesTimer = null;
+function _renderRecipesDebounced(){
+  if(_renderRecipesTimer) clearTimeout(_renderRecipesTimer);
+  _renderRecipesTimer = setTimeout(() => {
+    renderRecipesTab();
+    const inp = document.querySelector('#hr-body input[type="search"]');
+    if(inp){
+      inp.focus();
+      const v = inp.value;
+      try { inp.setSelectionRange(v.length, v.length); } catch {}
+    }
+  }, 180);
+}
 
 function renderRecipesTab(){
   const root = $('#hr-body'); if(!root) return; root.innerHTML='';
@@ -17666,10 +17686,17 @@ function renderRecipesTab(){
     catCounts.set(k, (catCounts.get(k) || 0) + 1);
   }
 
-  // Apply the category filter
-  const filtered = _fichesCatFilter === 'all'
+  // Apply the filter chain: fiche category → POS category → free-text search.
+  let filtered = _fichesCatFilter === 'all'
     ? visibleRecipes
     : visibleRecipes.filter(r => (r.fiche_category || 'cuisine') === _fichesCatFilter);
+  if(_fichesPosCat !== 'all'){
+    filtered = filtered.filter(r => (r.pos_category || '') === _fichesPosCat);
+  }
+  if(_fichesSearch){
+    const q = _fichesSearch.toLowerCase();
+    filtered = filtered.filter(r => (r.name || '').toLowerCase().includes(q));
+  }
 
   // ── Category filter chips — built first so we can inline them into the
   // header row, side by side with the count and the action buttons.
@@ -17700,15 +17727,30 @@ function renderRecipesTab(){
     }
   }
 
-  // Single header row: [count + chips] left | [Import + Nouvelle] right.
-  // The left group has flex:1 so chips wrap naturally on narrow screens,
-  // while the action buttons stay glued to the right with flex-shrink:0.
+  // ── Filters (search + POS category) — middle group between chips and
+  // action buttons. Search is plain client-side; POS dropdown populates
+  // from the Loyverse categories cache and re-fetches if the token is
+  // present.
+  const searchInput = el('input',{
+    type:'search', placeholder:'🔍 Search fiches…',
+    value: _fichesSearch,
+    style:'padding:7px 12px;border:1.5px solid var(--border);border-radius:var(--r-pill);font-size:12px;background:#fff;color:var(--navy);width:180px;font-family:inherit;outline:none',
+    oninput:(e)=>{ _fichesSearch = e.target.value.trim(); _renderRecipesDebounced(); },
+  });
+  const posCatSelect = el('select',{
+    style:'padding:7px 10px;border:1.5px solid var(--border);border-radius:var(--r-pill);font-size:12px;background:#fff;color:var(--navy);font-family:inherit;cursor:pointer;outline:none;max-width:160px',
+    onchange:(e)=>{ _fichesPosCat = e.target.value; renderRecipesTab(); },
+  });
+  posCatSelect.appendChild(el('option',{value:'all'}, 'POS: All categories'));
+  // Header row
   root.appendChild(el('div',{class:'roster-head'},
     el('div',{style:'display:flex;flex-wrap:wrap;gap:8px;align-items:center;flex:1;min-width:0'},
       el('div',{style:'white-space:nowrap'}, t('app.recipes.header_count', {n: visibleRecipes.length})),
       ...chipButtons,
     ),
-    el('div',{style:'display:flex;gap:8px;align-items:center;flex-shrink:0'},
+    el('div',{style:'display:flex;gap:8px;align-items:center;flex-shrink:0;flex-wrap:wrap'},
+      searchInput,
+      posCatSelect,
       isMgr && loyverseToken() ? el('button',{
         class:'btn-secondary',
         style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0',
@@ -17717,6 +17759,37 @@ function renderRecipesTab(){
       isMgr ? el('button',{class:'btn-primary',onclick:()=>showRecipeEditor(null)}, t('app.recipes.btn_new')) : null,
     ),
   ));
+
+  // Populate the POS category dropdown async from the Loyverse cache.
+  // Counts per category come from visibleRecipes so the chef sees which
+  // POS bucket each fiche belongs to.
+  if(typeof loyverseToken === 'function' && loyverseToken() && typeof loyverseGetCategoriesMap === 'function'){
+    loyverseGetCategoriesMap().then(catMap => {
+      const cats = Object.values(catMap || {});
+      if(!cats.length) return;
+      // Count how many visible recipes sit in each POS category
+      const posCounts = new Map();
+      for(const r of visibleRecipes){
+        const k = r.pos_category || '';
+        posCounts.set(k, (posCounts.get(k) || 0) + 1);
+      }
+      cats.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+      // Keep "All" + add per-category options, with count when > 0
+      const uncatN = posCounts.get('') || 0;
+      if(uncatN > 0){
+        posCatSelect.appendChild(el('option',{value:''}, '— Uncategorized — (' + uncatN + ')'));
+      }
+      for(const c of cats){
+        const n = posCounts.get(c.id) || 0;
+        if(n === 0) continue;  // hide POS cats with zero local recipes
+        const opt = el('option',{value: c.id},
+          (c.color ? '● ' : '') + (c.name || '?') + ' (' + n + ')');
+        if(c.id === _fichesPosCat) opt.selected = true;
+        posCatSelect.appendChild(opt);
+      }
+      if(_fichesPosCat === '' && uncatN > 0) posCatSelect.value = '';
+    }).catch(err => console.warn('Loyverse cats for filter dropdown', err));
+  }
 
   if(!filtered.length){
     if(visibleRecipes.length === 0){
