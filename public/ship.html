@@ -2503,6 +2503,17 @@ body.view-profile .channels-pane{display:none}
   max-height:calc(100vh - 32px);overflow-y:auto;
   box-shadow:var(--shadow-lg);
 }
+/* Recipe editor specifically — needs much more horizontal room than a
+   shift editor (ingredient grid, equipment thumbs, steps, totals strip).
+   On a desktop screen it switches to a wide centered card; on phones it
+   stays at the default 540px max so it fits a thumb. */
+@media (min-width: 1024px){
+  #recipe-editor.shift-editor-bg{padding:24px}
+  #recipe-editor .shift-editor-panel{
+    max-width:1100px;
+    padding:28px 32px;
+  }
+}
 /* Color-coded section blocks inside the shift editor — give each logical
    group (timing, tasks, scope) its own subtle background so the eye groups
    them naturally. Each section has a coloured left-border accent and a tiny
@@ -18283,6 +18294,27 @@ function showRecipeEditor(rec){
   modal.appendChild(panel);
   document.body.appendChild(modal);
   rebuildIngredients(); rebuildEquipment(); rebuildSteps(); recalcTotals();
+
+  // ── Live recalc on yield / sell price change ──
+  // Without this, the chef typed "4 portions" but the cost-per-portion
+  // tile kept showing the value calculated from the old yield (because
+  // recipeTotals() reads r.yield_portions, which only changed on Save).
+  // Mirror the input value into `r` immediately so the totals strip
+  // updates as the chef types.
+  const yieldInp = $('#rec-yield');
+  if(yieldInp){
+    yieldInp.addEventListener('input', () => {
+      r.yield_portions = Math.max(1, parseInt(yieldInp.value) || 1);
+      recalcTotals();
+    });
+  }
+  const sellInp = $('#rec-sell');
+  if(sellInp){
+    sellInp.addEventListener('input', () => {
+      r.selling_price_thb = parseFloat(sellInp.value) || 0;
+      recalcTotals();
+    });
+  }
 
   // ── Loyverse categories — replace the hardcoded menu category list ──
   // We pull the live POS categories (cached 5 min) and rebuild the
