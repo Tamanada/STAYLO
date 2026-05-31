@@ -20124,6 +20124,7 @@ let _tasksDate = null;     // YYYY-MM-DD currently displayed (default: today)
 // sticks across tab switches and reloads (per-hotel via _hkey).
 let _tasksDeptFilter = null;   // initialized from localStorage on first render
 let _tasksZoneFilter = null;
+let _tasksSearch = '';         // free-text filter on task title (matches Fiches search)
 // View range: 'day' = just _tasksDate (default), '1w' / '2w' / '1m' = forward
 // window of N days starting at _tasksDate, 'all' = every active task.
 // In range modes, tasks are de-duplicated by id (a daily-recurring task shows
@@ -20235,7 +20236,7 @@ function renderTasksTab(){
   if(_tasksDeptFilter === null) _tasksDeptFilter = lsGet(_hkey('staylo_tasks_dept_filter'), 'all');
   if(_tasksZoneFilter === null) _tasksZoneFilter = lsGet(_hkey('staylo_tasks_zone_filter'), 'all');
 
-  // ── Apply dept + zone filters on top of the date/role pre-filter ──
+  // ── Apply dept + zone + search filters on top of the date/role pre-filter ──
   let filteredTasks = myDayTasks;
   if(_tasksDeptFilter !== 'all'){
     filteredTasks = filteredTasks.filter(t => deriveService(t) === _tasksDeptFilter);
@@ -20247,6 +20248,13 @@ function renderTasksTab(){
       // chores still show up when a specific zone is selected.
       return z === '' || z === _tasksZoneFilter;
     });
+  }
+  if(_tasksSearch){
+    const q = _tasksSearch.toLowerCase();
+    filteredTasks = filteredTasks.filter(tk =>
+      (tk.title || '').toLowerCase().includes(q) ||
+      (tk.description || '').toLowerCase().includes(q)
+    );
   }
 
   // ── Build the filter dropdowns ──
@@ -20370,10 +20378,32 @@ function renderTasksTab(){
     el('div',{class:'sched-nav-right'}, rangeToggle, deptDropdown, zoneDropdown),
   ));
 
-  // ── "+ New task" moves into the top-nav action slot ──
+  // ── Top-nav action slot — search + "+ New task" (mirrors Fiches pattern) ──
+  // Debounced re-render on each keystroke so we don't redraw the grid on
+  // every letter. After redraw we restore focus + cursor so the chef can
+  // keep typing without clicking the field again.
   const _actionsSlotTasks = $('#cv-actions');
   if(_actionsSlotTasks){
     _actionsSlotTasks.innerHTML = '';
+    const tasksSearchInput = el('input',{
+      type:'search',
+      placeholder: (t('app.tasks_tab.search_placeholder') || '🔍 Search tasks…'),
+      value: _tasksSearch || '',
+      style:`padding:6px 11px;border:1.5px solid var(--border);border-radius:var(--r-pill);
+        font-size:12px;background:#fff;color:var(--navy);width:160px;
+        font-family:inherit;outline:none;`,
+    });
+    let _tasksSearchTimer = null;
+    tasksSearchInput.addEventListener('input', (e) => {
+      _tasksSearch = e.target.value.trim();
+      if(_tasksSearchTimer) clearTimeout(_tasksSearchTimer);
+      _tasksSearchTimer = setTimeout(() => {
+        renderTasksTab();
+        const inp = document.querySelector('#cv-actions input[type="search"]');
+        if(inp){ inp.focus(); try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch {} }
+      }, 180);
+    });
+    _actionsSlotTasks.appendChild(tasksSearchInput);
     if(isMgr){
       _actionsSlotTasks.appendChild(el('button',{
         class:'btn-primary',
