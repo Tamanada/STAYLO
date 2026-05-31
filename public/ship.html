@@ -12052,6 +12052,26 @@ function findRecipe(id){ return getRecipes().find(r => r.id === id) || null; }
 function upsertRecipe(r){
   const all = getRecipes();
   if(!r.id){
+    // Safety net: if a recipe with the SAME name was created in the
+    // last 3 seconds, treat this call as a duplicate and silently
+    // upgrade it to an update of that recent recipe. This catches the
+    // double-click-into-creates-twice bug at the storage layer even
+    // if the button-level debounce in showRecipeEditor is bypassed
+    // (e.g. by a future code path that calls upsertRecipe directly).
+    const wantName = (r.name || '').toLowerCase().trim();
+    if(wantName){
+      const recent = all.find(x =>
+        (x.name||'').toLowerCase().trim() === wantName &&
+        x.created_at && (Date.now() - new Date(x.created_at).getTime() < 3000)
+      );
+      if(recent){
+        r.id = recent.id;
+        const i = all.findIndex(x => x.id === recent.id);
+        all[i] = {...all[i], ...r, updated_at: new Date().toISOString()};
+        saveRecipes(all);
+        return r;
+      }
+    }
     r.id = 'r-'+Date.now()+'-'+Math.floor(Math.random()*9999);
     r.created_at = new Date().toISOString();
     r.created_by = State.user.name;
@@ -18865,7 +18885,21 @@ function showRecipeEditor(rec){
         }
       }, '🔗 Sync to Loyverse') : null,
       el('button',{class:'btn-secondary',onclick:()=>modal.remove()}, t('app.common.cancel')),
-      el('button',{class:'btn-primary',onclick:()=>{
+      el('button',{class:'btn-primary',onclick:function _saveOnce(e){
+        // Click-debounce — guard against a rapid double-click on Save
+        // creating two recipes (an earlier bug: each click built a fresh
+        // `next` from the closure `r` which still had no id, so the
+        // second upsertRecipe inserted instead of updating). Disable the
+        // button on the first click; modal.remove() at the end of this
+        // handler tears down the whole form anyway, so re-enabling isn't
+        // needed on the happy path.
+        const btn = e && e.currentTarget;
+        if(btn){
+          if(btn.dataset.saving === '1') return;   // already running
+          btn.dataset.saving = '1';
+          btn.disabled = true;
+          btn.style.opacity = '.6';
+        }
         // When the dropdown was repopulated with Loyverse categories the
         // selected option carries dataset.name (the human name) and value
         // (the Loyverse category_id, a UUID). Store the id in pos_category
@@ -18911,7 +18945,13 @@ function showRecipeEditor(rec){
           equipment: r.equipment.filter(e => e.name?.trim()),
           steps: r.steps.filter(s => s.instruction?.trim()),
         };
-        if(!next.name){ alert(t('app.dialogs.recipe_name_required')); return; }
+        if(!next.name){
+          // Validation failed — re-enable the button so the chef can fix
+          // the name and click Save again (otherwise the click-debounce
+          // would leave them stuck with a greyed-out button).
+          if(btn){ btn.dataset.saving = ''; btn.disabled = false; btn.style.opacity = '1'; }
+          alert(t('app.dialogs.recipe_name_required')); return;
+        }
         upsertRecipe(next);
         modal.remove();
         renderRecipesTab();
