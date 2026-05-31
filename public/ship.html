@@ -19080,10 +19080,15 @@ function showRecipeEditor(rec){
           deleteRecipe(r.id); modal.remove(); renderRecipesTab();
         }
       }}, t('app.common.delete')) : null,
-      // 🔗 Sync to Loyverse — only when a token is connected; the wizard
-      // builds the composite-item payload from the live form values.
+      // 🔗 Sync to Loyverse — only when a token is connected AND the fiche
+      // category is 'cuisine'. Loyverse is a POS/F&B catalogue; pushing a
+      // Jardin/Maintenance/Spa fiche to it makes no sense (nothing to sell
+      // at the till). The `cuisine-only` class hooks into the existing CSS
+      // rule (.recipe-form.non-cuisine .cuisine-only{display:none}) so the
+      // button auto-hides as soon as the chef switches the Fiche category
+      // away from Cuisine, no extra JS required.
       loyverseToken() ? el('button',{
-        class:'btn-secondary',
+        class:'btn-secondary cuisine-only',
         style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0',
         onclick:()=>{
           // Read the live form values so the wizard sees what the chef
@@ -19175,12 +19180,14 @@ function showRecipeEditor(rec){
         upsertRecipe(next);
         modal.remove();
         renderRecipesTab();
-        // If Loyverse is connected, try to propagate the metadata
-        // changes (name / category / sell price) to the matching POS
-        // item — by id if linked, otherwise by exact name. Best-effort
-        // background sync with a toast for success AND failure so the
-        // chef always knows whether it reached the till.
-        if(typeof loyverseToken === 'function' && loyverseToken()){
+        // If Loyverse is connected AND this is a cuisine fiche, try to
+        // propagate the metadata changes (name / category / sell price)
+        // to the matching POS item — by id if linked, otherwise by
+        // exact name. Non-cuisine fiches (Jardin, Maintenance, Spa…)
+        // are never auto-pushed: Loyverse is a POS catalogue, those
+        // categories don't belong on a till.
+        if(next.fiche_category === 'cuisine'
+           && typeof loyverseToken === 'function' && loyverseToken()){
           pulsePushFicheUpdateToLoyverse(next).then(() => {
             pulseShowToast('✓ Pushed to Loyverse · refresh your Loyverse Back Office tab to see the change');
           }).catch(err => {
