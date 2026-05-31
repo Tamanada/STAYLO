@@ -13774,6 +13774,22 @@ function renderPayrollTab(){
     ),
   ));
 
+  // ── Pierre Martin badge drops onto the header row ──
+  // Re-parent #cv-user into the LAST top-level element we just appended
+  // (the header row). renderActiveView puts it back into .cv-head on
+  // tab/view switch so other tabs see the default layout.
+  const _payrollHeadRow = root.lastElementChild;
+  const _cvUserBadgePayroll = $('#cv-user');
+  if(_payrollHeadRow && _cvUserBadgePayroll){
+    _cvUserBadgePayroll.style.marginLeft = '0';
+    _cvUserBadgePayroll.style.flexShrink = '0';
+    _payrollHeadRow.appendChild(_cvUserBadgePayroll);
+  }
+  // Payroll has no "+ New" button — make sure the cv-actions slot is
+  // empty so a stale button from another tab doesn't linger.
+  const _actionsSlotPayroll = $('#cv-actions');
+  if(_actionsSlotPayroll) _actionsSlotPayroll.innerHTML = '';
+
   // ── Sort helper — re-applied every render so live state drives order ──
   const sortRows = (arr) => {
     const {col, dir} = _payrollSort;
@@ -15349,34 +15365,57 @@ function renderRosterTab(){
   const scopeLabel = isHR
     ? `${emps.length}${_rosterFilterDept==='all' ? '' : ` / ${baseList.length}`} employees · ${State.user.hotelCode}`
     : `${emps.length} in ${State.user.department}`;
-  root.appendChild(el('div',{class:'roster-head'},
-    el('div',{style:'display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1;min-width:0'},
-      el('div',{}, scopeLabel),
-      // Dept filter — HR/GM only. Dept managers don't get the dropdown
-      // (they're already scope-locked to their own department).
-      isHR ? (() => {
-        const sel = document.createElement('select');
-        sel.className = 'sched-dept-filter';
-        const optAll = document.createElement('option');
-        optAll.value = 'all';
-        optAll.textContent = t('app.schedule_nav.all_depts',{n:baseList.length});
-        if(_rosterFilterDept === 'all') optAll.selected = true;
-        sel.appendChild(optAll);
-        for(const d of depts){
-          const opt = document.createElement('option');
-          opt.value = d; opt.textContent = `${translateDept(d)} (${counts[d]})`;
-          if(d === _rosterFilterDept) opt.selected = true;
-          sel.appendChild(opt);
-        }
-        sel.addEventListener('change', e => {
-          _rosterFilterDept = e.target.value;
-          renderRosterTab();
-        });
-        return sel;
-      })() : null,
-    ),
-    el('button',{class:'btn-primary',onclick:()=>{_hrEmployeeId='__new__';renderRosterTab();}}, t('app.roster.new_employee_btn')),
-  ));
+  // Build the dept filter select (HR/GM only — dept managers are scope-locked).
+  const deptFilterSel = isHR ? (() => {
+    const sel = document.createElement('select');
+    sel.className = 'sched-dept-filter';
+    const optAll = document.createElement('option');
+    optAll.value = 'all';
+    optAll.textContent = t('app.schedule_nav.all_depts',{n:baseList.length});
+    if(_rosterFilterDept === 'all') optAll.selected = true;
+    sel.appendChild(optAll);
+    for(const d of depts){
+      const opt = document.createElement('option');
+      opt.value = d; opt.textContent = `${translateDept(d)} (${counts[d]})`;
+      if(d === _rosterFilterDept) opt.selected = true;
+      sel.appendChild(opt);
+    }
+    sel.addEventListener('change', e => {
+      _rosterFilterDept = e.target.value;
+      renderRosterTab();
+    });
+    return sel;
+  })() : null;
+
+  // Header row — count + filter on the left, Pierre Martin badge pinned
+  // on the right (same layout pattern as the Fiches tab so the chef's
+  // identity sits at the same y as the screen's primary count).
+  const headLeft = el('div',{
+    style:'display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1;min-width:0'
+  }, el('div',{}, scopeLabel), deptFilterSel);
+  const headRow = el('div',{
+    class:'roster-head',
+    style:'display:flex;gap:12px;align-items:center'
+  }, headLeft);
+  const _cvUserBadgeRoster = $('#cv-user');
+  if(_cvUserBadgeRoster){
+    _cvUserBadgeRoster.style.marginLeft = '0';
+    _cvUserBadgeRoster.style.flexShrink = '0';
+    headRow.appendChild(_cvUserBadgeRoster);
+  }
+  root.appendChild(headRow);
+
+  // "+ Nouvel employé" moves into the top-nav action slot so it lives in
+  // the same place as Fiches' Import / New buttons.
+  const _actionsSlotRoster = $('#cv-actions');
+  if(_actionsSlotRoster){
+    _actionsSlotRoster.innerHTML = '';
+    _actionsSlotRoster.appendChild(el('button',{
+      class:'btn-primary',
+      style:'padding:7px 12px;font-size:12px',
+      onclick: () => { _hrEmployeeId='__new__'; renderRosterTab(); }
+    }, t('app.roster.new_employee_btn')));
+  }
   const list = el('div',{class:'roster-list'});
   if(!emps.length){
     const emptyMsg = (isHR && _rosterFilterDept !== 'all')
@@ -17696,6 +17735,19 @@ function renderScheduleTab(){
       })(),
     ),
   ));
+
+  // Pierre Martin badge dropped onto the sched-nav row — matches the
+  // Fiches / Roster / Tasks / Payroll pattern. The last child of
+  // stickyHead at this point IS the sched-nav row we just appended.
+  // sched-spacer (flex:1) already pushes the right cluster to the right,
+  // so we just append next to it (marginLeft:0).
+  const _schedNavRow = stickyHead.lastElementChild;
+  const _cvUserBadgeSched = $('#cv-user');
+  if(_schedNavRow && _cvUserBadgeSched){
+    _cvUserBadgeSched.style.marginLeft = '0';
+    _cvUserBadgeSched.style.flexShrink = '0';
+    _schedNavRow.appendChild(_cvUserBadgeSched);
+  }
 
   // Print button lives in the cv-head action slot (left of the user badge),
   // not inside the sched-nav row — keeps the period/filter row tighter and
@@ -20346,19 +20398,40 @@ function renderTasksTab(){
   })();
 
   // ── Render the unified nav row (mirrors Schedule's `.sched-nav`) ──
+  // Pierre Martin badge is appended at the end so it sits at the same y
+  // as the date range pill — same pattern as Fiches' chip row.
+  const _tasksNavRight = el('div',{class:'sched-nav-right'},
+    rangeToggle,
+    deptDropdown,
+    zoneDropdown,
+  );
+  const _cvUserBadgeTasks = $('#cv-user');
+  if(_cvUserBadgeTasks){
+    _cvUserBadgeTasks.style.marginLeft = '0';
+    _cvUserBadgeTasks.style.flexShrink = '0';
+    _tasksNavRight.appendChild(_cvUserBadgeTasks);
+  }
   root.appendChild(el('div',{class:'sched-nav'},
     el('button',{class:'nav-btn',onclick:()=>shiftTaskRange(-1)},t('app.tasks_tab.past') || '← Past'),
     el('button',{class:'nav-btn',onclick:()=>{_tasksDate=new Date().toISOString().slice(0,10);renderTasksTab();}},t('app.tasks_tab.today')),
     el('button',{class:'nav-btn',onclick:()=>shiftTaskRange(1)},t('app.tasks_tab.future') || 'Future →'),
     el('span',{class:'sched-week-label'}, rangeLabel),
     el('span',{class:'sched-spacer'}),
-    el('div',{class:'sched-nav-right'},
-      rangeToggle,
-      deptDropdown,
-      zoneDropdown,
-      isMgr ? el('button',{class:'btn-primary',style:'padding:6px 12px;font-size:11px',onclick:()=>showTaskEditor(null)},t('app.tasks_tab.new_task')) : null,
-    ),
+    _tasksNavRight,
   ));
+
+  // ── "+ New task" moves into the top-nav action slot ──
+  const _actionsSlotTasks = $('#cv-actions');
+  if(_actionsSlotTasks){
+    _actionsSlotTasks.innerHTML = '';
+    if(isMgr){
+      _actionsSlotTasks.appendChild(el('button',{
+        class:'btn-primary',
+        style:'padding:7px 12px;font-size:12px',
+        onclick: () => showTaskEditor(null)
+      }, t('app.tasks_tab.new_task')));
+    }
+  }
 
   if(!filteredTasks.length){
     // Two distinct empty states: nothing at all on this date, vs filter
