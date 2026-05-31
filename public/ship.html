@@ -18308,14 +18308,13 @@ function renderRecipesTab(){
     onchange:(e)=>{ _fichesPosCat = e.target.value; renderRecipesTab(); },
   });
   posCatSelect.appendChild(el('option',{value:'all'}, 'POS: All categories'));
-  // ── Header — two clean rows so nothing wraps onto a third ──
-  // Row 1: count + chips, scrollable horizontally if the chef has
-  //   many categories (custom ones + the 7 built-ins can overflow).
-  // Row 2: search · POS filter · Import · New fiche
+  // ── Body header — single row with count + chip strip ──
+  // The action buttons (search · POS · Import · New fiche) now live
+  // in #cv-actions (top nav, between the tab pills and Pierre Martin)
+  // so they're always within reach without scrolling.
   const headWrap = el('div',{
     style:'display:flex;flex-direction:column;gap:10px;margin-bottom:14px'
   });
-  // ↳ Row 1 — count + chip strip (no wrap, x-scroll on overflow)
   const chipsRow = el('div',{
     style:`display:flex;gap:8px;align-items:center;overflow-x:auto;
       overflow-y:hidden;padding-bottom:4px;scrollbar-width:thin;`
@@ -18329,22 +18328,38 @@ function renderRecipesTab(){
   // would otherwise squeeze them into ovals).
   for(const c of chipButtons){ c.style.flexShrink = '0'; }
   headWrap.appendChild(chipsRow);
-  // ↳ Row 2 — actions, right-aligned on wide screens, wraps cleanly on mobile
-  const actionsRow = el('div',{
-    style:`display:flex;gap:8px;align-items:center;flex-wrap:wrap;
-      justify-content:flex-end;`
-  },
-    searchInput,
-    posCatSelect,
-    isMgr && loyverseToken() ? el('button',{
-      class:'btn-secondary',
-      style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0',
-      onclick: () => pulseOpenLoyverseImportModal()
-    }, '📥 Import from Loyverse') : null,
-    isMgr ? el('button',{class:'btn-primary',onclick:()=>showRecipeEditor(null)}, t('app.recipes.btn_new')) : null,
-  );
-  headWrap.appendChild(actionsRow);
   root.appendChild(headWrap);
+
+  // ── Move actions into the top-nav slot (#cv-actions) ──
+  // Clearing first so a previous tab's actions don't leak. Compact
+  // styling: search input narrower, buttons slimmer to fit the nav.
+  const _actionsSlot = $('#cv-actions');
+  if(_actionsSlot){
+    _actionsSlot.innerHTML = '';
+    // Search shrinks to a clean pill that doesn't blow up the nav width
+    searchInput.style.width = '160px';
+    searchInput.style.padding = '6px 11px';
+    searchInput.style.fontSize = '12px';
+    posCatSelect.style.padding = '6px 9px';
+    posCatSelect.style.fontSize = '12px';
+    posCatSelect.style.maxWidth = '140px';
+    _actionsSlot.appendChild(searchInput);
+    _actionsSlot.appendChild(posCatSelect);
+    if(isMgr && loyverseToken()){
+      _actionsSlot.appendChild(el('button',{
+        class:'btn-secondary',
+        style:'background:linear-gradient(135deg,#00B894,#6C5CE7);color:#fff;border:0;padding:7px 12px;font-size:12px',
+        onclick: () => pulseOpenLoyverseImportModal()
+      }, '📥 Import from Loyverse'));
+    }
+    if(isMgr){
+      _actionsSlot.appendChild(el('button',{
+        class:'btn-primary',
+        style:'padding:7px 12px;font-size:12px',
+        onclick: () => showRecipeEditor(null)
+      }, t('app.recipes.btn_new')));
+    }
+  }
 
   // ── Auto-detect Loyverse items NOT yet in fiches ──
   // Placeholder host — we render synchronously below from the items
