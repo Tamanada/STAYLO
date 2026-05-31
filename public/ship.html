@@ -18328,7 +18328,15 @@ function renderRecipesTab(){
       return btn;
     };
     chipButtons.push(mkChip('all', t('app.fiches.all_categories') || '📂 All', visibleRecipes.length, _fichesCatFilter==='all'));
-    for(const cat of getAllFicheCategories()){
+    // Sort categories alphabetically by their display label so chips
+    // scan in a predictable order regardless of when each category was
+    // created. "Toutes" already led the row above; everything else
+    // follows in localeCompare order (case + accent insensitive).
+    const sortedCats = getAllFicheCategories().slice().sort((a, b) =>
+      ficheCategoryLabel(a.slug).localeCompare(
+        ficheCategoryLabel(b.slug), undefined, { sensitivity: 'base' })
+    );
+    for(const cat of sortedCats){
       const n = catCounts.get(cat.slug) || 0;
       // HR/GM see every category chip even when empty (so they can create
       // a "first" fiche for a dept). Other users see only non-empty chips.
@@ -18466,6 +18474,12 @@ function renderRecipesTab(){
     }
     return;
   }
+  // Alphabetical sort by fiche name (case + accent insensitive) so the
+  // grid stays scannable as the catalogue grows. localeCompare uses the
+  // browser's locale so "É" sorts next to "E" in French, etc.
+  filtered = filtered.slice().sort((a, b) =>
+    (a.name || '').localeCompare(b.name || '', undefined, { sensitivity: 'base' })
+  );
   const list = el('div',{class:'recipe-list'});
   for(const r of filtered){
     const tot = recipeTotals(r);
