@@ -7149,6 +7149,113 @@ function pulseShowToast(msg, kind){
 }
 
 /* ════════════════════════════════════════════════════════════════
+   DELETE FICHE — 3-way chooser when linked to Loyverse
+   ════════════════════════════════════════════════════════════════
+   When a fiche is linked to a Loyverse item the chef gets to decide:
+     • Keep on POS — only the STAYLO fiche disappears, the dish is
+       still sellable at the till. Useful for archiving back-of-house
+       notes while keeping POS continuity.
+     • Delete everywhere — DELETE /items/{id} on Loyverse + drop the
+       fiche locally. The dish vanishes from the till too.
+     • Cancel — bail out.
+   For fiches with no Loyverse link we use the plain confirm dialog
+   (handled at the call site).                                          */
+function pulseConfirmDeleteRecipe(recipe, onDone){
+  const bg = el('div',{
+    style:`position:fixed;inset:0;background:rgba(20,20,40,.55);z-index:99998;
+      display:flex;align-items:center;justify-content:center;padding:16px;
+      backdrop-filter:blur(4px);`,
+    onclick:(e)=>{ if(e.target===bg) bg.remove(); }
+  });
+  const card = el('div',{
+    style:`background:#fff;border-radius:18px;max-width:440px;width:100%;
+      padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:inherit;`,
+    onclick:(e)=>e.stopPropagation()
+  });
+  card.appendChild(el('div',{
+    style:'font-size:13px;font-weight:800;color:var(--orange);letter-spacing:1.2px;margin-bottom:6px;text-transform:uppercase'
+  }, '⚠ Delete this fiche'));
+  card.appendChild(el('div',{
+    style:'font-size:18px;font-weight:900;color:var(--navy);margin-bottom:14px'
+  }, '"' + (recipe.name || 'Fiche') + '"'));
+  card.appendChild(el('div',{
+    style:'font-size:13px;color:var(--gray);line-height:1.5;margin-bottom:18px'
+  },
+    'This fiche is linked to a Loyverse item. The till still has this dish in its menu — do you also want to remove it from Loyverse?'
+  ));
+
+  const btnRow = el('div',{style:'display:flex;flex-direction:column;gap:8px'});
+
+  // Option 1 — Keep on POS (delete in SHIP only)
+  btnRow.appendChild(el('button',{
+    style:`background:#FAFBFC;border:1px solid var(--border);border-radius:10px;
+      padding:12px 14px;text-align:left;cursor:pointer;font:inherit;`,
+    onclick: () => {
+      deleteRecipe(recipe.id);
+      bg.remove();
+      pulseShowToast('✓ Fiche deleted · the dish is still on Loyverse');
+      onDone && onDone();
+    }
+  },
+    el('div',{style:'font-weight:800;color:var(--navy);font-size:13px'},
+      '🗂 Delete in STAYLO only'),
+    el('div',{style:'font-size:11px;color:var(--gray);margin-top:2px'},
+      'Keep the dish active on the Loyverse till.')
+  ));
+
+  // Option 2 — Delete everywhere (SHIP + Loyverse)
+  const everywhereBtn = el('button',{
+    style:`background:linear-gradient(135deg,#FF3CB4,#8B0036);color:#fff;
+      border:0;border-radius:10px;padding:12px 14px;text-align:left;
+      cursor:pointer;font:inherit;`,
+    onclick: async () => {
+      everywhereBtn.disabled = true;
+      everywhereBtn.style.opacity = '.6';
+      everywhereBtn.querySelector('.label').textContent = '⏳ Deleting from Loyverse…';
+      try {
+        // Pass undefined (not null) so the proxy sends NO body — Loyverse
+        // expects DELETE /items/{id} with an empty request body.
+        await loyverseWrite('DELETE', 'items/' + recipe.loyverse_item_id, undefined);
+        _loyverseItemsCache.stamp = 0;
+        deleteRecipe(recipe.id);
+        bg.remove();
+        pulseShowToast('✓ Deleted in STAYLO and Loyverse');
+        onDone && onDone();
+      } catch (err){
+        console.warn('Loyverse delete failed', err);
+        everywhereBtn.disabled = false;
+        everywhereBtn.style.opacity = '1';
+        everywhereBtn.querySelector('.label').textContent = '🗑 Delete in STAYLO AND Loyverse';
+        // Surface the real cause so the chef can react
+        const msg = err && err.message ? err.message : String(err);
+        const hint = err && err.status === 401
+          ? ' — your token may lack ITEMS_WRITE/DELETE scope'
+          : err && err.status === 404
+            ? ' — Loyverse already deleted that item; you can use "STAYLO only"'
+            : '';
+        alert('Could not delete on Loyverse: ' + msg + hint);
+      }
+    }
+  });
+  everywhereBtn.appendChild(el('div',{class:'label',style:'font-weight:800;font-size:13px'},
+    '🗑 Delete in STAYLO AND Loyverse'));
+  everywhereBtn.appendChild(el('div',{style:'font-size:11px;opacity:.85;margin-top:2px'},
+    'Removes the dish from the till too.'));
+  btnRow.appendChild(everywhereBtn);
+
+  // Cancel
+  btnRow.appendChild(el('button',{
+    style:`background:transparent;border:0;color:var(--gray);font-weight:700;
+      padding:10px;cursor:pointer;font:inherit;`,
+    onclick: () => bg.remove()
+  }, 'Cancel'));
+
+  card.appendChild(btnRow);
+  bg.appendChild(card);
+  document.body.appendChild(bg);
+}
+
+/* ════════════════════════════════════════════════════════════════
    LOYVERSE → STAYLO IMPORT — pull composite items + their components
    into the STAYLO recipes UI so the chef can edit them like any other
    fiche. Cost data (variant.cost × quantity) becomes the ingredient
@@ -18637,7 +18744,15 @@ function showRecipeEditor(rec){
     el('div',{class:'fld'}, el('label',{},t('app.recipes.lbl_notes')), inp('rec-notes','textarea', r.notes, t('app.recipes.lbl_notes_placeholder'))),
     el('div',{class:'row-actions'},
       isEdit ? el('button',{class:'btn-danger',onclick:()=>{
-        if(confirm(t('app.dialogs.delete_recipe'))){ deleteRecipe(r.id); modal.remove(); renderRecipesTab(); }
+        // If the fiche is linked to a Loyverse item we open a 3-way
+        // chooser (SHIP only / both / cancel) so the chef can decide
+        // whether the dish should also vanish from the till. Otherwise
+        // fall back to the classic single confirm.
+        if(typeof loyverseToken === 'function' && loyverseToken() && r.loyverse_item_id){
+          pulseConfirmDeleteRecipe(r, () => { modal.remove(); renderRecipesTab(); });
+        } else if(confirm(t('app.dialogs.delete_recipe'))){
+          deleteRecipe(r.id); modal.remove(); renderRecipesTab();
+        }
       }}, t('app.common.delete')) : null,
       // 🔗 Sync to Loyverse — only when a token is connected; the wizard
       // builds the composite-item payload from the live form values.
