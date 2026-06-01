@@ -1,56 +1,45 @@
 // ============================================
-// Dashboard — Room Management module
+// Dashboard — Room Management (PMS-style full-screen takeover)
 // ============================================
-// Operational view of all rooms for a property — distinct from the
-// "Chambres" tab inside Gérer (which is CONFIG: add/edit room types,
-// capacity, prices). This module is OPS: who is in which room right
-// now, who's checking in/out, what's dirty, what's under maintenance.
+// Direct port of docs/ui-refs/staylo_room_manager.html — same dark
+// topbar + dark sidebar + light main area + side panel. Wired to real
+// STAYLO data (Supabase rooms + bookings) so what the hotelier sees
+// reflects their actual property, not the mockup's sample numbers.
 //
-// Three view modes (matches the reference HTML in docs/ui-refs/):
-//   • Timeline (Gantt)   — rooms × 14 days, reservation bars
-//   • Grid    (cards)    — rooms grouped by floor, status colors
-//   • Floor Plan (map)   — top-down rooms positioned on a corridor
+// Renders at /dashboard/property/:id/rooms OUTSIDE PropertyLayout so
+// the property header + pill row don't double up with the mockup's
+// own dark sidebar/topbar (which provide the same navigation).
 //
-// Status taxonomy:
-//   available · occupied · dirty · maintenance · cleaning · checkout
+// Topbar nav routes:
+//   Dashboard     → /dashboard
+//   Rooms         → current page (active)
+//   Reservations  → /dashboard/property/:id/incoming-bookings
+//   Housekeeping  → /dashboard/property/:id/housekeeping
+//   Reports       → /dashboard/property/:id/reports
 //
-// Persistence:
-//   - Rooms: existing `rooms` table (read-only here; edits live in
-//     PropertyManage → Chambres tab).
-//   - Bookings: existing `bookings` table, used to auto-derive
-//     occupied / checkout status from check_in / check_out.
-//   - Manual status overrides (dirty / cleaning / maintenance) are
-//     stored in component state for the demo — a persistent
-//     `room_status` table can come later without breaking this UI.
+// Sidebar:
+//   - HOTEL header → real property name (or "—" while loading)
+//   - All Rooms / Available / Occupied / Dirty / Maintenance counts
+//   - Room Types (derived from real rooms.bed_type)
+//   - Quick Actions (placeholders — wire to real flows later)
+//   - Today panel (Occupancy / Arrivals / Departures from bookings)
 //
-// Rendered inside PropertyLayout (route /dashboard/property/:id/rooms)
-// so the 6-pill nav stays visible and the property header is shared.
+// Status overrides (manual cleaning / maintenance) live in component
+// state; promotes to a `room_status` table when the back-office needs
+// persistence.
 // ============================================
 import { useState, useEffect, useMemo } from 'react'
-import { useTranslation } from 'react-i18next'
-import { useParams, useOutletContext } from 'react-router-dom'
-// CAREFUL: lucide-react exports `Map` (icon) which would shadow the
-// global `Map` constructor used by useMemo's data grouping below.
-// Always alias it (and any other globals like `Set`, `Date`) on import.
-import {
-  Calendar as CalendarIcon, Grid3x3, Map as MapIcon, Search,
-  ChevronLeft, ChevronRight, X, BedDouble, User,
-  AlertTriangle, Plus, LogIn, LogOut, RefreshCw,
-  TrendingUp, ArrowDown, ArrowUp,
-} from 'lucide-react'
+import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
 // ── STATUS TAXONOMY ───────────────────────────────────────────────
-// Single source of truth. Each entry: label, color, text background,
-// emoji-style sigil for badges. Order matters — used as the canonical
-// list when rendering the status picker on the side panel.
 export const ROOM_STATUSES = {
-  available:   { key: 'available',   label: 'Available',    color: '#00B894', bg: '#E8F8F2', text: '#065F46', sigil: '🟢' },
-  occupied:    { key: 'occupied',    label: 'Occupied',     color: '#6C5CE7', bg: '#EEF2FF', text: '#3730A3', sigil: '🟣' },
-  dirty:       { key: 'dirty',       label: 'Dirty',        color: '#F4C542', bg: '#FFFBEB', text: '#92400E', sigil: '🟡' },
-  maintenance: { key: 'maintenance', label: 'Maintenance',  color: '#E74C3C', bg: '#FEF2F2', text: '#B91C1C', sigil: '🔴' },
-  cleaning:    { key: 'cleaning',    label: 'Cleaning',     color: '#0984E3', bg: '#EFF6FF', text: '#1E40AF', sigil: '🔵' },
-  checkout:    { key: 'checkout',    label: 'Due Checkout', color: '#FF6B00', bg: '#FFF7ED', text: '#C2410C', sigil: '🟠' },
+  available:   { label: 'Available',    color: '#00B894', bg: '#E8F8F2', text: '#065F46', sigil: '🟢' },
+  occupied:    { label: 'Occupied',     color: '#6C5CE7', bg: '#EEF2FF', text: '#3730A3', sigil: '🟣' },
+  dirty:       { label: 'Dirty',        color: '#F4C542', bg: '#FFFBEB', text: '#92400E', sigil: '🟡' },
+  maintenance: { label: 'Maintenance',  color: '#E74C3C', bg: '#FEF2F2', text: '#B91C1C', sigil: '🔴' },
+  cleaning:    { label: 'Cleaning',     color: '#0984E3', bg: '#EFF6FF', text: '#1E40AF', sigil: '🔵' },
+  checkout:    { label: 'Due Checkout', color: '#FF6B00', bg: '#FFF7ED', text: '#C2410C', sigil: '🟠' },
 }
 const STATUS_KEYS = Object.keys(ROOM_STATUSES)
 
@@ -59,86 +48,221 @@ const MONTHS_LBL = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct',
 const fmtDay = (d) => `${MONTHS_LBL[d.getMonth()]} ${d.getDate()}`
 const isoDate = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
 
-export default function RoomManagement() {
-  const { t } = useTranslation()
-  const { id: propertyId } = useParams()
-  // Property data passed by PropertyLayout — used for the corridor
-  // label in the floor-plan view.
-  const outletCtx = useOutletContext()
-  const property = outletCtx?.property
+// ── EXACT MOCKUP CSS ─────────────────────────────────────────────
+// Lifted verbatim from docs/ui-refs/staylo_room_manager.html — kept
+// inline so the styles are scoped to this component without
+// polluting the global Tailwind layer. Class names mirror the
+// mockup so future tweaks can be ported 1:1.
+const STYLES = `
+/* Full-viewport takeover — covers the STAYLO dashboard sidebar so
+   we don't double up the chrome. z-index above the dashboard layout. */
+.rm-shell{position:fixed;inset:0;z-index:50;display:grid;grid-template-columns:220px 1fr;grid-template-rows:56px 1fr;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0EDE8;color:#1A1F2E}
+.rm-topbar{grid-column:1/-1;background:#1A1F2E;display:flex;align-items:center;gap:0;padding:0;border-bottom:1px solid rgba(255,255,255,.08)}
+.rm-topbar-logo{width:220px;padding:0 20px;font-size:20px;font-weight:900;color:white;border-right:1px solid rgba(255,255,255,.08)}
+.rm-topbar-logo b{color:#FF6B00}
+.rm-topbar-nav{display:flex;height:100%}
+.rm-tnav{padding:0 20px;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;border-bottom:2px solid transparent;transition:all .15s;text-decoration:none}
+.rm-tnav:hover{color:rgba(255,255,255,.8)}
+.rm-tnav.active{color:white;border-bottom-color:#FF6B00}
+.rm-topbar-right{margin-left:auto;padding:0 20px;display:flex;align-items:center;gap:12px}
+.rm-date-nav{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.7)}
+.rm-date-btn{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.1);border:none;color:white;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.rm-date-btn:hover{background:rgba(255,255,255,.2)}
+.rm-today-btn{padding:4px 12px;border-radius:6px;background:#FF6B00;border:none;color:white;font-size:12px;font-weight:700;cursor:pointer}
 
-  // ── State ────────────────────────────────────────────────────────
-  const [view, setView] = useState('grid')   // 'timeline' | 'grid' | 'floorplan'
+.rm-sidebar{background:#1A1F2E;padding:16px 0;overflow-y:auto;border-right:1px solid rgba(255,255,255,.06)}
+.rm-sidebar-section{margin-bottom:8px}
+.rm-sidebar-title{font-size:10px;font-weight:700;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;padding:8px 18px 4px}
+.rm-sidebar-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;font-size:13px;color:rgba(255,255,255,.55);transition:all .12s;position:relative;background:none;border:none;width:100%;font-family:inherit;text-align:left}
+.rm-sidebar-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.85)}
+.rm-sidebar-item.active{background:rgba(255,107,0,.15);color:white}
+.rm-sidebar-item.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:#FF6B00;border-radius:0 2px 2px 0}
+.rm-si-icon{font-size:15px;width:20px;text-align:center}
+.rm-badge{margin-left:auto;background:#E74C3C;color:white;border-radius:999px;padding:1px 7px;font-size:10px;font-weight:700}
+.rm-badge.green{background:#00B894}
+.rm-badge.orange{background:#FF6B00}
+.rm-badge.purple{background:#6C5CE7}
+
+.rm-main{overflow:hidden;display:flex;flex-direction:column}
+
+.rm-toolbar{background:white;border-bottom:1px solid #E8E0D8;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;flex-wrap:wrap}
+.rm-view-tabs{display:flex;gap:4px;background:#F8F6F0;border-radius:8px;padding:3px}
+.rm-vtab{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;color:#636E72;border:none;background:none;transition:all .12s}
+.rm-vtab.active{background:white;color:#1A1F2E;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.rm-filter-btn{padding:6px 14px;border-radius:8px;border:1px solid #E8E0D8;background:white;font-size:12px;font-weight:600;color:#636E72;cursor:pointer;display:flex;align-items:center;gap:5px}
+.rm-filter-btn:hover{border-color:#FF6B00;color:#FF6B00}
+.rm-filter-btn.active{border-color:#FF6B00;color:#FF6B00;background:#FFF5E6}
+.rm-search-box{flex:1;max-width:260px;padding:6px 12px;border-radius:8px;border:1px solid #E8E0D8;font-size:13px;font-family:inherit;outline:none}
+.rm-search-box:focus{border-color:#FF6B00}
+.rm-stats-row{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.rm-stat-chip{padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:5px}
+.rm-stat-chip::before{content:'';width:7px;height:7px;border-radius:50%}
+.rm-sc-available{background:#E8F8F2;color:#00875A}.rm-sc-available::before{background:#00B894}
+.rm-sc-occupied{background:#EEF2FF;color:#4338CA}.rm-sc-occupied::before{background:#6C5CE7}
+.rm-sc-dirty{background:#FFF8E1;color:#92400E}.rm-sc-dirty::before{background:#F4C542}
+.rm-sc-maintenance{background:#FEF2F2;color:#B91C1C}.rm-sc-maintenance::before{background:#E74C3C}
+
+.rm-legend{display:flex;gap:12px;align-items:center;padding:8px 20px;background:white;border-bottom:1px solid #E8E0D8;flex-shrink:0;flex-wrap:wrap}
+.rm-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#636E72}
+.rm-legend-dot{width:8px;height:8px;border-radius:50%}
+
+.rm-view{flex:1;overflow:auto}
+
+/* Timeline */
+.rm-tl-header{display:flex;background:white;border-bottom:1px solid #E8E0D8;position:sticky;top:0;z-index:2}
+.rm-tl-room-col{width:140px;flex-shrink:0;padding:10px 14px;font-size:11px;font-weight:700;color:#636E72;text-transform:uppercase;letter-spacing:.05em;border-right:1px solid #E8E0D8}
+.rm-tl-dates{flex:1;display:flex}
+.rm-tl-day{flex:1;min-width:60px;text-align:center;padding:6px 4px;border-right:1px solid #F0EDE8;font-size:11px}
+.rm-tl-day.today{background:#FFF5E6}
+.rm-tl-day .rm-tl-dow{color:#636E72;font-weight:500;display:block}
+.rm-tl-day .rm-tl-date{font-weight:700;color:#1A1F2E;font-size:13px}
+.rm-tl-day.today .rm-tl-date{color:#FF6B00}
+.rm-tl-row{display:flex;border-bottom:1px solid #F0EDE8;position:relative;height:44px;align-items:center;background:white}
+.rm-tl-row:hover{background:#FAFAF8}
+.rm-tl-room-info{width:140px;flex-shrink:0;padding:0 14px;border-right:1px solid #E8E0D8;display:flex;flex-direction:column;justify-content:center;height:100%}
+.rm-tl-room-num{font-size:14px;font-weight:700;color:#1A1F2E}
+.rm-tl-room-type{font-size:10px;color:#B2BEC3}
+.rm-tl-grid{flex:1;position:relative;height:100%;display:flex}
+.rm-tl-cell{flex:1;min-width:60px;border-right:1px solid #F0EDE8;position:relative;height:100%}
+.rm-tl-cell.today{background:rgba(255,107,0,.04)}
+.rm-res-bar{position:absolute;height:28px;top:8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600;color:white;transition:opacity .12s;white-space:nowrap;overflow:hidden;z-index:1;border:none;font-family:inherit}
+.rm-res-bar:hover{opacity:.85;z-index:5}
+.rm-rb-confirmed{background:linear-gradient(135deg,#4C51BF,#6C5CE7)}
+.rm-rb-checkin{background:linear-gradient(135deg,#0F766E,#00B894)}
+.rm-rb-checkout{background:linear-gradient(135deg,#C2410C,#FF6B00)}
+.rm-rb-blocked{background:repeating-linear-gradient(45deg,#9CA3AF,#9CA3AF 4px,#D1D5DB 4px,#D1D5DB 8px)}
+
+/* Grid */
+.rm-grid-view{padding:20px}
+.rm-floor-section{margin-bottom:24px}
+.rm-floor-title{font-size:12px;font-weight:700;color:#636E72;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.rm-floor-title::after{content:'';flex:1;height:1px;background:#E8E0D8}
+.rm-rooms-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.rm-room-card{background:white;border-radius:14px;padding:14px;cursor:pointer;border:2px solid #E8E0D8;transition:all .15s;position:relative;overflow:hidden;text-align:left;font-family:inherit}
+.rm-room-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.rm-room-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.rm-room-card.available{border-color:rgba(0,184,148,.3)}.rm-room-card.available::before{background:#00B894}
+.rm-room-card.occupied{border-color:rgba(108,92,231,.3)}.rm-room-card.occupied::before{background:#6C5CE7}
+.rm-room-card.dirty{border-color:rgba(244,197,66,.4)}.rm-room-card.dirty::before{background:#F4C542}
+.rm-room-card.maintenance{border-color:rgba(231,76,60,.3)}.rm-room-card.maintenance::before{background:#E74C3C}
+.rm-room-card.cleaning{border-color:rgba(9,132,227,.3)}.rm-room-card.cleaning::before{background:#0984E3}
+.rm-room-card.checkout{border-color:rgba(255,107,0,.3)}.rm-room-card.checkout::before{background:#FF6B00}
+.rm-rc-num{font-size:22px;font-weight:900;color:#1A1F2E;line-height:1}
+.rm-rc-type{font-size:10px;color:#B2BEC3;margin-top:2px;margin-bottom:8px}
+.rm-rc-status{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:700}
+.rm-rc-status.available{background:#E8F8F2;color:#00875A}
+.rm-rc-status.occupied{background:#EEF2FF;color:#4338CA}
+.rm-rc-status.dirty{background:#FFF8E1;color:#92400E}
+.rm-rc-status.maintenance{background:#FEF2F2;color:#B91C1C}
+.rm-rc-status.cleaning{background:#EEF6FF;color:#1D4ED8}
+.rm-rc-status.checkout{background:#FFF5E6;color:#C2410C}
+.rm-rc-guest{font-size:11px;color:#636E72;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rm-rc-nights{font-size:10px;color:#B2BEC3;margin-top:2px}
+.rm-hk-icon{position:absolute;top:10px;right:10px;font-size:14px}
+
+/* Floor plan */
+.rm-fp-view{display:flex;flex-direction:column}
+.rm-fp-floors{display:flex;gap:0;background:white;border-bottom:1px solid #E8E0D8;flex-shrink:0}
+.rm-fp-floor-tab{padding:10px 20px;font-size:13px;font-weight:600;color:#636E72;cursor:pointer;border-bottom:2px solid transparent;transition:all .12s;background:none;border-left:none;border-right:none;border-top:none;font-family:inherit}
+.rm-fp-floor-tab.active{color:#FF6B00;border-bottom-color:#FF6B00}
+.rm-fp-canvas{flex:1;overflow:auto;padding:24px;background:#F0EDE8}
+.rm-floor-plan{background:white;border-radius:16px;padding:28px;display:grid;gap:12px;box-shadow:0 2px 20px rgba(0,0,0,.06);max-width:700px;margin:0 auto}
+.rm-fp-corridor{background:#F0EDE8;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#636E72;text-transform:uppercase;letter-spacing:.06em;grid-column:1/-1}
+.rm-fp-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.rm-fp-room{width:90px;height:70px;border-radius:10px;border:2px solid #E8E0D8;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .15s;position:relative;background:white;font-family:inherit}
+.rm-fp-room:hover{transform:scale(1.04);z-index:5}
+.rm-fpr-num{font-size:16px;font-weight:900}
+.rm-fpr-type{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;opacity:.7}
+.rm-fpr-status{width:8px;height:8px;border-radius:50%;position:absolute;top:7px;right:7px}
+.rm-fp-room.available{background:#E8F8F2;border-color:#A7F3D0}.rm-fp-room.available .rm-fpr-num{color:#065F46}.rm-fp-room.available .rm-fpr-status{background:#00B894}
+.rm-fp-room.occupied{background:#EEF2FF;border-color:#C4B5FD}.rm-fp-room.occupied .rm-fpr-num{color:#3730A3}.rm-fp-room.occupied .rm-fpr-status{background:#6C5CE7}
+.rm-fp-room.dirty{background:#FFFBEB;border-color:#FCD34D}.rm-fp-room.dirty .rm-fpr-num{color:#92400E}.rm-fp-room.dirty .rm-fpr-status{background:#F4C542}
+.rm-fp-room.maintenance{background:#FEF2F2;border-color:#FCA5A5}.rm-fp-room.maintenance .rm-fpr-num{color:#B91C1C}.rm-fp-room.maintenance .rm-fpr-status{background:#E74C3C}
+.rm-fp-room.cleaning{background:#EFF6FF;border-color:#93C5FD}.rm-fp-room.cleaning .rm-fpr-num{color:#1E40AF}.rm-fp-room.cleaning .rm-fpr-status{background:#0984E3}
+.rm-fp-room.checkout{background:#FFF7ED;border-color:#FDBA74}.rm-fp-room.checkout .rm-fpr-num{color:#C2410C}.rm-fp-room.checkout .rm-fpr-status{background:#FF6B00}
+
+/* Side panel */
+.rm-room-panel{position:fixed;right:20px;top:80px;width:300px;background:white;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.18);border:1px solid #E8E0D8;z-index:1000;padding:20px}
+.rm-rp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.rm-rp-num{font-size:28px;font-weight:900;color:#1A1F2E;line-height:1}
+.rm-rp-type{font-size:12px;color:#636E72;margin-top:2px}
+.rm-rp-close{width:28px;height:28px;border-radius:50%;background:#F8F6F0;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.rm-rp-status-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.rm-rp-status-btn{padding:5px 12px;border-radius:999px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .12s}
+.rm-rp-status-btn.current{box-shadow:0 0 0 2px rgba(0,0,0,.1)}
+.rm-rp-info{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.rm-rp-row{display:flex;justify-content:space-between;font-size:12px}
+.rm-rp-label{color:#636E72}
+.rm-rp-val{font-weight:600;color:#1A1F2E}
+.rm-rp-actions{display:flex;flex-direction:column;gap:6px}
+.rm-rp-btn{padding:9px;border-radius:10px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center}
+.rm-rp-btn-primary{background:linear-gradient(135deg,#FF6B00,#FF3CB4);color:white}
+.rm-rp-btn-secondary{background:#F8F6F0;color:#1A1F2E;border:1px solid #E8E0D8}
+.rm-rp-btn-danger{background:#FEF2F2;color:#E74C3C;border:1px solid rgba(231,76,60,.2)}
+
+/* Backdrop click target */
+.rm-panel-backdrop{position:fixed;inset:0;z-index:999}
+`
+
+const DAYS_SHOW = 14
+
+export default function RoomManagement() {
+  const { id: propertyId } = useParams()
+  const navigate = useNavigate()
+
+  // ── State ──────────────────────────────────────────────────────
+  const [view, setView] = useState('timeline')   // 'timeline' | 'grid' | 'floorplan'
+  const [property, setProperty] = useState(null)
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
-  // Manual status overrides keyed by room.id. Lives in memory for the
-  // demo — promotes to a `room_status` table when the back-office
-  // wants persistence.
   const [statusOverrides, setStatusOverrides] = useState({})
   // Filters
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
+  const [sideStatusFilter, setSideStatusFilter] = useState('all')   // sidebar: all | available | occupied | dirty | maintenance
+  const [sideTypeFilter, setSideTypeFilter] = useState('all')
+  const [needsActionOnly, setNeedsActionOnly] = useState(false)
   const [search, setSearch] = useState('')
-  // Selected room for the side panel
   const [selectedRoom, setSelectedRoom] = useState(null)
-  // Timeline date window — starts today, walks ±7 days
-  const [startDay, setStartDay] = useState(() => {
-    const d = new Date(); d.setHours(0,0,0,0); return d
-  })
-  const DAYS_SHOW = 14
-  // Currently-shown floor for the floor-plan view
-  const [activeFloor, setActiveFloor] = useState(1)
+  // Timeline window
+  const [startDay, setStartDay] = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d })
+  // Floor plan
+  const [activeFloor, setActiveFloor] = useState(null)
+  // Today (re-evaluated only when needed)
+  const today = isoDate(new Date())
 
-  // ── Fetch ────────────────────────────────────────────────────────
+  // ── Fetch ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!propertyId) return
     let cancelled = false
     async function fetchAll() {
       setLoading(true)
-      const [roomsRes, bookingsRes] = await Promise.all([
+      const [propRes, roomsRes, bookingsRes] = await Promise.all([
+        supabase.from('properties').select('id, name, city, country, status').eq('id', propertyId).maybeSingle(),
         supabase.from('rooms').select('*').eq('property_id', propertyId).order('name'),
         supabase.from('bookings').select('*').eq('property_id', propertyId),
       ])
-      if (!cancelled) {
-        setRooms(roomsRes.data || [])
-        setBookings(bookingsRes.data || [])
-        setLoading(false)
-      }
+      if (cancelled) return
+      setProperty(propRes.data || null)
+      setRooms(roomsRes.data || [])
+      setBookings(bookingsRes.data || [])
+      setLoading(false)
     }
     fetchAll()
     return () => { cancelled = true }
   }, [propertyId])
 
-  // ── Derive status per room ───────────────────────────────────────
-  // Manual override wins; otherwise we look at active bookings.
-  const today = isoDate(new Date())
-  function deriveStatus(room) {
-    if (statusOverrides[room.id]) return statusOverrides[room.id]
-    const active = bookings.find(b =>
-      b.room_id === room.id &&
-      b.status !== 'cancelled' &&
-      b.check_in  <= today &&
-      b.check_out >= today,
-    )
-    if (active) return active.check_out === today ? 'checkout' : 'occupied'
-    return 'available'
-  }
-
-  function setRoomStatus(roomId, status) {
-    setStatusOverrides(s => ({ ...s, [roomId]: status }))
-  }
-
-  // ── Enrich rooms with derived status + matched guest ─────────────
+  // ── Derive ─────────────────────────────────────────────────────
   const enrichedRooms = useMemo(() => {
     return rooms.map(r => {
-      const status = deriveStatus(r)
+      const override = statusOverrides[r.id]
       const active = bookings.find(b =>
-        b.room_id === r.id &&
-        b.status !== 'cancelled' &&
-        b.check_in  <= today &&
-        b.check_out >= today,
-      )
+        b.room_id === r.id && b.status !== 'cancelled' &&
+        b.check_in <= today && b.check_out >= today)
+      let status = override
+      if (!status) {
+        if (active) status = active.check_out === today ? 'checkout' : 'occupied'
+        else status = 'available'
+      }
       const nights = active
         ? Math.max(1, Math.ceil((new Date(active.check_out) - new Date(active.check_in)) / 86400000))
         : 0
@@ -146,7 +270,7 @@ export default function RoomManagement() {
         ...r,
         status,
         floor: r.floor ?? Number(String(r.name || '').match(/^(\d)/)?.[1]) ?? 1,
-        type: r.bed_type || r.name || 'Standard',
+        type: r.bed_type || 'Standard',
         guest: active?.guest_name || '',
         nights,
         checkin: active?.check_in || null,
@@ -154,13 +278,32 @@ export default function RoomManagement() {
       }
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rooms, bookings, statusOverrides])
+  }, [rooms, bookings, statusOverrides, today])
 
-  // ── Filters ──────────────────────────────────────────────────────
+  const counts = useMemo(() => {
+    const c = { all: enrichedRooms.length }
+    for (const k of STATUS_KEYS) c[k] = 0
+    enrichedRooms.forEach(r => { c[r.status] = (c[r.status] || 0) + 1 })
+    return c
+  }, [enrichedRooms])
+
+  const types = useMemo(() => {
+    const counts = new Map()
+    enrichedRooms.forEach(r => counts.set(r.type, (counts.get(r.type) || 0) + 1))
+    return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0]))
+  }, [enrichedRooms])
+
   const filteredRooms = useMemo(() => {
     return enrichedRooms.filter(r => {
-      if (statusFilter !== 'all' && r.status !== statusFilter) return false
-      if (typeFilter !== 'all' && r.type !== typeFilter) return false
+      if (sideStatusFilter !== 'all') {
+        // Sidebar groups "Dirty" + "Cleaning" together as the housekeeping
+        // bucket (matches the mockup's "Dirty / Clean" label).
+        if (sideStatusFilter === 'dirty') {
+          if (r.status !== 'dirty' && r.status !== 'cleaning') return false
+        } else if (r.status !== sideStatusFilter) return false
+      }
+      if (sideTypeFilter !== 'all' && r.type !== sideTypeFilter) return false
+      if (needsActionOnly && !['dirty','maintenance','checkout','cleaning'].includes(r.status)) return false
       if (search) {
         const q = search.toLowerCase()
         const hay = `${r.name} ${r.type} ${r.guest}`.toLowerCase()
@@ -168,22 +311,8 @@ export default function RoomManagement() {
       }
       return true
     })
-  }, [enrichedRooms, statusFilter, typeFilter, search])
+  }, [enrichedRooms, sideStatusFilter, sideTypeFilter, needsActionOnly, search])
 
-  // ── Status counts (for the toolbar chips) ────────────────────────
-  const counts = useMemo(() => {
-    const c = {}
-    for (const k of STATUS_KEYS) c[k] = 0
-    enrichedRooms.forEach(r => { c[r.status] = (c[r.status] || 0) + 1 })
-    return c
-  }, [enrichedRooms])
-
-  // ── Type list (for filter dropdown) ──────────────────────────────
-  const types = useMemo(() => {
-    return Array.from(new Set(enrichedRooms.map(r => r.type).filter(Boolean))).sort()
-  }, [enrichedRooms])
-
-  // ── Floors grouping ──────────────────────────────────────────────
   const floorsMap = useMemo(() => {
     const m = new Map()
     filteredRooms.forEach(r => {
@@ -193,10 +322,13 @@ export default function RoomManagement() {
     return new Map([...m.entries()].sort((a, b) => a[0] - b[0]))
   }, [filteredRooms])
 
-  // ── Today stats (for the briefing strip) ─────────────────────────
-  // Occupancy = occupied / total rooms. Arrivals/departures pulled
-  // straight from bookings — same source the side panel uses so the
-  // numbers always agree.
+  // Pick a default active floor when the floor plan view opens
+  useEffect(() => {
+    if (activeFloor === null && floorsMap.size > 0) {
+      setActiveFloor([...floorsMap.keys()][0])
+    }
+  }, [floorsMap, activeFloor])
+
   const todayStats = useMemo(() => {
     const total = enrichedRooms.length || 1
     const occupied = enrichedRooms.filter(r => r.status === 'occupied' || r.status === 'checkout').length
@@ -206,207 +338,289 @@ export default function RoomManagement() {
     return { occupancy, arrivals, departures }
   }, [enrichedRooms, bookings, today])
 
-  // ── Empty / loading states ───────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="py-20 text-center">
-        <div className="w-10 h-10 border-4 border-ocean/20 border-t-ocean rounded-full animate-spin mx-auto" />
-      </div>
-    )
+  // ── Helpers ────────────────────────────────────────────────────
+  function shift(n) {
+    const d = new Date(startDay); d.setDate(d.getDate() + n); setStartDay(d)
   }
-  if (rooms.length === 0) {
-    return (
-      <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-        <BedDouble size={48} className="text-gray-300 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
-          {t('rooms.empty_title', 'Aucune chambre configurée')}
-        </h2>
-        <p className="text-gray-500 mb-6">
-          {t('rooms.empty_desc', 'Ajoute des chambres dans Gérer → Chambres pour les voir apparaître ici.')}
-        </p>
-      </div>
-    )
+  function goToday() {
+    const d = new Date(); d.setHours(0,0,0,0); setStartDay(d)
   }
+  function setRoomStatus(roomId, status) {
+    setStatusOverrides(s => ({ ...s, [roomId]: status }))
+  }
+
+  const dates = useMemo(() => {
+    const arr = []
+    for (let i = 0; i < DAYS_SHOW; i++) {
+      const d = new Date(startDay); d.setDate(d.getDate() + i)
+      arr.push(d)
+    }
+    return arr
+  }, [startDay])
+  const endDay = dates[dates.length - 1]
+  const todayDate = (() => { const d = new Date(); d.setHours(0,0,0,0); return d })()
 
   return (
-    <div>
-      {/* ── Today briefing + quick actions ──────────────────────
-          Same "single-row, evenly-spaced, no wrap" rhythm as the
-          toolbar below. Compact inline pills (icon + value + small
-          label) on the left, compact icon-first action buttons on
-          the right. */}
-      <div className="bg-white border border-gray-200 rounded-xl px-3 py-2 mb-3 flex items-center gap-2 flex-wrap">
-        <Metric icon={TrendingUp} color="text-electric"
-          label={t('rooms.occupancy', 'Occupancy')}
-          value={`${todayStats.occupancy}%`} />
-        <Metric icon={ArrowDown} color="text-libre"
-          label={t('rooms.arrivals', 'Arrivals')}
-          value={todayStats.arrivals} />
-        <Metric icon={ArrowUp} color="text-orange"
-          label={t('rooms.departures', 'Departures')}
-          value={todayStats.departures} />
-        <div className="ml-auto flex items-center gap-1.5 flex-wrap">
-          <QuickAction icon={Plus}      label={t('rooms.qa_new_booking', 'New booking')} />
-          <QuickAction icon={LogIn}     label={t('rooms.qa_check_in',    'Check in')}
-            badge={todayStats.arrivals > 0 ? todayStats.arrivals : null} accent="text-libre" />
-          <QuickAction icon={LogOut}    label={t('rooms.qa_check_out',   'Check out')}
-            badge={todayStats.departures > 0 ? todayStats.departures : null} accent="text-orange" />
-          <QuickAction icon={RefreshCw} label={t('rooms.qa_room_move',   'Move')} />
-        </div>
-      </div>
-
-      {/* ── Toolbar ─────────────────────────────────────────────── */}
-      <div className="bg-white border border-gray-200 rounded-xl p-3 mb-3 flex flex-wrap items-center gap-2">
-        {/* View switcher */}
-        <div className="inline-flex bg-gray-100 rounded-lg p-1 gap-1">
-          {[
-            { key: 'timeline',  icon: CalendarIcon, label: t('rooms.view_timeline', 'Timeline') },
-            { key: 'grid',      icon: Grid3x3,      label: t('rooms.view_grid',     'Grid') },
-            { key: 'floorplan', icon: MapIcon,      label: t('rooms.view_floor',    'Floor Plan') },
-          ].map(v => (
-            <button key={v.key}
-              onClick={() => setView(v.key)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
-                view === v.key ? 'bg-white text-deep shadow-sm' : 'text-gray-500 hover:text-gray-700'
-              }`}>
-              <v.icon size={13} />
-              {v.label}
-            </button>
-          ))}
+    <>
+      <style>{STYLES}</style>
+      <div className="rm-shell">
+        {/* ── TOPBAR ──────────────────────────────────────────── */}
+        <div className="rm-topbar">
+          <div className="rm-topbar-logo">Stay<b>lo</b></div>
+          <div className="rm-topbar-nav">
+            <Link to="/dashboard" className="rm-tnav">Dashboard</Link>
+            <span className="rm-tnav active">Rooms</span>
+            <Link to={`/dashboard/property/${propertyId}/incoming-bookings`} className="rm-tnav">Reservations</Link>
+            <Link to={`/dashboard/property/${propertyId}/housekeeping`} className="rm-tnav">Housekeeping</Link>
+            <Link to={`/dashboard/property/${propertyId}/reports`} className="rm-tnav">Reports</Link>
+          </div>
+          <div className="rm-topbar-right">
+            <div className="rm-date-nav">
+              <button className="rm-date-btn" onClick={() => shift(-7)}>‹</button>
+              <span>{fmtDay(startDay)} – {fmtDay(endDay)}</span>
+              <button className="rm-date-btn" onClick={() => shift(7)}>›</button>
+            </div>
+            <button className="rm-today-btn" onClick={goToday}>Today</button>
+          </div>
         </div>
 
-        {/* Filters */}
-        <select
-          value={statusFilter}
-          onChange={e => setStatusFilter(e.target.value)}
-          className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-deep">
-          <option value="all">🏠 {t('rooms.filter_all', 'All statuses')}</option>
-          {STATUS_KEYS.map(k => (
-            <option key={k} value={k}>{ROOM_STATUSES[k].sigil} {ROOM_STATUSES[k].label} ({counts[k] || 0})</option>
-          ))}
-        </select>
+        {/* ── SIDEBAR ─────────────────────────────────────────── */}
+        <div className="rm-sidebar">
+          <div className="rm-sidebar-section">
+            <div className="rm-sidebar-title">
+              {property?.name || (loading ? '…' : 'Hotel')}
+            </div>
+            <SidebarItem icon="🏠" label="All Rooms" badge={counts.all} badgeClass="green"
+              active={sideStatusFilter === 'all'} onClick={() => setSideStatusFilter('all')} />
+            <SidebarItem icon="🟢" label="Available" badge={counts.available || 0} badgeClass="green"
+              active={sideStatusFilter === 'available'} onClick={() => setSideStatusFilter('available')} />
+            <SidebarItem icon="🟣" label="Occupied" badge={counts.occupied || 0} badgeClass="purple"
+              active={sideStatusFilter === 'occupied'} onClick={() => setSideStatusFilter('occupied')} />
+            <SidebarItem icon="🟡" label="Dirty / Clean" badge={(counts.dirty || 0) + (counts.cleaning || 0)} badgeClass="orange"
+              active={sideStatusFilter === 'dirty'} onClick={() => setSideStatusFilter('dirty')} />
+            <SidebarItem icon="🔴" label="Maintenance" badge={counts.maintenance || 0}
+              active={sideStatusFilter === 'maintenance'} onClick={() => setSideStatusFilter('maintenance')} />
+          </div>
 
-        {types.length > 1 && (
-          <select
-            value={typeFilter}
-            onChange={e => setTypeFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-semibold text-deep">
-            <option value="all">🛏 {t('rooms.filter_types', 'All types')}</option>
-            {types.map(tp => <option key={tp} value={tp}>{tp}</option>)}
-          </select>
+          {types.length > 0 && (
+            <div className="rm-sidebar-section">
+              <div className="rm-sidebar-title">Room Types</div>
+              <SidebarItem icon="🛏" label={`All (${counts.all})`}
+                active={sideTypeFilter === 'all'} onClick={() => setSideTypeFilter('all')} />
+              {types.map(([type, n]) => (
+                <SidebarItem key={type} icon="🛏" label={`${type} (${n})`}
+                  active={sideTypeFilter === type} onClick={() => setSideTypeFilter(type)} />
+              ))}
+            </div>
+          )}
+
+          <div className="rm-sidebar-section">
+            <div className="rm-sidebar-title">Quick Actions</div>
+            <SidebarItem icon="➕" label="New Booking" />
+            <SidebarItem icon="✅" label={`Check In (${todayStats.arrivals})`} />
+            <SidebarItem icon="🚪" label={`Check Out (${todayStats.departures})`} />
+            <SidebarItem icon="🔄" label="Room Move" />
+          </div>
+
+          <div className="rm-sidebar-section">
+            <div className="rm-sidebar-title">Today</div>
+            <SidebarItem icon="📈" label={`Occupancy: ${todayStats.occupancy}%`} />
+            <SidebarItem icon="⬆️" label={`Arrivals: ${todayStats.arrivals}`} />
+            <SidebarItem icon="⬇️" label={`Departures: ${todayStats.departures}`} />
+          </div>
+
+          <div className="rm-sidebar-section">
+            <SidebarItem icon="←"
+              label="Back to property"
+              onClick={() => navigate(`/dashboard/property/${propertyId}`)} />
+          </div>
+        </div>
+
+        {/* ── MAIN ────────────────────────────────────────────── */}
+        <div className="rm-main">
+          {/* Toolbar */}
+          <div className="rm-toolbar">
+            <div className="rm-view-tabs">
+              <button className={`rm-vtab ${view === 'timeline' ? 'active' : ''}`} onClick={() => setView('timeline')}>📅 Timeline</button>
+              <button className={`rm-vtab ${view === 'grid' ? 'active' : ''}`} onClick={() => setView('grid')}>⬛ Grid</button>
+              <button className={`rm-vtab ${view === 'floorplan' ? 'active' : ''}`} onClick={() => setView('floorplan')}>🗺 Floor Plan</button>
+            </div>
+            <button className={`rm-filter-btn ${sideTypeFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setSideTypeFilter('all')}>🏠 All Types</button>
+            <button className={`rm-filter-btn ${sideStatusFilter === 'available' ? 'active' : ''}`}
+              onClick={() => setSideStatusFilter(sideStatusFilter === 'available' ? 'all' : 'available')}>🟢 Available</button>
+            <button className={`rm-filter-btn ${needsActionOnly ? 'active' : ''}`}
+              onClick={() => setNeedsActionOnly(v => !v)}>⚠️ Needs Action</button>
+            <input
+              className="rm-search-box"
+              type="text" placeholder="🔍  Search room, guest..."
+              value={search} onChange={e => setSearch(e.target.value)} />
+            <div className="rm-stats-row">
+              <span className="rm-stat-chip rm-sc-available">Available {counts.available || 0}</span>
+              <span className="rm-stat-chip rm-sc-occupied">Occupied {counts.occupied || 0}</span>
+              <span className="rm-stat-chip rm-sc-dirty">Dirty {counts.dirty || 0}</span>
+              <span className="rm-stat-chip rm-sc-maintenance">Maint. {counts.maintenance || 0}</span>
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="rm-legend">
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#636E72' }}>Legend:</span>
+            <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#00B894' }}></div>Available</div>
+            <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#6C5CE7' }}></div>Occupied</div>
+            <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#F4C542' }}></div>Dirty / Ready to clean</div>
+            <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#FF6B00' }}></div>Due checkout</div>
+            <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#0984E3' }}></div>In cleaning</div>
+            <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#E74C3C' }}></div>Maintenance</div>
+            <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#9CA3AF' }}></div>Blocked</div>
+          </div>
+
+          {/* View body */}
+          <div className="rm-view">
+            {loading ? (
+              <div style={{ padding: 60, textAlign: 'center', color: '#636E72' }}>Loading rooms…</div>
+            ) : rooms.length === 0 ? (
+              <div style={{ padding: 60, textAlign: 'center', color: '#636E72' }}>
+                No rooms configured yet. <Link to={`/dashboard/property/${propertyId}/manage`}>Add rooms in Manage → Chambres</Link>.
+              </div>
+            ) : view === 'timeline' ? (
+              <TimelineView rooms={filteredRooms} bookings={bookings}
+                startDay={startDay} dates={dates} todayDate={todayDate}
+                onPick={setSelectedRoom} />
+            ) : view === 'grid' ? (
+              <GridView floorsMap={floorsMap} onPick={setSelectedRoom} />
+            ) : (
+              <FloorPlanView floorsMap={floorsMap} activeFloor={activeFloor}
+                setActiveFloor={setActiveFloor} property={property}
+                onPick={setSelectedRoom} />
+            )}
+          </div>
+        </div>
+
+        {/* ── SIDE PANEL ──────────────────────────────────────── */}
+        {selectedRoom && (
+          <>
+            <div className="rm-panel-backdrop" onClick={() => setSelectedRoom(null)} />
+            <RoomPanel
+              room={selectedRoom}
+              bookings={bookings}
+              onClose={() => setSelectedRoom(null)}
+              onSetStatus={(s) => {
+                setRoomStatus(selectedRoom.id, s)
+                setSelectedRoom(r => r ? { ...r, status: s } : r)
+              }}
+            />
+          </>
         )}
-
-        <div className="relative flex-1 min-w-[180px] max-w-[260px]">
-          <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input
-            type="search"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={t('rooms.search_placeholder', 'Search room, guest…')}
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg border border-gray-200 bg-white text-xs font-medium text-deep focus:outline-none focus:ring-2 focus:ring-ocean/30"
-          />
-        </div>
-
-        {/* Stat chips — right-aligned */}
-        <div className="ml-auto flex gap-1.5 flex-wrap">
-          {[
-            ['available',   counts.available],
-            ['occupied',    counts.occupied],
-            ['dirty',       counts.dirty],
-            ['maintenance', counts.maintenance],
-          ].map(([k, n]) => (
-            <span key={k} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold"
-              style={{ background: ROOM_STATUSES[k].bg, color: ROOM_STATUSES[k].text }}>
-              <span className="w-1.5 h-1.5 rounded-full" style={{ background: ROOM_STATUSES[k].color }} />
-              {ROOM_STATUSES[k].label} {n}
-            </span>
-          ))}
-        </div>
       </div>
-
-      {/* ── Legend ──────────────────────────────────────────────────
-          Visible cheat-sheet of the 6 status colors. Helps staff who
-          are new to the codes learn them without opening every card.
-          Quietly tucked below the toolbar — same row pattern as the
-          mockup. */}
-      <div className="flex flex-wrap items-center gap-3 mb-3 px-1 text-[11px] text-gray-500">
-        <span className="font-bold uppercase tracking-wider">{t('rooms.legend', 'Legend')}:</span>
-        {STATUS_KEYS.map(k => {
-          const s = ROOM_STATUSES[k]
-          return (
-            <span key={k} className="inline-flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full" style={{ background: s.color }} />
-              {s.label}
-            </span>
-          )
-        })}
-        <span className="inline-flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full" style={{ background: '#9CA3AF' }} />
-          {t('rooms.status_blocked', 'Blocked')}
-        </span>
-      </div>
-
-      {/* ── View body ───────────────────────────────────────────── */}
-      {view === 'grid' && (
-        <GridView floorsMap={floorsMap} onPick={setSelectedRoom} />
-      )}
-      {view === 'timeline' && (
-        <TimelineView
-          rooms={filteredRooms} bookings={bookings}
-          startDay={startDay} setStartDay={setStartDay} daysShow={DAYS_SHOW}
-          onPick={setSelectedRoom}
-        />
-      )}
-      {view === 'floorplan' && (
-        <FloorPlanView
-          floorsMap={floorsMap}
-          activeFloor={activeFloor}
-          setActiveFloor={setActiveFloor}
-          property={property}
-          onPick={setSelectedRoom}
-        />
-      )}
-
-      {/* Side panel — slides over content */}
-      {selectedRoom && (
-        <RoomPanel
-          room={selectedRoom}
-          bookings={bookings}
-          onClose={() => setSelectedRoom(null)}
-          onSetStatus={(s) => {
-            setRoomStatus(selectedRoom.id, s)
-            // Refresh the panel's local view by replacing the selectedRoom
-            setSelectedRoom(r => r ? { ...r, status: s } : r)
-          }}
-        />
-      )}
-    </div>
+    </>
   )
 }
 
-// ============================================
-// VIEW — Grid (rooms grouped by floor)
-// ============================================
-function GridView({ floorsMap, onPick }) {
-  const { t } = useTranslation()
-  if (floorsMap.size === 0) {
-    return (
-      <div className="bg-white rounded-xl border border-gray-200 p-10 text-center text-sm text-gray-500">
-        {t('rooms.empty_filter', 'No rooms match the current filters.')}
+// ── Sidebar item ──
+function SidebarItem({ icon, label, badge, badgeClass, active, onClick }) {
+  return (
+    <button className={`rm-sidebar-item ${active ? 'active' : ''}`} onClick={onClick}>
+      <span className="rm-si-icon">{icon}</span>
+      <span style={{ flex: 1 }}>{label}</span>
+      {badge != null && badge !== '' && (
+        <span className={`rm-badge ${badgeClass || ''}`}>{badge}</span>
+      )}
+    </button>
+  )
+}
+
+// ── Timeline view ──
+function TimelineView({ rooms, bookings, startDay, dates, todayDate, onPick }) {
+  const resByRoom = useMemo(() => {
+    const m = new Map()
+    const endDay = dates[dates.length - 1]
+    bookings.forEach(b => {
+      if (b.status === 'cancelled') return
+      const ci = new Date(b.check_in); ci.setHours(0,0,0,0)
+      const co = new Date(b.check_out); co.setHours(0,0,0,0)
+      if (co < startDay || ci > endDay) return
+      const startIdx = Math.max(0, Math.floor((ci - startDay) / 86400000))
+      const endIdx   = Math.min(DAYS_SHOW, Math.ceil((co - startDay) / 86400000))
+      if (endIdx <= startIdx) return
+      const arr = m.get(b.room_id) || []
+      arr.push({ ...b, startIdx, endIdx })
+      m.set(b.room_id, arr)
+    })
+    return m
+  }, [bookings, startDay, dates])
+  const todayISO = isoDate(new Date())
+
+  return (
+    <>
+      <div className="rm-tl-header">
+        <div className="rm-tl-room-col">Room</div>
+        <div className="rm-tl-dates">
+          {dates.map((d, i) => {
+            const isToday = d.toDateString() === todayDate.toDateString()
+            return (
+              <div key={i} className={`rm-tl-day ${isToday ? 'today' : ''}`}>
+                <span className="rm-tl-dow">{DAYS_LBL[d.getDay()]}</span>
+                <span className="rm-tl-date">{d.getDate()}</span>
+              </div>
+            )
+          })}
+        </div>
       </div>
-    )
+      {rooms.map(room => {
+        const reservations = resByRoom.get(room.id) || []
+        return (
+          <div key={room.id} className="rm-tl-row">
+            <div className="rm-tl-room-info">
+              <div className="rm-tl-room-num">{room.name}</div>
+              <div className="rm-tl-room-type">{room.type}</div>
+            </div>
+            <div className="rm-tl-grid">
+              {dates.map((d, i) => {
+                const isToday = d.toDateString() === todayDate.toDateString()
+                return <div key={i} className={`rm-tl-cell ${isToday ? 'today' : ''}`} />
+              })}
+              {reservations.map((b, i) => {
+                const cellW = 100 / DAYS_SHOW
+                const isCheckin = b.check_in === todayISO
+                const isCheckout = b.check_out === todayISO
+                const isBlocked = b.status === 'blocked'
+                const klass = isBlocked ? 'rm-rb-blocked'
+                            : isCheckout ? 'rm-rb-checkout'
+                            : isCheckin ? 'rm-rb-checkin'
+                            : 'rm-rb-confirmed'
+                return (
+                  <button key={i} className={`rm-res-bar ${klass}`}
+                    style={{
+                      left: `calc(${b.startIdx * cellW}% + 2px)`,
+                      width: `calc(${(b.endIdx - b.startIdx) * cellW}% - 4px)`,
+                    }}
+                    onClick={() => onPick(room)}
+                    title={`${b.guest_name || 'Guest'} · ${b.check_in} → ${b.check_out}`}>
+                    {b.guest_name || 'Guest'}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </>
+  )
+}
+
+// ── Grid view ──
+function GridView({ floorsMap, onPick }) {
+  if (floorsMap.size === 0) {
+    return <div style={{ padding: 60, textAlign: 'center', color: '#636E72' }}>No rooms match the current filters.</div>
   }
   return (
-    <div className="space-y-5">
+    <div className="rm-grid-view">
       {[...floorsMap.entries()].map(([floor, list]) => (
-        <section key={floor}>
-          <h3 className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">
-            <span>{t('rooms.floor', 'Floor')} {floor}</span>
-            <span className="flex-1 h-px bg-gray-200" />
-            <span className="text-gray-400 font-semibold">{list.length}</span>
-          </h3>
-          <div className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
-            {list.map(r => <RoomCard key={r.id} room={r} onPick={onPick} />)}
+        <section key={floor} className="rm-floor-section">
+          <div className="rm-floor-title">Floor {floor}</div>
+          <div className="rm-rooms-grid">
+            {list.map(r => <GridCard key={r.id} room={r} onPick={onPick} />)}
           </div>
         </section>
       ))}
@@ -414,219 +628,49 @@ function GridView({ floorsMap, onPick }) {
   )
 }
 
-function RoomCard({ room, onPick }) {
-  const s = ROOM_STATUSES[room.status]
-  const hkIcon = room.status === 'dirty' ? '🧹'
-              : room.status === 'cleaning' ? '⏳'
-              : room.status === 'maintenance' ? '🔧'
-              : room.status === 'checkout' ? '🚪'
-              : null
+function GridCard({ room, onPick }) {
+  const s = ROOM_STATUSES[room.status] || ROOM_STATUSES.available
+  const hk = room.status === 'dirty' ? '🧹'
+          : room.status === 'cleaning' ? '⏳'
+          : room.status === 'maintenance' ? '🔧'
+          : room.status === 'checkout' ? '🚪'
+          : ''
   return (
-    <button
-      type="button"
-      onClick={() => onPick(room)}
-      className="text-left bg-white rounded-xl p-3 border-2 transition-all hover:-translate-y-0.5 hover:shadow-md relative overflow-hidden"
-      style={{ borderColor: s.color + '40' }}
-    >
-      <div className="absolute top-0 left-0 right-0 h-1" style={{ background: s.color }} />
-      {hkIcon && <div className="absolute top-2 right-2 text-base">{hkIcon}</div>}
-      <div className="text-xl font-black text-deep leading-none">{room.name}</div>
-      <div className="text-[10px] text-gray-400 mt-0.5 truncate">{room.type}</div>
-      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-2"
-        style={{ background: s.bg, color: s.text }}>
-        {s.label}
-      </span>
-      {room.guest && (
-        <div className="text-[11px] text-gray-600 mt-1.5 truncate flex items-center gap-1">
-          <User size={10} /> {room.guest}
-        </div>
-      )}
+    <button className={`rm-room-card ${room.status}`} onClick={() => onPick(room)}>
+      <div className="rm-rc-num">{room.name}</div>
+      <div className="rm-rc-type">{room.type}</div>
+      <div className={`rm-rc-status ${room.status}`}>{s.label}</div>
+      {room.guest && <div className="rm-rc-guest">👤 {room.guest}</div>}
       {room.nights > 0 && room.checkout && (
-        <div className="text-[10px] text-gray-400 mt-0.5">
-          {room.nights}N · CO {fmtDay(new Date(room.checkout))}
-        </div>
+        <div className="rm-rc-nights">📅 {room.nights}N · CO: {fmtDay(new Date(room.checkout))}</div>
       )}
+      {hk && <div className="rm-hk-icon">{hk}</div>}
     </button>
   )
 }
 
-// ============================================
-// VIEW — Timeline (Gantt)
-// ============================================
-function TimelineView({ rooms, bookings, startDay, setStartDay, daysShow, onPick }) {
-  const { t } = useTranslation()
-  // Build the date columns once per startDay change.
-  const dates = useMemo(() => {
-    const arr = []
-    for (let i = 0; i < daysShow; i++) {
-      const d = new Date(startDay); d.setDate(d.getDate() + i)
-      arr.push(d)
-    }
-    return arr
-  }, [startDay, daysShow])
-  const today = new Date(); today.setHours(0,0,0,0)
-  const endDay = dates[dates.length - 1]
-
-  // Reservations indexed by room id — clipped to the visible window.
-  const resByRoom = useMemo(() => {
-    const m = new Map()
-    bookings.forEach(b => {
-      if (b.status === 'cancelled') return
-      const ci = new Date(b.check_in); ci.setHours(0,0,0,0)
-      const co = new Date(b.check_out); co.setHours(0,0,0,0)
-      if (co < startDay || ci > endDay) return
-      const startIdx = Math.max(0, Math.floor((ci - startDay) / 86400000))
-      const endIdx   = Math.min(daysShow, Math.ceil((co - startDay) / 86400000))
-      if (endIdx <= startIdx) return
-      const arr = m.get(b.room_id) || []
-      arr.push({ ...b, startIdx, endIdx })
-      m.set(b.room_id, arr)
-    })
-    return m
-  }, [bookings, startDay, endDay, daysShow])
-
-  function shift(n) {
-    const d = new Date(startDay); d.setDate(d.getDate() + n); setStartDay(d)
-  }
-  function goToday() {
-    const d = new Date(); d.setHours(0,0,0,0); setStartDay(d)
-  }
-
-  return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-      {/* Date nav */}
-      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-gray-200">
-        <div className="inline-flex items-center gap-2 text-xs font-semibold text-gray-700">
-          <button onClick={() => shift(-7)} className="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
-            <ChevronLeft size={14} />
-          </button>
-          <span>{fmtDay(startDay)} – {fmtDay(endDay)}</span>
-          <button onClick={() => shift(7)} className="w-6 h-6 rounded-md bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
-            <ChevronRight size={14} />
-          </button>
-        </div>
-        <button onClick={goToday} className="px-3 py-1 rounded-md bg-orange text-white text-[11px] font-bold">
-          {t('rooms.today', 'Today')}
-        </button>
-      </div>
-
-      {/* Header — Room | day cols */}
-      <div className="flex border-b border-gray-200 bg-gray-50">
-        <div className="w-32 flex-shrink-0 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-500 border-r border-gray-200">
-          {t('rooms.room', 'Room')}
-        </div>
-        <div className="flex-1 flex">
-          {dates.map((d, i) => {
-            const isToday = d.toDateString() === today.toDateString()
-            return (
-              <div key={i}
-                className={`flex-1 min-w-[42px] text-center py-1.5 border-r border-gray-100 text-[10px] ${
-                  isToday ? 'bg-orange/5' : ''
-                }`}>
-                <div className="text-gray-500">{DAYS_LBL[d.getDay()]}</div>
-                <div className={`font-bold text-[12px] ${isToday ? 'text-orange' : 'text-deep'}`}>{d.getDate()}</div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="max-h-[calc(100vh-340px)] overflow-y-auto">
-        {rooms.map(room => {
-          const reservations = resByRoom.get(room.id) || []
-          return (
-            <div key={room.id} className="flex border-b border-gray-100 h-11 items-center hover:bg-gray-50/60">
-              <div className="w-32 flex-shrink-0 px-3 border-r border-gray-200">
-                <div className="text-sm font-bold text-deep leading-tight">{room.name}</div>
-                <div className="text-[10px] text-gray-400 truncate">{room.type}</div>
-              </div>
-              <div className="flex-1 relative flex">
-                {dates.map((d, i) => {
-                  const isToday = d.toDateString() === today.toDateString()
-                  return (
-                    <div key={i} className={`flex-1 min-w-[42px] border-r border-gray-100 ${isToday ? 'bg-orange/5' : ''}`} />
-                  )
-                })}
-                {reservations.map((b, i) => {
-                  const cellW = 100 / daysShow
-                  // Status-based gradient — matches the mockup palette:
-                  //   confirmed (default) → indigo→purple
-                  //   checkin (arriving today) → emerald→libre
-                  //   checkout (leaving today) → orange→sunrise
-                  //   blocked (cancelled / maintenance hold) → grey hatched
-                  const todayISO = isoDate(new Date())
-                  const isCheckin = b.check_in === todayISO
-                  const isCheckout = b.check_out === todayISO
-                  const isBlocked = b.status === 'blocked' || b.guest_name === 'Blocked'
-                  const bg = isBlocked
-                    ? 'repeating-linear-gradient(45deg, #9CA3AF, #9CA3AF 4px, #D1D5DB 4px, #D1D5DB 8px)'
-                    : isCheckout
-                      ? 'linear-gradient(135deg, #C2410C, #FF6B00)'
-                      : isCheckin
-                        ? 'linear-gradient(135deg, #0F766E, #00B894)'
-                        : 'linear-gradient(135deg, #4C51BF, #6C5CE7)'
-                  return (
-                    <button key={i}
-                      onClick={() => onPick(room)}
-                      className="absolute h-7 top-1/2 -translate-y-1/2 rounded-md px-2 flex items-center text-[11px] font-semibold text-white truncate hover:opacity-85 transition-opacity"
-                      style={{
-                        left: `calc(${b.startIdx * cellW}% + 2px)`,
-                        width: `calc(${(b.endIdx - b.startIdx) * cellW}% - 4px)`,
-                        background: bg,
-                      }}
-                      title={`${b.guest_name || 'Guest'} · ${b.check_in} → ${b.check_out}`}
-                    >
-                      {b.guest_name || 'Guest'}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-    </div>
-  )
-}
-
-// ============================================
-// VIEW — Floor Plan (top-down map)
-// ============================================
+// ── Floor plan view ──
 function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, onPick }) {
-  const { t } = useTranslation()
   const floors = [...floorsMap.keys()]
-  // If the saved active floor disappears (filtered out), fall back to first.
-  const effective = floors.includes(activeFloor) ? activeFloor : floors[0]
-  const floorRooms = floorsMap.get(effective) || []
-  const half = Math.ceil(floorRooms.length / 2)
-
+  const effective = floors.includes(activeFloor) ? activeFloor : (floors[0] ?? 1)
+  const list = floorsMap.get(effective) || []
+  const half = Math.ceil(list.length / 2)
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-      <div className="flex border-b border-gray-200">
+    <div className="rm-fp-view">
+      <div className="rm-fp-floors">
         {floors.map(f => (
-          <button key={f}
-            onClick={() => setActiveFloor(f)}
-            className={`px-4 py-2.5 text-xs font-semibold transition-all border-b-2 ${
-              effective === f ? 'text-orange border-orange' : 'text-gray-500 border-transparent hover:text-gray-700'
-            }`}>
-            {t('rooms.floor', 'Floor')} {f}
-          </button>
+          <button key={f} className={`rm-fp-floor-tab ${effective === f ? 'active' : ''}`}
+            onClick={() => setActiveFloor(f)}>Floor {f}</button>
         ))}
       </div>
-      <div className="p-6 bg-gray-50">
-        <div className="bg-white rounded-2xl p-6 shadow-sm max-w-3xl mx-auto">
-          {/* Top row of rooms */}
-          <div className="flex gap-2.5 justify-center flex-wrap">
-            {floorRooms.slice(0, half).map(r => <FpRoom key={r.id} room={r} onPick={onPick} />)}
+      <div className="rm-fp-canvas">
+        <div className="rm-floor-plan">
+          <div className="rm-fp-row">
+            {list.slice(0, half).map(r => <FpRoom key={r.id} room={r} onPick={onPick} />)}
           </div>
-          {/* Corridor strip */}
-          <div className="my-3 h-9 rounded-lg bg-gray-100 flex items-center justify-center text-[10px] font-bold uppercase tracking-wider text-gray-500">
-            — {property?.name || t('rooms.corridor', 'Corridor')} — Floor {effective} —
-          </div>
-          {/* Bottom row */}
-          <div className="flex gap-2.5 justify-center flex-wrap">
-            {floorRooms.slice(half).map(r => <FpRoom key={r.id} room={r} onPick={onPick} />)}
+          <div className="rm-fp-corridor">— {property?.name || 'Corridor'} — Floor {effective} —</div>
+          <div className="rm-fp-row">
+            {list.slice(half).map(r => <FpRoom key={r.id} room={r} onPick={onPick} />)}
           </div>
         </div>
       </div>
@@ -635,151 +679,80 @@ function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, onPic
 }
 
 function FpRoom({ room, onPick }) {
-  const s = ROOM_STATUSES[room.status]
   return (
-    <button onClick={() => onPick(room)}
-      className="w-[88px] h-[70px] rounded-xl border-2 flex flex-col items-center justify-center gap-0.5 transition-transform hover:scale-105 relative"
-      style={{ background: s.bg, borderColor: s.color + '80' }}
-      title={`${room.name} · ${room.type} · ${s.label}${room.guest ? ' · ' + room.guest : ''}`}
-    >
-      <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full" style={{ background: s.color }} />
-      <div className="text-base font-black" style={{ color: s.text }}>{room.name}</div>
-      <div className="text-[9px] font-semibold uppercase opacity-60" style={{ color: s.text }}>
-        {(room.type || '').split(' ')[0]}
-      </div>
+    <button className={`rm-fp-room ${room.status}`} onClick={() => onPick(room)}
+      title={`Room ${room.name} · ${room.type}`}>
+      <div className="rm-fpr-num">{room.name}</div>
+      <div className="rm-fpr-type">{(room.type || '').split(' ')[0]}</div>
+      <div className="rm-fpr-status" />
     </button>
   )
 }
 
-// ============================================
-// Room Side Panel
-// ============================================
+// ── Side panel ──
 function RoomPanel({ room, bookings, onClose, onSetStatus }) {
-  const { t } = useTranslation()
-  const s = ROOM_STATUSES[room.status]
+  const today = isoDate(new Date())
   const active = bookings.find(b =>
     b.room_id === room.id && b.status !== 'cancelled' &&
-    b.check_in <= isoDate(new Date()) && b.check_out >= isoDate(new Date()),
-  )
-  const primaryLabel = room.status === 'checkout'    ? `🚪 ${t('rooms.action_checkout', 'Process checkout')}`
-                     : room.status === 'available'   ? `✅ ${t('rooms.action_checkin', 'Quick check in')}`
-                     : room.status === 'dirty'       ? `🧹 ${t('rooms.action_clean', 'Assign housekeeper')}`
-                     : room.status === 'maintenance' ? `🔧 ${t('rooms.action_tech', 'Assign technician')}`
-                     :                                 `👤 ${t('rooms.action_guest', 'View guest profile')}`
+    b.check_in <= today && b.check_out >= today)
+  const s = ROOM_STATUSES[room.status] || ROOM_STATUSES.available
+  const primary =
+    room.status === 'checkout'    ? '🚪 Process Checkout'
+  : room.status === 'available'   ? '✅ Quick Check In'
+  : room.status === 'dirty'       ? '🧹 Assign Housekeeper'
+  : room.status === 'maintenance' ? '🔧 Assign Technician'
+  :                                 '👤 View Guest Profile'
 
   return (
-    <>
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/20 z-40" onClick={onClose} />
-      {/* Panel */}
-      <aside
-        className="fixed right-4 top-20 w-[300px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 p-5"
-        onClick={e => e.stopPropagation()}
-      >
-        <header className="flex items-start justify-between mb-4">
-          <div>
-            <div className="text-2xl font-black text-deep leading-none">
-              {t('rooms.room', 'Room')} {room.name}
-            </div>
-            <div className="text-xs text-gray-500 mt-0.5">{room.type} · {t('rooms.floor', 'Floor')} {room.floor}</div>
-          </div>
-          <button onClick={onClose}
-            className="w-7 h-7 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600">
-            <X size={14} />
-          </button>
-        </header>
-
-        {/* Status picker — sigil pills */}
-        <div className="flex flex-wrap gap-1.5 mb-4">
-          {STATUS_KEYS.map(k => {
-            const sk = ROOM_STATUSES[k]
-            const current = k === room.status
-            return (
-              <button key={k}
-                onClick={() => onSetStatus(k)}
-                className="px-2.5 py-1 rounded-full text-[11px] font-bold border-2 transition-all"
-                style={{
-                  borderColor: sk.color,
-                  color: current ? '#fff' : sk.text,
-                  background: current ? sk.color : sk.bg,
-                }}>
-                {sk.label}
-              </button>
-            )
-          })}
+    <aside className="rm-room-panel" onClick={e => e.stopPropagation()}>
+      <div className="rm-rp-header">
+        <div>
+          <div className="rm-rp-num">Room {room.name}</div>
+          <div className="rm-rp-type">{room.type} · Floor {room.floor}</div>
         </div>
+        <button className="rm-rp-close" onClick={onClose}>✕</button>
+      </div>
 
-        {/* Info rows */}
-        <div className="space-y-1.5 mb-4 text-[12px]">
-          <Row label={t('rooms.status', 'Status')} value={s.label} valueStyle={{ color: s.color }} />
-          {active?.guest_name && <Row label={t('rooms.guest', 'Guest')} value={active.guest_name} />}
-          {room.nights > 0 && <Row label={t('rooms.nights', 'Nights')} value={room.nights} />}
-          {active?.check_in && <Row label={t('rooms.checkin', 'Check-in')} value={fmtDay(new Date(active.check_in))} />}
-          {active?.check_out && <Row label={t('rooms.checkout_label', 'Check-out')} value={fmtDay(new Date(active.check_out))} />}
-        </div>
+      <div className="rm-rp-status-row">
+        {STATUS_KEYS.map(k => {
+          const sk = ROOM_STATUSES[k]
+          const cur = k === room.status
+          return (
+            <button key={k} className={`rm-rp-status-btn ${cur ? 'current' : ''}`}
+              style={{
+                borderColor: sk.color,
+                background: cur ? sk.color : sk.bg,
+                color: cur ? '#fff' : sk.text,
+              }}
+              onClick={() => onSetStatus(k)}>
+              {sk.label}
+            </button>
+          )
+        })}
+      </div>
 
-        {/* Actions */}
-        <div className="space-y-1.5">
-          <button
-            className="w-full py-2.5 rounded-xl text-white text-xs font-bold"
-            style={{ background: 'linear-gradient(135deg, #FF6B00, #FF3CB4)' }}
-          >
-            {primaryLabel}
-          </button>
-          <button className="w-full py-2.5 rounded-xl bg-gray-100 text-deep text-xs font-bold border border-gray-200"
-            onClick={onClose}>
-            ✎ {t('rooms.edit_reservation', 'Edit reservation')}
-          </button>
-          <button className="w-full py-2.5 rounded-xl bg-red-50 text-red-600 text-xs font-bold border border-red-200">
-            <AlertTriangle size={12} className="inline mr-1" /> {t('rooms.report_issue', 'Report issue')}
-          </button>
-        </div>
-      </aside>
-    </>
+      <div className="rm-rp-info">
+        <Row label="Status" value={s.label} valueStyle={{ color: s.color }} />
+        {active?.guest_name && <Row label="Guest" value={active.guest_name} />}
+        {room.nights > 0 && <Row label="Nights" value={room.nights} />}
+        {active?.check_in && <Row label="Check-in" value={fmtDay(new Date(active.check_in))} />}
+        {active?.check_out && <Row label="Check-out" value={fmtDay(new Date(active.check_out))} />}
+      </div>
+
+      <div className="rm-rp-actions">
+        <button className="rm-rp-btn rm-rp-btn-primary">{primary}</button>
+        <button className="rm-rp-btn rm-rp-btn-secondary" onClick={onClose}>Edit Reservation</button>
+        <button className="rm-rp-btn rm-rp-btn-danger">Report Issue</button>
+      </div>
+    </aside>
   )
 }
 
 function Row({ label, value, valueStyle }) {
   return (
-    <div className="flex items-center justify-between">
-      <span className="text-gray-500">{label}</span>
-      <span className="font-semibold text-deep" style={valueStyle}>{value}</span>
+    <div className="rm-rp-row">
+      <span className="rm-rp-label">{label}</span>
+      <span className="rm-rp-val" style={valueStyle}>{value}</span>
     </div>
-  )
-}
-
-// ── Today briefing metric chip ───────────────────────────────────
-// Single-line inline pill matching the toolbar's height. The icon +
-// big value + small label sit on a single horizontal row so 3-4
-// metrics + 4 actions fit comfortably on one row.
-function Metric({ icon: Icon, color, label, value }) {
-  return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
-      <Icon size={13} className={color} />
-      <span className="text-sm font-extrabold text-deep leading-none">{value}</span>
-      <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold leading-none">{label}</span>
-    </span>
-  )
-}
-
-// ── Quick action button ──────────────────────────────────────────
-// Compact icon-first button, same height as the Metric pill so the
-// briefing row reads as a single coherent strip. Action handlers
-// are still placeholders — they'll be wired to the real check-in /
-// check-out flows in a follow-up.
-function QuickAction({ icon: Icon, label, badge, accent }) {
-  return (
-    <button
-      type="button"
-      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-semibold text-deep hover:border-orange/40 hover:bg-orange/5 hover:text-orange transition-all leading-none"
-    >
-      <Icon size={13} className={accent || 'text-gray-500'} />
-      {label}
-      {badge != null && (
-        <span className="ml-0.5 bg-orange text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 leading-none">
-          {badge}
-        </span>
-      )}
-    </button>
   )
 }
