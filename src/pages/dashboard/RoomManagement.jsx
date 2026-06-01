@@ -54,29 +54,21 @@ const isoDate = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'
 // polluting the global Tailwind layer. Class names mirror the
 // mockup so future tweaks can be ported 1:1.
 const STYLES = `
-/* Full-viewport takeover — covers the STAYLO dashboard sidebar so
-   we don't double up the chrome. z-index above the dashboard layout.
-   The sidebar collapses to 0 width when retracted; transition keeps
-   the slide smooth. Logo zone follows the same width so the topbar
-   logo doesn't float in mid-air. */
-.rm-shell{position:fixed;inset:0;z-index:50;display:grid;grid-template-columns:220px 1fr;grid-template-rows:56px 1fr;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0EDE8;color:#1A1F2E;transition:grid-template-columns .25s ease}
+/* Renders INSIDE PropertyLayout — the STAYLO pill bar (Chambres /
+   Housekeeping / Rapports / etc.) stays on top, this module sits
+   below it. No fixed positioning, no own topbar (would duplicate
+   the pill bar). Dark sidebar + light main area only.
+   Sidebar collapses smoothly when the chef wants more grid width. */
+.rm-shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 200px);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0EDE8;color:#1A1F2E;border-radius:12px;overflow:hidden;border:1px solid #E8E0D8;transition:grid-template-columns .25s ease}
 .rm-shell.collapsed{grid-template-columns:0 1fr}
-.rm-shell.collapsed .rm-topbar-logo{width:0;padding:0;border-right:none;opacity:0;overflow:hidden}
-.rm-topbar-logo{transition:width .25s ease, padding .25s ease, opacity .25s ease}
-.rm-sidebar-toggle{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:none;border-radius:8px;cursor:pointer;margin:0 8px 0 12px;flex-shrink:0;transition:all .12s}
-.rm-sidebar-toggle:hover{background:rgba(255,255,255,.15);color:white}
-.rm-topbar{grid-column:1/-1;background:#1A1F2E;display:flex;align-items:center;gap:0;padding:0;border-bottom:1px solid rgba(255,255,255,.08)}
-.rm-topbar-logo{width:220px;padding:0 20px;font-size:20px;font-weight:900;color:white;border-right:1px solid rgba(255,255,255,.08)}
-.rm-topbar-logo b{color:#FF6B00}
-.rm-topbar-nav{display:flex;height:100%}
-.rm-tnav{padding:0 20px;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);cursor:pointer;display:flex;align-items:center;border-bottom:2px solid transparent;transition:all .15s;text-decoration:none}
-.rm-tnav:hover{color:rgba(255,255,255,.8)}
-.rm-tnav.active{color:white;border-bottom-color:#FF6B00}
-.rm-topbar-right{margin-left:auto;padding:0 20px;display:flex;align-items:center;gap:12px}
-.rm-date-nav{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.7)}
-.rm-date-btn{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.1);border:none;color:white;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
-.rm-date-btn:hover{background:rgba(255,255,255,.2)}
-.rm-today-btn{padding:4px 12px;border-radius:6px;background:#FF6B00;border:none;color:white;font-size:12px;font-weight:700;cursor:pointer}
+/* Date nav lives in the toolbar (top of main area) so it stays
+   visible even when the sidebar collapses. */
+.rm-date-nav{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#636E72;font-weight:600;padding:0 8px}
+.rm-date-btn{width:24px;height:24px;border-radius:6px;background:#F8F6F0;border:1px solid #E8E0D8;color:#636E72;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
+.rm-date-btn:hover{background:#FFE9D6;color:#FF6B00;border-color:#FF6B00}
+.rm-today-btn{padding:4px 10px;border-radius:6px;background:#FF6B00;border:none;color:white;font-size:11px;font-weight:700;cursor:pointer}
+.rm-sidebar-toggle{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:#F8F6F0;color:#636E72;border:1px solid #E8E0D8;border-radius:8px;cursor:pointer;flex-shrink:0;transition:all .12s}
+.rm-sidebar-toggle:hover{background:#FFE9D6;color:#FF6B00;border-color:#FF6B00}
 
 .rm-sidebar{background:#1A1F2E;padding:16px 0;overflow-y:auto;border-right:1px solid rgba(255,255,255,.06)}
 .rm-sidebar-section{margin-bottom:8px}
@@ -381,37 +373,6 @@ export default function RoomManagement() {
     <>
       <style>{STYLES}</style>
       <div className={`rm-shell ${sidebarOpen ? '' : 'collapsed'}`}>
-        {/* ── TOPBAR ──────────────────────────────────────────── */}
-        <div className="rm-topbar">
-          <div className="rm-topbar-logo">Stay<b>lo</b></div>
-          {/* Sidebar toggle — slides the dark left panel away when the
-              hotelier needs more real estate (e.g. on a wide Timeline
-              grid). Position right after the logo so it's the first
-              thing the eye finds when looking for a way to free up
-              space. Persists choice in localStorage. */}
-          <button className="rm-sidebar-toggle"
-            onClick={() => setSidebarOpen(v => !v)}
-            title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
-            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}>
-            {sidebarOpen ? '◀' : '▶'}
-          </button>
-          <div className="rm-topbar-nav">
-            <Link to="/dashboard" className="rm-tnav">Dashboard</Link>
-            <span className="rm-tnav active">Rooms</span>
-            <Link to={`/dashboard/property/${propertyId}/incoming-bookings`} className="rm-tnav">Reservations</Link>
-            <Link to={`/dashboard/property/${propertyId}/housekeeping`} className="rm-tnav">Housekeeping</Link>
-            <Link to={`/dashboard/property/${propertyId}/reports`} className="rm-tnav">Reports</Link>
-          </div>
-          <div className="rm-topbar-right">
-            <div className="rm-date-nav">
-              <button className="rm-date-btn" onClick={() => shift(-7)}>‹</button>
-              <span>{fmtDay(startDay)} – {fmtDay(endDay)}</span>
-              <button className="rm-date-btn" onClick={() => shift(7)}>›</button>
-            </div>
-            <button className="rm-today-btn" onClick={goToday}>Today</button>
-          </div>
-        </div>
-
         {/* ── SIDEBAR ─────────────────────────────────────────── */}
         <div className="rm-sidebar">
           <div className="rm-sidebar-section">
@@ -468,11 +429,32 @@ export default function RoomManagement() {
         <div className="rm-main">
           {/* Toolbar */}
           <div className="rm-toolbar">
+            {/* Sidebar toggle — moved here from the (removed) dark
+                topbar. Stays visible whether the sidebar is open or
+                closed, so the chef can always swap. */}
+            <button className="rm-sidebar-toggle"
+              onClick={() => setSidebarOpen(v => !v)}
+              title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+              aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}>
+              {sidebarOpen ? '◀' : '▶'}
+            </button>
             <div className="rm-view-tabs">
               <button className={`rm-vtab ${view === 'timeline' ? 'active' : ''}`} onClick={() => setView('timeline')}>📅 Timeline</button>
               <button className={`rm-vtab ${view === 'grid' ? 'active' : ''}`} onClick={() => setView('grid')}>⬛ Grid</button>
               <button className={`rm-vtab ${view === 'floorplan' ? 'active' : ''}`} onClick={() => setView('floorplan')}>🗺 Floor Plan</button>
             </div>
+            {/* Date nav — only meaningful in Timeline view. Hide on
+                other views to keep the toolbar tidy. */}
+            {view === 'timeline' && (
+              <>
+                <div className="rm-date-nav">
+                  <button className="rm-date-btn" onClick={() => shift(-7)}>‹</button>
+                  <span>{fmtDay(startDay)} – {fmtDay(endDay)}</span>
+                  <button className="rm-date-btn" onClick={() => shift(7)}>›</button>
+                </div>
+                <button className="rm-today-btn" onClick={goToday}>Today</button>
+              </>
+            )}
             <button className={`rm-filter-btn ${sideTypeFilter === 'all' ? 'active' : ''}`}
               onClick={() => setSideTypeFilter('all')}>🏠 All Types</button>
             <button className={`rm-filter-btn ${sideStatusFilter === 'available' ? 'active' : ''}`}

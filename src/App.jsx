@@ -109,6 +109,7 @@ export default function App() {
                 also lives in the layout. */}
             <Route path="property/:id" element={<PropertyLayout />}>
               <Route index element={<PropertyLanding />} />
+              <Route path="rooms" element={<RoomManagement />} />
               <Route path="front-desk" element={<PMSFrontDesk />} />
               <Route path="housekeeping" element={<PMSHousekeeping />} />
               <Route path="reports" element={<PMSReports />} />
@@ -116,12 +117,6 @@ export default function App() {
               <Route path="incoming-bookings" element={<IncomingBookings />} />
               <Route path="manage" element={<PropertyManage />} />
             </Route>
-            {/* Rooms — full-screen PMS-style takeover that owns its
-                own dark sidebar + topbar (matches docs/ui-refs/
-                staylo_room_manager.html exactly). Hoisted out of the
-                PropertyLayout shell so we don't double up the property
-                header / pill row. */}
-            <Route path="property/:id/rooms" element={<RoomManagement />} />
             {/* Hotel-wide routes — kept for backwards compat / non-
                 contextual access via direct URL. No pills row here. */}
             <Route path="front-desk" element={<PMSFrontDesk />} />
