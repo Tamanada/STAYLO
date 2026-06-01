@@ -27,7 +27,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft, ConciergeBell, Sparkles, BarChart3, Banknote,
+  ArrowLeft, ConciergeBell, Sparkles, BarChart3,
   Inbox, Settings,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
@@ -101,11 +101,12 @@ export default function PropertyLayout() {
   const pillActive = 'bg-deep border border-deep text-white shadow-md'
   // Per-section accent color (used on hover when idle, AND for the icon
   // tint even when active so the brand color stays present).
+  // Note: "banking" was removed — its content (BTC / Solana / Bank /
+  // Stripe) is folded into the Settings tab under "Payment Connection".
   const accentByTo = {
     'front-desk':        { icon: 'text-ocean',    hover: 'hover:border-ocean/40 hover:bg-ocean/5 hover:text-ocean hover:shadow-sm' },
     'housekeeping':      { icon: 'text-libre',    hover: 'hover:border-libre/40 hover:bg-libre/5 hover:text-libre hover:shadow-sm' },
     'reports':           { icon: 'text-electric', hover: 'hover:border-electric/40 hover:bg-electric/5 hover:text-electric hover:shadow-sm' },
-    'banking':           { icon: 'text-sunset',   hover: 'hover:border-sunset/40 hover:bg-sunset/5 hover:text-sunset hover:shadow-sm' },
     'incoming-bookings': { icon: 'text-orange',   hover: 'hover:border-orange/40 hover:bg-orange/5 hover:text-orange hover:shadow-sm' },
     'manage':            { icon: 'text-electric', hover: 'hover:border-electric/40 hover:bg-electric/5 hover:text-electric hover:shadow-sm' },
   }
@@ -154,10 +155,8 @@ export default function PropertyLayout() {
           <BarChart3 size={16} className={accentByTo['reports'].icon} />
           {t('dashboard.nav_reports', 'Rapports')}
         </NavLink>
-        <NavLink to="banking" className={({ isActive }) => pillClass('banking', isActive)}>
-          <Banknote size={16} className={accentByTo['banking'].icon} />
-          {t('dashboard.nav_banking', 'Banque')}
-        </NavLink>
+        {/* The old Banque pill is now folded into Settings → Payment
+            Connection (BTC · Solana · Bank · Stripe) inside the Gérer tab. */}
         <NavLink to="incoming-bookings" className={({ isActive }) => pillClass('incoming-bookings', isActive)}>
           <Inbox size={16} className={accentByTo['incoming-bookings'].icon} />
           {t('bookings.tab_incoming', 'Réservations reçues')}

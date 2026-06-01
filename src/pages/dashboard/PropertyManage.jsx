@@ -784,6 +784,21 @@ function SettingsTab({ property, onRefresh }) {
     smoking_policy:      property.smoking_policy || 'no_smoking',
     star_rating:   property.star_rating ?? 3,
     min_age:       property.min_age != null ? String(property.min_age) : '',
+    // ── Payment Connection (folded in from the old Banking page) ──
+    // Where the hotelier wants to RECEIVE their share of bookings.
+    // Editable even when the property is verified — these are payout
+    // details, not legal info, and they may legitimately change over time.
+    payment_btc_address:    property.payment_btc_address    || '',
+    payment_solana_address: property.payment_solana_address || '',
+    payment_bank_details:   property.payment_bank_details   || '',
+    payment_stripe_link:    property.payment_stripe_link    || '',
+    // ── OTA Integrations (API connectors for inbound bookings) ──
+    // JSONB bag — each connector gets a { api_key, enabled } pair.
+    // Initialised from the row so untouched connectors stay intact.
+    ota_booking_com_api_key: property.ota_integrations?.booking_com?.api_key || '',
+    ota_airbnb_api_key:      property.ota_integrations?.airbnb?.api_key      || '',
+    ota_agoda_api_key:       property.ota_integrations?.agoda?.api_key       || '',
+    ota_expedia_api_key:     property.ota_integrations?.expedia?.api_key     || '',
   })
   const [saving, setSaving] = useState(false)
   const [savedAt, setSavedAt] = useState(null)
@@ -795,11 +810,31 @@ function SettingsTab({ property, onRefresh }) {
   }
 
   async function handleSave() {
-    if (isLocked) { setError('This property is verified — contact STAYLO admin to request changes.'); return }
-    if (!form.name.trim()) { setError('Property name is required'); return }
+    // Payment + integration fields stay editable even when the property
+    // is locked (verified) — only the legal/identity fields freeze.
+    if (!isLocked && !form.name.trim()) { setError('Property name is required'); return }
     setSaving(true)
     setError('')
-    const payload = {
+    // Build the OTA integrations bag — keep untouched connectors intact
+    // by spreading the existing payload + overwriting only the api_key.
+    const prevOta = property.ota_integrations || {}
+    const otaPayload = {
+      ...prevOta,
+      booking_com: { ...(prevOta.booking_com || {}), api_key: form.ota_booking_com_api_key.trim() || null },
+      airbnb:      { ...(prevOta.airbnb      || {}), api_key: form.ota_airbnb_api_key.trim()      || null },
+      agoda:       { ...(prevOta.agoda       || {}), api_key: form.ota_agoda_api_key.trim()       || null },
+      expedia:     { ...(prevOta.expedia     || {}), api_key: form.ota_expedia_api_key.trim()     || null },
+    }
+    // Payout + integrations payload — always saved.
+    const payoutPayload = {
+      payment_btc_address:    form.payment_btc_address.trim()    || null,
+      payment_solana_address: form.payment_solana_address.trim() || null,
+      payment_bank_details:   form.payment_bank_details.trim()   || null,
+      payment_stripe_link:    form.payment_stripe_link.trim()    || null,
+      ota_integrations:       otaPayload,
+    }
+    // Legal/identity payload — only when NOT locked.
+    const legalPayload = isLocked ? {} : {
       name:          form.name.trim(),
       description:   form.description.trim() || null,
       city:          form.city.trim() || null,
@@ -816,6 +851,7 @@ function SettingsTab({ property, onRefresh }) {
       star_rating:   Number(form.star_rating) || 3,
       min_age:       form.min_age ? Number(form.min_age) : null,
     }
+    const payload = { ...legalPayload, ...payoutPayload }
     const { error: dbErr } = await supabase.from('properties').update(payload).eq('id', property.id)
     setSaving(false)
     if (dbErr) {
@@ -970,6 +1006,162 @@ function SettingsTab({ property, onRefresh }) {
           <p className="text-[11px] text-gray-400 mt-1">
             18+ properties refuse bookings with children at the OTA level.
           </p>
+        </div>
+      </div>
+
+      {/* ───── Payment Connection ─────────────────────────────────────
+          Folded in from the old "Banque" pill. These are payout
+          destinations — where the hotelier wants to RECEIVE their share
+          of bookings. Stays editable even when the property is verified
+          (a wallet change is a routine operations event, not a legal
+          amendment requiring STAYLO admin review). */}
+      <div className="mt-8 pt-6 border-t border-gray-100">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-deep mb-1 flex items-center gap-2">
+          💰 {t('manage.payment_connection_title', 'Payment connection')}
+        </h3>
+        <p className="text-xs text-gray-500 mb-4">
+          {t('manage.payment_connection_subtitle',
+            'Où veux-tu recevoir ta part des réservations ? Tous les champs sont optionnels — remplis ceux qui te conviennent. STAYLO utilisera le premier disponible dans cet ordre : BTC → Solana → Stripe → Banque.')}
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              ₿ {t('manage.payment_btc', 'Bitcoin address')}
+            </label>
+            <input type="text"
+              value={form.payment_btc_address}
+              onChange={e => update('payment_btc_address', e.target.value)}
+              placeholder="bc1q... · 3... · 1..."
+              spellCheck="false"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            <p className="text-[11px] text-gray-400 mt-1">
+              {t('manage.payment_btc_hint', 'Adresse BTC (Bech32, P2SH ou Legacy). Payouts crypto natifs, frais minimes.')}
+            </p>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              ◎ {t('manage.payment_solana', 'Solana address')}
+            </label>
+            <input type="text"
+              value={form.payment_solana_address}
+              onChange={e => update('payment_solana_address', e.target.value)}
+              placeholder="9xN...base58"
+              spellCheck="false"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            <p className="text-[11px] text-gray-400 mt-1">
+              {t('manage.payment_solana_hint', 'Adresse Solana (base58). Reçoit aussi les payouts en $STAY.')}
+            </p>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              🏦 {t('manage.payment_bank', 'Bank account details')}
+            </label>
+            <textarea
+              value={form.payment_bank_details}
+              onChange={e => update('payment_bank_details', e.target.value)}
+              rows={3}
+              placeholder={t('manage.payment_bank_placeholder',
+                'Holder name · IBAN · SWIFT/BIC · Bank · Country')}
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 resize-none" />
+            <p className="text-[11px] text-gray-400 mt-1">
+              {t('manage.payment_bank_hint', 'Virement bancaire classique. Les frais SWIFT s’appliquent sur les paiements internationaux.')}
+            </p>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              💳 {t('manage.payment_stripe', 'Stripe link')}
+            </label>
+            <input type="url"
+              value={form.payment_stripe_link}
+              onChange={e => update('payment_stripe_link', e.target.value)}
+              placeholder="https://connect.stripe.com/express/... or acct_..."
+              spellCheck="false"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            <p className="text-[11px] text-gray-400 mt-1">
+              {t('manage.payment_stripe_hint', 'Lien Stripe Connect/Express OU ton account id (acct_...). Pour payouts par carte.')}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ───── OTA Integrations ─────────────────────────────────────
+          API connectors for inbound reservation sync. Each connector
+          stores its own credentials + enabled flag in the
+          ota_integrations JSONB column, so new OTAs can be added
+          without a schema migration. */}
+      <div className="mt-8 pt-6 border-t border-gray-100">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-deep mb-1 flex items-center gap-2">
+          🔌 {t('manage.ota_integrations_title', 'OTA integrations')}
+        </h3>
+        <p className="text-xs text-gray-500 mb-4">
+          {t('manage.ota_integrations_subtitle',
+            'Connecte les APIs des plateformes pour collecter automatiquement leurs réservations. Les clés sont chiffrées au repos, jamais exposées au navigateur.')}
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              🔵 {t('manage.ota_booking_com', 'Booking.com API key')}
+            </label>
+            <input type="password"
+              value={form.ota_booking_com_api_key}
+              onChange={e => update('ota_booking_com_api_key', e.target.value)}
+              placeholder="••••••••••••••••"
+              autoComplete="off"
+              spellCheck="false"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              🌸 {t('manage.ota_airbnb', 'Airbnb API key')}
+            </label>
+            <input type="password"
+              value={form.ota_airbnb_api_key}
+              onChange={e => update('ota_airbnb_api_key', e.target.value)}
+              placeholder="••••••••••••••••"
+              autoComplete="off"
+              spellCheck="false"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              🔴 {t('manage.ota_agoda', 'Agoda API key')}
+            </label>
+            <input type="password"
+              value={form.ota_agoda_api_key}
+              onChange={e => update('ota_agoda_api_key', e.target.value)}
+              placeholder="••••••••••••••••"
+              autoComplete="off"
+              spellCheck="false"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-xs font-medium text-gray-500 mb-1">
+              🟡 {t('manage.ota_expedia', 'Expedia API key')}
+            </label>
+            <input type="password"
+              value={form.ota_expedia_api_key}
+              onChange={e => update('ota_expedia_api_key', e.target.value)}
+              placeholder="••••••••••••••••"
+              autoComplete="off"
+              spellCheck="false"
+              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-start gap-2">
+          <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
+          <span>
+            {t('manage.ota_warning',
+              'Les clés API ne sont jamais affichées en clair une fois sauvegardées. Si tu en perds une, génère-la à nouveau côté plateforme et recolle-la ici.')}
+          </span>
         </div>
       </div>
 

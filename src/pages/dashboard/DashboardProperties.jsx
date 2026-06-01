@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Banknote, Inbox } from 'lucide-react'
+import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Inbox } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -143,13 +143,9 @@ export default function DashboardProperties() {
           <BarChart3 size={16} className="text-electric" />
           {t('dashboard.nav_reports', 'Reports')}
         </Link>
-        <Link
-          to="/dashboard/banking"
-          className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-sunset/40 hover:bg-sunset/5 hover:text-sunset hover:shadow-sm"
-        >
-          <Banknote size={16} className="text-sunset" />
-          {t('dashboard.nav_banking', 'Banking')}
-        </Link>
+        {/* "Banking" pill removed — payout destinations (BTC · Solana ·
+            Bank · Stripe) are now configured inside each property's
+            Settings tab under "Payment Connection". */}
         {/* Réservations reçues — Link to a dedicated route, same pattern
             as the other 4 pills above. Lives at /dashboard/incoming-bookings
             and renders the IncomingBookings page standalone. */}
