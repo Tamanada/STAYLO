@@ -4304,10 +4304,19 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
 }
 
 // ============================================
-// CELL HOVER PANEL (unused — kept for now in case we want a quick
-// hover preview later; rendered nowhere as of this commit)
+// CELL HOVER PANEL — DEPRECATED
 // ============================================
-function CellHoverPanel({
+// Was rendered as an absolute-positioned popover anchored to each
+// cell. Two problems killed it:
+//   1. overflow-x-auto on the grid container forces overflow-y to
+//      auto too in browsers, so the popover got clipped at the top
+//      of the first row.
+//   2. The buttons opened native prompts, which the user found
+//      clunky ("JE VEUX POUVOIR CHANGER LES PRIX, LES OPTIONS").
+// Replaced by CellEditorModal above. Function body kept for a beat
+// so the diff is reviewable; will be deleted in a follow-up commit.
+// eslint-disable-next-line no-unused-vars
+function CellHoverPanel_DEPRECATED({
   room, iso, row, stock, totalStock, priceBrut, priceNet, hasOverride,
   isBlocked, saving,
   onMouseEnter, onMouseLeave,
@@ -5111,7 +5120,6 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
                   : (row && typeof row.available_count === 'number' ? row.available_count : totalStock)
                 const hasOverride = row?.price_override != null
                 const isSelected = bulkMode && selectedCells.has(cellKey(room.id, iso))
-                const isHovered = hoveredCell?.roomId === room.id && hoveredCell?.iso === iso
 
                 // Stock chip color — full = libre, partial = orange, none = sunset
                 const stockChipClass = stock === 0
