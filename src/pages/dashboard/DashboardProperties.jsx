@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Inbox } from 'lucide-react'
+import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Inbox, BedSingle } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -122,6 +122,18 @@ export default function DashboardProperties() {
           All 5 pills are Links to dedicated routes; user shouldn't have
           to scan the sidebar to find any of these hotelier tools. */}
       <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
+        {/* Chambres — only shows if user has ≥ 1 property AND links to the
+            first property's room manager. Identical pattern to the Manage
+            pill below. */}
+        {properties.length > 0 && (
+          <Link
+            to={`/dashboard/property/${properties[0].id}/rooms`}
+            className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-pink/40 hover:bg-pink/5 hover:text-pink hover:shadow-sm"
+          >
+            <BedSingle size={16} className="text-pink" />
+            {t('dashboard.nav_rooms', 'Chambres')}
+          </Link>
+        )}
         <Link
           to="/dashboard/front-desk"
           className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-ocean/40 hover:bg-ocean/5 hover:text-ocean hover:shadow-sm"

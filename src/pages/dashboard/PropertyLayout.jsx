@@ -28,7 +28,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, ConciergeBell, Sparkles, BarChart3,
-  Inbox, Settings,
+  Inbox, Settings, BedDouble,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
@@ -104,6 +104,7 @@ export default function PropertyLayout() {
   // Note: "banking" was removed — its content (BTC / Solana / Bank /
   // Stripe) is folded into the Settings tab under "Payment Connection".
   const accentByTo = {
+    'rooms':             { icon: 'text-pink',     hover: 'hover:border-pink/40 hover:bg-pink/5 hover:text-pink hover:shadow-sm' },
     'front-desk':        { icon: 'text-ocean',    hover: 'hover:border-ocean/40 hover:bg-ocean/5 hover:text-ocean hover:shadow-sm' },
     'housekeeping':      { icon: 'text-libre',    hover: 'hover:border-libre/40 hover:bg-libre/5 hover:text-libre hover:shadow-sm' },
     'reports':           { icon: 'text-electric', hover: 'hover:border-electric/40 hover:bg-electric/5 hover:text-electric hover:shadow-sm' },
@@ -143,6 +144,10 @@ export default function PropertyLayout() {
 
       {/* 6-pill quick-nav (sticky-friendly horizontal scroll if too tight) */}
       <div className="flex flex-wrap gap-2 mb-4">
+        <NavLink to="rooms" className={({ isActive }) => pillClass('rooms', isActive)}>
+          <BedDouble size={16} className={accentByTo['rooms'].icon} />
+          {t('dashboard.nav_rooms', 'Chambres')}
+        </NavLink>
         <NavLink to="front-desk" className={({ isActive }) => pillClass('front-desk', isActive)}>
           <ConciergeBell size={16} className={accentByTo['front-desk'].icon} />
           {t('dashboard.nav_front_desk', 'Réception')}

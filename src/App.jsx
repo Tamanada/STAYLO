@@ -47,6 +47,7 @@ import LegalPrivacy from './pages/legal/Privacy'
 import PropertyManage from './pages/dashboard/PropertyManage'
 import PropertyLanding from './pages/dashboard/PropertyLanding'
 import PropertyLayout from './pages/dashboard/PropertyLayout'
+import RoomManagement from './pages/dashboard/RoomManagement'
 import DashboardKit from './pages/dashboard/DashboardKit'
 import PMSFrontDesk from './pages/dashboard/PMSFrontDesk'
 import PMSHousekeeping from './pages/dashboard/PMSHousekeeping'
@@ -108,6 +109,7 @@ export default function App() {
                 also lives in the layout. */}
             <Route path="property/:id" element={<PropertyLayout />}>
               <Route index element={<PropertyLanding />} />
+              <Route path="rooms" element={<RoomManagement />} />
               <Route path="front-desk" element={<PMSFrontDesk />} />
               <Route path="housekeeping" element={<PMSHousekeeping />} />
               <Route path="reports" element={<PMSReports />} />
