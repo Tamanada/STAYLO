@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Inbox, BedSingle } from 'lucide-react'
+import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, Sparkles, BarChart3, Inbox, BedSingle } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -134,13 +134,11 @@ export default function DashboardProperties() {
             {t('dashboard.nav_rooms', 'Chambres')}
           </Link>
         )}
-        <Link
-          to="/dashboard/front-desk"
-          className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-ocean/40 hover:bg-ocean/5 hover:text-ocean hover:shadow-sm"
-        >
-          <ConciergeBell size={16} className="text-ocean" />
-          {t('dashboard.nav_front_desk', 'Front Desk')}
-        </Link>
+        {/* "Front Desk" pill removed — the Rooms module supersedes it
+            (Timeline view shows the same calendar rack + arrivals/
+            departures, side panel offers check-in/check-out actions).
+            The /dashboard/front-desk route is still mounted for
+            backward compatibility on old bookmarks. */}
         <Link
           to="/dashboard/housekeeping"
           className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-libre/40 hover:bg-libre/5 hover:text-libre hover:shadow-sm"

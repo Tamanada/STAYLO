@@ -27,7 +27,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft, ConciergeBell, Sparkles, BarChart3,
+  ArrowLeft, Sparkles, BarChart3,
   Inbox, Settings, BedDouble,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
@@ -103,9 +103,11 @@ export default function PropertyLayout() {
   // tint even when active so the brand color stays present).
   // Note: "banking" was removed — its content (BTC / Solana / Bank /
   // Stripe) is folded into the Settings tab under "Payment Connection".
+  // Note: "front-desk" (Réception) was removed — its calendar rack +
+  // arrivals/departures workflow is fully covered by the Rooms module
+  // (Timeline view + Grid + side panel with check-in/check-out actions).
   const accentByTo = {
     'rooms':             { icon: 'text-pink',     hover: 'hover:border-pink/40 hover:bg-pink/5 hover:text-pink hover:shadow-sm' },
-    'front-desk':        { icon: 'text-ocean',    hover: 'hover:border-ocean/40 hover:bg-ocean/5 hover:text-ocean hover:shadow-sm' },
     'housekeeping':      { icon: 'text-libre',    hover: 'hover:border-libre/40 hover:bg-libre/5 hover:text-libre hover:shadow-sm' },
     'reports':           { icon: 'text-electric', hover: 'hover:border-electric/40 hover:bg-electric/5 hover:text-electric hover:shadow-sm' },
     'incoming-bookings': { icon: 'text-orange',   hover: 'hover:border-orange/40 hover:bg-orange/5 hover:text-orange hover:shadow-sm' },
@@ -148,10 +150,11 @@ export default function PropertyLayout() {
           <BedDouble size={16} className={accentByTo['rooms'].icon} />
           {t('dashboard.nav_rooms', 'Chambres')}
         </NavLink>
-        <NavLink to="front-desk" className={({ isActive }) => pillClass('front-desk', isActive)}>
-          <ConciergeBell size={16} className={accentByTo['front-desk'].icon} />
-          {t('dashboard.nav_front_desk', 'Réception')}
-        </NavLink>
+        {/* The old "Réception" pill (Front Desk) was retired — its
+            calendar rack + arrivals/departures workflow is now part of
+            the Rooms module (Timeline view + side panel actions). The
+            route /dashboard/property/:id/front-desk is still mounted
+            in App.jsx so old bookmarks / external links keep working. */}
         <NavLink to="housekeeping" className={({ isActive }) => pillClass('housekeeping', isActive)}>
           <Sparkles size={16} className={accentByTo['housekeeping'].icon} />
           {t('dashboard.nav_housekeeping', 'Housekeeping')}
