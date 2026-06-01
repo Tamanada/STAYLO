@@ -4063,6 +4063,7 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
   const [bulkMode, setBulkMode] = useState(false)
   const [selectedCells, setSelectedCells] = useState(new Set())
   const [saving, setSaving] = useState(false)
+  const [rewardModalOpen, setRewardModalOpen] = useState(false)
 
   // Build the 14 ISO dates from the current start.
   const dates = []
@@ -4171,6 +4172,14 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
   // Apply payload to all selected cells. Groups by room_id so we can
   // do one fetch + one insert/update batch per room, then recompute
   // availability if is_blocked was touched.
+  //
+  // Special meta-keys (mirror Monthly's bulkUpdate so rewards stack
+  // correctly across days):
+  //   - add_special: {label, perk, min_stay} → append to specials[]
+  //   - clear_specials: true → wipe specials[]
+  //   - remove_special_at: <index> → remove one entry
+  // Plain keys (is_blocked, price_override, min_stay, internal_note,
+  // promo_label, promo_pct, perk) write directly.
   async function bulkUpdate(payload, label) {
     if (selectedCells.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
     if (!confirm(`${label} — ${selectedCells.size} ${selectedCells.size > 1 ? 'cells' : 'cell'}?`)) return
@@ -4183,6 +4192,10 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
       if (!byRoom[rid]) byRoom[rid] = []
       byRoom[rid].push(iso)
     })
+
+    // Pull meta-actions out — they need per-row processing
+    const { add_special, clear_specials, remove_special_at, ...directWrites } = payload
+    const touchesSpecials = !!add_special || !!clear_specials || typeof remove_special_at === 'number'
 
     for (const [roomId, isoList] of Object.entries(byRoom)) {
       const room = rooms.find(r => r.id === roomId)
@@ -4200,25 +4213,43 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
       const toUpdate = isoList.filter(d => existingByDate[d])
       const toInsert = isoList.filter(d => !existingByDate[d])
 
-      // Updates — direct payload write
+      // Updates — compute next specials array per row when needed
       for (const iso of toUpdate) {
-        await supabase.from('room_availability').update(payload).eq('id', existingByDate[iso].id)
+        const row = existingByDate[iso]
+        let rowPayload = directWrites
+        if (touchesSpecials) {
+          const current = Array.isArray(row.specials) ? row.specials : []
+          let next = current
+          if (clear_specials) next = []
+          else if (add_special) next = [...current, add_special]
+          else if (typeof remove_special_at === 'number') next = current.filter((_, i) => i !== remove_special_at)
+          rowPayload = { ...directWrites, specials: next }
+        }
+        await supabase.from('room_availability').update(rowPayload).eq('id', row.id)
       }
+
       // Inserts — fill required NOT NULL columns
       if (toInsert.length > 0) {
+        const startingSpecials = add_special ? [add_special] : []
         const rows = toInsert.map(iso => ({
           room_id: roomId,
           date: iso,
-          available_count: payload.is_blocked ? 0 : (room.quantity || 1),
-          is_blocked: payload.is_blocked ?? false,
-          price_override: payload.price_override ?? null,
+          available_count: directWrites.is_blocked ? 0 : (room.quantity || 1),
+          is_blocked:     directWrites.is_blocked ?? false,
+          price_override: directWrites.price_override ?? null,
+          min_stay:       directWrites.min_stay ?? null,
+          promo_label:    directWrites.promo_label ?? null,
+          promo_pct:      directWrites.promo_pct ?? null,
+          perk:           directWrites.perk ?? null,
+          specials:       startingSpecials,
+          internal_note:  directWrites.internal_note ?? null,
         }))
         await supabase.from('room_availability').insert(rows)
       }
 
       // Recompute available_count if is_blocked changed — same safety
       // net as Monthly view: ensures stock honors in-house bookings.
-      if ('is_blocked' in payload) {
+      if ('is_blocked' in directWrites) {
         const sorted = [...isoList].sort()
         await supabase.rpc('recompute_room_availability', {
           p_room_id:   roomId,
@@ -4254,6 +4285,61 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
     await bulkUpdate(
       { price_override: newPrice },
       newPrice ? `${t('manage.bulk_set_price_label', 'Set price to')} $${newPrice}` : t('manage.bulk_clear_price_label', 'Clear price override')
+    )
+  }
+
+  // 🌙 Min stay — same UX as Monthly: prompt for an integer ≥ 1, blank clears.
+  async function bulkSetMinStay() {
+    if (selectedCells.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
+    const input = prompt(
+      t(
+        'manage.bulk_min_stay_prompt',
+        'Minimum nights required if the booking includes any of the {{n}} selected cell(s).\n\nEnter a number (e.g. 3). Leave blank to remove the constraint.',
+        { n: selectedCells.size }
+      )
+    )
+    if (input === null) return
+    const trimmed = input.trim()
+    let val = null
+    if (trimmed !== '') {
+      val = Math.floor(Number(trimmed))
+      if (!isFinite(val) || val < 1) {
+        alert(t('manage.invalid_min_stay', 'Invalid min stay (must be ≥ 1).'))
+        return
+      }
+    }
+    await bulkUpdate(
+      { min_stay: val },
+      val ? `${t('manage.bulk_set_min_stay_label', 'Set min stay to')} ${val} ${val > 1 ? t('common.nights', 'nights') : t('common.night', 'night')}`
+          : t('manage.bulk_clear_min_stay_label', 'Remove min stay')
+    )
+  }
+
+  // 🎁 Reward — opens the same RewardModal as Monthly. The modal's
+  // onApply returns the payload + label which we pass straight through.
+  function bulkSetReward() {
+    if (selectedCells.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
+    setRewardModalOpen(true)
+  }
+  async function handleRewardModalApply(payload, label) {
+    await bulkUpdate(payload, label)
+  }
+
+  // 📝 Internal note — hotelier-only annotation, never shown to guests.
+  async function bulkSetNote() {
+    if (selectedCells.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
+    const input = prompt(
+      t(
+        'manage.bulk_note_prompt',
+        'Internal note for {{n}} selected cell(s). NEVER shown to guests.\n\nExamples: "Wedding Smith — pre-booked", "Maintenance morning of 8am-noon"\n\nLeave blank to clear the note.',
+        { n: selectedCells.size }
+      )
+    )
+    if (input === null) return
+    const note = input.trim() || null
+    await bulkUpdate(
+      { internal_note: note },
+      note ? t('manage.bulk_set_note_label', 'Set internal note') : t('manage.bulk_clear_note_label', 'Clear note')
     )
   }
 
@@ -4365,6 +4451,18 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
               <button onClick={bulkSetPrice} type="button" disabled={saving}
                 className="px-2.5 py-1 rounded text-xs font-bold bg-ocean text-white hover:bg-ocean/90 disabled:opacity-50">
                 💰 {t('manage.price', 'Price')}
+              </button>
+              <button onClick={bulkSetMinStay} type="button" disabled={saving}
+                className="px-2.5 py-1 rounded text-xs font-bold bg-deep/5 text-deep hover:bg-deep/10 border border-deep/15 disabled:opacity-50">
+                🌙 {t('manage.min_stay', 'Min stay')}
+              </button>
+              <button onClick={bulkSetReward} type="button" disabled={saving}
+                className="px-2.5 py-1 rounded text-xs font-bold bg-libre/10 text-libre hover:bg-libre/20 border border-libre/15 disabled:opacity-50">
+                🎁 {t('manage.reward', 'Reward')}
+              </button>
+              <button onClick={bulkSetNote} type="button" disabled={saving}
+                className="px-2.5 py-1 rounded text-xs font-bold bg-electric/10 text-electric hover:bg-electric/20 border border-electric/15 disabled:opacity-50">
+                📝 {t('manage.note', 'Note')}
               </button>
               <span className="mx-1 text-gray-200">|</span>
               <button onClick={bulkBlock} type="button" disabled={saving}
@@ -4547,6 +4645,16 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
         </span>
       </div>
     </Card>
+
+    {/* Reward picker — shared modal with Monthly view. onApply hands
+        back a payload that bulkUpdate knows how to merge into the
+        specials[] arrays of the selected cells. */}
+    <RewardModal
+      open={rewardModalOpen}
+      onClose={() => setRewardModalOpen(false)}
+      onApply={handleRewardModalApply}
+      selectedCount={selectedCells.size}
+    />
     </>
   )
 }
