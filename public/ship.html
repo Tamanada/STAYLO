@@ -24808,26 +24808,45 @@ async function init(){
     const empList = lsGet(`staylo_employees_${inviteHotel}`,[]);
     const emp = empList.find(e=>e.invite_token===inviteToken);
     if(emp){
-      // Status routing — DON'T auto-boot anymore. Always pass through the
-      // claim flow so the staff sees their contract + accepts T&C explicitly.
+      // ── New "direct boot" flow ──
+      // The contract is signed on paper at hire time → the QR is the
+      // access credential. No more multi-step claim modal: scan ➜ enter.
+      //
+      // Status routing:
       //   declined          → permanently blocked (manager must reissue)
-      //   accepted (full)   → already done, boot straight in
-      //   anything else     → run the claim flow
+      //   anything else     → auto-accept (first-time scan) or re-enter
+      //                       (returning staff) and boot straight into SHIP.
+      //
+      // We still enforce the device binding so a leaked QR can't be reused
+      // from a second phone — first scan binds the device, later scans
+      // from a different device hit the re-auth screen.
       if(emp.accept_status === 'declined'){
         alert(t('app.dialogs.invite_declined'));
         history.replaceState({},'',location.pathname);
-      } else if(emp.accept_status === 'accepted' && (emp.tc_version === STAYLO_TC_VERSION)){
-        // Already onboarded with current T&C → DEVICE CHECK before boot.
-        // If hash differs from bound_device_hash, block + show re-auth screen.
+      } else {
         (async () => {
           const currentHash = await deviceFingerprintHash();
-          const matches = !emp.bound_device_hash || emp.bound_device_hash === currentHash;
-          if(!matches){
-            // Device mismatch → block with manager-reauth screen
+          const isReturning = emp.accept_status === 'accepted' && !!emp.bound_device_hash;
+          if(isReturning && emp.bound_device_hash !== currentHash){
+            // Returning staff scanning from a different device → block
+            // until the manager re-binds them (security).
             history.replaceState({},'',location.pathname);
             showDeviceMismatchBlock(emp, inviteHotel, currentHash);
             return;
           }
+          // First-time scan (or re-scan after a T&C version bump) →
+          // auto-accept on behalf of the staff. The paper contract is the
+          // source of truth; we just mirror that into the employee record
+          // so the manager-side UI shows "✓ Onboarded" instead of "Pending".
+          if(emp.accept_status !== 'accepted' || emp.tc_version !== STAYLO_TC_VERSION){
+            emp.accept_status   = 'accepted';
+            emp.tc_version      = STAYLO_TC_VERSION;
+            emp.bound_device_hash = currentHash;
+            emp.accepted_at     = emp.accepted_at || new Date().toISOString();
+            emp.invite_used     = true;
+            try { persistClaimUpdate(emp, inviteHotel); } catch (e) { console.warn(e); }
+          }
+          // Build the user session straight from the contract data.
           const u = {
             name: `${emp.first_name} ${emp.last_name||''}`.trim(),
             role: emp.role,
@@ -24843,11 +24862,6 @@ async function init(){
           $('#onboarding').style.display='none';
           bootApp();
         })();
-        return;
-      } else {
-        // unclaimed | pending_acceptance | accepted-but-old-TC → run flow
-        $('#onboarding').style.display='none';
-        showStaffClaimFlow(emp, inviteHotel);
         return;
       }
     } else {
