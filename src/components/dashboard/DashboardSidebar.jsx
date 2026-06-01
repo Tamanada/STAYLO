@@ -104,11 +104,15 @@ export function DashboardSidebar() {
   // Lightweight payload (id + name) — the full Properties page still
   // fetches its own rich record set when the user navigates there.
   const [propertyList, setPropertyList] = useState([])
-  // Auto-expanded when the user is currently on /dashboard/properties or
-  // any /dashboard/property/:id — feels right because the parent item is
-  // visually "active". Toggleable by clicking the chevron.
+  // "Mes propriétés" is now a pure expand/collapse toggle — no longer
+  // links to the /dashboard/properties list page. Per David: the
+  // properties are accessed directly from this dropdown, so the parent
+  // row should not navigate, just expand. We default to OPEN so the
+  // list is visible the moment the dashboard mounts.
   const propertiesActive = /^\/dashboard\/propert/.test(location.pathname)
-  const [propsExpanded, setPropsExpanded] = useState(propertiesActive)
+  const [propsExpanded, setPropsExpanded] = useState(true)
+  // Still keep it open whenever the user lands on a property URL (e.g.
+  // via a deep link / refresh) so the active item is visible in context.
   useEffect(() => {
     if (propertiesActive) setPropsExpanded(true)
   }, [propertiesActive])
@@ -194,74 +198,77 @@ export function DashboardSidebar() {
               </div>
             )}
             {section.items.map(item => {
-              // Special case: the "Mes propriétés" item gets an inline
-              // dropdown listing the user's properties. We render a row
-              // with a NavLink for the label (navigates to the index page)
-              // and a chevron button for the expand/collapse toggle, so
-              // clicking the name still goes to the list view as before.
+              // Special case: the "Mes propriétés" item is now a PURE
+              // expand/collapse toggle — no navigation to a list page.
+              // Per David, properties are accessed directly from the
+              // dropdown items below (one per property). The list page
+              // /dashboard/properties is still mounted for old bookmarks,
+              // but nothing in the sidebar links to it anymore.
               const isPropertiesItem = item.to === '/dashboard/properties'
-              if (isPropertiesItem && propertyList.length > 0) {
+              if (isPropertiesItem) {
                 return (
                   <div key={item.to}>
-                    <div className={`group flex items-stretch rounded-xl transition-all duration-200 ${
-                      propertiesActive
-                        ? 'bg-electric/15'
-                        : 'hover:bg-white/5'
-                    }`}>
-                      <NavLink
-                        to={item.to}
-                        end={item.end}
-                        onClick={() => setMobileOpen(false)}
-                        className={({ isActive }) =>
-                          `flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200 no-underline flex-1 min-w-0 ${
-                            isActive
-                              ? 'text-electric border-l-4 border-electric -ml-1 pl-5'
-                              : 'text-white/60 group-hover:text-white'
-                          }`
-                        }
-                      >
-                        <item.icon size={18} className="flex-shrink-0" />
-                        <span className="truncate">{t(item.labelKey, item.label)}</span>
-                      </NavLink>
-                      <button
-                        type="button"
-                        onClick={(e) => { e.stopPropagation(); setPropsExpanded(v => !v) }}
-                        aria-label={propsExpanded ? 'Collapse' : 'Expand'}
-                        className="px-3 flex items-center text-white/40 hover:text-white transition-colors cursor-pointer"
-                      >
-                        {propsExpanded
-                          ? <ChevronDown size={16} />
-                          : <ChevronRight size={16} />}
-                      </button>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPropsExpanded(v => !v)}
+                      aria-expanded={propsExpanded}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+                        propertiesActive
+                          ? 'bg-electric/15 text-electric border-l-4 border-electric -ml-1 pl-5'
+                          : 'text-white/60 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <item.icon size={18} className="flex-shrink-0" />
+                      <span className="truncate flex-1 text-left">{t(item.labelKey, item.label)}</span>
+                      {propsExpanded
+                        ? <ChevronDown size={16} className="text-white/40" />
+                        : <ChevronRight size={16} className="text-white/40" />}
+                    </button>
                     {/* Dropdown — one row per property, indented under the
                         parent. Status dot (green/orange/gray) gives an at-
                         a-glance health signal so the user spots a property
                         stuck in review without clicking through. */}
                     {propsExpanded && (
                       <div className="ml-3 mt-1 mb-1 pl-3 border-l border-white/10 space-y-0.5">
-                        {propertyList.map(prop => (
-                          <NavLink
-                            key={prop.id}
-                            to={`/dashboard/property/${prop.id}`}
+                        {propertyList.length > 0 ? (
+                          propertyList.map(prop => (
+                            <NavLink
+                              key={prop.id}
+                              to={`/dashboard/property/${prop.id}`}
+                              onClick={() => setMobileOpen(false)}
+                              className={({ isActive }) =>
+                                `flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all duration-200 no-underline ${
+                                  isActive
+                                    ? 'bg-electric/10 text-electric font-semibold'
+                                    : 'text-white/50 hover:text-white hover:bg-white/5'
+                                }`
+                              }
+                            >
+                              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                                prop.status === 'live'      ? 'bg-libre' :
+                                prop.status === 'validated' ? 'bg-electric' :
+                                prop.status === 'reviewing' ? 'bg-sunset' :
+                                'bg-white/30'
+                              }`} />
+                              <span className="truncate">{prop.name || 'Untitled'}</span>
+                            </NavLink>
+                          ))
+                        ) : (
+                          // Empty state — the hotelier has no properties
+                          // yet. Surface the "Add your first" CTA right
+                          // inside the dropdown so they don't have to
+                          // hunt for it elsewhere.
+                          <Link
+                            to="/submit"
                             onClick={() => setMobileOpen(false)}
-                            className={({ isActive }) =>
-                              `flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all duration-200 no-underline ${
-                                isActive
-                                  ? 'bg-electric/10 text-electric font-semibold'
-                                  : 'text-white/50 hover:text-white hover:bg-white/5'
-                              }`
-                            }
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-electric/80 hover:text-electric hover:bg-electric/10 no-underline transition-all"
                           >
-                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                              prop.status === 'live'      ? 'bg-libre' :
-                              prop.status === 'validated' ? 'bg-electric' :
-                              prop.status === 'reviewing' ? 'bg-sunset' :
-                              'bg-white/30'
-                            }`} />
-                            <span className="truncate">{prop.name || 'Untitled'}</span>
-                          </NavLink>
-                        ))}
+                            <PlusCircle size={14} className="flex-shrink-0" />
+                            <span className="truncate">
+                              {t('dashboard.add_first_property', 'Add your first property')}
+                            </span>
+                          </Link>
+                        )}
                       </div>
                     )}
                   </div>
