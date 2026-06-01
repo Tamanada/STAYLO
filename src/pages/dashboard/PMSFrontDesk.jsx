@@ -334,25 +334,29 @@ export default function PMSFrontDesk() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900">{t('pms.front_desk', 'Front Desk')}</h1>
-          <p className="text-sm text-gray-500">{formatDate(today)}</p>
-        </div>
+    <div className={isPropertyScoped ? '' : 'max-w-7xl mx-auto px-4 py-6'}>
+      {/* Header — only when standalone (PropertyLayout already names the
+          property + has the section pill active above). When scoped we
+          just show the date as a small subtitle to keep visual context. */}
+      {isPropertyScoped ? (
+        <div className="mb-4 text-xs text-gray-500 font-medium">{formatDate(today)}</div>
+      ) : (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900">{t('pms.front_desk', 'Front Desk')}</h1>
+            <p className="text-sm text-gray-500">{formatDate(today)}</p>
+          </div>
 
-        {/* Property selector — hidden when the URL locks us to a
-            property (PropertyLayout's header already names it). */}
-        {!isPropertyScoped && properties.length > 1 && (
-          <select value={selectedProperty || ''} onChange={e => setSelectedProperty(e.target.value)}
-            className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 min-w-[200px]">
-            {properties.map(p => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-        )}
-      </div>
+          {properties.length > 1 && (
+            <select value={selectedProperty || ''} onChange={e => setSelectedProperty(e.target.value)}
+              className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 min-w-[200px]">
+              {properties.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          )}
+        </div>
+      )}
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">

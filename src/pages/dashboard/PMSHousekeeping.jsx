@@ -88,24 +88,28 @@ export default function PMSHousekeeping() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <Sparkles size={24} className="text-ocean" />
-            {t('pms.housekeeping', 'Housekeeping')}
-          </h1>
-          <p className="text-sm text-gray-500">{t('pms.hk_subtitle', 'Manage room cleanliness and readiness')}</p>
-        </div>
+    <div className={isPropertyScoped ? '' : 'max-w-7xl mx-auto px-4 py-6'}>
+      {/* Header — full version only when standalone. Inside the property
+          layout the page title is implicit (the Housekeeping pill is
+          highlighted above), so we skip the h1 to recover vertical space. */}
+      {!isPropertyScoped && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+              <Sparkles size={24} className="text-ocean" />
+              {t('pms.housekeeping', 'Housekeeping')}
+            </h1>
+            <p className="text-sm text-gray-500">{t('pms.hk_subtitle', 'Manage room cleanliness and readiness')}</p>
+          </div>
 
-        {!isPropertyScoped && properties.length > 1 && (
-          <select value={selectedProperty || ''} onChange={e => setSelectedProperty(e.target.value)}
-            className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 min-w-[200px]">
-            {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
-        )}
-      </div>
+          {properties.length > 1 && (
+            <select value={selectedProperty || ''} onChange={e => setSelectedProperty(e.target.value)}
+              className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 min-w-[200px]">
+              {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          )}
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">

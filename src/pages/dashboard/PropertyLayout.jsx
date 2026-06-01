@@ -115,33 +115,33 @@ export default function PropertyLayout() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header — back arrow + name + status + location */}
-      <div className="flex items-center gap-4 mb-6">
+    <div className="max-w-5xl mx-auto px-4 py-5">
+      {/* Header — back arrow + name + status + location (compact) */}
+      <div className="flex items-center gap-3 mb-4">
         <Link
           to="/dashboard/properties"
-          className="w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors no-underline text-gray-600 flex-shrink-0"
+          className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors no-underline text-gray-600 flex-shrink-0"
           title={t('common.back', 'Back')}
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={16} />
         </Link>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-bold text-deep truncate">{property.name}</h1>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-xl sm:text-2xl font-bold text-deep truncate leading-tight">{property.name}</h1>
             <Badge variant={statusColors[property.status] || 'gray'}>
               {t(`dashboard.status.${property.status}`, property.status)}
             </Badge>
+            {(property.city || property.country) && (
+              <span className="text-gray-500 text-xs sm:text-sm">
+                · {[property.city, property.country].filter(Boolean).join(', ')}
+              </span>
+            )}
           </div>
-          {(property.city || property.country) && (
-            <p className="text-gray-500 mt-1 text-sm">
-              {[property.city, property.country].filter(Boolean).join(', ')}
-            </p>
-          )}
         </div>
       </div>
 
       {/* 6-pill quick-nav (sticky-friendly horizontal scroll if too tight) */}
-      <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
+      <div className="flex flex-wrap gap-2 mb-4">
         <NavLink to="front-desk" className={({ isActive }) => pillClass('front-desk', isActive)}>
           <ConciergeBell size={16} className={accentByTo['front-desk'].icon} />
           {t('dashboard.nav_front_desk', 'Réception')}

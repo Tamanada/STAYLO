@@ -171,21 +171,24 @@ export default function PMSReports() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-            <BarChart3 size={24} className="text-ocean" />
-            {t('pms.reports', 'Reports & Analytics')}
-          </h1>
-          <p className="text-sm text-gray-500">{t('pms.reports_subtitle', 'Key performance metrics for your properties')}</p>
-        </div>
+    <div className={isPropertyScoped ? '' : 'max-w-7xl mx-auto px-4 py-6'}>
+      {/* Header — full version standalone; compact (just the period
+          toggle, right-aligned) inside PropertyLayout to save vertical
+          space. The pill row above already tells the user this is
+          Rapports. */}
+      <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${isPropertyScoped ? 'mb-4' : 'mb-6'}`}>
+        {!isPropertyScoped && (
+          <div>
+            <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+              <BarChart3 size={24} className="text-ocean" />
+              {t('pms.reports', 'Reports & Analytics')}
+            </h1>
+            <p className="text-sm text-gray-500">{t('pms.reports_subtitle', 'Key performance metrics for your properties')}</p>
+          </div>
+        )}
 
-        <div className="flex items-center gap-2">
-          {/* Property filter — hidden when the route locks us to a
-              property (the URL already names the property in the
-              PropertyLayout header above). */}
+        <div className={`flex items-center gap-2 ${isPropertyScoped ? 'ml-auto' : ''}`}>
+          {/* Property filter — only when not URL-locked. */}
           {!isPropertyScoped && (
             <select value={selectedProperty} onChange={e => setSelectedProperty(e.target.value)}
               className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-900">
