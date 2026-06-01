@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom'
 import { usePageViewLogger } from './hooks/usePageViewLogger'
 
 function ScrollToTop() {
@@ -108,7 +108,13 @@ export default function App() {
                 every section. The property header (name / status / city)
                 also lives in the layout. */}
             <Route path="property/:id" element={<PropertyLayout />}>
-              <Route index element={<PropertyLanding />} />
+              {/* Default landing → Rooms. David wanted the property
+                  link to open straight into the Rooms manager (he
+                  reaches Gérer / Housekeeping / etc. via the pill
+                  nav above). PropertyLanding's hub content is now
+                  unused; kept as a component in case we re-introduce
+                  it as a separate "Overview" pill later. */}
+              <Route index element={<Navigate to="rooms" replace />} />
               <Route path="rooms" element={<RoomManagement />} />
               <Route path="front-desk" element={<PMSFrontDesk />} />
               <Route path="housekeeping" element={<PMSHousekeeping />} />
