@@ -764,10 +764,42 @@ function ShareInviteModal({ data, property, onClose }) {
 // ============================================
 function SettingsTab({ property, onRefresh }) {
   const { t } = useTranslation()
+  const { user } = useAuth()
   // Lock editing once the property has been verified (status >= validated).
   // Hoteliers must contact STAYLO admin to amend legal info after that point.
   // Admins can still edit via /admin/properties (their RLS bypass).
   const isLocked = property.status === 'validated' || property.status === 'live'
+  // Per-field "Apply to my other properties on save" intent. Default off
+  // per field so an owner with 5 hotels doesn't accidentally write their
+  // BTC address everywhere. Toggles aren't persisted — they're a save-
+  // time directive, the chef re-checks them next time if they want to
+  // re-sync after editing one property in isolation.
+  const [propagate, setPropagate] = useState({
+    payment_btc_address:    false,
+    payment_solana_address: false,
+    payment_bank_details:   false,
+    payment_stripe_link:    false,
+    ota_booking_com:        false,
+    ota_airbnb:             false,
+    ota_agoda:              false,
+    ota_expedia:            false,
+  })
+  const togglePropagate = (key) => setPropagate(p => ({ ...p, [key]: !p[key] }))
+  // Count of OTHER properties the user owns — drives the "Synced to N
+  // other properties" badge after save and conditionally shows the
+  // propagate toggles (no toggle when there's only this one property).
+  const [otherPropCount, setOtherPropCount] = useState(0)
+  useEffect(() => {
+    if (!user?.id || !property?.id) return
+    let cancelled = false
+    supabase.from('properties')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .neq('id', property.id)
+      .then(({ count }) => { if (!cancelled) setOtherPropCount(count || 0) })
+    return () => { cancelled = true }
+  }, [user?.id, property?.id])
+  const hasOtherProperties = otherPropCount > 0
   const [form, setForm] = useState({
     name:          property.name || '',
     description:   property.description || '',
@@ -853,12 +885,66 @@ function SettingsTab({ property, onRefresh }) {
     }
     const payload = { ...legalPayload, ...payoutPayload }
     const { error: dbErr } = await supabase.from('properties').update(payload).eq('id', property.id)
-    setSaving(false)
     if (dbErr) {
+      setSaving(false)
       setError(dbErr.message)
       return
     }
-    setSavedAt(new Date())
+
+    // ── Field-level propagation to the user's OTHER properties ──
+    // Only fields with their propagate toggle ON get copied. Bank,
+    // Stripe etc. are simple TEXT updates (one bulk UPDATE …in(ids));
+    // OTA keys need a per-row read-merge-write because the JSONB bag
+    // may already hold other connectors we mustn't clobber.
+    let propagated = 0
+    try {
+      const otherIdsRes = await supabase
+        .from('properties').select('id, ota_integrations')
+        .eq('user_id', user.id).neq('id', property.id)
+      const otherProps = otherIdsRes.data || []
+      const otherIds = otherProps.map(p => p.id)
+
+      if (otherIds.length > 0) {
+        // 1. Simple text fields → one bulk UPDATE per checked field
+        const textUpdates = {}
+        if (propagate.payment_btc_address)    textUpdates.payment_btc_address    = payoutPayload.payment_btc_address
+        if (propagate.payment_solana_address) textUpdates.payment_solana_address = payoutPayload.payment_solana_address
+        if (propagate.payment_bank_details)   textUpdates.payment_bank_details   = payoutPayload.payment_bank_details
+        if (propagate.payment_stripe_link)    textUpdates.payment_stripe_link    = payoutPayload.payment_stripe_link
+        if (Object.keys(textUpdates).length > 0) {
+          await supabase.from('properties').update(textUpdates).in('id', otherIds)
+          propagated++
+        }
+
+        // 2. OTA keys → merge into each other property's existing JSONB
+        const otaKeysToCopy = []
+        if (propagate.ota_booking_com) otaKeysToCopy.push('booking_com')
+        if (propagate.ota_airbnb)      otaKeysToCopy.push('airbnb')
+        if (propagate.ota_agoda)       otaKeysToCopy.push('agoda')
+        if (propagate.ota_expedia)     otaKeysToCopy.push('expedia')
+        if (otaKeysToCopy.length > 0) {
+          const sourceOta = otaPayload  // the freshly-saved bag
+          await Promise.all(otherProps.map(p => {
+            const merged = { ...(p.ota_integrations || {}) }
+            for (const k of otaKeysToCopy) merged[k] = sourceOta[k]
+            return supabase.from('properties').update({ ota_integrations: merged }).eq('id', p.id)
+          }))
+          propagated++
+        }
+      }
+    } catch (e) {
+      console.warn('Field propagation failed (continuing)', e)
+    }
+
+    setSaving(false)
+    setSavedAt({ at: new Date(), propagated, otherCount: otherPropCount })
+    // Reset toggles so a stray click on Save doesn't re-propagate.
+    setPropagate({
+      payment_btc_address: false, payment_solana_address: false,
+      payment_bank_details: false, payment_stripe_link: false,
+      ota_booking_com: false, ota_airbnb: false,
+      ota_agoda: false, ota_expedia: false,
+    })
     onRefresh?.()
   }
 
@@ -1038,6 +1124,15 @@ function SettingsTab({ property, onRefresh }) {
             <p className="text-[11px] text-gray-400 mt-1">
               {t('manage.payment_btc_hint', 'Adresse BTC (Bech32, P2SH ou Legacy). Payouts crypto natifs, frais minimes.')}
             </p>
+            {hasOtherProperties && (
+              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
+                <input type="checkbox"
+                  checked={propagate.payment_btc_address}
+                  onChange={() => togglePropagate('payment_btc_address')}
+                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
+                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
+              </label>
+            )}
           </div>
 
           <div className="sm:col-span-2">
@@ -1053,6 +1148,15 @@ function SettingsTab({ property, onRefresh }) {
             <p className="text-[11px] text-gray-400 mt-1">
               {t('manage.payment_solana_hint', 'Adresse Solana (base58). Reçoit aussi les payouts en $STAY.')}
             </p>
+            {hasOtherProperties && (
+              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
+                <input type="checkbox"
+                  checked={propagate.payment_solana_address}
+                  onChange={() => togglePropagate('payment_solana_address')}
+                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
+                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
+              </label>
+            )}
           </div>
 
           <div className="sm:col-span-2">
@@ -1069,6 +1173,15 @@ function SettingsTab({ property, onRefresh }) {
             <p className="text-[11px] text-gray-400 mt-1">
               {t('manage.payment_bank_hint', 'Virement bancaire classique. Les frais SWIFT s’appliquent sur les paiements internationaux.')}
             </p>
+            {hasOtherProperties && (
+              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
+                <input type="checkbox"
+                  checked={propagate.payment_bank_details}
+                  onChange={() => togglePropagate('payment_bank_details')}
+                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
+                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
+              </label>
+            )}
           </div>
 
           <div className="sm:col-span-2">
@@ -1084,6 +1197,15 @@ function SettingsTab({ property, onRefresh }) {
             <p className="text-[11px] text-gray-400 mt-1">
               {t('manage.payment_stripe_hint', 'Lien Stripe Connect/Express OU ton account id (acct_...). Pour payouts par carte.')}
             </p>
+            {hasOtherProperties && (
+              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
+                <input type="checkbox"
+                  checked={propagate.payment_stripe_link}
+                  onChange={() => togglePropagate('payment_stripe_link')}
+                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
+                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
+              </label>
+            )}
           </div>
         </div>
       </div>
@@ -1114,6 +1236,15 @@ function SettingsTab({ property, onRefresh }) {
               autoComplete="off"
               spellCheck="false"
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            {hasOtherProperties && (
+              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
+                <input type="checkbox"
+                  checked={propagate.ota_booking_com}
+                  onChange={() => togglePropagate('ota_booking_com')}
+                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
+                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
+              </label>
+            )}
           </div>
 
           <div className="sm:col-span-2">
@@ -1127,6 +1258,15 @@ function SettingsTab({ property, onRefresh }) {
               autoComplete="off"
               spellCheck="false"
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            {hasOtherProperties && (
+              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
+                <input type="checkbox"
+                  checked={propagate.ota_airbnb}
+                  onChange={() => togglePropagate('ota_airbnb')}
+                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
+                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
+              </label>
+            )}
           </div>
 
           <div className="sm:col-span-2">
@@ -1140,6 +1280,15 @@ function SettingsTab({ property, onRefresh }) {
               autoComplete="off"
               spellCheck="false"
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            {hasOtherProperties && (
+              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
+                <input type="checkbox"
+                  checked={propagate.ota_agoda}
+                  onChange={() => togglePropagate('ota_agoda')}
+                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
+                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
+              </label>
+            )}
           </div>
 
           <div className="sm:col-span-2">
@@ -1153,6 +1302,15 @@ function SettingsTab({ property, onRefresh }) {
               autoComplete="off"
               spellCheck="false"
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            {hasOtherProperties && (
+              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
+                <input type="checkbox"
+                  checked={propagate.ota_expedia}
+                  onChange={() => togglePropagate('ota_expedia')}
+                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
+                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
+              </label>
+            )}
           </div>
         </div>
 
@@ -1179,8 +1337,16 @@ function SettingsTab({ property, onRefresh }) {
             : saving ? t('manage.saving', 'Saving…') : t('manage.save_changes', 'Save changes')}
         </Button>
         {savedAt && (
-          <span className="text-xs text-libre flex items-center gap-1">
-            <Check size={12} /> Saved
+          <span className="text-xs text-libre flex items-center gap-1 flex-wrap">
+            <Check size={12} /> {t('manage.saved', 'Saved')}
+            {savedAt.propagated > 0 && savedAt.otherCount > 0 && (
+              <span className="text-gray-500 ml-1">
+                · {t('manage.synced_to_others',
+                  { defaultValue: 'Synced to {{n}} other propert{{p}}',
+                    n: savedAt.otherCount,
+                    p: savedAt.otherCount > 1 ? 'ies' : 'y' })}
+              </span>
+            )}
           </span>
         )}
       </div>
