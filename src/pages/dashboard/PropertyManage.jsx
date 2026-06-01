@@ -4061,132 +4061,178 @@ function CellHoverPanel({
   const internalNote = row?.internal_note
   const specials = Array.isArray(row?.specials) ? row.specials : []
   const dateDisplay = new Date(iso + 'T00:00:00').toLocaleDateString(undefined, {
-    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+    weekday: 'long', month: 'short', day: 'numeric',
   })
+  // Status pill — borrows the same color logic from cells so the
+  // popover header reads at a glance.
+  const statusPillClass = isBlocked
+    ? 'bg-gradient-to-r from-sunset to-sunset/80 text-white'
+    : stock === 0 ? 'bg-gradient-to-r from-sunset to-sunset/80 text-white'
+    : stock < totalStock ? 'bg-gradient-to-r from-orange to-pink text-white'
+    : 'bg-gradient-to-r from-libre to-libre/80 text-white'
+
+  // Action button — shared structure for the 5 cells in the grid.
+  // STAYLO style: rounded-2xl pill, gradient bg, soft lift on hover.
+  const ActionBtn = ({ onClick, gradient, icon, label, full }) => (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={saving}
+      className={`inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-semibold text-white shadow-sm transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-md hover:scale-[1.03] cursor-pointer ${gradient} ${full ? 'col-span-2' : ''}`}
+    >
+      <span className="text-sm leading-none">{icon}</span>
+      <span>{label}</span>
+    </button>
+  )
 
   return (
     <div
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
-      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-72 max-w-[90vw] bg-white rounded-xl shadow-2xl border border-gray-200 p-3 text-left animate-in fade-in zoom-in-95 duration-150"
+      className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 z-50 w-80 max-w-[92vw] bg-white rounded-2xl shadow-2xl shadow-deep/20 border border-white/60 ring-1 ring-deep/5 overflow-hidden text-left animate-in fade-in slide-in-from-bottom-1 duration-200"
     >
-      {/* Pointer arrow */}
-      <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-gray-200" />
+      {/* Pointer arrow — matches the white card body */}
+      <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 bg-white border-r border-b border-deep/5" />
 
-      {/* Header — date + room + status badge */}
-      <div className="flex items-baseline justify-between gap-2 pb-2 mb-2 border-b border-gray-100">
-        <div className="min-w-0">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-gray-400">{dateDisplay}</div>
-          <div className="text-sm font-bold text-deep truncate">{room.name}</div>
+      {/* Header — gradient strip in STAYLO brand colors. Deep navy
+          fading to electric mirrors the dashboard sidebar accent. */}
+      <div className="relative px-4 py-3 bg-gradient-to-br from-deep via-deep to-electric/90">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/50">
+              {dateDisplay}
+            </div>
+            <div className="text-sm font-bold text-white truncate mt-0.5">{room.name}</div>
+          </div>
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide ${statusPillClass}`}>
+            {isBlocked ? t('manage.blocked', 'Blocked').toUpperCase() : `${stock} / ${totalStock}`}
+          </span>
         </div>
-        <span className={`text-[10px] font-bold px-2 py-0.5 rounded whitespace-nowrap ${
-          isBlocked ? 'bg-sunset/15 text-sunset' :
-          stock === 0 ? 'bg-sunset/15 text-sunset' :
-          stock < totalStock ? 'bg-orange/15 text-orange' :
-          'bg-libre/15 text-libre'
-        }`}>
-          {isBlocked ? 'BLOCKED' : `${stock}/${totalStock}`}
-        </span>
       </div>
 
-      {/* Pricing summary */}
-      {!isBlocked && (
-        <div className="bg-gray-50 rounded-lg px-2.5 py-1.5 mb-2">
-          <div className="flex items-baseline justify-between">
-            <span className="text-[11px] text-gray-500">{t('manage.cal_guest_pays', 'Guest pays')}</span>
-            <span className="text-base font-bold text-ocean">
-              ${priceBrut.toFixed(0)}
-              {hasOverride && <span className="ml-1 text-[10px] text-orange" title={t('manage.cal_custom_price', 'Custom price for this day')}>★</span>}
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-[11px] text-gray-500">{t('manage.you_receive', 'You receive (90%)')}</span>
-            <span className="text-sm font-semibold text-libre">${priceNet.toFixed(0)}</span>
-          </div>
-          {hasOverride && (
-            <div className="text-[10px] text-orange mt-0.5 italic">
-              Default: ${Number(room.base_price).toFixed(0)}
+      {/* Body — soft off-white inside, content stacks vertically */}
+      <div className="p-4 bg-white">
+        {/* Pricing summary — only when bookable. Uses the brand gradient
+            on the headline price so it pops the way prices do across
+            the rest of the app. */}
+        {!isBlocked && (
+          <div className="rounded-2xl bg-gradient-to-br from-ocean/5 to-electric/5 border border-ocean/10 px-3.5 py-2.5 mb-3">
+            <div className="flex items-baseline justify-between">
+              <span className="text-[11px] text-deep/60 font-medium">
+                {t('manage.cal_guest_pays', 'Guest pays')}
+              </span>
+              <span className="text-xl font-extrabold bg-gradient-to-r from-ocean to-electric bg-clip-text text-transparent leading-none">
+                ${priceBrut.toFixed(0)}
+                {hasOverride && (
+                  <span className="ml-1.5 text-xs text-orange align-middle" title={t('manage.cal_custom_price', 'Custom price for this day')}>★</span>
+                )}
+              </span>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Existing flags (min stay, note, rewards) */}
-      {minStay > 1 && (
-        <div className="flex items-center gap-1.5 text-[11px] text-deep mb-1">
-          <span className="font-bold">🌙 {t('manage.min_stay', 'Min stay')}:</span> {minStay} {minStay > 1 ? 'nights' : 'night'}
-        </div>
-      )}
-      {specials.length > 0 && (
-        <div className="mt-1 pt-1 border-t border-gray-100">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-libre mb-1">
-            🎁 {t('manage.rewards', 'Rewards')} ({specials.length})
-          </div>
-          <div className="space-y-0.5">
-            {specials.map((sp, idx) => (
-              <div key={idx} className="text-[11px] leading-tight">
-                <span className="font-semibold text-deep">{sp.label || `Reward ${idx + 1}`}</span>
-                {sp.perk && <span className="text-gray-500"> · {sp.perk}</span>}
+            <div className="flex items-baseline justify-between mt-1">
+              <span className="text-[11px] text-deep/60 font-medium">
+                {t('manage.you_receive', 'You receive (90%)')}
+              </span>
+              <span className="text-sm font-bold text-libre">${priceNet.toFixed(0)}</span>
+            </div>
+            {hasOverride && (
+              <div className="text-[10px] text-orange/80 mt-1 italic font-medium">
+                {t('manage.default_price', 'Default')}: ${Number(room.base_price).toFixed(0)}
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      )}
-      {internalNote && (
-        <div className="mt-1 pt-1 border-t border-gray-100">
-          <div className="text-[10px] font-bold uppercase tracking-wide text-electric mb-0.5">
-            📝 {t('manage.internal_note', 'Internal note')}
-          </div>
-          <div className="text-[11px] text-gray-600 italic">{internalNote}</div>
-        </div>
-      )}
+        )}
 
-      {/* Action buttons — one click per action, prompts open inline */}
-      <div className="mt-2 pt-2 border-t border-gray-100 grid grid-cols-2 gap-1">
-        <button
-          type="button"
-          onClick={onSetPrice}
-          disabled={saving}
-          className="px-2 py-1.5 rounded-lg text-[11px] font-bold bg-ocean text-white hover:bg-ocean/90 disabled:opacity-50 transition-all"
-        >
-          💰 {t('manage.price', 'Price')}
-        </button>
-        <button
-          type="button"
-          onClick={onToggleBlock}
-          disabled={saving}
-          className={`px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all disabled:opacity-50 ${
-            isBlocked
-              ? 'bg-libre/10 text-libre hover:bg-libre/20'
-              : 'bg-sunset/10 text-sunset hover:bg-sunset/20'
-          }`}
-        >
-          {isBlocked ? t('manage.unblock', 'Unblock') : t('manage.block', 'Block')}
-        </button>
-        <button
-          type="button"
-          onClick={onSetMinStay}
-          disabled={saving}
-          className="px-2 py-1.5 rounded-lg text-[11px] font-bold bg-deep/5 text-deep hover:bg-deep/10 border border-deep/15 disabled:opacity-50 transition-all"
-        >
-          🌙 {t('manage.min_stay', 'Min stay')}
-        </button>
-        <button
-          type="button"
-          onClick={onSetReward}
-          disabled={saving}
-          className="px-2 py-1.5 rounded-lg text-[11px] font-bold bg-libre/10 text-libre hover:bg-libre/20 border border-libre/15 disabled:opacity-50 transition-all"
-        >
-          🎁 {t('manage.reward', 'Reward')}
-        </button>
-        <button
-          type="button"
-          onClick={onSetNote}
-          disabled={saving}
-          className="col-span-2 px-2 py-1.5 rounded-lg text-[11px] font-bold bg-electric/10 text-electric hover:bg-electric/20 border border-electric/15 disabled:opacity-50 transition-all"
-        >
-          📝 {t('manage.note', 'Note')}
-        </button>
+        {/* Existing flags — only render if any are set. Each is a soft
+            pastel chip so they read as informational, not noisy. */}
+        {(minStay > 1 || specials.length > 0 || internalNote) && (
+          <div className="space-y-1.5 mb-3">
+            {minStay > 1 && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-deep/[0.04] text-[11px]">
+                <span className="text-base leading-none">🌙</span>
+                <span className="text-deep/80 font-medium">
+                  {t('manage.min_stay', 'Min stay')}:
+                </span>
+                <span className="font-bold text-deep">
+                  {minStay} {minStay > 1 ? t('common.nights', 'nights') : t('common.night', 'night')}
+                </span>
+              </div>
+            )}
+            {specials.length > 0 && (
+              <div className="px-3 py-2 rounded-xl bg-libre/[0.06] border border-libre/15">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-base leading-none">🎁</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-libre">
+                    {t('manage.rewards', 'Rewards')} · {specials.length}
+                  </span>
+                </div>
+                <div className="space-y-0.5">
+                  {specials.map((sp, idx) => (
+                    <div key={idx} className="text-[11px] leading-tight pl-6">
+                      <span className="font-semibold text-deep">{sp.label || `Reward ${idx + 1}`}</span>
+                      {sp.perk && <span className="text-deep/50"> · {sp.perk}</span>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {internalNote && (
+              <div className="px-3 py-2 rounded-xl bg-electric/[0.06] border border-electric/15">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-base leading-none">📝</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wide text-electric">
+                    {t('manage.internal_note', 'Internal note')}
+                  </span>
+                </div>
+                <div className="text-[11px] text-deep/70 italic pl-6">{internalNote}</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Actions — STAYLO-style gradient pills. 2-column grid keeps
+            the popover compact; the bottom "Note" pill spans both cols. */}
+        <div className="grid grid-cols-2 gap-1.5">
+          <ActionBtn
+            onClick={onSetPrice}
+            gradient="bg-gradient-to-r from-ocean to-electric"
+            icon="💰"
+            label={t('manage.price', 'Price')}
+          />
+          {isBlocked ? (
+            <ActionBtn
+              onClick={onToggleBlock}
+              gradient="bg-gradient-to-r from-libre to-libre/80"
+              icon="✓"
+              label={t('manage.unblock', 'Unblock')}
+            />
+          ) : (
+            <ActionBtn
+              onClick={onToggleBlock}
+              gradient="bg-gradient-to-r from-sunset to-sunset/80"
+              icon="⛔"
+              label={t('manage.block', 'Block')}
+            />
+          )}
+          <ActionBtn
+            onClick={onSetMinStay}
+            gradient="bg-gradient-to-r from-deep to-deep/80"
+            icon="🌙"
+            label={t('manage.min_stay', 'Min stay')}
+          />
+          <ActionBtn
+            onClick={onSetReward}
+            gradient="bg-gradient-to-r from-libre to-electric"
+            icon="🎁"
+            label={t('manage.reward', 'Reward')}
+          />
+          <ActionBtn
+            onClick={onSetNote}
+            gradient="bg-gradient-to-r from-electric to-pink"
+            icon="📝"
+            label={t('manage.note', 'Note')}
+            full
+          />
+        </div>
       </div>
     </div>
   )
