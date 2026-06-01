@@ -131,53 +131,12 @@ export default function DashboardProperties() {
         )}
       </div>
 
-      {/* Tabs — Properties / Réservations reçues. Same visual treatment as
-          the old MyBookings tab strip so the user feels at home. */}
-      <div className="flex items-center gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
-        <button
-          onClick={() => switchTab('properties')}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
-            tab === 'properties' ? 'bg-white shadow-sm text-deep' : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Building2 size={14} />
-          {t('dashboard.my_properties', 'Mes propriétés')}
-          <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
-            {properties.length}
-          </span>
-        </button>
-        <button
-          onClick={() => switchTab('incoming')}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
-            tab === 'incoming' ? 'bg-white shadow-sm text-deep' : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Inbox size={14} />
-          {t('bookings.tab_incoming', 'Réservations reçues')}
-          <span className="text-[10px] bg-orange/10 text-orange px-1.5 py-0.5 rounded-full font-bold">
-            {incomingCount}
-          </span>
-        </button>
-      </div>
-
-      {/* Tab content — render the IncomingBookings component when the
-          second tab is active. It's the same data + card layout that used
-          to live inside MyBookings, just relocated to its natural home. */}
-      {tab === 'incoming' && <IncomingBookings embedded />}
-      {tab === 'properties' && <PropertiesTabContent t={t} properties={properties} />}
-    </div>
-  )
-}
-
-// ── Extracted properties-tab body so the main render stays readable.
-//    Renders the Hosting quick-nav row + the properties list (or empty state).
-function PropertiesTabContent({ t, properties }) {
-  return (
-    <>
-      {/* Hosting quick-nav — direct links to the 4 operational tools
-          (Front Desk / Housekeeping / Reports / Banking) that live on
-          their own routes but are CONTEXTUAL to "your properties". User
-          shouldn't have to scan the sidebar to find them. */}
+      {/* Hosting quick-nav — pill row contextual to "your properties".
+          The first 4 pills are LINKS to dedicated routes (Front Desk /
+          Housekeeping / Reports / Banking). The last pill ("Réservations
+          reçues") is a TOGGLE that swaps the inline content between the
+          properties list and the incoming-bookings view — clicking it
+          activates the orange highlight, clicking again deactivates. */}
       <div className="flex flex-wrap gap-2 sm:gap-3 mb-6">
         <Link
           to="/dashboard/front-desk"
@@ -207,7 +166,45 @@ function PropertiesTabContent({ t, properties }) {
           <Banknote size={16} className="text-sunset" />
           {t('dashboard.nav_banking', 'Banking')}
         </Link>
+        {/* Réservations reçues — inline toggle (not a Link), placed to
+            the right of Banking. Active state uses the orange palette so
+            it stands out from the 4 navigation pills above. */}
+        <button
+          type="button"
+          onClick={() => switchTab(tab === 'incoming' ? 'properties' : 'incoming')}
+          className={`group inline-flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-semibold transition-all ${
+            tab === 'incoming'
+              ? 'bg-orange/10 border-orange/50 text-orange shadow-sm'
+              : 'bg-white border-gray-200 text-deep hover:border-orange/40 hover:bg-orange/5 hover:text-orange hover:shadow-sm'
+          }`}
+        >
+          <Inbox size={16} className={tab === 'incoming' ? 'text-orange' : 'text-orange'} />
+          {t('bookings.tab_incoming', 'Réservations reçues')}
+          {incomingCount > 0 && (
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+              tab === 'incoming' ? 'bg-orange text-white' : 'bg-orange/15 text-orange'
+            }`}>
+              {incomingCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      {/* Body content — toggles between the properties list and the
+          incoming-bookings view based on the active "tab". */}
+      {tab === 'incoming' && <IncomingBookings embedded />}
+      {tab === 'properties' && <PropertiesTabContent t={t} properties={properties} />}
+    </div>
+  )
+}
+
+// ── Extracted properties-tab body so the main render stays readable.
+//    Renders just the properties list (or empty state). The Hosting
+//    quick-nav row lives above in the main render so its pills stay
+//    visible on both tabs.
+function PropertiesTabContent({ t, properties }) {
+  return (
+    <>
 
       {/* Properties list */}
       {properties.length === 0 ? (
