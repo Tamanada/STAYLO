@@ -640,7 +640,10 @@ function RoomPanel({ room, bookings, onClose, onSetStatus }) {
 
         {/* Actions */}
         <div className="space-y-1.5">
-          <button className="w-full py-2.5 rounded-xl bg-gradient-to-br from-orange to-pink text-white text-xs font-bold">
+          <button
+            className="w-full py-2.5 rounded-xl text-white text-xs font-bold"
+            style={{ background: 'linear-gradient(135deg, #FF6B00, #FF3CB4)' }}
+          >
             {primaryLabel}
           </button>
           <button className="w-full py-2.5 rounded-xl bg-gray-100 text-deep text-xs font-bold border border-gray-200"
