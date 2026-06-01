@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Banknote, Inbox, ChevronDown } from 'lucide-react'
+import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Banknote, Inbox } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
@@ -33,21 +33,12 @@ export default function DashboardProperties() {
   const [incomingCount, setIncomingCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  // Manage-pill popover state — when there's more than one property,
-  // the pill opens a small picker listing them. Single property → the
-  // pill renders as a direct Link to /dashboard/property/:id.
-  const [manageOpen, setManageOpen] = useState(false)
-  const manageRef = useRef(null)
-  useEffect(() => {
-    if (!manageOpen) return
-    function onClickOutside(e) {
-      if (manageRef.current && !manageRef.current.contains(e.target)) {
-        setManageOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', onClickOutside)
-    return () => document.removeEventListener('mousedown', onClickOutside)
-  }, [manageOpen])
+  // Manage pill always renders as a direct Link straight into the
+  // property management page (the one with Photos / Videos / Chambres /
+  // Packages / Disponibilités / Réservations / Team / Settings tabs).
+  // When there are several properties we open the FIRST one — the
+  // hotelier can switch between properties via the sidebar dropdown
+  // ("Mes propriétés ▾") once they're inside the manage view.
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/login')
@@ -174,11 +165,12 @@ export default function DashboardProperties() {
             </span>
           )}
         </Link>
-        {/* Manage pill — direct Link when there's one property, popover
-            picker when there are several. Lets the hotelier jump into a
-            specific property's management page without scrolling the
-            properties list below. Hidden entirely if no properties yet. */}
-        {properties.length === 1 && (
+        {/* Manage pill — direct Link to the FIRST property's management
+            page (the Photos / Videos / Chambres / Packages / etc. view).
+            Hidden when the hotelier has no properties yet. Once inside
+            the manage view, the sidebar "Mes propriétés ▾" dropdown lets
+            them jump to any other property. */}
+        {properties.length > 0 && (
           <Link
             to={`/dashboard/property/${properties[0].id}`}
             className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-electric/40 hover:bg-electric/5 hover:text-electric hover:shadow-sm"
@@ -186,46 +178,6 @@ export default function DashboardProperties() {
             <Settings size={16} className="text-electric" />
             {t('dashboard.manage', 'Manage')}
           </Link>
-        )}
-        {properties.length > 1 && (
-          <div className="relative" ref={manageRef}>
-            <button
-              type="button"
-              onClick={() => setManageOpen(v => !v)}
-              className={`group inline-flex items-center gap-2 px-4 py-2.5 rounded-full border text-sm font-semibold transition-all ${
-                manageOpen
-                  ? 'bg-electric/10 border-electric/50 text-electric shadow-sm'
-                  : 'bg-white border-gray-200 text-deep hover:border-electric/40 hover:bg-electric/5 hover:text-electric hover:shadow-sm'
-              }`}
-            >
-              <Settings size={16} className="text-electric" />
-              {t('dashboard.manage', 'Manage')}
-              <ChevronDown size={14} className={`transition-transform duration-200 ${manageOpen ? 'rotate-180' : ''}`} />
-            </button>
-            {manageOpen && (
-              <div className="absolute top-full left-0 mt-2 w-64 max-w-[80vw] bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50">
-                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  {t('dashboard.select_property', 'Select a property')}
-                </div>
-                {properties.map(p => (
-                  <Link
-                    key={p.id}
-                    to={`/dashboard/property/${p.id}`}
-                    onClick={() => setManageOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 text-sm text-deep no-underline hover:bg-gray-50 transition-colors"
-                  >
-                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                      p.status === 'live'      ? 'bg-emerald-500' :
-                      p.status === 'validated' ? 'bg-electric' :
-                      p.status === 'reviewing' ? 'bg-amber-500' :
-                      'bg-gray-300'
-                    }`} />
-                    <span className="truncate font-medium">{p.name || 'Untitled'}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
         )}
       </div>
 
