@@ -4063,6 +4063,12 @@ function TimelineAvailabilityView({ rooms }) {
   })
   const [availByRoom, setAvailByRoom] = useState({})
   const [loading, setLoading] = useState(true)
+  // Bulk edit — same idea as Monthly view but cells span room × date.
+  // Each entry is "${room_id}|${yyyy-mm-dd}" so the user can mix rooms
+  // and dates in one selection (the big advantage of Timeline).
+  const [bulkMode, setBulkMode] = useState(false)
+  const [selectedCells, setSelectedCells] = useState(new Set())
+  const [saving, setSaving] = useState(false)
 
   // Build the 14 ISO dates from the current start.
   const dates = []
@@ -4071,31 +4077,41 @@ function TimelineAvailabilityView({ rooms }) {
     dates.push(d)
   }
   const isoOf = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const addDaysISO = (dateStr, n) => {
+    const d = new Date(dateStr + 'T00:00:00Z')
+    d.setUTCDate(d.getUTCDate() + n)
+    return d.toISOString().slice(0, 10)
+  }
+
+  // Pulled out of the useEffect so bulk-edit handlers can call it after
+  // writing rows to refresh the on-screen grid.
+  async function refreshAvail() {
+    if (rooms.length === 0) { setLoading(false); return }
+    setLoading(true)
+    const startISO = isoOf(dates[0])
+    const endISO   = isoOf(dates[DAYS - 1])
+    const roomIds  = rooms.map(r => r.id)
+    const { data } = await supabase
+      .from('room_availability')
+      .select('*')
+      .in('room_id', roomIds)
+      .gte('date', startISO)
+      .lte('date', endISO)
+    const map = {}
+    ;(data || []).forEach(row => {
+      if (!map[row.room_id]) map[row.room_id] = {}
+      map[row.room_id][row.date] = row
+    })
+    setAvailByRoom(map)
+    setLoading(false)
+  }
 
   useEffect(() => {
-    if (rooms.length === 0) { setLoading(false); return }
     let cancelled = false
-    setLoading(true)
-    async function fetchAvail() {
-      const startISO = isoOf(dates[0])
-      const endISO   = isoOf(dates[DAYS - 1])
-      const roomIds  = rooms.map(r => r.id)
-      const { data } = await supabase
-        .from('room_availability')
-        .select('*')
-        .in('room_id', roomIds)
-        .gte('date', startISO)
-        .lte('date', endISO)
+    ;(async () => {
+      await refreshAvail()
       if (cancelled) return
-      const map = {}
-      ;(data || []).forEach(row => {
-        if (!map[row.room_id]) map[row.room_id] = {}
-        map[row.room_id][row.date] = row
-      })
-      setAvailByRoom(map)
-      setLoading(false)
-    }
-    fetchAvail()
+    })()
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rooms, startDate])
@@ -4107,6 +4123,144 @@ function TimelineAvailabilityView({ rooms }) {
   }
   function goToday() {
     const d = new Date(); d.setHours(0, 0, 0, 0); setStartDate(d)
+  }
+
+  // ── Bulk-edit handlers ───────────────────────────────────
+  function toggleBulkMode() {
+    setBulkMode(b => !b)
+    setSelectedCells(new Set())
+  }
+  function cellKey(roomId, iso) { return `${roomId}|${iso}` }
+  function toggleCell(roomId, iso) {
+    setSelectedCells(prev => {
+      const next = new Set(prev)
+      const k = cellKey(roomId, iso)
+      if (next.has(k)) next.delete(k)
+      else next.add(k)
+      return next
+    })
+  }
+  function selectAllFuture() {
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const next = new Set()
+    for (const room of rooms) {
+      for (const d of dates) {
+        if (d >= today) next.add(cellKey(room.id, isoOf(d)))
+      }
+    }
+    setSelectedCells(next)
+  }
+  function selectWeekends() {
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const next = new Set()
+    for (const room of rooms) {
+      for (const d of dates) {
+        const dow = d.getDay()
+        if ((dow === 0 || dow === 6) && d >= today) {
+          next.add(cellKey(room.id, isoOf(d)))
+        }
+      }
+    }
+    setSelectedCells(next)
+  }
+  function selectRoomRow(roomId) {
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    setSelectedCells(prev => {
+      const next = new Set(prev)
+      for (const d of dates) {
+        if (d >= today) next.add(cellKey(roomId, isoOf(d)))
+      }
+      return next
+    })
+  }
+
+  // Apply payload to all selected cells. Groups by room_id so we can
+  // do one fetch + one insert/update batch per room, then recompute
+  // availability if is_blocked was touched.
+  async function bulkUpdate(payload, label) {
+    if (selectedCells.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
+    if (!confirm(`${label} — ${selectedCells.size} ${selectedCells.size > 1 ? 'cells' : 'cell'}?`)) return
+    setSaving(true)
+
+    // Group keys by room_id
+    const byRoom = {}
+    selectedCells.forEach(k => {
+      const [rid, iso] = k.split('|')
+      if (!byRoom[rid]) byRoom[rid] = []
+      byRoom[rid].push(iso)
+    })
+
+    for (const [roomId, isoList] of Object.entries(byRoom)) {
+      const room = rooms.find(r => r.id === roomId)
+      if (!room) continue
+
+      // Fetch existing rows for this room × these dates
+      const { data: existing } = await supabase
+        .from('room_availability')
+        .select('*')
+        .eq('room_id', roomId)
+        .in('date', isoList)
+      const existingByDate = {}
+      ;(existing || []).forEach(r => { existingByDate[r.date] = r })
+
+      const toUpdate = isoList.filter(d => existingByDate[d])
+      const toInsert = isoList.filter(d => !existingByDate[d])
+
+      // Updates — direct payload write
+      for (const iso of toUpdate) {
+        await supabase.from('room_availability').update(payload).eq('id', existingByDate[iso].id)
+      }
+      // Inserts — fill required NOT NULL columns
+      if (toInsert.length > 0) {
+        const rows = toInsert.map(iso => ({
+          room_id: roomId,
+          date: iso,
+          available_count: payload.is_blocked ? 0 : (room.quantity || 1),
+          is_blocked: payload.is_blocked ?? false,
+          price_override: payload.price_override ?? null,
+        }))
+        await supabase.from('room_availability').insert(rows)
+      }
+
+      // Recompute available_count if is_blocked changed — same safety
+      // net as Monthly view: ensures stock honors in-house bookings.
+      if ('is_blocked' in payload) {
+        const sorted = [...isoList].sort()
+        await supabase.rpc('recompute_room_availability', {
+          p_room_id:   roomId,
+          p_check_in:  sorted[0],
+          p_check_out: addDaysISO(sorted[sorted.length - 1], 1),
+        })
+      }
+    }
+
+    await refreshAvail()
+    setSelectedCells(new Set())
+    setSaving(false)
+  }
+
+  async function bulkBlock()   { await bulkUpdate({ is_blocked: true  }, t('manage.bulk_block_label', 'Block')) }
+  async function bulkUnblock() { await bulkUpdate({ is_blocked: false }, t('manage.bulk_unblock_label', 'Unblock')) }
+
+  async function bulkSetPrice() {
+    if (selectedCells.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
+    const input = prompt(
+      t('manage.bulk_price_prompt', 'Set price (USD) for {{n}} selected cell(s).\n\nLeave blank to revert to each room\'s default price.', { n: selectedCells.size })
+    )
+    if (input === null) return
+    const trimmed = input.trim()
+    let newPrice = null
+    if (trimmed !== '') {
+      newPrice = Number(trimmed)
+      if (!isFinite(newPrice) || newPrice <= 0) {
+        alert(t('manage.invalid_price', 'Invalid price. Must be a positive number.'))
+        return
+      }
+    }
+    await bulkUpdate(
+      { price_override: newPrice },
+      newPrice ? `${t('manage.bulk_set_price_label', 'Set price to')} $${newPrice}` : t('manage.bulk_clear_price_label', 'Clear price override')
+    )
   }
 
   if (rooms.length === 0) {
@@ -4140,8 +4294,68 @@ function TimelineAvailabilityView({ rooms }) {
           </button>
         </div>
         <span className="text-[11px] text-gray-400 italic">
-          {t('manage.timeline_edit_hint', 'Switch to Monthly to edit prices & blocks')}
+          {bulkMode
+            ? t('manage.timeline_bulk_hint', 'Click cells to add to the selection · then apply an action below')
+            : t('manage.timeline_bulk_off_hint', 'Turn on Bulk edit to block/unblock or change prices across rooms × days')}
         </span>
+      </div>
+
+      {/* Bulk-edit toolbar — works exactly like Monthly's, except a
+          single selection can span multiple rooms (big advantage of
+          the rooms×days grid). */}
+      <div className="mb-3 flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={toggleBulkMode}
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            bulkMode
+              ? 'bg-ocean text-white shadow-sm'
+              : 'bg-white border border-gray-200 text-gray-600 hover:border-ocean hover:text-ocean'
+          }`}
+        >
+          {bulkMode ? `✓ ${t('manage.bulk_edit_on', 'Bulk edit ON')}` : t('manage.bulk_edit', 'Bulk edit')}
+        </button>
+
+        {bulkMode && (
+          <>
+            <button onClick={selectAllFuture} type="button"
+              className="px-2.5 py-1 rounded text-xs text-gray-500 hover:text-deep hover:bg-gray-50 transition-all">
+              {t('manage.timeline_select_all', 'Select range')}
+            </button>
+            <button onClick={selectWeekends} type="button"
+              className="px-2.5 py-1 rounded text-xs text-gray-500 hover:text-deep hover:bg-gray-50 transition-all">
+              {t('manage.weekends_only', 'Weekends only')}
+            </button>
+            {selectedCells.size > 0 && (
+              <button onClick={() => setSelectedCells(new Set())} type="button"
+                className="px-2.5 py-1 rounded text-xs text-gray-400 hover:text-sunset transition-all">
+                {t('manage.clear_count', 'Clear ({{n}})', { n: selectedCells.size })}
+              </button>
+            )}
+
+            {selectedCells.size > 0 && (
+              <div className="basis-full pt-2 mt-1 border-t border-gray-100 flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs text-gray-400 mr-1">
+                  {t('manage.cells_count', '{{n}} cell(s) →', { n: selectedCells.size })}
+                </span>
+                <button onClick={bulkSetPrice} type="button" disabled={saving}
+                  className="px-2.5 py-1 rounded text-xs font-bold bg-ocean text-white hover:bg-ocean/90 disabled:opacity-50">
+                  💰 {t('manage.price', 'Price')}
+                </button>
+                <span className="mx-1 text-gray-200">|</span>
+                <button onClick={bulkBlock} type="button" disabled={saving}
+                  className="px-2.5 py-1 rounded text-xs font-bold bg-sunset/10 text-sunset hover:bg-sunset/20 disabled:opacity-50">
+                  {t('manage.block', 'Block')}
+                </button>
+                <button onClick={bulkUnblock} type="button" disabled={saving}
+                  className="px-2.5 py-1 rounded text-xs font-bold bg-libre/10 text-libre hover:bg-libre/20 disabled:opacity-50">
+                  {t('manage.unblock', 'Unblock')}
+                </button>
+                {saving && <Loader2 size={14} className="animate-spin text-gray-400 ml-1" />}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Grid — fixed room column + DAYS evenly-spaced day columns.
@@ -4170,22 +4384,31 @@ function TimelineAvailabilityView({ rooms }) {
             })}
           </div>
 
-          {/* Rows — one per room. Each cell shows stock badge + price + net.
-              No click handlers here (read-only view); the Monthly view is
-              the editor. */}
+          {/* Rows — one per room. In bulk mode, clicking a cell toggles
+              it in the selection (which can span multiple rooms). Click
+              the room name header to add that whole row's future cells. */}
           {rooms.map(room => (
             <div
               key={room.id}
               className="grid items-stretch"
               style={{ gridTemplateColumns: `180px repeat(${DAYS}, 1fr)` }}
             >
-              {/* Room info — name + default price + total stock */}
-              <div className="py-2 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02]">
-                <div className="text-sm font-bold text-deep truncate" title={room.name}>{room.name}</div>
+              {/* Room info — name + default price + total stock.
+                  Clickable in bulk mode to select the whole row at once. */}
+              <button
+                type="button"
+                onClick={bulkMode ? () => selectRoomRow(room.id) : undefined}
+                disabled={!bulkMode}
+                className={`py-2 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02] text-left ${
+                  bulkMode ? 'cursor-pointer hover:bg-ocean/5' : 'cursor-default'
+                }`}
+                title={bulkMode ? t('manage.timeline_select_row', 'Click to select all future cells in this row') : room.name}
+              >
+                <div className="text-sm font-bold text-deep truncate">{room.name}</div>
                 <div className="text-[10px] text-gray-500 leading-tight">
                   ${Number(room.base_price || 0).toFixed(0)}/night · ×{room.quantity}
                 </div>
-              </div>
+              </button>
 
               {/* Day cells */}
               {dates.map((d, i) => {
@@ -4200,6 +4423,7 @@ function TimelineAvailabilityView({ rooms }) {
                 const stock = isBlocked ? 0
                   : (row && typeof row.available_count === 'number' ? row.available_count : totalStock)
                 const hasOverride = row?.price_override != null
+                const isSelected = bulkMode && selectedCells.has(cellKey(room.id, iso))
 
                 // Stock chip color — full = libre, partial = orange, none = sunset
                 const stockChipClass = stock === 0
@@ -4215,23 +4439,38 @@ function TimelineAvailabilityView({ rooms }) {
                     </div>
                   )
                 }
+
+                // Selection ring + click handler shared across blocked /
+                // available variants — DRY for the bulk-mode behavior.
+                const selectionRing = isSelected
+                  ? 'ring-2 ring-ocean bg-ocean/15'
+                  : isToday ? 'ring-1 ring-inset ring-ocean/30' : ''
+                const onCellClick = bulkMode && !isPast ? () => toggleCell(room.id, iso) : undefined
+                const cursorClass = bulkMode && !isPast ? 'cursor-pointer' : 'cursor-default'
+
                 if (isBlocked) {
                   return (
-                    <div
+                    <button
                       key={i}
-                      className={`border-b border-l border-gray-100 py-2 px-1 text-center bg-sunset/10 flex flex-col justify-center ${isToday ? 'ring-1 ring-inset ring-ocean/40' : ''}`}
+                      type="button"
+                      onClick={onCellClick}
+                      disabled={saving}
+                      className={`border-b border-l border-gray-100 py-2 px-1 text-center bg-sunset/10 flex flex-col justify-center ${selectionRing} ${cursorClass} ${bulkMode ? 'hover:bg-sunset/20' : ''}`}
                       title={`${room.name} · ${iso} · blocked`}
                     >
                       <div className="text-[9px] font-bold text-sunset uppercase tracking-wider">
                         {t('manage.blocked', 'Blocked')}
                       </div>
-                    </div>
+                    </button>
                   )
                 }
                 return (
-                  <div
+                  <button
                     key={i}
-                    className={`border-b border-l border-gray-100 py-1.5 px-1 text-center bg-libre/5 flex flex-col justify-center gap-0.5 ${isToday ? 'ring-1 ring-inset ring-ocean/30 bg-ocean/[0.04]' : ''}`}
+                    type="button"
+                    onClick={onCellClick}
+                    disabled={saving}
+                    className={`border-b border-l border-gray-100 py-1.5 px-1 text-center bg-libre/5 flex flex-col justify-center gap-0.5 ${selectionRing} ${cursorClass} ${bulkMode ? 'hover:bg-ocean/5' : ''} ${isToday && !isSelected ? 'bg-ocean/[0.04]' : ''}`}
                     title={`${room.name} · ${iso} · ${stock}/${totalStock} available · $${priceBrut.toFixed(0)} (net $${priceNet.toFixed(0)})`}
                   >
                     <div className={`text-[10px] font-bold inline-block px-1 rounded mx-auto ${stockChipClass}`}>
@@ -4244,7 +4483,7 @@ function TimelineAvailabilityView({ rooms }) {
                     <div className="text-[10px] text-libre/90 font-medium leading-tight">
                       net ${priceNet.toFixed(0)}
                     </div>
-                  </div>
+                  </button>
                 )
               })}
             </div>
