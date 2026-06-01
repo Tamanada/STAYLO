@@ -29,10 +29,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams, useOutletContext } from 'react-router-dom'
+// CAREFUL: lucide-react exports `Map` (icon) which would shadow the
+// global `Map` constructor used by useMemo's data grouping below.
+// Always alias it (and any other globals like `Set`, `Date`) on import.
 import {
-  Calendar as CalendarIcon, Grid3x3, Map, Search,
+  Calendar as CalendarIcon, Grid3x3, Map as MapIcon, Search,
   ChevronLeft, ChevronRight, X, BedDouble, User,
-  Wrench, Sparkles, DoorOpen, AlertTriangle, CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
@@ -220,7 +223,7 @@ export default function RoomManagement() {
           {[
             { key: 'timeline',  icon: CalendarIcon, label: t('rooms.view_timeline', 'Timeline') },
             { key: 'grid',      icon: Grid3x3,      label: t('rooms.view_grid',     'Grid') },
-            { key: 'floorplan', icon: Map,          label: t('rooms.view_floor',    'Floor Plan') },
+            { key: 'floorplan', icon: MapIcon,      label: t('rooms.view_floor',    'Floor Plan') },
           ].map(v => (
             <button key={v.key}
               onClick={() => setView(v.key)}
