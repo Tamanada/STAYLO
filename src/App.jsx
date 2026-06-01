@@ -46,6 +46,7 @@ import LegalTerms from './pages/legal/Terms'
 import LegalPrivacy from './pages/legal/Privacy'
 import PropertyManage from './pages/dashboard/PropertyManage'
 import PropertyLanding from './pages/dashboard/PropertyLanding'
+import PropertyLayout from './pages/dashboard/PropertyLayout'
 import DashboardKit from './pages/dashboard/DashboardKit'
 import PMSFrontDesk from './pages/dashboard/PMSFrontDesk'
 import PMSHousekeeping from './pages/dashboard/PMSHousekeeping'
@@ -100,8 +101,22 @@ export default function App() {
             <Route path="shares" element={<DashboardShares />} />
             <Route path="ambassador" element={<AmbassadorDashboard />} />
             <Route path="kit" element={<DashboardKit />} />
-            <Route path="property/:id" element={<PropertyLanding />} />
-            <Route path="property/:id/manage" element={<PropertyManage />} />
+            {/* Property-scoped routes — wrapped by PropertyLayout so the
+                6-pill nav strip (Réception · Housekeeping · Rapports ·
+                Banque · Réservations reçues · Gérer) stays visible on
+                every section. The property header (name / status / city)
+                also lives in the layout. */}
+            <Route path="property/:id" element={<PropertyLayout />}>
+              <Route index element={<PropertyLanding />} />
+              <Route path="front-desk" element={<PMSFrontDesk />} />
+              <Route path="housekeeping" element={<PMSHousekeeping />} />
+              <Route path="reports" element={<PMSReports />} />
+              <Route path="banking" element={<Banking />} />
+              <Route path="incoming-bookings" element={<IncomingBookings />} />
+              <Route path="manage" element={<PropertyManage />} />
+            </Route>
+            {/* Hotel-wide routes — kept for backwards compat / non-
+                contextual access via direct URL. No pills row here. */}
             <Route path="front-desk" element={<PMSFrontDesk />} />
             <Route path="housekeeping" element={<PMSHousekeeping />} />
             <Route path="reports" element={<PMSReports />} />
