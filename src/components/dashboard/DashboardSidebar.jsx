@@ -14,7 +14,7 @@
 // just wanted to book a room.
 // ============================================
 import { useState, useEffect } from 'react'
-import { NavLink, Link, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
@@ -32,7 +32,9 @@ import {
   Luggage,
   Shield,
   PlusCircle,
-  Smartphone
+  Smartphone,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 
 // ── Section definitions ─────────────────────────────────
@@ -91,13 +93,25 @@ export function DashboardSidebar() {
   const { t } = useTranslation()
   const { user, profile, signOut } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   // Adaptive flags — query Supabase once on mount.
-  // Use head:true + count:'exact' so we don't pull actual rows.
   const [hasProperties, setHasProperties] = useState(false)
   const [hasShares, setHasShares] = useState(false)
   const [stateLoaded, setStateLoaded] = useState(false)
+  // Mini-list of the user's properties for the sidebar dropdown.
+  // Lightweight payload (id + name) — the full Properties page still
+  // fetches its own rich record set when the user navigates there.
+  const [propertyList, setPropertyList] = useState([])
+  // Auto-expanded when the user is currently on /dashboard/properties or
+  // any /dashboard/property/:id — feels right because the parent item is
+  // visually "active". Toggleable by clicking the chevron.
+  const propertiesActive = /^\/dashboard\/propert/.test(location.pathname)
+  const [propsExpanded, setPropsExpanded] = useState(propertiesActive)
+  useEffect(() => {
+    if (propertiesActive) setPropsExpanded(true)
+  }, [propertiesActive])
 
   useEffect(() => {
     if (!user) { setStateLoaded(true); return }
@@ -108,15 +122,27 @@ export function DashboardSidebar() {
     // gets one row in property_members regardless of role.
     Promise.all([
       supabase.from('property_members')
-        .select('id', { count: 'exact', head: true })
+        .select('property_id')
         .eq('user_id', user.id)
         .eq('status', 'active'),
       supabase.from('shares').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-    ]).then(([propRes, shareRes]) => {
+    ]).then(async ([propRes, shareRes]) => {
       if (cancelled) return
-      setHasProperties((propRes.count || 0) > 0)
+      const memberRows = propRes.data || []
+      setHasProperties(memberRows.length > 0)
       setHasShares((shareRes.count || 0) > 0)
       setStateLoaded(true)
+      // Fetch the property names for the dropdown list. Cheap query —
+      // we only ask for id + name + status so the payload stays tiny.
+      const propIds = memberRows.map(r => r.property_id)
+      if (propIds.length > 0) {
+        const { data: props } = await supabase
+          .from('properties')
+          .select('id, name, status')
+          .in('id', propIds)
+          .order('name', { ascending: true })
+        if (!cancelled) setPropertyList(props || [])
+      }
     }).catch(() => {
       // On error fail open — show everything (defensive: don't lock the user out)
       if (!cancelled) {
@@ -167,24 +193,100 @@ export function DashboardSidebar() {
                 </p>
               </div>
             )}
-            {section.items.map(item => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                onClick={() => setMobileOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 no-underline ${
-                    isActive
-                      ? 'bg-electric/15 text-electric border-l-4 border-electric -ml-1 pl-5'
-                      : 'text-white/60 hover:text-white hover:bg-white/5'
-                  }`
-                }
-              >
-                <item.icon size={18} />
-                <span>{t(item.labelKey, item.label)}</span>
-              </NavLink>
-            ))}
+            {section.items.map(item => {
+              // Special case: the "Mes propriétés" item gets an inline
+              // dropdown listing the user's properties. We render a row
+              // with a NavLink for the label (navigates to the index page)
+              // and a chevron button for the expand/collapse toggle, so
+              // clicking the name still goes to the list view as before.
+              const isPropertiesItem = item.to === '/dashboard/properties'
+              if (isPropertiesItem && propertyList.length > 0) {
+                return (
+                  <div key={item.to}>
+                    <div className={`group flex items-stretch rounded-xl transition-all duration-200 ${
+                      propertiesActive
+                        ? 'bg-electric/15'
+                        : 'hover:bg-white/5'
+                    }`}>
+                      <NavLink
+                        to={item.to}
+                        end={item.end}
+                        onClick={() => setMobileOpen(false)}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 px-4 py-3 text-sm font-medium transition-all duration-200 no-underline flex-1 min-w-0 ${
+                            isActive
+                              ? 'text-electric border-l-4 border-electric -ml-1 pl-5'
+                              : 'text-white/60 group-hover:text-white'
+                          }`
+                        }
+                      >
+                        <item.icon size={18} className="flex-shrink-0" />
+                        <span className="truncate">{t(item.labelKey, item.label)}</span>
+                      </NavLink>
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setPropsExpanded(v => !v) }}
+                        aria-label={propsExpanded ? 'Collapse' : 'Expand'}
+                        className="px-3 flex items-center text-white/40 hover:text-white transition-colors cursor-pointer"
+                      >
+                        {propsExpanded
+                          ? <ChevronDown size={16} />
+                          : <ChevronRight size={16} />}
+                      </button>
+                    </div>
+                    {/* Dropdown — one row per property, indented under the
+                        parent. Status dot (green/orange/gray) gives an at-
+                        a-glance health signal so the user spots a property
+                        stuck in review without clicking through. */}
+                    {propsExpanded && (
+                      <div className="ml-3 mt-1 mb-1 pl-3 border-l border-white/10 space-y-0.5">
+                        {propertyList.map(prop => (
+                          <NavLink
+                            key={prop.id}
+                            to={`/dashboard/property/${prop.id}`}
+                            onClick={() => setMobileOpen(false)}
+                            className={({ isActive }) =>
+                              `flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-all duration-200 no-underline ${
+                                isActive
+                                  ? 'bg-electric/10 text-electric font-semibold'
+                                  : 'text-white/50 hover:text-white hover:bg-white/5'
+                              }`
+                            }
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                              prop.status === 'live'      ? 'bg-libre' :
+                              prop.status === 'validated' ? 'bg-electric' :
+                              prop.status === 'reviewing' ? 'bg-sunset' :
+                              'bg-white/30'
+                            }`} />
+                            <span className="truncate">{prop.name || 'Untitled'}</span>
+                          </NavLink>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+              // Default render — every other item stays a simple NavLink
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  onClick={() => setMobileOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 no-underline ${
+                      isActive
+                        ? 'bg-electric/15 text-electric border-l-4 border-electric -ml-1 pl-5'
+                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                    }`
+                  }
+                >
+                  <item.icon size={18} />
+                  <span>{t(item.labelKey, item.label)}</span>
+                </NavLink>
+              )
+            })}
           </div>
         ))}
 
