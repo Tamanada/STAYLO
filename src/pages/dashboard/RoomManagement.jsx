@@ -35,7 +35,8 @@ import { useParams, useOutletContext } from 'react-router-dom'
 import {
   Calendar as CalendarIcon, Grid3x3, Map as MapIcon, Search,
   ChevronLeft, ChevronRight, X, BedDouble, User,
-  AlertTriangle,
+  AlertTriangle, Plus, LogIn, LogOut, RefreshCw,
+  TrendingUp, ArrowDown, ArrowUp,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 
@@ -192,6 +193,19 @@ export default function RoomManagement() {
     return new Map([...m.entries()].sort((a, b) => a[0] - b[0]))
   }, [filteredRooms])
 
+  // ── Today stats (for the briefing strip) ─────────────────────────
+  // Occupancy = occupied / total rooms. Arrivals/departures pulled
+  // straight from bookings — same source the side panel uses so the
+  // numbers always agree.
+  const todayStats = useMemo(() => {
+    const total = enrichedRooms.length || 1
+    const occupied = enrichedRooms.filter(r => r.status === 'occupied' || r.status === 'checkout').length
+    const occupancy = Math.round((occupied / total) * 100)
+    const arrivals = bookings.filter(b => b.status !== 'cancelled' && b.check_in === today).length
+    const departures = bookings.filter(b => b.status !== 'cancelled' && b.check_out === today).length
+    return { occupancy, arrivals, departures }
+  }, [enrichedRooms, bookings, today])
+
   // ── Empty / loading states ───────────────────────────────────────
   if (loading) {
     return (
@@ -216,6 +230,35 @@ export default function RoomManagement() {
 
   return (
     <div>
+      {/* ── Today briefing + quick actions ───────────────────────
+          One-glance ops summary at the very top — Occupancy %,
+          arrivals, departures — followed by the four most frequent
+          actions a receptionist takes on morning shift. Matches the
+          "TODAY" + "QUICK ACTIONS" sidebar sections from the mockup. */}
+      <div className="bg-white border border-gray-200 rounded-xl p-3 mb-3 flex flex-wrap items-center gap-3">
+        {/* Stats trio — left side */}
+        <div className="flex items-center gap-2">
+          <Metric icon={TrendingUp} color="text-electric"
+            label={t('rooms.occupancy', 'Occupancy')}
+            value={`${todayStats.occupancy}%`} />
+          <Metric icon={ArrowDown} color="text-libre"
+            label={t('rooms.arrivals', 'Arrivals')}
+            value={todayStats.arrivals} />
+          <Metric icon={ArrowUp} color="text-orange"
+            label={t('rooms.departures', 'Departures')}
+            value={todayStats.departures} />
+        </div>
+        {/* Quick actions — right side */}
+        <div className="ml-auto flex flex-wrap gap-2">
+          <QuickAction icon={Plus}      label={t('rooms.qa_new_booking', 'New booking')} />
+          <QuickAction icon={LogIn}     label={t('rooms.qa_check_in',    'Check in')}
+            badge={todayStats.arrivals > 0 ? todayStats.arrivals : null} accent="text-libre" />
+          <QuickAction icon={LogOut}    label={t('rooms.qa_check_out',   'Check out')}
+            badge={todayStats.departures > 0 ? todayStats.departures : null} accent="text-orange" />
+          <QuickAction icon={RefreshCw} label={t('rooms.qa_room_move',   'Room move')} />
+        </div>
+      </div>
+
       {/* ── Toolbar ─────────────────────────────────────────────── */}
       <div className="bg-white border border-gray-200 rounded-xl p-3 mb-3 flex flex-wrap items-center gap-2">
         {/* View switcher */}
@@ -283,6 +326,28 @@ export default function RoomManagement() {
             </span>
           ))}
         </div>
+      </div>
+
+      {/* ── Legend ──────────────────────────────────────────────────
+          Visible cheat-sheet of the 6 status colors. Helps staff who
+          are new to the codes learn them without opening every card.
+          Quietly tucked below the toolbar — same row pattern as the
+          mockup. */}
+      <div className="flex flex-wrap items-center gap-3 mb-3 px-1 text-[11px] text-gray-500">
+        <span className="font-bold uppercase tracking-wider">{t('rooms.legend', 'Legend')}:</span>
+        {STATUS_KEYS.map(k => {
+          const s = ROOM_STATUSES[k]
+          return (
+            <span key={k} className="inline-flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full" style={{ background: s.color }} />
+              {s.label}
+            </span>
+          )
+        })}
+        <span className="inline-flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full" style={{ background: '#9CA3AF' }} />
+          {t('rooms.status_blocked', 'Blocked')}
+        </span>
       </div>
 
       {/* ── View body ───────────────────────────────────────────── */}
@@ -489,6 +554,22 @@ function TimelineView({ rooms, bookings, startDay, setStartDay, daysShow, onPick
                 })}
                 {reservations.map((b, i) => {
                   const cellW = 100 / daysShow
+                  // Status-based gradient — matches the mockup palette:
+                  //   confirmed (default) → indigo→purple
+                  //   checkin (arriving today) → emerald→libre
+                  //   checkout (leaving today) → orange→sunrise
+                  //   blocked (cancelled / maintenance hold) → grey hatched
+                  const todayISO = isoDate(new Date())
+                  const isCheckin = b.check_in === todayISO
+                  const isCheckout = b.check_out === todayISO
+                  const isBlocked = b.status === 'blocked' || b.guest_name === 'Blocked'
+                  const bg = isBlocked
+                    ? 'repeating-linear-gradient(45deg, #9CA3AF, #9CA3AF 4px, #D1D5DB 4px, #D1D5DB 8px)'
+                    : isCheckout
+                      ? 'linear-gradient(135deg, #C2410C, #FF6B00)'
+                      : isCheckin
+                        ? 'linear-gradient(135deg, #0F766E, #00B894)'
+                        : 'linear-gradient(135deg, #4C51BF, #6C5CE7)'
                   return (
                     <button key={i}
                       onClick={() => onPick(room)}
@@ -496,7 +577,7 @@ function TimelineView({ rooms, bookings, startDay, setStartDay, daysShow, onPick
                       style={{
                         left: `calc(${b.startIdx * cellW}% + 2px)`,
                         width: `calc(${(b.endIdx - b.startIdx) * cellW}% - 4px)`,
-                        background: 'linear-gradient(135deg, #4C51BF, #6C5CE7)',
+                        background: bg,
                       }}
                       title={`${b.guest_name || 'Guest'} · ${b.check_in} → ${b.check_out}`}
                     >
@@ -668,5 +749,43 @@ function Row({ label, value, valueStyle }) {
       <span className="text-gray-500">{label}</span>
       <span className="font-semibold text-deep" style={valueStyle}>{value}</span>
     </div>
+  )
+}
+
+// ── Today briefing metric chip ───────────────────────────────────
+// Compact "icon · value · label" trio used in the top stats strip.
+// Plenty of contrast (chunky value, gray label) so a glance is enough.
+function Metric({ icon: Icon, color, label, value }) {
+  return (
+    <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-gray-200">
+      <Icon size={16} className={color} />
+      <div className="flex flex-col leading-tight">
+        <span className="text-base font-extrabold text-deep">{value}</span>
+        <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">{label}</span>
+      </div>
+    </div>
+  )
+}
+
+// ── Quick action button ──────────────────────────────────────────
+// One of the four high-frequency operations a receptionist runs on
+// shift. The optional `badge` shows e.g. "Check in (4)" when there
+// are pending arrivals. Action handlers are still placeholders —
+// they currently open the side panel via a TODO; wiring them to the
+// real check-in / check-out flows is next.
+function QuickAction({ icon: Icon, label, badge, accent }) {
+  return (
+    <button
+      type="button"
+      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-xs font-semibold text-deep hover:border-orange/40 hover:bg-orange/5 hover:text-orange transition-all"
+    >
+      <Icon size={14} className={accent || 'text-gray-500'} />
+      {label}
+      {badge != null && (
+        <span className="ml-0.5 bg-orange text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">
+          {badge}
+        </span>
+      )}
+    </button>
   )
 }
