@@ -55,8 +55,16 @@ const isoDate = (d) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'
 // mockup so future tweaks can be ported 1:1.
 const STYLES = `
 /* Full-viewport takeover — covers the STAYLO dashboard sidebar so
-   we don't double up the chrome. z-index above the dashboard layout. */
-.rm-shell{position:fixed;inset:0;z-index:50;display:grid;grid-template-columns:220px 1fr;grid-template-rows:56px 1fr;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0EDE8;color:#1A1F2E}
+   we don't double up the chrome. z-index above the dashboard layout.
+   The sidebar collapses to 0 width when retracted; transition keeps
+   the slide smooth. Logo zone follows the same width so the topbar
+   logo doesn't float in mid-air. */
+.rm-shell{position:fixed;inset:0;z-index:50;display:grid;grid-template-columns:220px 1fr;grid-template-rows:56px 1fr;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0EDE8;color:#1A1F2E;transition:grid-template-columns .25s ease}
+.rm-shell.collapsed{grid-template-columns:0 1fr}
+.rm-shell.collapsed .rm-topbar-logo{width:0;padding:0;border-right:none;opacity:0;overflow:hidden}
+.rm-topbar-logo{transition:width .25s ease, padding .25s ease, opacity .25s ease}
+.rm-sidebar-toggle{width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:none;border-radius:8px;cursor:pointer;margin:0 8px 0 12px;flex-shrink:0;transition:all .12s}
+.rm-sidebar-toggle:hover{background:rgba(255,255,255,.15);color:white}
 .rm-topbar{grid-column:1/-1;background:#1A1F2E;display:flex;align-items:center;gap:0;padding:0;border-bottom:1px solid rgba(255,255,255,.08)}
 .rm-topbar-logo{width:220px;padding:0 20px;font-size:20px;font-weight:900;color:white;border-right:1px solid rgba(255,255,255,.08)}
 .rm-topbar-logo b{color:#FF6B00}
@@ -211,6 +219,15 @@ export default function RoomManagement() {
   const navigate = useNavigate()
 
   // ── State ──────────────────────────────────────────────────────
+  // Sidebar collapsed state — persisted across navigations so the
+  // user's preference sticks. Default expanded on first visit.
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    try { return localStorage.getItem('staylo_rm_sidebar') !== 'closed' }
+    catch { return true }
+  })
+  useEffect(() => {
+    try { localStorage.setItem('staylo_rm_sidebar', sidebarOpen ? 'open' : 'closed') } catch {}
+  }, [sidebarOpen])
   const [view, setView] = useState('timeline')   // 'timeline' | 'grid' | 'floorplan'
   const [property, setProperty] = useState(null)
   const [rooms, setRooms] = useState([])
@@ -363,10 +380,21 @@ export default function RoomManagement() {
   return (
     <>
       <style>{STYLES}</style>
-      <div className="rm-shell">
+      <div className={`rm-shell ${sidebarOpen ? '' : 'collapsed'}`}>
         {/* ── TOPBAR ──────────────────────────────────────────── */}
         <div className="rm-topbar">
           <div className="rm-topbar-logo">Stay<b>lo</b></div>
+          {/* Sidebar toggle — slides the dark left panel away when the
+              hotelier needs more real estate (e.g. on a wide Timeline
+              grid). Position right after the logo so it's the first
+              thing the eye finds when looking for a way to free up
+              space. Persists choice in localStorage. */}
+          <button className="rm-sidebar-toggle"
+            onClick={() => setSidebarOpen(v => !v)}
+            title={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+            aria-label={sidebarOpen ? 'Hide sidebar' : 'Show sidebar'}>
+            {sidebarOpen ? '◀' : '▶'}
+          </button>
           <div className="rm-topbar-nav">
             <Link to="/dashboard" className="rm-tnav">Dashboard</Link>
             <span className="rm-tnav active">Rooms</span>
