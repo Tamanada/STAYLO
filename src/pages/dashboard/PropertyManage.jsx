@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom'
 import {
   ArrowLeft, Plus, BedDouble, Calendar, ClipboardList, Pencil, Trash2,
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
@@ -128,6 +128,13 @@ export default function PropertyManage() {
   const { id: propertyId } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
+  // When rendered inside PropertyLayout (the /dashboard/property/:id/manage
+  // route), the parent already shows the back arrow + name + status badge
+  // + city/country + the 6-pill nav. We detect that via useOutletContext
+  // and hide our own redundant header — keep only the action buttons
+  // (Go Live / Delete) which are specific to the manage view.
+  const layoutContext = useOutletContext()
+  const isInsideLayout = !!layoutContext
   const [activeTab, setActiveTab] = useState('photos')
   const [property, setProperty] = useState(null)
   const [rooms, setRooms] = useState([])
@@ -216,28 +223,13 @@ export default function PropertyManage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Link to="/dashboard/properties" className="text-gray-400 hover:text-ocean transition-colors">
-            <ArrowLeft size={20} />
-          </Link>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold text-deep">{property.name}</h1>
-              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                property.status === 'live'
-                  ? 'bg-libre/10 text-libre'
-                  : 'bg-gray-100 text-gray-500'
-              }`}>
-                {property.status === 'live' ? 'Live' : 'Offline'}
-              </span>
-            </div>
-            <p className="text-sm text-gray-500">{property.city}{property.country ? `, ${property.country}` : ''}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
+    <div className={isInsideLayout ? '' : 'max-w-5xl mx-auto px-4 py-8'}>
+      {/* Header — only when rendered standalone. Inside PropertyLayout the
+          identity row (back arrow + name + status + city/country) is
+          already rendered by the parent. We still show the action buttons
+          (Go Live / Delete) in either case — they're manage-specific. */}
+      {isInsideLayout ? (
+        <div className="flex items-center justify-end gap-2 mb-6">
           <button onClick={handleToggleLive}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
               property.status === 'live'
@@ -251,7 +243,42 @@ export default function PropertyManage() {
             <Trash2 size={14} /> {t('manage.delete', 'Delete')}
           </button>
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Link to="/dashboard/properties" className="text-gray-400 hover:text-ocean transition-colors">
+              <ArrowLeft size={20} />
+            </Link>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-deep">{property.name}</h1>
+                <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                  property.status === 'live'
+                    ? 'bg-libre/10 text-libre'
+                    : 'bg-gray-100 text-gray-500'
+                }`}>
+                  {property.status === 'live' ? 'Live' : 'Offline'}
+                </span>
+              </div>
+              <p className="text-sm text-gray-500">{property.city}{property.country ? `, ${property.country}` : ''}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={handleToggleLive}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                property.status === 'live'
+                  ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-libre text-white hover:bg-libre/90'
+              }`}>
+              {property.status === 'live' ? <><Ban size={14} /> {t('manage.stop', 'Stop')}</> : <><Check size={14} /> {t('manage.go_live', 'Go Live')}</>}
+            </button>
+            <button onClick={handleDeleteProperty}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-all">
+              <Trash2 size={14} /> {t('manage.delete', 'Delete')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 bg-gray-100 rounded-xl p-1">
