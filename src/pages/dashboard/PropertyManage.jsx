@@ -3151,6 +3151,19 @@ function RoomMediaUploader({ kind, room, propertyId, onChange }) {
 // ============================================
 function CalendarTab({ rooms }) {
   const { t } = useTranslation()
+  // View mode — 'monthly' (per-room 35-day grid, editor) or 'timeline'
+  // (all rooms × 14 days, bird's-eye view). The Timeline view is the
+  // hotelier's "Réception calendar" for availability: same Gantt-style
+  // layout as the old front-desk page, except the cells are filled with
+  // room info (stock + price + net) instead of reservation bars.
+  // Persisted in localStorage so each hotelier keeps their preference.
+  const [viewMode, setViewMode] = useState(() => {
+    if (typeof window === 'undefined') return 'monthly'
+    return localStorage.getItem('staylo_avail_view') || 'monthly'
+  })
+  useEffect(() => {
+    if (typeof window !== 'undefined') localStorage.setItem('staylo_avail_view', viewMode)
+  }, [viewMode])
   const [selectedRoom, setSelectedRoom] = useState(rooms[0]?.id || null)
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date()
@@ -3555,6 +3568,45 @@ function CalendarTab({ rooms }) {
 
   return (
     <div>
+      {/* View toggle — Monthly (per-room editor) vs Timeline (all-rooms
+          bird's-eye). The Timeline mirrors the Réception Gantt grid but
+          fills cells with availability info instead of reservation bars. */}
+      <div className="mb-4 flex items-center gap-2 flex-wrap">
+        <div className="inline-flex rounded-xl border border-gray-200 bg-white p-1">
+          <button
+            type="button"
+            onClick={() => setViewMode('monthly')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              viewMode === 'monthly'
+                ? 'bg-deep text-white shadow-sm'
+                : 'text-gray-500 hover:text-deep'
+            }`}
+          >
+            📅 {t('manage.view_monthly', 'Monthly')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('timeline')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              viewMode === 'timeline'
+                ? 'bg-deep text-white shadow-sm'
+                : 'text-gray-500 hover:text-deep'
+            }`}
+          >
+            📊 {t('manage.view_timeline', 'Timeline')}
+          </button>
+        </div>
+        <span className="text-xs text-gray-400">
+          {viewMode === 'monthly'
+            ? t('manage.view_monthly_hint', 'Per-room month grid · edit prices & blocks')
+            : t('manage.view_timeline_hint', 'All rooms · 14 days at a glance')}
+        </span>
+      </div>
+
+      {viewMode === 'timeline' ? (
+        <TimelineAvailabilityView rooms={rooms} />
+      ) : (
+      <>
       {/* Room selector */}
       <div className="mb-4">
         <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.select_room', 'Select Room Type')}</label>
@@ -3965,7 +4017,255 @@ function CalendarTab({ rooms }) {
           </button>
         </div>
       )}
+      </>
+      )}
     </div>
+  )
+}
+
+// ============================================
+// TIMELINE AVAILABILITY VIEW
+// ============================================
+// All-rooms × 14-days bird's-eye view of stock + price. Same visual
+// rhythm as the Réception page's Gantt rack (rooms on the left, days
+// across the top), but cells are filled with availability info
+// (e.g. "24/24" + "$45" + "net $40") instead of reservation bars.
+//
+// This is a READ-MOSTLY view: clicking a cell jumps to the Monthly
+// view's corresponding room+month so the hotelier can edit prices /
+// block days there. Keeping the heavy editor in one place avoids
+// duplicating the bulk-edit machinery in two layouts.
+// ============================================
+function TimelineAvailabilityView({ rooms }) {
+  const { t } = useTranslation()
+  const DAYS = 14
+  const [startDate, setStartDate] = useState(() => {
+    const d = new Date(); d.setHours(0, 0, 0, 0); return d
+  })
+  const [availByRoom, setAvailByRoom] = useState({})
+  const [loading, setLoading] = useState(true)
+
+  // Build the 14 ISO dates from the current start.
+  const dates = []
+  for (let i = 0; i < DAYS; i++) {
+    const d = new Date(startDate); d.setDate(d.getDate() + i)
+    dates.push(d)
+  }
+  const isoOf = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+
+  useEffect(() => {
+    if (rooms.length === 0) { setLoading(false); return }
+    let cancelled = false
+    setLoading(true)
+    async function fetchAvail() {
+      const startISO = isoOf(dates[0])
+      const endISO   = isoOf(dates[DAYS - 1])
+      const roomIds  = rooms.map(r => r.id)
+      const { data } = await supabase
+        .from('room_availability')
+        .select('*')
+        .in('room_id', roomIds)
+        .gte('date', startISO)
+        .lte('date', endISO)
+      if (cancelled) return
+      const map = {}
+      ;(data || []).forEach(row => {
+        if (!map[row.room_id]) map[row.room_id] = {}
+        map[row.room_id][row.date] = row
+      })
+      setAvailByRoom(map)
+      setLoading(false)
+    }
+    fetchAvail()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rooms, startDate])
+
+  function shift(days) {
+    setStartDate(d => {
+      const next = new Date(d); next.setDate(next.getDate() + days); return next
+    })
+  }
+  function goToday() {
+    const d = new Date(); d.setHours(0, 0, 0, 0); setStartDate(d)
+  }
+
+  if (rooms.length === 0) {
+    return (
+      <Card className="p-12 text-center">
+        <Calendar size={48} className="text-gray-300 mx-auto mb-4" />
+        <h3 className="text-xl font-bold text-deep mb-2">{t('manage.no_rooms_calendar', 'Add rooms first')}</h3>
+        <p className="text-gray-500">{t('manage.no_rooms_calendar_desc', 'You need at least one room type to manage availability.')}</p>
+      </Card>
+    )
+  }
+
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const todayISO = isoOf(today)
+  const dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+  return (
+    <Card>
+      {/* Range nav — same look as Monthly view's month picker */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <button onClick={() => shift(-7)} className="p-2 rounded-lg hover:bg-gray-100"><ChevronLeft size={20} /></button>
+          <h3 className="text-base sm:text-lg font-bold text-deep">
+            {dates[0].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+            {' – '}
+            {dates[DAYS - 1].toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+          </h3>
+          <button onClick={() => shift(7)} className="p-2 rounded-lg hover:bg-gray-100"><ChevronRight size={20} /></button>
+          <button onClick={goToday} className="ml-1 px-3 py-1 rounded-lg bg-deep text-white text-xs font-bold hover:bg-deep/90">
+            {t('common.today', 'Today')}
+          </button>
+        </div>
+        <span className="text-[11px] text-gray-400 italic">
+          {t('manage.timeline_edit_hint', 'Switch to Monthly to edit prices & blocks')}
+        </span>
+      </div>
+
+      {/* Grid — fixed room column + DAYS evenly-spaced day columns.
+          Horizontal scroll kicks in below ~900px so the cells never
+          collapse into illegible slivers on tablet portraits. */}
+      <div className="overflow-x-auto -mx-2 px-2">
+        <div className="min-w-[820px]">
+          {/* Header row — DOW + day number per column */}
+          <div className="grid mb-1" style={{ gridTemplateColumns: `180px repeat(${DAYS}, 1fr)` }}>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-gray-400 py-2 px-2 border-b border-gray-200">
+              {t('manage.room', 'Room')}
+            </div>
+            {dates.map((d, i) => {
+              const isWeekend = d.getDay() === 0 || d.getDay() === 6
+              const isToday = isoOf(d) === todayISO
+              return (
+                <div key={i} className={`text-center py-1.5 border-b border-gray-200 ${isToday ? 'bg-ocean/10' : ''}`}>
+                  <div className={`text-[10px] font-medium ${isWeekend ? 'text-orange/70' : 'text-gray-400'}`}>
+                    {dows[d.getDay()]}
+                  </div>
+                  <div className={`text-sm font-bold ${isToday ? 'text-ocean' : isWeekend ? 'text-orange' : 'text-deep'}`}>
+                    {d.getDate()}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Rows — one per room. Each cell shows stock badge + price + net.
+              No click handlers here (read-only view); the Monthly view is
+              the editor. */}
+          {rooms.map(room => (
+            <div
+              key={room.id}
+              className="grid items-stretch"
+              style={{ gridTemplateColumns: `180px repeat(${DAYS}, 1fr)` }}
+            >
+              {/* Room info — name + default price + total stock */}
+              <div className="py-2 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02]">
+                <div className="text-sm font-bold text-deep truncate" title={room.name}>{room.name}</div>
+                <div className="text-[10px] text-gray-500 leading-tight">
+                  ${Number(room.base_price || 0).toFixed(0)}/night · ×{room.quantity}
+                </div>
+              </div>
+
+              {/* Day cells */}
+              {dates.map((d, i) => {
+                const iso = isoOf(d)
+                const isPast = d < today
+                const isToday = iso === todayISO
+                const row = availByRoom[room.id]?.[iso]
+                const isBlocked = row?.is_blocked
+                const priceBrut = Number(row?.price_override ?? room.base_price ?? 0)
+                const priceNet = priceBrut * 0.9
+                const totalStock = room.quantity || 1
+                const stock = isBlocked ? 0
+                  : (row && typeof row.available_count === 'number' ? row.available_count : totalStock)
+                const hasOverride = row?.price_override != null
+
+                // Stock chip color — full = libre, partial = orange, none = sunset
+                const stockChipClass = stock === 0
+                  ? 'bg-sunset/15 text-sunset'
+                  : stock < totalStock
+                    ? 'bg-orange/15 text-orange'
+                    : 'bg-libre/15 text-libre'
+
+                if (isPast) {
+                  return (
+                    <div key={i} className="border-b border-l border-gray-100 bg-gray-50 py-2 px-1 text-center">
+                      <span className="text-[10px] text-gray-300">—</span>
+                    </div>
+                  )
+                }
+                if (isBlocked) {
+                  return (
+                    <div
+                      key={i}
+                      className={`border-b border-l border-gray-100 py-2 px-1 text-center bg-sunset/10 flex flex-col justify-center ${isToday ? 'ring-1 ring-inset ring-ocean/40' : ''}`}
+                      title={`${room.name} · ${iso} · blocked`}
+                    >
+                      <div className="text-[9px] font-bold text-sunset uppercase tracking-wider">
+                        {t('manage.blocked', 'Blocked')}
+                      </div>
+                    </div>
+                  )
+                }
+                return (
+                  <div
+                    key={i}
+                    className={`border-b border-l border-gray-100 py-1.5 px-1 text-center bg-libre/5 flex flex-col justify-center gap-0.5 ${isToday ? 'ring-1 ring-inset ring-ocean/30 bg-ocean/[0.04]' : ''}`}
+                    title={`${room.name} · ${iso} · ${stock}/${totalStock} available · $${priceBrut.toFixed(0)} (net $${priceNet.toFixed(0)})`}
+                  >
+                    <div className={`text-[10px] font-bold inline-block px-1 rounded mx-auto ${stockChipClass}`}>
+                      {stock}/{totalStock}
+                    </div>
+                    <div className="text-xs font-bold text-ocean leading-tight">
+                      ${priceBrut.toFixed(0)}
+                      {hasOverride && <span className="ml-0.5 text-[9px] text-orange">★</span>}
+                    </div>
+                    <div className="text-[10px] text-libre/90 font-medium leading-tight">
+                      net ${priceNet.toFixed(0)}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {loading && (
+        <div className="text-center py-3 text-gray-400 text-xs">
+          <Loader2 size={14} className="inline animate-spin mr-1" />
+          {t('common.loading', 'Loading…')}
+        </div>
+      )}
+
+      {/* Legend — same vocabulary as Monthly view */}
+      <div className="flex items-center gap-4 mt-4 text-xs text-gray-500 flex-wrap">
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 rounded bg-libre/10 border border-libre/10" /> {t('manage.available', 'Available')}
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-3 h-3 rounded bg-sunset/10 border border-sunset/20" /> {t('manage.blocked', 'Blocked')}
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="text-ocean font-bold text-[11px]">$X</span>
+          <span className="text-gray-400">{t('manage.cal_guest_pays', 'Guest pays')}</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="text-libre font-bold text-[11px]">net $X</span>
+          <span className="text-gray-400">{t('manage.you_receive', 'You receive (90%)')}</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="text-libre font-bold text-[11px]">N/M</span>
+          <span className="text-gray-400">{t('manage.rooms_avail_total', 'rooms available / total')}</span>
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="text-orange font-bold text-[11px]">★</span>
+          <span className="text-gray-400">{t('manage.custom_price', 'custom price for this day')}</span>
+        </span>
+      </div>
+    </Card>
   )
 }
 
