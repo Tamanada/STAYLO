@@ -2913,7 +2913,26 @@ function RoomEditFormCard({
         </div>
       </div>
 
-      <div className="flex items-center gap-3 mt-6">
+      {/* Validation summary — surfaces WHY the Save button is disabled.
+          Was a silent gray button (David: "j'ai crée une chambre mais
+          je ne peux pas l'enregistrer"); now the missing required
+          field(s) are listed inline so the hotelier knows what to fill. */}
+      {(!form.name.trim() || !form.base_price) && (
+        <div className="mt-6 px-4 py-3 rounded-xl bg-orange/5 border border-orange/20 text-xs text-orange">
+          <strong className="font-bold">
+            {t('manage.missing_required', 'Fill the required fields to enable saving:')}
+          </strong>
+          <ul className="mt-1 ml-4 list-disc space-y-0.5">
+            {!form.name.trim() && (
+              <li>{t('manage.room_name', 'Room Name')} *</li>
+            )}
+            {!form.base_price && (
+              <li>{t('manage.base_price', 'Default price per night')} *</li>
+            )}
+          </ul>
+        </div>
+      )}
+      <div className="flex items-center gap-3 mt-4">
         <Button onClick={handleSave} disabled={saving || !form.name.trim() || !form.base_price}>
           {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           {editingRoom ? t('manage.save_changes', 'Save Changes') : t('manage.create_room', 'Create Room')}
