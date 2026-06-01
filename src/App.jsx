@@ -50,6 +50,7 @@ import PMSFrontDesk from './pages/dashboard/PMSFrontDesk'
 import PMSHousekeeping from './pages/dashboard/PMSHousekeeping'
 import PMSReports from './pages/dashboard/PMSReports'
 import MyBookings from './pages/dashboard/MyBookings'
+import IncomingBookings from './pages/dashboard/IncomingBookings'
 import Banking from './pages/dashboard/Banking'
 import Splash from './pages/Splash'
 import ResetPassword from './pages/ResetPassword'
@@ -103,6 +104,7 @@ export default function App() {
             <Route path="housekeeping" element={<PMSHousekeeping />} />
             <Route path="reports" element={<PMSReports />} />
             <Route path="bookings" element={<MyBookings />} />
+            <Route path="incoming-bookings" element={<IncomingBookings />} />
             <Route path="banking" element={<Banking />} />
           </Route>
 
