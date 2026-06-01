@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router-dom'
-import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Banknote } from 'lucide-react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Plus, Building2, MapPin, BedDouble, DollarSign, Calendar, Settings, ConciergeBell, Sparkles, BarChart3, Banknote, Inbox } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Card } from '../../components/ui/Card'
 import { Badge } from '../../components/ui/Badge'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
+import IncomingBookings from './IncomingBookings'
 
 const statusColors = {
   pending: 'gray',
@@ -29,8 +30,20 @@ export default function DashboardProperties() {
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const [properties, setProperties] = useState([])
+  const [incomingCount, setIncomingCount] = useState(0)
   const [loading, setLoading] = useState(true)
+
+  // Tab state — ?tab=incoming switches to the Réservations reçues view.
+  // Defaults to the properties list. URL-driven so the tab is bookmarkable
+  // and survives a hard refresh.
+  const tab = searchParams.get('tab') === 'incoming' ? 'incoming' : 'properties'
+  function switchTab(next) {
+    if (next === 'incoming') searchParams.set('tab', 'incoming')
+    else searchParams.delete('tab')
+    setSearchParams(searchParams, { replace: true })
+  }
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/login')
@@ -69,6 +82,19 @@ export default function DashboardProperties() {
         setProperties(enriched)
         setLoading(false)
       }
+      // Count incoming bookings (only for properties the user OWNS — same
+      // scope as IncomingBookings itself, see properties.user_id filter
+      // there). Used as the badge on the "Réservations reçues" tab.
+      const ownedPropIds = (props || [])
+        .filter(p => p.user_id === user.id)
+        .map(p => p.id)
+      if (ownedPropIds.length > 0) {
+        supabase
+          .from('bookings')
+          .select('id', { count: 'exact', head: true })
+          .in('property_id', ownedPropIds)
+          .then(({ count }) => { if (!cancelled) setIncomingCount(count || 0) })
+      }
     }
     fetchAll()
     return () => { cancelled = true }
@@ -82,21 +108,72 @@ export default function DashboardProperties() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-deep">{t('dashboard.my_properties', 'My Properties')}</h1>
+          <h1 className="text-3xl font-bold text-deep">
+            {tab === 'incoming'
+              ? t('bookings.incoming_title', 'Réservations reçues')
+              : t('dashboard.my_properties', 'My Properties')}
+          </h1>
           <p className="text-gray-500 mt-1">
-            {t('dashboard.properties_count_label', '{{count}} properties registered', { count: properties.length })}
+            {tab === 'incoming'
+              ? t('bookings.incoming_subtitle', 'Bookings made on your properties — guest contact, dates, special requests.')
+              : t('dashboard.properties_count_label', '{{count}} properties registered', { count: properties.length })}
           </p>
         </div>
-        <Link to="/submit">
-          <Button>
-            <Plus size={18} />
-            {t('dashboard.add_property', 'Add Property')}
-          </Button>
-        </Link>
+        {tab === 'properties' && (
+          <Link to="/submit">
+            <Button>
+              <Plus size={18} />
+              {t('dashboard.add_property', 'Add Property')}
+            </Button>
+          </Link>
+        )}
       </div>
 
+      {/* Tabs — Properties / Réservations reçues. Same visual treatment as
+          the old MyBookings tab strip so the user feels at home. */}
+      <div className="flex items-center gap-1 mb-6 bg-gray-100 rounded-xl p-1 w-fit">
+        <button
+          onClick={() => switchTab('properties')}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
+            tab === 'properties' ? 'bg-white shadow-sm text-deep' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Building2 size={14} />
+          {t('dashboard.my_properties', 'Mes propriétés')}
+          <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
+            {properties.length}
+          </span>
+        </button>
+        <button
+          onClick={() => switchTab('incoming')}
+          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
+            tab === 'incoming' ? 'bg-white shadow-sm text-deep' : 'text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          <Inbox size={14} />
+          {t('bookings.tab_incoming', 'Réservations reçues')}
+          <span className="text-[10px] bg-orange/10 text-orange px-1.5 py-0.5 rounded-full font-bold">
+            {incomingCount}
+          </span>
+        </button>
+      </div>
+
+      {/* Tab content — render the IncomingBookings component when the
+          second tab is active. It's the same data + card layout that used
+          to live inside MyBookings, just relocated to its natural home. */}
+      {tab === 'incoming' && <IncomingBookings embedded />}
+      {tab === 'properties' && <PropertiesTabContent t={t} properties={properties} />}
+    </div>
+  )
+}
+
+// ── Extracted properties-tab body so the main render stays readable.
+//    Renders the Hosting quick-nav row + the properties list (or empty state).
+function PropertiesTabContent({ t, properties }) {
+  return (
+    <>
       {/* Hosting quick-nav — direct links to the 4 operational tools
           (Front Desk / Housekeeping / Reports / Banking) that live on
           their own routes but are CONTEXTUAL to "your properties". User
@@ -215,6 +292,6 @@ export default function DashboardProperties() {
           })}
         </div>
       )}
-    </div>
+    </>
   )
 }

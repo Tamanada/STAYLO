@@ -1,23 +1,22 @@
 // ============================================
-// Dashboard — My Bookings + Incoming Reservations
+// Dashboard — My Bookings (traveler view)
 // ============================================
-// Two tabs in one page:
-//   - "Mes voyages" (guest view): bookings the current user made AS A GUEST.
-//     Focus: upcoming trips, history.
-//   - "Réservations reçues" (hotelier view): bookings made ON the current
-//     user's PROPERTIES. Focus: ops — who arrives when, contact info,
-//     special requests. Only shown if the user owns at least one property.
+// Bookings the current user made AS A GUEST. Focus: upcoming trips, history.
 //
-// The split comes from the bookings table having both `guest_id` (FK to
-// users) and `property_id` (FK to properties.user_id chain). RLS already
-// allows both views (Guest can read own + Owner can read property bookings).
+// The hotelier-side "Réservations reçues" view used to live here as a second
+// tab; it was moved to /dashboard/properties (as a tab next to "Mes
+// propriétés") so this page stays focused on the traveler experience.
+// See ./IncomingBookings.jsx for the standalone component.
+//
+// BookingCard + STATUS_CONFIG are exported so IncomingBookings can reuse
+// them without duplicating the rich card layout.
 // ============================================
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import {
   Calendar, MapPin, BedDouble, Users, Clock, CheckCircle,
-  XCircle, AlertCircle, Search, Luggage, Building2, Mail, Phone,
+  XCircle, Search, Luggage, Mail, Phone,
   MessageSquare, DollarSign
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
@@ -25,7 +24,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { formatCurrency } from '../../lib/currencies'
 import { formatDate } from '../../lib/dateFormat'
 
-const STATUS_CONFIG = {
+export const STATUS_CONFIG = {
   pending:   { label: 'Pending',   icon: Clock,       color: 'bg-amber-50 text-amber-700 border-amber-200',     dot: 'bg-amber-500' },
   confirmed: { label: 'Confirmed', icon: CheckCircle, color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
   completed: { label: 'Completed', icon: CheckCircle, color: 'bg-blue-50 text-blue-700 border-blue-200',         dot: 'bg-blue-500' },
@@ -35,16 +34,10 @@ const STATUS_CONFIG = {
 export default function MyBookings() {
   const { t } = useTranslation()
   const { user } = useAuth()
-  const [searchParams, setSearchParams] = useSearchParams()
-
-  const initialView = searchParams.get('view') === 'incoming' ? 'incoming' : 'trips'
-  const [view, setView] = useState(initialView)
 
   const [tripBookings, setTripBookings] = useState([])
-  const [incomingBookings, setIncomingBookings] = useState([])
   const [properties, setProperties] = useState({})
   const [rooms, setRooms] = useState({})
-  const [hasProperties, setHasProperties] = useState(false)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
 
@@ -55,38 +48,19 @@ export default function MyBookings() {
     async function fetchAll() {
       setLoading(true)
 
-      // 1. Bookings made by the user as a GUEST
+      // Bookings made by the user as a GUEST
       const tripsRes = await supabase
         .from('bookings').select('*')
         .eq('guest_id', user.id)
         .order('created_at', { ascending: false })
       const trips = tripsRes.data || []
 
-      // 2. Bookings made TO the user's properties (hotelier view).
-      //    First find their properties, then bookings on those.
-      const myPropsRes = await supabase
-        .from('properties').select('id')
-        .eq('user_id', user.id)
-      const myPropertyIds = (myPropsRes.data || []).map(p => p.id)
-      let incoming = []
-      if (myPropertyIds.length > 0) {
-        const incomingRes = await supabase
-          .from('bookings').select('*')
-          .in('property_id', myPropertyIds)
-          .order('created_at', { ascending: false })
-        incoming = incomingRes.data || []
-      }
-
       if (cancelled) return
-
       setTripBookings(trips)
-      setIncomingBookings(incoming)
-      setHasProperties(myPropertyIds.length > 0)
 
-      // 3. Hydrate related properties + rooms (union of both lists)
-      const all = [...trips, ...incoming]
-      const propIds = [...new Set(all.map(b => b.property_id).filter(Boolean))]
-      const roomIds = [...new Set(all.map(b => b.room_id).filter(Boolean))]
+      // Hydrate related properties + rooms
+      const propIds = [...new Set(trips.map(b => b.property_id).filter(Boolean))]
+      const roomIds = [...new Set(trips.map(b => b.room_id).filter(Boolean))]
 
       if (propIds.length > 0) {
         const { data: props } = await supabase
@@ -111,17 +85,7 @@ export default function MyBookings() {
     return () => { cancelled = true }
   }, [user])
 
-  // Switch tab — also reflect in the URL so it's bookmarkable
-  function switchView(next) {
-    setView(next)
-    if (next === 'incoming') searchParams.set('view', 'incoming')
-    else searchParams.delete('view')
-    setSearchParams(searchParams, { replace: true })
-  }
-
-  const sourceList = view === 'incoming' ? incomingBookings : tripBookings
-  const filtered   = filter === 'all' ? sourceList : sourceList.filter(b => b.status === filter)
-
+  const filtered = filter === 'all' ? tripBookings : tripBookings.filter(b => b.status === filter)
   const now = new Date().toISOString().split('T')[0]
   const upcoming = filtered.filter(b => b.check_in >= now && b.status !== 'cancelled')
   const past     = filtered.filter(b => b.check_in <  now || b.status === 'cancelled')
@@ -134,56 +98,19 @@ export default function MyBookings() {
     )
   }
 
-  const isHotelier = view === 'incoming'
-  const isEmpty    = sourceList.length === 0
+  const isEmpty = tripBookings.length === 0
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2 mb-1">
-          {isHotelier
-            ? <Building2 size={24} className="text-ocean" />
-            : <Luggage   size={24} className="text-ocean" />}
-          {isHotelier
-            ? t('bookings.incoming_title', 'Réservations reçues')
-            : t('bookings.trips_title',    'Mes voyages')}
+          <Luggage size={24} className="text-ocean" />
+          {t('bookings.trips_title', 'Mes voyages')}
         </h1>
         <p className="text-sm text-gray-500">
-          {isHotelier
-            ? t('bookings.incoming_subtitle', 'Bookings made on your properties — guest contact, dates, special requests.')
-            : t('bookings.trips_subtitle',    'Your reservations as a traveler — past and upcoming trips.')}
+          {t('bookings.trips_subtitle', 'Your reservations as a traveler — past and upcoming trips.')}
         </p>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex items-center gap-1 mb-4 bg-gray-100 rounded-xl p-1 w-fit">
-        <button
-          onClick={() => switchView('trips')}
-          className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
-            view === 'trips' ? 'bg-white shadow-sm text-deep' : 'text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          <Luggage size={14} />
-          {t('bookings.tab_trips', 'Mes voyages')}
-          <span className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full">
-            {tripBookings.length}
-          </span>
-        </button>
-        {hasProperties && (
-          <button
-            onClick={() => switchView('incoming')}
-            className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all flex items-center gap-2 ${
-              view === 'incoming' ? 'bg-white shadow-sm text-deep' : 'text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            <Building2 size={14} />
-            {t('bookings.tab_incoming', 'Réservations reçues')}
-            <span className="text-[10px] bg-orange/10 text-orange px-1.5 py-0.5 rounded-full font-bold">
-              {incomingBookings.length}
-            </span>
-          </button>
-        )}
       </div>
 
       {/* Status filter chips */}
@@ -203,7 +130,16 @@ export default function MyBookings() {
       )}
 
       {isEmpty ? (
-        <EmptyState isHotelier={isHotelier} t={t} />
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <Search size={48} className="text-gray-300 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('bookings.no_bookings', 'Aucun voyage pour l\'instant')}</h2>
+          <p className="text-gray-500 mb-6">{t('bookings.no_bookings_desc', 'Commencez à explorer des hôtels et faites votre première réservation.')}</p>
+          <Link to="/ota"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ocean text-white rounded-lg font-medium text-sm hover:bg-ocean/90 no-underline transition-all">
+            <Search size={16} />
+            {t('bookings.browse_hotels', 'Parcourir les hôtels')}
+          </Link>
+        </div>
       ) : (
         <>
           {upcoming.length > 0 && (
@@ -218,7 +154,6 @@ export default function MyBookings() {
                     booking={booking}
                     property={properties[booking.property_id]}
                     room={rooms[booking.room_id]}
-                    isHotelier={isHotelier}
                   />
                 ))}
               </div>
@@ -237,7 +172,6 @@ export default function MyBookings() {
                     booking={booking}
                     property={properties[booking.property_id]}
                     room={rooms[booking.room_id]}
-                    isHotelier={isHotelier}
                     isPast
                   />
                 ))}
@@ -250,39 +184,13 @@ export default function MyBookings() {
   )
 }
 
-// ── Sub-components ───────────────────────────────────────
-
-function EmptyState({ isHotelier, t }) {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-      {isHotelier ? (
-        <>
-          <Building2 size={48} className="text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('bookings.no_incoming', 'Aucune réservation reçue')}</h2>
-          <p className="text-gray-500 mb-6">{t('bookings.no_incoming_desc', 'Lorsqu\'un voyageur réservera dans vos propriétés, ils apparaîtront ici.')}</p>
-          <Link to="/dashboard/properties"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ocean text-white rounded-lg font-medium text-sm hover:bg-ocean/90 no-underline transition-all">
-            <Building2 size={16} />
-            {t('bookings.manage_properties', 'Gérer mes propriétés')}
-          </Link>
-        </>
-      ) : (
-        <>
-          <Search size={48} className="text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">{t('bookings.no_bookings', 'Aucun voyage pour l\'instant')}</h2>
-          <p className="text-gray-500 mb-6">{t('bookings.no_bookings_desc', 'Commencez à explorer des hôtels et faites votre première réservation.')}</p>
-          <Link to="/ota"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-ocean text-white rounded-lg font-medium text-sm hover:bg-ocean/90 no-underline transition-all">
-            <Search size={16} />
-            {t('bookings.browse_hotels', 'Parcourir les hôtels')}
-          </Link>
-        </>
-      )}
-    </div>
-  )
-}
-
-function BookingCard({ booking, property, room, isHotelier, isPast }) {
+// ── Shared BookingCard — exported for IncomingBookings ────────────────
+//
+// `isHotelier` flips the layout to surface guest contact (name / email /
+// phone / special requests) and to show "You receive" instead of "Total"
+// using the payout_amount_cents column. Trip cards (the default) hide
+// those panels since the guest is the viewer.
+export function BookingCard({ booking, property, room, isHotelier = false, isPast = false }) {
   const { t } = useTranslation()
   const nights = Math.max(1, Math.ceil(
     (new Date(booking.check_out) - new Date(booking.check_in)) / (1000 * 60 * 60 * 24)
