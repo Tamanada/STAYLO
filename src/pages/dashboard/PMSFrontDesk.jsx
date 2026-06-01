@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import {
   BedDouble, Users, LogIn, LogOut, Clock, AlertCircle,
   ChevronLeft, ChevronRight, Building2, Phone, Mail, Search,
@@ -30,10 +30,14 @@ function formatDate(d) {
 export default function PMSFrontDesk() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  // `:id` is set when rendered under /dashboard/property/:id/front-desk.
+  // When present we lock the view to this property and hide the picker.
+  const { id: scopedPropertyId } = useParams()
+  const isPropertyScoped = !!scopedPropertyId
   const [properties, setProperties] = useState([])
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
-  const [selectedProperty, setSelectedProperty] = useState(null)
+  const [selectedProperty, setSelectedProperty] = useState(scopedPropertyId || null)
   const [viewMode, setViewMode] = useState('cards')   // 'cards' | 'grid' | 'calendar'
   const [calStartOffset, setCalStartOffset] = useState(0)  // days from today; user can page
   const [loading, setLoading] = useState(true)
@@ -64,7 +68,14 @@ export default function PMSFrontDesk() {
     const { data: props } = await supabase
       .from('properties').select('*').eq('user_id', user.id).order('created_at')
     setProperties(props || [])
-    if (props?.length > 0 && !selectedProperty) setSelectedProperty(props[0].id)
+    // When the route locks us to a property, always honor that — the
+    // user navigated here from /dashboard/property/:id/front-desk and
+    // expects to see THAT property, not the first one alphabetically.
+    if (scopedPropertyId) {
+      setSelectedProperty(scopedPropertyId)
+    } else if (props?.length > 0 && !selectedProperty) {
+      setSelectedProperty(props[0].id)
+    }
 
     const propIds = (props || []).map(p => p.id)
     if (propIds.length > 0) {
@@ -331,8 +342,9 @@ export default function PMSFrontDesk() {
           <p className="text-sm text-gray-500">{formatDate(today)}</p>
         </div>
 
-        {/* Property selector */}
-        {properties.length > 1 && (
+        {/* Property selector — hidden when the URL locks us to a
+            property (PropertyLayout's header already names it). */}
+        {!isPropertyScoped && properties.length > 1 && (
           <select value={selectedProperty || ''} onChange={e => setSelectedProperty(e.target.value)}
             className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 min-w-[200px]">
             {properties.map(p => (

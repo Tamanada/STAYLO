@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import {
   Sparkles, AlertTriangle, CheckCircle2, Clock, BedDouble,
   Building2, RotateCcw, Eye
@@ -18,9 +18,13 @@ const HK_STATUSES = {
 export default function PMSHousekeeping() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  // Route-locked property id when rendered under
+  // /dashboard/property/:id/housekeeping (PropertyLayout).
+  const { id: scopedPropertyId } = useParams()
+  const isPropertyScoped = !!scopedPropertyId
   const [properties, setProperties] = useState([])
   const [rooms, setRooms] = useState([])
-  const [selectedProperty, setSelectedProperty] = useState(null)
+  const [selectedProperty, setSelectedProperty] = useState(scopedPropertyId || null)
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
   // Local housekeeping state (in real app, would be in DB)
@@ -32,7 +36,9 @@ export default function PMSHousekeeping() {
       const { data: props } = await supabase
         .from('properties').select('*').eq('user_id', user.id).order('created_at')
       setProperties(props || [])
-      if (props?.length > 0) setSelectedProperty(props[0].id)
+      // Honor the URL-locked property when set; else default to the first.
+      if (scopedPropertyId) setSelectedProperty(scopedPropertyId)
+      else if (props?.length > 0) setSelectedProperty(props[0].id)
 
       const propIds = (props || []).map(p => p.id)
       if (propIds.length > 0) {
@@ -93,7 +99,7 @@ export default function PMSHousekeeping() {
           <p className="text-sm text-gray-500">{t('pms.hk_subtitle', 'Manage room cleanliness and readiness')}</p>
         </div>
 
-        {properties.length > 1 && (
+        {!isPropertyScoped && properties.length > 1 && (
           <select value={selectedProperty || ''} onChange={e => setSelectedProperty(e.target.value)}
             className="px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-sm font-medium text-gray-900 min-w-[200px]">
             {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}

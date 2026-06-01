@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import {
   BarChart3, TrendingUp, TrendingDown, DollarSign, BedDouble,
   Calendar, Building2, Users, ArrowUpRight, ArrowDownRight,
@@ -42,12 +42,23 @@ function StatCard({ icon: Icon, iconColor, label, value, subvalue, trend, trendU
 export default function PMSReports() {
   const { t } = useTranslation()
   const { user } = useAuth()
+  // `:id` is set when this component is rendered under
+  // /dashboard/property/:id/reports (inside PropertyLayout). Undefined
+  // on the hotel-wide /dashboard/reports route. When present we lock
+  // the report scope to this property and hide the property picker.
+  const { id: scopedPropertyId } = useParams()
+  const isPropertyScoped = !!scopedPropertyId
   const [properties, setProperties] = useState([])
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
+  // Selected property state — kept for the standalone hotel-wide view.
+  // When the route locks us to a property we ignore this and use
+  // scopedPropertyId everywhere instead.
   const [selectedProperty, setSelectedProperty] = useState('all')
   const [period, setPeriod] = useState('month')
   const [loading, setLoading] = useState(true)
+  // Effective property id used by all the filtering memos below.
+  const effectiveProperty = isPropertyScoped ? scopedPropertyId : selectedProperty
 
   useEffect(() => {
     async function fetchData() {
@@ -73,8 +84,8 @@ export default function PMSReports() {
   // Filter by property
   const filteredBookings = useMemo(() => {
     let result = bookings
-    if (selectedProperty !== 'all') {
-      result = result.filter(b => b.property_id === selectedProperty)
+    if (effectiveProperty !== 'all') {
+      result = result.filter(b => b.property_id === effectiveProperty)
     }
     // Filter by period
     const now = new Date()
@@ -85,12 +96,12 @@ export default function PMSReports() {
     else if (period === 'year') cutoff.setFullYear(now.getFullYear() - 1)
     result = result.filter(b => new Date(b.created_at) >= cutoff)
     return result
-  }, [bookings, selectedProperty, period])
+  }, [bookings, effectiveProperty, period])
 
   const filteredRooms = useMemo(() => {
-    if (selectedProperty === 'all') return rooms
-    return rooms.filter(r => r.property_id === selectedProperty)
-  }, [rooms, selectedProperty])
+    if (effectiveProperty === 'all') return rooms
+    return rooms.filter(r => r.property_id === effectiveProperty)
+  }, [rooms, effectiveProperty])
 
   // Compute metrics
   const totalBookings = filteredBookings.length
@@ -129,13 +140,13 @@ export default function PMSReports() {
       const monthLabel = d.toLocaleString('default', { month: 'short' })
       const monthBookings = bookings.filter(b => {
         const bd = b.created_at?.substring(0, 7)
-        return bd === monthKey && (selectedProperty === 'all' || b.property_id === selectedProperty)
+        return bd === monthKey && (effectiveProperty === 'all' || b.property_id === effectiveProperty)
       })
       const revenue = monthBookings.reduce((s, b) => s + Number(b.total_price || 0), 0)
       months.push({ label: monthLabel, revenue, bookings: monthBookings.length })
     }
     return months
-  }, [bookings, selectedProperty])
+  }, [bookings, effectiveProperty])
 
   const maxMonthRevenue = Math.max(...monthlyData.map(m => m.revenue), 1)
 
@@ -172,12 +183,16 @@ export default function PMSReports() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Property filter */}
-          <select value={selectedProperty} onChange={e => setSelectedProperty(e.target.value)}
-            className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-900">
-            <option value="all">{t('pms.all_properties', 'All Properties')}</option>
-            {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          {/* Property filter — hidden when the route locks us to a
+              property (the URL already names the property in the
+              PropertyLayout header above). */}
+          {!isPropertyScoped && (
+            <select value={selectedProperty} onChange={e => setSelectedProperty(e.target.value)}
+              className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm font-medium text-gray-900">
+              <option value="all">{t('pms.all_properties', 'All Properties')}</option>
+              {properties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          )}
 
           {/* Period */}
           <div className="flex bg-gray-100 rounded-lg p-0.5">
@@ -230,7 +245,7 @@ export default function PMSReports() {
           value={`${avgStay} nights`} />
         <StatCard icon={Globe} iconColor="bg-indigo-100 text-indigo-600"
           label={t('pms.properties_count', 'Properties')}
-          value={selectedProperty === 'all' ? properties.length : 1} />
+          value={effectiveProperty === 'all' ? properties.length : 1} />
         <StatCard icon={TrendingDown} iconColor="bg-red-100 text-red-600"
           label={t('pms.commission', 'STAYLO Commission (10%)')}
           value={`$${commission.toFixed(0)}`}
@@ -259,7 +274,7 @@ export default function PMSReports() {
       </div>
 
       {/* Property breakdown */}
-      {selectedProperty === 'all' && properties.length > 1 && (
+      {effectiveProperty === 'all' && properties.length > 1 && (
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h3 className="text-sm font-bold text-gray-900 mb-4">{t('pms.property_breakdown', 'Revenue by Property')}</h3>
           <div className="space-y-3">
