@@ -119,7 +119,12 @@ export default function PropertyLayout() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-5">
+    // Wider container (≈90 % viewport on standard laptops; capped at
+    // a max so very-wide monitors don't stretch tables to oblivion).
+    // Was max-w-5xl — too tight for the Rooms toolbar + the Timeline
+    // 14-day grid; David asked for the room info + filters to live on
+    // the same row.
+    <div className="w-[92%] max-w-[1440px] mx-auto px-4 py-5">
       {/* Header — back arrow + name + status + location (compact) */}
       <div className="flex items-center gap-3 mb-4">
         <Link
