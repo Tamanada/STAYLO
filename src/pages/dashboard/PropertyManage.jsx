@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import PackagesTab from './PackagesTab'
 import RewardModal from '../../components/dashboard/RewardModal'
+import { Modal } from '../../components/ui/Modal'
 import PhoneInput from '../../components/ui/PhoneInput'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
@@ -4037,18 +4038,274 @@ function CalendarTab({ rooms }) {
 }
 
 // ============================================
-// CELL HOVER PANEL
+// CELL EDITOR MODAL
 // ============================================
-// Floating panel that opens when the pointer enters a Timeline cell.
-// Shows full room/day info AND lets the hotelier edit any of it
-// (price, min stay, reward, note, block/unblock) without entering
-// Bulk edit mode — one cell, one popover, all actions inline.
+// Centered modal that opens when the hotelier clicks a Timeline
+// cell (Bulk edit OFF). Inline inputs for price · min stay · note
+// + a clean Available/Blocked toggle, plus the rewards section
+// that opens the shared RewardModal scoped to this cell.
 //
-// Lives inside the cell's relative wrapper so absolute positioning
-// is anchored to it. Has its own onMouseEnter/onMouseLeave so the
-// user can move the cursor INTO the panel without it closing
-// (the parent's mouseleave timer is cancelled by enter, restarted
-// by leave).
+// Single Save commits ALL changed fields at once via bulkUpdate
+// with a single-cell Set. Rewards are managed separately because
+// they need the catalog UI from RewardModal.
+//
+// Renders via the project's Modal component so it lives at body
+// root — no more clipping by the grid's overflow-x container.
+// ============================================
+function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenReward, onRemoveReward, t }) {
+  // Local form state — initialized from the row when the modal
+  // opens, then edited freely. Save builds a delta payload.
+  const [price, setPrice] = useState('')
+  const [minStay, setMinStay] = useState('')
+  const [note, setNote] = useState('')
+  const [isBlocked, setIsBlocked] = useState(false)
+  // Re-seed local state every time the cell changes (e.g. user
+  // closes and opens another cell quickly).
+  useEffect(() => {
+    setPrice(row?.price_override != null ? String(row.price_override) : '')
+    setMinStay(row?.min_stay != null ? String(row.min_stay) : '')
+    setNote(row?.internal_note || '')
+    setIsBlocked(!!row?.is_blocked)
+  }, [cell.roomId, cell.iso, row?.price_override, row?.min_stay, row?.internal_note, row?.is_blocked])
+
+  if (!room) return null
+
+  const dateDisplay = new Date(cell.iso + 'T00:00:00').toLocaleDateString(undefined, {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+  })
+  const totalStock = room.quantity || 1
+  const stock = isBlocked ? 0
+    : (row && typeof row.available_count === 'number' ? row.available_count : totalStock)
+  const previewPrice = price.trim() !== '' && Number(price) > 0 ? Number(price) : Number(room.base_price || 0)
+  const previewNet = previewPrice * 0.9
+  const specials = Array.isArray(row?.specials) ? row.specials : []
+
+  const statusPillClass = isBlocked
+    ? 'bg-gradient-to-r from-sunset to-sunset/80 text-white'
+    : stock === 0 ? 'bg-gradient-to-r from-sunset to-sunset/80 text-white'
+    : stock < totalStock ? 'bg-gradient-to-r from-orange to-pink text-white'
+    : 'bg-gradient-to-r from-libre to-libre/80 text-white'
+
+  function handleSave() {
+    // Build payload of CHANGED fields only — passing every field
+    // every time would clobber columns we didn't touch (perk,
+    // promo_label, promo_pct etc. handled by RewardModal).
+    const payload = {}
+    const newPrice = price.trim() === '' ? null : Number(price)
+    if (newPrice !== null && (!isFinite(newPrice) || newPrice <= 0)) {
+      alert(t('manage.invalid_price', 'Invalid price. Must be a positive number.'))
+      return
+    }
+    if (newPrice !== (row?.price_override ?? null)) {
+      payload.price_override = newPrice
+    }
+    const newMinStay = minStay.trim() === '' ? null : Math.floor(Number(minStay))
+    if (newMinStay !== null && (!isFinite(newMinStay) || newMinStay < 1)) {
+      alert(t('manage.invalid_min_stay', 'Invalid min stay (must be ≥ 1).'))
+      return
+    }
+    if (newMinStay !== (row?.min_stay ?? null)) {
+      payload.min_stay = newMinStay
+    }
+    const newNote = note.trim() === '' ? null : note.trim()
+    if (newNote !== (row?.internal_note ?? null)) {
+      payload.internal_note = newNote
+    }
+    if (isBlocked !== !!row?.is_blocked) {
+      payload.is_blocked = isBlocked
+    }
+    if (Object.keys(payload).length === 0) {
+      // No changes — just close
+      onClose()
+      return
+    }
+    onSave(payload, 'Update cell')
+  }
+
+  return (
+    <Modal open onClose={onClose}>
+      {/* Header — gradient strip in STAYLO brand colors */}
+      <div className="-mx-6 -mt-6 mb-5 px-6 py-4 bg-gradient-to-br from-deep via-deep to-electric/90 rounded-t-2xl">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/50">
+              {dateDisplay}
+            </div>
+            <div className="text-base font-bold text-white truncate mt-0.5">{room.name}</div>
+            <div className="text-[11px] text-white/40 mt-0.5">
+              {t('manage.default_price', 'Default')}: ${Number(room.base_price || 0).toFixed(0)}/night · ×{totalStock}
+            </div>
+          </div>
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide ${statusPillClass}`}>
+            {isBlocked ? t('manage.blocked', 'Blocked').toUpperCase() : `${stock} / ${totalStock}`}
+          </span>
+        </div>
+      </div>
+
+      {/* Form body — inline fields, real inputs */}
+      <div className="space-y-4">
+        {/* Available / Blocked toggle */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wide text-deep/60 mb-1.5">
+            {t('manage.status', 'Status')}
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setIsBlocked(false)}
+              className={`px-3 py-2.5 rounded-2xl text-sm font-bold transition-all ${
+                !isBlocked
+                  ? 'bg-gradient-to-r from-libre to-libre/80 text-white shadow-md'
+                  : 'bg-white border border-gray-200 text-deep/50 hover:border-libre/40 hover:text-libre'
+              }`}
+            >
+              ✓ {t('manage.available', 'Available')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsBlocked(true)}
+              className={`px-3 py-2.5 rounded-2xl text-sm font-bold transition-all ${
+                isBlocked
+                  ? 'bg-gradient-to-r from-sunset to-sunset/80 text-white shadow-md'
+                  : 'bg-white border border-gray-200 text-deep/50 hover:border-sunset/40 hover:text-sunset'
+              }`}
+            >
+              ⛔ {t('manage.blocked', 'Blocked')}
+            </button>
+          </div>
+        </div>
+
+        {/* Price input */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wide text-deep/60 mb-1.5">
+            💰 {t('manage.price', 'Price')} <span className="text-deep/30 font-normal normal-case">(USD · {t('common.night', 'night')})</span>
+          </label>
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-deep/40 font-bold">$</span>
+            <input
+              type="number"
+              min={1}
+              step="0.01"
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              placeholder={`${Number(room.base_price || 0).toFixed(0)} (default)`}
+              disabled={isBlocked}
+              className="w-full pl-8 pr-4 py-2.5 rounded-2xl border border-gray-200 bg-white text-deep text-base font-bold focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean disabled:bg-gray-50 disabled:text-gray-400"
+            />
+          </div>
+          {!isBlocked && previewPrice > 0 && (
+            <div className="mt-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-br from-ocean/5 to-electric/5 border border-ocean/10 text-[11px] flex items-center justify-between">
+              <span className="text-deep/60">{t('manage.you_receive', 'You receive (90%)')}</span>
+              <span className="font-bold text-libre">${previewNet.toFixed(2)}</span>
+            </div>
+          )}
+          <p className="text-[10px] text-deep/40 mt-1">
+            {t('manage.editor_price_hint', 'Leave blank to use the room default')}
+          </p>
+        </div>
+
+        {/* Min stay input */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wide text-deep/60 mb-1.5">
+            🌙 {t('manage.min_stay', 'Min stay')} <span className="text-deep/30 font-normal normal-case">({t('common.nights', 'nights')})</span>
+          </label>
+          <input
+            type="number"
+            min={1}
+            value={minStay}
+            onChange={e => setMinStay(e.target.value)}
+            placeholder={t('manage.editor_min_stay_placeholder', 'No minimum')}
+            className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 bg-white text-deep text-base focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean"
+          />
+        </div>
+
+        {/* Rewards list — read + remove. Add goes through RewardModal. */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-xs font-bold uppercase tracking-wide text-deep/60">
+              🎁 {t('manage.rewards', 'Rewards')}
+              {specials.length > 0 && <span className="ml-1 text-libre">· {specials.length}</span>}
+            </label>
+            <button
+              type="button"
+              onClick={onOpenReward}
+              disabled={saving}
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl text-xs font-bold text-white bg-gradient-to-r from-libre to-electric shadow-sm hover:shadow-md hover:scale-[1.03] transition-all disabled:opacity-50 cursor-pointer"
+            >
+              + {t('manage.add', 'Add')}
+            </button>
+          </div>
+          {specials.length > 0 ? (
+            <div className="space-y-1">
+              {specials.map((sp, idx) => (
+                <div key={idx} className="flex items-start gap-2 px-3 py-2 rounded-2xl bg-libre/[0.06] border border-libre/15">
+                  <span className="text-base leading-none mt-0.5">🎁</span>
+                  <div className="flex-1 min-w-0 text-[12px]">
+                    <div className="font-semibold text-deep">{sp.label || `Reward ${idx + 1}`}</div>
+                    {sp.perk && <div className="text-deep/50">{sp.perk}</div>}
+                    {sp.min_stay && <div className="text-deep/40 text-[10px]">Min stay ≥ {sp.min_stay}</div>}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onRemoveReward(idx)}
+                    disabled={saving}
+                    className="p-1 rounded-full text-deep/30 hover:text-sunset hover:bg-sunset/10 transition-all cursor-pointer disabled:opacity-50"
+                    aria-label="Remove reward"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[11px] text-deep/40 italic px-1">
+              {t('manage.editor_no_rewards', 'No rewards yet — click + Add to attach one.')}
+            </p>
+          )}
+        </div>
+
+        {/* Internal note */}
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wide text-deep/60 mb-1.5">
+            📝 {t('manage.internal_note', 'Internal note')} <span className="text-deep/30 font-normal normal-case">({t('manage.editor_note_private', 'never shown to guests')})</span>
+          </label>
+          <textarea
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            rows={2}
+            placeholder={t('manage.editor_note_placeholder', 'e.g. Wedding Smith — pre-booked')}
+            className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean resize-none"
+          />
+        </div>
+      </div>
+
+      {/* Footer — Save commits all changes at once */}
+      <div className="mt-6 flex items-center gap-3 justify-end">
+        <button
+          type="button"
+          onClick={onClose}
+          disabled={saving}
+          className="px-5 py-2.5 rounded-2xl text-sm font-semibold text-deep/60 hover:text-deep hover:bg-gray-50 transition-all cursor-pointer disabled:opacity-50"
+        >
+          {t('common.cancel', 'Cancel')}
+        </button>
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-ocean to-electric shadow-md hover:shadow-xl hover:scale-[1.02] transition-all cursor-pointer disabled:opacity-50"
+        >
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          {t('common.save', 'Save')}
+        </button>
+      </div>
+    </Modal>
+  )
+}
+
+// ============================================
+// CELL HOVER PANEL (unused — kept for now in case we want a quick
+// hover preview later; rendered nowhere as of this commit)
 // ============================================
 function CellHoverPanel({
   room, iso, row, stock, totalStock, priceBrut, priceNet, hasOverride,
@@ -4272,25 +4529,15 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
   // null → use selectedCells (Bulk edit flow).
   const [rewardCellSet, setRewardCellSet] = useState(null)
 
-  // Hover popover — opens when the pointer enters a cell (and the
-  // user is NOT in Bulk edit mode, where cells are click-to-select).
-  // Tracks the active cell + a small close timer so the user can
-  // move the cursor from the cell into the popover without it
-  // disappearing.
-  const [hoveredCell, setHoveredCell] = useState(null) // { roomId, iso } | null
-  const hoverTimerRef = useRef(null)
-  function openHover(roomId, iso) {
-    if (bulkMode) return
-    if (hoverTimerRef.current) { clearTimeout(hoverTimerRef.current); hoverTimerRef.current = null }
-    setHoveredCell({ roomId, iso })
-  }
-  function scheduleCloseHover() {
-    if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current)
-    hoverTimerRef.current = setTimeout(() => { setHoveredCell(null); hoverTimerRef.current = null }, 180)
-  }
-  function cancelCloseHover() {
-    if (hoverTimerRef.current) { clearTimeout(hoverTimerRef.current); hoverTimerRef.current = null }
-  }
+  // Editor modal — opens when a cell is clicked (and the user is NOT
+  // in Bulk edit mode, where clicks toggle selection). Holds the
+  // identity of the cell being edited so the modal can fetch its
+  // current values from availByRoom + rooms on the fly.
+  // Was previously a hover popover but it kept getting clipped by
+  // the grid's overflow-x-auto container, and the user explicitly
+  // wanted inline fields to "change prices, options" — modal is
+  // the right surface for that.
+  const [editingCell, setEditingCell] = useState(null) // { roomId, iso } | null
 
   // Build the 14 ISO dates from the current start.
   const dates = []
@@ -4881,86 +5128,83 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
                   )
                 }
 
-                // Selection ring + click handler shared across blocked /
-                // available variants — DRY for the bulk-mode behavior.
+                // Click → either toggle bulk selection OR open editor modal.
+                // Bulk mode keeps the existing select-toggle behaviour;
+                // outside bulk mode every click opens the editor anchored
+                // on this cell so the hotelier can change anything inline.
+                const onCellClick = !isPast
+                  ? (bulkMode
+                      ? () => toggleCell(room.id, iso)
+                      : () => setEditingCell({ roomId: room.id, iso }))
+                  : undefined
+
+                // Selection ring + cursor cue
                 const selectionRing = isSelected
                   ? 'ring-2 ring-ocean bg-ocean/15'
                   : isToday ? 'ring-1 ring-inset ring-ocean/30' : ''
-                const onCellClick = bulkMode && !isPast ? () => toggleCell(room.id, iso) : undefined
-                const cursorClass = bulkMode && !isPast ? 'cursor-pointer' : 'cursor-default'
+                const cursorClass = !isPast ? 'cursor-pointer' : 'cursor-default'
+                // Compact tooltip via title — gives a quick read of the
+                // cell's state without needing to click in.
+                const titleParts = [
+                  `${room.name} · ${iso}`,
+                  isBlocked ? 'BLOCKED' : `${stock}/${totalStock} available · $${priceBrut.toFixed(0)} (net $${priceNet.toFixed(0)})`,
+                ]
+                if (row?.min_stay > 1) titleParts.push(`Min stay: ${row.min_stay} nights`)
+                if (Array.isArray(row?.specials) && row.specials.length > 0) titleParts.push(`🎁 ${row.specials.length} reward(s)`)
+                if (row?.internal_note) titleParts.push(`📝 ${row.internal_note}`)
+                const cellTitle = titleParts.join(' · ') + (bulkMode ? '' : ' — click to edit')
 
-                // Wrapper div is the grid cell. The button fills it and
-                // the popover (sibling) sits absolutely positioned on top.
-                // Hover handlers live on the wrapper so they cover BOTH
-                // the button and any neighbouring popover space if it
-                // extends beyond.
-                const wrapperHandlers = !bulkMode && !isPast ? {
-                  onMouseEnter: () => openHover(room.id, iso),
-                  onMouseLeave: scheduleCloseHover,
-                } : {}
+                // Discreet status badges in the corner — let the user see
+                // at a glance which cells already have a min stay /
+                // rewards / note attached.
+                const hasMinStay = row?.min_stay > 1
+                const hasReward = Array.isArray(row?.specials) && row.specials.length > 0
+                const hasNote   = !!row?.internal_note
 
+                if (isBlocked) {
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={onCellClick}
+                      disabled={saving}
+                      title={cellTitle}
+                      className={`border-b border-l border-gray-100 py-2 px-1 text-center bg-sunset/10 flex flex-col justify-center hover:bg-sunset/20 transition-colors ${selectionRing} ${cursorClass}`}
+                    >
+                      <div className="text-[9px] font-bold text-sunset uppercase tracking-wider">
+                        {t('manage.blocked', 'Blocked')}
+                      </div>
+                    </button>
+                  )
+                }
                 return (
-                  <div key={i} className="relative" {...wrapperHandlers}>
-                    {isBlocked ? (
-                      <button
-                        type="button"
-                        onClick={onCellClick}
-                        disabled={saving}
-                        className={`w-full h-full border-b border-l border-gray-100 py-2 px-1 text-center bg-sunset/10 flex flex-col justify-center ${selectionRing} ${cursorClass} ${bulkMode ? 'hover:bg-sunset/20' : ''}`}
-                      >
-                        <div className="text-[9px] font-bold text-sunset uppercase tracking-wider">
-                          {t('manage.blocked', 'Blocked')}
-                        </div>
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={onCellClick}
-                        disabled={saving}
-                        className={`w-full h-full border-b border-l border-gray-100 py-1.5 px-1 text-center bg-libre/5 flex flex-col justify-center gap-0.5 ${selectionRing} ${cursorClass} ${bulkMode ? 'hover:bg-ocean/5' : ''} ${isToday && !isSelected ? 'bg-ocean/[0.04]' : ''}`}
-                      >
-                        <div className={`text-[10px] font-bold inline-block px-1 rounded mx-auto ${stockChipClass}`}>
-                          {stock}/{totalStock}
-                        </div>
-                        <div className="text-xs font-bold text-ocean leading-tight">
-                          ${priceBrut.toFixed(0)}
-                          {hasOverride && <span className="ml-0.5 text-[9px] text-orange">★</span>}
-                        </div>
-                        <div className="text-[10px] text-libre/90 font-medium leading-tight">
-                          net ${priceNet.toFixed(0)}
-                        </div>
-                      </button>
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={onCellClick}
+                    disabled={saving}
+                    title={cellTitle}
+                    className={`relative border-b border-l border-gray-100 py-1.5 px-1 text-center bg-libre/5 flex flex-col justify-center gap-0.5 transition-colors hover:bg-libre/15 ${selectionRing} ${cursorClass} ${isToday && !isSelected ? 'bg-ocean/[0.04]' : ''}`}
+                  >
+                    <div className={`text-[10px] font-bold inline-block px-1 rounded mx-auto ${stockChipClass}`}>
+                      {stock}/{totalStock}
+                    </div>
+                    <div className="text-xs font-bold text-ocean leading-tight">
+                      ${priceBrut.toFixed(0)}
+                      {hasOverride && <span className="ml-0.5 text-[9px] text-orange">★</span>}
+                    </div>
+                    <div className="text-[10px] text-libre/90 font-medium leading-tight">
+                      net ${priceNet.toFixed(0)}
+                    </div>
+                    {/* At-a-glance badges — only render if any flag is set */}
+                    {(hasMinStay || hasReward || hasNote) && (
+                      <div className="absolute top-0.5 right-0.5 flex gap-0.5 text-[8px] leading-none">
+                        {hasMinStay && <span title={`Min stay ${row.min_stay}`}>🌙</span>}
+                        {hasReward && <span title="Reward(s) on this day">🎁</span>}
+                        {hasNote && <span title="Internal note">📝</span>}
+                      </div>
                     )}
-
-                    {/* Rich hover popover with inline action buttons.
-                        Only rendered when this cell is the active hover
-                        target AND we're not in Bulk edit (which uses
-                        clicks for selection). Centered above the cell
-                        with a pointer arrow; high z-index so it floats
-                        over neighbouring rows. */}
-                    {isHovered && (
-                      <CellHoverPanel
-                        room={room}
-                        iso={iso}
-                        row={row}
-                        stock={stock}
-                        totalStock={totalStock}
-                        priceBrut={priceBrut}
-                        priceNet={priceNet}
-                        hasOverride={hasOverride}
-                        isBlocked={isBlocked}
-                        saving={saving}
-                        onMouseEnter={cancelCloseHover}
-                        onMouseLeave={scheduleCloseHover}
-                        onSetPrice={() => singleSetPrice(room.id, iso)}
-                        onToggleBlock={() => singleToggleBlock(room.id, iso)}
-                        onSetMinStay={() => singleSetMinStay(room.id, iso)}
-                        onSetReward={() => singleSetReward(room.id, iso)}
-                        onSetNote={() => singleSetNote(room.id, iso)}
-                        t={t}
-                      />
-                    )}
-                  </div>
+                  </button>
                 )
               })}
             </div>
@@ -5009,8 +5253,35 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
       open={rewardModalOpen}
       onClose={() => setRewardModalOpen(false)}
       onApply={handleRewardModalApply}
-      selectedCount={selectedCells.size}
+      selectedCount={rewardCellSet ? rewardCellSet.size : selectedCells.size}
     />
+
+    {/* Per-cell editor — opens on click in non-bulk mode. Inline
+        inputs for price / min stay / note + Block/Available toggle,
+        plus a Rewards section that opens the RewardModal scoped to
+        this cell. One Save commits all changes at once. */}
+    {editingCell && (
+      <CellEditorModal
+        cell={editingCell}
+        room={rooms.find(r => r.id === editingCell.roomId)}
+        row={availByRoom[editingCell.roomId]?.[editingCell.iso]}
+        saving={saving}
+        onClose={() => setEditingCell(null)}
+        onSave={async (payload, label) => {
+          await bulkUpdate(payload, label, new Set([cellKey(editingCell.roomId, editingCell.iso)]))
+          setEditingCell(null)
+        }}
+        onOpenReward={() => singleSetReward(editingCell.roomId, editingCell.iso)}
+        onRemoveReward={async (idx) => {
+          await bulkUpdate(
+            { remove_special_at: idx },
+            'Remove reward',
+            new Set([cellKey(editingCell.roomId, editingCell.iso)])
+          )
+        }}
+        t={t}
+      />
+    )}
     </>
   )
 }
