@@ -230,32 +230,28 @@ export default function RoomManagement() {
 
   return (
     <div>
-      {/* ── Today briefing + quick actions ───────────────────────
-          One-glance ops summary at the very top — Occupancy %,
-          arrivals, departures — followed by the four most frequent
-          actions a receptionist takes on morning shift. Matches the
-          "TODAY" + "QUICK ACTIONS" sidebar sections from the mockup. */}
-      <div className="bg-white border border-gray-200 rounded-xl p-3 mb-3 flex flex-wrap items-center gap-3">
-        {/* Stats trio — left side */}
-        <div className="flex items-center gap-2">
-          <Metric icon={TrendingUp} color="text-electric"
-            label={t('rooms.occupancy', 'Occupancy')}
-            value={`${todayStats.occupancy}%`} />
-          <Metric icon={ArrowDown} color="text-libre"
-            label={t('rooms.arrivals', 'Arrivals')}
-            value={todayStats.arrivals} />
-          <Metric icon={ArrowUp} color="text-orange"
-            label={t('rooms.departures', 'Departures')}
-            value={todayStats.departures} />
-        </div>
-        {/* Quick actions — right side */}
-        <div className="ml-auto flex flex-wrap gap-2">
+      {/* ── Today briefing + quick actions ──────────────────────
+          Same "single-row, evenly-spaced, no wrap" rhythm as the
+          toolbar below. Compact inline pills (icon + value + small
+          label) on the left, compact icon-first action buttons on
+          the right. */}
+      <div className="bg-white border border-gray-200 rounded-xl px-3 py-2 mb-3 flex items-center gap-2 flex-wrap">
+        <Metric icon={TrendingUp} color="text-electric"
+          label={t('rooms.occupancy', 'Occupancy')}
+          value={`${todayStats.occupancy}%`} />
+        <Metric icon={ArrowDown} color="text-libre"
+          label={t('rooms.arrivals', 'Arrivals')}
+          value={todayStats.arrivals} />
+        <Metric icon={ArrowUp} color="text-orange"
+          label={t('rooms.departures', 'Departures')}
+          value={todayStats.departures} />
+        <div className="ml-auto flex items-center gap-1.5 flex-wrap">
           <QuickAction icon={Plus}      label={t('rooms.qa_new_booking', 'New booking')} />
           <QuickAction icon={LogIn}     label={t('rooms.qa_check_in',    'Check in')}
             badge={todayStats.arrivals > 0 ? todayStats.arrivals : null} accent="text-libre" />
           <QuickAction icon={LogOut}    label={t('rooms.qa_check_out',   'Check out')}
             badge={todayStats.departures > 0 ? todayStats.departures : null} accent="text-orange" />
-          <QuickAction icon={RefreshCw} label={t('rooms.qa_room_move',   'Room move')} />
+          <QuickAction icon={RefreshCw} label={t('rooms.qa_room_move',   'Move')} />
         </div>
       </div>
 
@@ -753,36 +749,34 @@ function Row({ label, value, valueStyle }) {
 }
 
 // ── Today briefing metric chip ───────────────────────────────────
-// Compact "icon · value · label" trio used in the top stats strip.
-// Plenty of contrast (chunky value, gray label) so a glance is enough.
+// Single-line inline pill matching the toolbar's height. The icon +
+// big value + small label sit on a single horizontal row so 3-4
+// metrics + 4 actions fit comfortably on one row.
 function Metric({ icon: Icon, color, label, value }) {
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 border border-gray-200">
-      <Icon size={16} className={color} />
-      <div className="flex flex-col leading-tight">
-        <span className="text-base font-extrabold text-deep">{value}</span>
-        <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold">{label}</span>
-      </div>
-    </div>
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 border border-gray-200">
+      <Icon size={13} className={color} />
+      <span className="text-sm font-extrabold text-deep leading-none">{value}</span>
+      <span className="text-[10px] uppercase tracking-wider text-gray-500 font-bold leading-none">{label}</span>
+    </span>
   )
 }
 
 // ── Quick action button ──────────────────────────────────────────
-// One of the four high-frequency operations a receptionist runs on
-// shift. The optional `badge` shows e.g. "Check in (4)" when there
-// are pending arrivals. Action handlers are still placeholders —
-// they currently open the side panel via a TODO; wiring them to the
-// real check-in / check-out flows is next.
+// Compact icon-first button, same height as the Metric pill so the
+// briefing row reads as a single coherent strip. Action handlers
+// are still placeholders — they'll be wired to the real check-in /
+// check-out flows in a follow-up.
 function QuickAction({ icon: Icon, label, badge, accent }) {
   return (
     <button
       type="button"
-      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white border border-gray-200 text-xs font-semibold text-deep hover:border-orange/40 hover:bg-orange/5 hover:text-orange transition-all"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-semibold text-deep hover:border-orange/40 hover:bg-orange/5 hover:text-orange transition-all leading-none"
     >
-      <Icon size={14} className={accent || 'text-gray-500'} />
+      <Icon size={13} className={accent || 'text-gray-500'} />
       {label}
       {badge != null && (
-        <span className="ml-0.5 bg-orange text-white text-[10px] font-bold rounded-full px-1.5 py-0.5">
+        <span className="ml-0.5 bg-orange text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 leading-none">
           {badge}
         </span>
       )}
