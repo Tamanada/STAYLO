@@ -29,11 +29,7 @@ import {
   Menu,
   X,
   User,
-  ConciergeBell,
-  Sparkles,
-  BarChart3,
   Luggage,
-  Banknote,
   Shield,
   PlusCircle,
   MessageSquare,
@@ -61,15 +57,16 @@ const SECTIONS = [
   },
   {
     // Section 2 — Hosting tools (REVIEW: forced visible; was: hasProperties)
+    // Trimmed to "My Properties" only — Front Desk / Housekeeping / Reports
+    // / Banking were removed from the menu at David's request. The routes
+    // themselves still exist (PMSFrontDesk, PMSHousekeeping, Reports,
+    // Banking pages remain mounted in App.jsx) so direct URLs still work;
+    // they're just not surfaced in the sidebar.
     label: 'Hosting',
     labelKey: 'dashboard.section_hosting',
     visible: () => true,
     items: [
       { to: '/dashboard/properties',   icon: Building2,     labelKey: 'dashboard.nav_properties',   label: 'My Properties' },
-      { to: '/dashboard/front-desk',   icon: ConciergeBell, labelKey: 'dashboard.nav_front_desk',   label: 'Front Desk' },
-      { to: '/dashboard/housekeeping', icon: Sparkles,      labelKey: 'dashboard.nav_housekeeping', label: 'Housekeeping' },
-      { to: '/dashboard/reports',      icon: BarChart3,     labelKey: 'dashboard.nav_reports',      label: 'Reports' },
-      { to: '/dashboard/banking',      icon: Banknote,      labelKey: 'dashboard.nav_banking',      label: 'Banking' },
     ],
   },
   {
