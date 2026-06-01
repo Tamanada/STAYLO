@@ -172,11 +172,11 @@ export default function DashboardProperties() {
             them jump to any other property. */}
         {properties.length > 0 && (
           <Link
-            to={`/dashboard/property/${properties[0].id}`}
+            to={`/dashboard/property/${properties[0].id}/manage`}
             className="group inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-deep no-underline transition-all hover:border-electric/40 hover:bg-electric/5 hover:text-electric hover:shadow-sm"
           >
             <Settings size={16} className="text-electric" />
-            {t('dashboard.manage', 'Manage')}
+            {t('dashboard.manage', 'Gérer')}
           </Link>
         )}
       </div>

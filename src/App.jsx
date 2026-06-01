@@ -45,6 +45,7 @@ import OTACheckout from './pages/ota/Checkout'
 import LegalTerms from './pages/legal/Terms'
 import LegalPrivacy from './pages/legal/Privacy'
 import PropertyManage from './pages/dashboard/PropertyManage'
+import PropertyLanding from './pages/dashboard/PropertyLanding'
 import DashboardKit from './pages/dashboard/DashboardKit'
 import PMSFrontDesk from './pages/dashboard/PMSFrontDesk'
 import PMSHousekeeping from './pages/dashboard/PMSHousekeeping'
@@ -99,7 +100,8 @@ export default function App() {
             <Route path="shares" element={<DashboardShares />} />
             <Route path="ambassador" element={<AmbassadorDashboard />} />
             <Route path="kit" element={<DashboardKit />} />
-            <Route path="property/:id" element={<PropertyManage />} />
+            <Route path="property/:id" element={<PropertyLanding />} />
+            <Route path="property/:id/manage" element={<PropertyManage />} />
             <Route path="front-desk" element={<PMSFrontDesk />} />
             <Route path="housekeeping" element={<PMSHousekeeping />} />
             <Route path="reports" element={<PMSReports />} />
