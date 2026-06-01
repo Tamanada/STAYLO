@@ -3587,43 +3587,37 @@ function CalendarTab({ rooms }) {
 
   return (
     <div>
-      {/* View toggle — Monthly (per-room editor) vs Timeline (all-rooms
-          bird's-eye). The Timeline mirrors the Réception Gantt grid but
-          fills cells with availability info instead of reservation bars. */}
-      <div className="mb-4 flex items-center gap-2 flex-wrap">
-        <div className="inline-flex rounded-xl border border-gray-200 bg-white p-1">
-          <button
-            type="button"
-            onClick={() => setViewMode('monthly')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              viewMode === 'monthly'
-                ? 'bg-deep text-white shadow-sm'
-                : 'text-gray-500 hover:text-deep'
-            }`}
-          >
-            📅 {t('manage.view_monthly', 'Monthly')}
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode('timeline')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              viewMode === 'timeline'
-                ? 'bg-deep text-white shadow-sm'
-                : 'text-gray-500 hover:text-deep'
-            }`}
-          >
-            📊 {t('manage.view_timeline', 'Timeline')}
-          </button>
+      {/* View toggle — Monthly only. In Timeline view the toggle is
+          merged into TimelineAvailabilityView's combined header bar
+          (alongside date nav + bulk edit toggle) per David's request
+          "Bulk edit / La date viennent sur la même ligne que les box
+          monthly/timeline". */}
+      {viewMode === 'monthly' && (
+        <div className="mb-4 flex items-center gap-2 flex-wrap">
+          <div className="inline-flex rounded-xl border border-gray-200 bg-white p-1">
+            <button
+              type="button"
+              onClick={() => setViewMode('monthly')}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold bg-deep text-white shadow-sm"
+            >
+              📅 {t('manage.view_monthly', 'Monthly')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('timeline')}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500 hover:text-deep transition-all"
+            >
+              📊 {t('manage.view_timeline', 'Timeline')}
+            </button>
+          </div>
+          <span className="text-xs text-gray-400">
+            {t('manage.view_monthly_hint', 'Per-room month grid · edit prices & blocks')}
+          </span>
         </div>
-        <span className="text-xs text-gray-400">
-          {viewMode === 'monthly'
-            ? t('manage.view_monthly_hint', 'Per-room month grid · edit prices & blocks')
-            : t('manage.view_timeline_hint', 'All rooms · 14 days at a glance')}
-        </span>
-      </div>
+      )}
 
       {viewMode === 'timeline' ? (
-        <TimelineAvailabilityView rooms={rooms} />
+        <TimelineAvailabilityView rooms={rooms} viewMode={viewMode} setViewMode={setViewMode} />
       ) : (
       <>
       {/* Room selector */}
@@ -4055,7 +4049,7 @@ function CalendarTab({ rooms }) {
 // block days there. Keeping the heavy editor in one place avoids
 // duplicating the bulk-edit machinery in two layouts.
 // ============================================
-function TimelineAvailabilityView({ rooms }) {
+function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
   const { t } = useTranslation()
   const DAYS = 14
   const [startDate, setStartDate] = useState(() => {
@@ -4278,32 +4272,50 @@ function TimelineAvailabilityView({ rooms }) {
   const dows = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   return (
-    <Card>
-      {/* Range nav — same look as Monthly view's month picker */}
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <button onClick={() => shift(-7)} className="p-2 rounded-lg hover:bg-gray-100"><ChevronLeft size={20} /></button>
-          <h3 className="text-base sm:text-lg font-bold text-deep">
+    <>
+      {/* Unified header bar — view toggle + date nav + Bulk edit on
+          ONE line. Lives OUTSIDE the Card so it sits with the page
+          chrome rather than inside the grid panel. Per David: "Bulk
+          edit / La date viennent sur la même ligne que les box
+          monthly/timeline". */}
+      <div className="mb-4 flex items-center gap-2 flex-wrap">
+        {/* View toggle */}
+        <div className="inline-flex rounded-xl border border-gray-200 bg-white p-1">
+          <button
+            type="button"
+            onClick={() => setViewMode('monthly')}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold text-gray-500 hover:text-deep transition-all"
+          >
+            📅 {t('manage.view_monthly', 'Monthly')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('timeline')}
+            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-deep text-white shadow-sm"
+          >
+            📊 {t('manage.view_timeline', 'Timeline')}
+          </button>
+        </div>
+
+        {/* Date nav */}
+        <div className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-1 py-0.5">
+          <button onClick={() => shift(-7)} className="p-1.5 rounded-lg hover:bg-gray-100" aria-label="Previous week">
+            <ChevronLeft size={16} />
+          </button>
+          <span className="text-xs sm:text-sm font-bold text-deep px-2 whitespace-nowrap">
             {dates[0].toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
             {' – '}
             {dates[DAYS - 1].toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-          </h3>
-          <button onClick={() => shift(7)} className="p-2 rounded-lg hover:bg-gray-100"><ChevronRight size={20} /></button>
-          <button onClick={goToday} className="ml-1 px-3 py-1 rounded-lg bg-deep text-white text-xs font-bold hover:bg-deep/90">
-            {t('common.today', 'Today')}
+          </span>
+          <button onClick={() => shift(7)} className="p-1.5 rounded-lg hover:bg-gray-100" aria-label="Next week">
+            <ChevronRight size={16} />
           </button>
         </div>
-        <span className="text-[11px] text-gray-400 italic">
-          {bulkMode
-            ? t('manage.timeline_bulk_hint', 'Click cells to add to the selection · then apply an action below')
-            : t('manage.timeline_bulk_off_hint', 'Turn on Bulk edit to block/unblock or change prices across rooms × days')}
-        </span>
-      </div>
+        <button onClick={goToday} className="px-3 py-1.5 rounded-lg bg-deep text-white text-xs font-bold hover:bg-deep/90">
+          {t('common.today', 'Today')}
+        </button>
 
-      {/* Bulk-edit toolbar — works exactly like Monthly's, except a
-          single selection can span multiple rooms (big advantage of
-          the rooms×days grid). */}
-      <div className="mb-3 flex items-center gap-2 flex-wrap">
+        {/* Bulk edit toggle */}
         <button
           type="button"
           onClick={toggleBulkMode}
@@ -4313,50 +4325,61 @@ function TimelineAvailabilityView({ rooms }) {
               : 'bg-white border border-gray-200 text-gray-600 hover:border-ocean hover:text-ocean'
           }`}
         >
-          {bulkMode ? `✓ ${t('manage.bulk_edit_on', 'Bulk edit ON')}` : t('manage.bulk_edit', 'Bulk edit')}
+          {bulkMode ? `✓ ${t('manage.bulk_edit_on', 'Bulk edit ON')}` : `✏️ ${t('manage.bulk_edit', 'Bulk edit')}`}
         </button>
 
-        {bulkMode && (
-          <>
-            <button onClick={selectAllFuture} type="button"
-              className="px-2.5 py-1 rounded text-xs text-gray-500 hover:text-deep hover:bg-gray-50 transition-all">
-              {t('manage.timeline_select_all', 'Select range')}
-            </button>
-            <button onClick={selectWeekends} type="button"
-              className="px-2.5 py-1 rounded text-xs text-gray-500 hover:text-deep hover:bg-gray-50 transition-all">
-              {t('manage.weekends_only', 'Weekends only')}
-            </button>
-            {selectedCells.size > 0 && (
-              <button onClick={() => setSelectedCells(new Set())} type="button"
-                className="px-2.5 py-1 rounded text-xs text-gray-400 hover:text-sunset transition-all">
-                {t('manage.clear_count', 'Clear ({{n}})', { n: selectedCells.size })}
-              </button>
-            )}
-
-            {selectedCells.size > 0 && (
-              <div className="basis-full pt-2 mt-1 border-t border-gray-100 flex items-center gap-1.5 flex-wrap">
-                <span className="text-xs text-gray-400 mr-1">
-                  {t('manage.cells_count', '{{n}} cell(s) →', { n: selectedCells.size })}
-                </span>
-                <button onClick={bulkSetPrice} type="button" disabled={saving}
-                  className="px-2.5 py-1 rounded text-xs font-bold bg-ocean text-white hover:bg-ocean/90 disabled:opacity-50">
-                  💰 {t('manage.price', 'Price')}
-                </button>
-                <span className="mx-1 text-gray-200">|</span>
-                <button onClick={bulkBlock} type="button" disabled={saving}
-                  className="px-2.5 py-1 rounded text-xs font-bold bg-sunset/10 text-sunset hover:bg-sunset/20 disabled:opacity-50">
-                  {t('manage.block', 'Block')}
-                </button>
-                <button onClick={bulkUnblock} type="button" disabled={saving}
-                  className="px-2.5 py-1 rounded text-xs font-bold bg-libre/10 text-libre hover:bg-libre/20 disabled:opacity-50">
-                  {t('manage.unblock', 'Unblock')}
-                </button>
-                {saving && <Loader2 size={14} className="animate-spin text-gray-400 ml-1" />}
-              </div>
-            )}
-          </>
-        )}
+        {/* Hint — pushed to the right via ml-auto so it doesn't crowd the controls */}
+        <span className="text-[11px] text-gray-400 italic ml-auto">
+          {bulkMode
+            ? t('manage.timeline_bulk_hint', 'Click cells to select · then apply an action')
+            : t('manage.view_timeline_hint', 'All rooms · 14 days at a glance')}
+        </span>
       </div>
+
+    <Card>
+      {/* Bulk-edit secondary toolbar — quick selects + actions, only
+          rendered when bulk mode is ON. The toggle itself moved up
+          into the unified header so this row is purely the workspace. */}
+      {bulkMode && (
+        <div className="mb-3 flex items-center gap-2 flex-wrap pb-2 border-b border-gray-100">
+          <button onClick={selectAllFuture} type="button"
+            className="px-2.5 py-1 rounded text-xs text-gray-500 hover:text-deep hover:bg-gray-50 transition-all">
+            {t('manage.timeline_select_all', 'Select range')}
+          </button>
+          <button onClick={selectWeekends} type="button"
+            className="px-2.5 py-1 rounded text-xs text-gray-500 hover:text-deep hover:bg-gray-50 transition-all">
+            {t('manage.weekends_only', 'Weekends only')}
+          </button>
+          {selectedCells.size > 0 && (
+            <button onClick={() => setSelectedCells(new Set())} type="button"
+              className="px-2.5 py-1 rounded text-xs text-gray-400 hover:text-sunset transition-all">
+              {t('manage.clear_count', 'Clear ({{n}})', { n: selectedCells.size })}
+            </button>
+          )}
+
+          {selectedCells.size > 0 && (
+            <div className="basis-full pt-2 mt-1 border-t border-gray-100 flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-gray-400 mr-1">
+                {t('manage.cells_count', '{{n}} cell(s) →', { n: selectedCells.size })}
+              </span>
+              <button onClick={bulkSetPrice} type="button" disabled={saving}
+                className="px-2.5 py-1 rounded text-xs font-bold bg-ocean text-white hover:bg-ocean/90 disabled:opacity-50">
+                💰 {t('manage.price', 'Price')}
+              </button>
+              <span className="mx-1 text-gray-200">|</span>
+              <button onClick={bulkBlock} type="button" disabled={saving}
+                className="px-2.5 py-1 rounded text-xs font-bold bg-sunset/10 text-sunset hover:bg-sunset/20 disabled:opacity-50">
+                {t('manage.block', 'Block')}
+              </button>
+              <button onClick={bulkUnblock} type="button" disabled={saving}
+                className="px-2.5 py-1 rounded text-xs font-bold bg-libre/10 text-libre hover:bg-libre/20 disabled:opacity-50">
+                {t('manage.unblock', 'Unblock')}
+              </button>
+              {saving && <Loader2 size={14} className="animate-spin text-gray-400 ml-1" />}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Grid — fixed room column + DAYS evenly-spaced day columns.
           Horizontal scroll kicks in below ~900px so the cells never
@@ -4524,6 +4547,7 @@ function TimelineAvailabilityView({ rooms }) {
         </span>
       </div>
     </Card>
+    </>
   )
 }
 
