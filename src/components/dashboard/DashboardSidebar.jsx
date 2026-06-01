@@ -32,7 +32,6 @@ import {
   Luggage,
   Shield,
   PlusCircle,
-  MessageSquare,
   Smartphone
 } from 'lucide-react'
 
@@ -222,11 +221,16 @@ export function DashboardSidebar() {
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => setMobileOpen(false)}
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold no-underline transition-all duration-200 text-electric/80 hover:text-electric hover:bg-electric/10 border border-electric/20"
+          title={t('dashboard.nav_messenger', 'Staff Messenger') + ' — Open ↗'}
+          aria-label={t('dashboard.nav_messenger', 'Staff Messenger')}
+          className="block rounded-xl overflow-hidden border border-electric/20 hover:border-electric/50 transition-all duration-200 hover:shadow-lg hover:shadow-electric/20 group"
         >
-          <MessageSquare size={18} />
-          <span>{t('dashboard.nav_messenger', 'Staff Messenger')}</span>
-          <span className="ml-auto text-[10px] uppercase font-bold opacity-60">Open ↗</span>
+          <img
+            src="/ShipBanner.webp"
+            alt={t('dashboard.nav_messenger', 'Staff Messenger')}
+            loading="lazy"
+            className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
+          />
         </a>
 
         {/* Guest App — opens the guest-facing PWA (app.staylo.app). Added so
