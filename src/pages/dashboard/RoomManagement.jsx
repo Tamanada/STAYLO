@@ -32,6 +32,7 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { AMENITY_META } from '../../lib/amenityIcons'
+import { downloadTM30 } from '../../lib/tm30'
 
 // Tiny helper — turn "king" / "extra_bed" into "King", "Extra bed"
 const prettyLabel = k => (k || '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
@@ -302,7 +303,9 @@ export default function RoomManagement() {
     async function fetchAll() {
       setLoading(true)
       const [propRes, roomsRes, bookingsRes, pkgRes] = await Promise.all([
-        supabase.from('properties').select('id, name, city, country, status').eq('id', propertyId).maybeSingle(),
+        // Include address/contact fields so the TM30 PDF generator
+        // has what it needs (manager name + full address).
+        supabase.from('properties').select('id, name, city, country, status, address, contact_name').eq('id', propertyId).maybeSingle(),
         supabase.from('rooms').select('*').eq('property_id', propertyId).order('name'),
         supabase.from('bookings').select('*').eq('property_id', propertyId),
         // Same shape PropertyDetail (OTA) uses — active packages with
@@ -620,6 +623,7 @@ export default function RoomManagement() {
         <CheckInModal
           open={!!checkinFor}
           room={checkinFor?.room}
+          property={property}
           defaultDate={checkinFor?.date}
           onClose={() => setCheckinFor(null)}
           onSaved={async () => {
@@ -665,13 +669,21 @@ function SidebarItem({ icon, label, badge, badgeClass, active, onClick }) {
 //   · Payment hold / Stripe authorization
 //   · Auto-generate TM30 form for foreign nationals
 //   · Hand-off QR (receptionist hands phone to guest)
-function CheckInModal({ open, room, defaultDate, onClose, onSaved }) {
+function CheckInModal({ open, room, property, defaultDate, onClose, onSaved }) {
   const [form, setForm] = useState({
     guest_name: '', guest_email: '', guest_phone: '',
     guests: 1, nights: 1, special_requests: '',
+    // TM30 fields — optional, but if filled the receptionist can
+    // download the pre-filled TM30 PDF for Thai Immigration.
+    nationality: '', passport_number: '', passport_expires_at: '',
+    date_of_birth: '', sex: '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  // TM30 fields are collapsed by default — receptionist expands when
+  // they want to generate the PDF. Saves screen real estate for the
+  // typical walk-in where TM30 isn't needed (domestic guests).
+  const [showTM30, setShowTM30] = useState(false)
 
   // Reset when reopened so we don't leak previous guest data.
   useEffect(() => {
@@ -679,7 +691,10 @@ function CheckInModal({ open, room, defaultDate, onClose, onSaved }) {
       setForm({
         guest_name: '', guest_email: '', guest_phone: '',
         guests: 1, nights: 1, special_requests: '',
+        nationality: '', passport_number: '', passport_expires_at: '',
+        date_of_birth: '', sex: '',
       })
+      setShowTM30(false)
       setError(null)
     }
   }, [open])
@@ -835,6 +850,79 @@ function CheckInModal({ open, room, defaultDate, onClose, onSaved }) {
             </div>
           </div>
 
+          {/* TM30 — collapsible passport info section. Filling these
+              unlocks the "Download TM30" button in the footer. Closed
+              by default to keep the modal compact for domestic guests
+              (no TM30 required). */}
+          <div style={{
+            borderRadius: 12, border: '1px solid #E8E0D8',
+            background: showTM30 ? '#fff' : 'rgba(255,107,0,.03)',
+            overflow: 'hidden',
+          }}>
+            <button
+              type="button"
+              onClick={() => setShowTM30(v => !v)}
+              style={{
+                width: '100%', padding: '10px 14px', display: 'flex',
+                justifyContent: 'space-between', alignItems: 'center',
+                background: 'transparent', border: 'none', cursor: 'pointer',
+                fontSize: 12, fontWeight: 700, color: '#1A1F2E', fontFamily: 'inherit',
+              }}
+            >
+              <span>🛂 Passport info <span style={{ color: '#636E72', fontWeight: 500 }}>(optional — required for TM30)</span></span>
+              <span style={{ color: '#FF6B00' }}>{showTM30 ? '▾' : '▸'}</span>
+            </button>
+            {showTM30 && (
+              <div style={{ padding: '8px 14px 14px', display: 'grid', gap: 10 }}>
+                <Field label="Nationality (ISO code: THA · USA · FRA …)">
+                  <input type="text" maxLength={3}
+                    value={form.nationality}
+                    placeholder="USA"
+                    onChange={e => setForm(f => ({ ...f, nationality: e.target.value.toUpperCase() }))}
+                    style={inputStyle({ maxWidth: 120, textTransform: 'uppercase' })} />
+                </Field>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label="Passport number">
+                    <input type="text"
+                      value={form.passport_number}
+                      placeholder="L898902C36"
+                      onChange={e => setForm(f => ({ ...f, passport_number: e.target.value }))}
+                      style={inputStyle()} />
+                  </Field>
+                  <Field label="Expires on">
+                    <input type="date"
+                      value={form.passport_expires_at}
+                      onChange={e => setForm(f => ({ ...f, passport_expires_at: e.target.value }))}
+                      style={inputStyle()} />
+                  </Field>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <Field label="Date of birth">
+                    <input type="date"
+                      value={form.date_of_birth}
+                      onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))}
+                      style={inputStyle()} />
+                  </Field>
+                  <Field label="Sex (M / F / X)">
+                    <input type="text" maxLength={1}
+                      value={form.sex}
+                      placeholder="M"
+                      onChange={e => setForm(f => ({ ...f, sex: e.target.value.toUpperCase() }))}
+                      style={inputStyle({ maxWidth: 80, textTransform: 'uppercase' })} />
+                  </Field>
+                </div>
+                <div style={{
+                  fontSize: 10, color: '#636E72', fontStyle: 'italic', lineHeight: 1.4,
+                }}>
+                  💡 Once filled, click <strong>📄 Download TM30</strong> to generate the
+                  pre-filled PDF for Thai Immigration. Upload to{' '}
+                  <span style={{ color: '#FF6B00' }}>extranet.immigration.go.th</span>{' '}
+                  within 24h of arrival.
+                </div>
+              </div>
+            )}
+          </div>
+
           {error && (
             <div style={{
               padding: 10, borderRadius: 10,
@@ -848,28 +936,63 @@ function CheckInModal({ open, room, defaultDate, onClose, onSaved }) {
 
         {/* Footer actions */}
         <div style={{
-          padding: '12px 20px 20px', display: 'flex', justifyContent: 'flex-end',
-          gap: 8, borderTop: '1px solid #F0EDE8',
+          padding: '12px 20px 20px', display: 'flex', justifyContent: 'space-between',
+          gap: 8, borderTop: '1px solid #F0EDE8', flexWrap: 'wrap',
         }}>
           <button
-            type="button" onClick={onClose} disabled={saving}
+            type="button"
+            onClick={() => downloadTM30({
+              booking: {
+                id: 'pending',
+                check_in: checkIn,
+                check_out: checkOut,
+                guest_name: form.guest_name,
+                room_id: room.id,
+                room_name: room.name,
+              },
+              property: property || { name: 'Property', city: '', country: '' },
+              guests: [{
+                first_name: (form.guest_name || '').split(' ')[0] || '',
+                last_name:  (form.guest_name || '').split(' ').slice(1).join(' '),
+                nationality: form.nationality,
+                passport_number: form.passport_number,
+                passport_expires_at: form.passport_expires_at || null,
+                date_of_birth: form.date_of_birth || null,
+                sex: form.sex,
+              }],
+            })}
+            disabled={saving || !form.guest_name.trim()}
+            title={!form.guest_name.trim() ? 'Enter the guest name first' : 'Generate the TM30 PDF for Thai Immigration'}
             style={{
-              padding: '9px 18px', borderRadius: 12, fontSize: 13, fontWeight: 700,
-              background: '#F8F6F0', color: '#1A1F2E', border: '1px solid #E8E0D8',
-              cursor: 'pointer',
-            }}
-          >Cancel</button>
-          <button
-            type="button" onClick={handleSave} disabled={saving}
-            style={{
-              padding: '9px 18px', borderRadius: 12, fontSize: 13, fontWeight: 800,
-              background: 'linear-gradient(135deg,#FF6B00,#FF3CB4)',
-              color: '#fff', border: 'none', cursor: 'pointer',
-              opacity: saving ? 0.5 : 1,
+              padding: '9px 16px', borderRadius: 12, fontSize: 12, fontWeight: 700,
+              background: '#F8F6F0', color: '#1A1F2E',
+              border: '1px solid #E8E0D8', cursor: 'pointer',
+              opacity: !form.guest_name.trim() ? 0.5 : 1,
             }}
           >
-            {saving ? 'Saving…' : '✓ Confirm check-in'}
+            📄 Download TM30
           </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button" onClick={onClose} disabled={saving}
+              style={{
+                padding: '9px 18px', borderRadius: 12, fontSize: 13, fontWeight: 700,
+                background: '#F8F6F0', color: '#1A1F2E', border: '1px solid #E8E0D8',
+                cursor: 'pointer',
+              }}
+            >Cancel</button>
+            <button
+              type="button" onClick={handleSave} disabled={saving}
+              style={{
+                padding: '9px 18px', borderRadius: 12, fontSize: 13, fontWeight: 800,
+                background: 'linear-gradient(135deg,#FF6B00,#FF3CB4)',
+                color: '#fff', border: 'none', cursor: 'pointer',
+                opacity: saving ? 0.5 : 1,
+              }}
+            >
+              {saving ? 'Saving…' : '✓ Confirm check-in'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
