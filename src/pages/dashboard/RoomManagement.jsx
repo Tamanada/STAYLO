@@ -714,6 +714,12 @@ function CheckInModal({ open, room, property, defaultDate, onClose, onSaved }) {
     if (!form.guest_name.trim()) { setError('Guest name is required'); return }
     setSaving(true)
     setError(null)
+    // booking_source aligned with the existing taxonomy from
+    // migration 20260502000000_walkin_bookings.sql: one of
+    // ('online', 'walk_in', 'phone', 'email'). The CheckInModal
+    // is the receptionist's walk-in path, so 'walk_in' fits.
+    // status 'checked_in' (not 'confirmed') because the guest is
+    // physically here — matches what PMSFrontDesk does.
     const { error: insertErr } = await supabase.from('bookings').insert({
       room_id: room.id,
       property_id: room.property_id,
@@ -724,9 +730,9 @@ function CheckInModal({ open, room, property, defaultDate, onClose, onSaved }) {
       check_in:  checkIn,
       check_out: checkOut,
       total_price: totalPrice,
-      status: 'confirmed',
+      status: 'checked_in',
+      booking_source: 'walk_in',
       special_requests: form.special_requests.trim() || null,
-      source: 'front_desk',
     })
     setSaving(false)
     if (insertErr) {
