@@ -4,7 +4,7 @@ import { useParams, Link, useNavigate, useOutletContext } from 'react-router-dom
 import {
   ArrowLeft, Plus, BedDouble, Calendar, ClipboardList, Pencil, Trash2,
   Users, DollarSign, Wifi, Wind, Waves, Coffee, Car, Umbrella,
-  ChevronLeft, ChevronRight, X, Save, Loader2, Ban, Check,
+  ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, Save, Loader2, Ban, Check,
   Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw, Gift,
   Settings as SettingsIcon, UserPlus, Shield, Mail, Crown,
   Package as PackageIcon
@@ -147,7 +147,12 @@ export default function PropertyManage() {
     setLoading(true)
     const [propRes, roomsRes, bookingsRes, pkgRes] = await Promise.all([
       supabase.from('properties').select('*').eq('id', propertyId).single(),
-      supabase.from('rooms').select('*').eq('property_id', propertyId).order('created_at'),
+      // Order: hotelier-controlled display_order (the same sequence
+      // shown on the OTA listing + reception views). Tie-breaker on
+      // name keeps it deterministic when two rooms share an order
+      // value (e.g. just after a reorder before the optimistic UI
+      // bump lands).
+      supabase.from('rooms').select('*').eq('property_id', propertyId).order('display_order').order('name'),
       supabase.from('bookings').select('*').eq('property_id', propertyId).order('created_at', { ascending: false }),
       // Pull qty + date_blocks from the junction for the room form
       supabase.from('packages').select('*, room_packages(room_id, qty, date_blocks)').eq('property_id', propertyId),
@@ -2144,6 +2149,36 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
     onRefresh()
   }
 
+  // Manual reordering — swap display_order between two rooms.
+  // The hotelier's sequence is shown EVERYWHERE rooms are listed:
+  //   · OTA PropertyDetail (the public listing)
+  //   · Reception timelines (Chambres + Disponibilités)
+  //   · PropertyManage Chambres tab (this very list)
+  // Defensive: clamps to the array bounds, skips no-op moves.
+  async function moveRoom(roomId, direction) {
+    const idx = rooms.findIndex(r => r.id === roomId)
+    if (idx === -1) return
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (targetIdx < 0 || targetIdx >= rooms.length) return
+    const a = rooms[idx]
+    const b = rooms[targetIdx]
+    // Pairwise swap of display_order — minimum churn on the index.
+    // If two rows happen to share the same display_order (legacy data,
+    // edge case after delete), fall back to assigning idx-based values
+    // for THIS pair so the swap is deterministic.
+    const aOrder = a.display_order ?? idx
+    const bOrder = b.display_order ?? targetIdx
+    if (aOrder === bOrder) {
+      // Force a difference so the next swap behaves predictably.
+      await supabase.from('rooms').update({ display_order: targetIdx }).eq('id', a.id)
+      await supabase.from('rooms').update({ display_order: idx }).eq('id', b.id)
+    } else {
+      await supabase.from('rooms').update({ display_order: bOrder }).eq('id', a.id)
+      await supabase.from('rooms').update({ display_order: aOrder }).eq('id', b.id)
+    }
+    onRefresh()
+  }
+
   function toggleAmenity(key) {
     setForm(f => ({
       ...f,
@@ -2180,7 +2215,7 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
 
       {/* Room cards — when editing, the form renders inline below its row */}
       <div className="space-y-3">
-        {rooms.map(room => (
+        {rooms.map((room, idx) => (
           <Fragment key={room.id}>
           <Card className={`!p-4 ${!room.is_active ? 'opacity-60' : ''}`}>
             <div className="flex items-start gap-4">
@@ -2280,6 +2315,29 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
                 )}
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
+                {/* Reorder buttons — this sequence drives the OTA listing
+                    AND every reception view. Up disabled on the first
+                    row, down on the last. */}
+                <div className="flex flex-col -mx-0.5">
+                  <button
+                    type="button"
+                    onClick={() => moveRoom(room.id, 'up')}
+                    disabled={idx === 0}
+                    className="p-0.5 rounded text-gray-400 hover:text-deep hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                    title={t('manage.move_up', 'Move up')}
+                  >
+                    <ChevronUp size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveRoom(room.id, 'down')}
+                    disabled={idx === rooms.length - 1}
+                    className="p-0.5 rounded text-gray-400 hover:text-deep hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                    title={t('manage.move_down', 'Move down')}
+                  >
+                    <ChevronDown size={14} />
+                  </button>
+                </div>
                 <button onClick={() => toggleActive(room)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600" title={room.is_active ? 'Deactivate' : 'Activate'}>
                   {room.is_active ? <Ban size={16} /> : <Check size={16} />}
                 </button>

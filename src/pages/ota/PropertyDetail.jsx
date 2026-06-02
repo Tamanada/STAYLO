@@ -129,7 +129,12 @@ export default function PropertyDetail() {
       setLoading(true)
       const [propRes, roomsRes, pkgRes] = await Promise.all([
         supabase.from('properties').select('*').eq('id', id).single(),
-        supabase.from('rooms').select('*, room_availability(*)').eq('property_id', id).eq('is_active', true).order('base_price'),
+        // Order: hotelier's display_order first (so they control the
+        // listing sequence), name as tie-breaker. Was ordering by
+        // base_price which conflicts with the hotelier's choice
+        // (a Suite at $500 might still belong before a dorm at $20
+        // in the pitch flow). Hotelier always wins.
+        supabase.from('rooms').select('*, room_availability(*)').eq('property_id', id).eq('is_active', true).order('display_order').order('name'),
         // Active packages + their room links (with qty + date_blocks).
         // Public read policy lets anonymous browsers fetch this directly.
         supabase.from('packages').select('*, room_packages(room_id, qty, date_blocks)').eq('property_id', id).eq('is_active', true),

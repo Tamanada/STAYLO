@@ -64,7 +64,7 @@ export default function PropertyLayout() {
   // calls refetchRooms() after saving a new room.
   const refetchRooms = useCallback(async () => {
     if (!id) return
-    const { data } = await supabase.from('rooms').select('*').eq('property_id', id).order('name')
+    const { data } = await supabase.from('rooms').select('*').eq('property_id', id).order('display_order').order('name')
     setRooms(data || [])
   }, [id])
 
@@ -123,7 +123,7 @@ export default function PropertyLayout() {
       // doesn't blank the whole page — we degrade gracefully.
       const settled = await Promise.allSettled([
         supabase.from('properties').select('*').eq('id', id).maybeSingle(),
-        supabase.from('rooms').select('*').eq('property_id', id).order('name'),
+        supabase.from('rooms').select('*').eq('property_id', id).order('display_order').order('name'),
         supabase.from('bookings').select('*').eq('property_id', id),
         supabase.from('packages')
           .select('id, name, description, price, currency, room_packages(room_id, qty, date_blocks)')
