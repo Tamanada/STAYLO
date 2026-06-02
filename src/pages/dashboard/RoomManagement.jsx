@@ -29,7 +29,7 @@
 // persistence.
 // ============================================
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useOutletContext, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { AMENITY_META } from '../../lib/amenityIcons'
 
@@ -267,16 +267,20 @@ export default function RoomManagement() {
     try { localStorage.setItem('staylo_rm_sidebar', sidebarOpen ? 'open' : 'closed') } catch {}
   }, [sidebarOpen])
   const [view, setView] = useState('timeline')   // 'timeline' | 'grid' | 'floorplan'
-  const [property, setProperty] = useState(null)
-  const [rooms, setRooms] = useState([])
-  const [bookings, setBookings] = useState([])
-  // Packages linked to the property (with room_packages join so we know
-  // which rooms each package belongs to). Powers the room hover popup
-  // — when the receptionist hovers a room, they see at a glance what's
-  // bundled with it (breakfast for 2, Full Moon transfer, etc.) without
-  // clicking through. Lightweight fetch (one extra query at mount).
-  const [packages, setPackages] = useState([])
-  const [loading, setLoading] = useState(true)
+  // Shared state from PropertyLayout — property + rooms + bookings +
+  // packages are fetched once by the parent and reused across every
+  // child route. Navigating from Rooms → Gérer → Réservations now
+  // happens without a refetch flash. Children can call refetchRooms /
+  // refetchBookings after a write to keep things fresh.
+  const ctx = useOutletContext() || {}
+  const property = ctx.property || null
+  const rooms    = ctx.rooms    || []
+  const bookings = ctx.bookings || []
+  const packages = ctx.packages || []
+  const refetchBookings = ctx.refetchBookings || (() => {})
+  // We're loading only while the parent's initial fetch hasn't seeded
+  // rooms yet. After that, navigation is instant.
+  const loading = !property
   const [statusOverrides, setStatusOverrides] = useState({})
   // Filters
   const [sideStatusFilter, setSideStatusFilter] = useState('all')   // sidebar: all | available | occupied | dirty | maintenance
@@ -300,35 +304,10 @@ export default function RoomManagement() {
   const today = isoDate(new Date())
 
   // ── Fetch ──────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!propertyId) return
-    let cancelled = false
-    async function fetchAll() {
-      setLoading(true)
-      const [propRes, roomsRes, bookingsRes, pkgRes] = await Promise.all([
-        // Include address/contact fields so the TM30 PDF generator
-        // has what it needs (manager name + full address).
-        supabase.from('properties').select('id, name, city, country, status, address, contact_name').eq('id', propertyId).maybeSingle(),
-        supabase.from('rooms').select('*').eq('property_id', propertyId).order('name'),
-        supabase.from('bookings').select('*').eq('property_id', propertyId),
-        // Same shape PropertyDetail (OTA) uses — active packages with
-        // their room links. We only need name/description/price/qty
-        // for the hover popup so the payload stays tiny.
-        supabase.from('packages')
-          .select('id, name, description, price, currency, room_packages(room_id, qty)')
-          .eq('property_id', propertyId)
-          .eq('is_active', true),
-      ])
-      if (cancelled) return
-      setProperty(propRes.data || null)
-      setRooms(roomsRes.data || [])
-      setBookings(bookingsRes.data || [])
-      setPackages(pkgRes.data || [])
-      setLoading(false)
-    }
-    fetchAll()
-    return () => { cancelled = true }
-  }, [propertyId])
+  // Property / rooms / bookings / packages now come from PropertyLayout
+  // via useOutletContext above — no local fetch needed. Big UX win:
+  // switching between Rooms / Gérer / Réservations no longer triggers
+  // a reload flash.
 
   // ── Derive ─────────────────────────────────────────────────────
   const enrichedRooms = useMemo(() => {

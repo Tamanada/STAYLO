@@ -23,7 +23,7 @@
 // Membership check is built in — a user with no active access to the
 // property is bounced back to /dashboard/properties.
 // ============================================
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
 import {
@@ -46,10 +46,57 @@ export default function PropertyLayout() {
   const { id } = useParams()
   const { user } = useAuth()
   const navigate = useNavigate()
+  // Shared state — child routes (Rooms, Manage, TM30, Reports, etc.)
+  // all read this via useOutletContext() so they DON'T re-fetch when
+  // the user navigates between them. React Router keeps PropertyLayout
+  // mounted across sibling-route changes, which means fetches happen
+  // once per property visit instead of once per page mount. Big UX win:
+  // no more loading flash on every pill click.
   const [property, setProperty] = useState(null)
+  const [rooms, setRooms]       = useState([])
+  const [bookings, setBookings] = useState([])
+  const [packages, setPackages] = useState([])
   const [incomingCount, setIncomingCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
+  // Refetch helpers — exposed via context so any child can refresh a
+  // slice after a write without reloading everything. e.g. PropertyManage
+  // calls refetchRooms() after saving a new room.
+  const refetchRooms = useCallback(async () => {
+    if (!id) return
+    const { data } = await supabase.from('rooms').select('*').eq('property_id', id).order('name')
+    setRooms(data || [])
+  }, [id])
+
+  const refetchBookings = useCallback(async () => {
+    if (!id) return
+    const { data } = await supabase.from('bookings').select('*').eq('property_id', id)
+    setBookings(data || [])
+    setIncomingCount((data || []).length)
+  }, [id])
+
+  const refetchPackages = useCallback(async () => {
+    if (!id) return
+    const { data } = await supabase
+      .from('packages')
+      .select('id, name, description, price, currency, room_packages(room_id, qty, date_blocks)')
+      .eq('property_id', id)
+      .eq('is_active', true)
+    setPackages(data || [])
+  }, [id])
+
+  const refetchProperty = useCallback(async () => {
+    if (!id) return
+    const { data } = await supabase
+      .from('properties')
+      .select('id, name, city, country, status, type, address, contact_name, tm30_license_number, checkin_start_hour, checkin_end_hour, checkout_hour, passport_validity_override_months')
+      .eq('id', id).maybeSingle()
+    setProperty(data)
+  }, [id])
+
+  // Initial fetch — runs once per property visit (`id` is the dep).
+  // Navigating between child routes does NOT re-trigger this because
+  // PropertyLayout stays mounted across sibling routes.
   useEffect(() => {
     if (!user || !id) return
     let cancelled = false
@@ -65,17 +112,23 @@ export default function PropertyLayout() {
         navigate('/dashboard/properties', { replace: true })
         return
       }
-      const { data: prop } = await supabase
-        .from('properties')
-        .select('id, name, city, country, status, type')
-        .eq('id', id).maybeSingle()
+      // Parallel fetch — property meta + rooms + bookings + packages.
+      const [pRes, rRes, bRes, pkRes] = await Promise.all([
+        supabase.from('properties')
+          .select('id, name, city, country, status, type, address, contact_name, tm30_license_number, checkin_start_hour, checkin_end_hour, checkout_hour, passport_validity_override_months')
+          .eq('id', id).maybeSingle(),
+        supabase.from('rooms').select('*').eq('property_id', id).order('name'),
+        supabase.from('bookings').select('*').eq('property_id', id),
+        supabase.from('packages')
+          .select('id, name, description, price, currency, room_packages(room_id, qty, date_blocks)')
+          .eq('property_id', id).eq('is_active', true),
+      ])
       if (cancelled) return
-      setProperty(prop)
-      // Property-scoped incoming bookings count for the pill badge
-      supabase.from('bookings')
-        .select('id', { count: 'exact', head: true })
-        .eq('property_id', id)
-        .then(({ count }) => { if (!cancelled) setIncomingCount(count || 0) })
+      setProperty(pRes.data)
+      setRooms(rRes.data || [])
+      setBookings(bRes.data || [])
+      setPackages(pkRes.data || [])
+      setIncomingCount((bRes.data || []).length)
       setLoading(false)
     }
     fetchAll()
@@ -185,8 +238,20 @@ export default function PropertyLayout() {
         </NavLink>
       </div>
 
-      {/* Child route — landing hint card / Réception / Housekeeping / etc. */}
-      <Outlet context={{ property }} />
+      {/* Child route — landing hint card / Réception / Housekeeping / etc.
+          Shared data + refetch hooks flow down so child pages don't
+          re-fetch on navigation. Children read selectively via
+          useOutletContext() and call refetch*() after writes. */}
+      <Outlet context={{
+        property,
+        rooms,
+        bookings,
+        packages,
+        refetchProperty,
+        refetchRooms,
+        refetchBookings,
+        refetchPackages,
+      }} />
     </div>
   )
 }
