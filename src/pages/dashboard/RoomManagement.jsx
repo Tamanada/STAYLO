@@ -213,7 +213,12 @@ const STYLES = `
    from the row's bounding rect, so it never gets clipped by the
    overflow:auto on the grid container. STAYLO brand styling: dark
    gradient header, soft white body, brand-coloured chips. */
-.rm-info-pop{position:fixed;z-index:5000;width:340px;max-width:92vw;background:#fff;border-radius:18px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:none;animation:rm-pop-in .15s ease-out}
+.rm-info-pop{position:fixed;z-index:5000;width:600px;max-width:94vw;background:#fff;border-radius:20px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:none;animation:rm-pop-in .15s ease-out}
+/* Two-column body so the receptionist gets everything in one glance:
+   left = room essentials + packages (what's included), right =
+   amenities + description. */
+.rm-ip-cols{display:grid;grid-template-columns:1fr 1.05fr;gap:12px;padding:12px 14px 14px;max-height:62vh;overflow-y:auto}
+.rm-ip-col{display:flex;flex-direction:column;gap:10px;min-width:0}
 @keyframes rm-pop-in{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .rm-ip-header{padding:14px 16px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative}
 .rm-ip-eyebrow{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin-bottom:2px}
@@ -223,6 +228,9 @@ const STYLES = `
 .rm-ip-price-amt{font-size:20px;font-weight:800;background:linear-gradient(90deg,#FF6B00,#FF3CB4);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
 .rm-ip-price-net{font-size:10px;color:rgba(255,255,255,.55);font-weight:600}
 .rm-ip-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto}
+.rm-ip-cta{padding:10px 14px;background:linear-gradient(135deg,#F8F6F0,#FFF7ED);border-top:1px solid #E8E0D8;font-size:11px;color:#1A1F2E;display:flex;align-items:center;gap:6px;font-weight:600}
+.rm-ip-cta .pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:#FF6B00;box-shadow:0 0 0 4px rgba(255,107,0,.18);animation:rm-pulse 1.6s ease-in-out infinite}
+@keyframes rm-pulse{0%,100%{box-shadow:0 0 0 4px rgba(255,107,0,.18)}50%{box-shadow:0 0 0 7px rgba(255,107,0,.08)}}
 .rm-ip-section-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#636E72;margin-bottom:5px;display:flex;align-items:center;gap:5px}
 .rm-ip-section-title .dot{width:6px;height:6px;border-radius:50%}
 .rm-ip-chips{display:flex;flex-wrap:wrap;gap:4px}
@@ -275,6 +283,11 @@ export default function RoomManagement() {
   const [needsActionOnly, setNeedsActionOnly] = useState(false)
   const [search, setSearch] = useState('')
   const [selectedRoom, setSelectedRoom] = useState(null)
+  // Check-in modal — { room, date } | null. Opened when the
+  // receptionist clicks a Timeline date cell (or a Grid "available"
+  // card). The modal pre-fills the room + date so the front-desk
+  // flow is "click box → fill form → done".
+  const [checkinFor, setCheckinFor] = useState(null)
   // Timeline window
   const [startDay, setStartDay] = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d })
   // Floor plan
@@ -564,9 +577,12 @@ export default function RoomManagement() {
               <TimelineView rooms={filteredRooms} bookings={bookings}
                 startDay={startDay} dates={dates} todayDate={todayDate}
                 packagesByRoom={packagesByRoom}
-                onPick={setSelectedRoom} />
+                onPick={setSelectedRoom}
+                onCheckIn={(room, date) => setCheckinFor({ room, date })} />
             ) : view === 'grid' ? (
-              <GridView floorsMap={floorsMap} packagesByRoom={packagesByRoom} onPick={setSelectedRoom} />
+              <GridView floorsMap={floorsMap} packagesByRoom={packagesByRoom}
+                onPick={setSelectedRoom}
+                onCheckIn={(room) => setCheckinFor({ room, date: isoDate(new Date()) })} />
             ) : (
               <FloorPlanView floorsMap={floorsMap} activeFloor={activeFloor}
                 setActiveFloor={setActiveFloor} property={property}
@@ -588,9 +604,30 @@ export default function RoomManagement() {
                 setRoomStatus(selectedRoom.id, s)
                 setSelectedRoom(r => r ? { ...r, status: s } : r)
               }}
+              onCheckIn={() => {
+                setCheckinFor({ room: selectedRoom, date: isoDate(new Date()) })
+                setSelectedRoom(null)
+              }}
             />
           </>
         )}
+
+        {/* ── CHECK-IN MODAL ──────────────────────────────────── */}
+        {/* Mounted at component root (outside the grid overflow) so it
+            covers the full viewport reliably. Saving inserts a new
+            row in bookings; we re-fetch bookings on success so the
+            reservation bar appears on the timeline immediately. */}
+        <CheckInModal
+          open={!!checkinFor}
+          room={checkinFor?.room}
+          defaultDate={checkinFor?.date}
+          onClose={() => setCheckinFor(null)}
+          onSaved={async () => {
+            // Refetch only the bookings — rooms haven't changed.
+            const { data } = await supabase.from('bookings').select('*').eq('property_id', propertyId)
+            setBookings(data || [])
+          }}
+        />
       </div>
     </>
   )
@@ -607,6 +644,256 @@ function SidebarItem({ icon, label, badge, badgeClass, active, onClick }) {
       )}
     </button>
   )
+}
+
+// ── Check-in modal ──
+// Launched when the receptionist clicks a Timeline cell (or Grid card
+// in "available" status). Pre-fills the room + check-in date so the
+// front-desk flow is "click box → fill name + ID → done". This is the
+// receptionist-side counterpart to PublicCheckIn (the QR self-check-in
+// guests do from their phone).
+//
+// V1 scope (what's wired now):
+//   · Room + date pre-filled, editable
+//   · Guest name, email, phone, # guests, special requests
+//   · Nights → derives check_out date
+//   · Status starts as 'confirmed' (receptionist trust)
+//   · INSERT into bookings + close
+// V2 scope (next iterations, see chat answer):
+//   · Passport / ID upload (front + back, OCR via edge function)
+//   · Signature canvas for T&Cs
+//   · Payment hold / Stripe authorization
+//   · Auto-generate TM30 form for foreign nationals
+//   · Hand-off QR (receptionist hands phone to guest)
+function CheckInModal({ open, room, defaultDate, onClose, onSaved }) {
+  const [form, setForm] = useState({
+    guest_name: '', guest_email: '', guest_phone: '',
+    guests: 1, nights: 1, special_requests: '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+
+  // Reset when reopened so we don't leak previous guest data.
+  useEffect(() => {
+    if (open) {
+      setForm({
+        guest_name: '', guest_email: '', guest_phone: '',
+        guests: 1, nights: 1, special_requests: '',
+      })
+      setError(null)
+    }
+  }, [open])
+
+  if (!open || !room) return null
+
+  const checkIn = defaultDate || isoDate(new Date())
+  function addDaysISO(iso, n) {
+    const d = new Date(iso + 'T00:00:00Z')
+    d.setUTCDate(d.getUTCDate() + n)
+    return d.toISOString().slice(0, 10)
+  }
+  const checkOut = addDaysISO(checkIn, Math.max(1, Number(form.nights) || 1))
+  const totalPrice = (Number(room.base_price) || 0) * (Number(form.nights) || 1)
+
+  async function handleSave() {
+    if (!form.guest_name.trim()) { setError('Guest name is required'); return }
+    setSaving(true)
+    setError(null)
+    const { error: insertErr } = await supabase.from('bookings').insert({
+      room_id: room.id,
+      property_id: room.property_id,
+      guest_name: form.guest_name.trim(),
+      guest_email: form.guest_email.trim() || null,
+      guest_phone: form.guest_phone.trim() || null,
+      guests: Number(form.guests) || 1,
+      check_in:  checkIn,
+      check_out: checkOut,
+      total_price: totalPrice,
+      status: 'confirmed',
+      special_requests: form.special_requests.trim() || null,
+      source: 'front_desk',
+    })
+    setSaving(false)
+    if (insertErr) {
+      setError(insertErr.message || 'Could not save check-in')
+      return
+    }
+    onSaved?.()
+    onClose?.()
+  }
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 6000,
+        background: 'rgba(26,31,46,.55)', backdropFilter: 'blur(4px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 16,
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#fff', borderRadius: 20, width: 560, maxWidth: '94vw',
+          maxHeight: '90vh', overflow: 'auto',
+          boxShadow: '0 24px 60px -10px rgba(26,31,46,.4)',
+        }}
+      >
+        {/* Header — same gradient language as the hover popover */}
+        <div style={{
+          padding: '16px 20px',
+          background: 'linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%)',
+          color: '#fff',
+        }}>
+          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.15em',
+            textTransform: 'uppercase', color: 'rgba(255,255,255,.5)' }}>
+            🔑 Front-desk check-in
+          </div>
+          <div style={{ fontSize: 20, fontWeight: 800, marginTop: 2 }}>{room.name}</div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.7)', marginTop: 4 }}>
+            {prettyLabel(room.bed_type) || 'Standard'} bed · max {room.max_guests || 1} guests · ${Number(room.base_price || 0).toFixed(0)}/night
+          </div>
+        </div>
+
+        {/* Form */}
+        <div style={{ padding: 20, display: 'grid', gap: 14 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <Field label="Check-in date">
+              <input type="date" value={checkIn} readOnly
+                style={inputStyle({ background: '#F8F6F0' })} />
+            </Field>
+            <Field label="Nights">
+              <input type="number" min={1} max={365}
+                value={form.nights}
+                onChange={e => setForm(f => ({ ...f, nights: e.target.value }))}
+                style={inputStyle()} />
+            </Field>
+          </div>
+
+          <Field label="Guest name *">
+            <input type="text"
+              value={form.guest_name}
+              placeholder="Full name as on ID / passport"
+              onChange={e => setForm(f => ({ ...f, guest_name: e.target.value }))}
+              autoFocus
+              style={inputStyle()} />
+          </Field>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+            <Field label="Email">
+              <input type="email"
+                value={form.guest_email}
+                placeholder="guest@example.com"
+                onChange={e => setForm(f => ({ ...f, guest_email: e.target.value }))}
+                style={inputStyle()} />
+            </Field>
+            <Field label="Phone">
+              <input type="tel"
+                value={form.guest_phone}
+                placeholder="+66 ..."
+                onChange={e => setForm(f => ({ ...f, guest_phone: e.target.value }))}
+                style={inputStyle()} />
+            </Field>
+          </div>
+
+          <Field label="# Guests">
+            <input type="number" min={1} max={room.max_guests || 10}
+              value={form.guests}
+              onChange={e => setForm(f => ({ ...f, guests: e.target.value }))}
+              style={inputStyle({ maxWidth: 120 })} />
+          </Field>
+
+          <Field label="Special requests">
+            <textarea rows={2}
+              value={form.special_requests}
+              placeholder="Late check-in, allergies, transfer ..."
+              onChange={e => setForm(f => ({ ...f, special_requests: e.target.value }))}
+              style={inputStyle({ resize: 'vertical', minHeight: 60 })} />
+          </Field>
+
+          {/* Totals strip */}
+          <div style={{
+            padding: '10px 14px', borderRadius: 12,
+            background: 'linear-gradient(135deg,rgba(255,107,0,.05),rgba(255,60,180,.05))',
+            border: '1px solid rgba(255,107,0,.15)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+          }}>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
+                textTransform: 'uppercase', color: '#636E72' }}>Stay total</div>
+              <div style={{ fontSize: 11, color: '#636E72', marginTop: 2 }}>
+                {checkIn} → {checkOut} · {form.nights} night{Number(form.nights) > 1 ? 's' : ''}
+              </div>
+            </div>
+            <div style={{
+              fontSize: 22, fontWeight: 800,
+              background: 'linear-gradient(90deg,#FF6B00,#FF3CB4)',
+              WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
+            }}>
+              ${totalPrice.toFixed(0)}
+            </div>
+          </div>
+
+          {error && (
+            <div style={{
+              padding: 10, borderRadius: 10,
+              background: 'rgba(231,76,60,.08)', color: '#B91C1C',
+              fontSize: 12, fontWeight: 600,
+            }}>
+              {error}
+            </div>
+          )}
+        </div>
+
+        {/* Footer actions */}
+        <div style={{
+          padding: '12px 20px 20px', display: 'flex', justifyContent: 'flex-end',
+          gap: 8, borderTop: '1px solid #F0EDE8',
+        }}>
+          <button
+            type="button" onClick={onClose} disabled={saving}
+            style={{
+              padding: '9px 18px', borderRadius: 12, fontSize: 13, fontWeight: 700,
+              background: '#F8F6F0', color: '#1A1F2E', border: '1px solid #E8E0D8',
+              cursor: 'pointer',
+            }}
+          >Cancel</button>
+          <button
+            type="button" onClick={handleSave} disabled={saving}
+            style={{
+              padding: '9px 18px', borderRadius: 12, fontSize: 13, fontWeight: 800,
+              background: 'linear-gradient(135deg,#FF6B00,#FF3CB4)',
+              color: '#fff', border: 'none', cursor: 'pointer',
+              opacity: saving ? 0.5 : 1,
+            }}
+          >
+            {saving ? 'Saving…' : '✓ Confirm check-in'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+function Field({ label, children }) {
+  return (
+    <label style={{ display: 'block' }}>
+      <div style={{
+        fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+        textTransform: 'uppercase', color: '#636E72', marginBottom: 4,
+      }}>{label}</div>
+      {children}
+    </label>
+  )
+}
+function inputStyle(extra = {}) {
+  return {
+    width: '100%', padding: '8px 12px', borderRadius: 10,
+    border: '1px solid #E8E0D8', background: '#fff',
+    fontSize: 13, color: '#1A1F2E', fontFamily: 'inherit',
+    outline: 'none', boxSizing: 'border-box',
+    ...extra,
+  }
 }
 
 // ── Room info hover popover ──
@@ -653,79 +940,99 @@ function RoomInfoPopover({ room, packages, x, y, side }) {
           </div>
         )}
       </div>
-      <div className="rm-ip-body">
-        {/* Meta grid — bed type + max guests as quick reference */}
-        <div className="rm-ip-meta">
-          <div className="rm-ip-meta-cell">
-            <div className="lab">Bed</div>
-            <div className="val">🛏️ {prettyLabel(room.bed_type) || 'Standard'}</div>
+      {/* Body — TWO columns so the receptionist takes everything in
+          at a glance. Left = room essentials + packages (the
+          value-add story they need to pitch). Right = amenities +
+          free-form description (the breadth answer for "what does it
+          have?"). */}
+      <div className="rm-ip-cols">
+        {/* ── Left column ── */}
+        <div className="rm-ip-col">
+          <div className="rm-ip-meta">
+            <div className="rm-ip-meta-cell">
+              <div className="lab">Bed</div>
+              <div className="val">🛏️ {prettyLabel(room.bed_type) || 'Standard'}</div>
+            </div>
+            <div className="rm-ip-meta-cell">
+              <div className="lab">Capacity</div>
+              <div className="val">👤 {room.max_guests || 1} {room.max_guests > 1 ? 'guests' : 'guest'}</div>
+            </div>
           </div>
-          <div className="rm-ip-meta-cell">
-            <div className="lab">Capacity</div>
-            <div className="val">👤 {room.max_guests || 1} {room.max_guests > 1 ? 'guests' : 'guest'}</div>
-          </div>
-        </div>
 
-        {/* Packages — what's INCLUDED (breakfast, transfer, etc.).
-            These are the "value-add" answers the receptionist needs:
-            "Breakfast for 2 included · Full Moon transfer included". */}
-        <div>
-          <div className="rm-ip-section-title">
-            <span className="dot" style={{background:'#FF6B00'}} />
-            🎁 Included packages
-          </div>
-          {packages.length === 0 ? (
-            <div className="rm-ip-empty">No packages bundled with this room</div>
-          ) : (
-            <div className="rm-ip-pkg-list">
-              {packages.map(p => (
-                <div key={p.id} className="rm-ip-pkg">
-                  <div className="rm-ip-pkg-name">
-                    {p.name}
-                    {p.qty > 1 && <span className="qty">×{p.qty}</span>}
+          {/* Packages — what's INCLUDED (breakfast, transfer, etc.).
+              The "value-add" answers the receptionist needs:
+              "Breakfast for 2 included · Full Moon transfer included". */}
+          <div>
+            <div className="rm-ip-section-title">
+              <span className="dot" style={{background:'#FF6B00'}} />
+              🎁 Included packages
+            </div>
+            {packages.length === 0 ? (
+              <div className="rm-ip-empty">No packages bundled with this room</div>
+            ) : (
+              <div className="rm-ip-pkg-list">
+                {packages.map(p => (
+                  <div key={p.id} className="rm-ip-pkg">
+                    <div className="rm-ip-pkg-name">
+                      {p.name}
+                      {p.qty > 1 && <span className="qty">×{p.qty}</span>}
+                    </div>
+                    {p.description && <div className="rm-ip-pkg-desc">{p.description}</div>}
                   </div>
-                  {p.description && <div className="rm-ip-pkg-desc">{p.description}</div>}
-                </div>
-              ))}
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Free-form description sits in the left column too so it
+              gets the pitch space. If empty, this section is hidden. */}
+          {room.description && (
+            <div>
+              <div className="rm-ip-section-title">
+                <span className="dot" style={{background:'#6C5CE7'}} />
+                📝 Description
+              </div>
+              <div className="rm-ip-desc">{room.description}</div>
             </div>
           )}
         </div>
 
-        {/* Amenities — all the room features as small green chips */}
-        {amenityChips.length > 0 && (
-          <div>
-            <div className="rm-ip-section-title">
-              <span className="dot" style={{background:'#00B894'}} />
-              ✨ Amenities ({amenityChips.length})
+        {/* ── Right column ── */}
+        <div className="rm-ip-col">
+          {amenityChips.length > 0 ? (
+            <div>
+              <div className="rm-ip-section-title">
+                <span className="dot" style={{background:'#00B894'}} />
+                ✨ Amenities ({amenityChips.length})
+              </div>
+              <div className="rm-ip-chips">
+                {amenityChips.map(a => (
+                  <span key={a.key} className="rm-ip-chip" title={a.label}>
+                    {a.Icon && <a.Icon size={11} />}
+                    {a.label}
+                  </span>
+                ))}
+              </div>
             </div>
-            <div className="rm-ip-chips">
-              {amenityChips.map(a => (
-                <span key={a.key} className="rm-ip-chip" title={a.label}>
-                  {a.Icon && <a.Icon size={11} />}
-                  {a.label}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
+          ) : (
+            <div className="rm-ip-empty">No amenities configured yet</div>
+          )}
+        </div>
+      </div>
 
-        {/* Free-form description — the hotelier's own pitch for the room */}
-        {room.description && (
-          <div>
-            <div className="rm-ip-section-title">
-              <span className="dot" style={{background:'#6C5CE7'}} />
-              📝 Description
-            </div>
-            <div className="rm-ip-desc">{room.description}</div>
-          </div>
-        )}
+      {/* Footer hint — tells the receptionist that clicking the row
+          launches the check-in flow. Subtle pulse on the dot draws the
+          eye without being noisy. */}
+      <div className="rm-ip-cta">
+        <span className="pulse" />
+        🔑 Click any cell in this row to start a check-in
       </div>
     </div>
   )
 }
 
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, packagesByRoom, startDay, dates, todayDate, onPick }) {
+function TimelineView({ rooms, bookings, packagesByRoom, startDay, dates, todayDate, onPick, onCheckIn }) {
   const resByRoom = useMemo(() => {
     const m = new Map()
     const endDay = dates[dates.length - 1]
@@ -815,7 +1122,18 @@ function TimelineView({ rooms, bookings, packagesByRoom, startDay, dates, todayD
             <div className="rm-tl-grid">
               {dates.map((d, i) => {
                 const isToday = d.toDateString() === todayDate.toDateString()
-                return <div key={i} className={`rm-tl-cell ${isToday ? 'today' : ''}`} />
+                // Clicking an empty cell launches the check-in modal
+                // pre-filled with this room + the cell's date. The
+                // reservation bars above sit on TOP of cells (z-index
+                // in CSS) so they intercept their own clicks.
+                return (
+                  <div key={i}
+                    className={`rm-tl-cell ${isToday ? 'today' : ''}`}
+                    onClick={() => onCheckIn?.(room, isoDate(d))}
+                    style={{ cursor: 'pointer' }}
+                    title="Click to start a check-in for this date"
+                  />
+                )
               })}
               {reservations.map((b, i) => {
                 const cellW = 100 / DAYS_SHOW
@@ -987,7 +1305,7 @@ function FpRoom({ room, onPick }) {
 }
 
 // ── Side panel ──
-function RoomPanel({ room, bookings, onClose, onSetStatus }) {
+function RoomPanel({ room, bookings, onClose, onSetStatus, onCheckIn }) {
   const today = isoDate(new Date())
   const active = bookings.find(b =>
     b.room_id === room.id && b.status !== 'cancelled' &&
@@ -1037,7 +1355,12 @@ function RoomPanel({ room, bookings, onClose, onSetStatus }) {
       </div>
 
       <div className="rm-rp-actions">
-        <button className="rm-rp-btn rm-rp-btn-primary">{primary}</button>
+        <button
+          className="rm-rp-btn rm-rp-btn-primary"
+          onClick={room.status === 'available' ? onCheckIn : undefined}
+        >
+          {primary}
+        </button>
         <button className="rm-rp-btn rm-rp-btn-secondary" onClick={onClose}>Edit Reservation</button>
         <button className="rm-rp-btn rm-rp-btn-danger">Report Issue</button>
       </div>
