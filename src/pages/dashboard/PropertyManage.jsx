@@ -4652,6 +4652,60 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
     })
   }
 
+  // Excel-like column selection — click a date header to select every
+  // room × that day. Modifier-aware:
+  //   · plain click  → REPLACE the selection with just this column
+  //   · ⌘ / Ctrl     → ADD this column to the existing selection
+  //                    (or remove it if it was already fully selected)
+  //   · ⇧ Shift      → contiguous range from the last anchor to here
+  //                    (so click Jun 3, shift+click Jun 7 picks Jun 3..7)
+  const lastColAnchorRef = useRef(null)
+  function toggleColumn(iso, e) {
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    // Pre-compute the keys this column would add (only future cells
+    // across every room — past cells aren't actionable).
+    const dateObj = new Date(iso + 'T00:00:00')
+    if (dateObj < today) return
+    const additive = !!(e && (e.metaKey || e.ctrlKey))
+    const rangeMode = !!(e && e.shiftKey)
+    const colKeys = []
+    for (const r of rooms) colKeys.push(cellKey(r.id, iso))
+
+    setSelectedCells(prev => {
+      if (rangeMode && lastColAnchorRef.current) {
+        // Contiguous range from anchor to here. Builds the date list
+        // forward or backward depending on direction.
+        const anchor = lastColAnchorRef.current
+        const idxA = dates.findIndex(d => isoOf(d) === anchor)
+        const idxB = dates.findIndex(d => isoOf(d) === iso)
+        if (idxA === -1 || idxB === -1) return prev
+        const [lo, hi] = idxA < idxB ? [idxA, idxB] : [idxB, idxA]
+        const next = new Set(prev)
+        for (let i = lo; i <= hi; i++) {
+          const di = dates[i]
+          if (di < today) continue
+          for (const r of rooms) next.add(cellKey(r.id, isoOf(di)))
+        }
+        return next
+      }
+      // Detect whether the column is ALREADY fully selected (so a
+      // re-click in additive mode toggles it off, like macOS Finder).
+      const fullySelected = colKeys.every(k => prev.has(k))
+      if (additive) {
+        const next = new Set(prev)
+        if (fullySelected) colKeys.forEach(k => next.delete(k))
+        else               colKeys.forEach(k => next.add(k))
+        return next
+      }
+      // Plain click — replace the selection with just this column.
+      // If the column is already the EXACT selection, clear it instead
+      // (lets a re-click deselect without needing the keyboard).
+      if (fullySelected && prev.size === colKeys.length) return new Set()
+      return new Set(colKeys)
+    })
+    lastColAnchorRef.current = iso
+  }
+
   // Apply payload to all selected cells. Groups by room_id so we can
   // do one fetch + one insert/update batch per room, then recompute
   // availability if is_blocked was touched.
@@ -4992,7 +5046,7 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
         {/* Hint — pushed to the right via ml-auto so it doesn't crowd the controls */}
         <span className="text-[11px] text-gray-400 italic ml-auto">
           {bulkMode
-            ? t('manage.timeline_bulk_hint', 'Click cells to select · then apply an action')
+            ? t('manage.timeline_bulk_hint', 'Click cells or date headers (⌘/Ctrl for multi) · then apply an action')
             : t('manage.view_timeline_hint', 'All rooms · 14 days at a glance')}
         </span>
       </div>
@@ -5059,20 +5113,48 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
           collapse into illegible slivers on tablet portraits. */}
       <div className="overflow-x-auto -mx-2 px-2">
         <div className="min-w-[820px]">
-          {/* Header row — DOW + day number per column */}
+          {/* Header row — DOW + day number per column.
+              In Bulk edit mode, each header becomes a clickable column
+              selector:
+                · plain click → replace selection with this column
+                · ⌘/Ctrl+click → add (or remove) this column
+                · Shift+click → range from last anchor to here */}
           <div className="grid mb-1" style={{ gridTemplateColumns: `180px repeat(${DAYS}, 1fr)` }}>
             <div className="text-[10px] font-bold uppercase tracking-wide text-gray-400 py-2 px-2 border-b border-gray-200">
               {t('manage.room', 'Room')}
             </div>
             {dates.map((d, i) => {
+              const iso = isoOf(d)
               const isWeekend = d.getDay() === 0 || d.getDay() === 6
-              const isToday = isoOf(d) === todayISO
+              const isToday = iso === todayISO
+              const isPastCol = d < today
+              // A column is "selected" iff every (room × this iso) cell
+              // is in selectedCells. Cheap to compute — at most DAYS
+              // headers × rooms ≈ 14 × N cells.
+              const colSelected = bulkMode && rooms.length > 0 &&
+                rooms.every(r => selectedCells.has(cellKey(r.id, iso)))
+              const headerClickable = bulkMode && !isPastCol
               return (
-                <div key={i} className={`text-center py-1.5 border-b border-gray-200 ${isToday ? 'bg-ocean/10' : ''}`}>
+                <div
+                  key={i}
+                  onClick={headerClickable ? (e) => toggleColumn(iso, e) : undefined}
+                  title={headerClickable
+                    ? 'Click to select this column · ⌘/Ctrl+click to add · Shift+click for range'
+                    : undefined}
+                  className={`text-center py-1.5 border-b border-gray-200 transition-colors ${
+                    colSelected
+                      ? 'bg-ocean/20 ring-1 ring-inset ring-ocean/40'
+                      : isToday ? 'bg-ocean/10' : ''
+                  } ${headerClickable ? 'cursor-pointer hover:bg-ocean/10' : ''}`}
+                >
                   <div className={`text-[10px] font-medium ${isWeekend ? 'text-orange/70' : 'text-gray-400'}`}>
                     {dows[d.getDay()]}
                   </div>
-                  <div className={`text-sm font-bold ${isToday ? 'text-ocean' : isWeekend ? 'text-orange' : 'text-deep'}`}>
+                  <div className={`text-sm font-bold ${
+                    colSelected ? 'text-ocean'
+                    : isToday   ? 'text-ocean'
+                    : isWeekend ? 'text-orange' : 'text-deep'
+                  }`}>
                     {d.getDate()}
                   </div>
                 </div>
