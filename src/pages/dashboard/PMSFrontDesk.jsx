@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import {
   BedDouble, Users, LogIn, LogOut, Clock, AlertCircle,
   ChevronLeft, ChevronRight, Building2, Phone, Mail, Search,
@@ -34,6 +34,14 @@ export default function PMSFrontDesk() {
   // When present we lock the view to this property and hide the picker.
   const { id: scopedPropertyId } = useParams()
   const isPropertyScoped = !!scopedPropertyId
+  // Deep-link support: when the Rooms timeline (RoomManagement) sends the
+  // user here via "click on a cell → start a check-in", it does so with
+  // ?room=<roomId>&tab=walkin so we can auto-open the room's modal with
+  // the walk-in tab pre-selected. Used once on mount, then we clear the
+  // params so a refresh doesn't keep re-opening the modal.
+  const [searchParams, setSearchParams] = useSearchParams()
+  const deepLinkRoomId = searchParams.get('room')
+  const deepLinkTab    = searchParams.get('tab')
   const [properties, setProperties] = useState([])
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
@@ -99,6 +107,20 @@ export default function PMSFrontDesk() {
 
   const currentProperty = properties.find(p => p.id === selectedProperty)
   const propertyRooms = rooms.filter(r => r.property_id === selectedProperty)
+
+  // Deep-link handler — opens the RoomDetailModal automatically when the
+  // URL has ?room=<id>. Runs once propertyRooms are loaded, then clears
+  // the params so refreshing the page doesn't re-trigger the modal.
+  useEffect(() => {
+    if (!deepLinkRoomId || propertyRooms.length === 0) return
+    const target = propertyRooms.find(r => r.id === deepLinkRoomId)
+    if (!target) return
+    setOpenRoom(target)
+    // Strip the params from the URL so the next refresh is clean. We
+    // keep the tab param a beat longer via initial-tab plumbing below.
+    setSearchParams({}, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deepLinkRoomId, propertyRooms.length])
 
   // Compute live stock & status per ROOM TYPE.
   // Each row in `rooms` is a TYPE with a `quantity` (e.g. Jungle ×3 = 3

@@ -32,7 +32,6 @@ import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { AMENITY_META } from '../../lib/amenityIcons'
-import { downloadTM30 } from '../../lib/tm30'
 
 // Tiny helper — turn "king" / "extra_bed" into "King", "Extra bed"
 const prettyLabel = k => (k || '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
@@ -285,11 +284,14 @@ export default function RoomManagement() {
   const [needsActionOnly, setNeedsActionOnly] = useState(false)
   const [search, setSearch] = useState('')
   const [selectedRoom, setSelectedRoom] = useState(null)
-  // Check-in modal — { room, date } | null. Opened when the
-  // receptionist clicks a Timeline date cell (or a Grid "available"
-  // card). The modal pre-fills the room + date so the front-desk
-  // flow is "click box → fill form → done".
-  const [checkinFor, setCheckinFor] = useState(null)
+  // Walk-in routing — clicking a Timeline date cell (or "Quick Check-In"
+  // on a Grid card) navigates to PMSFrontDesk with ?room=<id>&tab=walkin
+  // so the mature multi-guest walk-in form opens pre-filled. We removed
+  // the parallel CheckInModal that lived here (it duplicated PMSFrontDesk
+  // without the TM30 fields).
+  function startWalkIn(roomId /*, dateIso */) {
+    navigate(`/dashboard/property/${propertyId}/front-desk?room=${roomId}&tab=walkin`)
+  }
   // Timeline window
   const [startDay, setStartDay] = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d })
   // Floor plan
@@ -582,11 +584,11 @@ export default function RoomManagement() {
                 startDay={startDay} dates={dates} todayDate={todayDate}
                 packagesByRoom={packagesByRoom}
                 onPick={setSelectedRoom}
-                onCheckIn={(room, date) => setCheckinFor({ room, date })} />
+                onCheckIn={(room, date) => startWalkIn(room.id, date)} />
             ) : view === 'grid' ? (
               <GridView floorsMap={floorsMap} packagesByRoom={packagesByRoom}
                 onPick={setSelectedRoom}
-                onCheckIn={(room) => setCheckinFor({ room, date: isoDate(new Date()) })} />
+                onCheckIn={(room) => startWalkIn(room.id)} />
             ) : (
               <FloorPlanView floorsMap={floorsMap} activeFloor={activeFloor}
                 setActiveFloor={setActiveFloor} property={property}
@@ -609,30 +611,16 @@ export default function RoomManagement() {
                 setSelectedRoom(r => r ? { ...r, status: s } : r)
               }}
               onCheckIn={() => {
-                setCheckinFor({ room: selectedRoom, date: isoDate(new Date()) })
+                startWalkIn(selectedRoom.id)
                 setSelectedRoom(null)
               }}
             />
           </>
         )}
 
-        {/* ── CHECK-IN MODAL ──────────────────────────────────── */}
-        {/* Mounted at component root (outside the grid overflow) so it
-            covers the full viewport reliably. Saving inserts a new
-            row in bookings; we re-fetch bookings on success so the
-            reservation bar appears on the timeline immediately. */}
-        <CheckInModal
-          open={!!checkinFor}
-          room={checkinFor?.room}
-          property={property}
-          defaultDate={checkinFor?.date}
-          onClose={() => setCheckinFor(null)}
-          onSaved={async () => {
-            // Refetch only the bookings — rooms haven't changed.
-            const { data } = await supabase.from('bookings').select('*').eq('property_id', propertyId)
-            setBookings(data || [])
-          }}
-        />
+        {/* Walk-in flow lives in PMSFrontDesk (mature multi-guest form
+            with full TM30 fields). startWalkIn() navigates there with
+            ?room=<id>&tab=walkin so the right modal opens pre-targeted. */}
       </div>
     </>
   )
@@ -649,381 +637,6 @@ function SidebarItem({ icon, label, badge, badgeClass, active, onClick }) {
       )}
     </button>
   )
-}
-
-// ── Check-in modal ──
-// Launched when the receptionist clicks a Timeline cell (or Grid card
-// in "available" status). Pre-fills the room + check-in date so the
-// front-desk flow is "click box → fill name + ID → done". This is the
-// receptionist-side counterpart to PublicCheckIn (the QR self-check-in
-// guests do from their phone).
-//
-// V1 scope (what's wired now):
-//   · Room + date pre-filled, editable
-//   · Guest name, email, phone, # guests, special requests
-//   · Nights → derives check_out date
-//   · Status starts as 'confirmed' (receptionist trust)
-//   · INSERT into bookings + close
-// V2 scope (next iterations, see chat answer):
-//   · Passport / ID upload (front + back, OCR via edge function)
-//   · Signature canvas for T&Cs
-//   · Payment hold / Stripe authorization
-//   · Auto-generate TM30 form for foreign nationals
-//   · Hand-off QR (receptionist hands phone to guest)
-function CheckInModal({ open, room, property, defaultDate, onClose, onSaved }) {
-  const [form, setForm] = useState({
-    guest_name: '', guest_email: '', guest_phone: '',
-    guests: 1, nights: 1, special_requests: '',
-    // TM30 fields — optional, but if filled the receptionist can
-    // download the pre-filled TM30 PDF for Thai Immigration.
-    nationality: '', passport_number: '', passport_expires_at: '',
-    date_of_birth: '', sex: '',
-  })
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState(null)
-  // TM30 fields are collapsed by default — receptionist expands when
-  // they want to generate the PDF. Saves screen real estate for the
-  // typical walk-in where TM30 isn't needed (domestic guests).
-  const [showTM30, setShowTM30] = useState(false)
-
-  // Reset when reopened so we don't leak previous guest data.
-  useEffect(() => {
-    if (open) {
-      setForm({
-        guest_name: '', guest_email: '', guest_phone: '',
-        guests: 1, nights: 1, special_requests: '',
-        nationality: '', passport_number: '', passport_expires_at: '',
-        date_of_birth: '', sex: '',
-      })
-      setShowTM30(false)
-      setError(null)
-    }
-  }, [open])
-
-  if (!open || !room) return null
-
-  const checkIn = defaultDate || isoDate(new Date())
-  function addDaysISO(iso, n) {
-    const d = new Date(iso + 'T00:00:00Z')
-    d.setUTCDate(d.getUTCDate() + n)
-    return d.toISOString().slice(0, 10)
-  }
-  const checkOut = addDaysISO(checkIn, Math.max(1, Number(form.nights) || 1))
-  const totalPrice = (Number(room.base_price) || 0) * (Number(form.nights) || 1)
-
-  async function handleSave() {
-    if (!form.guest_name.trim()) { setError('Guest name is required'); return }
-    setSaving(true)
-    setError(null)
-    // booking_source aligned with the existing taxonomy from
-    // migration 20260502000000_walkin_bookings.sql: one of
-    // ('online', 'walk_in', 'phone', 'email'). The CheckInModal
-    // is the receptionist's walk-in path, so 'walk_in' fits.
-    // status 'checked_in' (not 'confirmed') because the guest is
-    // physically here — matches what PMSFrontDesk does.
-    const { error: insertErr } = await supabase.from('bookings').insert({
-      room_id: room.id,
-      property_id: room.property_id,
-      guest_name: form.guest_name.trim(),
-      guest_email: form.guest_email.trim() || null,
-      guest_phone: form.guest_phone.trim() || null,
-      guests: Number(form.guests) || 1,
-      check_in:  checkIn,
-      check_out: checkOut,
-      total_price: totalPrice,
-      status: 'checked_in',
-      booking_source: 'walk_in',
-      special_requests: form.special_requests.trim() || null,
-    })
-    setSaving(false)
-    if (insertErr) {
-      setError(insertErr.message || 'Could not save check-in')
-      return
-    }
-    onSaved?.()
-    onClose?.()
-  }
-
-  return (
-    <div
-      style={{
-        position: 'fixed', inset: 0, zIndex: 6000,
-        background: 'rgba(26,31,46,.55)', backdropFilter: 'blur(4px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: 16,
-      }}
-      onClick={onClose}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: '#fff', borderRadius: 20, width: 560, maxWidth: '94vw',
-          maxHeight: '90vh', overflow: 'auto',
-          boxShadow: '0 24px 60px -10px rgba(26,31,46,.4)',
-        }}
-      >
-        {/* Header — same gradient language as the hover popover */}
-        <div style={{
-          padding: '16px 20px',
-          background: 'linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%)',
-          color: '#fff',
-        }}>
-          <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.15em',
-            textTransform: 'uppercase', color: 'rgba(255,255,255,.5)' }}>
-            🔑 Front-desk check-in
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 800, marginTop: 2 }}>{room.name}</div>
-          <div style={{ fontSize: 12, color: 'rgba(255,255,255,.7)', marginTop: 4 }}>
-            {prettyLabel(room.bed_type) || 'Standard'} bed · max {room.max_guests || 1} guests · ${Number(room.base_price || 0).toFixed(0)}/night
-          </div>
-        </div>
-
-        {/* Form */}
-        <div style={{ padding: 20, display: 'grid', gap: 14 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <Field label="Check-in date">
-              <input type="date" value={checkIn} readOnly
-                style={inputStyle({ background: '#F8F6F0' })} />
-            </Field>
-            <Field label="Nights">
-              <input type="number" min={1} max={365}
-                value={form.nights}
-                onChange={e => setForm(f => ({ ...f, nights: e.target.value }))}
-                style={inputStyle()} />
-            </Field>
-          </div>
-
-          <Field label="Guest name *">
-            <input type="text"
-              value={form.guest_name}
-              placeholder="Full name as on ID / passport"
-              onChange={e => setForm(f => ({ ...f, guest_name: e.target.value }))}
-              autoFocus
-              style={inputStyle()} />
-          </Field>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            <Field label="Email">
-              <input type="email"
-                value={form.guest_email}
-                placeholder="guest@example.com"
-                onChange={e => setForm(f => ({ ...f, guest_email: e.target.value }))}
-                style={inputStyle()} />
-            </Field>
-            <Field label="Phone">
-              <input type="tel"
-                value={form.guest_phone}
-                placeholder="+66 ..."
-                onChange={e => setForm(f => ({ ...f, guest_phone: e.target.value }))}
-                style={inputStyle()} />
-            </Field>
-          </div>
-
-          <Field label="# Guests">
-            <input type="number" min={1} max={room.max_guests || 10}
-              value={form.guests}
-              onChange={e => setForm(f => ({ ...f, guests: e.target.value }))}
-              style={inputStyle({ maxWidth: 120 })} />
-          </Field>
-
-          <Field label="Special requests">
-            <textarea rows={2}
-              value={form.special_requests}
-              placeholder="Late check-in, allergies, transfer ..."
-              onChange={e => setForm(f => ({ ...f, special_requests: e.target.value }))}
-              style={inputStyle({ resize: 'vertical', minHeight: 60 })} />
-          </Field>
-
-          {/* Totals strip */}
-          <div style={{
-            padding: '10px 14px', borderRadius: 12,
-            background: 'linear-gradient(135deg,rgba(255,107,0,.05),rgba(255,60,180,.05))',
-            border: '1px solid rgba(255,107,0,.15)',
-            display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
-          }}>
-            <div>
-              <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em',
-                textTransform: 'uppercase', color: '#636E72' }}>Stay total</div>
-              <div style={{ fontSize: 11, color: '#636E72', marginTop: 2 }}>
-                {checkIn} → {checkOut} · {form.nights} night{Number(form.nights) > 1 ? 's' : ''}
-              </div>
-            </div>
-            <div style={{
-              fontSize: 22, fontWeight: 800,
-              background: 'linear-gradient(90deg,#FF6B00,#FF3CB4)',
-              WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent',
-            }}>
-              ${totalPrice.toFixed(0)}
-            </div>
-          </div>
-
-          {/* TM30 — collapsible passport info section. Filling these
-              unlocks the "Download TM30" button in the footer. Closed
-              by default to keep the modal compact for domestic guests
-              (no TM30 required). */}
-          <div style={{
-            borderRadius: 12, border: '1px solid #E8E0D8',
-            background: showTM30 ? '#fff' : 'rgba(255,107,0,.03)',
-            overflow: 'hidden',
-          }}>
-            <button
-              type="button"
-              onClick={() => setShowTM30(v => !v)}
-              style={{
-                width: '100%', padding: '10px 14px', display: 'flex',
-                justifyContent: 'space-between', alignItems: 'center',
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                fontSize: 12, fontWeight: 700, color: '#1A1F2E', fontFamily: 'inherit',
-              }}
-            >
-              <span>🛂 Passport info <span style={{ color: '#636E72', fontWeight: 500 }}>(optional — required for TM30)</span></span>
-              <span style={{ color: '#FF6B00' }}>{showTM30 ? '▾' : '▸'}</span>
-            </button>
-            {showTM30 && (
-              <div style={{ padding: '8px 14px 14px', display: 'grid', gap: 10 }}>
-                <Field label="Nationality (ISO code: THA · USA · FRA …)">
-                  <input type="text" maxLength={3}
-                    value={form.nationality}
-                    placeholder="USA"
-                    onChange={e => setForm(f => ({ ...f, nationality: e.target.value.toUpperCase() }))}
-                    style={inputStyle({ maxWidth: 120, textTransform: 'uppercase' })} />
-                </Field>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <Field label="Passport number">
-                    <input type="text"
-                      value={form.passport_number}
-                      placeholder="L898902C36"
-                      onChange={e => setForm(f => ({ ...f, passport_number: e.target.value }))}
-                      style={inputStyle()} />
-                  </Field>
-                  <Field label="Expires on">
-                    <input type="date"
-                      value={form.passport_expires_at}
-                      onChange={e => setForm(f => ({ ...f, passport_expires_at: e.target.value }))}
-                      style={inputStyle()} />
-                  </Field>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <Field label="Date of birth">
-                    <input type="date"
-                      value={form.date_of_birth}
-                      onChange={e => setForm(f => ({ ...f, date_of_birth: e.target.value }))}
-                      style={inputStyle()} />
-                  </Field>
-                  <Field label="Sex (M / F / X)">
-                    <input type="text" maxLength={1}
-                      value={form.sex}
-                      placeholder="M"
-                      onChange={e => setForm(f => ({ ...f, sex: e.target.value.toUpperCase() }))}
-                      style={inputStyle({ maxWidth: 80, textTransform: 'uppercase' })} />
-                  </Field>
-                </div>
-                <div style={{
-                  fontSize: 10, color: '#636E72', fontStyle: 'italic', lineHeight: 1.4,
-                }}>
-                  💡 Once filled, click <strong>📄 Download TM30</strong> to generate the
-                  pre-filled PDF for Thai Immigration. Upload to{' '}
-                  <span style={{ color: '#FF6B00' }}>extranet.immigration.go.th</span>{' '}
-                  within 24h of arrival.
-                </div>
-              </div>
-            )}
-          </div>
-
-          {error && (
-            <div style={{
-              padding: 10, borderRadius: 10,
-              background: 'rgba(231,76,60,.08)', color: '#B91C1C',
-              fontSize: 12, fontWeight: 600,
-            }}>
-              {error}
-            </div>
-          )}
-        </div>
-
-        {/* Footer actions */}
-        <div style={{
-          padding: '12px 20px 20px', display: 'flex', justifyContent: 'space-between',
-          gap: 8, borderTop: '1px solid #F0EDE8', flexWrap: 'wrap',
-        }}>
-          <button
-            type="button"
-            onClick={() => downloadTM30({
-              booking: {
-                id: 'pending',
-                check_in: checkIn,
-                check_out: checkOut,
-                guest_name: form.guest_name,
-                room_id: room.id,
-                room_name: room.name,
-              },
-              property: property || { name: 'Property', city: '', country: '' },
-              guests: [{
-                first_name: (form.guest_name || '').split(' ')[0] || '',
-                last_name:  (form.guest_name || '').split(' ').slice(1).join(' '),
-                nationality: form.nationality,
-                passport_number: form.passport_number,
-                passport_expires_at: form.passport_expires_at || null,
-                date_of_birth: form.date_of_birth || null,
-                sex: form.sex,
-              }],
-            })}
-            disabled={saving || !form.guest_name.trim()}
-            title={!form.guest_name.trim() ? 'Enter the guest name first' : 'Generate the TM30 PDF for Thai Immigration'}
-            style={{
-              padding: '9px 16px', borderRadius: 12, fontSize: 12, fontWeight: 700,
-              background: '#F8F6F0', color: '#1A1F2E',
-              border: '1px solid #E8E0D8', cursor: 'pointer',
-              opacity: !form.guest_name.trim() ? 0.5 : 1,
-            }}
-          >
-            📄 Download TM30
-          </button>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              type="button" onClick={onClose} disabled={saving}
-              style={{
-                padding: '9px 18px', borderRadius: 12, fontSize: 13, fontWeight: 700,
-                background: '#F8F6F0', color: '#1A1F2E', border: '1px solid #E8E0D8',
-                cursor: 'pointer',
-              }}
-            >Cancel</button>
-            <button
-              type="button" onClick={handleSave} disabled={saving}
-              style={{
-                padding: '9px 18px', borderRadius: 12, fontSize: 13, fontWeight: 800,
-                background: 'linear-gradient(135deg,#FF6B00,#FF3CB4)',
-                color: '#fff', border: 'none', cursor: 'pointer',
-                opacity: saving ? 0.5 : 1,
-              }}
-            >
-              {saving ? 'Saving…' : '✓ Confirm check-in'}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-function Field({ label, children }) {
-  return (
-    <label style={{ display: 'block' }}>
-      <div style={{
-        fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
-        textTransform: 'uppercase', color: '#636E72', marginBottom: 4,
-      }}>{label}</div>
-      {children}
-    </label>
-  )
-}
-function inputStyle(extra = {}) {
-  return {
-    width: '100%', padding: '8px 12px', borderRadius: 10,
-    border: '1px solid #E8E0D8', background: '#fff',
-    fontSize: 13, color: '#1A1F2E', fontFamily: 'inherit',
-    outline: 'none', boxSizing: 'border-box',
-    ...extra,
-  }
 }
 
 // ── Room info hover popover ──

@@ -45,6 +45,7 @@ import OTACheckout from './pages/ota/Checkout'
 import LegalTerms from './pages/legal/Terms'
 import LegalPrivacy from './pages/legal/Privacy'
 import PropertyManage from './pages/dashboard/PropertyManage'
+import TM30Export from './pages/dashboard/TM30Export'
 import PropertyLanding from './pages/dashboard/PropertyLanding'
 import PropertyLayout from './pages/dashboard/PropertyLayout'
 import RoomManagement from './pages/dashboard/RoomManagement'
@@ -122,6 +123,7 @@ export default function App() {
               <Route path="banking" element={<Banking />} />
               <Route path="incoming-bookings" element={<IncomingBookings />} />
               <Route path="manage" element={<PropertyManage />} />
+              <Route path="tm30" element={<TM30Export />} />
             </Route>
             {/* Hotel-wide routes — kept for backwards compat / non-
                 contextual access via direct URL. No pills row here. */}
