@@ -290,6 +290,20 @@ const STYLES = `
 .rm-ip-meta-cell .lab{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#636E72;font-weight:700;margin-bottom:3px}
 .rm-ip-meta-cell .val{font-size:13.5px;font-weight:700;color:#1A1F2E;display:flex;align-items:center;gap:5px}
 .rm-ip-desc{font-size:13px;color:#1A1F2E;line-height:1.5;font-style:italic;padding:9px 12px;border-left:3px solid #FF6B00;background:rgba(255,107,0,.05);border-radius:0 10px 10px 0}
+/* Full-width rewards row — sits below the 3-column body so we get
+   real horizontal real estate. Each card is a compact box that flexes
+   to fill the line. ~3-4 fit per row at 1020px popover width. */
+.rm-ip-rewards-row{padding:0 16px 14px;display:flex;flex-direction:column;gap:8px}
+.rm-ip-rewards-grid{display:flex;flex-wrap:wrap;gap:8px}
+.rm-ip-reward-card{flex:1 1 220px;min-width:200px;max-width:300px;padding:9px 11px;border-radius:11px;background:linear-gradient(135deg,rgba(255,60,180,.08),rgba(108,92,231,.08));border:1px solid rgba(255,60,180,.22);display:flex;flex-direction:column;gap:3px}
+.rm-ip-reward-card .rwd-head{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.rm-ip-reward-card .rwd-label{font-weight:800;color:#A21CAF;font-size:12.5px;display:flex;align-items:center;gap:4px;min-width:0;flex:1}
+.rm-ip-reward-card .rwd-label .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-ip-reward-card .rwd-days{font-size:10.5px;font-weight:800;color:#A21CAF;background:rgba(255,60,180,.14);padding:2px 7px;border-radius:999px;white-space:nowrap}
+.rm-ip-reward-card .rwd-pct{font-size:9px;font-weight:800;background:#A21CAF;color:#fff;padding:1px 6px;border-radius:999px;line-height:1.1}
+.rm-ip-reward-card .rwd-perk{font-size:11.5px;color:#5A6370;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rm-ip-reward-card .rwd-dates{font-size:10.5px;color:#7C7F8A;font-style:italic}
+.rm-ip-reward-card .rwd-min{font-size:10.5px;color:#5A6370}
 `
 
 const DAYS_SHOW = 14
@@ -917,49 +931,6 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
             )}
           </div>
 
-          {/* Upcoming rewards (next 60 days) — per-day specials the
-              hotelier set in Disponibilités → Timeline → 🎁 Reward.
-              Grouped by reward identity (label + perk) so a recurring
-              promo lists the dates once instead of duplicating. */}
-          {rewards && rewards.length > 0 && (
-            <div>
-              <div className="rm-ip-section-title">
-                <span className="dot" style={{background:'#FF3CB4'}} />
-                ✨ Active rewards (next 60 days)
-              </div>
-              <div className="rm-ip-pkg-list">
-                {rewards.map(r => (
-                  <div key={r.key} className="rm-ip-pkg" style={{
-                    background: 'linear-gradient(135deg,rgba(255,60,180,.07),rgba(108,92,231,.07))',
-                    borderColor: 'rgba(255,60,180,.22)',
-                  }}>
-                    <div className="rm-ip-pkg-head">
-                      <div className="rm-ip-pkg-name" style={{ color: '#A21CAF' }}>
-                        ✨ {r.label || 'Reward'}
-                        {r.promo_pct ? <span className="qty" style={{ background: '#A21CAF' }}>-{Number(r.promo_pct)}%</span> : null}
-                      </div>
-                      <span className="rm-ip-pkg-price" style={{
-                        background: 'rgba(255,60,180,.12)', color: '#A21CAF',
-                      }}>
-                        {r.dates.length} day{r.dates.length > 1 ? 's' : ''}
-                      </span>
-                    </div>
-                    {r.perk && (
-                      <div className="rm-ip-pkg-desc" style={{ color: '#5A6370' }}>{r.perk}</div>
-                    )}
-                    {r.min_stay > 1 && (
-                      <div className="rm-ip-pkg-desc" style={{ color: '#5A6370', marginTop: 2 }}>
-                        🌙 Requires ≥ {r.min_stay} nights
-                      </div>
-                    )}
-                    <div className="rm-ip-pkg-desc" style={{ marginTop: 3, fontStyle: 'italic', color: '#7C7F8A' }}>
-                      {formatDateRanges(r.dates)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* ── Col 2 — Description + basics ── */}
@@ -1025,6 +996,39 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
           )}
         </div>
       </div>
+
+      {/* Active rewards — full-width horizontal row. Each reward is a
+          compact card that flexes to fill the line; 3-4 fit per row at
+          the popover's 1020px width. Sits below the 3-column body so
+          the rewards get real horizontal real estate instead of being
+          stacked vertically in col 1. */}
+      {rewards && rewards.length > 0 && (
+        <div className="rm-ip-rewards-row">
+          <div className="rm-ip-section-title">
+            <span className="dot" style={{background:'#FF3CB4'}} />
+            ✨ Active rewards (next 60 days) · {rewards.length}
+          </div>
+          <div className="rm-ip-rewards-grid">
+            {rewards.map(r => (
+              <div key={r.key} className="rm-ip-reward-card">
+                <div className="rwd-head">
+                  <span className="rwd-label">
+                    <span>✨</span>
+                    <span className="lbl">{r.label || 'Reward'}</span>
+                    {r.promo_pct ? <span className="rwd-pct">-{Number(r.promo_pct)}%</span> : null}
+                  </span>
+                  <span className="rwd-days">{r.dates.length}d</span>
+                </div>
+                {r.perk && <div className="rwd-perk">{r.perk}</div>}
+                {r.min_stay > 1 && (
+                  <div className="rwd-min">🌙 ≥ {r.min_stay} nights</div>
+                )}
+                <div className="rwd-dates">{formatDateRanges(r.dates)}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Footer hint — tells the receptionist that clicking the row
           launches the check-in flow. Subtle pulse on the dot draws the
