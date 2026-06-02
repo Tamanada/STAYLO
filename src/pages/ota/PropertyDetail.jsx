@@ -596,6 +596,24 @@ export default function PropertyDetail() {
                           </div>
                         )}
 
+                        {/* Blocked-day warning — one or more days inside the
+                            requested range are flagged is_blocked in
+                            room_availability (the hotelier closed sales
+                            on those nights). Hard-stop: the room is
+                            unselectable. Was previously only caught at
+                            Checkout, leaking selectable blocked rooms
+                            through the discovery flow. */}
+                        {pricing.hasBlockedDay && (
+                          <div className="bg-sunset/10 border-b border-sunset/30 px-4 py-2 text-xs text-sunset flex items-center gap-2">
+                            <Info size={13} className="flex-shrink-0" />
+                            <span>
+                              <strong>Not available</strong> for one or more of
+                              the selected dates. Pick a different date range
+                              to book this room.
+                            </span>
+                          </div>
+                        )}
+
                         {/* Room media — photo strip + optional video.
                             Click on any thumbnail opens a fullscreen lightbox
                             with prev/next navigation through that room's media. */}
@@ -761,23 +779,25 @@ export default function PropertyDetail() {
 
                               <button
                                 onClick={() => {
-                                  if (!pricing.minStayOK) return
+                                  if (!pricing.minStayOK || pricing.hasBlockedDay) return
                                   setSelectedRoom(room.id)
                                   setSelectedPackage(null)  // reset on room change
                                 }}
-                                disabled={!pricing.minStayOK}
+                                disabled={!pricing.minStayOK || pricing.hasBlockedDay}
                                 className={`w-full sm:w-auto px-6 py-3 rounded-lg font-bold text-sm transition-all ${
-                                  !pricing.minStayOK
+                                  (!pricing.minStayOK || pricing.hasBlockedDay)
                                     ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                                     : isSelected
                                       ? 'bg-[#003580] text-white shadow-lg'
                                       : 'bg-[#0071c2] hover:bg-[#005fa8] text-white'
                                 }`}>
-                                {!pricing.minStayOK
-                                  ? `Need ${pricing.minStayRequired}+ nights`
-                                  : isSelected
-                                    ? '✓ Selected'
-                                    : t('booking.select', 'Select')}
+                                {pricing.hasBlockedDay
+                                  ? 'Not available'
+                                  : !pricing.minStayOK
+                                    ? `Need ${pricing.minStayRequired}+ nights`
+                                    : isSelected
+                                      ? '✓ Selected'
+                                      : t('booking.select', 'Select')}
                               </button>
                             </div>
                           </div>
