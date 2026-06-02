@@ -265,8 +265,7 @@ CREATE POLICY "Guest reads own vouchers" ON public.guest_vouchers
     EXISTS (
       SELECT 1 FROM public.bookings b
       WHERE b.id = guest_vouchers.booking_id
-        AND (b.guest_id = auth.uid()
-             OR b.user_id  = auth.uid())
+        AND b.guest_id = auth.uid()
     )
     OR
     -- Roommates with a STAYLO account can also see the booking's vouchers.
@@ -306,7 +305,7 @@ CREATE POLICY "Guest reads own consumptions" ON public.voucher_consumptions
       SELECT 1 FROM public.guest_vouchers gv
       JOIN public.bookings b ON b.id = gv.booking_id
       WHERE gv.id = voucher_consumptions.voucher_id
-        AND (b.guest_id = auth.uid() OR b.user_id = auth.uid())
+        AND b.guest_id = auth.uid()
     )
   );
 
