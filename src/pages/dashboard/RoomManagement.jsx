@@ -213,41 +213,44 @@ const STYLES = `
    from the row's bounding rect, so it never gets clipped by the
    overflow:auto on the grid container. STAYLO brand styling: dark
    gradient header, soft white body, brand-coloured chips. */
-.rm-info-pop{position:fixed;z-index:5000;width:920px;max-width:96vw;background:#fff;border-radius:20px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:none;animation:rm-pop-in .15s ease-out}
-/* Three-column body — receptionist sees everything in one glance:
-   col 1 (compact) = bed/capacity meta + packages, col 2 (compact)
-   = description + room badges, col 3 (wide) = amenities chip cloud
-   that flows multi-column so 40+ amenities fit without vertical scroll. */
-.rm-ip-cols{display:grid;grid-template-columns:200px 220px 1fr;gap:10px;padding:10px 14px 12px;max-height:64vh;overflow-y:auto}
-.rm-ip-col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.rm-info-pop{position:fixed;z-index:5000;width:1020px;max-width:96vw;background:#fff;border-radius:22px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:none;animation:rm-pop-in .15s ease-out}
+/* Three-column body — receptionist sees everything in one glance.
+   Packages got the WIDEST middle column so name + description + price
+   are all on one line. David: "agrandir les polices, infos lisibles
+   en un clin d'oeil". */
+.rm-ip-cols{display:grid;grid-template-columns:200px 280px 1fr;gap:12px;padding:14px 16px 14px;max-height:68vh;overflow-y:auto}
+.rm-ip-col{display:flex;flex-direction:column;gap:11px;min-width:0}
 @keyframes rm-pop-in{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-.rm-ip-header{padding:14px 16px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative}
-.rm-ip-eyebrow{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin-bottom:2px}
-.rm-ip-title{font-size:16px;font-weight:800;line-height:1.2;color:#fff}
-.rm-ip-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.rm-ip-price{margin-top:8px;display:flex;align-items:baseline;justify-content:space-between}
-.rm-ip-price-amt{font-size:20px;font-weight:800;background:linear-gradient(90deg,#FF6B00,#FF3CB4);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
-.rm-ip-price-net{font-size:10px;color:rgba(255,255,255,.55);font-weight:600}
-.rm-ip-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto}
-.rm-ip-cta{padding:10px 14px;background:linear-gradient(135deg,#F8F6F0,#FFF7ED);border-top:1px solid #E8E0D8;font-size:11px;color:#1A1F2E;display:flex;align-items:center;gap:6px;font-weight:600}
-.rm-ip-cta .pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:#FF6B00;box-shadow:0 0 0 4px rgba(255,107,0,.18);animation:rm-pulse 1.6s ease-in-out infinite}
+.rm-ip-header{padding:16px 18px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative}
+.rm-ip-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin-bottom:3px}
+.rm-ip-title{font-size:20px;font-weight:800;line-height:1.2;color:#fff}
+.rm-ip-sub{font-size:13px;color:rgba(255,255,255,.75);margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rm-ip-price{margin-top:10px;display:flex;align-items:baseline;justify-content:space-between}
+.rm-ip-price-amt{font-size:24px;font-weight:800;background:linear-gradient(90deg,#FF6B00,#FF3CB4);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+.rm-ip-price-net{font-size:12px;color:rgba(255,255,255,.65);font-weight:600}
+.rm-ip-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto}
+.rm-ip-cta{padding:11px 16px;background:linear-gradient(135deg,#F8F6F0,#FFF7ED);border-top:1px solid #E8E0D8;font-size:13px;color:#1A1F2E;display:flex;align-items:center;gap:8px;font-weight:600}
+.rm-ip-cta .pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#FF6B00;box-shadow:0 0 0 4px rgba(255,107,0,.18);animation:rm-pulse 1.6s ease-in-out infinite}
 @keyframes rm-pulse{0%,100%{box-shadow:0 0 0 4px rgba(255,107,0,.18)}50%{box-shadow:0 0 0 7px rgba(255,107,0,.08)}}
-.rm-ip-section-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#636E72;margin-bottom:5px;display:flex;align-items:center;gap:5px}
-.rm-ip-section-title .dot{width:6px;height:6px;border-radius:50%}
-.rm-ip-chips{display:flex;flex-wrap:wrap;gap:3px;align-content:flex-start}
-.rm-ip-chip{font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(0,184,148,.08);color:#066e54;font-weight:600;display:inline-flex;align-items:center;gap:3px;border:1px solid rgba(0,184,148,.15);white-space:nowrap}
-.rm-ip-chip svg{width:10px;height:10px;flex-shrink:0}
-.rm-ip-pkg-list{display:flex;flex-direction:column;gap:5px}
-.rm-ip-pkg{padding:7px 10px;border-radius:10px;background:linear-gradient(135deg,rgba(255,107,0,.06),rgba(255,60,180,.06));border:1px solid rgba(255,107,0,.15);font-size:11.5px;line-height:1.35}
-.rm-ip-pkg-name{font-weight:700;color:#C2410C;display:flex;align-items:center;gap:5px}
-.rm-ip-pkg-name .qty{font-size:9px;font-weight:800;background:#FF6B00;color:#fff;padding:1px 5px;border-radius:999px}
-.rm-ip-pkg-desc{color:#636E72;margin-top:1px;font-size:10.5px}
-.rm-ip-empty{font-size:10.5px;color:#9CA3AF;font-style:italic}
-.rm-ip-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.rm-ip-meta-cell{padding:7px 10px;border-radius:10px;background:#F8F6F0;border:1px solid #E8E0D8;font-size:11px}
-.rm-ip-meta-cell .lab{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#636E72;font-weight:700;margin-bottom:2px}
-.rm-ip-meta-cell .val{font-weight:700;color:#1A1F2E;display:flex;align-items:center;gap:5px}
-.rm-ip-desc{font-size:11px;color:#636E72;line-height:1.45;font-style:italic;padding:6px 10px;border-left:2px solid #FF6B00;background:rgba(255,107,0,.04);border-radius:0 8px 8px 0}
+.rm-ip-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#1A1F2E;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.rm-ip-section-title .dot{width:7px;height:7px;border-radius:50%}
+.rm-ip-chips{display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start}
+.rm-ip-chip{font-size:12px;padding:3px 9px;border-radius:999px;background:rgba(0,184,148,.10);color:#066e54;font-weight:600;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(0,184,148,.20);white-space:nowrap}
+.rm-ip-chip svg{width:12px;height:12px;flex-shrink:0}
+.rm-ip-pkg-list{display:flex;flex-direction:column;gap:7px}
+.rm-ip-pkg{padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(255,107,0,.07),rgba(255,60,180,.07));border:1px solid rgba(255,107,0,.20);line-height:1.4}
+.rm-ip-pkg-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px}
+.rm-ip-pkg-name{font-weight:800;color:#C2410C;display:flex;align-items:center;gap:6px;font-size:14px;min-width:0}
+.rm-ip-pkg-name .qty{font-size:10px;font-weight:800;background:#FF6B00;color:#fff;padding:2px 7px;border-radius:999px;line-height:1.1}
+.rm-ip-pkg-price{font-size:12px;font-weight:800;color:#C2410C;background:rgba(255,107,0,.12);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.rm-ip-pkg-price.free{background:rgba(0,184,148,.15);color:#066e54}
+.rm-ip-pkg-desc{color:#5A6370;font-size:12.5px;line-height:1.45}
+.rm-ip-empty{font-size:12.5px;color:#9CA3AF;font-style:italic;padding:8px 10px;border-radius:10px;background:#FAFAF8;border:1px dashed #E8E0D8}
+.rm-ip-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.rm-ip-meta-cell{padding:9px 11px;border-radius:11px;background:#F8F6F0;border:1px solid #E8E0D8}
+.rm-ip-meta-cell .lab{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#636E72;font-weight:700;margin-bottom:3px}
+.rm-ip-meta-cell .val{font-size:13.5px;font-weight:700;color:#1A1F2E;display:flex;align-items:center;gap:5px}
+.rm-ip-desc{font-size:13px;color:#1A1F2E;line-height:1.5;font-style:italic;padding:9px 12px;border-left:3px solid #FF6B00;background:rgba(255,107,0,.05);border-radius:0 10px 10px 0}
 `
 
 const DAYS_SHOW = 14
@@ -693,15 +696,38 @@ function RoomInfoPopover({ room, packages, x, y, side }) {
               <div className="rm-ip-empty">No packages bundled with this room</div>
             ) : (
               <div className="rm-ip-pkg-list">
-                {packages.map(p => (
-                  <div key={p.id} className="rm-ip-pkg">
-                    <div className="rm-ip-pkg-name">
-                      {p.name}
-                      {p.qty > 1 && <span className="qty">×{p.qty}</span>}
+                {packages.map(p => {
+                  // Price model: packages.price is the per-unit add-on
+                  // price in `currency` (USD by default). `qty` comes
+                  // from the room_packages join — how many units the
+                  // room gets by default (e.g. breakfast ×2 for a
+                  // couple). Total = price × qty. price = 0 → "Included
+                  // free", surfaced as a green pill so the receptionist
+                  // spots it immediately when reading off the room.
+                  const unitPrice = Number(p.price) || 0
+                  const total = unitPrice * (p.qty || 1)
+                  const currency = p.currency || 'USD'
+                  const isFree = unitPrice === 0
+                  return (
+                    <div key={p.id} className="rm-ip-pkg">
+                      <div className="rm-ip-pkg-head">
+                        <div className="rm-ip-pkg-name">
+                          🎁 {p.name}
+                          {p.qty > 1 && <span className="qty">×{p.qty}</span>}
+                        </div>
+                        <span className={`rm-ip-pkg-price${isFree ? ' free' : ''}`}>
+                          {isFree
+                            ? '✓ Included'
+                            : (p.qty > 1
+                                ? `${total} ${currency} (${unitPrice}×${p.qty})`
+                                : `${unitPrice} ${currency}`)
+                          }
+                        </span>
+                      </div>
+                      {p.description && <div className="rm-ip-pkg-desc">{p.description}</div>}
                     </div>
-                    {p.description && <div className="rm-ip-pkg-desc">{p.description}</div>}
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             )}
           </div>
@@ -814,7 +840,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, startDay, dates, todayD
   function handleRowEnter(e, room) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
     const rowRect = e.currentTarget.getBoundingClientRect()
-    const POPOVER_W = 340
+    const POPOVER_W = 1020
     const GAP = 12
     // Default: place popover to the RIGHT of the room-info col, just
     // below the row. If there isn't room (right edge cuts off), flip
@@ -935,7 +961,7 @@ function GridView({ floorsMap, packagesByRoom, onPick }) {
   function openFor(room, el) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
     const r = el.getBoundingClientRect()
-    const POPOVER_W = 340
+    const POPOVER_W = 1020
     const GAP = 12
     let x = r.right + GAP
     let side = 'right'
