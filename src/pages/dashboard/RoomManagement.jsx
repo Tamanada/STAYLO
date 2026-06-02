@@ -28,9 +28,13 @@
 // state; promotes to a `room_status` table when the back-office needs
 // persistence.
 // ============================================
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { AMENITY_META } from '../../lib/amenityIcons'
+
+// Tiny helper — turn "king" / "extra_bed" into "King", "Extra bed"
+const prettyLabel = k => (k || '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
 
 // ── STATUS TAXONOMY ───────────────────────────────────────────────
 export const ROOM_STATUSES = {
@@ -202,6 +206,39 @@ const STYLES = `
 
 /* Backdrop click target */
 .rm-panel-backdrop{position:fixed;inset:0;z-index:999}
+
+/* ── Room info hover popover ──────────────────────────────────────
+   Appears when the receptionist hovers a room row (Timeline view) or
+   a room card (Grid view). Position is computed at the mouseenter
+   from the row's bounding rect, so it never gets clipped by the
+   overflow:auto on the grid container. STAYLO brand styling: dark
+   gradient header, soft white body, brand-coloured chips. */
+.rm-info-pop{position:fixed;z-index:5000;width:340px;max-width:92vw;background:#fff;border-radius:18px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:none;animation:rm-pop-in .15s ease-out}
+@keyframes rm-pop-in{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.rm-ip-header{padding:14px 16px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative}
+.rm-ip-eyebrow{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin-bottom:2px}
+.rm-ip-title{font-size:16px;font-weight:800;line-height:1.2;color:#fff}
+.rm-ip-sub{font-size:11px;color:rgba(255,255,255,.65);margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.rm-ip-price{margin-top:8px;display:flex;align-items:baseline;justify-content:space-between}
+.rm-ip-price-amt{font-size:20px;font-weight:800;background:linear-gradient(90deg,#FF6B00,#FF3CB4);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+.rm-ip-price-net{font-size:10px;color:rgba(255,255,255,.55);font-weight:600}
+.rm-ip-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px;max-height:60vh;overflow-y:auto}
+.rm-ip-section-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#636E72;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.rm-ip-section-title .dot{width:6px;height:6px;border-radius:50%}
+.rm-ip-chips{display:flex;flex-wrap:wrap;gap:4px}
+.rm-ip-chip{font-size:10.5px;padding:3px 8px;border-radius:999px;background:rgba(0,184,148,.08);color:#066e54;font-weight:600;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(0,184,148,.15)}
+.rm-ip-chip svg{width:11px;height:11px}
+.rm-ip-pkg-list{display:flex;flex-direction:column;gap:5px}
+.rm-ip-pkg{padding:7px 10px;border-radius:10px;background:linear-gradient(135deg,rgba(255,107,0,.06),rgba(255,60,180,.06));border:1px solid rgba(255,107,0,.15);font-size:11.5px;line-height:1.35}
+.rm-ip-pkg-name{font-weight:700;color:#C2410C;display:flex;align-items:center;gap:5px}
+.rm-ip-pkg-name .qty{font-size:9px;font-weight:800;background:#FF6B00;color:#fff;padding:1px 5px;border-radius:999px}
+.rm-ip-pkg-desc{color:#636E72;margin-top:1px;font-size:10.5px}
+.rm-ip-empty{font-size:10.5px;color:#9CA3AF;font-style:italic}
+.rm-ip-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.rm-ip-meta-cell{padding:7px 10px;border-radius:10px;background:#F8F6F0;border:1px solid #E8E0D8;font-size:11px}
+.rm-ip-meta-cell .lab{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#636E72;font-weight:700;margin-bottom:2px}
+.rm-ip-meta-cell .val{font-weight:700;color:#1A1F2E;display:flex;align-items:center;gap:5px}
+.rm-ip-desc{font-size:11px;color:#636E72;line-height:1.45;font-style:italic;padding:6px 10px;border-left:2px solid #FF6B00;background:rgba(255,107,0,.04);border-radius:0 8px 8px 0}
 `
 
 const DAYS_SHOW = 14
@@ -224,6 +261,12 @@ export default function RoomManagement() {
   const [property, setProperty] = useState(null)
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
+  // Packages linked to the property (with room_packages join so we know
+  // which rooms each package belongs to). Powers the room hover popup
+  // — when the receptionist hovers a room, they see at a glance what's
+  // bundled with it (breakfast for 2, Full Moon transfer, etc.) without
+  // clicking through. Lightweight fetch (one extra query at mount).
+  const [packages, setPackages] = useState([])
   const [loading, setLoading] = useState(true)
   const [statusOverrides, setStatusOverrides] = useState({})
   // Filters
@@ -245,15 +288,23 @@ export default function RoomManagement() {
     let cancelled = false
     async function fetchAll() {
       setLoading(true)
-      const [propRes, roomsRes, bookingsRes] = await Promise.all([
+      const [propRes, roomsRes, bookingsRes, pkgRes] = await Promise.all([
         supabase.from('properties').select('id, name, city, country, status').eq('id', propertyId).maybeSingle(),
         supabase.from('rooms').select('*').eq('property_id', propertyId).order('name'),
         supabase.from('bookings').select('*').eq('property_id', propertyId),
+        // Same shape PropertyDetail (OTA) uses — active packages with
+        // their room links. We only need name/description/price/qty
+        // for the hover popup so the payload stays tiny.
+        supabase.from('packages')
+          .select('id, name, description, price, currency, room_packages(room_id, qty)')
+          .eq('property_id', propertyId)
+          .eq('is_active', true),
       ])
       if (cancelled) return
       setProperty(propRes.data || null)
       setRooms(roomsRes.data || [])
       setBookings(bookingsRes.data || [])
+      setPackages(pkgRes.data || [])
       setLoading(false)
     }
     fetchAll()
@@ -295,6 +346,22 @@ export default function RoomManagement() {
     enrichedRooms.forEach(r => { c[r.status] = (c[r.status] || 0) + 1 })
     return c
   }, [enrichedRooms])
+
+  // Index packages by room_id once so the hover popup is O(1) lookup
+  // per row instead of scanning the whole packages array each time.
+  // Each value = the packages bundled with that specific room (with
+  // qty from the room_packages join so we can display "x2" etc.).
+  const packagesByRoom = useMemo(() => {
+    const m = new Map()
+    for (const pkg of packages) {
+      for (const rp of (pkg.room_packages || [])) {
+        const list = m.get(rp.room_id) || []
+        list.push({ ...pkg, qty: rp.qty || 1 })
+        m.set(rp.room_id, list)
+      }
+    }
+    return m
+  }, [packages])
 
   const types = useMemo(() => {
     const counts = new Map()
@@ -496,12 +563,14 @@ export default function RoomManagement() {
             ) : view === 'timeline' ? (
               <TimelineView rooms={filteredRooms} bookings={bookings}
                 startDay={startDay} dates={dates} todayDate={todayDate}
+                packagesByRoom={packagesByRoom}
                 onPick={setSelectedRoom} />
             ) : view === 'grid' ? (
-              <GridView floorsMap={floorsMap} onPick={setSelectedRoom} />
+              <GridView floorsMap={floorsMap} packagesByRoom={packagesByRoom} onPick={setSelectedRoom} />
             ) : (
               <FloorPlanView floorsMap={floorsMap} activeFloor={activeFloor}
                 setActiveFloor={setActiveFloor} property={property}
+                packagesByRoom={packagesByRoom}
                 onPick={setSelectedRoom} />
             )}
           </div>
@@ -540,8 +609,123 @@ function SidebarItem({ icon, label, badge, badgeClass, active, onClick }) {
   )
 }
 
+// ── Room info hover popover ──
+// Lightweight read-only card that floats next to the row when the
+// receptionist hovers a room. Goal: answer "what's this room like?"
+// without a single click — so when a guest asks at the desk, the
+// receptionist can rattle off "KING bed, breakfast for 2 included,
+// transfer to Full Moon included" instantly.
+//
+// Rendered as position:fixed so the grid's overflow-x can't clip it.
+// Coordinates come from the hovered row's bounding rect (computed in
+// the parent on mouseenter). pointer-events:none so the popover never
+// steals hover from the row itself — the row continues to drive the
+// open/close state.
+function RoomInfoPopover({ room, packages, x, y, side }) {
+  const amenities = Array.isArray(room.amenities) ? room.amenities : []
+  // Map amenity keys → human labels via AMENITY_META so "wifi" reads
+  // as "Free WiFi" and "breakfast_included" → its proper label.
+  // Falls back to the prettified key for any unknown amenity so the
+  // chip still renders.
+  const amenityChips = amenities.map(k => {
+    const meta = AMENITY_META[k]
+    return { key: k, label: meta?.label || prettyLabel(k), Icon: meta?.icon || null }
+  })
+
+  // "Side" lets the parent flip the popover left/right depending on
+  // where the row sits in the viewport (so we never get cut off on
+  // the right edge of large monitors).
+  const style = { left: x, top: y }
+  return (
+    <div className="rm-info-pop" style={style} data-side={side}>
+      <div className="rm-ip-header">
+        <div className="rm-ip-eyebrow">Room details</div>
+        <div className="rm-ip-title">{room.name}</div>
+        <div className="rm-ip-sub">
+          {room.bed_type && <>🛏️ {prettyLabel(room.bed_type)} bed</>}
+          {room.max_guests > 0 && <span>· 👤 max {room.max_guests}</span>}
+          {room.size_sqm > 0 && <span>· 📐 {room.size_sqm} m²</span>}
+        </div>
+        {room.base_price > 0 && (
+          <div className="rm-ip-price">
+            <span className="rm-ip-price-amt">${Number(room.base_price).toFixed(0)}<span style={{fontSize:11,fontWeight:600,color:'rgba(255,255,255,.7)'}}>/night</span></span>
+            <span className="rm-ip-price-net">net ${(Number(room.base_price) * 0.9).toFixed(0)}</span>
+          </div>
+        )}
+      </div>
+      <div className="rm-ip-body">
+        {/* Meta grid — bed type + max guests as quick reference */}
+        <div className="rm-ip-meta">
+          <div className="rm-ip-meta-cell">
+            <div className="lab">Bed</div>
+            <div className="val">🛏️ {prettyLabel(room.bed_type) || 'Standard'}</div>
+          </div>
+          <div className="rm-ip-meta-cell">
+            <div className="lab">Capacity</div>
+            <div className="val">👤 {room.max_guests || 1} {room.max_guests > 1 ? 'guests' : 'guest'}</div>
+          </div>
+        </div>
+
+        {/* Packages — what's INCLUDED (breakfast, transfer, etc.).
+            These are the "value-add" answers the receptionist needs:
+            "Breakfast for 2 included · Full Moon transfer included". */}
+        <div>
+          <div className="rm-ip-section-title">
+            <span className="dot" style={{background:'#FF6B00'}} />
+            🎁 Included packages
+          </div>
+          {packages.length === 0 ? (
+            <div className="rm-ip-empty">No packages bundled with this room</div>
+          ) : (
+            <div className="rm-ip-pkg-list">
+              {packages.map(p => (
+                <div key={p.id} className="rm-ip-pkg">
+                  <div className="rm-ip-pkg-name">
+                    {p.name}
+                    {p.qty > 1 && <span className="qty">×{p.qty}</span>}
+                  </div>
+                  {p.description && <div className="rm-ip-pkg-desc">{p.description}</div>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Amenities — all the room features as small green chips */}
+        {amenityChips.length > 0 && (
+          <div>
+            <div className="rm-ip-section-title">
+              <span className="dot" style={{background:'#00B894'}} />
+              ✨ Amenities ({amenityChips.length})
+            </div>
+            <div className="rm-ip-chips">
+              {amenityChips.map(a => (
+                <span key={a.key} className="rm-ip-chip" title={a.label}>
+                  {a.Icon && <a.Icon size={11} />}
+                  {a.label}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Free-form description — the hotelier's own pitch for the room */}
+        {room.description && (
+          <div>
+            <div className="rm-ip-section-title">
+              <span className="dot" style={{background:'#6C5CE7'}} />
+              📝 Description
+            </div>
+            <div className="rm-ip-desc">{room.description}</div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, startDay, dates, todayDate, onPick }) {
+function TimelineView({ rooms, bookings, packagesByRoom, startDay, dates, todayDate, onPick }) {
   const resByRoom = useMemo(() => {
     const m = new Map()
     const endDay = dates[dates.length - 1]
@@ -560,6 +744,44 @@ function TimelineView({ rooms, bookings, startDay, dates, todayDate, onPick }) {
     return m
   }, [bookings, startDay, dates])
   const todayISO = isoDate(new Date())
+
+  // Hover popover state — { room, x, y, side } | null. Coordinates
+  // are computed from the row's bounding rect at mouseenter so the
+  // popover anchors below/right of the room-info column and tracks
+  // viewport edges (flips to the LEFT of the row if there's not
+  // enough room on the right).
+  const [hovered, setHovered] = useState(null)
+  const closeTimerRef = useRef(null)
+
+  function handleRowEnter(e, room) {
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
+    const rowRect = e.currentTarget.getBoundingClientRect()
+    const POPOVER_W = 340
+    const GAP = 12
+    // Default: place popover to the RIGHT of the room-info col, just
+    // below the row. If there isn't room (right edge cuts off), flip
+    // to the LEFT side of the row.
+    const roomColW = 180 // matches .rm-tl-room-info default width
+    let x = rowRect.left + roomColW + GAP
+    let side = 'right'
+    if (x + POPOVER_W > window.innerWidth - 8) {
+      x = Math.max(8, rowRect.left + roomColW - POPOVER_W - GAP)
+      side = 'left'
+    }
+    // Vertically: align with the row top, but clamp so it never goes
+    // above the viewport or off the bottom (where the popover would
+    // get cut by the browser chrome).
+    let y = rowRect.top
+    const POPOVER_MAX_H = 480
+    if (y + POPOVER_MAX_H > window.innerHeight - 8) {
+      y = Math.max(8, window.innerHeight - POPOVER_MAX_H - 8)
+    }
+    setHovered({ room, x, y, side })
+  }
+  function handleRowLeave() {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    closeTimerRef.current = setTimeout(() => { setHovered(null); closeTimerRef.current = null }, 80)
+  }
 
   return (
     <>
@@ -580,7 +802,12 @@ function TimelineView({ rooms, bookings, startDay, dates, todayDate, onPick }) {
       {rooms.map(room => {
         const reservations = resByRoom.get(room.id) || []
         return (
-          <div key={room.id} className="rm-tl-row">
+          <div
+            key={room.id}
+            className="rm-tl-row"
+            onMouseEnter={e => handleRowEnter(e, room)}
+            onMouseLeave={handleRowLeave}
+          >
             <div className="rm-tl-room-info">
               <div className="rm-tl-room-num">{room.name}</div>
               <div className="rm-tl-room-type">{room.type}</div>
@@ -615,12 +842,50 @@ function TimelineView({ rooms, bookings, startDay, dates, todayDate, onPick }) {
           </div>
         )
       })}
+      {hovered && (
+        <RoomInfoPopover
+          room={hovered.room}
+          packages={packagesByRoom?.get(hovered.room.id) || []}
+          x={hovered.x}
+          y={hovered.y}
+          side={hovered.side}
+        />
+      )}
     </>
   )
 }
 
 // ── Grid view ──
-function GridView({ floorsMap, onPick }) {
+function GridView({ floorsMap, packagesByRoom, onPick }) {
+  // Same hover popover wiring as Timeline — the card opens it, popover
+  // is rendered once at the view root so we don't get N popovers
+  // racing each other.
+  const [hovered, setHovered] = useState(null)
+  const closeTimerRef = useRef(null)
+
+  function openFor(room, el) {
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
+    const r = el.getBoundingClientRect()
+    const POPOVER_W = 340
+    const GAP = 12
+    let x = r.right + GAP
+    let side = 'right'
+    if (x + POPOVER_W > window.innerWidth - 8) {
+      x = Math.max(8, r.left - POPOVER_W - GAP)
+      side = 'left'
+    }
+    let y = r.top
+    const POPOVER_MAX_H = 480
+    if (y + POPOVER_MAX_H > window.innerHeight - 8) {
+      y = Math.max(8, window.innerHeight - POPOVER_MAX_H - 8)
+    }
+    setHovered({ room, x, y, side })
+  }
+  function closeSoon() {
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    closeTimerRef.current = setTimeout(() => { setHovered(null); closeTimerRef.current = null }, 80)
+  }
+
   if (floorsMap.size === 0) {
     return <div style={{ padding: 60, textAlign: 'center', color: '#636E72' }}>No rooms match the current filters.</div>
   }
@@ -630,15 +895,32 @@ function GridView({ floorsMap, onPick }) {
         <section key={floor} className="rm-floor-section">
           <div className="rm-floor-title">Floor {floor}</div>
           <div className="rm-rooms-grid">
-            {list.map(r => <GridCard key={r.id} room={r} onPick={onPick} />)}
+            {list.map(r => (
+              <GridCard
+                key={r.id}
+                room={r}
+                onPick={onPick}
+                onHoverIn={el => openFor(r, el)}
+                onHoverOut={closeSoon}
+              />
+            ))}
           </div>
         </section>
       ))}
+      {hovered && (
+        <RoomInfoPopover
+          room={hovered.room}
+          packages={packagesByRoom?.get(hovered.room.id) || []}
+          x={hovered.x}
+          y={hovered.y}
+          side={hovered.side}
+        />
+      )}
     </div>
   )
 }
 
-function GridCard({ room, onPick }) {
+function GridCard({ room, onPick, onHoverIn, onHoverOut }) {
   const s = ROOM_STATUSES[room.status] || ROOM_STATUSES.available
   const hk = room.status === 'dirty' ? '🧹'
           : room.status === 'cleaning' ? '⏳'
@@ -646,7 +928,12 @@ function GridCard({ room, onPick }) {
           : room.status === 'checkout' ? '🚪'
           : ''
   return (
-    <button className={`rm-room-card ${room.status}`} onClick={() => onPick(room)}>
+    <button
+      className={`rm-room-card ${room.status}`}
+      onClick={() => onPick(room)}
+      onMouseEnter={e => onHoverIn?.(e.currentTarget)}
+      onMouseLeave={() => onHoverOut?.()}
+    >
       <div className="rm-rc-num">{room.name}</div>
       <div className="rm-rc-type">{room.type}</div>
       <div className={`rm-rc-status ${room.status}`}>{s.label}</div>
