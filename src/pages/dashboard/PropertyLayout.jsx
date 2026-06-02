@@ -87,10 +87,13 @@ export default function PropertyLayout() {
 
   const refetchProperty = useCallback(async () => {
     if (!id) return
+    // SELECT * because some columns (checkin_*_hour, passport_validity_*,
+    // tm30_license_number) only exist after later migrations have been
+    // applied. Enumerating them broke the page on databases where those
+    // columns aren't yet present. * is tolerant: it returns whatever the
+    // schema currently has.
     const { data } = await supabase
-      .from('properties')
-      .select('id, name, city, country, status, type, address, contact_name, tm30_license_number, checkin_start_hour, checkin_end_hour, checkout_hour, passport_validity_override_months')
-      .eq('id', id).maybeSingle()
+      .from('properties').select('*').eq('id', id).maybeSingle()
     setProperty(data)
   }, [id])
 
@@ -113,10 +116,13 @@ export default function PropertyLayout() {
         return
       }
       // Parallel fetch — property meta + rooms + bookings + packages.
-      const [pRes, rRes, bRes, pkRes] = await Promise.all([
-        supabase.from('properties')
-          .select('id, name, city, country, status, type, address, contact_name, tm30_license_number, checkin_start_hour, checkin_end_hour, checkout_hour, passport_validity_override_months')
-          .eq('id', id).maybeSingle(),
+      // SELECT * on properties so we don't break when newer columns
+      // (tm30_*, checkin_*_hour, etc.) aren't yet in the deployed DB.
+      // Each query is awaited individually with allSettled so a single
+      // failure (e.g. packages table missing in an exotic deploy)
+      // doesn't blank the whole page — we degrade gracefully.
+      const settled = await Promise.allSettled([
+        supabase.from('properties').select('*').eq('id', id).maybeSingle(),
         supabase.from('rooms').select('*').eq('property_id', id).order('name'),
         supabase.from('bookings').select('*').eq('property_id', id),
         supabase.from('packages')
@@ -124,11 +130,18 @@ export default function PropertyLayout() {
           .eq('property_id', id).eq('is_active', true),
       ])
       if (cancelled) return
-      setProperty(pRes.data)
-      setRooms(rRes.data || [])
-      setBookings(bRes.data || [])
-      setPackages(pkRes.data || [])
-      setIncomingCount((bRes.data || []).length)
+      const [pRes, rRes, bRes, pkRes] = settled.map(s => s.status === 'fulfilled' ? s.value : { data: null, error: s.reason })
+      // Log any non-fatal failures so they're easy to debug from the
+      // browser console without crashing the page.
+      settled.forEach((s, i) => {
+        if (s.status === 'rejected') console.warn('PropertyLayout fetch[' + i + '] failed:', s.reason)
+        else if (s.value?.error) console.warn('PropertyLayout fetch[' + i + '] error:', s.value.error)
+      })
+      setProperty(pRes?.data || null)
+      setRooms(rRes?.data || [])
+      setBookings(bRes?.data || [])
+      setPackages(pkRes?.data || [])
+      setIncomingCount((bRes?.data || []).length)
       setLoading(false)
     }
     fetchAll()
@@ -142,7 +155,27 @@ export default function PropertyLayout() {
       </div>
     )
   }
-  if (!property) return null
+  // Fetch completed but no property row came back — could be a
+  // schema mismatch (newer column requested against an older DB),
+  // a deleted row, or a permission issue. Surface this instead of
+  // rendering a silent blank page (the bug David hit on 2026-06-03).
+  if (!property) {
+    return (
+      <div className="w-[92%] max-w-[1440px] mx-auto px-4 py-20 text-center">
+        <div className="inline-block px-6 py-5 rounded-2xl bg-white border border-gray-200 shadow-sm">
+          <div className="text-2xl mb-2">🤔</div>
+          <h2 className="text-lg font-bold text-deep mb-1">Property not loaded</h2>
+          <p className="text-sm text-gray-500 max-w-md mb-3">
+            The property record didn't load. This usually means a database
+            migration is pending. Open the browser console for details.
+          </p>
+          <Link to="/dashboard/properties" className="inline-block px-4 py-2 rounded-xl bg-deep text-white text-sm font-bold no-underline hover:opacity-90">
+            ← Back to My Properties
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   // Pill class factories — share a base + per-color hover state, with
   // a stronger highlight when the pill is the active route. NavLink's
