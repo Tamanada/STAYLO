@@ -5575,8 +5575,14 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                   swaps in DB, propagates to OTA + reception views).
                   In bulk mode, drag is disabled and the click selects
                   every future cell in the row instead. */}
-              <button
-                type="button"
+              {/* Switched from <button> to <div role="button"> — HTML
+                  refuses to drag a disabled <button>, and we want the
+                  cell to NOT be clickable outside bulk mode while
+                  STILL being draggable. A button can't satisfy both
+                  conditions, a div role=button can. */}
+              <div
+                role="button"
+                tabIndex={0}
                 draggable={!bulkMode}
                 onDragStart={!bulkMode ? (e) => handleRowDragStart(e, room.id) : undefined}
                 onDragOver={!bulkMode ? (e) => handleRowDragOver(e, room.id) : undefined}
@@ -5584,7 +5590,6 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                 onDrop={!bulkMode ? (e) => handleRowDrop(e, room.id) : undefined}
                 onDragEnd={!bulkMode ? handleRowDragEnd : undefined}
                 onClick={bulkMode ? () => selectRoomRow(room.id) : undefined}
-                disabled={!bulkMode && !draggedRoomId}  // stay enabled during a drag so events fire
                 className={`py-2 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02] text-left transition-all ${
                   bulkMode ? 'cursor-pointer hover:bg-ocean/5' : 'cursor-grab active:cursor-grabbing hover:bg-ocean/5'
                 } ${
@@ -5603,7 +5608,7 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                 <div className="text-[10px] text-gray-500 leading-tight">
                   ${Number(room.base_price || 0).toFixed(0)}/night · ×{room.quantity}
                 </div>
-              </button>
+              </div>
 
               {/* Day cells */}
               {dates.map((d, i) => {
