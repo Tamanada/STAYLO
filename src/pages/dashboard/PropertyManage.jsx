@@ -4952,24 +4952,53 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
 
   async function reorderRooms(draggedId, targetId) {
     if (!draggedId || !targetId || draggedId === targetId) return
-    const a = rooms.find(r => r.id === draggedId)
-    const b = rooms.find(r => r.id === targetId)
-    if (!a || !b) return
-    // Defensive: if two rooms share the same display_order (legacy
-    // data, e.g. all at 0 before the manual reorder migration was
-    // applied), seed them from their CURRENT index instead so the
-    // swap is deterministic.
-    const aOrder = a.display_order ?? rooms.indexOf(a)
-    const bOrder = b.display_order ?? rooms.indexOf(b)
-    if (aOrder === bOrder) {
-      const idxA = rooms.indexOf(a)
-      const idxB = rooms.indexOf(b)
-      await supabase.from('rooms').update({ display_order: idxB }).eq('id', a.id)
-      await supabase.from('rooms').update({ display_order: idxA }).eq('id', b.id)
-    } else {
-      await supabase.from('rooms').update({ display_order: bOrder }).eq('id', a.id)
-      await supabase.from('rooms').update({ display_order: aOrder }).eq('id', b.id)
+    const srcIdx = rooms.findIndex(r => r.id === draggedId)
+    const dstIdx = rooms.findIndex(r => r.id === targetId)
+    if (srcIdx < 0 || dstIdx < 0) return
+
+    // Insertion-style reorder (not swap) — pluck the dragged room out
+    // of the array, splice it back in at the target's position. This
+    // is what hoteliers expect when they drag A onto C: A moves to C's
+    // slot, everything in between shifts up by one.
+    const next = rooms.slice()
+    const [moved] = next.splice(srcIdx, 1)
+    next.splice(dstIdx, 0, moved)
+
+    // Full renumber 0..N — guarantees no collisions even on legacy
+    // data where all rooms share display_order = 0 (the case before
+    // 20260604020000_rooms_display_order.sql was applied).
+    const updates = next.map((r, i) => ({ id: r.id, order: i }))
+
+    // Hit the DB. We do the writes in parallel; if ANY of them fails
+    // we surface the error loudly because silent failure is exactly
+    // what the hotelier saw before this fix ("the order never changes").
+    // The most common failure here is the migration not having been
+    // applied yet — the `display_order` column doesn't exist, every
+    // update returns "column does not exist" and the array snaps back
+    // on next render.
+    try {
+      const results = await Promise.all(
+        updates.map(u =>
+          supabase.from('rooms').update({ display_order: u.order }).eq('id', u.id).select('id')
+        )
+      )
+      const firstError = results.find(r => r.error)?.error
+      if (firstError) {
+        console.error('[reorderRooms] DB update failed:', firstError)
+        const missingColumn = /display_order/i.test(firstError.message || '')
+        alert(
+          missingColumn
+            ? "Reorder couldn't save — the `display_order` column is missing on `rooms`. Apply migration 20260604020000_rooms_display_order.sql in Supabase, then try again."
+            : `Reorder couldn't save: ${firstError.message || firstError}`
+        )
+        return
+      }
+    } catch (err) {
+      console.error('[reorderRooms] unexpected error:', err)
+      alert(`Reorder couldn't save: ${err?.message || err}`)
+      return
     }
+
     onRefresh?.()
   }
 
