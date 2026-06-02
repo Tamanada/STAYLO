@@ -870,12 +870,13 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
 
-  const [guests, setGuests] = useState([])
-  const [charges, setCharges] = useState([])
+  const [guests, setGuests]     = useState([])
+  const [charges, setCharges]   = useState([])
+  const [vouchers, setVouchers] = useState([])    // S3e — guest_vouchers entitlements
   const [loadingExtras, setLoadingExtras] = useState(false)
 
   useEffect(() => {
-    if (!booking) { setForm(null); setGuests([]); setCharges([]); return }
+    if (!booking) { setForm(null); setGuests([]); setCharges([]); setVouchers([]); return }
     setForm({
       guest_name:       booking.guest_name       || '',
       guest_email:      booking.guest_email      || '',
@@ -890,14 +891,16 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
     })
     setError(null)
     setTab('booking')
-    // Lazy fetch guests + charges in parallel
+    // Lazy fetch guests + charges + vouchers in parallel
     setLoadingExtras(true)
     Promise.all([
       supabase.from('booking_guests').select('*').eq('booking_id', booking.id).order('is_lead', { ascending: false }).order('created_at'),
       supabase.from('booking_charges').select('*').eq('booking_id', booking.id).order('charged_at', { ascending: false }),
-    ]).then(([gRes, cRes]) => {
+      supabase.from('guest_vouchers').select('*').eq('booking_id', booking.id).order('created_at'),
+    ]).then(([gRes, cRes, vRes]) => {
       setGuests(gRes.data || [])
       setCharges(cRes.data || [])
+      setVouchers(vRes.data || [])
       setLoadingExtras(false)
     })
   }, [booking])
@@ -947,6 +950,54 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
     const { error: delErr } = await supabase.from('booking_charges').delete().eq('id', c.id)
     if (delErr) { setError(delErr.message); return }
     setCharges(prev => prev.filter(x => x.id !== c.id))
+  }
+
+  // Voucher consumption — calls the SECURITY DEFINER RPC for race-safe
+  // decrement, then mirrors a $0 booking_charges row so the final bill
+  // shows "Voucher used: <label>" with the audit trail. The RPC checks
+  // expiry + quota + property-membership, so any error from it is
+  // surfaced as a toast.
+  async function consumeVoucher(voucher, qty = 1) {
+    if (!voucher?.voucher_code) return
+    const remaining = voucher.qty_total - voucher.qty_consumed
+    if (qty > remaining) {
+      setError(`Only ${remaining} left on this voucher`)
+      return
+    }
+    // 1. RPC — atomic decrement
+    const { data, error: rpcErr } = await supabase.rpc('consume_voucher', {
+      p_voucher_code: voucher.voucher_code,
+      p_qty: qty,
+      p_location: 'reception',
+      p_notes:    null,
+      p_booking_charge_id: null,
+    })
+    if (rpcErr) { setError(rpcErr.message); return }
+    // 2. Mirror line on the folio so the bill shows the voucher use.
+    //    Category mapped from kind via a tiny lookup — falls back to
+    //    'other' when the voucher kind doesn't have a direct match.
+    const KIND_TO_CATEGORY = {
+      dining: 'restaurant', wellness: 'spa', adventure: 'tour',
+      celebration: 'bar',  family: 'other', romance: 'other',
+      business: 'other',   retreat: 'spa',  other: 'other',
+    }
+    const category = KIND_TO_CATEGORY[voucher.kind] || 'other'
+    const { data: charge } = await supabase.from('booking_charges').insert({
+      booking_id: booking.id,
+      category,
+      description: `🎁 ${voucher.label} (voucher ${voucher.voucher_code})`,
+      unit_price: 0,
+      qty,
+      amount:    0,
+      notes:     `voucher_id=${data?.[0]?.voucher_id || ''}`,
+      paid:      true,    // already redeemed, never charge again
+    }).select().single()
+    // 3. Local state refresh — bump qty_consumed + prepend the new
+    //    $0 line in the charges feed.
+    setVouchers(prev => prev.map(v =>
+      v.id === voucher.id ? { ...v, qty_consumed: v.qty_consumed + qty } : v
+    ))
+    if (charge) setCharges(prev => [charge, ...prev])
   }
 
   // Tab button helper
@@ -1120,15 +1171,17 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
         </div>
       )}
 
-      {/* Tab: FOLIO — bar / restaurant / spa / etc. */}
+      {/* Tab: FOLIO — bar / restaurant / spa / etc. + vouchers (S3e) */}
       {tab === 'folio' && (
         <FolioPanel
           charges={charges}
+          vouchers={vouchers}
           loading={loadingExtras}
           totals={{ total: folioTotal, unpaid: unpaidTotal }}
           onAdd={addCharge}
           onTogglePaid={togglePaid}
           onDelete={deleteCharge}
+          onConsumeVoucher={consumeVoucher}
         />
       )}
     </Modal>
@@ -1138,7 +1191,7 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
 // ──────────────────────────────────────────────────────────────────────────────
 // FolioPanel — list of charges + quick-add row + paid/unpaid toggle + total bar
 // ──────────────────────────────────────────────────────────────────────────────
-function FolioPanel({ charges, loading, totals, onAdd, onTogglePaid, onDelete }) {
+function FolioPanel({ charges, vouchers = [], loading, totals, onAdd, onTogglePaid, onDelete, onConsumeVoucher }) {
   const { t } = useTranslation()
   const [draft, setDraft] = useState({
     category: 'bar', description: '', unit_price: '', qty: 1,
@@ -1176,6 +1229,69 @@ function FolioPanel({ charges, loading, totals, onAdd, onTogglePaid, onDelete })
           </div>
         </div>
       </div>
+
+      {/* Vouchers section (S3e) — entitlements the guest has via packages
+          or rewards. "Use ×1" calls the consume_voucher RPC and mirrors
+          a $0 line in the charges feed for audit. */}
+      {vouchers.length > 0 && (
+        <div className="bg-gradient-to-br from-pink-500/5 to-purple-500/5 border border-pink-500/20 rounded-lg p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[11px] font-bold uppercase tracking-wide text-pink-700">
+              🎁 Guest vouchers · {vouchers.length}
+            </div>
+            <div className="text-[10px] text-pink-600/70 italic">
+              Use to redeem · creates a $0 line for audit
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {vouchers.map(v => {
+              const remaining = (v.qty_total || 0) - (v.qty_consumed || 0)
+              const allUsed   = remaining <= 0
+              const isExpired = v.valid_until && v.valid_until < new Date().toISOString().slice(0, 10)
+              const isPending = v.valid_from  && v.valid_from  > new Date().toISOString().slice(0, 10)
+              const disabled  = allUsed || isExpired || isPending
+              return (
+                <div key={v.id} className={`rounded-lg border px-2.5 py-2 flex items-center gap-2 text-xs ${
+                  disabled
+                    ? 'bg-gray-50 border-gray-200 opacity-60'
+                    : 'bg-white border-pink-500/30'
+                }`}>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-deep truncate flex items-center gap-1.5">
+                      🎁 {v.label}
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                        allUsed   ? 'bg-gray-200 text-gray-500'
+                      : isExpired ? 'bg-sunset/15 text-sunset'
+                      : isPending ? 'bg-orange/15 text-orange'
+                      :             'bg-libre/15 text-libre'
+                      }`}>
+                        {allUsed   ? 'used'
+                       : isExpired ? 'expired'
+                       : isPending ? `from ${v.valid_from}`
+                       :             `${remaining} / ${v.qty_total}`}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-gray-400 truncate font-mono">
+                      {v.voucher_code}{v.valid_until ? ` · until ${v.valid_until}` : ''}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onConsumeVoucher?.(v, 1)}
+                    disabled={disabled}
+                    title={disabled
+                      ? (allUsed ? 'All consumed' : isExpired ? 'Expired' : `Valid from ${v.valid_from}`)
+                      : `Use 1 of ${remaining} remaining`}
+                    className="px-2.5 py-1 rounded text-[10px] font-bold bg-pink-500 text-white hover:bg-pink-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Use ×1
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Quick-add row */}
       <div className="bg-libre/5 border border-libre/20 rounded-lg p-3">
