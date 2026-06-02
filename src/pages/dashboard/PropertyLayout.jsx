@@ -34,6 +34,21 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { Badge } from '../../components/ui/Badge'
 
+// Sort rooms by the hotelier's display_order (when present) with name
+// as tie-breaker. Done client-side instead of ORDER BY display_order
+// in the query because that column ships in migration 20260604020000;
+// older DBs that haven't applied it yet would return an error and
+// blank the page. Defensive: rooms without display_order get sorted
+// LAST (Infinity), preserving alpha order among themselves.
+function sortRoomsByDisplay(rooms) {
+  return [...(rooms || [])].sort((a, b) => {
+    const ao = a?.display_order ?? Infinity
+    const bo = b?.display_order ?? Infinity
+    if (ao !== bo) return ao - bo
+    return (a?.name || '').localeCompare(b?.name || '')
+  })
+}
+
 const statusColors = {
   pending: 'gray',
   reviewing: 'orange',
@@ -64,8 +79,8 @@ export default function PropertyLayout() {
   // calls refetchRooms() after saving a new room.
   const refetchRooms = useCallback(async () => {
     if (!id) return
-    const { data } = await supabase.from('rooms').select('*').eq('property_id', id).order('display_order').order('name')
-    setRooms(data || [])
+    const { data } = await supabase.from('rooms').select('*').eq('property_id', id).order('name')
+    setRooms(sortRoomsByDisplay(data))
   }, [id])
 
   const refetchBookings = useCallback(async () => {
@@ -123,7 +138,7 @@ export default function PropertyLayout() {
       // doesn't blank the whole page — we degrade gracefully.
       const settled = await Promise.allSettled([
         supabase.from('properties').select('*').eq('id', id).maybeSingle(),
-        supabase.from('rooms').select('*').eq('property_id', id).order('display_order').order('name'),
+        supabase.from('rooms').select('*').eq('property_id', id).order('name'),
         supabase.from('bookings').select('*').eq('property_id', id),
         supabase.from('packages')
           .select('id, name, description, price, currency, room_packages(room_id, qty, date_blocks)')
@@ -138,7 +153,7 @@ export default function PropertyLayout() {
         else if (s.value?.error) console.warn('PropertyLayout fetch[' + i + '] error:', s.value.error)
       })
       setProperty(pRes?.data || null)
-      setRooms(rRes?.data || [])
+      setRooms(sortRoomsByDisplay(rRes?.data))
       setBookings(bRes?.data || [])
       setPackages(pkRes?.data || [])
       setIncomingCount((bRes?.data || []).length)

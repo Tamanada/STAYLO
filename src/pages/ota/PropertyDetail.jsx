@@ -129,12 +129,11 @@ export default function PropertyDetail() {
       setLoading(true)
       const [propRes, roomsRes, pkgRes] = await Promise.all([
         supabase.from('properties').select('*').eq('id', id).single(),
-        // Order: hotelier's display_order first (so they control the
-        // listing sequence), name as tie-breaker. Was ordering by
-        // base_price which conflicts with the hotelier's choice
-        // (a Suite at $500 might still belong before a dorm at $20
-        // in the pitch flow). Hotelier always wins.
-        supabase.from('rooms').select('*, room_availability(*)').eq('property_id', id).eq('is_active', true).order('display_order').order('name'),
+        // Order: name at DB layer (always safe). Re-sorted client-side
+        // by display_order so the hotelier's manual sequence wins
+        // once the rooms.display_order migration is applied, without
+        // blanking the page on DBs where it isn't yet.
+        supabase.from('rooms').select('*, room_availability(*)').eq('property_id', id).eq('is_active', true).order('name'),
         // Active packages + their room links (with qty + date_blocks).
         // Public read policy lets anonymous browsers fetch this directly.
         supabase.from('packages').select('*, room_packages(room_id, qty, date_blocks)').eq('property_id', id).eq('is_active', true),
@@ -150,7 +149,16 @@ export default function PropertyDetail() {
           amenities: propRes.data.amenities?.length ? propRes.data.amenities : ['wifi'],
           rooms: [],
         })
-        setRealRooms(roomsRes.data || [])
+        // Sort by display_order client-side so the hotelier-controlled
+        // sequence applies, but doesn't blank the listing on DBs
+        // where the column isn't deployed yet.
+        const sortedRooms = [...(roomsRes.data || [])].sort((a, b) => {
+          const ao = a?.display_order ?? Infinity
+          const bo = b?.display_order ?? Infinity
+          if (ao !== bo) return ao - bo
+          return (a?.name || '').localeCompare(b?.name || '')
+        })
+        setRealRooms(sortedRooms)
         // Index packages by room for O(1) lookup in the room card.
         // Map shape: { roomId: [{ id, qty, dateBlocks }, ...] }
         const pkgs = pkgRes.data || []

@@ -147,12 +147,12 @@ export default function PropertyManage() {
     setLoading(true)
     const [propRes, roomsRes, bookingsRes, pkgRes] = await Promise.all([
       supabase.from('properties').select('*').eq('id', propertyId).single(),
-      // Order: hotelier-controlled display_order (the same sequence
-      // shown on the OTA listing + reception views). Tie-breaker on
-      // name keeps it deterministic when two rooms share an order
-      // value (e.g. just after a reorder before the optimistic UI
-      // bump lands).
-      supabase.from('rooms').select('*').eq('property_id', propertyId).order('display_order').order('name'),
+      // Order: name only at the DB layer (safe — column always
+      // exists). Client-side we re-sort by display_order so the
+      // hotelier's manual order applies once the migration lands,
+      // but doesn't break the page on DBs where the column is
+      // still missing.
+      supabase.from('rooms').select('*').eq('property_id', propertyId).order('name'),
       supabase.from('bookings').select('*').eq('property_id', propertyId).order('created_at', { ascending: false }),
       // Pull qty + date_blocks from the junction for the room form
       supabase.from('packages').select('*, room_packages(room_id, qty, date_blocks)').eq('property_id', propertyId),
@@ -172,6 +172,15 @@ export default function PropertyManage() {
         })
         .filter(Boolean),
     }))
+    // Sort by display_order (hotelier-controlled) with name fallback.
+    // Done client-side so the page works on DBs where migration
+    // 20260604020000 (rooms.display_order) hasn't landed yet.
+    decoratedRooms.sort((a, b) => {
+      const ao = a?.display_order ?? Infinity
+      const bo = b?.display_order ?? Infinity
+      if (ao !== bo) return ao - bo
+      return (a?.name || '').localeCompare(b?.name || '')
+    })
     setRooms(decoratedRooms)
     setBookings(bookingsRes.data || [])
     setPropertyPackages(allPkgs)
