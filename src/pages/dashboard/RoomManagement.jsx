@@ -36,6 +36,40 @@ import { AMENITY_META } from '../../lib/amenityIcons'
 // Tiny helper — turn "king" / "extra_bed" into "King", "Extra bed"
 const prettyLabel = k => (k || '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
 
+// Format a sorted list of ISO dates as compact human ranges:
+//   ['2026-06-03','2026-06-04','2026-06-05','2026-06-10']
+//   → 'Jun 3-5, Jun 10'
+// Used in the room info popover to surface upcoming rewards
+// without listing 14 individual days for a "Free spa weekends".
+function formatDateRanges(isoDates) {
+  if (!isoDates || isoDates.length === 0) return ''
+  const dates = isoDates.slice().sort().map(s => new Date(s + 'T00:00:00'))
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+  const groups = []
+  let cur = { start: dates[0], end: dates[0] }
+  for (let i = 1; i < dates.length; i++) {
+    const prev = cur.end
+    const next = dates[i]
+    if ((next - prev) === 86400000) {
+      cur.end = next
+    } else {
+      groups.push(cur)
+      cur = { start: next, end: next }
+    }
+  }
+  groups.push(cur)
+  return groups.map(g => {
+    const sameDay = g.start.getTime() === g.end.getTime()
+    const sm = months[g.start.getMonth()]
+    const em = months[g.end.getMonth()]
+    const sd = g.start.getDate()
+    const ed = g.end.getDate()
+    if (sameDay) return `${sm} ${sd}`
+    if (sm === em) return `${sm} ${sd}-${ed}`
+    return `${sm} ${sd} – ${em} ${ed}`
+  }).join(', ')
+}
+
 // ── STATUS TAXONOMY ───────────────────────────────────────────────
 export const ROOM_STATUSES = {
   available:   { label: 'Available',    color: '#00B894', bg: '#E8F8F2', text: '#065F46', sigil: '🟢' },
@@ -281,6 +315,11 @@ export default function RoomManagement() {
   const bookings = ctx.bookings || []
   const packages = ctx.packages || []
   const refetchBookings = ctx.refetchBookings || (() => {})
+  // Upcoming rewards/specials per room — fetched from room_availability
+  // for the next 60 days. The hover popover surfaces them so the
+  // receptionist sees "Early bird ×3 days, Free spa Jun 8" without
+  // clicking through to the Disponibilités tab.
+  const [upcomingAvail, setUpcomingAvail] = useState([])
   // We're loading only while the parent's initial fetch hasn't seeded
   // rooms yet. After that, navigation is instant.
   const loading = !property
@@ -348,6 +387,36 @@ export default function RoomManagement() {
     return c
   }, [enrichedRooms])
 
+  // Fetch upcoming rewards/specials from room_availability — runs once
+  // the rooms list is known. We only ask for rows where there's
+  // SOMETHING to display (specials array non-empty, OR perk text, OR
+  // promo_label) so we don't pull the whole calendar.
+  useEffect(() => {
+    if (rooms.length === 0) return
+    let cancelled = false
+    const todayISO = isoDate(new Date())
+    const horizon = new Date(); horizon.setDate(horizon.getDate() + 60)
+    const horizonISO = isoDate(horizon)
+    const roomIds = rooms.map(r => r.id)
+    ;(async () => {
+      const { data, error } = await supabase
+        .from('room_availability')
+        .select('room_id, date, specials, perk, promo_label, promo_pct, min_stay')
+        .in('room_id', roomIds)
+        .gte('date', todayISO)
+        .lte('date', horizonISO)
+      if (cancelled) return
+      if (error) { console.warn('upcoming rewards fetch failed:', error); return }
+      // Filter client-side to rows that actually have something to show.
+      const meaningful = (data || []).filter(r =>
+        (Array.isArray(r.specials) && r.specials.length > 0) ||
+        r.perk || r.promo_label || r.promo_pct
+      )
+      setUpcomingAvail(meaningful)
+    })()
+    return () => { cancelled = true }
+  }, [rooms])
+
   // Index packages by room_id once so the hover popup is O(1) lookup
   // per row instead of scanning the whole packages array each time.
   // Each value = the packages bundled with that specific room (with
@@ -363,6 +432,51 @@ export default function RoomManagement() {
     }
     return m
   }, [packages])
+
+  // Group rewards per room, then by reward identity (label + perk) so
+  // a reward applying to 5 days shows ONCE with a date list rather
+  // than 5 cluttering rows. Anonymous discount rows (no label, only
+  // promo_pct/promo_label) become their own group too.
+  const rewardsByRoom = useMemo(() => {
+    const m = new Map()  // roomId -> array of { key, label, perk, min_stay, dates[] }
+    for (const row of upcomingAvail) {
+      const list = m.get(row.room_id) || []
+      // Stack model — each row can carry an array of specials.
+      const items = Array.isArray(row.specials) && row.specials.length > 0
+        ? row.specials.map(s => ({ label: s.label, perk: s.perk, min_stay: s.min_stay }))
+        : []
+      // Legacy single-perk / promo fields.
+      if (row.perk || row.promo_label) {
+        items.push({
+          label: row.promo_label || row.perk,
+          perk: row.perk,
+          min_stay: row.min_stay,
+          promo_pct: row.promo_pct,
+        })
+      } else if (row.promo_pct) {
+        items.push({
+          label: `${Number(row.promo_pct)}% discount`,
+          promo_pct: row.promo_pct,
+        })
+      }
+      for (const it of items) {
+        const key = `${it.label || ''}__${it.perk || ''}__${it.promo_pct || ''}`
+        let g = list.find(x => x.key === key)
+        if (!g) {
+          g = { key, label: it.label || '—', perk: it.perk, min_stay: it.min_stay, promo_pct: it.promo_pct, dates: [] }
+          list.push(g)
+        }
+        if (!g.dates.includes(row.date)) g.dates.push(row.date)
+      }
+      m.set(row.room_id, list)
+    }
+    // Sort dates per group + groups by first occurrence for stable UI.
+    for (const list of m.values()) {
+      list.forEach(g => g.dates.sort())
+      list.sort((a, b) => (a.dates[0] || '').localeCompare(b.dates[0] || ''))
+    }
+    return m
+  }, [upcomingAvail])
 
   const types = useMemo(() => {
     const counts = new Map()
@@ -565,16 +679,20 @@ export default function RoomManagement() {
               <TimelineView rooms={filteredRooms} bookings={bookings}
                 startDay={startDay} dates={dates} todayDate={todayDate}
                 packagesByRoom={packagesByRoom}
+                rewardsByRoom={rewardsByRoom}
                 onPick={setSelectedRoom}
                 onCheckIn={(room, date) => startWalkIn(room.id, date)} />
             ) : view === 'grid' ? (
-              <GridView floorsMap={floorsMap} packagesByRoom={packagesByRoom}
+              <GridView floorsMap={floorsMap}
+                packagesByRoom={packagesByRoom}
+                rewardsByRoom={rewardsByRoom}
                 onPick={setSelectedRoom}
                 onCheckIn={(room) => startWalkIn(room.id)} />
             ) : (
               <FloorPlanView floorsMap={floorsMap} activeFloor={activeFloor}
                 setActiveFloor={setActiveFloor} property={property}
                 packagesByRoom={packagesByRoom}
+                rewardsByRoom={rewardsByRoom}
                 onPick={setSelectedRoom} />
             )}
           </div>
@@ -633,7 +751,7 @@ function SidebarItem({ icon, label, badge, badgeClass, active, onClick }) {
 // the parent on mouseenter). pointer-events:none so the popover never
 // steals hover from the row itself — the row continues to drive the
 // open/close state.
-function RoomInfoPopover({ room, packages, x, y, side }) {
+function RoomInfoPopover({ room, packages, rewards, x, y, side }) {
   const amenities = Array.isArray(room.amenities) ? room.amenities : []
   // Map amenity keys → human labels via AMENITY_META so "wifi" reads
   // as "Free WiFi" and "breakfast_included" → its proper label.
@@ -731,6 +849,50 @@ function RoomInfoPopover({ room, packages, x, y, side }) {
               </div>
             )}
           </div>
+
+          {/* Upcoming rewards (next 60 days) — per-day specials the
+              hotelier set in Disponibilités → Timeline → 🎁 Reward.
+              Grouped by reward identity (label + perk) so a recurring
+              promo lists the dates once instead of duplicating. */}
+          {rewards && rewards.length > 0 && (
+            <div>
+              <div className="rm-ip-section-title">
+                <span className="dot" style={{background:'#FF3CB4'}} />
+                ✨ Active rewards (next 60 days)
+              </div>
+              <div className="rm-ip-pkg-list">
+                {rewards.map(r => (
+                  <div key={r.key} className="rm-ip-pkg" style={{
+                    background: 'linear-gradient(135deg,rgba(255,60,180,.07),rgba(108,92,231,.07))',
+                    borderColor: 'rgba(255,60,180,.22)',
+                  }}>
+                    <div className="rm-ip-pkg-head">
+                      <div className="rm-ip-pkg-name" style={{ color: '#A21CAF' }}>
+                        ✨ {r.label || 'Reward'}
+                        {r.promo_pct ? <span className="qty" style={{ background: '#A21CAF' }}>-{Number(r.promo_pct)}%</span> : null}
+                      </div>
+                      <span className="rm-ip-pkg-price" style={{
+                        background: 'rgba(255,60,180,.12)', color: '#A21CAF',
+                      }}>
+                        {r.dates.length} day{r.dates.length > 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    {r.perk && (
+                      <div className="rm-ip-pkg-desc" style={{ color: '#5A6370' }}>{r.perk}</div>
+                    )}
+                    {r.min_stay > 1 && (
+                      <div className="rm-ip-pkg-desc" style={{ color: '#5A6370', marginTop: 2 }}>
+                        🌙 Requires ≥ {r.min_stay} nights
+                      </div>
+                    )}
+                    <div className="rm-ip-pkg-desc" style={{ marginTop: 3, fontStyle: 'italic', color: '#7C7F8A' }}>
+                      {formatDateRanges(r.dates)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* ── Col 2 — Description + basics ── */}
@@ -809,7 +971,7 @@ function RoomInfoPopover({ room, packages, x, y, side }) {
 }
 
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, packagesByRoom, startDay, dates, todayDate, onPick, onCheckIn }) {
+function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, startDay, dates, todayDate, onPick, onCheckIn }) {
   const resByRoom = useMemo(() => {
     const m = new Map()
     const endDay = dates[dates.length - 1]
@@ -941,6 +1103,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, startDay, dates, todayD
         <RoomInfoPopover
           room={hovered.room}
           packages={packagesByRoom?.get(hovered.room.id) || []}
+          rewards={rewardsByRoom?.get(hovered.room.id) || []}
           x={hovered.x}
           y={hovered.y}
           side={hovered.side}
@@ -951,7 +1114,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, startDay, dates, todayD
 }
 
 // ── Grid view ──
-function GridView({ floorsMap, packagesByRoom, onPick }) {
+function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
   // Same hover popover wiring as Timeline — the card opens it, popover
   // is rendered once at the view root so we don't get N popovers
   // racing each other.
@@ -1006,6 +1169,7 @@ function GridView({ floorsMap, packagesByRoom, onPick }) {
         <RoomInfoPopover
           room={hovered.room}
           packages={packagesByRoom?.get(hovered.room.id) || []}
+          rewards={rewardsByRoom?.get(hovered.room.id) || []}
           x={hovered.x}
           y={hovered.y}
           side={hovered.side}
