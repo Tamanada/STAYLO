@@ -318,7 +318,7 @@ export default function PropertyManage() {
       {activeTab === 'videos' && <VideosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} packages={propertyPackages} onRefresh={fetchData} onJumpToPackages={() => setActiveTab('packages')} />}
       {activeTab === 'packages' && <PackagesTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
-      {activeTab === 'calendar' && <CalendarTab rooms={rooms} />}
+      {activeTab === 'calendar' && <CalendarTab rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'team' && <TeamTab property={property} />}
       {activeTab === 'settings' && <SettingsTab property={property} onRefresh={fetchData} />}
@@ -3236,7 +3236,7 @@ function RoomMediaUploader({ kind, room, propertyId, onChange }) {
 // ============================================
 // CALENDAR TAB
 // ============================================
-function CalendarTab({ rooms }) {
+function CalendarTab({ rooms, onRefresh }) {
   const { t } = useTranslation()
   // View mode — 'monthly' (per-room 35-day grid, editor) or 'timeline'
   // (all rooms × 14 days, bird's-eye view). The Timeline view is the
@@ -3685,7 +3685,7 @@ function CalendarTab({ rooms }) {
       )}
 
       {viewMode === 'timeline' ? (
-        <TimelineAvailabilityView rooms={rooms} viewMode={viewMode} setViewMode={setViewMode} />
+        <TimelineAvailabilityView rooms={rooms} viewMode={viewMode} setViewMode={setViewMode} onRefresh={onRefresh} />
       ) : (
       <>
       {/* Room selector */}
@@ -4584,7 +4584,7 @@ function CellHoverPanel_DEPRECATED({
 // block days there. Keeping the heavy editor in one place avoids
 // duplicating the bulk-edit machinery in two layouts.
 // ============================================
-function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
+function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
   const { t } = useTranslation()
   const DAYS = 14
   const [startDate, setStartDate] = useState(() => {
@@ -4614,6 +4614,66 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
   // wanted inline fields to "change prices, options" — modal is
   // the right surface for that.
   const [editingCell, setEditingCell] = useState(null) // { roomId, iso } | null
+
+  // Drag-drop reordering of room rows. The left info column of each
+  // row is draggable; drop onto another row's info column swaps the
+  // two rooms' display_order. Applies everywhere rooms are listed
+  // (OTA + reception views) because every fetch sorts by display_order.
+  // HTML5 native API, no library — vertical reorder is the simplest
+  // case it handles well on desktop.
+  const [draggedRoomId, setDraggedRoomId] = useState(null)
+  const [dragOverRoomId, setDragOverRoomId] = useState(null)
+
+  async function reorderRooms(draggedId, targetId) {
+    if (!draggedId || !targetId || draggedId === targetId) return
+    const a = rooms.find(r => r.id === draggedId)
+    const b = rooms.find(r => r.id === targetId)
+    if (!a || !b) return
+    // Defensive: if two rooms share the same display_order (legacy
+    // data, e.g. all at 0 before the manual reorder migration was
+    // applied), seed them from their CURRENT index instead so the
+    // swap is deterministic.
+    const aOrder = a.display_order ?? rooms.indexOf(a)
+    const bOrder = b.display_order ?? rooms.indexOf(b)
+    if (aOrder === bOrder) {
+      const idxA = rooms.indexOf(a)
+      const idxB = rooms.indexOf(b)
+      await supabase.from('rooms').update({ display_order: idxB }).eq('id', a.id)
+      await supabase.from('rooms').update({ display_order: idxA }).eq('id', b.id)
+    } else {
+      await supabase.from('rooms').update({ display_order: bOrder }).eq('id', a.id)
+      await supabase.from('rooms').update({ display_order: aOrder }).eq('id', b.id)
+    }
+    onRefresh?.()
+  }
+
+  function handleRowDragStart(e, roomId) {
+    setDraggedRoomId(roomId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', roomId)
+  }
+  function handleRowDragOver(e, roomId) {
+    if (!draggedRoomId) return
+    e.preventDefault()  // tells the browser this is a valid drop target
+    e.dataTransfer.dropEffect = 'move'
+    if (draggedRoomId !== roomId) setDragOverRoomId(roomId)
+  }
+  function handleRowDragLeave() {
+    setDragOverRoomId(null)
+  }
+  async function handleRowDrop(e, targetId) {
+    e.preventDefault()
+    const sourceId = draggedRoomId || e.dataTransfer.getData('text/plain')
+    setDraggedRoomId(null)
+    setDragOverRoomId(null)
+    if (sourceId && sourceId !== targetId) {
+      await reorderRooms(sourceId, targetId)
+    }
+  }
+  function handleRowDragEnd() {
+    setDraggedRoomId(null)
+    setDragOverRoomId(null)
+  }
 
   // Build the 14 ISO dates from the current start.
   const dates = []
@@ -5239,17 +5299,36 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode }) {
               style={{ gridTemplateColumns: `180px repeat(${DAYS}, 1fr)` }}
             >
               {/* Room info — name + default price + total stock.
-                  Clickable in bulk mode to select the whole row at once. */}
+                  Outside bulk mode, the cell is draggable so the
+                  hotelier can drag-drop to reorder rooms (display_order
+                  swaps in DB, propagates to OTA + reception views).
+                  In bulk mode, drag is disabled and the click selects
+                  every future cell in the row instead. */}
               <button
                 type="button"
+                draggable={!bulkMode}
+                onDragStart={!bulkMode ? (e) => handleRowDragStart(e, room.id) : undefined}
+                onDragOver={!bulkMode ? (e) => handleRowDragOver(e, room.id) : undefined}
+                onDragLeave={!bulkMode ? handleRowDragLeave : undefined}
+                onDrop={!bulkMode ? (e) => handleRowDrop(e, room.id) : undefined}
+                onDragEnd={!bulkMode ? handleRowDragEnd : undefined}
                 onClick={bulkMode ? () => selectRoomRow(room.id) : undefined}
-                disabled={!bulkMode}
-                className={`py-2 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02] text-left ${
-                  bulkMode ? 'cursor-pointer hover:bg-ocean/5' : 'cursor-default'
+                disabled={!bulkMode && !draggedRoomId}  // stay enabled during a drag so events fire
+                className={`py-2 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02] text-left transition-all ${
+                  bulkMode ? 'cursor-pointer hover:bg-ocean/5' : 'cursor-grab active:cursor-grabbing hover:bg-ocean/5'
+                } ${
+                  draggedRoomId === room.id ? 'opacity-40' : ''
+                } ${
+                  dragOverRoomId === room.id ? 'ring-2 ring-inset ring-ocean bg-ocean/10' : ''
                 }`}
-                title={bulkMode ? t('manage.timeline_select_row', 'Click to select all future cells in this row') : room.name}
+                title={bulkMode
+                  ? t('manage.timeline_select_row', 'Click to select all future cells in this row')
+                  : t('manage.drag_to_reorder', 'Drag to reorder rooms — this order applies on the OTA + every reception view')}
               >
-                <div className="text-sm font-bold text-deep truncate">{room.name}</div>
+                <div className="text-sm font-bold text-deep truncate flex items-center gap-1.5">
+                  {!bulkMode && <span className="text-gray-300 select-none" aria-hidden="true">⋮⋮</span>}
+                  {room.name}
+                </div>
                 <div className="text-[10px] text-gray-500 leading-tight">
                   ${Number(room.base_price || 0).toFixed(0)}/night · ×{room.quantity}
                 </div>
