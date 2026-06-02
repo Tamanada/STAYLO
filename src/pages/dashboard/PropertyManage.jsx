@@ -779,6 +779,115 @@ function ShareInviteModal({ data, property, onClose }) {
 //
 // Photos / videos / rooms / availability live in their own tabs.
 // ============================================
+
+// ============================================
+// OtaChannelCard — V1 placeholder for the channel-manager Connect /
+// Refresh flow. Status pill reads from whether the hotelier has
+// already pasted an API key:
+//   · no key     → "🔌 Not connected" (gray)
+//   · key set    → "⏳ Pending integration" (orange) — credentials
+//                  on file, awaiting Phase 2 connector rollout
+// "Refresh now" + "Connect" buttons are disabled but visible so
+// hoteliers can see what's coming. Clicking the gradient pill
+// surfaces a tooltip + the Advanced panel collapses below for
+// pasting / updating the key today.
+//
+// When the Phase 2 connectors ship, swap the disabled handlers
+// for real RPCs without touching the layout.
+// ============================================
+function OtaChannelCard({ channel, hasKey, form, update, propagate, togglePropagate, hasOtherProperties, otherPropCount, t }) {
+  const [expanded, setExpanded] = useState(false)
+  const statusPill = hasKey
+    ? { label: 'Pending integration', className: 'bg-orange/12 text-orange border-orange/25' }
+    : { label: 'Not connected',       className: 'bg-gray-100 text-gray-500 border-gray-200' }
+
+  function handleConnect() {
+    // V1: open a mailto for early access. V2: trigger the OAuth /
+    // API-key wizard for the specific channel. Same button label
+    // both phases — no re-learning for the hotelier.
+    const subject = encodeURIComponent(`Early access — ${channel.name} channel for STAYLO`)
+    const body = encodeURIComponent(
+      `Hi STAYLO team,\n\nI'd like early access to the ${channel.name} channel manager integration for my property.\n\nThanks!`
+    )
+    window.open(`mailto:contact@staylo.app?subject=${subject}&body=${body}`, '_blank')
+  }
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden">
+      {/* Header — gradient strip in the channel's brand colour family */}
+      <div className={`bg-gradient-to-r ${channel.accent} px-3.5 py-2 text-white flex items-center justify-between gap-2`}>
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-base leading-none">{channel.emoji}</span>
+          <span className="font-extrabold text-sm truncate">{channel.name}</span>
+        </div>
+        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusPill.className}`} style={{ background: 'rgba(255,255,255,.95)' }}>
+          {statusPill.label}
+        </span>
+      </div>
+
+      {/* Body — action buttons + collapsible advanced */}
+      <div className="p-3 space-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleConnect}
+            title={t('manage.ota_connect_tip', 'Channel-manager auto-connect arrives in Phase 2. Click to request early access — our team gets back within 24 h.')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-deep text-white hover:bg-deep/90 transition-colors"
+          >
+            🔌 {t('manage.ota_request_access', 'Request early access')}
+          </button>
+          <button
+            type="button"
+            disabled
+            title={t('manage.ota_refresh_tip', 'Manual refresh will pull every reservation from this channel in real time. Phase 2 feature.')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
+          >
+            <RotateCcw size={11} /> {t('manage.ota_refresh', 'Refresh now')}
+          </button>
+          <button
+            type="button"
+            onClick={() => setExpanded(v => !v)}
+            className="inline-flex items-center gap-1 ml-auto text-[11px] font-bold text-gray-500 hover:text-deep transition-colors"
+          >
+            {expanded ? '▾' : '▸'} {t('manage.ota_advanced', 'Advanced')}
+          </button>
+        </div>
+
+        {expanded && (
+          <div className="pt-2 border-t border-gray-100 space-y-2">
+            <label className="block text-[10px] font-bold uppercase tracking-wide text-gray-500">
+              {t('manage.ota_api_key', 'API key')}
+            </label>
+            <input
+              type="password"
+              value={form[channel.formKey]}
+              onChange={e => update(channel.formKey, e.target.value)}
+              placeholder="••••••••••••••••"
+              autoComplete="off"
+              spellCheck="false"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30"
+            />
+            <p className="text-[10px] text-gray-400 italic leading-tight">
+              {t('manage.ota_key_hint', 'Paste your channel API key here to pre-stage the connection. The key is encrypted at rest and never sent back to the browser.')}
+            </p>
+            {hasOtherProperties && (
+              <label className="flex items-center gap-1.5 mt-1 text-[10px] text-gray-500 hover:text-deep cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={propagate[channel.propKey]}
+                  onChange={() => togglePropagate(channel.propKey)}
+                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3 h-3"
+                />
+                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
+              </label>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function SettingsTab({ property, onRefresh }) {
   const { t } = useTranslation()
   const { user } = useAuth()
@@ -1227,115 +1336,61 @@ function SettingsTab({ property, onRefresh }) {
         </div>
       </div>
 
-      {/* ───── OTA Integrations ─────────────────────────────────────
-          API connectors for inbound reservation sync. Each connector
-          stores its own credentials + enabled flag in the
-          ota_integrations JSONB column, so new OTAs can be added
-          without a schema migration. */}
+      {/* ───── OTA Channel Manager ─────────────────────────────────
+          V1 placeholder UI for the upcoming channel-manager
+          integration. Each OTA is a card with a status pill and
+          Connect/Refresh action stubs — clicking them today shows
+          a "coming soon" hint + opens a contact mailto for early
+          access. When the API connectors ship (V2), the same UI
+          gains real behaviour without re-training the hotelier.
+
+          The 4 API-key text inputs from the previous version are
+          preserved inside a collapsible "Advanced" panel so
+          channel-manager-savvy operators can still paste a key
+          today. */}
       <div className="mt-8 pt-6 border-t border-gray-100">
         <h3 className="text-sm font-bold uppercase tracking-wider text-deep mb-1 flex items-center gap-2">
-          🔌 {t('manage.ota_integrations_title', 'OTA integrations')}
+          🔌 {t('manage.ota_integrations_title', 'OTA channel manager')}
         </h3>
         <p className="text-xs text-gray-500 mb-4">
-          {t('manage.ota_integrations_subtitle',
-            'Connecte les APIs des plateformes pour collecter automatiquement leurs réservations. Les clés sont chiffrées au repos, jamais exposées au navigateur.')}
+          {t('manage.ota_integrations_subtitle_v2',
+            'Synchronise les réservations de chaque plateforme automatiquement. Évite le surbooking. La connexion API arrive en Phase 2 — demande un accès anticipé.')}
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-medium text-gray-500 mb-1">
-              🔵 {t('manage.ota_booking_com', 'Booking.com API key')}
-            </label>
-            <input type="password"
-              value={form.ota_booking_com_api_key}
-              onChange={e => update('ota_booking_com_api_key', e.target.value)}
-              placeholder="••••••••••••••••"
-              autoComplete="off"
-              spellCheck="false"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-            {hasOtherProperties && (
-              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
-                <input type="checkbox"
-                  checked={propagate.ota_booking_com}
-                  onChange={() => togglePropagate('ota_booking_com')}
-                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
-                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
-              </label>
-            )}
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-medium text-gray-500 mb-1">
-              🌸 {t('manage.ota_airbnb', 'Airbnb API key')}
-            </label>
-            <input type="password"
-              value={form.ota_airbnb_api_key}
-              onChange={e => update('ota_airbnb_api_key', e.target.value)}
-              placeholder="••••••••••••••••"
-              autoComplete="off"
-              spellCheck="false"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-            {hasOtherProperties && (
-              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
-                <input type="checkbox"
-                  checked={propagate.ota_airbnb}
-                  onChange={() => togglePropagate('ota_airbnb')}
-                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
-                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
-              </label>
-            )}
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-medium text-gray-500 mb-1">
-              🔴 {t('manage.ota_agoda', 'Agoda API key')}
-            </label>
-            <input type="password"
-              value={form.ota_agoda_api_key}
-              onChange={e => update('ota_agoda_api_key', e.target.value)}
-              placeholder="••••••••••••••••"
-              autoComplete="off"
-              spellCheck="false"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-            {hasOtherProperties && (
-              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
-                <input type="checkbox"
-                  checked={propagate.ota_agoda}
-                  onChange={() => togglePropagate('ota_agoda')}
-                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
-                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
-              </label>
-            )}
-          </div>
-
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-medium text-gray-500 mb-1">
-              🟡 {t('manage.ota_expedia', 'Expedia API key')}
-            </label>
-            <input type="password"
-              value={form.ota_expedia_api_key}
-              onChange={e => update('ota_expedia_api_key', e.target.value)}
-              placeholder="••••••••••••••••"
-              autoComplete="off"
-              spellCheck="false"
-              className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-            {hasOtherProperties && (
-              <label className="flex items-center gap-1.5 mt-2 text-[11px] text-gray-500 hover:text-deep cursor-pointer select-none">
-                <input type="checkbox"
-                  checked={propagate.ota_expedia}
-                  onChange={() => togglePropagate('ota_expedia')}
-                  className="rounded border-gray-300 text-ocean focus:ring-ocean/30 w-3.5 h-3.5" />
-                🔗 {t('manage.propagate_field', { defaultValue: 'Appliquer à mes {{n}} autre{{p}} propriété{{p}} à la sauvegarde', n: otherPropCount, p: otherPropCount > 1 ? 's' : '' })}
-              </label>
-            )}
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            { key: 'booking_com', emoji: '🔵', name: 'Booking.com', accent: 'from-blue-500 to-blue-600',
+              formKey: 'ota_booking_com_api_key', propKey: 'ota_booking_com' },
+            { key: 'airbnb',      emoji: '🌸', name: 'Airbnb',      accent: 'from-pink-500 to-red-500',
+              formKey: 'ota_airbnb_api_key',      propKey: 'ota_airbnb' },
+            { key: 'agoda',       emoji: '🔴', name: 'Agoda',       accent: 'from-red-500 to-rose-600',
+              formKey: 'ota_agoda_api_key',       propKey: 'ota_agoda' },
+            { key: 'expedia',     emoji: '🟡', name: 'Expedia',     accent: 'from-amber-500 to-yellow-500',
+              formKey: 'ota_expedia_api_key',     propKey: 'ota_expedia' },
+          ].map(ch => {
+            const hasKey = !!form[ch.formKey]?.trim()
+            return (
+              <OtaChannelCard
+                key={ch.key}
+                channel={ch}
+                hasKey={hasKey}
+                form={form}
+                update={update}
+                propagate={propagate}
+                togglePropagate={togglePropagate}
+                hasOtherProperties={hasOtherProperties}
+                otherPropCount={otherPropCount}
+                t={t}
+              />
+            )
+          })}
         </div>
 
-        <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-start gap-2">
+        <div className="mt-4 p-3 bg-electric/5 border border-electric/20 rounded-lg text-xs text-electric flex items-start gap-2">
           <AlertCircle size={14} className="flex-shrink-0 mt-0.5" />
           <span>
-            {t('manage.ota_warning',
-              'Les clés API ne sont jamais affichées en clair une fois sauvegardées. Si tu en perds une, génère-la à nouveau côté plateforme et recolle-la ici.')}
+            {t('manage.ota_phase2_note',
+              'Phase 2 (post-launch) : Channel manager natif STAYLO — un bouton "Refresh" rapatrie les réservations de toutes vos plateformes en temps réel. Aujourd\'hui en mode preview : tu peux déjà saisir tes clés API pour préparer la connexion (chiffrées au repos, jamais exposées).')}
           </span>
         </div>
       </div>
