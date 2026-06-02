@@ -5619,15 +5619,27 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
               it in the selection (which can span multiple rooms). Click
               the room name header to add that whole row's future cells. */}
           {rooms.map(room => (
+            // Row wrapper — owns the drop target + drag visuals so the
+            // WHOLE row (info column + every day cell) lights up as the
+            // drop zone, not just the leftmost handle. The `draggable`
+            // attribute stays on the left "room info" cell so date cells
+            // remain individually clickable for editing; but the wrapper
+            // catches dragOver/Drop anywhere across the row.
             <div
               key={room.id}
-              className="grid items-stretch"
+              className={`grid items-stretch transition-all ${
+                draggedRoomId === room.id ? 'opacity-40' : ''
+              } ${
+                dragOverRoomId === room.id ? 'ring-2 ring-inset ring-ocean bg-ocean/10' : ''
+              }`}
               style={{ gridTemplateColumns: `180px repeat(${DAYS}, 1fr)` }}
+              onDragOver={!bulkMode ? (e) => handleRowDragOver(e, room.id) : undefined}
+              onDragLeave={!bulkMode ? handleRowDragLeave : undefined}
+              onDrop={!bulkMode ? (e) => handleRowDrop(e, room.id) : undefined}
             >
               {/* Room info — name + default price + total stock.
-                  Outside bulk mode, the cell is draggable so the
-                  hotelier can drag-drop to reorder rooms (display_order
-                  swaps in DB, propagates to OTA + reception views).
+                  Outside bulk mode, the cell is the drag handle (only
+                  this cell initiates the drag — date cells stay clickable).
                   In bulk mode, drag is disabled and the click selects
                   every future cell in the row instead. */}
               {/* Switched from <button> to <div role="button"> — HTML
@@ -5640,17 +5652,10 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                 tabIndex={0}
                 draggable={!bulkMode}
                 onDragStart={!bulkMode ? (e) => handleRowDragStart(e, room.id) : undefined}
-                onDragOver={!bulkMode ? (e) => handleRowDragOver(e, room.id) : undefined}
-                onDragLeave={!bulkMode ? handleRowDragLeave : undefined}
-                onDrop={!bulkMode ? (e) => handleRowDrop(e, room.id) : undefined}
                 onDragEnd={!bulkMode ? handleRowDragEnd : undefined}
                 onClick={bulkMode ? () => selectRoomRow(room.id) : undefined}
                 className={`py-2 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02] text-left transition-all ${
                   bulkMode ? 'cursor-pointer hover:bg-ocean/5' : 'cursor-grab active:cursor-grabbing hover:bg-ocean/5'
-                } ${
-                  draggedRoomId === room.id ? 'opacity-40' : ''
-                } ${
-                  dragOverRoomId === room.id ? 'ring-2 ring-inset ring-ocean bg-ocean/10' : ''
                 }`}
                 title={bulkMode
                   ? t('manage.timeline_select_row', 'Click to select all future cells in this row')
