@@ -214,12 +214,13 @@ const STYLES = `
    from the row's bounding rect, so it never gets clipped by the
    overflow:auto on the grid container. STAYLO brand styling: dark
    gradient header, soft white body, brand-coloured chips. */
-.rm-info-pop{position:fixed;z-index:5000;width:600px;max-width:94vw;background:#fff;border-radius:20px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:none;animation:rm-pop-in .15s ease-out}
-/* Two-column body so the receptionist gets everything in one glance:
-   left = room essentials + packages (what's included), right =
-   amenities + description. */
-.rm-ip-cols{display:grid;grid-template-columns:1fr 1.05fr;gap:12px;padding:12px 14px 14px;max-height:62vh;overflow-y:auto}
-.rm-ip-col{display:flex;flex-direction:column;gap:10px;min-width:0}
+.rm-info-pop{position:fixed;z-index:5000;width:920px;max-width:96vw;background:#fff;border-radius:20px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:none;animation:rm-pop-in .15s ease-out}
+/* Three-column body — receptionist sees everything in one glance:
+   col 1 (compact) = bed/capacity meta + packages, col 2 (compact)
+   = description + room badges, col 3 (wide) = amenities chip cloud
+   that flows multi-column so 40+ amenities fit without vertical scroll. */
+.rm-ip-cols{display:grid;grid-template-columns:200px 220px 1fr;gap:10px;padding:10px 14px 12px;max-height:64vh;overflow-y:auto}
+.rm-ip-col{display:flex;flex-direction:column;gap:8px;min-width:0}
 @keyframes rm-pop-in{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .rm-ip-header{padding:14px 16px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative}
 .rm-ip-eyebrow{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin-bottom:2px}
@@ -234,9 +235,9 @@ const STYLES = `
 @keyframes rm-pulse{0%,100%{box-shadow:0 0 0 4px rgba(255,107,0,.18)}50%{box-shadow:0 0 0 7px rgba(255,107,0,.08)}}
 .rm-ip-section-title{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#636E72;margin-bottom:5px;display:flex;align-items:center;gap:5px}
 .rm-ip-section-title .dot{width:6px;height:6px;border-radius:50%}
-.rm-ip-chips{display:flex;flex-wrap:wrap;gap:4px}
-.rm-ip-chip{font-size:10.5px;padding:3px 8px;border-radius:999px;background:rgba(0,184,148,.08);color:#066e54;font-weight:600;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(0,184,148,.15)}
-.rm-ip-chip svg{width:11px;height:11px}
+.rm-ip-chips{display:flex;flex-wrap:wrap;gap:3px;align-content:flex-start}
+.rm-ip-chip{font-size:10px;padding:2px 7px;border-radius:999px;background:rgba(0,184,148,.08);color:#066e54;font-weight:600;display:inline-flex;align-items:center;gap:3px;border:1px solid rgba(0,184,148,.15);white-space:nowrap}
+.rm-ip-chip svg{width:10px;height:10px;flex-shrink:0}
 .rm-ip-pkg-list{display:flex;flex-direction:column;gap:5px}
 .rm-ip-pkg{padding:7px 10px;border-radius:10px;background:linear-gradient(135deg,rgba(255,107,0,.06),rgba(255,60,180,.06));border:1px solid rgba(255,107,0,.15);font-size:11.5px;line-height:1.35}
 .rm-ip-pkg-name{font-weight:700;color:#C2410C;display:flex;align-items:center;gap:5px}
@@ -1069,13 +1070,13 @@ function RoomInfoPopover({ room, packages, x, y, side }) {
           </div>
         )}
       </div>
-      {/* Body — TWO columns so the receptionist takes everything in
-          at a glance. Left = room essentials + packages (the
-          value-add story they need to pitch). Right = amenities +
-          free-form description (the breadth answer for "what does it
-          have?"). */}
+      {/* Body — THREE columns for max density. The receptionist sees
+          essentials + packages + amenities all without scrolling.
+          col 1: bed/capacity + included packages (the pitch story)
+          col 2: description + room basics
+          col 3: amenities chip cloud (wide, flows naturally) */}
       <div className="rm-ip-cols">
-        {/* ── Left column ── */}
+        {/* ── Col 1 — Essentials + Packages ── */}
         <div className="rm-ip-col">
           <div className="rm-ip-meta">
             <div className="rm-ip-meta-cell">
@@ -1089,8 +1090,8 @@ function RoomInfoPopover({ room, packages, x, y, side }) {
           </div>
 
           {/* Packages — what's INCLUDED (breakfast, transfer, etc.).
-              The "value-add" answers the receptionist needs:
-              "Breakfast for 2 included · Full Moon transfer included". */}
+              The pitch the receptionist needs: "Breakfast for 2
+              included · Full Moon transfer included". */}
           <div>
             <div className="rm-ip-section-title">
               <span className="dot" style={{background:'#FF6B00'}} />
@@ -1112,9 +1113,10 @@ function RoomInfoPopover({ room, packages, x, y, side }) {
               </div>
             )}
           </div>
+        </div>
 
-          {/* Free-form description sits in the left column too so it
-              gets the pitch space. If empty, this section is hidden. */}
+        {/* ── Col 2 — Description + basics ── */}
+        <div className="rm-ip-col">
           {room.description && (
             <div>
               <div className="rm-ip-section-title">
@@ -1124,9 +1126,37 @@ function RoomInfoPopover({ room, packages, x, y, side }) {
               <div className="rm-ip-desc">{room.description}</div>
             </div>
           )}
+          {/* Quick-fact chips — extra context the receptionist may need
+              (size, view type if set as fields, floor, etc.). Only render
+              if at least one piece of data exists. */}
+          {(room.size_sqm > 0 || room.floor || room.unit_number) && (
+            <div>
+              <div className="rm-ip-section-title">
+                <span className="dot" style={{background:'#6C5CE7'}} />
+                ℹ️ At a glance
+              </div>
+              <div className="rm-ip-chips" style={{ marginTop: 2 }}>
+                {room.size_sqm > 0 && (
+                  <span className="rm-ip-chip" style={{ background: 'rgba(108,92,231,.08)', color: '#3F2E94', borderColor: 'rgba(108,92,231,.18)' }}>
+                    📐 {room.size_sqm} m²
+                  </span>
+                )}
+                {room.floor && (
+                  <span className="rm-ip-chip" style={{ background: 'rgba(108,92,231,.08)', color: '#3F2E94', borderColor: 'rgba(108,92,231,.18)' }}>
+                    🏢 Floor {room.floor}
+                  </span>
+                )}
+                {room.unit_number && (
+                  <span className="rm-ip-chip" style={{ background: 'rgba(108,92,231,.08)', color: '#3F2E94', borderColor: 'rgba(108,92,231,.18)' }}>
+                    🚪 #{room.unit_number}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* ── Right column ── */}
+        {/* ── Col 3 (wide) — Amenities chip cloud ── */}
         <div className="rm-ip-col">
           {amenityChips.length > 0 ? (
             <div>
@@ -1137,7 +1167,7 @@ function RoomInfoPopover({ room, packages, x, y, side }) {
               <div className="rm-ip-chips">
                 {amenityChips.map(a => (
                   <span key={a.key} className="rm-ip-chip" title={a.label}>
-                    {a.Icon && <a.Icon size={11} />}
+                    {a.Icon && <a.Icon size={10} />}
                     {a.label}
                   </span>
                 ))}
