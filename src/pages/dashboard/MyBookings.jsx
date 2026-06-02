@@ -17,12 +17,13 @@ import { Link } from 'react-router-dom'
 import {
   Calendar, MapPin, BedDouble, Users, Clock, CheckCircle,
   XCircle, Search, Luggage, Mail, Phone,
-  MessageSquare, DollarSign
+  MessageSquare, DollarSign, Wallet,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { formatCurrency } from '../../lib/currencies'
 import { formatDate } from '../../lib/dateFormat'
+import MyStayPanel from '../../components/dashboard/MyStayPanel'
 
 export const STATUS_CONFIG = {
   pending:   { label: 'Pending',   icon: Clock,       color: 'bg-amber-50 text-amber-700 border-amber-200',     dot: 'bg-amber-500' },
@@ -40,6 +41,10 @@ export default function MyBookings() {
   const [rooms, setRooms] = useState({})
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  // MyStayPanel — guest wallet + folio. Opened by "💼 My stay" button
+  // on active bookings. State holds the booking the panel is anchored
+  // to; null = closed.
+  const [stayBooking, setStayBooking] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -154,6 +159,7 @@ export default function MyBookings() {
                     booking={booking}
                     property={properties[booking.property_id]}
                     room={rooms[booking.room_id]}
+                    onOpenStay={() => setStayBooking(booking)}
                   />
                 ))}
               </div>
@@ -173,6 +179,7 @@ export default function MyBookings() {
                     property={properties[booking.property_id]}
                     room={rooms[booking.room_id]}
                     isPast
+                    onOpenStay={() => setStayBooking(booking)}
                   />
                 ))}
               </div>
@@ -180,6 +187,19 @@ export default function MyBookings() {
           )}
         </>
       )}
+
+      {/* My Stay modal — vouchers QR + folio live (S3b + S3c). Opens
+          when a guest clicks "💼 My stay" on a booking card. Auto-fetches
+          + subscribes via Supabase Realtime so the receptionist consuming
+          a voucher from the Folio tab makes the guest's wallet update
+          live (great wow moment in a demo). */}
+      <MyStayPanel
+        open={!!stayBooking}
+        booking={stayBooking}
+        property={stayBooking ? properties[stayBooking.property_id] : null}
+        room={stayBooking ? rooms[stayBooking.room_id] : null}
+        onClose={() => setStayBooking(null)}
+      />
     </div>
   )
 }
@@ -190,7 +210,7 @@ export default function MyBookings() {
 // phone / special requests) and to show "You receive" instead of "Total"
 // using the payout_amount_cents column. Trip cards (the default) hide
 // those panels since the guest is the viewer.
-export function BookingCard({ booking, property, room, isHotelier = false, isPast = false }) {
+export function BookingCard({ booking, property, room, isHotelier = false, isPast = false, onOpenStay }) {
   const { t } = useTranslation()
   const nights = Math.max(1, Math.ceil(
     (new Date(booking.check_out) - new Date(booking.check_in)) / (1000 * 60 * 60 * 24)
@@ -306,7 +326,7 @@ export function BookingCard({ booking, property, room, isHotelier = false, isPas
             </div>
           </div>
 
-          <div className="flex items-center gap-3 mt-3 text-xs text-gray-400">
+          <div className="flex items-center gap-3 mt-3 text-xs text-gray-400 flex-wrap">
             <span>{nights} night{nights > 1 ? 's' : ''}</span>
             <span>{booking.guests || 1} guest{(booking.guests || 1) > 1 ? 's' : ''}</span>
             {booking.payment_method && (
@@ -322,6 +342,19 @@ export function BookingCard({ booking, property, room, isHotelier = false, isPas
               }`}>
                 escrow: {booking.escrow_status}
               </span>
+            )}
+            {/* "💼 My stay" — opens the wallet+folio modal. Visible on
+                non-cancelled trips only (cancelled has nothing to show,
+                and showing the button there would be misleading). */}
+            {onOpenStay && !isHotelier && booking.status !== 'cancelled' && (
+              <button
+                type="button"
+                onClick={onOpenStay}
+                className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold bg-gradient-to-r from-orange to-pink-500 text-white hover:shadow-md hover:scale-[1.02] transition-all"
+              >
+                <Wallet size={12} />
+                My stay
+              </button>
             )}
           </div>
         </div>
