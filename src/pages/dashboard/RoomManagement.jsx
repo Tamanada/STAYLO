@@ -78,6 +78,10 @@ export const ROOM_STATUSES = {
   maintenance: { label: 'Maintenance',  color: '#E74C3C', bg: '#FEF2F2', text: '#B91C1C', sigil: '🔴' },
   cleaning:    { label: 'Cleaning',     color: '#0984E3', bg: '#EFF6FF', text: '#1E40AF', sigil: '🔵' },
   checkout:    { label: 'Due Checkout', color: '#FF6B00', bg: '#FFF7ED', text: '#C2410C', sigil: '🟠' },
+  // Blocked = hotelier closed the date for sale via Disponibilités →
+  // Timeline. A room with is_blocked=true on today's date should NOT
+  // count as Available even if no booking is on it.
+  blocked:     { label: 'Blocked',      color: '#FF3CB4', bg: '#FDF2F8', text: '#A21CAF', sigil: '🔒' },
 }
 const STATUS_KEYS = Object.keys(ROOM_STATUSES)
 
@@ -379,10 +383,19 @@ export default function RoomManagement() {
       const active = bookings.find(b =>
         b.room_id === r.id && b.status !== 'cancelled' &&
         b.check_in <= today && b.check_out >= today)
+      // A room is "blocked TODAY" if there's a room_availability row
+      // for this room × today with is_blocked=true. Without this
+      // check, fully-blocked rooms (like BABA when the hotelier closes
+      // every date) would fall through to 'available' and slip past
+      // the Available filter.
+      const blockedToday = upcomingAvail.some(a =>
+        a.room_id === r.id && a.date === today && a.is_blocked
+      )
       let status = override
       if (!status) {
-        if (active) status = active.check_out === today ? 'checkout' : 'occupied'
-        else status = 'available'
+        if (active)           status = active.check_out === today ? 'checkout' : 'occupied'
+        else if (blockedToday) status = 'blocked'
+        else                   status = 'available'
       }
       const nights = active
         ? Math.max(1, Math.ceil((new Date(active.check_out) - new Date(active.check_in)) / 86400000))
@@ -399,7 +412,7 @@ export default function RoomManagement() {
       }
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rooms, bookings, statusOverrides, today])
+  }, [rooms, bookings, statusOverrides, today, upcomingAvail])
 
   const counts = useMemo(() => {
     const c = { all: enrichedRooms.length }
