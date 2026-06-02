@@ -7,7 +7,7 @@ import {
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, Save, Loader2, Ban, Check,
   Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw, Gift,
   Settings as SettingsIcon, UserPlus, Shield, Mail, Crown,
-  Package as PackageIcon
+  Package as PackageIcon, Map as MapIcon,
 } from 'lucide-react'
 import PackagesTab from './PackagesTab'
 import RewardModal from '../../components/dashboard/RewardModal'
@@ -117,6 +117,7 @@ const tabs = [
   { key: 'photos', icon: Camera, label: 'Photos' },
   { key: 'videos', icon: Video, label: 'Videos' },
   { key: 'rooms', icon: BedDouble, label: 'Rooms' },
+  { key: 'plan', icon: MapIcon, label: 'Plan' },
   { key: 'packages', icon: PackageIcon, label: 'Packages' },
   { key: 'calendar', icon: Calendar, label: 'Availability' },
   { key: 'bookings', icon: ClipboardList, label: 'Bookings' },
@@ -317,6 +318,7 @@ export default function PropertyManage() {
       {activeTab === 'photos' && <PhotosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'videos' && <VideosTab property={property} onRefresh={fetchData} />}
       {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} packages={propertyPackages} onRefresh={fetchData} onJumpToPackages={() => setActiveTab('packages')} />}
+      {activeTab === 'plan' && <FloorPlanTab property={property} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'packages' && <PackagesTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
@@ -1825,6 +1827,275 @@ function PhotosTab({ property, onRefresh }) {
 // Pretty label for snake_case enum values: "junior_suite" → "Junior Suite"
 function prettyLabel(s) {
   return String(s || '').split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+}
+
+// ============================================
+// FLOOR PLAN TAB — upload an image of the property's floor plan,
+// then drag each room from the "Unplaced" tray onto it. Marker
+// positions persist as % coordinates on rooms.floor_plan_x/y.
+// ============================================
+function FloorPlanTab({ property, rooms, onRefresh }) {
+  const { t } = useTranslation()
+  const [planUrl, setPlanUrl] = useState(property?.floor_plan_url || null)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState(null)
+  // The room currently being dragged — tracked locally so the drop
+  // handler on the image knows which room.id to update.
+  const [draggingRoomId, setDraggingRoomId] = useState(null)
+  // Local positions cache — keyed by room.id. Lets us update the UI
+  // instantly on drop without waiting for the parent refetch.
+  const [localPositions, setLocalPositions] = useState(() => {
+    const m = {}
+    for (const r of rooms) {
+      if (r.floor_plan_x != null && r.floor_plan_y != null) {
+        m[r.id] = { x: Number(r.floor_plan_x), y: Number(r.floor_plan_y) }
+      }
+    }
+    return m
+  })
+  // Re-seed local cache when the parent re-fetches rooms.
+  useEffect(() => {
+    const m = {}
+    for (const r of rooms) {
+      if (r.floor_plan_x != null && r.floor_plan_y != null) {
+        m[r.id] = { x: Number(r.floor_plan_x), y: Number(r.floor_plan_y) }
+      }
+    }
+    setLocalPositions(m)
+  }, [rooms])
+  // And sync the upload state when the parent's property reference
+  // changes (e.g. after a fetch that picks up the new URL).
+  useEffect(() => { setPlanUrl(property?.floor_plan_url || null) }, [property?.floor_plan_url])
+
+  async function handleUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true); setError(null)
+    const ext = file.name.split('.').pop()
+    const filename = `floor-plan-${Date.now()}.${ext}`
+    const path = `properties/${property.id}/${filename}`
+    const { error: upErr } = await supabase.storage
+      .from('property-photos')
+      .upload(path, file, { contentType: file.type })
+    if (upErr) {
+      setUploading(false)
+      setError(`Upload failed: ${upErr.message}`)
+      return
+    }
+    const { data: urlData } = supabase.storage.from('property-photos').getPublicUrl(path)
+    const url = urlData?.publicUrl
+    const { error: dbErr } = await supabase
+      .from('properties')
+      .update({ floor_plan_url: url })
+      .eq('id', property.id)
+    setUploading(false)
+    if (dbErr) {
+      setError(`Saved file but couldn't update property: ${dbErr.message}`)
+    } else {
+      setPlanUrl(url)
+      onRefresh?.()
+    }
+  }
+
+  async function handleRemovePlan() {
+    if (!confirm(t('manage.confirm_remove_plan', 'Remove this floor plan? Room positions will be cleared.'))) return
+    setError(null)
+    // Clear the URL on the property AND null out every room's
+    // coordinates — the positions don't make sense without the image.
+    await supabase.from('properties').update({ floor_plan_url: null }).eq('id', property.id)
+    await supabase.from('rooms').update({ floor_plan_x: null, floor_plan_y: null }).eq('property_id', property.id)
+    setPlanUrl(null)
+    setLocalPositions({})
+    onRefresh?.()
+  }
+
+  // Drag-and-drop — HTML5 native API.
+  function handleRoomDragStart(e, roomId) {
+    setDraggingRoomId(roomId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', roomId)
+  }
+  function handleRoomDragEnd() { setDraggingRoomId(null) }
+  function handlePlanDragOver(e) {
+    if (!draggingRoomId) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+  async function handlePlanDrop(e) {
+    e.preventDefault()
+    const roomId = draggingRoomId || e.dataTransfer.getData('text/plain')
+    setDraggingRoomId(null)
+    if (!roomId) return
+    // Compute coordinates as % from the image's bounding rect.
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width) * 100
+    const y = ((e.clientY - rect.top)  / rect.height) * 100
+    // Clamp to 0–100 (mostly defensive — getBoundingClientRect should
+    // already constrain the cursor inside the image).
+    const cx = Math.max(0, Math.min(100, x))
+    const cy = Math.max(0, Math.min(100, y))
+    // Optimistic UI — drop the marker now, persist async.
+    setLocalPositions(prev => ({ ...prev, [roomId]: { x: cx, y: cy } }))
+    const { error: upErr } = await supabase
+      .from('rooms')
+      .update({ floor_plan_x: cx.toFixed(2), floor_plan_y: cy.toFixed(2) })
+      .eq('id', roomId)
+    if (upErr) {
+      setError(`Could not save room position: ${upErr.message}`)
+      // Revert on failure
+      setLocalPositions(prev => {
+        const next = { ...prev }; delete next[roomId]; return next
+      })
+    } else {
+      onRefresh?.()
+    }
+  }
+  async function handleMarkerRemove(roomId) {
+    setLocalPositions(prev => {
+      const next = { ...prev }; delete next[roomId]; return next
+    })
+    const { error: upErr } = await supabase
+      .from('rooms').update({ floor_plan_x: null, floor_plan_y: null }).eq('id', roomId)
+    if (upErr) setError(upErr.message)
+    else onRefresh?.()
+  }
+
+  // Partition rooms into placed (has coordinates) and unplaced.
+  const placedRooms   = rooms.filter(r => localPositions[r.id])
+  const unplacedRooms = rooms.filter(r => !localPositions[r.id])
+
+  // ── Render ────────────────────────────────────────────────
+  if (!planUrl) {
+    return (
+      <Card className="p-8">
+        <div className="max-w-md mx-auto text-center">
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-ocean/15 to-electric/15 flex items-center justify-center mb-4">
+            <MapIcon size={26} className="text-ocean" />
+          </div>
+          <h3 className="text-xl font-bold text-deep mb-2">
+            {t('manage.plan_empty_title', 'Upload your floor plan')}
+          </h3>
+          <p className="text-sm text-gray-500 mb-5 leading-relaxed">
+            {t('manage.plan_empty_desc', 'A schematic, a photo, or a hand-drawn sketch. Once uploaded, drag each room onto the plan to place it where it actually is in your property.')}
+          </p>
+          <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-ocean to-electric text-white font-bold text-sm cursor-pointer hover:shadow-md transition-all">
+            <Upload size={16} />
+            {uploading ? t('common.uploading', 'Uploading…') : t('manage.plan_upload', 'Choose an image')}
+            <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
+          </label>
+          {error && (
+            <div className="mt-3 px-3 py-2 rounded-lg bg-sunset/10 text-sunset text-xs font-semibold">{error}</div>
+          )}
+        </div>
+      </Card>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-xs text-gray-500">
+          {t('manage.plan_toolbar_hint', 'Drag a room from below onto the plan to place it. Click a marker to remove it.')}
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-deep hover:border-ocean cursor-pointer transition-all">
+            <Upload size={12} />
+            {uploading ? '…' : t('manage.plan_replace', 'Replace image')}
+            <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
+          </label>
+          <button
+            type="button"
+            onClick={handleRemovePlan}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-sunset/30 text-xs font-bold text-sunset hover:bg-sunset/5 transition-all"
+          >
+            <Trash2 size={12} />
+            {t('manage.plan_remove', 'Remove plan')}
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="px-3 py-2 rounded-lg bg-sunset/10 text-sunset text-xs font-semibold">{error}</div>
+      )}
+
+      {/* Plan canvas — drop target */}
+      <div
+        onDragOver={handlePlanDragOver}
+        onDrop={handlePlanDrop}
+        className="relative w-full rounded-2xl border-2 border-dashed border-ocean/30 bg-gray-50 overflow-hidden select-none"
+        style={{ minHeight: 360 }}
+      >
+        <img
+          src={planUrl}
+          alt="Floor plan"
+          className="w-full h-auto block pointer-events-none"
+          draggable={false}
+        />
+        {/* Markers — overlaid by % coords */}
+        {placedRooms.map(room => {
+          const pos = localPositions[room.id]
+          if (!pos) return null
+          return (
+            <button
+              type="button"
+              key={room.id}
+              onClick={() => handleMarkerRemove(room.id)}
+              title={`${room.name} — click to remove`}
+              style={{
+                position: 'absolute',
+                left: `${pos.x}%`,
+                top:  `${pos.y}%`,
+                transform: 'translate(-50%, -50%)',
+              }}
+              className="px-2.5 py-1.5 rounded-full bg-gradient-to-r from-orange to-pink-500 text-white text-[11px] font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer ring-2 ring-white"
+            >
+              🛏️ {room.name}
+            </button>
+          )
+        })}
+        {/* Empty-state hint when no markers yet */}
+        {placedRooms.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-white/90 backdrop-blur px-4 py-2.5 rounded-full text-xs font-bold text-deep shadow-lg">
+              ⬇️ {t('manage.plan_drop_here', 'Drag a room here to place it')}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Unplaced tray */}
+      <div>
+        <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-2">
+          {t('manage.plan_unplaced', 'Unplaced rooms')} · {unplacedRooms.length}
+        </div>
+        {unplacedRooms.length === 0 ? (
+          <div className="text-xs text-libre font-semibold py-2">
+            ✓ {t('manage.plan_all_placed', 'Every room is placed on the plan.')}
+          </div>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {unplacedRooms.map(room => (
+              <button
+                key={room.id}
+                type="button"
+                draggable
+                onDragStart={(e) => handleRoomDragStart(e, room.id)}
+                onDragEnd={handleRoomDragEnd}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border-2 border-dashed border-gray-300 text-xs font-bold text-deep cursor-grab active:cursor-grabbing hover:border-ocean hover:bg-ocean/5 transition-all ${
+                  draggingRoomId === room.id ? 'opacity-50' : ''
+                }`}
+              >
+                <span className="text-gray-300">⋮⋮</span>
+                🛏️ {room.name}
+                <span className="text-[10px] text-gray-400 font-normal">×{room.quantity}</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 // ============================================
