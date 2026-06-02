@@ -13,6 +13,7 @@ import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import PhoneInput from '../../components/ui/PhoneInput'
 import UndoToast from '../../components/ui/UndoToast'
+import { downloadCheckoutBill } from '../../lib/bill'
 
 const STATUS_CONFIG = {
   available:   { label: 'Available',        color: 'bg-emerald-100 text-emerald-700 border-emerald-200', dot: 'bg-emerald-500' },
@@ -873,10 +874,11 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
   const [guests, setGuests]     = useState([])
   const [charges, setCharges]   = useState([])
   const [vouchers, setVouchers] = useState([])    // S3e — guest_vouchers entitlements
+  const [property, setProperty] = useState(null)  // S3h — needed for the check-out bill PDF
   const [loadingExtras, setLoadingExtras] = useState(false)
 
   useEffect(() => {
-    if (!booking) { setForm(null); setGuests([]); setCharges([]); setVouchers([]); return }
+    if (!booking) { setForm(null); setGuests([]); setCharges([]); setVouchers([]); setProperty(null); return }
     setForm({
       guest_name:       booking.guest_name       || '',
       guest_email:      booking.guest_email      || '',
@@ -891,16 +893,18 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
     })
     setError(null)
     setTab('booking')
-    // Lazy fetch guests + charges + vouchers in parallel
+    // Lazy fetch guests + charges + vouchers + property in parallel
     setLoadingExtras(true)
     Promise.all([
       supabase.from('booking_guests').select('*').eq('booking_id', booking.id).order('is_lead', { ascending: false }).order('created_at'),
       supabase.from('booking_charges').select('*').eq('booking_id', booking.id).order('charged_at', { ascending: false }),
       supabase.from('guest_vouchers').select('*').eq('booking_id', booking.id).order('created_at'),
-    ]).then(([gRes, cRes, vRes]) => {
+      supabase.from('properties').select('*').eq('id', booking.property_id).maybeSingle(),
+    ]).then(([gRes, cRes, vRes, pRes]) => {
       setGuests(gRes.data || [])
       setCharges(cRes.data || [])
       setVouchers(vRes.data || [])
+      setProperty(pRes.data || null)
       setLoadingExtras(false)
     })
   }, [booking])
@@ -1182,6 +1186,9 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
           onTogglePaid={togglePaid}
           onDelete={deleteCharge}
           onConsumeVoucher={consumeVoucher}
+          booking={booking}
+          room={rooms.find(r => r.id === booking.room_id)}
+          property={property}
         />
       )}
     </Modal>
@@ -1191,7 +1198,7 @@ function BookingEditModal({ booking, rooms, onClose, onSaved }) {
 // ──────────────────────────────────────────────────────────────────────────────
 // FolioPanel — list of charges + quick-add row + paid/unpaid toggle + total bar
 // ──────────────────────────────────────────────────────────────────────────────
-function FolioPanel({ charges, vouchers = [], loading, totals, onAdd, onTogglePaid, onDelete, onConsumeVoucher }) {
+function FolioPanel({ charges, vouchers = [], loading, totals, onAdd, onTogglePaid, onDelete, onConsumeVoucher, booking, room, property }) {
   const { t } = useTranslation()
   const [draft, setDraft] = useState({
     category: 'bar', description: '', unit_price: '', qty: 1,
@@ -1229,6 +1236,31 @@ function FolioPanel({ charges, vouchers = [], loading, totals, onAdd, onTogglePa
           </div>
         </div>
       </div>
+
+      {/* Check-out bill — generates the final invoice PDF for the guest
+          (S3h). Disabled when there's literally nothing to bill yet
+          (no charges, no consumed vouchers) since an empty bill is
+          meaningless. */}
+      {(charges.length > 0 || vouchers.some(v => (v.qty_consumed || 0) > 0)) && (
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={() => downloadCheckoutBill({
+              booking,
+              property: property || { name: 'Property' },
+              room,
+              charges,
+              vouchers,
+              guestName: booking?.guest_name,
+            })}
+            disabled={!booking || !property}
+            title="Generate the check-out bill PDF — printable, includes vouchers redeemed at $0 for the guest's records"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-deep text-white hover:bg-deep/90 disabled:bg-gray-200 disabled:text-gray-400 transition-colors"
+          >
+            📄 Print check-out bill
+          </button>
+        </div>
+      )}
 
       {/* Vouchers section (S3e) — entitlements the guest has via packages
           or rewards. "Use ×1" calls the consume_voucher RPC and mirrors
