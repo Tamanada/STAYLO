@@ -247,7 +247,8 @@ const STYLES = `
    from the row's bounding rect, so it never gets clipped by the
    overflow:auto on the grid container. STAYLO brand styling: dark
    gradient header, soft white body, brand-coloured chips. */
-.rm-info-pop{position:fixed;z-index:5000;width:1020px;max-width:96vw;background:#fff;border-radius:22px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:none;animation:rm-pop-in .15s ease-out}
+.rm-info-pop{position:fixed;z-index:5000;width:1020px;max-width:96vw;background:#fff;border-radius:22px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:auto;animation:rm-pop-in .15s ease-out}
+.rm-info-pop.pinned{box-shadow:0 28px 70px -10px rgba(255,107,0,.4),0 10px 30px -8px rgba(255,60,180,.2);border-color:rgba(255,107,0,.4)}
 /* Three-column body — receptionist sees everything in one glance.
    Packages got the WIDEST middle column so name + description + price
    are all on one line. David: "agrandir les polices, infos lisibles
@@ -255,7 +256,11 @@ const STYLES = `
 .rm-ip-cols{display:grid;grid-template-columns:200px 280px 1fr;gap:12px;padding:14px 16px 14px;max-height:68vh;overflow-y:auto}
 .rm-ip-col{display:flex;flex-direction:column;gap:11px;min-width:0}
 @keyframes rm-pop-in{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-.rm-ip-header{padding:16px 18px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative}
+.rm-ip-header{padding:16px 18px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative;cursor:grab;user-select:none}
+.rm-ip-header.dragging{cursor:grabbing}
+.rm-ip-close{position:absolute;top:10px;right:10px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;border:none;cursor:pointer;font-size:14px;line-height:1;transition:background .12s}
+.rm-ip-close:hover{background:rgba(255,255,255,.22)}
+.rm-ip-drag-hint{position:absolute;top:11px;right:46px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.45);pointer-events:none}
 .rm-ip-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin-bottom:3px}
 .rm-ip-title{font-size:20px;font-weight:800;line-height:1.2;color:#fff}
 .rm-ip-sub{font-size:13px;color:rgba(255,255,255,.75);margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -751,7 +756,49 @@ function SidebarItem({ icon, label, badge, badgeClass, active, onClick }) {
 // the parent on mouseenter). pointer-events:none so the popover never
 // steals hover from the row itself — the row continues to drive the
 // open/close state.
-function RoomInfoPopover({ room, packages, rewards, x, y, side }) {
+function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, onMouseEnter, onMouseLeave }) {
+  // Drag-to-reposition. The first time the user mouses down on the
+  // header, the popover becomes "pinned" — it stops auto-closing on
+  // row mouseleave and only goes away when the user clicks ×.
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [dragging, setDragging] = useState(false)
+  const [pinned, setPinned] = useState(false)
+  const dragStartRef = useRef(null)
+
+  function handleDragStart(e) {
+    if (e.button !== 0) return
+    // Don't start a drag if the user clicked the close button.
+    if (e.target.closest('.rm-ip-close')) return
+    e.preventDefault()
+    setDragging(true)
+    if (!pinned) {
+      setPinned(true)
+      onPin?.()
+    }
+    dragStartRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      offX: dragOffset.x,
+      offY: dragOffset.y,
+    }
+    const onMove = ev => {
+      const s = dragStartRef.current
+      if (!s) return
+      setDragOffset({
+        x: s.offX + (ev.clientX - s.mouseX),
+        y: s.offY + (ev.clientY - s.mouseY),
+      })
+    }
+    const onUp = () => {
+      dragStartRef.current = null
+      setDragging(false)
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+    }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+  }
+
   const amenities = Array.isArray(room.amenities) ? room.amenities : []
   // Map amenity keys → human labels via AMENITY_META so "wifi" reads
   // as "Free WiFi" and "breakfast_included" → its proper label.
@@ -764,11 +811,22 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side }) {
 
   // "Side" lets the parent flip the popover left/right depending on
   // where the row sits in the viewport (so we never get cut off on
-  // the right edge of large monitors).
-  const style = { left: x, top: y }
+  // the right edge of large monitors). dragOffset shifts it once the
+  // user grabs the header — additive to the anchor position.
+  const style = { left: x + dragOffset.x, top: y + dragOffset.y }
   return (
-    <div className="rm-info-pop" style={style} data-side={side}>
-      <div className="rm-ip-header">
+    <div
+      className={`rm-info-pop${pinned ? ' pinned' : ''}`}
+      style={style}
+      data-side={side}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={pinned ? undefined : onMouseLeave}
+    >
+      <div
+        className={`rm-ip-header${dragging ? ' dragging' : ''}`}
+        onMouseDown={handleDragStart}
+        title="Drag to reposition · click ✕ to close"
+      >
         <div className="rm-ip-eyebrow">Room details</div>
         <div className="rm-ip-title">{room.name}</div>
         <div className="rm-ip-sub">
@@ -782,6 +840,15 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side }) {
             <span className="rm-ip-price-net">net ${(Number(room.base_price) * 0.9).toFixed(0)}</span>
           </div>
         )}
+        {/* Drag hint + close — only visible when popover is interactive */}
+        {!pinned && <span className="rm-ip-drag-hint">⇕ drag</span>}
+        <button
+          type="button"
+          className="rm-ip-close"
+          onClick={(e) => { e.stopPropagation(); onClose?.() }}
+          aria-label="Close"
+          title="Close (Esc)"
+        >✕</button>
       </div>
       {/* Body — THREE columns for max density. The receptionist sees
           essentials + packages + amenities all without scrolling.
@@ -997,36 +1064,50 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, startDay
   // viewport edges (flips to the LEFT of the row if there's not
   // enough room on the right).
   const [hovered, setHovered] = useState(null)
+  // `pinned` flag — when the user starts dragging the popover, we
+  // disable the auto-close-on-row-leave behavior. Popover stays open
+  // until the user clicks ✕ or hovers a DIFFERENT room.
+  const [pinned, setPinned] = useState(false)
   const closeTimerRef = useRef(null)
 
   function handleRowEnter(e, room) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
+    // If the popover is pinned and we hover the SAME room, do nothing.
+    // If we hover a different room, swap the anchor (drop the pin so
+    // the new popover positions next to the new row).
+    if (pinned && hovered?.room?.id === room.id) return
     const rowRect = e.currentTarget.getBoundingClientRect()
     const POPOVER_W = 1020
     const GAP = 12
-    // Default: place popover to the RIGHT of the room-info col, just
-    // below the row. If there isn't room (right edge cuts off), flip
-    // to the LEFT side of the row.
-    const roomColW = 180 // matches .rm-tl-room-info default width
+    const roomColW = 180
     let x = rowRect.left + roomColW + GAP
     let side = 'right'
     if (x + POPOVER_W > window.innerWidth - 8) {
       x = Math.max(8, rowRect.left + roomColW - POPOVER_W - GAP)
       side = 'left'
     }
-    // Vertically: align with the row top, but clamp so it never goes
-    // above the viewport or off the bottom (where the popover would
-    // get cut by the browser chrome).
     let y = rowRect.top
     const POPOVER_MAX_H = 480
     if (y + POPOVER_MAX_H > window.innerHeight - 8) {
       y = Math.max(8, window.innerHeight - POPOVER_MAX_H - 8)
     }
     setHovered({ room, x, y, side })
+    setPinned(false)
   }
   function handleRowLeave() {
+    // Pinned = don't auto-close. The popover only goes away when the
+    // user clicks ✕ or hovers a different room.
+    if (pinned) return
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
     closeTimerRef.current = setTimeout(() => { setHovered(null); closeTimerRef.current = null }, 80)
+  }
+  function cancelClose() {
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
+  }
+  function closePopover() {
+    cancelClose()
+    setHovered(null)
+    setPinned(false)
   }
 
   return (
@@ -1107,6 +1188,10 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, startDay
           x={hovered.x}
           y={hovered.y}
           side={hovered.side}
+          onMouseEnter={cancelClose}
+          onMouseLeave={handleRowLeave}
+          onClose={closePopover}
+          onPin={() => setPinned(true)}
         />
       )}
     </>
@@ -1119,10 +1204,12 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
   // is rendered once at the view root so we don't get N popovers
   // racing each other.
   const [hovered, setHovered] = useState(null)
+  const [pinned, setPinned] = useState(false)   // drag = pin (same UX as Timeline)
   const closeTimerRef = useRef(null)
 
   function openFor(room, el) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
+    if (pinned && hovered?.room?.id === room.id) return
     const r = el.getBoundingClientRect()
     const POPOVER_W = 1020
     const GAP = 12
@@ -1138,10 +1225,20 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
       y = Math.max(8, window.innerHeight - POPOVER_MAX_H - 8)
     }
     setHovered({ room, x, y, side })
+    setPinned(false)
   }
   function closeSoon() {
+    if (pinned) return
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
     closeTimerRef.current = setTimeout(() => { setHovered(null); closeTimerRef.current = null }, 80)
+  }
+  function cancelClose() {
+    if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
+  }
+  function closePopover() {
+    cancelClose()
+    setHovered(null)
+    setPinned(false)
   }
 
   if (floorsMap.size === 0) {
@@ -1173,6 +1270,10 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
           x={hovered.x}
           y={hovered.y}
           side={hovered.side}
+          onMouseEnter={cancelClose}
+          onMouseLeave={closeSoon}
+          onClose={closePopover}
+          onPin={() => setPinned(true)}
         />
       )}
     </div>
