@@ -163,6 +163,8 @@ const STYLES = `
 .rm-tl-grid{flex:1;position:relative;height:100%;display:flex}
 .rm-tl-cell{flex:1;min-width:60px;border-right:1px solid #F0EDE8;position:relative;height:100%}
 .rm-tl-cell.today{background:rgba(255,107,0,.04)}
+.rm-tl-cell.blocked{background:repeating-linear-gradient(45deg,rgba(255,60,180,.10),rgba(255,60,180,.10) 6px,rgba(255,60,180,.18) 6px,rgba(255,60,180,.18) 12px);cursor:not-allowed}
+.rm-tl-cell.blocked::after{content:'BLOQUÉ';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#A21CAF;letter-spacing:.05em;text-shadow:0 1px 0 rgba(255,255,255,.7)}
 .rm-res-bar{position:absolute;height:28px;top:8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:600;color:white;transition:opacity .12s;white-space:nowrap;overflow:hidden;z-index:1;border:none;font-family:inherit}
 .rm-res-bar:hover{opacity:.85;z-index:5}
 .rm-rb-confirmed{background:linear-gradient(135deg,#4C51BF,#6C5CE7)}
@@ -406,10 +408,13 @@ export default function RoomManagement() {
     return c
   }, [enrichedRooms])
 
-  // Fetch upcoming rewards/specials from room_availability — runs once
-  // the rooms list is known. We only ask for rows where there's
-  // SOMETHING to display (specials array non-empty, OR perk text, OR
-  // promo_label) so we don't pull the whole calendar.
+  // Fetch upcoming room_availability — runs once the rooms list is known.
+  // We need TWO things from this query:
+  //   1. Rewards (rows with specials / perk / promo_*) for the popover
+  //   2. Blocked days (rows with is_blocked=true) for the Timeline cells
+  //      so blocked dates render like Disponibilités' "BLOQUÉ" pink cells.
+  // Keeping both in one fetch + filtering client-side is cheaper than
+  // two queries.
   useEffect(() => {
     if (rooms.length === 0) return
     let cancelled = false
@@ -420,14 +425,17 @@ export default function RoomManagement() {
     ;(async () => {
       const { data, error } = await supabase
         .from('room_availability')
-        .select('room_id, date, specials, perk, promo_label, promo_pct, min_stay')
+        .select('room_id, date, specials, perk, promo_label, promo_pct, min_stay, is_blocked')
         .in('room_id', roomIds)
         .gte('date', todayISO)
         .lte('date', horizonISO)
       if (cancelled) return
-      if (error) { console.warn('upcoming rewards fetch failed:', error); return }
-      // Filter client-side to rows that actually have something to show.
+      if (error) { console.warn('room_availability fetch failed:', error); return }
+      // Keep any row that has SOMETHING to surface — a reward OR a block.
+      // Empty rows (just available_count snapshots with no specials/blocks)
+      // are dropped to keep the in-memory set small.
       const meaningful = (data || []).filter(r =>
+        r.is_blocked ||
         (Array.isArray(r.specials) && r.specials.length > 0) ||
         r.perk || r.promo_label || r.promo_pct
       )
@@ -451,6 +459,20 @@ export default function RoomManagement() {
     }
     return m
   }, [packages])
+
+  // Blocked dates per room — for the Timeline cell renderer to paint
+  // pink "BLOQUÉ" cells like Disponibilités does. Set of ISO date
+  // strings = O(1) lookup per cell.
+  const blockedByRoom = useMemo(() => {
+    const m = new Map()
+    for (const row of upcomingAvail) {
+      if (!row.is_blocked) continue
+      const set = m.get(row.room_id) || new Set()
+      set.add(row.date)
+      m.set(row.room_id, set)
+    }
+    return m
+  }, [upcomingAvail])
 
   // Group rewards per room, then by reward identity (label + perk) so
   // a reward applying to 5 days shows ONCE with a date list rather
@@ -699,6 +721,7 @@ export default function RoomManagement() {
                 startDay={startDay} dates={dates} todayDate={todayDate}
                 packagesByRoom={packagesByRoom}
                 rewardsByRoom={rewardsByRoom}
+                blockedByRoom={blockedByRoom}
                 onPick={setSelectedRoom}
                 onCheckIn={(room, date) => startWalkIn(room.id, date)} />
             ) : view === 'grid' ? (
@@ -1042,7 +1065,7 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
 }
 
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, startDay, dates, todayDate, onPick, onCheckIn }) {
+function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, onPick, onCheckIn }) {
   const resByRoom = useMemo(() => {
     const m = new Map()
     const endDay = dates[dates.length - 1]
@@ -1146,6 +1169,20 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, startDay
             <div className="rm-tl-grid">
               {dates.map((d, i) => {
                 const isToday = d.toDateString() === todayDate.toDateString()
+                const iso = isoDate(d)
+                // Mirror Disponibilités: cells flagged is_blocked in
+                // room_availability render with hatched pink bg + "BLOQUÉ"
+                // label. blockedByRoom is the Map of roomId → Set<ISO>
+                // built from the same query as rewards (no extra fetch).
+                const isBlocked = blockedByRoom?.get(room.id)?.has(iso)
+                if (isBlocked) {
+                  return (
+                    <div key={i}
+                      className={`rm-tl-cell blocked ${isToday ? 'today' : ''}`}
+                      title="This date is blocked for sale (set in Disponibilités → Timeline)"
+                    />
+                  )
+                }
                 // Clicking an empty cell launches the check-in modal
                 // pre-filled with this room + the cell's date. The
                 // reservation bars above sit on TOP of cells (z-index
@@ -1153,7 +1190,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, startDay
                 return (
                   <div key={i}
                     className={`rm-tl-cell ${isToday ? 'today' : ''}`}
-                    onClick={() => onCheckIn?.(room, isoDate(d))}
+                    onClick={() => onCheckIn?.(room, iso)}
                     style={{ cursor: 'pointer' }}
                     title="Click to start a check-in for this date"
                   />
