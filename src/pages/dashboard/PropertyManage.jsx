@@ -2094,21 +2094,16 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         return
       }
 
-      // ─── 3. Render the clean SVG (outline mode) ──────────────
+      // ─── 3. Keep the original image as the background ────────
+      // Earlier iterations generated a clean STAYLO-styled SVG and
+      // replaced the original. That made the plan look generic and
+      // disconnected from the building's real geometry. We now KEEP
+      // the original raw image as the floor_plan_url; the AI outlines
+      // are stored separately in properties.floor_plan_outlines and
+      // overlaid as React elements at render time (transparent
+      // rectangles + placeholder numbers floating on top of the image).
       setAiStage('rendering')
-      const svgString = generateOutlineFloorPlanSVG({
-        outlines: detectedOutlines,
-        title: property.name,
-      })
-      const svgBlob = svgToBlob(svgString)
-      const svgPath = `properties/${property.id}/floor-plan-${stamp}.svg`
-      const { error: svgUpErr } = await supabase.storage
-        .from('property-photos')
-        .upload(svgPath, svgBlob, { contentType: 'image/svg+xml', upsert: false })
-      if (svgUpErr) throw new Error(`SVG upload failed: ${svgUpErr.message}`)
-      const { data: svgUrlData } = supabase.storage.from('property-photos').getPublicUrl(svgPath)
-      const svgUrl = svgUrlData?.publicUrl
-      if (!svgUrl) throw new Error('Could not derive public URL for generated SVG')
+      const finalUrl = rawUrl
 
       // ─── 4. Persist URL + outlines + clear stale positions ───
       // Re-running the AI on a NEW plan produces new outline coordinates,
@@ -2118,7 +2113,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
       const writes = [
         supabase.from('properties')
           .update({
-            floor_plan_url: svgUrl,
+            floor_plan_url: finalUrl,
             floor_plan_outlines: detectedOutlines,
           })
           .eq('id', property.id),
@@ -2135,7 +2130,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
       if (firstErr) throw new Error(`Plan generated but couldn't save: ${firstErr.message}`)
 
       // ─── 5. Done — surface result + reset local state ────────
-      setPlanUrl(svgUrl)
+      setPlanUrl(finalUrl)
       setOutlines(detectedOutlines)
       setLocalPositions(Object.fromEntries(rooms.map(r => [r.id, []])))
       setAiResult({
@@ -2406,7 +2401,11 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         <div className="px-3 py-2 rounded-lg bg-sunset/10 text-sunset text-xs font-semibold">{error}</div>
       )}
 
-      {/* Plan canvas — drop target */}
+      {/* Plan canvas — drop target. The original image stays as the
+          background; AI-detected outlines are overlaid as translucent
+          rectangles + placeholder numbers ON TOP of the image so the
+          hotelier sees both the real building geometry AND the AI's
+          read of it. */}
       <div
         onDragOver={handlePlanDragOver}
         onDrop={handlePlanDrop}
@@ -2419,6 +2418,31 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           className="w-full h-auto block pointer-events-none"
           draggable={false}
         />
+        {/* AI outlines overlay — only when outlines exist. Each one is
+            a transparent rectangle in ocean tint with a placeholder
+            number at its centre. pointer-events-none so clicks pass
+            through to the underlying drop zone (we want drag-drop to
+            target the canvas, not an individual outline). */}
+        {outlines.length > 0 && outlines.map((o, i) => {
+          const w = Math.max(2, Number(o.width_percent)  || 8)
+          const h = Math.max(2, Number(o.height_percent) || 6)
+          return (
+            <div
+              key={`outline-${i}`}
+              className="absolute rounded-lg border-2 border-ocean/55 bg-ocean/[0.08] pointer-events-none flex items-center justify-center"
+              style={{
+                left:   `${o.x_percent - w / 2}%`,
+                top:    `${o.y_percent - h / 2}%`,
+                width:  `${w}%`,
+                height: `${h}%`,
+              }}
+            >
+              <span className="text-deep/35 font-extrabold text-sm md:text-base select-none">
+                {i + 1}
+              </span>
+            </div>
+          )
+        })}
         {/* Markers — one per placed unit. Non-dorm rooms: click removes
             THAT specific unit. Dorm rooms: click opens the sub-plan modal
             with the bed grid (removal lives inside the modal). */}
