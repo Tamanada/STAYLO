@@ -1930,6 +1930,19 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   // doing during the ~20-30s round-trip to Claude Vision.
   const [aiStage, setAiStage] = useState(null)    // null | 'uploading' | 'analysing' | 'saving'
   const [aiResult, setAiResult] = useState(null)  // { detected: number, notes?: string } | null
+  // V6-Phase 2 manual drawing mode. After 6 AI iterations confirmed
+  // Claude Vision can't deliver pixel-accurate polygons on dense CAD
+  // plans, David pivoted to fast manual tracing. The hotelier clicks
+  // "Place BABA" on a tray chip, then clicks two corners on the canvas
+  // to drop a rectangle zone for BABA. ~10 sec per rectangular room,
+  // ~5 min total for 30 rooms. 100% accurate.
+  //   drawingForRoom : { room, unitIndex } | null
+  //   pendingRect    : { x1, y1, x2, y2 } in % — first corner placed,
+  //                    second following the cursor (null = waiting for
+  //                    the first click)
+  const [drawingForRoom, setDrawingForRoom] = useState(null)
+  const [pendingRect,    setPendingRect]    = useState(null)
+  const [cursorPos,      setCursorPos]      = useState({ x: 50, y: 50 })
   // Outlines from any previous AI extraction. We no longer FETCH new
   // outlines (the AI detection path was dropped 2026-06-05 — it was
   // imprecise on dense CAD plans and the hotelier prefers to place
@@ -2067,6 +2080,143 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
       onRefresh?.()
     }
   }
+
+  // ──────────────────────────────────────────────────────────────
+  // Manual drawing (V6 Phase 2)
+  // ──────────────────────────────────────────────────────────────
+  // Count of active (= non-deleted) zones assigned to a given room.
+  // Used by the tray to show "X/Y placed" badges and to decide whether
+  // a room still has units to place.
+  function assignedCount(roomId) {
+    return zones.filter(z => !z.deleted && z.assigned_room_id === roomId).length
+  }
+  // Lowest unused unit_index in 1..max for this room. The hotelier
+  // can remove unit 2 of a 3-unit room, then re-place it — the new
+  // placement gets index 2 again, not 4.
+  function nextZoneIndexFor(roomId, max) {
+    const used = new Set(
+      zones.filter(z => !z.deleted && z.assigned_room_id === roomId).map(z => z.unit_index)
+    )
+    for (let i = 1; i <= max; i++) if (!used.has(i)) return i
+    return max
+  }
+
+  /**
+   * Start drawing a new zone for a specific room. The hotelier clicks
+   * the "+ Place BABA" button on a tray chip → the canvas enters
+   * crosshair mode → two clicks on the plan drop a rectangle zone
+   * with assigned_room_id and unit_index set.
+   *
+   * For dorms, only 1 zone per room — the unit_index stays null.
+   * For multi-unit rooms (HQ double bed × 9), unit_index iterates 1..9.
+   */
+  function handleStartDrawing(room) {
+    const dorm = isDormRoom(room)
+    const max = dorm ? 1 : (room.quantity || 1)
+    if (assignedCount(room.id) >= max) return
+    setDrawingForRoom({
+      room,
+      unitIndex: dorm ? null : nextZoneIndexFor(room.id, max),
+    })
+    setPendingRect(null)
+  }
+  function handleCancelDrawing() {
+    setDrawingForRoom(null)
+    setPendingRect(null)
+  }
+
+  // Compute pointer position as % of the canvas bounding rect. Shared
+  // by every pointer handler so cursor preview + zone vertices stay
+  // consistent.
+  function pointerPctOf(e) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - rect.left) / rect.width)  * 100
+    const y = ((e.clientY - rect.top)  / rect.height) * 100
+    return {
+      x: Math.max(0, Math.min(100, x)),
+      y: Math.max(0, Math.min(100, y)),
+    }
+  }
+
+  function handleCanvasClick(e) {
+    if (!drawingForRoom) return
+    const p = pointerPctOf(e)
+    if (!pendingRect) {
+      // First click — anchor the first corner. Second corner tracks
+      // the cursor via handleCanvasMove until the next click.
+      setPendingRect({ x1: p.x, y1: p.y, x2: p.x, y2: p.y })
+      return
+    }
+    // Second click — finalise the rectangle. Defensive: ignore micro-
+    // rectangles (probably an accidental double-click on the first
+    // corner). The hotelier can re-click to start over.
+    if (Math.abs(p.x - pendingRect.x1) < 0.8 || Math.abs(p.y - pendingRect.y1) < 0.8) return
+    finaliseRect(p)
+  }
+  function handleCanvasMove(e) {
+    if (!drawingForRoom) return
+    const p = pointerPctOf(e)
+    setCursorPos(p)
+    if (pendingRect) setPendingRect(r => ({ ...r, x2: p.x, y2: p.y }))
+  }
+  async function finaliseRect(p2) {
+    const { room, unitIndex } = drawingForRoom
+    const minX = Math.min(pendingRect.x1, p2.x)
+    const maxX = Math.max(pendingRect.x1, p2.x)
+    const minY = Math.min(pendingRect.y1, p2.y)
+    const maxY = Math.max(pendingRect.y1, p2.y)
+    // Clockwise from top-left.
+    const newZone = {
+      id: `z-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      vertices: [[minX, minY], [maxX, minY], [maxX, maxY], [minX, maxY]],
+      deleted: false,
+      assigned_room_id: room.id,
+      unit_index: unitIndex,
+    }
+    const next = [...zones, newZone]
+    setZones(next)
+    setPendingRect(null)
+
+    // Stay in drawing mode if more units are needed (multi-unit case).
+    // Auto-pick the next unit_index. For dorms or 1-unit rooms, exit.
+    const dorm = isDormRoom(room)
+    const max = dorm ? 1 : (room.quantity || 1)
+    const placedAfter = next.filter(z => !z.deleted && z.assigned_room_id === room.id).length
+    if (placedAfter < max) {
+      setDrawingForRoom({
+        room,
+        unitIndex: dorm ? null : nextZoneIndexFor(room.id, max) + 1 > max
+          ? max
+          : (() => {
+              const used = new Set(next.filter(z => !z.deleted && z.assigned_room_id === room.id).map(z => z.unit_index))
+              for (let i = 1; i <= max; i++) if (!used.has(i)) return i
+              return max
+            })(),
+      })
+    } else {
+      setDrawingForRoom(null)
+    }
+
+    const { error: upErr } = await supabase
+      .from('properties')
+      .update({ floor_plan_zones: next })
+      .eq('id', property.id)
+    if (upErr) {
+      setError(`Couldn't save zone: ${upErr.message}`)
+      setZones(zones)   // revert
+    } else {
+      onRefresh?.()
+    }
+  }
+
+  // Escape exits drawing mode. Saves the hotelier from a stuck state if
+  // they meant to click somewhere else.
+  useEffect(() => {
+    if (!drawingForRoom) return
+    function onKey(e) { if (e.key === 'Escape') handleCancelDrawing() }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [drawingForRoom])
 
   // Sub-plan modal for dorm rooms — opens when the hotelier clicks a
   // dorm marker on the main plan. Carries the room being inspected.
@@ -2503,6 +2653,33 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         </div>
       )}
 
+      {/* Drawing-mode banner — appears when the hotelier is mid-placement.
+          Pins to the top of the canvas with the current room name + a
+          cancel button. */}
+      {drawingForRoom && (
+        <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-orange/15 to-pink-500/15 border border-orange/40 text-deep text-xs">
+          <div className="leading-relaxed">
+            <span className="font-bold">
+              {t('manage.plan_drawing_for', '✏️ Drawing {{name}}', { name: drawingForRoom.room.name })}
+              {drawingForRoom.unitIndex && (drawingForRoom.room.quantity || 1) > 1
+                ? ` ${drawingForRoom.unitIndex}/${drawingForRoom.room.quantity}`
+                : ''}
+              {' · '}
+            </span>
+            {pendingRect
+              ? t('manage.plan_drawing_corner2', 'Click the opposite corner to place it. Hit Esc to cancel.')
+              : t('manage.plan_drawing_corner1', 'Click two corners on the plan to draw a rectangle. Esc to cancel.')}
+          </div>
+          <button
+            type="button"
+            onClick={handleCancelDrawing}
+            className="px-2.5 py-1 rounded-lg bg-white border border-deep/15 text-[10px] font-bold text-deep/70 hover:bg-deep/5 hover:text-deep transition-all"
+          >
+            {t('common.cancel', 'Cancel')}
+          </button>
+        </div>
+      )}
+
       {/* Plan canvas — drop target. The original image is the background;
           when cleanView is ON, a CSS filter boosts contrast + desaturates
           so the wall structure pops and furniture/decoration fades.
@@ -2510,7 +2687,11 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
       <div
         onDragOver={handlePlanDragOver}
         onDrop={handlePlanDrop}
-        className="relative w-full rounded-2xl border-2 border-dashed border-ocean/30 bg-white overflow-hidden select-none"
+        onClick={handleCanvasClick}
+        onMouseMove={handleCanvasMove}
+        className={`relative w-full rounded-2xl border-2 border-dashed border-ocean/30 bg-white overflow-hidden select-none ${
+          drawingForRoom ? 'cursor-crosshair' : ''
+        }`}
         style={{ minHeight: 360 }}
       >
         <img
@@ -2548,6 +2729,35 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
               )
             })}
           </svg>
+        )}
+        {/* Drawing preview — the rectangle currently being placed. The
+            first click anchors x1/y1 and starts following the cursor
+            with x2/y2. The second click finalises it (handleCanvasClick). */}
+        {drawingForRoom && pendingRect && (
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            <rect
+              x={Math.min(pendingRect.x1, pendingRect.x2).toFixed(2)}
+              y={Math.min(pendingRect.y1, pendingRect.y2).toFixed(2)}
+              width={Math.abs(pendingRect.x2 - pendingRect.x1).toFixed(2)}
+              height={Math.abs(pendingRect.y2 - pendingRect.y1).toFixed(2)}
+              className="fill-orange/30 stroke-orange"
+              strokeWidth="0.4"
+              vectorEffect="non-scaling-stroke"
+              strokeDasharray="1.2 0.8"
+            />
+          </svg>
+        )}
+        {/* First-click marker — a tiny dot showing where corner 1 landed
+            so the hotelier sees the rectangle's anchor at a glance. */}
+        {drawingForRoom && pendingRect && (
+          <div
+            className="absolute w-2 h-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange ring-2 ring-white shadow pointer-events-none"
+            style={{ left: `${pendingRect.x1}%`, top: `${pendingRect.y1}%` }}
+          />
         )}
         {/* Per-zone HTML overlay — centroid-anchored label + delete X
             button on hover. Sits above the SVG so it's clickable. */}
@@ -2642,22 +2852,30 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         ) : (
           <div className="flex flex-wrap gap-2">
             {trayRooms.map(room => {
-              const placed = placedCount(room.id)
+              // Prefer V6 zone count once any zones exist for this property;
+              // fall back to V5 positions otherwise (backward compat).
+              const usesZones = zones.some(z => !z.deleted && z.assigned_room_id)
+              const placed = usesZones ? assignedCount(room.id) : placedCount(room.id)
               const max    = maxPositionsFor(room)
               const dorm   = isDormRoom(room)
               const beds   = room.quantity || 1
+              const drawing = drawingForRoom?.room.id === room.id
               return (
                 <button
                   key={room.id}
                   type="button"
+                  onClick={() => handleStartDrawing(room)}
                   draggable
                   onDragStart={(e) => handleRoomDragStart(e, room.id)}
                   onDragEnd={handleRoomDragEnd}
-                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border-2 border-dashed text-xs font-bold text-deep cursor-grab active:cursor-grabbing transition-all ${
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border-2 border-dashed text-xs font-bold text-deep cursor-pointer transition-all ${
                     dorm
                       ? 'border-libre/40 hover:border-libre hover:bg-libre/5'
                       : 'border-gray-300 hover:border-ocean hover:bg-ocean/5'
-                  } ${draggingRoomId === room.id ? 'opacity-50' : ''}`}
+                  } ${draggingRoomId === room.id ? 'opacity-50' : ''} ${
+                    drawing ? 'ring-2 ring-orange ring-offset-1' : ''
+                  }`}
+                  title={t('manage.plan_place_hint', 'Click to place {{name}} — then click two corners on the plan', { name: room.name })}
                 >
                   <span className="text-gray-300">⋮⋮</span>
                   🛏️ {room.name}
