@@ -748,6 +748,8 @@ export default function RoomManagement() {
                 setActiveFloor={setActiveFloor} property={property}
                 packagesByRoom={packagesByRoom}
                 rewardsByRoom={rewardsByRoom}
+                bookings={bookings}
+                today={today}
                 onPick={setSelectedRoom} />
             )}
           </div>
@@ -1361,7 +1363,7 @@ function GridCard({ room, onPick, onHoverIn, onHoverOut }) {
 }
 
 // ── Floor plan view ──
-function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, onPick }) {
+function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, bookings, today, onPick }) {
   // V7 shortcut — if the hotelier has configured zones (drag-drop shapes
   // on the architect plan in PropertyManage), display THAT instead of
   // the auto-layout fallback. The fallback is kept for properties that
@@ -1383,6 +1385,8 @@ function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, onPic
         planUrl={planUrl}
         zones={liveZones}
         roomById={roomById}
+        bookings={bookings || []}
+        today={today}
         property={property}
         onPick={onPick}
       />
@@ -1421,12 +1425,72 @@ function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, onPic
 // V7 reception view — architect plan as background, V7 shape zones as
 // clickable status-coloured rectangles/circles/polygons on top.
 // ──────────────────────────────────────────────────────────────────────
-function FloorPlanV7View({ planUrl, zones, roomById, property, onPick }) {
-  // Find the status colour for a given zone via its assigned room.
+function FloorPlanV7View({ planUrl, zones, roomById, bookings, today, property, onPick }) {
+  // Per-room booking count active today — used to compute PER-UNIT
+  // status instead of inheriting the type-level room.status. Without
+  // this, a room with quantity=3 and ONE booking would show all 3
+  // V7 zones as "occupied" because the parent rolls the type-level
+  // status up to "occupied" as soon as any unit is booked.
+  const bookingsByRoom = (() => {
+    const map = new Map()
+    for (const b of (bookings || [])) {
+      if (!b?.room_id) continue
+      if (b.status === 'cancelled') continue
+      if (today && (b.check_in > today || b.check_out <= today)) continue
+      const arr = map.get(b.room_id) || []
+      arr.push(b)
+      map.set(b.room_id, arr)
+    }
+    return map
+  })()
+  /**
+   * Status for one specific zone (= one physical unit, identified by
+   * room.id + zone.unit_index).
+   *
+   * Rules:
+   *   1. If the room.status is 'blocked' or 'maintenance' (type-wide
+   *      hotelier action), every unit inherits it — those flags don't
+   *      partition by unit.
+   *   2. For multi-unit rooms, count active bookings today. Units with
+   *      unit_index ≤ count are 'occupied'; the rest fall back to
+   *      'available'. Deterministic assignment by ascending index —
+   *      good enough until bookings.room_unit_index lands.
+   *   3. For dorms (1 zone per dorm, room.quantity = beds), we keep
+   *      the type-level status. Future work: show a partial-fill
+   *      indicator on the dorm zone with N/total occupied beds.
+   *   4. Single-unit rooms: just use the type-level status as is.
+   */
   function statusFor(zone) {
     const room = roomById.get(zone.assigned_room_id)
-    const status = room?.status || 'available'
-    return ROOM_STATUSES[status] || ROOM_STATUSES.available
+    if (!room) return ROOM_STATUSES.available
+
+    const typeStatus = room.status || 'available'
+    if (typeStatus === 'blocked' || typeStatus === 'maintenance') {
+      return ROOM_STATUSES[typeStatus]
+    }
+
+    const quantity = room.quantity || 1
+    const dorm = (room.type || '').toLowerCase()
+    const isDorm = dorm === 'dormitory' || dorm === 'capsule'
+    if (quantity === 1 || isDorm) {
+      return ROOM_STATUSES[typeStatus] || ROOM_STATUSES.available
+    }
+
+    const activeBookings = bookingsByRoom.get(room.id) || []
+    const occupiedCount = activeBookings.length
+    const myIndex = zone.unit_index ?? 1
+    if (myIndex <= occupiedCount) {
+      // Mirror the type-level state when more specific information
+      // exists (checkout / cleaning / dirty). Otherwise default to
+      // 'occupied' since this unit IS booked.
+      if (['checkout', 'cleaning', 'dirty'].includes(typeStatus)) {
+        return ROOM_STATUSES[typeStatus]
+      }
+      return ROOM_STATUSES.occupied
+    }
+    // Unbooked unit of a multi-unit room → available even if other
+    // units share the same room_id and are occupied.
+    return ROOM_STATUSES.available
   }
   // Sort zones — bigger ones first so smaller ones (e.g. en-suite
   // bathrooms accidentally drawn inside a room) stay clickable on top.
