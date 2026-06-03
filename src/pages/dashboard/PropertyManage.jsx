@@ -1930,19 +1930,23 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   // doing during the ~20-30s round-trip to Claude Vision.
   const [aiStage, setAiStage] = useState(null)    // null | 'uploading' | 'analysing' | 'saving'
   const [aiResult, setAiResult] = useState(null)  // { detected: number, notes?: string } | null
-  // V6-Phase 2 manual drawing mode. After 6 AI iterations confirmed
-  // Claude Vision can't deliver pixel-accurate polygons on dense CAD
-  // plans, David pivoted to fast manual tracing. The hotelier clicks
-  // "Place BABA" on a tray chip, then clicks two corners on the canvas
-  // to drop a rectangle zone for BABA. ~10 sec per rectangular room,
-  // ~5 min total for 30 rooms. 100% accurate.
-  //   drawingForRoom : { room, unitIndex } | null
-  //   pendingRect    : { x1, y1, x2, y2 } in % — first corner placed,
-  //                    second following the cursor (null = waiting for
-  //                    the first click)
-  const [drawingForRoom, setDrawingForRoom] = useState(null)
-  const [pendingRect,    setPendingRect]    = useState(null)
-  const [cursorPos,      setCursorPos]      = useState({ x: 50, y: 50 })
+  // V7 drag-drop + shape model. After confirming V6's click-to-draw was
+  // awkward, the hotelier just drags a tray chip onto the plan. We drop
+  // a default rectangle (12% × 8%) centred on the cursor and auto-assign
+  // it to that room. The hotelier then clicks the shape to select it,
+  // drags corners to resize, drags the body to move, or cycles the shape
+  // type (rectangle / square / circle) via a floating selector.
+  //   selectedZoneId : id of the currently selected zone (handles visible)
+  //   zoneDrag       : { zoneId, mode, originX, originY,
+  //                      startCx, startCy, startW, startH, handle? }
+  //                    Used during a move / resize gesture. `mode` is
+  //                    'move' or 'resize'. `handle` is 'nw'|'ne'|'sw'|'se'
+  //                    for corner-anchored resizes.
+  const [selectedZoneId, setSelectedZoneId] = useState(null)
+  const [zoneDrag,       setZoneDrag]       = useState(null)
+  // Background visibility — hotelier toggles OFF once every room is
+  // placed, leaving a clean abstract plan with only the coloured shapes.
+  const [bgVisible, setBgVisible] = useState(true)
   // Outlines from any previous AI extraction. We no longer FETCH new
   // outlines (the AI detection path was dropped 2026-06-05 — it was
   // imprecise on dense CAD plans and the hotelier prefers to place
@@ -2082,17 +2086,13 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   }
 
   // ──────────────────────────────────────────────────────────────
-  // Manual drawing (V6 Phase 2)
+  // V7 drag-drop + shape model
   // ──────────────────────────────────────────────────────────────
   // Count of active (= non-deleted) zones assigned to a given room.
-  // Used by the tray to show "X/Y placed" badges and to decide whether
-  // a room still has units to place.
   function assignedCount(roomId) {
     return zones.filter(z => !z.deleted && z.assigned_room_id === roomId).length
   }
-  // Lowest unused unit_index in 1..max for this room. The hotelier
-  // can remove unit 2 of a 3-unit room, then re-place it — the new
-  // placement gets index 2 again, not 4.
+  // Lowest unused unit_index in 1..max — stable across removals.
   function nextZoneIndexFor(roomId, max) {
     const used = new Set(
       zones.filter(z => !z.deleted && z.assigned_room_id === roomId).map(z => z.unit_index)
@@ -2101,33 +2101,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     return max
   }
 
-  /**
-   * Start drawing a new zone for a specific room. The hotelier clicks
-   * the "+ Place BABA" button on a tray chip → the canvas enters
-   * crosshair mode → two clicks on the plan drop a rectangle zone
-   * with assigned_room_id and unit_index set.
-   *
-   * For dorms, only 1 zone per room — the unit_index stays null.
-   * For multi-unit rooms (HQ double bed × 9), unit_index iterates 1..9.
-   */
-  function handleStartDrawing(room) {
-    const dorm = isDormRoom(room)
-    const max = dorm ? 1 : (room.quantity || 1)
-    if (assignedCount(room.id) >= max) return
-    setDrawingForRoom({
-      room,
-      unitIndex: dorm ? null : nextZoneIndexFor(room.id, max),
-    })
-    setPendingRect(null)
-  }
-  function handleCancelDrawing() {
-    setDrawingForRoom(null)
-    setPendingRect(null)
-  }
-
-  // Compute pointer position as % of the canvas bounding rect. Shared
-  // by every pointer handler so cursor preview + zone vertices stay
-  // consistent.
+  // Pointer position as % of the canvas bounding rect.
   function pointerPctOf(e) {
     const rect = e.currentTarget.getBoundingClientRect()
     const x = ((e.clientX - rect.left) / rect.width)  * 100
@@ -2138,85 +2112,183 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     }
   }
 
-  function handleCanvasClick(e) {
-    if (!drawingForRoom) return
+  // Default shape dimensions when a room is first dropped on the plan.
+  // Conservative — small enough to fit between adjacent rooms on a
+  // dense CAD plan, large enough to be readable. Hotelier can resize.
+  const DEFAULT_SHAPE_W = 12
+  const DEFAULT_SHAPE_H = 8
+
+  /**
+   * Tray-chip drag → canvas drop. Creates a new zone with default
+   * rectangle shape centred on the cursor, auto-assigned to the
+   * dragged room. For multi-unit rooms the unit_index iterates; for
+   * dorms only the first drop sticks.
+   */
+  async function handleZoneDrop(e) {
+    e.preventDefault()
+    const roomId = draggingRoomId || e.dataTransfer.getData('text/plain')
+    setDraggingRoomId(null)
+    if (!roomId) return
+    const room = rooms.find(r => r.id === roomId)
+    if (!room) return
+    const dorm = isDormRoom(room)
+    const max = dorm ? 1 : (room.quantity || 1)
+    if (assignedCount(room.id) >= max) return
     const p = pointerPctOf(e)
-    if (!pendingRect) {
-      // First click — anchor the first corner. Second corner tracks
-      // the cursor via handleCanvasMove until the next click.
-      setPendingRect({ x1: p.x, y1: p.y, x2: p.x, y2: p.y })
-      return
-    }
-    // Second click — finalise the rectangle. Defensive: ignore micro-
-    // rectangles (probably an accidental double-click on the first
-    // corner). The hotelier can re-click to start over.
-    if (Math.abs(p.x - pendingRect.x1) < 0.8 || Math.abs(p.y - pendingRect.y1) < 0.8) return
-    finaliseRect(p)
-  }
-  function handleCanvasMove(e) {
-    if (!drawingForRoom) return
-    const p = pointerPctOf(e)
-    setCursorPos(p)
-    if (pendingRect) setPendingRect(r => ({ ...r, x2: p.x, y2: p.y }))
-  }
-  async function finaliseRect(p2) {
-    const { room, unitIndex } = drawingForRoom
-    const minX = Math.min(pendingRect.x1, p2.x)
-    const maxX = Math.max(pendingRect.x1, p2.x)
-    const minY = Math.min(pendingRect.y1, p2.y)
-    const maxY = Math.max(pendingRect.y1, p2.y)
-    // Clockwise from top-left.
     const newZone = {
       id: `z-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      vertices: [[minX, minY], [maxX, minY], [maxX, maxY], [minX, maxY]],
+      shape: 'rect',
+      cx: p.x,
+      cy: p.y,
+      w: DEFAULT_SHAPE_W,
+      h: DEFAULT_SHAPE_H,
       deleted: false,
       assigned_room_id: room.id,
-      unit_index: unitIndex,
+      unit_index: dorm ? null : nextZoneIndexFor(room.id, max),
     }
     const next = [...zones, newZone]
     setZones(next)
-    setPendingRect(null)
-
-    // Stay in drawing mode if more units are needed (multi-unit case).
-    // Auto-pick the next unit_index. For dorms or 1-unit rooms, exit.
-    const dorm = isDormRoom(room)
-    const max = dorm ? 1 : (room.quantity || 1)
-    const placedAfter = next.filter(z => !z.deleted && z.assigned_room_id === room.id).length
-    if (placedAfter < max) {
-      setDrawingForRoom({
-        room,
-        unitIndex: dorm ? null : nextZoneIndexFor(room.id, max) + 1 > max
-          ? max
-          : (() => {
-              const used = new Set(next.filter(z => !z.deleted && z.assigned_room_id === room.id).map(z => z.unit_index))
-              for (let i = 1; i <= max; i++) if (!used.has(i)) return i
-              return max
-            })(),
-      })
-    } else {
-      setDrawingForRoom(null)
-    }
-
+    setSelectedZoneId(newZone.id)
     const { error: upErr } = await supabase
       .from('properties')
       .update({ floor_plan_zones: next })
       .eq('id', property.id)
     if (upErr) {
       setError(`Couldn't save zone: ${upErr.message}`)
-      setZones(zones)   // revert
+      setZones(zones)
     } else {
       onRefresh?.()
     }
   }
 
-  // Escape exits drawing mode. Saves the hotelier from a stuck state if
-  // they meant to click somewhere else.
+  /** Persist a single zone mutation to the DB. Called by move / resize /
+   *  shape-change. Updates the local cache optimistically; reverts on
+   *  error so the UI doesn't drift from the DB. */
+  async function persistZone(zoneId, patch) {
+    const prev = zones
+    const next = zones.map(z => z.id === zoneId ? { ...z, ...patch } : z)
+    setZones(next)
+    const { error: upErr } = await supabase
+      .from('properties')
+      .update({ floor_plan_zones: next })
+      .eq('id', property.id)
+    if (upErr) {
+      setError(`Couldn't save change: ${upErr.message}`)
+      setZones(prev)
+      return false
+    }
+    onRefresh?.()
+    return true
+  }
+
+  /** Cycle shape: rect → square → circle → rect. Square keeps current
+   *  width as both dimensions; circle uses width as diameter. */
+  function cycleShape(zone) {
+    const cycle = { rect: 'square', square: 'circle', circle: 'rect' }
+    const nextShape = cycle[zone.shape] || 'rect'
+    const patch = { shape: nextShape }
+    if (nextShape === 'square' || nextShape === 'circle') {
+      const size = Math.max(zone.w, zone.h)
+      patch.w = size
+      patch.h = size
+    }
+    persistZone(zone.id, patch)
+  }
+
+  // Move + resize via pointer events on the canvas. We don't use HTML5
+  // drag here — pointer events give us precise per-pixel control.
+  function startMove(e, zone) {
+    e.stopPropagation()
+    const rect = e.currentTarget.closest('[data-plan-canvas]')?.getBoundingClientRect()
+    if (!rect) return
+    setSelectedZoneId(zone.id)
+    setZoneDrag({
+      zoneId: zone.id,
+      mode: 'move',
+      originX: e.clientX,
+      originY: e.clientY,
+      startCx: zone.cx,
+      startCy: zone.cy,
+      startW: zone.w,
+      startH: zone.h,
+      canvasW: rect.width,
+      canvasH: rect.height,
+    })
+  }
+  function startResize(e, zone, handle) {
+    e.stopPropagation()
+    const rect = e.currentTarget.closest('[data-plan-canvas]')?.getBoundingClientRect()
+    if (!rect) return
+    setSelectedZoneId(zone.id)
+    setZoneDrag({
+      zoneId: zone.id,
+      mode: 'resize',
+      handle,
+      originX: e.clientX,
+      originY: e.clientY,
+      startCx: zone.cx,
+      startCy: zone.cy,
+      startW: zone.w,
+      startH: zone.h,
+      canvasW: rect.width,
+      canvasH: rect.height,
+    })
+  }
+  function handlePointerMove(e) {
+    if (!zoneDrag) return
+    const dxPct = ((e.clientX - zoneDrag.originX) / zoneDrag.canvasW) * 100
+    const dyPct = ((e.clientY - zoneDrag.originY) / zoneDrag.canvasH) * 100
+    if (zoneDrag.mode === 'move') {
+      const newCx = Math.max(0, Math.min(100, zoneDrag.startCx + dxPct))
+      const newCy = Math.max(0, Math.min(100, zoneDrag.startCy + dyPct))
+      setZones(zs => zs.map(z => z.id === zoneDrag.zoneId ? { ...z, cx: newCx, cy: newCy } : z))
+    } else if (zoneDrag.mode === 'resize') {
+      const { handle, startCx, startCy, startW, startH } = zoneDrag
+      // Each handle anchors the opposite corner. Compute the new
+      // bounding box, then re-derive cx/cy/w/h.
+      const left   = startCx - startW / 2
+      const right  = startCx + startW / 2
+      const top    = startCy - startH / 2
+      const bot    = startCy + startH / 2
+      let nLeft = left, nRight = right, nTop = top, nBot = bot
+      if (handle.includes('w')) nLeft  = Math.min(right - 1, left  + dxPct)
+      if (handle.includes('e')) nRight = Math.max(left + 1,  right + dxPct)
+      if (handle.includes('n')) nTop   = Math.min(bot - 1,   top   + dyPct)
+      if (handle.includes('s')) nBot   = Math.max(top + 1,   bot   + dyPct)
+      let nW = nRight - nLeft
+      let nH = nBot - nTop
+      const cur = zones.find(z => z.id === zoneDrag.zoneId)
+      if (cur && (cur.shape === 'square' || cur.shape === 'circle')) {
+        const size = Math.max(nW, nH)
+        nW = nH = size
+      }
+      const nCx = Math.max(0, Math.min(100, (nLeft + nRight) / 2))
+      const nCy = Math.max(0, Math.min(100, (nTop  + nBot)   / 2))
+      setZones(zs => zs.map(z => z.id === zoneDrag.zoneId
+        ? { ...z, cx: nCx, cy: nCy, w: Math.max(2, nW), h: Math.max(2, nH) }
+        : z))
+    }
+  }
+  async function handlePointerUp() {
+    if (!zoneDrag) return
+    const finalZone = zones.find(z => z.id === zoneDrag.zoneId)
+    setZoneDrag(null)
+    if (!finalZone) return
+    // Persist the final position/size. The optimistic updates during
+    // the drag already painted the UI; this just commits to DB.
+    await supabase
+      .from('properties')
+      .update({ floor_plan_zones: zones })
+      .eq('id', property.id)
+    onRefresh?.()
+  }
+
+  // Escape deselects.
   useEffect(() => {
-    if (!drawingForRoom) return
-    function onKey(e) { if (e.key === 'Escape') handleCancelDrawing() }
+    function onKey(e) { if (e.key === 'Escape') setSelectedZoneId(null) }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [drawingForRoom])
+  }, [])
 
   // Sub-plan modal for dorm rooms — opens when the hotelier clicks a
   // dorm marker on the main plan. Carries the room being inspected.
@@ -2618,14 +2690,14 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                   ? t('manage.plan_ai_redetect', 'Re-detect zones')
                   : t('manage.plan_ai_detect', '✨ Detect zones (AI)')}
           </button>
-          {/* Clean view toggle — applies the contrast/desaturate filter
-              so the structure pops while furniture fades. Lets the
-              hotelier flip back to RAW if their plan is already crisp
-              and the filter overshoots. */}
+          {/* Clean view toggle — boosts contrast + desaturates so walls
+              pop and meubles fade. Hotelier can flip OFF if plan is
+              already crisp. Only meaningful while bg is visible. */}
           <button
             type="button"
             onClick={() => setCleanView(v => !v)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            disabled={!bgVisible}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
               cleanView
                 ? 'bg-deep text-white shadow-sm hover:shadow-md'
                 : 'bg-white border border-gray-200 text-deep hover:border-ocean'
@@ -2637,6 +2709,25 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
             {cleanView
               ? t('manage.plan_clean_label_on', '☼ Clean')
               : t('manage.plan_clean_label_off', '◯ Raw')}
+          </button>
+          {/* Hide background — once every room is placed, the hotelier
+              flips this to get a clean abstract plan with only the
+              coloured shapes. Toggle-back to verify alignment. */}
+          <button
+            type="button"
+            onClick={() => setBgVisible(v => !v)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              bgVisible
+                ? 'bg-white border border-gray-200 text-deep hover:border-ocean'
+                : 'bg-gradient-to-r from-libre to-electric text-white shadow-sm hover:shadow-md'
+            }`}
+            title={bgVisible
+              ? t('manage.plan_bg_hide_tip', 'Hide the architect plan — only the room shapes remain')
+              : t('manage.plan_bg_show_tip', 'Show the architect plan')}
+          >
+            {bgVisible
+              ? t('manage.plan_bg_hide', '👁 Hide plan')
+              : t('manage.plan_bg_show', '◉ Show plan')}
           </button>
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-deep hover:border-ocean cursor-pointer transition-all">
             <Upload size={12} />
@@ -2698,61 +2789,37 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         </div>
       )}
 
-      {/* Drawing-mode banner — appears when the hotelier is mid-placement.
-          Pins to the top of the canvas with the current room name + a
-          cancel button. */}
-      {drawingForRoom && (
-        <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-orange/15 to-pink-500/15 border border-orange/40 text-deep text-xs">
-          <div className="leading-relaxed">
-            <span className="font-bold">
-              {t('manage.plan_drawing_for', '✏️ Drawing {{name}}', { name: drawingForRoom.room.name })}
-              {drawingForRoom.unitIndex && (drawingForRoom.room.quantity || 1) > 1
-                ? ` ${drawingForRoom.unitIndex}/${drawingForRoom.room.quantity}`
-                : ''}
-              {' · '}
-            </span>
-            {pendingRect
-              ? t('manage.plan_drawing_corner2', 'Click the opposite corner to place it. Hit Esc to cancel.')
-              : t('manage.plan_drawing_corner1', 'Click two corners on the plan to draw a rectangle. Esc to cancel.')}
-          </div>
-          <button
-            type="button"
-            onClick={handleCancelDrawing}
-            className="px-2.5 py-1 rounded-lg bg-white border border-deep/15 text-[10px] font-bold text-deep/70 hover:bg-deep/5 hover:text-deep transition-all"
-          >
-            {t('common.cancel', 'Cancel')}
-          </button>
-        </div>
-      )}
-
-      {/* Plan canvas — drop target. The original image is the background;
-          when cleanView is ON, a CSS filter boosts contrast + desaturates
-          so the wall structure pops and furniture/decoration fades.
-          AI-detected polygons (zones) are layered above as an SVG overlay. */}
+      {/* Plan canvas — drop target. The original image is the background
+          (can be hidden via toolbar toggle once rooms are placed). Zones
+          are rendered as SVG shapes (rect / circle); the selected zone
+          gets resize handles + a shape selector floating above it. */}
       <div
+        data-plan-canvas
         onDragOver={handlePlanDragOver}
-        onDrop={handlePlanDrop}
-        onClick={handleCanvasClick}
-        onMouseMove={handleCanvasMove}
-        className={`relative w-full rounded-2xl border-2 border-dashed border-ocean/30 bg-white overflow-hidden select-none ${
-          drawingForRoom ? 'cursor-crosshair' : ''
-        }`}
+        onDrop={handleZoneDrop}
+        onClick={() => setSelectedZoneId(null)}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        className="relative w-full rounded-2xl border-2 border-dashed border-ocean/30 bg-white overflow-hidden select-none"
         style={{ minHeight: 360 }}
       >
         <img
           src={planUrl}
           alt="Floor plan"
-          className="w-full h-auto block pointer-events-none transition-[filter] duration-300"
+          className="w-full h-auto block pointer-events-none transition-[filter,opacity] duration-300"
           draggable={false}
           style={{
-            filter: cleanView
+            filter: bgVisible && cleanView
               ? 'contrast(1.55) saturate(0) brightness(1.08)'
               : 'none',
+            opacity: bgVisible ? 1 : 0,
           }}
         />
         {/* AI zone polygons — rendered as an SVG overlay using the same
             % coordinate system as the data. viewBox 0..100 matches the
             stored vertices directly, no per-render math needed. */}
+        {/* V7 shape zones — rect / circle, with optional legacy polygon
+            support for properties still on V6 polygon vertices. */}
         {zones.filter(z => !z.deleted).length > 0 && (
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none"
@@ -2761,86 +2828,170 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           >
             {zones.filter(z => !z.deleted).map(z => {
               const assigned = !!z.assigned_room_id
+              const room = assigned ? rooms.find(r => r.id === z.assigned_room_id) : null
+              const dorm = room && isDormRoom(room)
+              const colour = !assigned
+                ? 'fill-deep/[0.06] stroke-deep/40'
+                : dorm
+                  ? 'fill-libre/25 stroke-libre'
+                  : 'fill-ocean/25 stroke-ocean'
+              // Legacy V6 polygon
+              if (Array.isArray(z.vertices) && z.vertices.length >= 3) {
+                return (
+                  <polygon
+                    key={z.id}
+                    points={verticesToPoints(z.vertices)}
+                    className={colour}
+                    strokeWidth="0.4"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )
+              }
+              // V7 shape
+              const shape = z.shape || 'rect'
+              if (shape === 'circle') {
+                return (
+                  <circle
+                    key={z.id}
+                    cx={z.cx} cy={z.cy} r={(z.w || 10) / 2}
+                    className={colour}
+                    strokeWidth="0.4"
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )
+              }
               return (
-                <polygon
+                <rect
                   key={z.id}
-                  points={verticesToPoints(z.vertices)}
-                  className={assigned
-                    ? 'fill-ocean/25 stroke-ocean'
-                    : 'fill-deep/[0.06] stroke-deep/40'}
-                  strokeWidth="0.3"
+                  x={z.cx - z.w / 2} y={z.cy - z.h / 2}
+                  width={z.w} height={z.h}
+                  rx="0.6" ry="0.6"
+                  className={colour}
+                  strokeWidth="0.4"
                   vectorEffect="non-scaling-stroke"
                 />
               )
             })}
           </svg>
         )}
-        {/* Drawing preview — the rectangle currently being placed. The
-            first click anchors x1/y1 and starts following the cursor
-            with x2/y2. The second click finalises it (handleCanvasClick). */}
-        {drawingForRoom && pendingRect && (
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-          >
-            <rect
-              x={Math.min(pendingRect.x1, pendingRect.x2).toFixed(2)}
-              y={Math.min(pendingRect.y1, pendingRect.y2).toFixed(2)}
-              width={Math.abs(pendingRect.x2 - pendingRect.x1).toFixed(2)}
-              height={Math.abs(pendingRect.y2 - pendingRect.y1).toFixed(2)}
-              className="fill-orange/30 stroke-orange"
-              strokeWidth="0.4"
-              vectorEffect="non-scaling-stroke"
-              strokeDasharray="1.2 0.8"
-            />
-          </svg>
-        )}
-        {/* First-click marker — a tiny dot showing where corner 1 landed
-            so the hotelier sees the rectangle's anchor at a glance. */}
-        {drawingForRoom && pendingRect && (
-          <div
-            className="absolute w-2 h-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-orange ring-2 ring-white shadow pointer-events-none"
-            style={{ left: `${pendingRect.x1}%`, top: `${pendingRect.y1}%` }}
-          />
-        )}
-        {/* Per-zone HTML overlay — centroid-anchored label + delete X
-            button on hover. Sits above the SVG so it's clickable. */}
+        {/* Per-zone interactive overlay — invisible drag surface covering
+            the shape, with a label at the center, resize handles when
+            selected, and a shape selector / delete floating above. */}
         {zones.filter(z => !z.deleted).map(z => {
-          const [cx, cy] = polygonCentroid(z.vertices)
           const assigned = z.assigned_room_id
             ? rooms.find(r => r.id === z.assigned_room_id)
             : null
+          const dorm = assigned && isDormRoom(assigned)
+          const isSelected = selectedZoneId === z.id
+          // V7 shape coordinates
+          const cx = z.cx ?? 50
+          const cy = z.cy ?? 50
+          const w  = z.w  ?? DEFAULT_SHAPE_W
+          const h  = z.h  ?? DEFAULT_SHAPE_H
+          // Bounding box (for handle positioning)
+          const left = cx - w / 2
+          const top  = cy - h / 2
+          // Label text
+          const unitSuffix = !dorm && (assigned?.quantity || 1) > 1 && z.unit_index
+            ? ` ${z.unit_index}`
+            : ''
+          const label = assigned
+            ? (dorm ? `${assigned.name} · ${assigned.quantity || 0} beds` : `${assigned.name}${unitSuffix}`)
+            : ''
+          // Shape label for the selector button
+          const shapeIcon = z.shape === 'circle' ? '●' : z.shape === 'square' ? '■' : '▭'
           return (
-            <div
-              key={`label-${z.id}`}
-              className="absolute group"
-              style={{
-                left: `${cx}%`,
-                top:  `${cy}%`,
-                transform: 'translate(-50%, -50%)',
-              }}
-            >
-              {/* Tiny X delete button — visible on hover */}
-              <button
-                type="button"
-                onClick={() => handleZoneDelete(z.id)}
-                className="absolute -top-3 -right-3 w-5 h-5 rounded-full bg-sunset text-white text-[10px] font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:scale-110"
-                title={t('manage.plan_zone_delete', 'Not a guest room — remove this zone')}
-                aria-label="Delete zone"
-              >
-                ×
-              </button>
-              {/* Label — room name if assigned, blank otherwise. The
-                  hover affordance + bg ring makes the zone tappable. */}
-              {assigned ? (
-                <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-orange to-pink-500 text-white text-[10px] font-bold shadow ring-2 ring-white whitespace-nowrap pointer-events-none">
-                  🛏️ {assigned.name}
-                </span>
-              ) : (
-                <span className="px-1.5 py-0.5 rounded-full bg-white/80 text-deep/60 text-[9px] font-semibold pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-                  {t('manage.plan_zone_unassigned', 'Unassigned')}
-                </span>
+            <div key={`overlay-${z.id}`} className="contents">
+              {/* Drag surface — covers the shape, captures move pointer */}
+              <div
+                onPointerDown={(e) => {
+                  // Only react to the primary button — Pointer Events
+                  // delivers a single canonical "pointerdown" we can
+                  // capture for the drag.
+                  if (e.button !== 0) return
+                  e.currentTarget.setPointerCapture?.(e.pointerId)
+                  startMove(e, z)
+                }}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  // If it was a click (no drag), select the zone, but
+                  // also handle the dorm sub-plan modal case.
+                  if (dorm) {
+                    setDormModal(assigned)
+                  } else {
+                    setSelectedZoneId(z.id)
+                  }
+                }}
+                className="absolute cursor-move"
+                style={{
+                  left: `${left}%`, top: `${top}%`,
+                  width: `${w}%`,   height: `${h}%`,
+                }}
+              />
+              {/* Center label */}
+              {label && (
+                <div
+                  className="absolute pointer-events-none"
+                  style={{ left: `${cx}%`, top: `${cy}%`, transform: 'translate(-50%, -50%)' }}
+                >
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shadow ring-2 ring-white whitespace-nowrap ${
+                    dorm ? 'bg-gradient-to-r from-libre to-electric text-white'
+                         : 'bg-gradient-to-r from-orange to-pink-500 text-white'
+                  }`}>
+                    🛏️ {label}
+                  </span>
+                </div>
+              )}
+              {/* Selected — handles + shape selector + delete */}
+              {isSelected && (
+                <>
+                  {/* Shape + delete floater above the zone */}
+                  <div
+                    className="absolute flex items-center gap-1 px-1 py-1 rounded-lg bg-deep text-white shadow-lg"
+                    style={{
+                      left: `${cx}%`, top: `${top}%`,
+                      transform: 'translate(-50%, calc(-100% - 8px))',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); cycleShape(z) }}
+                      className="px-2 py-0.5 rounded text-xs font-bold hover:bg-white/15 cursor-pointer"
+                      title={t('manage.plan_shape_cycle', 'Cycle shape: rectangle → square → circle')}
+                    >
+                      {shapeIcon}
+                    </button>
+                    <span className="w-px h-3 bg-white/30" />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleZoneDelete(z.id) }}
+                      className="px-2 py-0.5 rounded text-xs font-bold text-sunset hover:bg-white/15 cursor-pointer"
+                      title={t('manage.plan_zone_delete', 'Remove this zone')}
+                    >
+                      ×
+                    </button>
+                  </div>
+                  {/* 4 corner handles — the local `handle` name avoids
+                      shadowing the outer `h` (= zone height). */}
+                  {['nw', 'ne', 'sw', 'se'].map(handle => {
+                    const hx = handle.includes('w') ? left : (cx + w / 2)
+                    const hy = handle.includes('n') ? top  : (cy + h / 2)
+                    const cursor = (handle === 'nw' || handle === 'se')
+                      ? 'cursor-nwse-resize' : 'cursor-nesw-resize'
+                    return (
+                      <div
+                        key={handle}
+                        onPointerDown={(e) => {
+                          if (e.button !== 0) return
+                          e.currentTarget.setPointerCapture?.(e.pointerId)
+                          startResize(e, z, handle)
+                        }}
+                        className={`absolute w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-sm bg-white border-2 border-ocean shadow ${cursor}`}
+                        style={{ left: `${hx}%`, top: `${hy}%` }}
+                      />
+                    )
+                  })}
+                </>
               )}
             </div>
           )
@@ -2904,23 +3055,19 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
               const max    = maxPositionsFor(room)
               const dorm   = isDormRoom(room)
               const beds   = room.quantity || 1
-              const drawing = drawingForRoom?.room.id === room.id
               return (
                 <button
                   key={room.id}
                   type="button"
-                  onClick={() => handleStartDrawing(room)}
                   draggable
                   onDragStart={(e) => handleRoomDragStart(e, room.id)}
                   onDragEnd={handleRoomDragEnd}
-                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border-2 border-dashed text-xs font-bold text-deep cursor-pointer transition-all ${
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border-2 border-dashed text-xs font-bold text-deep cursor-grab active:cursor-grabbing transition-all ${
                     dorm
                       ? 'border-libre/40 hover:border-libre hover:bg-libre/5'
                       : 'border-gray-300 hover:border-ocean hover:bg-ocean/5'
-                  } ${draggingRoomId === room.id ? 'opacity-50' : ''} ${
-                    drawing ? 'ring-2 ring-orange ring-offset-1' : ''
-                  }`}
-                  title={t('manage.plan_place_hint', 'Click to place {{name}} — then click two corners on the plan', { name: room.name })}
+                  } ${draggingRoomId === room.id ? 'opacity-50' : ''}`}
+                  title={t('manage.plan_place_hint_v7', 'Drag onto the plan to place {{name}}', { name: room.name })}
                 >
                   <span className="text-gray-300">⋮⋮</span>
                   🛏️ {room.name}
