@@ -7,8 +7,10 @@ import {
   ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X, Save, Loader2, Ban, Check,
   Image as ImageIcon, Upload, AlertCircle, Camera, Video, Film, RotateCcw, Gift,
   Settings as SettingsIcon, UserPlus, Shield, Mail, Crown,
-  Package as PackageIcon, Map as MapIcon,
+  Package as PackageIcon, Map as MapIcon, Sparkles,
 } from 'lucide-react'
+import { generateFloorPlanSVG, svgToBlob } from '../../lib/floorPlanSvg'
+import { bestRoomMatch } from '../../lib/fuzzyMatch'
 import PackagesTab from './PackagesTab'
 import RewardModal from '../../components/dashboard/RewardModal'
 import { Modal } from '../../components/ui/Modal'
@@ -1894,6 +1896,12 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   const [planUrl, setPlanUrl] = useState(property?.floor_plan_url || null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState(null)
+  // AI extraction flow — independent of manual upload. Goes through three
+  // states (uploading raw → analysing with Claude → rendering clean SVG).
+  // `aiResult` carries the toast message once done so the hotelier sees
+  // how many rooms were auto-placed.
+  const [aiStage, setAiStage] = useState(null)    // null | 'uploading' | 'analysing' | 'rendering'
+  const [aiResult, setAiResult] = useState(null)  // {matched:n, unmatched:[], total:n} | null
   // The room currently being dragged — tracked locally so the drop
   // handler on the image knows which room.id to update.
   const [draggingRoomId, setDraggingRoomId] = useState(null)
@@ -1949,6 +1957,147 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     } else {
       setPlanUrl(url)
       onRefresh?.()
+    }
+  }
+
+  /**
+   * AI-assisted plan generation — the hotelier uploads any raw image
+   * (sketch, photo, blueprint screenshot…). We:
+   *  1. Upload it to storage as the source-of-truth raw plan
+   *  2. Send the public URL + the property's room names to the
+   *     `floor-plan-extract` edge function, which calls Claude Vision
+   *  3. Receive back {rooms[]} with %-positions
+   *  4. Fuzzy-match each extracted room to a real `rooms` row
+   *  5. Render a clean STAYLO-branded SVG from the matched rooms
+   *  6. Upload the SVG to storage and set it as floor_plan_url (overrides
+   *     the raw image — we keep the raw in storage for traceability but
+   *     the property displays the clean SVG)
+   *  7. Bulk-update rooms.floor_plan_x/y for every matched room
+   *  8. Surface a result toast with the count + any unmatched labels
+   */
+  async function handleAiGenerate(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setError(null)
+    setAiResult(null)
+
+    try {
+      // ─── 1. Raw image upload ─────────────────────────────────
+      setAiStage('uploading')
+      const ext = (file.name.split('.').pop() || 'png').toLowerCase()
+      const stamp = Date.now()
+      const rawPath  = `properties/${property.id}/floor-plan-raw-${stamp}.${ext}`
+      const { error: upErr } = await supabase.storage
+        .from('property-photos')
+        .upload(rawPath, file, { contentType: file.type })
+      if (upErr) throw new Error(`Upload failed: ${upErr.message}`)
+      const { data: rawUrlData } = supabase.storage.from('property-photos').getPublicUrl(rawPath)
+      const rawUrl = rawUrlData?.publicUrl
+      if (!rawUrl) throw new Error('Could not derive public URL for uploaded image')
+
+      // ─── 2. Call the edge function ───────────────────────────
+      setAiStage('analysing')
+      const { data: { session } } = await supabase.auth.getSession()
+      const accessToken = session?.access_token
+      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/floor-plan-extract`
+      const fnResp = await fetch(fnUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          property_id: property.id,
+          image_url:   rawUrl,
+          room_names:  rooms.map(r => r.name).filter(Boolean),
+        }),
+      })
+      if (!fnResp.ok) {
+        const errBody = await fnResp.json().catch(() => ({}))
+        throw new Error(errBody.error || errBody.detail || `Edge function returned ${fnResp.status}`)
+      }
+      const extracted = await fnResp.json()
+      const extractedRooms = Array.isArray(extracted.rooms) ? extracted.rooms : []
+      if (extractedRooms.length === 0) {
+        throw new Error(extracted.notes || 'Claude could not find any rooms on this image. Try a clearer scan or place the rooms manually.')
+      }
+
+      // ─── 3. Fuzzy-match extracted labels → real rooms ────────
+      // We allow at most ONE assignment per real room — if two extracted
+      // labels both want "BABA", only the first wins.
+      const matched = []           // [{ roomId, name, x, y, w, h, accent }]
+      const usedRoomIds = new Set()
+      const unmatchedLabels = []
+      for (const er of extractedRooms) {
+        const candidate = bestRoomMatch(er.name, rooms.filter(r => !usedRoomIds.has(r.id)))
+        if (candidate) {
+          usedRoomIds.add(candidate.id)
+          matched.push({
+            roomId: candidate.id,
+            name: candidate.name,           // use the canonical real name in the SVG
+            x_percent: er.x_percent,
+            y_percent: er.y_percent,
+            width_percent:  er.width_percent,
+            height_percent: er.height_percent,
+            accent: false,
+          })
+        } else {
+          unmatchedLabels.push(er.name)
+        }
+      }
+      if (matched.length === 0) {
+        throw new Error('Claude extracted rooms but none matched your existing room names. Add the missing rooms in the Chambres tab first.')
+      }
+
+      // ─── 4. Render the clean SVG ─────────────────────────────
+      setAiStage('rendering')
+      const svgString = generateFloorPlanSVG({
+        rooms: matched,
+        title: property.name,
+      })
+      const svgBlob = svgToBlob(svgString)
+      const svgPath = `properties/${property.id}/floor-plan-${stamp}.svg`
+      const { error: svgUpErr } = await supabase.storage
+        .from('property-photos')
+        .upload(svgPath, svgBlob, { contentType: 'image/svg+xml', upsert: false })
+      if (svgUpErr) throw new Error(`SVG upload failed: ${svgUpErr.message}`)
+      const { data: svgUrlData } = supabase.storage.from('property-photos').getPublicUrl(svgPath)
+      const svgUrl = svgUrlData?.publicUrl
+      if (!svgUrl) throw new Error('Could not derive public URL for generated SVG')
+
+      // ─── 5. Persist URL + room positions ─────────────────────
+      // All writes run in parallel; if any fails we report but don't
+      // unroll the others (the SVG file is already in storage, and
+      // partial position writes are recoverable manually).
+      const writes = [
+        supabase.from('properties').update({ floor_plan_url: svgUrl }).eq('id', property.id),
+        ...matched.map(m =>
+          supabase.from('rooms')
+            .update({
+              floor_plan_x: Number(m.x_percent).toFixed(2),
+              floor_plan_y: Number(m.y_percent).toFixed(2),
+            })
+            .eq('id', m.roomId)
+        ),
+      ]
+      const writeResults = await Promise.all(writes)
+      const firstErr = writeResults.find(r => r.error)?.error
+      if (firstErr) throw new Error(`Plan generated but couldn't save: ${firstErr.message}`)
+
+      // ─── 6. Done — surface result ────────────────────────────
+      setPlanUrl(svgUrl)
+      setAiResult({
+        total:     extractedRooms.length,
+        matched:   matched.length,
+        unmatched: unmatchedLabels,
+      })
+      onRefresh?.()
+    } catch (err) {
+      setError(err?.message || String(err))
+    } finally {
+      setAiStage(null)
+      // Reset the input so picking the same file again retriggers onChange
+      if (e?.target) e.target.value = ''
     }
   }
 
@@ -2019,6 +2168,13 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   const placedRooms   = rooms.filter(r => localPositions[r.id])
   const unplacedRooms = rooms.filter(r => !localPositions[r.id])
 
+  // Stage labels for the AI flow toast — picked at render time so the
+  // hotelier sees "Analysing with Claude…" specifically, not just a spinner.
+  const aiStageLabel = aiStage === 'uploading' ? t('manage.plan_ai_uploading', 'Uploading your plan…')
+    : aiStage === 'analysing' ? t('manage.plan_ai_analysing', 'Analysing with AI — reading room labels…')
+    : aiStage === 'rendering' ? t('manage.plan_ai_rendering', 'Generating clean plan + placing rooms…')
+    : null
+
   // ── Render ────────────────────────────────────────────────
   if (!planUrl) {
     return (
@@ -2033,11 +2189,27 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           <p className="text-sm text-gray-500 mb-5 leading-relaxed">
             {t('manage.plan_empty_desc', 'A schematic, a photo, or a hand-drawn sketch. Once uploaded, drag each room onto the plan to place it where it actually is in your property.')}
           </p>
-          <label className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-ocean to-electric text-white font-bold text-sm cursor-pointer hover:shadow-md transition-all">
-            <Upload size={16} />
-            {uploading ? t('common.uploading', 'Uploading…') : t('manage.plan_upload', 'Choose an image')}
-            <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
-          </label>
+
+          {/* Two side-by-side CTAs — manual vs AI. The AI one is highlighted
+              as the recommended path for hoteliers who already have a raw
+              plan with visible room numbers. */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
+            <label className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-libre to-electric text-white font-bold text-sm cursor-pointer hover:shadow-md transition-all ${aiStage ? 'opacity-60 pointer-events-none' : ''}`}>
+              <Sparkles size={16} />
+              {aiStage ? aiStageLabel : t('manage.plan_ai_cta', '✨ Generate from my plan (AI)')}
+              <input type="file" accept="image/*" onChange={handleAiGenerate} className="hidden" disabled={!!aiStage} />
+            </label>
+            <label className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-deep font-bold text-sm cursor-pointer hover:border-ocean transition-all ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
+              <Upload size={16} />
+              {uploading ? t('common.uploading', 'Uploading…') : t('manage.plan_upload', 'Upload manually')}
+              <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
+            </label>
+          </div>
+
+          <p className="mt-3 text-[11px] text-gray-400 italic leading-relaxed">
+            {t('manage.plan_ai_hint', 'AI mode: upload any plan with visible room numbers and we\'ll auto-place every matching room. Manual: upload an image and drag the rooms onto it.')}
+          </p>
+
           {error && (
             <div className="mt-3 px-3 py-2 rounded-lg bg-sunset/10 text-sunset text-xs font-semibold">{error}</div>
           )}
@@ -2053,7 +2225,12 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         <div className="text-xs text-gray-500">
           {t('manage.plan_toolbar_hint', 'Drag a room from below onto the plan to place it. Click a marker to remove it.')}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-libre to-electric text-white text-xs font-bold cursor-pointer hover:shadow-md transition-all ${aiStage ? 'opacity-60 pointer-events-none' : ''}`}>
+            <Sparkles size={12} />
+            {aiStage ? aiStageLabel : t('manage.plan_ai_replace', '✨ Re-generate with AI')}
+            <input type="file" accept="image/*" onChange={handleAiGenerate} className="hidden" disabled={!!aiStage} />
+          </label>
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-deep hover:border-ocean cursor-pointer transition-all">
             <Upload size={12} />
             {uploading ? '…' : t('manage.plan_replace', 'Replace image')}
@@ -2069,6 +2246,37 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           </button>
         </div>
       </div>
+
+      {/* AI result toast — green pill summarising the auto-placement run.
+          Dismisses itself the next time the hotelier drags a room or
+          triggers any other action that clears aiResult. */}
+      {aiResult && (
+        <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-libre/10 to-electric/10 border border-libre/30 text-deep text-xs">
+          <Sparkles size={14} className="text-libre mt-0.5 flex-shrink-0" />
+          <div className="flex-1 leading-relaxed">
+            <span className="font-bold">
+              {t('manage.plan_ai_done', '✓ {{matched}} of {{total}} rooms detected and placed.', {
+                matched: aiResult.matched, total: aiResult.total,
+              })}
+            </span>
+            {aiResult.unmatched.length > 0 && (
+              <span className="text-deep/60">
+                {' '}{t('manage.plan_ai_unmatched', 'Couldn\'t match: {{labels}}. Place them manually from the tray below.', {
+                  labels: aiResult.unmatched.join(', '),
+                })}
+              </span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setAiResult(null)}
+            className="text-deep/40 hover:text-deep transition-colors"
+            aria-label="Dismiss"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="px-3 py-2 rounded-lg bg-sunset/10 text-sunset text-xs font-semibold">{error}</div>
