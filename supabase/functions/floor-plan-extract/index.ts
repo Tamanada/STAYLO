@@ -1,30 +1,19 @@
 // ============================================================================
-// floor-plan-extract — Claude 3.5 Sonnet Vision turns a hotelier's raw plan
-// into a structured room layout
+// floor-plan-extract — Claude 3.5 Sonnet Vision turns a raw CAD plan into
+// a structured list of room outlines (V2 — outline-detection mode)
 // ============================================================================
-// The hotelier uploads any photo / scan / screenshot of their floor plan
-// (hand-drawn, architect blueprint, PDF screenshot — whatever they have
-// lying around). The frontend stores it in storage, then calls this
-// function with the public URL.
+// Design clarified by David 2026-06-05: most hotelier plans don't have
+// room labels written on them (that's normal). What we really want from
+// the AI is to LOCATE every guest-room rectangle on the plan, regardless
+// of whether it's labelled. The frontend then renders those rectangles
+// as clean outlines on a STAYLO-styled SVG background, and the hotelier
+// drag-drops their actual room names onto the outlines (snap magnetism).
 //
-// Claude reads the plan and returns a JSON list of rooms with:
-//   · name           — the label written on the plan (BABA, "Room 102", etc.)
-//   · x_percent      — horizontal centroid as % of image width (0–100)
-//   · y_percent      — vertical centroid as % of image height (0–100)
-//   · width_percent  — bounding-box width (optional, for nicer SVG render)
-//   · height_percent — bounding-box height
-//
-// We hint Claude with the property's existing room names so it can match
-// even when handwriting is messy. Fuzzy-matching to the actual `rooms`
-// table is done client-side after this returns.
+// Optional secondary output: if any labels DO exist on the plan, return
+// them so the UI can pre-assign matching rooms automatically.
 //
 // Auth: any active property_member of the target property.
-//
-// Env vars required:
-//   ANTHROPIC_API_KEY — same key the enrich-prospect function uses.
-//
-// Cost: ~$0.003–$0.015 per call depending on image resolution. Onboarding
-// 500 hotels once each = under $10 lifetime.
+// Cost: ~$0.003–$0.015 per analysis (one Claude Vision call).
 // ============================================================================
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { getServiceClient, getAuthUser } from '../_shared/supabase.ts'
@@ -33,25 +22,24 @@ import { preflight, jsonResponse } from '../_shared/cors.ts'
 interface Req {
   property_id: string
   image_url: string                 // public URL of the uploaded raw plan
-  room_names?: string[]             // existing room names — sharpens Claude's reading
+  room_names?: string[]             // existing room names — sharpens label OCR if any
 }
 
-interface ExtractedRoom {
-  name: string
+interface Outline {
   x_percent: number
   y_percent: number
-  width_percent?: number
-  height_percent?: number
+  width_percent: number
+  height_percent: number
+  suggested_label?: string          // optional — only if a label is visible on the plan
 }
 
 interface ExtractionResult {
-  rooms: ExtractedRoom[]
-  notes?: string                     // 1-line summary from Claude (debug)
-  unmatched_labels?: string[]        // labels Claude saw but couldn't classify as rooms
+  outlines: Outline[]
+  notes?: string                     // 1-line debug summary from Claude
   confidence?: 'high' | 'medium' | 'low'
 }
 
-const MODEL = 'claude-sonnet-4-5'    // Vision-capable, structured-output-friendly
+const MODEL = 'claude-sonnet-4-5'    // Vision-capable, fast, cheap
 
 serve(async (req: Request) => {
   const pre = preflight(req); if (pre) return pre
@@ -67,8 +55,7 @@ serve(async (req: Request) => {
   if (!body.property_id) return jsonResponse({ error: 'property_id required' }, 400)
   if (!body.image_url)   return jsonResponse({ error: 'image_url required'   }, 400)
 
-  // 3. Verify the caller is a member of this property (RLS would catch
-  //    it later but we want a clean 403 here, not a silent no-op).
+  // 3. Verify property membership
   const sb = getServiceClient()
   const { data: membership } = await sb
     .from('property_members')
@@ -88,60 +75,55 @@ serve(async (req: Request) => {
     }, 503)
   }
 
-  // 5. Build the prompt — hint Claude with the property's room names so
-  //    handwriting recognition is anchored. If we don't have names yet
-  //    (rare — property without rooms), Claude works in discovery mode.
+  // 5. Prompt — focus on OUTLINE detection, not labels.
   const roomList = (body.room_names ?? []).filter(s => s && s.trim().length > 0)
-  const hint = roomList.length > 0
-    ? `Known room names in this property (use these as a vocabulary anchor for OCR — fuzzy-match if the label on the plan is slightly different, e.g. "BAB4" → "BABA"):
-${roomList.map(n => `  · ${n}`).join('\n')}
-`
-    : 'No prior room names — discover whatever rooms are labelled on the plan.'
+  const labelHint = roomList.length > 0
+    ? `If you happen to see a label like one of these on a room, return it as suggested_label so the UI can auto-assign:\n${roomList.map(n => `  · ${n}`).join('\n')}`
+    : 'Most plans don\'t have labels — that\'s expected. Skip suggested_label if nothing readable.'
 
   const systemPrompt = `You analyse hotel floor plans for STAYLO, a hotelier-owned booking platform.
 
-The user gives you ONE image: a floor plan (could be a hand sketch, a CAD export, a photo of an architect blueprint, a Google Maps satellite screenshot with annotations, anything). Your job is to extract every labelled GUEST ROOM with its position.
+The user gives you ONE image: a floor plan (hand sketch, CAD export, photo of an architect blueprint, etc.). Your job is to LOCATE every guest-room rectangle on the plan. Most plans WON'T have labels written on the rooms — that's expected. You don't need labels to detect a room; you detect them from their shape, bed layout, and position.
 
-What counts as a room:
-  · Anything that looks like a sleeping unit: bungalows, hotel rooms, suites, dorm beds
-  · Has a label / number / name on it (BABA, "Room 102", "Bungalow A", "Suite Mer")
+What counts as a guest room:
+  · A sleeping unit (hotel room, bungalow, suite, dorm cell)
+  · Has a recognisable bed / sleeping area in it
+  · Has its own walls (enclosed space)
 
 What does NOT count (skip these):
   · Reception / lobby / front desk
   · Restaurant, bar, kitchen, dining areas
-  · Pool, garden, parking, paths
-  · Bathrooms / toilets if they are shared common areas
+  · Pool, garden, parking, outdoor paths
+  · Shared bathrooms (in-room private baths are fine — count those as part of the room)
   · Laundry, storage, staff quarters
-  · Anything without a label
+  · Corridors / hallways
 
-For each room you identify, return:
-  · name           — the label exactly as written on the plan (preserve case)
-  · x_percent      — horizontal CENTER of the room, as a percentage of total image width (0 = left edge, 100 = right edge). Float, two decimals.
-  · y_percent      — vertical CENTER of the room, as a percentage of total image height (0 = top edge, 100 = bottom edge). Float, two decimals.
-  · width_percent  — bounding-box width as % of total image width (rough estimate is fine)
-  · height_percent — bounding-box height as % of total image height
+For each guest room you detect, return:
+  · x_percent       — horizontal CENTER of the room, % of total image width (0=left, 100=right). Float, two decimals.
+  · y_percent       — vertical CENTER of the room, % of total image height (0=top, 100=bottom). Float, two decimals.
+  · width_percent   — bounding-box width as % of total image width.
+  · height_percent  — bounding-box height as % of total image height.
+  · suggested_label — ONLY if a clear label/number is written on the room. Omit otherwise. ${labelHint}
 
-${hint}
+Order doesn't matter. Aim for completeness — better to include all rooms than to skip some.
 
 Output strict JSON with these EXACT keys (no markdown fences, no commentary):
 {
-  "rooms": [
-    {"name": "BABA", "x_percent": 25.5, "y_percent": 30.2, "width_percent": 12, "height_percent": 8}
+  "outlines": [
+    {"x_percent": 25.5, "y_percent": 30.2, "width_percent": 12, "height_percent": 8},
+    {"x_percent": 25.5, "y_percent": 45.0, "width_percent": 12, "height_percent": 8, "suggested_label": "BABA"}
   ],
-  "unmatched_labels": ["labels you saw but classified as non-room, e.g. 'Reception', 'Pool'"],
-  "notes": "1-line description of what kind of plan this is",
+  "notes": "1-line description of the plan style + how many rooms you detected",
   "confidence": "high" | "medium" | "low"
 }
 
-If you cannot make out any rooms, return rooms: [] with notes explaining why. Never invent rooms that aren't visible on the plan.`
+If you genuinely can't make out any rooms, return outlines: [] with notes explaining why. Never invent rooms.`
 
-  const userPrompt = `Extract the rooms from this floor plan. Property has ${roomList.length} known room${roomList.length === 1 ? '' : 's'}.`
+  const userPrompt = `Detect every guest-room rectangle on this floor plan. Property has ${roomList.length} known room${roomList.length === 1 ? '' : 's'} in its database (most likely with quantity > 1 for some types).`
 
-  // 6. Call Anthropic with the image as a URL block. Claude fetches the
-  //    image from the public URL itself — no need to base64-encode here.
   const anthropicReq = {
     model: MODEL,
-    max_tokens: 2048,
+    max_tokens: 4096,                // bigger plans → more outlines → bigger output
     system: systemPrompt,
     messages: [
       {
@@ -196,31 +178,37 @@ If you cannot make out any rooms, return rooms: [] with notes explaining why. Ne
     }, 502)
   }
 
-  // 7. Defensive sanitisation — clamp coordinates to 0–100, drop rooms
-  //    without a name, ensure numeric types. Claude is usually well-behaved
-  //    here but we'd rather catch a stray NaN now than corrupt the DB.
-  const clamped: ExtractedRoom[] = (result.rooms || [])
-    .filter(r => r && typeof r.name === 'string' && r.name.trim().length > 0)
-    .map(r => ({
-      name: r.name.trim(),
-      x_percent: clamp01(Number(r.x_percent)),
-      y_percent: clamp01(Number(r.y_percent)),
-      width_percent:  r.width_percent  != null ? clamp01(Number(r.width_percent))  : undefined,
-      height_percent: r.height_percent != null ? clamp01(Number(r.height_percent)) : undefined,
+  // 6. Sanitise — clamp coordinates, drop incomplete entries.
+  const clamped: Outline[] = (result.outlines || [])
+    .filter((o: Partial<Outline>) =>
+      o &&
+      typeof o.x_percent === 'number' &&
+      typeof o.y_percent === 'number'
+    )
+    .map((o: Outline) => ({
+      x_percent:      clamp01(Number(o.x_percent)),
+      y_percent:      clamp01(Number(o.y_percent)),
+      width_percent:  o.width_percent  != null ? clamp01(Number(o.width_percent))  : 8,
+      height_percent: o.height_percent != null ? clamp01(Number(o.height_percent)) : 6,
+      suggested_label: typeof o.suggested_label === 'string' && o.suggested_label.trim()
+        ? o.suggested_label.trim()
+        : undefined,
     }))
 
-  console.log(`[floor-plan-extract] ${body.property_id}: extracted ${clamped.length} rooms in ${elapsed}ms`)
+  console.log(`[floor-plan-extract] ${body.property_id}: detected ${clamped.length} outlines in ${elapsed}ms`)
 
+  // 7. Return — NEVER treat 0 outlines as an error. If Claude saw a non-
+  //    floor-plan image or genuinely empty plan, the UI shows an info
+  //    banner with the notes, not a red error.
   return jsonResponse({
-    rooms: clamped,
+    outlines: clamped,
     notes: result.notes,
-    unmatched_labels: result.unmatched_labels ?? [],
     confidence: result.confidence ?? 'medium',
     elapsed_ms: elapsed,
   })
 })
 
 function clamp01(n: number): number {
-  if (!Number.isFinite(n)) return 50    // safe centre
+  if (!Number.isFinite(n)) return 50
   return Math.max(0, Math.min(100, n))
 }

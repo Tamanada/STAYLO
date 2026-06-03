@@ -9,7 +9,7 @@ import {
   Settings as SettingsIcon, UserPlus, Shield, Mail, Crown,
   Package as PackageIcon, Map as MapIcon, Sparkles,
 } from 'lucide-react'
-import { generateFloorPlanSVG, svgToBlob } from '../../lib/floorPlanSvg'
+import { generateFloorPlanSVG, generateOutlineFloorPlanSVG, svgToBlob } from '../../lib/floorPlanSvg'
 import { bestRoomMatch } from '../../lib/fuzzyMatch'
 import PackagesTab from './PackagesTab'
 import RewardModal from '../../components/dashboard/RewardModal'
@@ -1899,36 +1899,79 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   // AI extraction flow — independent of manual upload. Goes through three
   // states (uploading raw → analysing with Claude → rendering clean SVG).
   // `aiResult` carries the toast message once done so the hotelier sees
-  // how many rooms were auto-placed.
+  // how many outlines were detected.
   const [aiStage, setAiStage] = useState(null)    // null | 'uploading' | 'analysing' | 'rendering'
-  const [aiResult, setAiResult] = useState(null)  // {matched:n, unmatched:[], total:n} | null
+  const [aiResult, setAiResult] = useState(null)  // {detected:n, notes?:string} | null
+  const [aiInfo,   setAiInfo]   = useState(null)  // info-level message when AI ran but found nothing
   // The room currently being dragged — tracked locally so the drop
   // handler on the image knows which room.id to update.
   const [draggingRoomId, setDraggingRoomId] = useState(null)
-  // Local positions cache — keyed by room.id. Lets us update the UI
-  // instantly on drop without waiting for the parent refetch.
-  const [localPositions, setLocalPositions] = useState(() => {
+  // Outlines from AI extraction — array of {x_percent, y_percent,
+  // width_percent, height_percent}. Used for snap-to-outline magnetism
+  // on drop, AND for highlighting which outline a room marker has claimed.
+  const [outlines, setOutlines] = useState(() => {
+    const raw = property?.floor_plan_outlines
+    return Array.isArray(raw) ? raw : []
+  })
+  // Local positions cache — keyed by room.id, value is an array of
+  // {x, y, index}. Index is 1-based and maps to room.quantity slots.
+  // Backward compat: if a room only has the legacy floor_plan_x/y set,
+  // promote it to a singleton positions[] entry on first read.
+  const seedPositions = useCallback(() => {
     const m = {}
     for (const r of rooms) {
-      if (r.floor_plan_x != null && r.floor_plan_y != null) {
-        m[r.id] = { x: Number(r.floor_plan_x), y: Number(r.floor_plan_y) }
+      if (Array.isArray(r.floor_plan_positions) && r.floor_plan_positions.length > 0) {
+        m[r.id] = r.floor_plan_positions.map((p, i) => ({
+          x: Number(p.x),
+          y: Number(p.y),
+          index: Number(p.index ?? (i + 1)),
+        }))
+      } else if (r.floor_plan_x != null && r.floor_plan_y != null) {
+        m[r.id] = [{ x: Number(r.floor_plan_x), y: Number(r.floor_plan_y), index: 1 }]
+      } else {
+        m[r.id] = []
       }
     }
     return m
-  })
-  // Re-seed local cache when the parent re-fetches rooms.
-  useEffect(() => {
-    const m = {}
-    for (const r of rooms) {
-      if (r.floor_plan_x != null && r.floor_plan_y != null) {
-        m[r.id] = { x: Number(r.floor_plan_x), y: Number(r.floor_plan_y) }
-      }
-    }
-    setLocalPositions(m)
   }, [rooms])
+  const [localPositions, setLocalPositions] = useState(seedPositions)
+  // Re-seed local cache when the parent re-fetches rooms.
+  useEffect(() => { setLocalPositions(seedPositions()) }, [seedPositions])
   // And sync the upload state when the parent's property reference
   // changes (e.g. after a fetch that picks up the new URL).
   useEffect(() => { setPlanUrl(property?.floor_plan_url || null) }, [property?.floor_plan_url])
+  useEffect(() => {
+    const raw = property?.floor_plan_outlines
+    setOutlines(Array.isArray(raw) ? raw : [])
+  }, [property?.floor_plan_outlines])
+
+  // Helpers — how many units placed vs total, lowest free index, snap.
+  const placedCount = (roomId) => (localPositions[roomId] || []).length
+  const remainingFor = (room) => Math.max(0, (room.quantity || 1) - placedCount(room.id))
+  function nextIndexFor(roomId, quantity) {
+    const used = new Set((localPositions[roomId] || []).map(p => p.index))
+    for (let i = 1; i <= quantity; i++) {
+      if (!used.has(i)) return i
+    }
+    return quantity   // shouldn't happen if remaining > 0
+  }
+  /**
+   * Magnétisme snap-to-outline. If the cursor lands within ~10% of an
+   * outline center we snap to that center; otherwise we return the raw
+   * cursor coords. Returns { x, y, snapped:boolean }.
+   */
+  function snapToNearestOutline(rawX, rawY) {
+    if (!outlines.length) return { x: rawX, y: rawY, snapped: false }
+    let best = null
+    for (const o of outlines) {
+      const cx = Number(o.x_percent)
+      const cy = Number(o.y_percent)
+      const dist = Math.hypot(rawX - cx, rawY - cy)
+      if (!best || dist < best.dist) best = { cx, cy, dist }
+    }
+    if (best && best.dist < 10) return { x: best.cx, y: best.cy, snapped: true }
+    return { x: rawX, y: rawY, snapped: false }
+  }
 
   async function handleUpload(e) {
     const file = e.target.files?.[0]
@@ -1961,25 +2004,29 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   }
 
   /**
-   * AI-assisted plan generation — the hotelier uploads any raw image
-   * (sketch, photo, blueprint screenshot…). We:
-   *  1. Upload it to storage as the source-of-truth raw plan
-   *  2. Send the public URL + the property's room names to the
-   *     `floor-plan-extract` edge function, which calls Claude Vision
-   *  3. Receive back {rooms[]} with %-positions
-   *  4. Fuzzy-match each extracted room to a real `rooms` row
-   *  5. Render a clean STAYLO-branded SVG from the matched rooms
-   *  6. Upload the SVG to storage and set it as floor_plan_url (overrides
-   *     the raw image — we keep the raw in storage for traceability but
-   *     the property displays the clean SVG)
-   *  7. Bulk-update rooms.floor_plan_x/y for every matched room
-   *  8. Surface a result toast with the count + any unmatched labels
+   * AI-assisted plan generation (V2 — outline detection).
+   *
+   *  1. Upload the raw plan to storage (kept for traceability)
+   *  2. Send the public URL to `floor-plan-extract`, which asks Claude
+   *     Vision to detect every guest-room RECTANGLE on the plan. No
+   *     labels needed — most plans don't have them and that's expected.
+   *  3. Receive back {outlines: [{x_percent, y_percent, w, h}, ...]}
+   *  4. Render a clean STAYLO-styled SVG from those outlines (empty
+   *     rectangles + placeholder numbers)
+   *  5. Upload the SVG and persist:
+   *       · properties.floor_plan_url       = SVG public URL
+   *       · properties.floor_plan_outlines  = outlines JSONB (for snap)
+   *     Clear any previously placed positions (the new plan has new
+   *     coordinates; old positions would land in the wrong places).
+   *  6. Hotelier drag-drops their room names onto the outlines — the UI
+   *     snaps to the nearest outline center on drop.
    */
   async function handleAiGenerate(e) {
     const file = e.target.files?.[0]
     if (!file) return
     setError(null)
     setAiResult(null)
+    setAiInfo(null)
 
     try {
       // ─── 1. Raw image upload ─────────────────────────────────
@@ -2017,42 +2064,22 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         throw new Error(errBody.error || errBody.detail || `Edge function returned ${fnResp.status}`)
       }
       const extracted = await fnResp.json()
-      const extractedRooms = Array.isArray(extracted.rooms) ? extracted.rooms : []
-      if (extractedRooms.length === 0) {
-        throw new Error(extracted.notes || 'Claude could not find any rooms on this image. Try a clearer scan or place the rooms manually.')
+      const detectedOutlines = Array.isArray(extracted.outlines) ? extracted.outlines : []
+      if (detectedOutlines.length === 0) {
+        // Successful AI run, but nothing detected. Show an INFO banner
+        // (not a red error). The hotelier can either annotate the plan
+        // more clearly or continue in manual mode.
+        setAiInfo({
+          notes: extracted.notes || 'AI ran but couldn\'t detect any room rectangles on this image.',
+          confidence: extracted.confidence,
+        })
+        return
       }
 
-      // ─── 3. Fuzzy-match extracted labels → real rooms ────────
-      // We allow at most ONE assignment per real room — if two extracted
-      // labels both want "BABA", only the first wins.
-      const matched = []           // [{ roomId, name, x, y, w, h, accent }]
-      const usedRoomIds = new Set()
-      const unmatchedLabels = []
-      for (const er of extractedRooms) {
-        const candidate = bestRoomMatch(er.name, rooms.filter(r => !usedRoomIds.has(r.id)))
-        if (candidate) {
-          usedRoomIds.add(candidate.id)
-          matched.push({
-            roomId: candidate.id,
-            name: candidate.name,           // use the canonical real name in the SVG
-            x_percent: er.x_percent,
-            y_percent: er.y_percent,
-            width_percent:  er.width_percent,
-            height_percent: er.height_percent,
-            accent: false,
-          })
-        } else {
-          unmatchedLabels.push(er.name)
-        }
-      }
-      if (matched.length === 0) {
-        throw new Error('Claude extracted rooms but none matched your existing room names. Add the missing rooms in the Chambres tab first.')
-      }
-
-      // ─── 4. Render the clean SVG ─────────────────────────────
+      // ─── 3. Render the clean SVG (outline mode) ──────────────
       setAiStage('rendering')
-      const svgString = generateFloorPlanSVG({
-        rooms: matched,
+      const svgString = generateOutlineFloorPlanSVG({
+        outlines: detectedOutlines,
         title: property.name,
       })
       const svgBlob = svgToBlob(svgString)
@@ -2065,31 +2092,37 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
       const svgUrl = svgUrlData?.publicUrl
       if (!svgUrl) throw new Error('Could not derive public URL for generated SVG')
 
-      // ─── 5. Persist URL + room positions ─────────────────────
-      // All writes run in parallel; if any fails we report but don't
-      // unroll the others (the SVG file is already in storage, and
-      // partial position writes are recoverable manually).
+      // ─── 4. Persist URL + outlines + clear stale positions ───
+      // Re-running the AI on a NEW plan produces new outline coordinates,
+      // so any previously placed markers would now be misaligned. Reset
+      // every room's positions[] (and legacy floor_plan_x/y) to NULL so
+      // the hotelier re-drops on the new outlines.
       const writes = [
-        supabase.from('properties').update({ floor_plan_url: svgUrl }).eq('id', property.id),
-        ...matched.map(m =>
-          supabase.from('rooms')
-            .update({
-              floor_plan_x: Number(m.x_percent).toFixed(2),
-              floor_plan_y: Number(m.y_percent).toFixed(2),
-            })
-            .eq('id', m.roomId)
-        ),
+        supabase.from('properties')
+          .update({
+            floor_plan_url: svgUrl,
+            floor_plan_outlines: detectedOutlines,
+          })
+          .eq('id', property.id),
+        supabase.from('rooms')
+          .update({
+            floor_plan_positions: [],
+            floor_plan_x: null,
+            floor_plan_y: null,
+          })
+          .eq('property_id', property.id),
       ]
       const writeResults = await Promise.all(writes)
       const firstErr = writeResults.find(r => r.error)?.error
       if (firstErr) throw new Error(`Plan generated but couldn't save: ${firstErr.message}`)
 
-      // ─── 6. Done — surface result ────────────────────────────
+      // ─── 5. Done — surface result + reset local state ────────
       setPlanUrl(svgUrl)
+      setOutlines(detectedOutlines)
+      setLocalPositions(Object.fromEntries(rooms.map(r => [r.id, []])))
       setAiResult({
-        total:     extractedRooms.length,
-        matched:   matched.length,
-        unmatched: unmatchedLabels,
+        detected: detectedOutlines.length,
+        notes: extracted.notes,
       })
       onRefresh?.()
     } catch (err) {
@@ -2104,12 +2137,19 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   async function handleRemovePlan() {
     if (!confirm(t('manage.confirm_remove_plan', 'Remove this floor plan? Room positions will be cleared.'))) return
     setError(null)
-    // Clear the URL on the property AND null out every room's
-    // coordinates — the positions don't make sense without the image.
-    await supabase.from('properties').update({ floor_plan_url: null }).eq('id', property.id)
-    await supabase.from('rooms').update({ floor_plan_x: null, floor_plan_y: null }).eq('property_id', property.id)
+    // Clear the URL + outlines on the property AND every room's
+    // positions — none of it makes sense without the background image.
+    await supabase.from('properties')
+      .update({ floor_plan_url: null, floor_plan_outlines: [] })
+      .eq('id', property.id)
+    await supabase.from('rooms')
+      .update({ floor_plan_positions: [], floor_plan_x: null, floor_plan_y: null })
+      .eq('property_id', property.id)
     setPlanUrl(null)
-    setLocalPositions({})
+    setOutlines([])
+    setLocalPositions(Object.fromEntries(rooms.map(r => [r.id, []])))
+    setAiResult(null)
+    setAiInfo(null)
     onRefresh?.()
   }
 
@@ -2130,49 +2170,86 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     const roomId = draggingRoomId || e.dataTransfer.getData('text/plain')
     setDraggingRoomId(null)
     if (!roomId) return
-    // Compute coordinates as % from the image's bounding rect.
+    const room = rooms.find(r => r.id === roomId)
+    if (!room) return
+    // Refuse if the room is already fully placed (defensive — the tray
+    // entry shouldn't render in this case but covers a race).
+    if (remainingFor(room) <= 0) return
+
+    // Compute drop coords as % of the image's bounding rect.
     const rect = e.currentTarget.getBoundingClientRect()
-    const x = ((e.clientX - rect.left) / rect.width) * 100
-    const y = ((e.clientY - rect.top)  / rect.height) * 100
-    // Clamp to 0–100 (mostly defensive — getBoundingClientRect should
-    // already constrain the cursor inside the image).
-    const cx = Math.max(0, Math.min(100, x))
-    const cy = Math.max(0, Math.min(100, y))
+    const rawX = ((e.clientX - rect.left) / rect.width)  * 100
+    const rawY = ((e.clientY - rect.top)  / rect.height) * 100
+    const clampedRaw = {
+      x: Math.max(0, Math.min(100, rawX)),
+      y: Math.max(0, Math.min(100, rawY)),
+    }
+    // Snap to nearest AI outline if one is within tolerance.
+    const { x, y } = snapToNearestOutline(clampedRaw.x, clampedRaw.y)
+
+    // Pick the next free index for this room (1..quantity).
+    const idx = nextIndexFor(roomId, room.quantity || 1)
+    const newPos = { x: Number(x.toFixed(2)), y: Number(y.toFixed(2)), index: idx }
+    const nextPositions = [...(localPositions[roomId] || []), newPos]
+      .sort((a, b) => a.index - b.index)
+
     // Optimistic UI — drop the marker now, persist async.
-    setLocalPositions(prev => ({ ...prev, [roomId]: { x: cx, y: cy } }))
+    setLocalPositions(prev => ({ ...prev, [roomId]: nextPositions }))
+
     const { error: upErr } = await supabase
       .from('rooms')
-      .update({ floor_plan_x: cx.toFixed(2), floor_plan_y: cy.toFixed(2) })
+      .update({ floor_plan_positions: nextPositions })
       .eq('id', roomId)
     if (upErr) {
       setError(`Could not save room position: ${upErr.message}`)
       // Revert on failure
-      setLocalPositions(prev => {
-        const next = { ...prev }; delete next[roomId]; return next
-      })
+      setLocalPositions(prev => ({
+        ...prev,
+        [roomId]: (prev[roomId] || []).filter(p => p.index !== idx),
+      }))
     } else {
       onRefresh?.()
     }
   }
-  async function handleMarkerRemove(roomId) {
-    setLocalPositions(prev => {
-      const next = { ...prev }; delete next[roomId]; return next
-    })
+  /** Remove a single unit's position; other units of the same room stay. */
+  async function handleMarkerRemove(roomId, index) {
+    const next = (localPositions[roomId] || []).filter(p => p.index !== index)
+    setLocalPositions(prev => ({ ...prev, [roomId]: next }))
     const { error: upErr } = await supabase
-      .from('rooms').update({ floor_plan_x: null, floor_plan_y: null }).eq('id', roomId)
+      .from('rooms')
+      .update({ floor_plan_positions: next })
+      .eq('id', roomId)
     if (upErr) setError(upErr.message)
     else onRefresh?.()
   }
 
-  // Partition rooms into placed (has coordinates) and unplaced.
-  const placedRooms   = rooms.filter(r => localPositions[r.id])
-  const unplacedRooms = rooms.filter(r => !localPositions[r.id])
+  // Flatten positions into a single list of markers for rendering.
+  // Each marker references back to its room + its index within that room.
+  const markers = []
+  for (const room of rooms) {
+    const positions = localPositions[room.id] || []
+    for (const p of positions) {
+      markers.push({
+        roomId: room.id,
+        roomName: room.name,
+        quantity: room.quantity || 1,
+        index: p.index,
+        x: p.x,
+        y: p.y,
+        label: (room.quantity || 1) > 1 ? `${room.name} ${p.index}` : room.name,
+      })
+    }
+  }
+  // Rooms that still have at least one unit to place. We show one tray
+  // chip per remaining UNIT (so dragging "Hibrakim" three times in a row
+  // sees the chip count decrement each time).
+  const trayRooms = rooms.filter(r => remainingFor(r) > 0)
 
   // Stage labels for the AI flow toast — picked at render time so the
   // hotelier sees "Analysing with Claude…" specifically, not just a spinner.
   const aiStageLabel = aiStage === 'uploading' ? t('manage.plan_ai_uploading', 'Uploading your plan…')
-    : aiStage === 'analysing' ? t('manage.plan_ai_analysing', 'Analysing with AI — reading room labels…')
-    : aiStage === 'rendering' ? t('manage.plan_ai_rendering', 'Generating clean plan + placing rooms…')
+    : aiStage === 'analysing' ? t('manage.plan_ai_analysing', 'Analysing — detecting room rectangles…')
+    : aiStage === 'rendering' ? t('manage.plan_ai_rendering', 'Generating clean plan…')
     : null
 
   // ── Render ────────────────────────────────────────────────
@@ -2247,29 +2324,49 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         </div>
       </div>
 
-      {/* AI result toast — green pill summarising the auto-placement run.
-          Dismisses itself the next time the hotelier drags a room or
-          triggers any other action that clears aiResult. */}
+      {/* AI success toast — green pill summarising the outline detection.
+          Dismisses on the X button or once the hotelier clears it. */}
       {aiResult && (
         <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-libre/10 to-electric/10 border border-libre/30 text-deep text-xs">
           <Sparkles size={14} className="text-libre mt-0.5 flex-shrink-0" />
           <div className="flex-1 leading-relaxed">
             <span className="font-bold">
-              {t('manage.plan_ai_done', '✓ {{matched}} of {{total}} rooms detected and placed.', {
-                matched: aiResult.matched, total: aiResult.total,
-              })}
+              {t('manage.plan_ai_done_v2', '✓ {{count}} room rectangles detected. Drag your rooms below onto the outlines — they\'ll snap into place.', { count: aiResult.detected })}
             </span>
-            {aiResult.unmatched.length > 0 && (
-              <span className="text-deep/60">
-                {' '}{t('manage.plan_ai_unmatched', 'Couldn\'t match: {{labels}}. Place them manually from the tray below.', {
-                  labels: aiResult.unmatched.join(', '),
-                })}
-              </span>
+            {aiResult.notes && (
+              <span className="block text-deep/50 mt-1 italic">{aiResult.notes}</span>
             )}
           </div>
           <button
             type="button"
             onClick={() => setAiResult(null)}
+            className="text-deep/40 hover:text-deep transition-colors"
+            aria-label="Dismiss"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* AI info banner — AI ran successfully but detected 0 outlines.
+          NOT an error; tells the hotelier how to get better results. */}
+      {aiInfo && (
+        <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-ocean/10 border border-ocean/30 text-deep text-xs">
+          <Sparkles size={14} className="text-ocean mt-0.5 flex-shrink-0" />
+          <div className="flex-1 leading-relaxed">
+            <span className="font-bold">
+              {t('manage.plan_ai_none_v2', 'AI ran but couldn\'t detect any room rectangles.')}
+            </span>
+            {aiInfo.notes && (
+              <span className="block text-deep/60 mt-1 italic">{aiInfo.notes}</span>
+            )}
+            <span className="block text-deep/60 mt-1.5">
+              {t('manage.plan_ai_none_tip', 'Try a higher-contrast scan of the plan, or annotate the rooms before re-running. You can also keep using manual drag-drop on the image you uploaded.')}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAiInfo(null)}
             className="text-deep/40 hover:text-deep transition-colors"
             aria-label="Dismiss"
           >
@@ -2295,65 +2392,76 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           className="w-full h-auto block pointer-events-none"
           draggable={false}
         />
-        {/* Markers — overlaid by % coords */}
-        {placedRooms.map(room => {
-          const pos = localPositions[room.id]
-          if (!pos) return null
-          return (
-            <button
-              type="button"
-              key={room.id}
-              onClick={() => handleMarkerRemove(room.id)}
-              title={`${room.name} — click to remove`}
-              style={{
-                position: 'absolute',
-                left: `${pos.x}%`,
-                top:  `${pos.y}%`,
-                transform: 'translate(-50%, -50%)',
-              }}
-              className="px-2.5 py-1.5 rounded-full bg-gradient-to-r from-orange to-pink-500 text-white text-[11px] font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer ring-2 ring-white"
-            >
-              🛏️ {room.name}
-            </button>
-          )
-        })}
+        {/* Markers — one per placed unit. Click to remove THAT specific
+            unit (others of the same room stay). Numbered when room.quantity > 1. */}
+        {markers.map(m => (
+          <button
+            type="button"
+            key={`${m.roomId}-${m.index}`}
+            onClick={() => handleMarkerRemove(m.roomId, m.index)}
+            title={`${m.label} — click to remove this unit`}
+            style={{
+              position: 'absolute',
+              left: `${m.x}%`,
+              top:  `${m.y}%`,
+              transform: 'translate(-50%, -50%)',
+            }}
+            className="px-2.5 py-1.5 rounded-full bg-gradient-to-r from-orange to-pink-500 text-white text-[11px] font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer ring-2 ring-white whitespace-nowrap"
+          >
+            🛏️ {m.label}
+          </button>
+        ))}
         {/* Empty-state hint when no markers yet */}
-        {placedRooms.length === 0 && (
+        {markers.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-white/90 backdrop-blur px-4 py-2.5 rounded-full text-xs font-bold text-deep shadow-lg">
-              ⬇️ {t('manage.plan_drop_here', 'Drag a room here to place it')}
+              ⬇️ {outlines.length > 0
+                ? t('manage.plan_drop_outline', 'Drag a room from below — it\'ll snap into an outline.')
+                : t('manage.plan_drop_here', 'Drag a room here to place it')}
             </div>
           </div>
         )}
       </div>
 
-      {/* Unplaced tray */}
+      {/* Unplaced tray — one chip per room TYPE still having unplaced units.
+          The chip shows "Hibrakim · 1/3 placed" so the hotelier sees how
+          many of that type they've put down. Drag it once for each unit. */}
       <div>
         <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 mb-2">
-          {t('manage.plan_unplaced', 'Unplaced rooms')} · {unplacedRooms.length}
+          {t('manage.plan_unplaced', 'Unplaced rooms')} · {trayRooms.length}
         </div>
-        {unplacedRooms.length === 0 ? (
+        {trayRooms.length === 0 ? (
           <div className="text-xs text-libre font-semibold py-2">
             ✓ {t('manage.plan_all_placed', 'Every room is placed on the plan.')}
           </div>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {unplacedRooms.map(room => (
-              <button
-                key={room.id}
-                type="button"
-                draggable
-                onDragStart={(e) => handleRoomDragStart(e, room.id)}
-                onDragEnd={handleRoomDragEnd}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border-2 border-dashed border-gray-300 text-xs font-bold text-deep cursor-grab active:cursor-grabbing hover:border-ocean hover:bg-ocean/5 transition-all ${
-                  draggingRoomId === room.id ? 'opacity-50' : ''
-                }`}
-              >
-                <span className="text-gray-300">⋮⋮</span>
-                🛏️ {room.name}
-                <span className="text-[10px] text-gray-400 font-normal">×{room.quantity}</span>
-              </button>
-            ))}
+            {trayRooms.map(room => {
+              const placed = placedCount(room.id)
+              const total  = room.quantity || 1
+              return (
+                <button
+                  key={room.id}
+                  type="button"
+                  draggable
+                  onDragStart={(e) => handleRoomDragStart(e, room.id)}
+                  onDragEnd={handleRoomDragEnd}
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border-2 border-dashed border-gray-300 text-xs font-bold text-deep cursor-grab active:cursor-grabbing hover:border-ocean hover:bg-ocean/5 transition-all ${
+                    draggingRoomId === room.id ? 'opacity-50' : ''
+                  }`}
+                >
+                  <span className="text-gray-300">⋮⋮</span>
+                  🛏️ {room.name}
+                  {total > 1 && (
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                      placed === 0 ? 'bg-gray-100 text-gray-500' : 'bg-libre/15 text-libre'
+                    }`}>
+                      {placed}/{total}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
         )}
       </div>
