@@ -2197,6 +2197,13 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
 
   // Move + resize via pointer events on the canvas. We don't use HTML5
   // drag here — pointer events give us precise per-pixel control.
+  //
+  // Important: we deliberately do NOT call setPointerCapture on the
+  // handle/drag-surface. Capture would redirect every subsequent
+  // pointermove/pointerup to that small child element instead of
+  // letting them bubble up to the canvas div where handlePointerMove
+  // is wired — i.e. the drag would silently break. Letting events
+  // bubble naturally is the right pattern here.
   function startMove(e, zone) {
     e.stopPropagation()
     const rect = e.currentTarget.closest('[data-plan-canvas]')?.getBoundingClientRect()
@@ -2902,20 +2909,15 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           const shapeIcon = z.shape === 'circle' ? '●' : z.shape === 'square' ? '■' : '▭'
           return (
             <div key={`overlay-${z.id}`} className="contents">
-              {/* Drag surface — covers the shape, captures move pointer */}
+              {/* Drag surface — covers the shape, no pointer capture so
+                  pointermove/up bubble to the canvas's handlers. */}
               <div
                 onPointerDown={(e) => {
-                  // Only react to the primary button — Pointer Events
-                  // delivers a single canonical "pointerdown" we can
-                  // capture for the drag.
                   if (e.button !== 0) return
-                  e.currentTarget.setPointerCapture?.(e.pointerId)
                   startMove(e, z)
                 }}
                 onClick={(e) => {
                   e.stopPropagation()
-                  // If it was a click (no drag), select the zone, but
-                  // also handle the dorm sub-plan modal case.
                   if (dorm) {
                     setDormModal(assigned)
                   } else {
@@ -2926,6 +2928,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                 style={{
                   left: `${left}%`, top: `${top}%`,
                   width: `${w}%`,   height: `${h}%`,
+                  touchAction: 'none',
                 }}
               />
               {/* Center label */}
@@ -2945,34 +2948,57 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
               {/* Selected — handles + shape selector + delete */}
               {isSelected && (
                 <>
-                  {/* Shape + delete floater above the zone */}
+                  {/* Shape + delete floater. Flips BELOW the zone if
+                      there's no room above (shape near top edge), so
+                      the buttons never escape the canvas. */}
+                  {(() => {
+                    const showBelow = top < 14
+                    const anchorY = showBelow ? (cy + h / 2) : top
+                    const yTransform = showBelow ? 'calc(0% + 8px)' : 'calc(-100% - 8px)'
+                    return (
+                      <div
+                        className="absolute flex items-center gap-1 px-1.5 py-1 rounded-lg bg-deep text-white shadow-lg z-10"
+                        style={{
+                          left: `${cx}%`, top: `${anchorY}%`,
+                          transform: `translate(-50%, ${yTransform})`,
+                          pointerEvents: 'auto',
+                        }}
+                      >
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); cycleShape(z) }}
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold hover:bg-white/15 cursor-pointer"
+                          title={t('manage.plan_shape_cycle', 'Cycle shape: rectangle → square → circle')}
+                        >
+                          <span className="text-sm leading-none">{shapeIcon}</span>
+                          <span className="text-[10px] opacity-70 uppercase tracking-wider">
+                            {z.shape || 'rect'}
+                          </span>
+                        </button>
+                        <span className="w-px h-3 bg-white/30" />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleZoneDelete(z.id) }}
+                          className="px-2 py-0.5 rounded text-xs font-bold text-sunset hover:bg-white/15 cursor-pointer"
+                          title={t('manage.plan_zone_delete', 'Remove this zone')}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    )
+                  })()}
+                  {/* Selection outline — thicker stroke around the shape
+                      so the hotelier sees clearly which zone is active. */}
                   <div
-                    className="absolute flex items-center gap-1 px-1 py-1 rounded-lg bg-deep text-white shadow-lg"
+                    className="absolute border-2 border-ocean rounded-md pointer-events-none"
                     style={{
-                      left: `${cx}%`, top: `${top}%`,
-                      transform: 'translate(-50%, calc(-100% - 8px))',
+                      left: `${left}%`, top: `${top}%`,
+                      width: `${w}%`, height: `${h}%`,
+                      boxShadow: '0 0 0 2px rgba(255,255,255,0.7)',
                     }}
-                  >
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); cycleShape(z) }}
-                      className="px-2 py-0.5 rounded text-xs font-bold hover:bg-white/15 cursor-pointer"
-                      title={t('manage.plan_shape_cycle', 'Cycle shape: rectangle → square → circle')}
-                    >
-                      {shapeIcon}
-                    </button>
-                    <span className="w-px h-3 bg-white/30" />
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleZoneDelete(z.id) }}
-                      className="px-2 py-0.5 rounded text-xs font-bold text-sunset hover:bg-white/15 cursor-pointer"
-                      title={t('manage.plan_zone_delete', 'Remove this zone')}
-                    >
-                      ×
-                    </button>
-                  </div>
-                  {/* 4 corner handles — the local `handle` name avoids
-                      shadowing the outer `h` (= zone height). */}
+                  />
+                  {/* 4 corner handles. NO setPointerCapture so the
+                      canvas's onPointerMove keeps receiving the drag. */}
                   {['nw', 'ne', 'sw', 'se'].map(handle => {
                     const hx = handle.includes('w') ? left : (cx + w / 2)
                     const hy = handle.includes('n') ? top  : (cy + h / 2)
@@ -2983,11 +3009,13 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                         key={handle}
                         onPointerDown={(e) => {
                           if (e.button !== 0) return
-                          e.currentTarget.setPointerCapture?.(e.pointerId)
                           startResize(e, z, handle)
                         }}
-                        className={`absolute w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-sm bg-white border-2 border-ocean shadow ${cursor}`}
-                        style={{ left: `${hx}%`, top: `${hy}%` }}
+                        className={`absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-sm bg-white border-2 border-ocean shadow-lg ${cursor} z-10`}
+                        style={{
+                          left: `${hx}%`, top: `${hy}%`,
+                          touchAction: 'none',
+                        }}
                       />
                     )
                   })}
