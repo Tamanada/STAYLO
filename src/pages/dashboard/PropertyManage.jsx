@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { generateFloorPlanSVG, generateOutlineFloorPlanSVG, svgToBlob } from '../../lib/floorPlanSvg'
 import { bestRoomMatch } from '../../lib/fuzzyMatch'
+import { centroid as polygonCentroid, polygonArea, verticesToPoints } from '../../lib/floorPlanGeometry'
 import DormSubPlanModal from '../../components/dashboard/DormSubPlanModal'
 
 // Dorm rooms behave differently on the floor plan: ONE marker on the
@@ -1916,6 +1917,19 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   // most architect CAD plans); the hotelier can flip back to raw if
   // their plan is already crisp.
   const [cleanView, setCleanView] = useState(true)
+  // V6-hybride zones — every enclosed polygonal area Claude detected,
+  // plus any zones the hotelier added/edited. Each entry:
+  //   { id, vertices: [[x,y]...], deleted?: bool,
+  //     assigned_room_id?: uuid, unit_index?: int }
+  // Curated by the hotelier: soft-delete with X, assign by drag-drop.
+  const [zones, setZones] = useState(() => {
+    const raw = property?.floor_plan_zones
+    return Array.isArray(raw) ? raw : []
+  })
+  // AI detection flow — three stages so the button can show what it's
+  // doing during the ~20-30s round-trip to Claude Vision.
+  const [aiStage, setAiStage] = useState(null)    // null | 'uploading' | 'analysing' | 'saving'
+  const [aiResult, setAiResult] = useState(null)  // { detected: number, notes?: string } | null
   // Outlines from any previous AI extraction. We no longer FETCH new
   // outlines (the AI detection path was dropped 2026-06-05 — it was
   // imprecise on dense CAD plans and the hotelier prefers to place
@@ -1956,6 +1970,103 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     const raw = property?.floor_plan_outlines
     setOutlines(Array.isArray(raw) ? raw : [])
   }, [property?.floor_plan_outlines])
+  useEffect(() => {
+    const raw = property?.floor_plan_zones
+    setZones(Array.isArray(raw) ? raw : [])
+  }, [property?.floor_plan_zones])
+
+  /**
+   * Trigger the AI polygon detection. Sends the current floor_plan_url
+   * to the `floor-plan-extract` edge function, which returns every
+   * enclosed polygonal area Claude could perceive (rooms + corridors +
+   * stairs — no classification). We replace the property's zones with
+   * the detected set, then the hotelier curates by clicking X on the
+   * non-room zones and dragging room names onto the rest.
+   *
+   * Confirmation: if zones already exist (previous detection or manual
+   * additions), warn before replacing. We never auto-merge — assignments
+   * and edits would be impossible to reconcile across runs.
+   */
+  async function handleAiDetect() {
+    if (!planUrl) return
+    if (zones.length > 0) {
+      const hasAssigned = zones.some(z => !z.deleted && z.assigned_room_id)
+      const msg = hasAssigned
+        ? t('manage.plan_zones_replace_assigned',
+            'Re-running AI will WIPE every existing zone, including the ones you\'ve already assigned to a room. Continue?')
+        : t('manage.plan_zones_replace_plain',
+            'Re-running AI will replace every existing zone. Continue?')
+      if (!confirm(msg)) return
+    }
+    setError(null)
+    setAiResult(null)
+    try {
+      setAiStage('analysing')
+      const { data: { session } } = await supabase.auth.getSession()
+      const accessToken = session?.access_token
+      const fnUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/floor-plan-extract`
+      const fnResp = await fetch(fnUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          property_id: property.id,
+          image_url:   planUrl,
+        }),
+      })
+      if (!fnResp.ok) {
+        const errBody = await fnResp.json().catch(() => ({}))
+        throw new Error(errBody.error || errBody.detail || `Edge function returned ${fnResp.status}`)
+      }
+      const extracted = await fnResp.json()
+      const detected = Array.isArray(extracted.zones) ? extracted.zones : []
+      const newZones = detected.map((z, i) => ({
+        id: `z-${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+        vertices: z.vertices,
+        deleted: false,
+        assigned_room_id: null,
+        unit_index: null,
+      }))
+
+      setAiStage('saving')
+      const { error: upErr } = await supabase
+        .from('properties')
+        .update({ floor_plan_zones: newZones })
+        .eq('id', property.id)
+      if (upErr) throw new Error(`Couldn't save zones: ${upErr.message}`)
+
+      setZones(newZones)
+      setAiResult({
+        detected: newZones.length,
+        notes: extracted.notes,
+      })
+      onRefresh?.()
+    } catch (err) {
+      setError(err?.message || String(err))
+    } finally {
+      setAiStage(null)
+    }
+  }
+
+  /** Soft-delete a zone (corridor, stairs, lobby — anything not a room). */
+  async function handleZoneDelete(zoneId) {
+    const next = zones.map(z =>
+      z.id === zoneId ? { ...z, deleted: true, assigned_room_id: null, unit_index: null } : z
+    )
+    setZones(next)
+    const { error: upErr } = await supabase
+      .from('properties')
+      .update({ floor_plan_zones: next })
+      .eq('id', property.id)
+    if (upErr) {
+      setError(`Couldn't delete zone: ${upErr.message}`)
+      setZones(zones)   // revert
+    } else {
+      onRefresh?.()
+    }
+  }
 
   // Sub-plan modal for dorm rooms — opens when the hotelier clicks a
   // dorm marker on the main plan. Carries the room being inspected.
@@ -2305,6 +2416,28 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           {t('manage.plan_toolbar_hint', 'Drag a room from below onto the plan to place it. Click a marker to remove it.')}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {/* AI zone detection — Claude finds every enclosed polygonal
+              area on the plan, the hotelier curates afterwards. */}
+          <button
+            type="button"
+            onClick={handleAiDetect}
+            disabled={!!aiStage}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              aiStage
+                ? 'bg-libre/20 text-libre opacity-80 cursor-wait'
+                : 'bg-gradient-to-r from-libre to-electric text-white shadow-sm hover:shadow-md'
+            }`}
+            title={t('manage.plan_ai_detect_tip', 'AI detects every enclosed area on the plan. You delete the corridors and stairs afterwards.')}
+          >
+            {aiStage === 'analysing' ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
+            {aiStage === 'analysing'
+              ? t('manage.plan_ai_analysing', 'Analysing…')
+              : aiStage === 'saving'
+                ? t('manage.plan_ai_saving', 'Saving…')
+                : zones.length > 0
+                  ? t('manage.plan_ai_redetect', 'Re-detect zones')
+                  : t('manage.plan_ai_detect', '✨ Detect zones (AI)')}
+          </button>
           {/* Clean view toggle — applies the contrast/desaturate filter
               so the structure pops while furniture fades. Lets the
               hotelier flip back to RAW if their plan is already crisp
@@ -2314,17 +2447,16 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
             onClick={() => setCleanView(v => !v)}
             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               cleanView
-                ? 'bg-gradient-to-r from-ocean to-electric text-white shadow-sm hover:shadow-md'
+                ? 'bg-deep text-white shadow-sm hover:shadow-md'
                 : 'bg-white border border-gray-200 text-deep hover:border-ocean'
             }`}
             title={cleanView
               ? t('manage.plan_clean_on', 'Clean view ON — click to show the raw image')
               : t('manage.plan_clean_off', 'Clean view OFF — click to simplify')}
           >
-            <Sparkles size={12} />
             {cleanView
-              ? t('manage.plan_clean_label_on', 'Clean view')
-              : t('manage.plan_clean_label_off', 'Raw view')}
+              ? t('manage.plan_clean_label_on', '☼ Clean')
+              : t('manage.plan_clean_label_off', '◯ Raw')}
           </button>
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-deep hover:border-ocean cursor-pointer transition-all">
             <Upload size={12} />
@@ -2346,9 +2478,35 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         <div className="px-3 py-2 rounded-lg bg-sunset/10 text-sunset text-xs font-semibold">{error}</div>
       )}
 
+      {/* AI result toast — once detection succeeds, tell the hotelier
+          what's next: hover a polygon to delete it, drag a room name
+          onto a polygon to assign. */}
+      {aiResult && (
+        <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-libre/10 to-electric/10 border border-libre/30 text-deep text-xs">
+          <Sparkles size={14} className="text-libre mt-0.5 flex-shrink-0" />
+          <div className="flex-1 leading-relaxed">
+            <span className="font-bold">
+              {t('manage.plan_zones_done', '✓ {{count}} zones detected. Click a polygon\'s X to remove non-rooms, then drag a room name onto a polygon to assign.', { count: aiResult.detected })}
+            </span>
+            {aiResult.notes && (
+              <span className="block text-deep/50 mt-1 italic">{aiResult.notes}</span>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setAiResult(null)}
+            className="text-deep/40 hover:text-deep transition-colors"
+            aria-label="Dismiss"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+
       {/* Plan canvas — drop target. The original image is the background;
           when cleanView is ON, a CSS filter boosts contrast + desaturates
-          so the wall structure pops and furniture/decoration fades. */}
+          so the wall structure pops and furniture/decoration fades.
+          AI-detected polygons (zones) are layered above as an SVG overlay. */}
       <div
         onDragOver={handlePlanDragOver}
         onDrop={handlePlanDrop}
@@ -2366,6 +2524,72 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
               : 'none',
           }}
         />
+        {/* AI zone polygons — rendered as an SVG overlay using the same
+            % coordinate system as the data. viewBox 0..100 matches the
+            stored vertices directly, no per-render math needed. */}
+        {zones.filter(z => !z.deleted).length > 0 && (
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none"
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+          >
+            {zones.filter(z => !z.deleted).map(z => {
+              const assigned = !!z.assigned_room_id
+              return (
+                <polygon
+                  key={z.id}
+                  points={verticesToPoints(z.vertices)}
+                  className={assigned
+                    ? 'fill-ocean/25 stroke-ocean'
+                    : 'fill-deep/[0.06] stroke-deep/40'}
+                  strokeWidth="0.3"
+                  vectorEffect="non-scaling-stroke"
+                />
+              )
+            })}
+          </svg>
+        )}
+        {/* Per-zone HTML overlay — centroid-anchored label + delete X
+            button on hover. Sits above the SVG so it's clickable. */}
+        {zones.filter(z => !z.deleted).map(z => {
+          const [cx, cy] = polygonCentroid(z.vertices)
+          const assigned = z.assigned_room_id
+            ? rooms.find(r => r.id === z.assigned_room_id)
+            : null
+          return (
+            <div
+              key={`label-${z.id}`}
+              className="absolute group"
+              style={{
+                left: `${cx}%`,
+                top:  `${cy}%`,
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              {/* Tiny X delete button — visible on hover */}
+              <button
+                type="button"
+                onClick={() => handleZoneDelete(z.id)}
+                className="absolute -top-3 -right-3 w-5 h-5 rounded-full bg-sunset text-white text-[10px] font-bold shadow-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer hover:scale-110"
+                title={t('manage.plan_zone_delete', 'Not a guest room — remove this zone')}
+                aria-label="Delete zone"
+              >
+                ×
+              </button>
+              {/* Label — room name if assigned, blank otherwise. The
+                  hover affordance + bg ring makes the zone tappable. */}
+              {assigned ? (
+                <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-orange to-pink-500 text-white text-[10px] font-bold shadow ring-2 ring-white whitespace-nowrap pointer-events-none">
+                  🛏️ {assigned.name}
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.5 rounded-full bg-white/80 text-deep/60 text-[9px] font-semibold pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                  {t('manage.plan_zone_unassigned', 'Unassigned')}
+                </span>
+              )}
+            </div>
+          )
+        })}
         {/* Markers — one per placed unit. Non-dorm rooms: click removes
             THAT specific unit. Dorm rooms: click opens the sub-plan modal
             with the bed grid (removal lives inside the modal). */}
