@@ -2270,17 +2270,47 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     }
     const { data: urlData } = supabase.storage.from('property-photos').getPublicUrl(path)
     const url = urlData?.publicUrl
-    const { error: dbErr } = await supabase
-      .from('properties')
-      .update({ floor_plan_url: url })
-      .eq('id', property.id)
+    // Replacing the image invalidates every existing zone/marker — their
+    // coordinates are tied to the dimensions of the previous image. We
+    // wipe them so the hotelier starts fresh, exactly like Remove plan
+    // does but without dropping the URL.
+    const writes = [
+      supabase.from('properties')
+        .update({ floor_plan_url: url, floor_plan_zones: [] })
+        .eq('id', property.id),
+      supabase.from('rooms')
+        .update({ floor_plan_positions: [], floor_plan_x: null, floor_plan_y: null })
+        .eq('property_id', property.id),
+    ]
+    const results = await Promise.all(writes)
+    const firstErr = results.find(r => r.error)?.error
     setUploading(false)
-    if (dbErr) {
-      setError(`Saved file but couldn't update property: ${dbErr.message}`)
+    if (firstErr) {
+      setError(`Saved file but couldn't update property: ${firstErr.message}`)
     } else {
       setPlanUrl(url)
+      setZones([])
+      setAiResult(null)
       onRefresh?.()
     }
+  }
+
+  /** Wipe every zone on this property — manual cleanup when the hotelier
+   *  wants to start over without changing the background image. */
+  async function handleClearAllZones() {
+    if (!confirm(t('manage.plan_clear_zones_confirm', 'Wipe every zone on this plan? This deletes every polygon, including the ones you\'ve assigned to rooms. The background image stays.'))) return
+    setError(null)
+    const { error: upErr } = await supabase
+      .from('properties')
+      .update({ floor_plan_zones: [] })
+      .eq('id', property.id)
+    if (upErr) {
+      setError(`Couldn't clear zones: ${upErr.message}`)
+      return
+    }
+    setZones([])
+    setAiResult(null)
+    onRefresh?.()
   }
 
   /**
@@ -2613,6 +2643,21 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
             {uploading ? '…' : t('manage.plan_replace', 'Replace image')}
             <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
           </label>
+          {/* Clear all zones — only shown when at least one zone exists
+              (otherwise it would be a no-op). Hotelier nukes every zone
+              without touching the background image — useful after a bad
+              AI run or to start fresh tracing. */}
+          {zones.filter(z => !z.deleted).length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAllZones}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-sunset/30 text-xs font-bold text-sunset hover:bg-sunset/5 transition-all"
+              title={t('manage.plan_clear_zones_tip', 'Delete every zone (AI-detected + manually drawn) on this plan')}
+            >
+              <X size={12} />
+              {t('manage.plan_clear_zones', 'Clear zones')}
+            </button>
+          )}
           <button
             type="button"
             onClick={handleRemovePlan}
