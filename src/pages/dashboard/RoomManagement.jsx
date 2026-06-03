@@ -1362,6 +1362,34 @@ function GridCard({ room, onPick, onHoverIn, onHoverOut }) {
 
 // ── Floor plan view ──
 function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, onPick }) {
+  // V7 shortcut — if the hotelier has configured zones (drag-drop shapes
+  // on the architect plan in PropertyManage), display THAT instead of
+  // the auto-layout fallback. The fallback is kept for properties that
+  // haven't run the V7 editor yet.
+  const planUrl = property?.floor_plan_url
+  const allZones = Array.isArray(property?.floor_plan_zones) ? property.floor_plan_zones : []
+  const liveZones = allZones.filter(z => !z?.deleted && z?.assigned_room_id)
+  const hasV7 = !!planUrl && liveZones.length > 0
+
+  // Build a flat room lookup so we can match each zone to its room
+  // status. Rooms in floorsMap already carry the computed status from
+  // the parent's per-day pipeline.
+  const allRooms = [...floorsMap.values()].flat()
+  const roomById = new Map(allRooms.map(r => [r.id, r]))
+
+  if (hasV7) {
+    return (
+      <FloorPlanV7View
+        planUrl={planUrl}
+        zones={liveZones}
+        roomById={roomById}
+        property={property}
+        onPick={onPick}
+      />
+    )
+  }
+
+  // ─── Legacy auto-layout fallback ───
   const floors = [...floorsMap.keys()]
   const effective = floors.includes(activeFloor) ? activeFloor : (floors[0] ?? 1)
   const list = floorsMap.get(effective) || []
@@ -1383,6 +1411,174 @@ function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, onPic
           <div className="rm-fp-row">
             {list.slice(half).map(r => <FpRoom key={r.id} room={r} onPick={onPick} />)}
           </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ──────────────────────────────────────────────────────────────────────
+// V7 reception view — architect plan as background, V7 shape zones as
+// clickable status-coloured rectangles/circles/polygons on top.
+// ──────────────────────────────────────────────────────────────────────
+function FloorPlanV7View({ planUrl, zones, roomById, property, onPick }) {
+  // Find the status colour for a given zone via its assigned room.
+  function statusFor(zone) {
+    const room = roomById.get(zone.assigned_room_id)
+    const status = room?.status || 'available'
+    return ROOM_STATUSES[status] || ROOM_STATUSES.available
+  }
+  // Sort zones — bigger ones first so smaller ones (e.g. en-suite
+  // bathrooms accidentally drawn inside a room) stay clickable on top.
+  // Order doesn't change visuals because shapes don't overlap typically.
+  const ordered = [...zones].sort((a, b) => {
+    const aa = (a.w || 10) * (a.h || 10)
+    const bb = (b.w || 10) * (b.h || 10)
+    return bb - aa
+  })
+
+  return (
+    <div className="rm-fp-view">
+      {/* Compact header — no floors here yet; V7 is single-plan for now */}
+      <div className="rm-fp-floors">
+        <span className="rm-fp-floor-tab active">
+          🗺 {property?.name || 'Floor plan'}
+        </span>
+      </div>
+      <div className="rm-fp-canvas">
+        <div
+          className="rm-fp-v7-canvas"
+          style={{
+            position: 'relative',
+            width: '100%',
+            maxHeight: '70vh',
+            overflow: 'hidden',
+            borderRadius: 12,
+            background: '#FAFBFC',
+            border: '1px solid rgba(0,0,0,0.06)',
+          }}
+        >
+          <img
+            src={planUrl}
+            alt="Floor plan"
+            draggable={false}
+            style={{
+              display: 'block',
+              width: '100%',
+              height: 'auto',
+              filter: 'contrast(1.45) saturate(0) brightness(1.06)',
+              opacity: 0.55,
+              pointerEvents: 'none',
+            }}
+          />
+          {/* SVG shapes layered above the image. ViewBox 0..100 lets
+              us drop zone coordinates straight in without per-render
+              math. */}
+          <svg
+            viewBox="0 0 100 100"
+            preserveAspectRatio="none"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+          >
+            {ordered.map(z => {
+              const s = statusFor(z)
+              // Legacy V6 polygon
+              if (Array.isArray(z.vertices) && z.vertices.length >= 3) {
+                const points = z.vertices.map(v => `${v[0]},${v[1]}`).join(' ')
+                return (
+                  <polygon
+                    key={z.id}
+                    points={points}
+                    fill={s.color}
+                    fillOpacity={0.3}
+                    stroke={s.color}
+                    strokeWidth={0.5}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )
+              }
+              // V7 circle
+              if (z.shape === 'circle') {
+                return (
+                  <circle
+                    key={z.id}
+                    cx={z.cx} cy={z.cy} r={(z.w || 10) / 2}
+                    fill={s.color}
+                    fillOpacity={0.3}
+                    stroke={s.color}
+                    strokeWidth={0.5}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                )
+              }
+              // V7 rect / square
+              return (
+                <rect
+                  key={z.id}
+                  x={z.cx - z.w / 2} y={z.cy - z.h / 2}
+                  width={z.w} height={z.h}
+                  rx={0.8} ry={0.8}
+                  fill={s.color}
+                  fillOpacity={0.3}
+                  stroke={s.color}
+                  strokeWidth={0.5}
+                  vectorEffect="non-scaling-stroke"
+                />
+              )
+            })}
+          </svg>
+          {/* Clickable HTML overlays — one per zone with the room name
+              + status pill. pointer-events on these only; the SVG is
+              decorative. Sorted to put labels in front of shapes. */}
+          {ordered.map(z => {
+            const room = roomById.get(z.assigned_room_id)
+            if (!room) return null
+            const s = statusFor(z)
+            const cx = z.cx ?? (Array.isArray(z.vertices)
+              ? z.vertices.reduce((a, v) => a + v[0], 0) / z.vertices.length
+              : 50)
+            const cy = z.cy ?? (Array.isArray(z.vertices)
+              ? z.vertices.reduce((a, v) => a + v[1], 0) / z.vertices.length
+              : 50)
+            const w  = z.w ?? 12
+            const h  = z.h ?? 8
+            return (
+              <button
+                key={`btn-${z.id}`}
+                type="button"
+                onClick={() => onPick(room)}
+                title={`${room.name} · ${s.label}${room.guest_name ? ' · ' + room.guest_name : ''}`}
+                style={{
+                  position: 'absolute',
+                  left:   `${cx - w / 2}%`,
+                  top:    `${cy - h / 2}%`,
+                  width:  `${w}%`,
+                  height: `${h}%`,
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                }}
+              >
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: '50%', top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    padding: '4px 8px',
+                    borderRadius: 999,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    background: s.color,
+                    color: '#fff',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.15), 0 0 0 2px #fff',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {s.sigil} {room.name}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>
