@@ -1907,19 +1907,20 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   const [planUrl, setPlanUrl] = useState(property?.floor_plan_url || null)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState(null)
-  // AI extraction flow — independent of manual upload. Goes through three
-  // states (uploading raw → analysing with Claude → rendering clean SVG).
-  // `aiResult` carries the toast message once done so the hotelier sees
-  // how many outlines were detected.
-  const [aiStage, setAiStage] = useState(null)    // null | 'uploading' | 'analysing' | 'rendering'
-  const [aiResult, setAiResult] = useState(null)  // {detected:n, notes?:string} | null
-  const [aiInfo,   setAiInfo]   = useState(null)  // info-level message when AI ran but found nothing
   // The room currently being dragged — tracked locally so the drop
   // handler on the image knows which room.id to update.
   const [draggingRoomId, setDraggingRoomId] = useState(null)
-  // Outlines from AI extraction — array of {x_percent, y_percent,
-  // width_percent, height_percent}. Used for snap-to-outline magnetism
-  // on drop, AND for highlighting which outline a room marker has claimed.
+  // Clean view — applies a CSS filter that boosts contrast +
+  // desaturates, so walls stay sharp while furniture and decoration
+  // fade. Default ON for new uploads (it's the more readable mode for
+  // most architect CAD plans); the hotelier can flip back to raw if
+  // their plan is already crisp.
+  const [cleanView, setCleanView] = useState(true)
+  // Outlines from any previous AI extraction. We no longer FETCH new
+  // outlines (the AI detection path was dropped 2026-06-05 — it was
+  // imprecise on dense CAD plans and the hotelier prefers to place
+  // every room manually). Existing outlines are still rendered so
+  // properties that ran the old flow don't suddenly lose their state.
   const [outlines, setOutlines] = useState(() => {
     const raw = property?.floor_plan_outlines
     return Array.isArray(raw) ? raw : []
@@ -2267,13 +2268,6 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   // sees the chip count decrement each time).
   const trayRooms = rooms.filter(r => remainingFor(r) > 0)
 
-  // Stage labels for the AI flow toast — picked at render time so the
-  // hotelier sees "Analysing with Claude…" specifically, not just a spinner.
-  const aiStageLabel = aiStage === 'uploading' ? t('manage.plan_ai_uploading', 'Uploading your plan…')
-    : aiStage === 'analysing' ? t('manage.plan_ai_analysing', 'Analysing — detecting room rectangles…')
-    : aiStage === 'rendering' ? t('manage.plan_ai_rendering', 'Generating clean plan…')
-    : null
-
   // ── Render ────────────────────────────────────────────────
   if (!planUrl) {
     return (
@@ -2286,28 +2280,14 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
             {t('manage.plan_empty_title', 'Upload your floor plan')}
           </h3>
           <p className="text-sm text-gray-500 mb-5 leading-relaxed">
-            {t('manage.plan_empty_desc', 'A schematic, a photo, or a hand-drawn sketch. Once uploaded, drag each room onto the plan to place it where it actually is in your property.')}
+            {t('manage.plan_empty_desc_v3', 'A schematic, a photo, or a CAD plan. We apply a clean-up filter so the structure pops, then you drag each room onto the plan where it actually is in your property.')}
           </p>
 
-          {/* Two side-by-side CTAs — manual vs AI. The AI one is highlighted
-              as the recommended path for hoteliers who already have a raw
-              plan with visible room numbers. */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5">
-            <label className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-libre to-electric text-white font-bold text-sm cursor-pointer hover:shadow-md transition-all ${aiStage ? 'opacity-60 pointer-events-none' : ''}`}>
-              <Sparkles size={16} />
-              {aiStage ? aiStageLabel : t('manage.plan_ai_cta', '✨ Generate from my plan (AI)')}
-              <input type="file" accept="image/*" onChange={handleAiGenerate} className="hidden" disabled={!!aiStage} />
-            </label>
-            <label className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-gray-200 text-deep font-bold text-sm cursor-pointer hover:border-ocean transition-all ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
-              <Upload size={16} />
-              {uploading ? t('common.uploading', 'Uploading…') : t('manage.plan_upload', 'Upload manually')}
-              <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
-            </label>
-          </div>
-
-          <p className="mt-3 text-[11px] text-gray-400 italic leading-relaxed">
-            {t('manage.plan_ai_hint', 'AI mode: upload any plan with visible room numbers and we\'ll auto-place every matching room. Manual: upload an image and drag the rooms onto it.')}
-          </p>
+          <label className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-ocean to-electric text-white font-bold text-sm cursor-pointer hover:shadow-md transition-all ${uploading ? 'opacity-60 pointer-events-none' : ''}`}>
+            <Upload size={16} />
+            {uploading ? t('common.uploading', 'Uploading…') : t('manage.plan_upload_cta', 'Choose an image')}
+            <input type="file" accept="image/*" onChange={handleUpload} className="hidden" disabled={uploading} />
+          </label>
 
           {error && (
             <div className="mt-3 px-3 py-2 rounded-lg bg-sunset/10 text-sunset text-xs font-semibold">{error}</div>
@@ -2325,11 +2305,27 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           {t('manage.plan_toolbar_hint', 'Drag a room from below onto the plan to place it. Click a marker to remove it.')}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <label className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-libre to-electric text-white text-xs font-bold cursor-pointer hover:shadow-md transition-all ${aiStage ? 'opacity-60 pointer-events-none' : ''}`}>
+          {/* Clean view toggle — applies the contrast/desaturate filter
+              so the structure pops while furniture fades. Lets the
+              hotelier flip back to RAW if their plan is already crisp
+              and the filter overshoots. */}
+          <button
+            type="button"
+            onClick={() => setCleanView(v => !v)}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              cleanView
+                ? 'bg-gradient-to-r from-ocean to-electric text-white shadow-sm hover:shadow-md'
+                : 'bg-white border border-gray-200 text-deep hover:border-ocean'
+            }`}
+            title={cleanView
+              ? t('manage.plan_clean_on', 'Clean view ON — click to show the raw image')
+              : t('manage.plan_clean_off', 'Clean view OFF — click to simplify')}
+          >
             <Sparkles size={12} />
-            {aiStage ? aiStageLabel : t('manage.plan_ai_replace', '✨ Re-generate with AI')}
-            <input type="file" accept="image/*" onChange={handleAiGenerate} className="hidden" disabled={!!aiStage} />
-          </label>
+            {cleanView
+              ? t('manage.plan_clean_label_on', 'Clean view')
+              : t('manage.plan_clean_label_off', 'Raw view')}
+          </button>
           <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-xs font-bold text-deep hover:border-ocean cursor-pointer transition-all">
             <Upload size={12} />
             {uploading ? '…' : t('manage.plan_replace', 'Replace image')}
@@ -2346,103 +2342,30 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         </div>
       </div>
 
-      {/* AI success toast — green pill summarising the outline detection.
-          Dismisses on the X button or once the hotelier clears it. */}
-      {aiResult && (
-        <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-libre/10 to-electric/10 border border-libre/30 text-deep text-xs">
-          <Sparkles size={14} className="text-libre mt-0.5 flex-shrink-0" />
-          <div className="flex-1 leading-relaxed">
-            <span className="font-bold">
-              {t('manage.plan_ai_done_v2', '✓ {{count}} room rectangles detected. Drag your rooms below onto the outlines — they\'ll snap into place.', { count: aiResult.detected })}
-            </span>
-            {aiResult.notes && (
-              <span className="block text-deep/50 mt-1 italic">{aiResult.notes}</span>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={() => setAiResult(null)}
-            className="text-deep/40 hover:text-deep transition-colors"
-            aria-label="Dismiss"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
-      {/* AI info banner — AI ran successfully but detected 0 outlines.
-          NOT an error; tells the hotelier how to get better results. */}
-      {aiInfo && (
-        <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-ocean/10 border border-ocean/30 text-deep text-xs">
-          <Sparkles size={14} className="text-ocean mt-0.5 flex-shrink-0" />
-          <div className="flex-1 leading-relaxed">
-            <span className="font-bold">
-              {t('manage.plan_ai_none_v2', 'AI ran but couldn\'t detect any room rectangles.')}
-            </span>
-            {aiInfo.notes && (
-              <span className="block text-deep/60 mt-1 italic">{aiInfo.notes}</span>
-            )}
-            <span className="block text-deep/60 mt-1.5">
-              {t('manage.plan_ai_none_tip', 'Try a higher-contrast scan of the plan, or annotate the rooms before re-running. You can also keep using manual drag-drop on the image you uploaded.')}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setAiInfo(null)}
-            className="text-deep/40 hover:text-deep transition-colors"
-            aria-label="Dismiss"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      )}
-
       {error && (
         <div className="px-3 py-2 rounded-lg bg-sunset/10 text-sunset text-xs font-semibold">{error}</div>
       )}
 
-      {/* Plan canvas — drop target. The original image stays as the
-          background; AI-detected outlines are overlaid as translucent
-          rectangles + placeholder numbers ON TOP of the image so the
-          hotelier sees both the real building geometry AND the AI's
-          read of it. */}
+      {/* Plan canvas — drop target. The original image is the background;
+          when cleanView is ON, a CSS filter boosts contrast + desaturates
+          so the wall structure pops and furniture/decoration fades. */}
       <div
         onDragOver={handlePlanDragOver}
         onDrop={handlePlanDrop}
-        className="relative w-full rounded-2xl border-2 border-dashed border-ocean/30 bg-gray-50 overflow-hidden select-none"
+        className="relative w-full rounded-2xl border-2 border-dashed border-ocean/30 bg-white overflow-hidden select-none"
         style={{ minHeight: 360 }}
       >
         <img
           src={planUrl}
           alt="Floor plan"
-          className="w-full h-auto block pointer-events-none"
+          className="w-full h-auto block pointer-events-none transition-[filter] duration-300"
           draggable={false}
+          style={{
+            filter: cleanView
+              ? 'contrast(1.55) saturate(0) brightness(1.08)'
+              : 'none',
+          }}
         />
-        {/* AI outlines overlay — only when outlines exist. Each one is
-            a transparent rectangle in ocean tint with a placeholder
-            number at its centre. pointer-events-none so clicks pass
-            through to the underlying drop zone (we want drag-drop to
-            target the canvas, not an individual outline). */}
-        {outlines.length > 0 && outlines.map((o, i) => {
-          const w = Math.max(2, Number(o.width_percent)  || 8)
-          const h = Math.max(2, Number(o.height_percent) || 6)
-          return (
-            <div
-              key={`outline-${i}`}
-              className="absolute rounded-lg border-2 border-ocean/55 bg-ocean/[0.08] pointer-events-none flex items-center justify-center"
-              style={{
-                left:   `${o.x_percent - w / 2}%`,
-                top:    `${o.y_percent - h / 2}%`,
-                width:  `${w}%`,
-                height: `${h}%`,
-              }}
-            >
-              <span className="text-deep/35 font-extrabold text-sm md:text-base select-none">
-                {i + 1}
-              </span>
-            </div>
-          )
-        })}
         {/* Markers — one per placed unit. Non-dorm rooms: click removes
             THAT specific unit. Dorm rooms: click opens the sub-plan modal
             with the bed grid (removal lives inside the modal). */}
@@ -2475,9 +2398,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         {markers.length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-white/90 backdrop-blur px-4 py-2.5 rounded-full text-xs font-bold text-deep shadow-lg">
-              ⬇️ {outlines.length > 0
-                ? t('manage.plan_drop_outline', 'Drag a room from below — it\'ll snap into an outline.')
-                : t('manage.plan_drop_here', 'Drag a room here to place it')}
+              ⬇️ {t('manage.plan_drop_here', 'Drag a room here to place it')}
             </div>
           </div>
         )}
