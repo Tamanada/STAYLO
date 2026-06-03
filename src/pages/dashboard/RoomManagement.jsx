@@ -1081,9 +1081,49 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
 
 // ── Timeline view ──
 function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, onPick, onCheckIn }) {
+  // Expand each non-dorm multi-unit room (e.g. Hibrakim × 3, HQ double
+  // bed × 9) into N virtual rows so the receptionist sees one row per
+  // physical unit. Dorms stay as one row (per-bed detail lives in the
+  // DormSubPlanModal grid). Single-unit rooms unchanged.
+  //
+  // The virtual row carries `unit_index` (1..quantity) and a synthetic
+  // display name like 'Hibrakim 2'. Lookups for packages, rewards,
+  // blocks still key on the parent room.id since those don't partition
+  // per unit.
+  const virtualRooms = useMemo(() => {
+    const out = []
+    for (const r of (rooms || [])) {
+      const type = String(r.type || '').toLowerCase()
+      const dorm = type === 'dormitory' || type === 'capsule'
+      const qty  = Math.max(1, Number(r.quantity) || 1)
+      if (dorm || qty <= 1) {
+        out.push({ ...r, unit_index: null, display_name: r.name, virtual_id: r.id })
+      } else {
+        for (let i = 1; i <= qty; i++) {
+          out.push({
+            ...r,
+            unit_index: i,
+            display_name: `${r.name} ${i}`,
+            virtual_id: `${r.id}#${i}`,
+          })
+        }
+      }
+    }
+    return out
+  }, [rooms])
+
+  // Bookings keyed by the VIRTUAL row id, not the raw room_id. For
+  // multi-unit rooms we distribute bookings deterministically by
+  // check-in date — first arrival goes to unit 1, second to unit 2, etc.
+  // (Same pattern as the FloorPlanV7View per-unit fix shipped earlier.)
+  // Long term this is replaced by an explicit bookings.room_unit_index
+  // column so the assignment isn't order-dependent.
   const resByRoom = useMemo(() => {
     const m = new Map()
     const endDay = dates[dates.length - 1]
+
+    // Group bookings by raw room_id with their grid indices computed.
+    const byRoom = new Map()
     bookings.forEach(b => {
       if (b.status === 'cancelled') return
       const ci = new Date(b.check_in); ci.setHours(0,0,0,0)
@@ -1092,12 +1132,57 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
       const startIdx = Math.max(0, Math.floor((ci - startDay) / 86400000))
       const endIdx   = Math.min(DAYS_SHOW, Math.ceil((co - startDay) / 86400000))
       if (endIdx <= startIdx) return
-      const arr = m.get(b.room_id) || []
-      arr.push({ ...b, startIdx, endIdx })
-      m.set(b.room_id, arr)
+      const arr = byRoom.get(b.room_id) || []
+      arr.push({ ...b, startIdx, endIdx, _ciTs: ci.getTime() })
+      byRoom.set(b.room_id, arr)
     })
+
+    // Distribute each room's bookings across its virtual rows.
+    for (const [roomId, list] of byRoom.entries()) {
+      const parent = rooms.find(r => r.id === roomId)
+      const type = String(parent?.type || '').toLowerCase()
+      const dorm = type === 'dormitory' || type === 'capsule'
+      const qty  = Math.max(1, Number(parent?.quantity) || 1)
+      if (dorm || qty <= 1) {
+        // All bookings on the single row.
+        m.set(roomId, list)
+        continue
+      }
+      // Sort by check-in ascending for stable assignment.
+      const sorted = [...list].sort((a, b) => a._ciTs - b._ciTs)
+      // Walk the sorted bookings and assign each to the next free
+      // virtual unit FOR ITS DATE RANGE. A unit is "free" for a
+      // booking if no already-assigned booking on that unit overlaps.
+      const occupancy = new Array(qty + 1).fill(null).map(() => [])
+      for (const b of sorted) {
+        let placed = false
+        for (let u = 1; u <= qty; u++) {
+          const conflicts = occupancy[u].some(existing =>
+            !(b.endIdx <= existing.startIdx || b.startIdx >= existing.endIdx)
+          )
+          if (!conflicts) {
+            occupancy[u].push(b)
+            const key = `${roomId}#${u}`
+            const arr = m.get(key) || []
+            arr.push(b)
+            m.set(key, arr)
+            placed = true
+            break
+          }
+        }
+        if (!placed) {
+          // Over-capacity (more concurrent bookings than units) — fall
+          // back to unit 1 visually. The receptionist will spot the
+          // overlap on the timeline and resolve it.
+          const key = `${roomId}#1`
+          const arr = m.get(key) || []
+          arr.push(b)
+          m.set(key, arr)
+        }
+      }
+    }
     return m
-  }, [bookings, startDay, dates])
+  }, [bookings, startDay, dates, rooms])
   const todayISO = isoDate(new Date())
 
   // Hover popover state — { room, x, y, side } | null. Coordinates
@@ -1168,17 +1253,17 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
           })}
         </div>
       </div>
-      {rooms.map(room => {
-        const reservations = resByRoom.get(room.id) || []
+      {virtualRooms.map(room => {
+        const reservations = resByRoom.get(room.virtual_id) || []
         return (
           <div
-            key={room.id}
+            key={room.virtual_id}
             className="rm-tl-row"
             onMouseEnter={e => handleRowEnter(e, room)}
             onMouseLeave={handleRowLeave}
           >
             <div className="rm-tl-room-info">
-              <div className="rm-tl-room-num">{room.name}</div>
+              <div className="rm-tl-room-num">{room.display_name}</div>
               <div className="rm-tl-room-type">{room.type}</div>
             </div>
             <div className="rm-tl-grid">
