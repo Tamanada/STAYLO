@@ -11,6 +11,17 @@ import {
 } from 'lucide-react'
 import { generateFloorPlanSVG, generateOutlineFloorPlanSVG, svgToBlob } from '../../lib/floorPlanSvg'
 import { bestRoomMatch } from '../../lib/fuzzyMatch'
+import DormSubPlanModal from '../../components/dashboard/DormSubPlanModal'
+
+// Dorm rooms behave differently on the floor plan: ONE marker on the
+// main plan (= the physical dorm room itself), and the room.quantity
+// is the number of BEDS inside that one room — surfaced via the sub-
+// plan modal, not as N markers spread across the main plan.
+function isDormRoom(room) {
+  if (!room) return false
+  const t = String(room.type || '').toLowerCase()
+  return t === 'dormitory' || t === 'capsule'
+}
 import PackagesTab from './PackagesTab'
 import RewardModal from '../../components/dashboard/RewardModal'
 import { Modal } from '../../components/ui/Modal'
@@ -1945,15 +1956,22 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     setOutlines(Array.isArray(raw) ? raw : [])
   }, [property?.floor_plan_outlines])
 
+  // Sub-plan modal for dorm rooms — opens when the hotelier clicks a
+  // dorm marker on the main plan. Carries the room being inspected.
+  const [dormModal, setDormModal] = useState(null)  // room | null
+
   // Helpers — how many units placed vs total, lowest free index, snap.
+  // For dorms, total capacity on the MAIN plan is 1 (the room itself);
+  // the room.quantity (= bed count) is shown inside the sub-plan modal.
   const placedCount = (roomId) => (localPositions[roomId] || []).length
-  const remainingFor = (room) => Math.max(0, (room.quantity || 1) - placedCount(room.id))
-  function nextIndexFor(roomId, quantity) {
+  const maxPositionsFor = (room) => isDormRoom(room) ? 1 : (room.quantity || 1)
+  const remainingFor = (room) => Math.max(0, maxPositionsFor(room) - placedCount(room.id))
+  function nextIndexFor(roomId, max) {
     const used = new Set((localPositions[roomId] || []).map(p => p.index))
-    for (let i = 1; i <= quantity; i++) {
+    for (let i = 1; i <= max; i++) {
       if (!used.has(i)) return i
     }
-    return quantity   // shouldn't happen if remaining > 0
+    return max   // shouldn't happen if remaining > 0
   }
   /**
    * Magnétisme snap-to-outline. If the cursor lands within ~10% of an
@@ -2187,8 +2205,9 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     // Snap to nearest AI outline if one is within tolerance.
     const { x, y } = snapToNearestOutline(clampedRaw.x, clampedRaw.y)
 
-    // Pick the next free index for this room (1..quantity).
-    const idx = nextIndexFor(roomId, room.quantity || 1)
+    // Pick the next free index for this room (1..maxPositionsFor).
+    // For dorms maxPositionsFor === 1 so this always returns 1.
+    const idx = nextIndexFor(roomId, maxPositionsFor(room))
     const newPos = { x: Number(x.toFixed(2)), y: Number(y.toFixed(2)), index: idx }
     const nextPositions = [...(localPositions[roomId] || []), newPos]
       .sort((a, b) => a.index - b.index)
@@ -2225,18 +2244,26 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
 
   // Flatten positions into a single list of markers for rendering.
   // Each marker references back to its room + its index within that room.
+  // Dorms get a single marker labelled "Name · N beds"; non-dorm rooms
+  // with quantity > 1 get numbered markers ("Name 1", "Name 2"…).
   const markers = []
   for (const room of rooms) {
     const positions = localPositions[room.id] || []
+    const dorm = isDormRoom(room)
     for (const p of positions) {
+      const label = dorm
+        ? `${room.name} · ${room.quantity || 1} beds`
+        : (room.quantity || 1) > 1 ? `${room.name} ${p.index}` : room.name
       markers.push({
         roomId: room.id,
         roomName: room.name,
+        roomRef: room,             // full room object for the modal
+        isDorm: dorm,
         quantity: room.quantity || 1,
         index: p.index,
         x: p.x,
         y: p.y,
-        label: (room.quantity || 1) > 1 ? `${room.name} ${p.index}` : room.name,
+        label,
       })
     }
   }
@@ -2392,21 +2419,30 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           className="w-full h-auto block pointer-events-none"
           draggable={false}
         />
-        {/* Markers — one per placed unit. Click to remove THAT specific
-            unit (others of the same room stay). Numbered when room.quantity > 1. */}
+        {/* Markers — one per placed unit. Non-dorm rooms: click removes
+            THAT specific unit. Dorm rooms: click opens the sub-plan modal
+            with the bed grid (removal lives inside the modal). */}
         {markers.map(m => (
           <button
             type="button"
             key={`${m.roomId}-${m.index}`}
-            onClick={() => handleMarkerRemove(m.roomId, m.index)}
-            title={`${m.label} — click to remove this unit`}
+            onClick={() => m.isDorm
+              ? setDormModal(m.roomRef)
+              : handleMarkerRemove(m.roomId, m.index)}
+            title={m.isDorm
+              ? `${m.label} — click to open bed layout`
+              : `${m.label} — click to remove this unit`}
             style={{
               position: 'absolute',
               left: `${m.x}%`,
               top:  `${m.y}%`,
               transform: 'translate(-50%, -50%)',
             }}
-            className="px-2.5 py-1.5 rounded-full bg-gradient-to-r from-orange to-pink-500 text-white text-[11px] font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer ring-2 ring-white whitespace-nowrap"
+            className={`px-2.5 py-1.5 rounded-full text-white text-[11px] font-bold shadow-lg hover:scale-110 transition-transform cursor-pointer ring-2 ring-white whitespace-nowrap ${
+              m.isDorm
+                ? 'bg-gradient-to-r from-libre to-electric'
+                : 'bg-gradient-to-r from-orange to-pink-500'
+            }`}
           >
             🛏️ {m.label}
           </button>
@@ -2438,7 +2474,9 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           <div className="flex flex-wrap gap-2">
             {trayRooms.map(room => {
               const placed = placedCount(room.id)
-              const total  = room.quantity || 1
+              const max    = maxPositionsFor(room)
+              const dorm   = isDormRoom(room)
+              const beds   = room.quantity || 1
               return (
                 <button
                   key={room.id}
@@ -2446,25 +2484,55 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                   draggable
                   onDragStart={(e) => handleRoomDragStart(e, room.id)}
                   onDragEnd={handleRoomDragEnd}
-                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border-2 border-dashed border-gray-300 text-xs font-bold text-deep cursor-grab active:cursor-grabbing hover:border-ocean hover:bg-ocean/5 transition-all ${
-                    draggingRoomId === room.id ? 'opacity-50' : ''
-                  }`}
+                  className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border-2 border-dashed text-xs font-bold text-deep cursor-grab active:cursor-grabbing transition-all ${
+                    dorm
+                      ? 'border-libre/40 hover:border-libre hover:bg-libre/5'
+                      : 'border-gray-300 hover:border-ocean hover:bg-ocean/5'
+                  } ${draggingRoomId === room.id ? 'opacity-50' : ''}`}
                 >
                   <span className="text-gray-300">⋮⋮</span>
                   🛏️ {room.name}
-                  {total > 1 && (
+                  {dorm ? (
+                    /* Dorms — show 'N beds' subtitle, binary placed badge */
+                    <>
+                      <span className="text-[10px] text-libre font-bold normal-case">
+                        · {beds} {t('manage.plan_beds', 'beds')}
+                      </span>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                        placed === 0 ? 'bg-gray-100 text-gray-500' : 'bg-libre/15 text-libre'
+                      }`}>
+                        {placed === 0
+                          ? t('manage.plan_not_placed', 'Not placed')
+                          : t('manage.plan_placed', '✓ Placed')}
+                      </span>
+                    </>
+                  ) : max > 1 ? (
+                    /* Non-dorm multi-unit — N/Total badge */
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
                       placed === 0 ? 'bg-gray-100 text-gray-500' : 'bg-libre/15 text-libre'
                     }`}>
-                      {placed}/{total}
+                      {placed}/{max}
                     </span>
-                  )}
+                  ) : null}
                 </button>
               )
             })}
           </div>
         )}
       </div>
+
+      {/* Dorm sub-plan modal — opens when a dorm marker is clicked. */}
+      {dormModal && (
+        <DormSubPlanModal
+          room={dormModal}
+          onClose={() => setDormModal(null)}
+          onRemove={() => {
+            // Remove the dorm's single marker from the main plan
+            const positions = localPositions[dormModal.id] || []
+            if (positions[0]) handleMarkerRemove(dormModal.id, positions[0].index)
+          }}
+        />
+      )}
     </div>
   )
 }
