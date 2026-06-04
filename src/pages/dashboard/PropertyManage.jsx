@@ -4697,10 +4697,17 @@ function CalendarTab({ rooms, onRefresh }) {
     async function fetch() {
       const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
       const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+      // Monthly view operates at the room-TYPE level (unit_index=0).
+      // Per-unit overrides (unit_index>0) only show up in the Timeline
+      // view's per-unit chips. Without this filter, getAvailForDate()
+      // can grab any of the N+1 rows for the same date — picking up a
+      // per-unit override row would make the cell look blocked even
+      // when the type-default is free.
       const { data } = await supabase
         .from('room_availability')
         .select('*')
         .eq('room_id', selectedRoom)
+        .eq('room_unit_index', 0)
         .gte('date', start.toISOString().split('T')[0])
         .lte('date', end.toISOString().split('T')[0])
       setAvailability(data || [])
@@ -4726,10 +4733,12 @@ function CalendarTab({ rooms, onRefresh }) {
   async function refreshMonth() {
     const start = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1)
     const end = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0)
+    // See useEffect above for why we filter on unit_index=0.
     const { data } = await supabase
       .from('room_availability')
       .select('*')
       .eq('room_id', selectedRoom)
+      .eq('room_unit_index', 0)
       .gte('date', start.toISOString().split('T')[0])
       .lte('date', end.toISOString().split('T')[0])
     setAvailability(data || [])
@@ -4750,10 +4759,22 @@ function CalendarTab({ rooms, onRefresh }) {
       await supabase.from('room_availability').update({
         is_blocked: !existing.is_blocked,
       }).eq('id', existing.id)
+      // Unblocking the type-default? Also wipe per-unit override rows
+      // so cells fully reopen (see Timeline bulkUpdate for the same
+      // reasoning). 2026-06-08: same root cause as the 4-BABA bug.
+      if (existing.is_blocked) {
+        await supabase.from('room_availability')
+          .delete()
+          .eq('room_id', selectedRoom)
+          .eq('date', dateStr)
+          .gt('room_unit_index', 0)
+          .eq('is_blocked', true)
+      }
     } else {
       await supabase.from('room_availability').insert({
         room_id: selectedRoom,
         date: dateStr,
+        room_unit_index: 0,            // type-default row
         available_count: 0,            // safe initial value, recompute fixes it
         is_blocked: true,
       })
@@ -4813,6 +4834,7 @@ function CalendarTab({ rooms, onRefresh }) {
     } else {
       await supabase.from('room_availability').insert({
         room_id: selectedRoom, date: dateStr,
+        room_unit_index: 0,
         available_count: room.quantity, is_blocked: false,
         price_override: newPrice,
       })
@@ -4913,10 +4935,12 @@ function CalendarTab({ rooms, onRefresh }) {
       // For brand-new (no existing row) days, the array starts empty
       // unless we're inserting a special right away. available_count is
       // a placeholder — recompute_room_availability fixes it below.
+      // room_unit_index=0 is the type-default row.
       const startingSpecials = add_special ? [add_special] : []
       const rows = inserts.map(date => ({
         room_id: selectedRoom,
         date,
+        room_unit_index: 0,
         available_count: directWrites.is_blocked ? 0 : room.quantity,
         is_blocked: directWrites.is_blocked ?? false,
         price_override: directWrites.price_override ?? null,
@@ -4928,6 +4952,19 @@ function CalendarTab({ rooms, onRefresh }) {
         internal_note: directWrites.internal_note ?? null,
       }))
       await supabase.from('room_availability').insert(rows)
+    }
+
+    // When un-blocking days at the type-default level, also wipe any
+    // per-unit override rows that are still blocked — otherwise the
+    // Timeline view will continue to show BABA-001..N as blocked even
+    // after the user said "Unblock" at the room level.
+    if (directWrites.is_blocked === false) {
+      await supabase.from('room_availability')
+        .delete()
+        .eq('room_id', selectedRoom)
+        .gt('room_unit_index', 0)
+        .eq('is_blocked', true)
+        .in('date', dates)
     }
 
     // After ANY change to is_blocked, recompute available_count from active
@@ -6459,10 +6496,20 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
       if (!room) continue
 
       // Fetch existing rows for this room × these dates
+      // IMPORTANT: bulkUpdate always operates at the room-TYPE level
+      // (room_unit_index = 0). Per-unit overrides (room_unit_index > 0)
+      // live in their own rows and are managed by handleUnitToggle.
+      // Without this filter, a (room_id, date) lookup returns N+1 rows
+      // for multi-unit rooms (type-default + per-unit overrides), and
+      // `existingByDate[r.date] = r` overwrites — last row wins, so
+      // unblocking the cell could update a per-unit row instead of the
+      // actual type-default. Found 2026-06-08 when David couldn't
+      // un-block 4 BABAs that were type-default blocked.
       const { data: existing } = await supabase
         .from('room_availability')
         .select('*')
         .eq('room_id', roomId)
+        .eq('room_unit_index', 0)
         .in('date', isoList)
       const existingByDate = {}
       ;(existing || []).forEach(r => { existingByDate[r.date] = r })
@@ -6485,12 +6532,15 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
         await supabase.from('room_availability').update(rowPayload).eq('id', row.id)
       }
 
-      // Inserts — fill required NOT NULL columns
+      // Inserts — fill required NOT NULL columns. Explicitly target the
+      // type-default index (= 0) — the column has a default but being
+      // explicit makes the intent clearer and survives default changes.
       if (toInsert.length > 0) {
         const startingSpecials = add_special ? [add_special] : []
         const rows = toInsert.map(iso => ({
           room_id: roomId,
           date: iso,
+          room_unit_index: 0,
           available_count: directWrites.is_blocked ? 0 : (room.quantity || 1),
           is_blocked:     directWrites.is_blocked ?? false,
           price_override: directWrites.price_override ?? null,
@@ -6502,6 +6552,21 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
           internal_note:  directWrites.internal_note ?? null,
         }))
         await supabase.from('room_availability').insert(rows)
+      }
+
+      // When UN-blocking the type-default, also clear any per-unit
+      // override rows that are still blocked for these dates. Reason:
+      // the cell editor's "Available" toggle is meant to fully reopen
+      // the room for these dates — leaving unit-specific blocks behind
+      // would keep BABA-001..00N visibly blocked even after the user
+      // explicitly said "Available" + Save.
+      if (directWrites.is_blocked === false) {
+        await supabase.from('room_availability')
+          .delete()
+          .eq('room_id', roomId)
+          .gt('room_unit_index', 0)
+          .eq('is_blocked', true)
+          .in('date', isoList)
       }
 
       // Recompute available_count if is_blocked changed — same safety
