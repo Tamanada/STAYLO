@@ -15,14 +15,43 @@ export function AuthProvider({ children }) {
       setLoading(false)
     })
 
+    // Supabase fires `onAuthStateChange` on several events that look the
+    // same from our app's perspective (the user is the same person):
+    //
+    //   INITIAL_SESSION    — page load, we already handled it via getSession
+    //   SIGNED_IN          — first sign-in OR tab-focus refresh
+    //   TOKEN_REFRESHED    — periodic + when the browser tab regains focus
+    //   USER_UPDATED       — profile edited via Supabase API
+    //   SIGNED_OUT         — auth ended
+    //   PASSWORD_RECOVERY  — recovery flow
+    //
+    // The default handler called setUser + fetchProfile on EVERY event,
+    // which meant every tab-focus cascaded a full app re-render and an
+    // extra profile fetch. Reported by David 2026-06-05: 'switching to
+    // another tab and coming back, the page reloads every time'.
+    //
+    // We now only react when the user IDENTITY changes (or auth ends).
+    // Token refreshes inside the same identity are silent — Supabase
+    // updates its internal state, we don't touch React state.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null)
-      if (session?.user) fetchProfile(session.user.id)
-      else setProfile(null)
-      // Redirect to reset password page on PASSWORD_RECOVERY event
       if (event === 'PASSWORD_RECOVERY') {
         window.location.href = '/reset-password'
+        return
       }
+      const nextUser = session?.user ?? null
+      setUser(prev => {
+        const prevId = prev?.id || null
+        const nextId = nextUser?.id || null
+        if (prevId === nextId) {
+          // Same identity — token refresh, user_updated, etc. Drop the
+          // signal to avoid forcing the whole tree to re-render.
+          return prev
+        }
+        // Identity change — sync user + (re)fetch the profile.
+        if (nextUser) fetchProfile(nextUser.id)
+        else setProfile(null)
+        return nextUser
+      })
     })
 
     return () => subscription.unsubscribe()
