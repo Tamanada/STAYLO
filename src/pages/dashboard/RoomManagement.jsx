@@ -152,7 +152,7 @@ const STYLES = `
 
 /* Timeline */
 .rm-tl-header{display:flex;background:white;border-bottom:1px solid #E8E0D8;position:sticky;top:0;z-index:2}
-.rm-tl-room-col{width:140px;flex-shrink:0;padding:10px 14px;font-size:11px;font-weight:700;color:#636E72;text-transform:uppercase;letter-spacing:.05em;border-right:1px solid #E8E0D8}
+.rm-tl-room-col{width:200px;flex-shrink:0;padding:10px 14px;font-size:11px;font-weight:700;color:#636E72;text-transform:uppercase;letter-spacing:.05em;border-right:1px solid #E8E0D8}
 .rm-tl-dates{flex:1;display:flex}
 .rm-tl-day{flex:1;min-width:60px;text-align:center;padding:6px 4px;border-right:1px solid #F0EDE8;font-size:11px}
 .rm-tl-day.today{background:#FFF5E6}
@@ -161,7 +161,9 @@ const STYLES = `
 .rm-tl-day.today .rm-tl-date{color:#FF6B00}
 .rm-tl-row{display:flex;border-bottom:1px solid #F0EDE8;position:relative;height:44px;align-items:center;background:white}
 .rm-tl-row:hover{background:#FAFAF8}
-.rm-tl-room-info{width:140px;flex-shrink:0;padding:0 14px;border-right:1px solid #E8E0D8;display:flex;flex-direction:column;justify-content:center;height:100%}
+.rm-tl-room-info{width:200px;flex-shrink:0;padding:0 14px;border-right:1px solid #E8E0D8;display:flex;flex-direction:column;justify-content:center;height:100%;overflow:hidden}
+.rm-tl-room-num{font-weight:700;font-size:13px;color:#2D3436;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+.rm-tl-room-type{font-size:11px;color:#636E72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 .rm-tl-room-num{font-size:14px;font-weight:700;color:#1A1F2E}
 .rm-tl-room-type{font-size:10px;color:#B2BEC3}
 .rm-tl-grid{flex:1;position:relative;height:100%;display:flex}
@@ -1206,7 +1208,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
     const rowRect = e.currentTarget.getBoundingClientRect()
     const POPOVER_W = 1020
     const GAP = 12
-    const roomColW = 180
+    const roomColW = 200
     let x = rowRect.left + roomColW + GAP
     let side = 'right'
     if (x + POPOVER_W > window.innerWidth - 8) {
