@@ -2195,99 +2195,104 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     persistZone(zone.id, patch)
   }
 
-  // Move + resize via pointer events on the canvas. We don't use HTML5
-  // drag here — pointer events give us precise per-pixel control.
-  //
-  // Important: we deliberately do NOT call setPointerCapture on the
-  // handle/drag-surface. Capture would redirect every subsequent
-  // pointermove/pointerup to that small child element instead of
-  // letting them bubble up to the canvas div where handlePointerMove
-  // is wired — i.e. the drag would silently break. Letting events
-  // bubble naturally is the right pattern here.
+  // Move + resize via NATIVE pointer events attached to the window.
+  // React's synthetic onPointerMove on the canvas didn't fire reliably
+  // during a drag — the cursor would leave the canvas bounding box,
+  // hit the empty page area, and we'd stop getting move updates.
+  // Window-level native listeners keep the drag alive regardless of
+  // which element the cursor is over, until release. The listeners are
+  // installed in start* and torn down in the local pointerup handler.
   function startMove(e, zone) {
     e.stopPropagation()
     const rect = e.currentTarget.closest('[data-plan-canvas]')?.getBoundingClientRect()
     if (!rect) return
     setSelectedZoneId(zone.id)
-    setZoneDrag({
-      zoneId: zone.id,
-      mode: 'move',
-      originX: e.clientX,
-      originY: e.clientY,
-      startCx: zone.cx,
-      startCy: zone.cy,
-      startW: zone.w,
-      startH: zone.h,
-      canvasW: rect.width,
-      canvasH: rect.height,
-    })
+    runDrag(e, zone, rect, 'move', null)
   }
   function startResize(e, zone, handle) {
     e.stopPropagation()
     const rect = e.currentTarget.closest('[data-plan-canvas]')?.getBoundingClientRect()
     if (!rect) return
     setSelectedZoneId(zone.id)
-    setZoneDrag({
-      zoneId: zone.id,
-      mode: 'resize',
-      handle,
-      originX: e.clientX,
-      originY: e.clientY,
-      startCx: zone.cx,
-      startCy: zone.cy,
-      startW: zone.w,
-      startH: zone.h,
-      canvasW: rect.width,
-      canvasH: rect.height,
-    })
+    runDrag(e, zone, rect, 'resize', handle)
   }
-  function handlePointerMove(e) {
-    if (!zoneDrag) return
-    const dxPct = ((e.clientX - zoneDrag.originX) / zoneDrag.canvasW) * 100
-    const dyPct = ((e.clientY - zoneDrag.originY) / zoneDrag.canvasH) * 100
-    if (zoneDrag.mode === 'move') {
-      const newCx = Math.max(0, Math.min(100, zoneDrag.startCx + dxPct))
-      const newCy = Math.max(0, Math.min(100, zoneDrag.startCy + dyPct))
-      setZones(zs => zs.map(z => z.id === zoneDrag.zoneId ? { ...z, cx: newCx, cy: newCy } : z))
-    } else if (zoneDrag.mode === 'resize') {
-      const { handle, startCx, startCy, startW, startH } = zoneDrag
-      // Each handle anchors the opposite corner. Compute the new
-      // bounding box, then re-derive cx/cy/w/h.
-      const left   = startCx - startW / 2
-      const right  = startCx + startW / 2
-      const top    = startCy - startH / 2
-      const bot    = startCy + startH / 2
-      let nLeft = left, nRight = right, nTop = top, nBot = bot
-      if (handle.includes('w')) nLeft  = Math.min(right - 1, left  + dxPct)
-      if (handle.includes('e')) nRight = Math.max(left + 1,  right + dxPct)
-      if (handle.includes('n')) nTop   = Math.min(bot - 1,   top   + dyPct)
-      if (handle.includes('s')) nBot   = Math.max(top + 1,   bot   + dyPct)
-      let nW = nRight - nLeft
-      let nH = nBot - nTop
-      const cur = zones.find(z => z.id === zoneDrag.zoneId)
-      if (cur && (cur.shape === 'square' || cur.shape === 'circle')) {
-        const size = Math.max(nW, nH)
-        nW = nH = size
+
+  /** Shared drag driver — installs window listeners and tears them
+   *  down on release. The closure captures the starting zone snapshot
+   *  so we don't depend on React state during the drag. */
+  function runDrag(downEvt, zone, canvasRect, mode, handle) {
+    const startCx = zone.cx, startCy = zone.cy
+    const startW  = zone.w,  startH  = zone.h
+    const originX = downEvt.clientX, originY = downEvt.clientY
+    const canvasW = canvasRect.width, canvasH = canvasRect.height
+    const zoneId  = zone.id
+    const isSqOrCircle = zone.shape === 'square' || zone.shape === 'circle'
+
+    function move(ev) {
+      const dxPct = ((ev.clientX - originX) / canvasW) * 100
+      const dyPct = ((ev.clientY - originY) / canvasH) * 100
+      if (mode === 'move') {
+        const nCx = Math.max(0, Math.min(100, startCx + dxPct))
+        const nCy = Math.max(0, Math.min(100, startCy + dyPct))
+        setZones(zs => zs.map(z => z.id === zoneId ? { ...z, cx: nCx, cy: nCy } : z))
+      } else {
+        const left   = startCx - startW / 2
+        const right  = startCx + startW / 2
+        const top    = startCy - startH / 2
+        const bot    = startCy + startH / 2
+        let nLeft = left, nRight = right, nTop = top, nBot = bot
+        if (handle.includes('w')) nLeft  = Math.min(right - 1, left  + dxPct)
+        if (handle.includes('e')) nRight = Math.max(left + 1,  right + dxPct)
+        if (handle.includes('n')) nTop   = Math.min(bot - 1,   top   + dyPct)
+        if (handle.includes('s')) nBot   = Math.max(top + 1,   bot   + dyPct)
+        let nW = nRight - nLeft
+        let nH = nBot - nTop
+        if (isSqOrCircle) {
+          const size = Math.max(nW, nH)
+          nW = nH = size
+        }
+        const nCx = Math.max(0, Math.min(100, (nLeft + nRight) / 2))
+        const nCy = Math.max(0, Math.min(100, (nTop  + nBot)   / 2))
+        setZones(zs => zs.map(z => z.id === zoneId
+          ? { ...z, cx: nCx, cy: nCy, w: Math.max(2, nW), h: Math.max(2, nH) }
+          : z))
       }
-      const nCx = Math.max(0, Math.min(100, (nLeft + nRight) / 2))
-      const nCy = Math.max(0, Math.min(100, (nTop  + nBot)   / 2))
-      setZones(zs => zs.map(z => z.id === zoneDrag.zoneId
-        ? { ...z, cx: nCx, cy: nCy, w: Math.max(2, nW), h: Math.max(2, nH) }
-        : z))
     }
+    function up() {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', up)
+      window.removeEventListener('pointercancel', up)
+      // Persist the final state (snapshot via functional setter so we
+      // don't race with React's commit).
+      setZones(zs => {
+        supabase.from('properties')
+          .update({ floor_plan_zones: zs })
+          .eq('id', property.id)
+          .then(() => onRefresh?.())
+        return zs
+      })
+    }
+    window.addEventListener('pointermove', move)
+    window.addEventListener('pointerup', up)
+    window.addEventListener('pointercancel', up)
   }
-  async function handlePointerUp() {
-    if (!zoneDrag) return
-    const finalZone = zones.find(z => z.id === zoneDrag.zoneId)
-    setZoneDrag(null)
-    if (!finalZone) return
-    // Persist the final position/size. The optimistic updates during
-    // the drag already painted the UI; this just commits to DB.
-    await supabase
-      .from('properties')
-      .update({ floor_plan_zones: zones })
-      .eq('id', property.id)
-    onRefresh?.()
+  // The canvas's onPointerMove / onPointerUp are no-ops now (kept as
+  // attribute references to avoid breaking the existing JSX, but
+  // the real work runs through window listeners). Defined as no-ops:
+  function handlePointerMove() {}
+  function handlePointerUp()   {}
+
+  /** Explicitly set the zone's shape — used by the floater buttons.
+   *  When changing to square or circle, size both axes to the larger
+   *  of w/h so the existing footprint is preserved as best possible. */
+  function setShape(zone, nextShape) {
+    const patch = { shape: nextShape }
+    if (nextShape === 'square' || nextShape === 'circle') {
+      const size = Math.max(zone.w, zone.h)
+      patch.w = size
+      patch.h = size
+    }
+    persistZone(zone.id, patch)
   }
 
   // Escape deselects.
@@ -2953,38 +2958,45 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
               {/* Selected — handles + shape selector + delete */}
               {isSelected && (
                 <>
-                  {/* Shape + delete floater. Flips BELOW the zone if
-                      there's no room above (shape near top edge), so
-                      the buttons never escape the canvas. */}
+                  {/* Shape selector floater — 3 explicit buttons + delete.
+                      Flips BELOW the zone if there's no room above so the
+                      buttons never escape the canvas. */}
                   {(() => {
-                    const showBelow = top < 14
+                    const showBelow = top < 18
                     const anchorY = showBelow ? (cy + h / 2) : top
-                    const yTransform = showBelow ? 'calc(0% + 8px)' : 'calc(-100% - 8px)'
+                    const yTransform = showBelow ? 'calc(0% + 10px)' : 'calc(-100% - 10px)'
+                    const currentShape = z.shape || 'rect'
+                    const ShapeBtn = ({ shape, icon, label }) => (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setShape(z, shape) }}
+                        className={`inline-flex items-center justify-center w-9 h-9 rounded-md text-base font-bold transition-all cursor-pointer ${
+                          currentShape === shape
+                            ? 'bg-ocean text-white shadow-inner'
+                            : 'text-white/80 hover:bg-white/15'
+                        }`}
+                        title={label}
+                      >
+                        {icon}
+                      </button>
+                    )
                     return (
                       <div
-                        className="absolute flex items-center gap-1 px-1.5 py-1 rounded-lg bg-deep text-white shadow-lg z-10"
+                        className="absolute flex items-center gap-0.5 px-1.5 py-1.5 rounded-xl bg-deep text-white shadow-2xl ring-1 ring-white/10 z-20"
                         style={{
                           left: `${cx}%`, top: `${anchorY}%`,
                           transform: `translate(-50%, ${yTransform})`,
                           pointerEvents: 'auto',
                         }}
                       >
-                        <button
-                          type="button"
-                          onClick={(e) => { e.stopPropagation(); cycleShape(z) }}
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold hover:bg-white/15 cursor-pointer"
-                          title={t('manage.plan_shape_cycle', 'Cycle shape: rectangle → square → circle')}
-                        >
-                          <span className="text-sm leading-none">{shapeIcon}</span>
-                          <span className="text-[10px] opacity-70 uppercase tracking-wider">
-                            {z.shape || 'rect'}
-                          </span>
-                        </button>
-                        <span className="w-px h-3 bg-white/30" />
+                        <ShapeBtn shape="rect"   icon="▭" label={t('manage.plan_shape_rect',   'Rectangle')} />
+                        <ShapeBtn shape="square" icon="■" label={t('manage.plan_shape_square', 'Square')} />
+                        <ShapeBtn shape="circle" icon="●" label={t('manage.plan_shape_circle', 'Circle')} />
+                        <span className="w-px h-6 bg-white/20 mx-1" />
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); handleZoneDelete(z.id) }}
-                          className="px-2 py-0.5 rounded text-xs font-bold text-sunset hover:bg-white/15 cursor-pointer"
+                          className="inline-flex items-center justify-center w-9 h-9 rounded-md text-lg font-bold text-sunset hover:bg-sunset/15 cursor-pointer transition-all"
                           title={t('manage.plan_zone_delete', 'Remove this zone')}
                         >
                           ×
