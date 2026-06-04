@@ -2549,18 +2549,28 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   }
 
   async function handleRemovePlan() {
-    if (!confirm(t('manage.confirm_remove_plan', 'Remove this floor plan? Room positions will be cleared.'))) return
+    if (!confirm(t('manage.confirm_remove_plan', 'Remove this floor plan? Every room shape, marker, and position will be cleared.'))) return
     setError(null)
-    // Clear the URL + outlines on the property AND every room's
-    // positions — none of it makes sense without the background image.
+    // Full wipe — URL + outlines + V7 zones + V5 marker positions.
+    // Without this the reception-side view (/rooms → Floor Plan)
+    // would keep showing the V7 zones because it checks both URL
+    // and zones independently. David reported 2026-06-05: 'le floor
+    // plan est toujours visible cote reception alors que je l'ai
+    // desactive' — caused by floor_plan_zones surviving the wipe.
     await supabase.from('properties')
-      .update({ floor_plan_url: null, floor_plan_outlines: [] })
+      .update({
+        floor_plan_url: null,
+        floor_plan_outlines: [],
+        floor_plan_zones: [],
+      })
       .eq('id', property.id)
     await supabase.from('rooms')
       .update({ floor_plan_positions: [], floor_plan_x: null, floor_plan_y: null })
       .eq('property_id', property.id)
     setPlanUrl(null)
     setOutlines([])
+    setZones([])
+    setSelectedZoneId(null)
     setLocalPositions(Object.fromEntries(rooms.map(r => [r.id, []])))
     setAiResult(null)
     setAiInfo(null)
