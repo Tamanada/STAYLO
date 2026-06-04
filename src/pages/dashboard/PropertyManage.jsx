@@ -3029,10 +3029,11 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
             </div>
           )
         })}
-        {/* Markers — one per placed unit. Non-dorm rooms: click removes
-            THAT specific unit. Dorm rooms: click opens the sub-plan modal
-            with the bed grid (removal lives inside the modal). */}
-        {markers.map(m => (
+        {/* Legacy V5 markers — only rendered when the property has NO
+            V7 zones yet. Once any zone is dropped, the V7 shape rendering
+            (with handles + shape selector) takes over and the V5 pin
+            pills would just intercept clicks meant for the shape. */}
+        {zones.filter(z => !z.deleted).length === 0 && markers.map(m => (
           <button
             type="button"
             key={`${m.roomId}-${m.index}`}
@@ -3057,8 +3058,9 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
             🛏️ {m.label}
           </button>
         ))}
-        {/* Empty-state hint when no markers yet */}
-        {markers.length === 0 && (
+        {/* Empty-state hint — nothing placed (no V5 markers AND no V7
+            zones). Once either model has data, the hint disappears. */}
+        {markers.length === 0 && zones.filter(z => !z.deleted).length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-white/90 backdrop-blur px-4 py-2.5 rounded-full text-xs font-bold text-deep shadow-lg">
               ⬇️ {t('manage.plan_drop_here', 'Drag a room here to place it')}
