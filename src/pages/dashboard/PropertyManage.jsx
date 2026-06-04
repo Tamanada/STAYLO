@@ -2218,8 +2218,12 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   }
 
   /** Shared drag driver — installs window listeners and tears them
-   *  down on release. The closure captures the starting zone snapshot
-   *  so we don't depend on React state during the drag. */
+   *  down on release. Uses a 4px movement threshold to distinguish a
+   *  pure CLICK (no drag) from a real DRAG: below threshold, neither
+   *  the zone state nor the DB are touched, so the click leaves the
+   *  selection intact and the floater visible/clickable. Above
+   *  threshold, the move/resize updates apply normally and the final
+   *  state is persisted on release. */
   function runDrag(downEvt, zone, canvasRect, mode, handle) {
     const startCx = zone.cx, startCy = zone.cy
     const startW  = zone.w,  startH  = zone.h
@@ -2227,10 +2231,19 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
     const canvasW = canvasRect.width, canvasH = canvasRect.height
     const zoneId  = zone.id
     const isSqOrCircle = zone.shape === 'square' || zone.shape === 'circle'
+    let hasMoved = false   // flips true once movement passes the threshold
 
     function move(ev) {
-      const dxPct = ((ev.clientX - originX) / canvasW) * 100
-      const dyPct = ((ev.clientY - originY) / canvasH) * 100
+      const dxPx = ev.clientX - originX
+      const dyPx = ev.clientY - originY
+      // Threshold gate — small accidental movements between mousedown
+      // and mouseup (typical of a click) get ignored. Only true drags
+      // mutate state.
+      if (!hasMoved && Math.abs(dxPx) < 4 && Math.abs(dyPx) < 4) return
+      hasMoved = true
+
+      const dxPct = (dxPx / canvasW) * 100
+      const dyPct = (dyPx / canvasH) * 100
       if (mode === 'move') {
         const nCx = Math.max(0, Math.min(100, startCx + dxPct))
         const nCy = Math.max(0, Math.min(100, startCy + dyPct))
@@ -2262,8 +2275,11 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', up)
-      // Persist the final state (snapshot via functional setter so we
-      // don't race with React's commit).
+      // Only persist when an actual drag happened. A pure click leaves
+      // the floater + handles in place; no save, no onRefresh, no
+      // re-render cascade — so the next click on a floater button
+      // hits the button reliably.
+      if (!hasMoved) return
       setZones(zs => {
         supabase.from('properties')
           .update({ floor_plan_zones: zs })
