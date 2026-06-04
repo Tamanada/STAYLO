@@ -1434,14 +1434,15 @@ function RoomDetailModal({ room, onClose, bookings, propertyId, userId, onSaved,
   if (!room) return null
 
   return (
-    <Modal open={!!room} onClose={onClose} title={`${room.name} · ${prettyType(room.type)}`}>
-      <div className="space-y-4">
-        {/* Quick room facts */}
-        <div className="flex items-center gap-3 text-xs text-gray-500 flex-wrap">
-          <span className="flex items-center gap-1"><BedDouble size={13} /> {prettyType(room.bed_type) || 'Standard'}</span>
-          <span className="flex items-center gap-1"><Users size={13} /> {room.max_guests || 2} {t('pms.guests', 'guests')}</span>
+    <Modal open={!!room} onClose={onClose} title={`${room.name} · ${prettyType(room.type)}`} size="2xl">
+      <div className="space-y-5">
+        {/* Quick room facts — bumped to text-sm so the receptionist
+            sees them at a glance without leaning into the screen. */}
+        <div className="flex items-center gap-4 text-sm text-gray-600 flex-wrap">
+          <span className="flex items-center gap-1.5"><BedDouble size={15} /> {prettyType(room.bed_type) || 'Standard'}</span>
+          <span className="flex items-center gap-1.5"><Users size={15} /> {room.max_guests || 2} {t('pms.guests', 'guests')}</span>
           {room.base_price && (
-            <span className="flex items-center gap-1 text-libre font-bold">
+            <span className="flex items-center gap-1.5 text-libre font-bold">
               ${Number(room.base_price).toFixed(0)} / {room.pricing_unit === 'bed' ? 'bed' : 'night'}
             </span>
           )}
@@ -1479,13 +1480,13 @@ function TabBtn({ active, onClick, icon: Icon, children }) {
   return (
     <button
       type="button" onClick={onClick}
-      className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+      className={`flex items-center gap-2 px-5 py-3 text-base font-semibold border-b-2 transition-colors ${
         active
           ? 'border-ocean text-ocean'
           : 'border-transparent text-gray-400 hover:text-gray-600'
       }`}
     >
-      <Icon size={14} /> {children}
+      <Icon size={16} /> {children}
     </button>
   )
 }
@@ -2132,10 +2133,18 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     onDone()
   }
 
+  // Reception-grade input style — single source for every text/select/date
+  // field in this form. Bumped 2026-06-08 because David wanted "tout
+  // agrandir" so reception staff can fill in walk-ins without squinting.
+  // Width = full of its grid cell. Padding = comfortable touch target.
+  // Font = base size, not the cramped text-sm we use elsewhere in admin.
+  const inputCls = 'w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-deep text-base focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean/30'
+  const inputElectricCls = 'w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-deep text-base focus:outline-none focus:ring-2 focus:ring-electric/30 focus:border-electric/30'
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Contact + payment (lead booker contact details) */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Field label={t('pms.guest_phone', 'Lead phone')}>
           <PhoneInput value={form.guest_phone} onChange={v => set('guest_phone', v)} />
         </Field>
@@ -2143,12 +2152,12 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
           <input
             type="email" value={form.guest_email} onChange={e => set('guest_email', e.target.value)}
             placeholder="optional"
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30"
+            className={inputCls}
           />
         </Field>
         <Field label={t('pms.payment_method', 'Payment method')}>
           <select value={form.payment_method} onChange={e => set('payment_method', e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
+            className={inputCls}>
             <option value="manual">{t('pms_frontdesk.pay_cash', 'Cash / direct')}</option>
             <option value="card">{t('pms_frontdesk.pay_card', 'Card (terminal)')}</option>
             <option value="lightning">{t('pms_frontdesk.pay_lightning', 'Lightning (BTC)')}</option>
@@ -2157,19 +2166,19 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
         {/* ── Booking type toggle — only show options the room actually offers ── */}
         {(offersHourly || offersDayUse) && (
           <div className="col-span-full">
-            <label className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">
+            <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1.5">
               Booking type
             </label>
-            <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-full sm:w-auto sm:inline-flex">
+            <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-full sm:w-auto sm:inline-flex">
               <button type="button" onClick={() => set('booking_type', 'overnight')}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex-1 ${
+                className={`px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex-1 ${
                   form.booking_type === 'overnight' ? 'bg-white text-deep shadow' : 'text-gray-500 hover:text-gray-700'
                 }`}>
                 🌙 Overnight
               </button>
               {offersHourly && (
                 <button type="button" onClick={() => set('booking_type', 'hourly')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex-1 ${
+                  className={`px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex-1 ${
                     form.booking_type === 'hourly' ? 'bg-white text-deep shadow' : 'text-gray-500 hover:text-gray-700'
                   }`}>
                   🕐 Hourly (${hourlyRate}/h)
@@ -2177,7 +2186,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
               )}
               {offersDayUse && (
                 <button type="button" onClick={() => set('booking_type', 'day_use')}
-                  className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex-1 ${
+                  className={`px-4 py-2.5 rounded-lg text-sm font-bold transition-all flex-1 ${
                     form.booking_type === 'day_use' ? 'bg-white text-deep shadow' : 'text-gray-500 hover:text-gray-700'
                   }`}>
                   ☀️ Day-use (${dayUseRate} / {dayUseMaxHrs}h)
@@ -2192,12 +2201,12 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
             <Field label={t('pms.check_in_date', 'Check-in')}>
               <input type="date" value={form.check_in} onChange={e => set('check_in', e.target.value)}
                 min={today}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                className={inputCls} />
             </Field>
             <Field label={t('pms.check_out_date', 'Check-out')}>
               <input type="date" value={form.check_out} onChange={e => set('check_out', e.target.value)}
                 min={form.check_in}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                className={inputCls} />
             </Field>
           </>
         ) : (
@@ -2205,12 +2214,12 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
             <Field label={t('pms_frontdesk.check_in_date_label', 'Check-in date')}>
               <input type="date" value={form.check_in} onChange={e => set('check_in', e.target.value)}
                 min={today}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                className={inputElectricCls} />
             </Field>
             <Field label={t('pms_frontdesk.start_time', 'Start time')}>
               <input type="time" value={form.check_in_time}
                 onChange={e => set('check_in_time', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm font-mono focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                className={`${inputElectricCls} font-mono`} />
             </Field>
             <Field label={form.booking_type === 'day_use'
               ? `Duration (locked to ${dayUseMaxHrs}h day-use block)`
@@ -2222,9 +2231,9 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                 value={form.booking_type === 'day_use' ? dayUseMaxHrs : form.hours}
                 disabled={form.booking_type === 'day_use'}
                 onChange={e => set('hours', e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-500" />
+                className={`${inputElectricCls} disabled:bg-gray-50 disabled:text-gray-500`} />
               {checkOutAtIso && (
-                <span className="text-[10px] text-gray-500 block mt-0.5">
+                <span className="text-[11px] text-gray-500 block mt-1">
                   Ends at {new Date(checkOutAtIso).toLocaleString(undefined, { hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric' })}
                 </span>
               )}
@@ -2238,19 +2247,19 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
               // Hard cap — receptionist can't overbook the room's physical capacity
               set('adults', Math.min(maxAdults, Math.max(1, n)))
             }}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            className={inputCls} />
         </Field>
         <Field label={t('pms.children', 'Children')}>
           <input type="number" min={0} max={20} value={form.children}
             onChange={e => set('children', Math.max(0, Number(e.target.value) || 0))}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            className={inputCls} />
         </Field>
         {extraBedAvail && (
           <Field label={`Extra beds (kids ≤ ${extraBedMaxAge}y)`}>
             <input type="number" min={0} max={maxExtraBeds} value={form.extra_beds}
               onChange={e => set('extra_beds', Math.min(maxExtraBeds, Math.max(0, Number(e.target.value) || 0)))}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
-            <span className="text-[10px] text-gray-400 block mt-0.5">
+              className={inputElectricCls} />
+            <span className="text-[11px] text-gray-500 block mt-1">
               +${extraBedPrice.toFixed(0)}/night each · max {maxExtraBeds}
             </span>
           </Field>
@@ -2258,13 +2267,13 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
         {form.booking_type === 'overnight' ? (
           <Field label={t('pms.rate_per_night', 'Rate per night (USD)')}>
             <input type="number" min={1} step="0.01" value={form.rate} onChange={e => set('rate', e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+              className={inputCls} />
           </Field>
         ) : (
           <Field label={form.booking_type === 'day_use' ? `Day-use total (${dayUseMaxHrs}h block)` : `Hourly rate ($/h × ${billedHours}h)`}>
-            <div className="px-3 py-2 rounded-lg border border-gray-200 bg-gray-50 text-deep text-sm font-mono">
+            <div className="px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-deep text-base font-mono">
               ${roomSubtotal.toFixed(2)}
-              <span className="text-[10px] text-gray-500 ml-2 font-sans">
+              <span className="text-[11px] text-gray-500 ml-2 font-sans">
                 {form.booking_type === 'day_use'
                   ? '(flat day-use rate)'
                   : (offersDayUse && billedHours <= dayUseMaxHrs && billedHours * hourlyRate > dayUseRate)
@@ -2282,15 +2291,20 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
           Required by Thai TM30 immigration law for foreign guests +
           good practice for everyone (fire safety, claims, CRM).
           ─────────────────────────────────────────────────────────────── */}
-      <div className="bg-cream/40 -mx-1 px-3 py-3 rounded-xl border border-cream space-y-2">
+      {/* Guest registry — bumped 2026-06-08 for reception legibility.
+          Previously crammed into text-xs / py-1.5 to fit 4 columns; now
+          one input per row width is comfortable, ID label sits on its
+          own line so it never wraps, and TM30 fields use text-xs labels
+          instead of the unreadable text-[9px]. */}
+      <div className="bg-cream/40 -mx-1 px-4 py-4 rounded-xl border border-cream space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500">
+          <h4 className="text-sm font-bold uppercase tracking-wider text-gray-600">
             Guest registry
-            <span className="text-gray-300 font-normal normal-case ml-1.5">— {guests.length} {guests.length === 1 ? 'person' : 'people'}, TM30 compliant</span>
+            <span className="text-gray-400 font-normal normal-case ml-2">— {guests.length} {guests.length === 1 ? 'person' : 'people'}, TM30 compliant</span>
           </h4>
           <button type="button"
             onClick={() => setGuests(g => [...g, blankGuest()])}
-            className="text-[11px] font-bold text-ocean hover:text-electric flex items-center gap-1">
+            className="text-sm font-bold text-ocean hover:text-electric flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-ocean/5 transition-colors">
             + Add another
           </button>
         </div>
@@ -2299,83 +2313,111 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
           // Auto-flag non-Thai non-children as needing TM30 (we still allow opt-in for everyone)
           const needsTM30 = !g.is_child && g.nationality && g.nationality.toUpperCase() !== 'TH'
           const isOpen   = tm30Open[idx] ?? needsTM30
+          // Reused field class — same recipe as the contact row above
+          // so every input in the modal looks consistent.
+          const guestInputCls = 'w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean/30'
           return (
-          <div key={idx} className="bg-white rounded-lg border border-gray-100">
-            {/* Row 1 — name + actions (always fits) */}
-            <div className="grid grid-cols-12 gap-1.5 items-center p-2 pb-1">
-              <div className="col-span-1 flex items-center justify-center text-[10px] font-bold text-gray-400">
-                {idx === 0 ? '👤' : g.is_child ? '👶' : '👤'}
-                <span className="ml-0.5">{idx + 1}</span>
-              </div>
-              <div className="col-span-5">
-                <input type="text" value={g.first_name}
-                  onChange={e => updateGuest(idx, 'first_name', e.target.value)}
-                  placeholder={idx === 0 ? 'First name *' : 'First name'}
-                  autoFocus={idx === 0}
-                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-              </div>
-              <div className="col-span-5">
-                <input type="text" value={g.last_name}
-                  onChange={e => updateGuest(idx, 'last_name', e.target.value)}
-                  placeholder="Last name"
-                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
-              </div>
-              <div className="col-span-1 flex items-center justify-end gap-1">
-                {idx > 0 && (
-                  <>
-                    <button type="button" onClick={() => updateGuest(idx, 'is_child', !g.is_child)}
-                      className="text-[10px] text-gray-400 hover:text-electric font-bold w-5 h-5 rounded border border-gray-200 hover:border-electric flex items-center justify-center"
-                      title={g.is_child ? 'Mark as adult' : 'Mark as child'}>
-                      {g.is_child ? 'A' : 'C'}
-                    </button>
-                    <button type="button"
-                      onClick={() => setGuests(arr => arr.filter((_, i) => i !== idx))}
-                      className="text-gray-300 hover:text-sunset text-base leading-none w-5 h-5 flex items-center justify-center"
-                      title={t('pms_frontdesk.remove_guest', 'Remove this guest')}>×</button>
-                  </>
+          <div key={idx} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            {/* Header strip — index + remove/child toggle. Pulled out
+                of the form grid so the inputs below get their own
+                clean 12-col layout without fighting an action column. */}
+            <div className="flex items-center justify-between px-3 py-2 bg-gray-50 border-b border-gray-100">
+              <span className="text-sm font-bold text-gray-600 flex items-center gap-1.5">
+                <span className="text-base leading-none">
+                  {idx === 0 ? '👤' : g.is_child ? '👶' : '👤'}
+                </span>
+                {t('pms_frontdesk.guest_n', 'Guest')} #{idx + 1}
+                {idx === 0 && (
+                  <span className="ml-2 px-2 py-0.5 rounded-full bg-ocean/10 text-ocean text-[10px] font-bold uppercase tracking-wider">
+                    {t('pms_frontdesk.lead_booker', 'Lead')}
+                  </span>
                 )}
-              </div>
+                {g.is_child && (
+                  <span className="ml-1 px-2 py-0.5 rounded-full bg-electric/10 text-electric text-[10px] font-bold uppercase tracking-wider">
+                    {t('pms_frontdesk.child', 'Child')}
+                  </span>
+                )}
+              </span>
+              {idx > 0 && (
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={() => updateGuest(idx, 'is_child', !g.is_child)}
+                    className="text-xs font-bold text-gray-500 hover:text-electric px-2.5 py-1 rounded-md border border-gray-200 hover:border-electric/40 hover:bg-electric/5 transition-colors"
+                    title={g.is_child ? t('pms_frontdesk.mark_adult', 'Mark as adult') : t('pms_frontdesk.mark_child', 'Mark as child')}>
+                    {g.is_child ? t('pms_frontdesk.mark_adult_short', '→ Adult') : t('pms_frontdesk.mark_child_short', '→ Child')}
+                  </button>
+                  <button type="button"
+                    onClick={() => setGuests(arr => arr.filter((_, i) => i !== idx))}
+                    className="text-gray-400 hover:text-sunset text-xl leading-none w-7 h-7 flex items-center justify-center rounded-md hover:bg-sunset/10 transition-colors"
+                    title={t('pms_frontdesk.remove_guest', 'Remove this guest')}>×</button>
+                </div>
+              )}
             </div>
 
-            {/* Row 2 — nationality + passport (full breathing room) */}
-            <div className="grid grid-cols-12 gap-1.5 items-center px-2 pb-2">
-              <div className="col-span-1" />
-              <div className="col-span-3">
+            {/* Name + nationality + passport — 12-col grid, plenty of
+                room. Last name no longer competes for half-row width
+                with controls. */}
+            <div className="grid grid-cols-12 gap-3 p-3">
+              <div className="col-span-6 sm:col-span-4">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                  {t('pms_frontdesk.first_name', 'First name')}{idx === 0 ? ' *' : ''}
+                </label>
+                <input type="text" value={g.first_name}
+                  onChange={e => updateGuest(idx, 'first_name', e.target.value)}
+                  autoFocus={idx === 0}
+                  className={guestInputCls} />
+              </div>
+              <div className="col-span-6 sm:col-span-4">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                  {t('pms_frontdesk.last_name', 'Last name')}
+                </label>
+                <input type="text" value={g.last_name}
+                  onChange={e => updateGuest(idx, 'last_name', e.target.value)}
+                  className={guestInputCls} />
+              </div>
+              <div className="col-span-4 sm:col-span-2">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                  {t('pms_frontdesk.nationality', 'Nationality')}
+                </label>
                 <input type="text" value={g.nationality}
                   onChange={e => updateGuest(idx, 'nationality', e.target.value.toUpperCase().slice(0, 2))}
                   placeholder="FR / TH"
                   maxLength={2}
-                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs uppercase font-mono tracking-wider text-center focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                  className={`${guestInputCls} uppercase font-mono tracking-wider text-center`} />
               </div>
-              <div className="col-span-8">
+              <div className="col-span-8 sm:col-span-2">
+                <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                  {t('pms_frontdesk.passport', 'Passport / ID')}
+                </label>
                 <input type="text" value={g.passport_number}
                   onChange={e => updateGuest(idx, 'passport_number', e.target.value)}
-                  placeholder={g.is_child ? 'Passport / ID (optional for child)' : 'Passport / ID number'}
-                  className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                  placeholder={g.is_child ? t('pms_frontdesk.optional_for_child', 'Optional') : t('pms_frontdesk.passport_number', 'Number')}
+                  className={`${guestInputCls} font-mono`} />
               </div>
             </div>
 
             {/* TM30 details toggle — auto-opens for foreign adults */}
             <button type="button"
               onClick={() => setTm30Open(s => ({ ...s, [idx]: !isOpen }))}
-              className={`w-full text-left px-3 py-1 text-[10px] font-bold uppercase tracking-wider border-t flex items-center justify-between ${
-                isOpen ? 'bg-ocean/5 text-ocean border-ocean/15' : 'bg-gray-50 text-gray-400 hover:text-gray-600 border-gray-100'
+              className={`w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider border-t flex items-center justify-between transition-colors ${
+                isOpen ? 'bg-ocean/5 text-ocean border-ocean/15' : 'bg-gray-50 text-gray-500 hover:text-gray-700 border-gray-100'
               }`}>
-              <span>{isOpen ? '▾' : '▸'} TM30 immigration details {needsTM30 && !isOpen ? '· required for foreign guests' : ''}</span>
-              <span className="text-[9px] normal-case font-normal opacity-60">
+              <span>{isOpen ? '▾' : '▸'} {t('pms_frontdesk.tm30_section', 'TM30 immigration details')} {needsTM30 && !isOpen ? `· ${t('pms_frontdesk.tm30_required_short', 'required for foreign guests')}` : ''}</span>
+              <span className="text-[11px] normal-case font-normal opacity-60">
                 {[g.sex, g.date_of_birth, g.thailand_arrival_date, g.visa_type, g.visa_number].filter(Boolean).length} / 5 filled
               </span>
             </button>
 
-            {/* Expanded TM30 fields */}
+            {/* Expanded TM30 fields — same 12-col grid, comfortable
+                touch targets. Labels bumped from text-[9px] to
+                text-[11px] (now actually readable). */}
             {isOpen && (
-              <div className="grid grid-cols-12 gap-1.5 p-2 pt-1 bg-ocean/5">
+              <div className="grid grid-cols-12 gap-3 p-3 bg-ocean/[0.03]">
                 {/* Sex */}
-                <div className="col-span-2">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Sex</label>
+                <div className="col-span-6 sm:col-span-2">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">{t('pms_frontdesk.sex', 'Sex')}</label>
                   <select value={g.sex || ''}
                     onChange={e => updateGuest(idx, 'sex', e.target.value)}
-                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30">
+                    className={guestInputCls}>
                     <option value="">—</option>
                     <option value="M">M</option>
                     <option value="F">F</option>
@@ -2383,19 +2425,19 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                   </select>
                 </div>
                 {/* DOB */}
-                <div className="col-span-2">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">{t('pms_frontdesk.tm30_dob', 'Date of birth')}</label>
+                <div className="col-span-6 sm:col-span-2">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">{t('pms_frontdesk.tm30_dob', 'Date of birth')}</label>
                   <input type="date" value={g.date_of_birth || ''}
                     onChange={e => updateGuest(idx, 'date_of_birth', e.target.value)}
                     max={new Date().toISOString().slice(0, 10)}
-                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                    className={guestInputCls} />
                 </div>
                 {/* Travel doc type */}
-                <div className="col-span-2">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">ID type</label>
+                <div className="col-span-12 sm:col-span-2">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">{t('pms_frontdesk.id_type', 'ID type')}</label>
                   <select value={g.travel_doc_type || 'passport'}
                     onChange={e => updateGuest(idx, 'travel_doc_type', e.target.value)}
-                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30">
+                    className={guestInputCls}>
                     <option value="passport">{t('pms_frontdesk.id_passport', 'Passport')}</option>
                     <option value="national_id">{t('pms_frontdesk.id_national', 'National ID')}</option>
                     <option value="border_pass">{t('pms_frontdesk.id_border_pass', 'Border pass')}</option>
@@ -2403,28 +2445,28 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                   </select>
                 </div>
                 {/* Thailand arrival date */}
-                <div className="col-span-3">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">{t('pms_frontdesk.tm30_arrival', 'Arrived in Thailand on')}</label>
+                <div className="col-span-6 sm:col-span-3">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">{t('pms_frontdesk.tm30_arrival', 'Arrived in Thailand on')}</label>
                   <input type="date" value={g.thailand_arrival_date || ''}
                     onChange={e => updateGuest(idx, 'thailand_arrival_date', e.target.value)}
                     max={form.check_in}
-                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                    className={guestInputCls} />
                 </div>
                 {/* Port of entry */}
-                <div className="col-span-3">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">{t('pms_frontdesk.tm30_port', 'Port of entry')}</label>
+                <div className="col-span-6 sm:col-span-3">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">{t('pms_frontdesk.tm30_port', 'Port of entry')}</label>
                   <input type="text" value={g.thailand_port_of_entry || ''}
                     onChange={e => updateGuest(idx, 'thailand_port_of_entry', e.target.value.toUpperCase().slice(0, 12))}
                     placeholder="BKK / DMK / HKT / CNX"
                     maxLength={12}
-                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs uppercase font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                    className={`${guestInputCls} uppercase font-mono`} />
                 </div>
                 {/* Visa type */}
-                <div className="col-span-3">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">Visa type</label>
+                <div className="col-span-6 sm:col-span-6">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">{t('pms_frontdesk.visa_type', 'Visa type')}</label>
                   <select value={g.visa_type || ''}
                     onChange={e => updateGuest(idx, 'visa_type', e.target.value)}
-                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs focus:outline-none focus:ring-2 focus:ring-ocean/30">
+                    className={guestInputCls}>
                     <option value="">—</option>
                     <option value="exempt">{t('pms_frontdesk.visa_exempt', 'Exempt (visa-on-arrival)')}</option>
                     <option value="TR">TR (Tourist)</option>
@@ -2438,87 +2480,87 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
                   </select>
                 </div>
                 {/* Visa number */}
-                <div className="col-span-3">
-                  <label className="block text-[9px] font-bold uppercase text-gray-400 mb-0.5">{t('pms_frontdesk.tm30_visa_number', 'Visa number')}</label>
+                <div className="col-span-6 sm:col-span-6">
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">{t('pms_frontdesk.tm30_visa_number', 'Visa number')}</label>
                   <input type="text" value={g.visa_number || ''}
                     onChange={e => updateGuest(idx, 'visa_number', e.target.value)}
-                    placeholder="from sticker"
-                    className="w-full px-2 py-1.5 rounded border border-gray-200 bg-white text-deep text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+                    placeholder={t('pms_frontdesk.visa_number_placeholder', 'from sticker')}
+                    className={`${guestInputCls} font-mono`} />
                 </div>
               </div>
             )}
           </div>
         )})}
 
-        <p className="text-[10px] text-gray-400 italic">
-          ID #1 = lead booker. Nationality = 2-letter code (FR, TH, US, GB...). TM30 details auto-opens for foreign guests, optional for Thais.
+        <p className="text-xs text-gray-500 italic">
+          {t('pms_frontdesk.guest_registry_hint', 'Guest #1 = lead booker. Nationality = 2-letter code (FR, TH, US, GB...). TM30 details auto-open for foreign guests, optional for Thais.')}
         </p>
       </div>
 
       {/* Communicating rooms — only offered when this room type advertises pairs */}
       {!!room.communicating_rooms_available && (
-        <label className="flex items-center gap-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg cursor-pointer">
+        <label className="flex items-center gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-xl cursor-pointer hover:bg-amber-100/50 transition-colors">
           <input type="checkbox" checked={!!form.communicating_rooms_requested}
             onChange={e => set('communicating_rooms_requested', e.target.checked)}
-            className="accent-amber-500" />
-          <span className="text-xs text-deep">
+            className="accent-amber-500 w-4 h-4" />
+          <span className="text-sm text-deep">
             🚪 <strong>{t('pms_frontdesk.assign_communicating', 'Assign communicating rooms')}</strong>
-            <span className="text-gray-500"> — {t('pms_frontdesk.assign_communicating_hint', 'pair this booking with an adjoining room (family-friendly)')}</span>
+            <span className="text-gray-600"> — {t('pms_frontdesk.assign_communicating_hint', 'pair this booking with an adjoining room (family-friendly)')}</span>
           </span>
         </label>
       )}
 
       <Field label={t('pms.special_requests', 'Special requests (optional)')}>
         <textarea value={form.special_requests} onChange={e => set('special_requests', e.target.value)}
-          rows={2} placeholder={t('pms_frontdesk.special_requests_placeholder', 'Late check-in, extra towels, etc.')}
-          className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 resize-none" />
+          rows={3} placeholder={t('pms_frontdesk.special_requests_placeholder', 'Late check-in, extra towels, etc.')}
+          className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white text-deep text-base focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean/30 resize-none" />
       </Field>
 
       {/* Live total + commission breakdown */}
-      <div className="p-3 bg-libre/5 border border-libre/15 rounded-xl space-y-1 text-sm">
-        <div className="flex justify-between text-gray-600">
+      <div className="p-4 bg-libre/5 border border-libre/15 rounded-xl space-y-1.5 text-base">
+        <div className="flex justify-between text-gray-700">
           <span>Room: {nights} {nights === 1 ? 'night' : 'nights'} × ${Number(form.rate || 0).toFixed(2)}</span>
           <span className="font-medium">${roomSubtotal.toFixed(2)}</span>
         </div>
         {form.extra_beds > 0 && (
-          <div className="flex justify-between text-gray-600">
+          <div className="flex justify-between text-gray-700">
             <span>Extra beds: {nights} × {form.extra_beds} × ${extraBedPrice.toFixed(2)}</span>
             <span className="font-medium">${extraBedSubtotal.toFixed(2)}</span>
           </div>
         )}
-        <div className="flex justify-between font-bold pt-1 border-t border-libre/15">
+        <div className="flex justify-between font-bold text-lg pt-2 border-t border-libre/15">
           <span>{t('pms_frontdesk.total_guest_pays', 'Total guest pays')}</span>
           <span>${totalPrice.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-xs text-gray-400">
+        <div className="flex justify-between text-sm text-gray-500">
           <span>STAYLO commission (10%)</span>
           <span>−${commission.toFixed(2)}</span>
         </div>
-        <div className="flex justify-between text-xs text-libre font-bold pt-1 border-t border-libre/15">
+        <div className="flex justify-between text-sm text-libre font-bold pt-1.5 border-t border-libre/15">
           <span>{t('pms_frontdesk.you_receive', 'You receive (paid directly)')}</span>
           <span>${(totalPrice - commission).toFixed(2)}</span>
         </div>
       </div>
 
       {conflict && (
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800">
-          <AlertCircle size={14} className="inline mr-1" />
+        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+          <AlertCircle size={16} className="inline mr-1.5 -mt-0.5" />
           <strong>Fully booked on {conflict.saturated_on}</strong> — all {conflict.quantity} {room.name} units already taken
           {conflict.guest_name ? ` (incl. ${conflict.guest_name} ${conflict.check_in} → ${conflict.check_out})` : ''}
         </div>
       )}
       {error && (
-        <div className="p-3 bg-sunset/10 border border-sunset/30 rounded-xl text-sm text-sunset">
+        <div className="p-3.5 bg-sunset/10 border border-sunset/30 rounded-xl text-sm text-sunset">
           {error}
         </div>
       )}
 
-      <div className="flex items-center gap-3 pt-2 border-t border-gray-100">
-        <Button onClick={handleSave} disabled={saving || conflict}>
-          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+      <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
+        <Button onClick={handleSave} disabled={saving || conflict} size="lg">
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
           {t('pms.check_in_now', 'Check in now')}
         </Button>
-        <Button variant="secondary" onClick={onCancel}>{t('common.cancel', 'Cancel')}</Button>
+        <Button variant="secondary" onClick={onCancel} size="lg">{t('common.cancel', 'Cancel')}</Button>
       </div>
     </div>
   )
@@ -2527,7 +2569,7 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="block text-xs font-medium text-gray-500 mb-1">{label}</span>
+      <span className="block text-sm font-semibold text-gray-600 mb-1.5">{label}</span>
       {children}
     </label>
   )
