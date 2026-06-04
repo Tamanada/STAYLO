@@ -1140,24 +1140,23 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
   // popover anchors below/right of the room-info column and tracks
   // viewport edges (flips to the LEFT of the row if there's not
   // enough room on the right).
+  // V8 — fixed right-side panel. Auto-closes when the cursor leaves
+  // both the row and the popover itself. cancelClose fires when the
+  // cursor enters the popover, so the receptionist has time to read.
   const [hovered, setHovered] = useState(null)
-  // `pinned` flag — when the user starts dragging the popover, we
-  // disable the auto-close-on-row-leave behavior. Popover stays open
-  // until the user clicks ✕ or hovers a DIFFERENT room.
-  const [pinned, setPinned] = useState(false)
   const closeTimerRef = useRef(null)
+  const setPinned = () => {}
 
   function handleRowEnter(e, room) {
-    // V8 — fixed right-side panel. We don't compute x/y any more; the
-    // popover docks itself via CSS. Just track which room is currently
-    // hovered so the content updates as the receptionist scans rows.
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
     setHovered({ room })
   }
   function handleRowLeave() {
-    // No auto-close. The right-side panel persists until the user
-    // explicitly clicks ✕ or presses Esc, so they can read it without
-    // racing the cursor.
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    closeTimerRef.current = setTimeout(() => {
+      setHovered(null)
+      closeTimerRef.current = null
+    }, 120)
   }
   function cancelClose() {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
@@ -1165,7 +1164,6 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
   function closePopover() {
     cancelClose()
     setHovered(null)
-    setPinned(false)
   }
 
   return (
@@ -1275,16 +1273,22 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
   // Same hover popover wiring as Timeline — the card opens it, popover
   // is rendered once at the view root so we don't get N popovers
   // racing each other.
+  // V8 — fixed right-side panel with auto-close on row leave + cancel
+  // when the cursor enters the popover itself.
   const [hovered, setHovered] = useState(null)
-  const [pinned, setPinned] = useState(false)   // drag = pin (same UX as Timeline)
   const closeTimerRef = useRef(null)
+  const setPinned = () => {}
 
-  function openFor(room, el) {
+  function openFor(room) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
     setHovered({ room })
   }
   function closeSoon() {
-    // V8 — fixed right-side panel, no auto-close.
+    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    closeTimerRef.current = setTimeout(() => {
+      setHovered(null)
+      closeTimerRef.current = null
+    }, 120)
   }
   function cancelClose() {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
@@ -1292,7 +1296,6 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
   function closePopover() {
     cancelClose()
     setHovered(null)
-    setPinned(false)
   }
 
   if (floorsMap.size === 0) {
@@ -1309,7 +1312,7 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
                 key={r.id}
                 room={r}
                 onPick={onPick}
-                onHoverIn={el => openFor(r, el)}
+                onHoverIn={() => openFor(r)}
                 onHoverOut={closeSoon}
               />
             ))}

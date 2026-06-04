@@ -2909,26 +2909,31 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           const shapeIcon = z.shape === 'circle' ? '●' : z.shape === 'square' ? '■' : '▭'
           return (
             <div key={`overlay-${z.id}`} className="contents">
-              {/* Drag surface — covers the shape, no pointer capture so
-                  pointermove/up bubble to the canvas's handlers. */}
+              {/* Drag surface — covers the shape. Selection happens on
+                  pointerdown (BEFORE the click event) so it can't be
+                  beaten by the canvas's onClick which deselects.
+                  stopPropagation on both pointerdown and click belt-
+                  and-suspenders against bubbling. No pointer capture
+                  so pointermove/up still bubble to the canvas's
+                  drag handlers. */}
               <div
                 onPointerDown={(e) => {
                   if (e.button !== 0) return
-                  startMove(e, z)
-                }}
-                onClick={(e) => {
                   e.stopPropagation()
                   if (dorm) {
                     setDormModal(assigned)
-                  } else {
-                    setSelectedZoneId(z.id)
+                    return
                   }
+                  setSelectedZoneId(z.id)
+                  startMove(e, z)
                 }}
+                onClick={(e) => { e.stopPropagation() }}
                 className="absolute cursor-move"
                 style={{
                   left: `${left}%`, top: `${top}%`,
                   width: `${w}%`,   height: `${h}%`,
                   touchAction: 'none',
+                  zIndex: 5,
                 }}
               />
               {/* Center label */}
