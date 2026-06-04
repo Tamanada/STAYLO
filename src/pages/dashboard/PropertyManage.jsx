@@ -6066,6 +6066,32 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
   // status chips and by the cell rendering to subtract from the
   // displayed available_count.
   const [unitBlocksByCell, setUnitBlocksByCell] = useState({})
+  // Virtual rooms — expand non-dorm multi-unit rooms into N rows.
+  // BABA × 4 → 4 rows ("BABA 1" / "BABA 2" / "BABA 3" / "BABA 4").
+  // Dorms (type 'dormitory' / 'capsule') stay as ONE row (the per-bed
+  // detail lives in the DormSubPlanModal, not the timeline).
+  // Single-unit rooms unchanged.
+  const virtualRooms = useMemo(() => {
+    const out = []
+    for (const r of (rooms || [])) {
+      const t = String(r.type || '').toLowerCase()
+      const isDorm = t === 'dormitory' || t === 'capsule'
+      const qty = Math.max(1, Number(r.quantity) || 1)
+      if (isDorm || qty <= 1) {
+        out.push({ ...r, unit_index: null, display_name: r.name, virtual_id: r.id })
+      } else {
+        for (let i = 1; i <= qty; i++) {
+          out.push({
+            ...r,
+            unit_index: i,
+            display_name: `${r.name} ${i}`,
+            virtual_id: `${r.id}#${i}`,
+          })
+        }
+      }
+    }
+    return out
+  }, [rooms])
   const [loading, setLoading] = useState(true)
   // Bulk edit — same idea as Monthly view but cells span room × date.
   // Each entry is "${room_id}|${yyyy-mm-dd}" so the user can mix rooms
@@ -6847,58 +6873,47 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
             })}
           </div>
 
-          {/* Rows — one per room. In bulk mode, clicking a cell toggles
-              it in the selection (which can span multiple rooms). Click
-              the room name header to add that whole row's future cells. */}
-          {rooms.map(room => (
-            // Row wrapper — owns the drop target + drag visuals so the
-            // WHOLE row (info column + every day cell) lights up as the
-            // drop zone, not just the leftmost handle. The `draggable`
-            // attribute stays on the left "room info" cell so date cells
-            // remain individually clickable for editing; but the wrapper
-            // catches dragOver/Drop anywhere across the row.
+          {/* Rows — one per VIRTUAL room (1 per physical unit for non-dorm
+              multi-unit rooms, 1 per room otherwise). In bulk mode,
+              clicking a cell toggles it in the selection. */}
+          {virtualRooms.map(vroom => {
+            const room = vroom              // alias for clarity in older code below
+            const isUnitRow = vroom.unit_index != null
+            return (
             <div
-              key={room.id}
+              key={vroom.virtual_id}
               className={`grid items-stretch transition-all ${
                 draggedRoomId === room.id ? 'opacity-40' : ''
               } ${
                 dragOverRoomId === room.id ? 'ring-2 ring-inset ring-ocean bg-ocean/10' : ''
               }`}
               style={{ gridTemplateColumns: `180px repeat(${DAYS}, 1fr)` }}
-              onDragOver={!bulkMode ? (e) => handleRowDragOver(e, room.id) : undefined}
-              onDragLeave={!bulkMode ? handleRowDragLeave : undefined}
-              onDrop={!bulkMode ? (e) => handleRowDrop(e, room.id) : undefined}
+              onDragOver={!bulkMode && !isUnitRow ? (e) => handleRowDragOver(e, room.id) : undefined}
+              onDragLeave={!bulkMode && !isUnitRow ? handleRowDragLeave : undefined}
+              onDrop={!bulkMode && !isUnitRow ? (e) => handleRowDrop(e, room.id) : undefined}
             >
-              {/* Room info — name + default price + total stock.
-                  Outside bulk mode, the cell is the drag handle (only
-                  this cell initiates the drag — date cells stay clickable).
-                  In bulk mode, drag is disabled and the click selects
-                  every future cell in the row instead. */}
-              {/* Switched from <button> to <div role="button"> — HTML
-                  refuses to drag a disabled <button>, and we want the
-                  cell to NOT be clickable outside bulk mode while
-                  STILL being draggable. A button can't satisfy both
-                  conditions, a div role=button can. */}
+              {/* Room info — name + default price + total stock. */}
               <div
                 role="button"
                 tabIndex={0}
-                draggable={!bulkMode}
-                onDragStart={!bulkMode ? (e) => handleRowDragStart(e, room.id) : undefined}
-                onDragEnd={!bulkMode ? handleRowDragEnd : undefined}
+                draggable={!bulkMode && !isUnitRow}
+                onDragStart={!bulkMode && !isUnitRow ? (e) => handleRowDragStart(e, room.id) : undefined}
+                onDragEnd={!bulkMode && !isUnitRow ? handleRowDragEnd : undefined}
                 onClick={bulkMode ? () => selectRoomRow(room.id) : undefined}
                 className={`py-2 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02] text-left transition-all ${
-                  bulkMode ? 'cursor-pointer hover:bg-ocean/5' : 'cursor-grab active:cursor-grabbing hover:bg-ocean/5'
+                  bulkMode ? 'cursor-pointer hover:bg-ocean/5' : (isUnitRow ? '' : 'cursor-grab active:cursor-grabbing hover:bg-ocean/5')
                 }`}
                 title={bulkMode
                   ? t('manage.timeline_select_row', 'Click to select all future cells in this row')
-                  : t('manage.drag_to_reorder', 'Drag to reorder rooms — this order applies on the OTA + every reception view')}
+                  : (isUnitRow ? '' : t('manage.drag_to_reorder', 'Drag to reorder rooms — this order applies on the OTA + every reception view'))}
               >
                 <div className="text-sm font-bold text-deep truncate flex items-center gap-1.5">
-                  {!bulkMode && <span className="text-gray-300 select-none" aria-hidden="true">⋮⋮</span>}
-                  {room.name}
+                  {!bulkMode && !isUnitRow && <span className="text-gray-300 select-none" aria-hidden="true">⋮⋮</span>}
+                  {vroom.display_name}
                 </div>
                 <div className="text-[10px] text-gray-500 leading-tight">
-                  ${Number(room.base_price || 0).toFixed(0)}/night · ×{room.quantity}
+                  ${Number(room.base_price || 0).toFixed(0)}/night
+                  {!isUnitRow && ` · ×${room.quantity}`}
                 </div>
               </div>
 
@@ -6908,12 +6923,19 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                 const isPast = d < today
                 const isToday = iso === todayISO
                 const row = availByRoom[room.id]?.[iso]
-                const isBlocked = row?.is_blocked
+                // Per-unit block check — if this is a unit row AND the
+                // unit's index is in the blocked set for this date, the
+                // cell is blocked. Type-default block on the row applies
+                // to all units.
+                const unitBlockSet = unitBlocksByCell[room.id]?.[iso]
+                const unitBlocked = isUnitRow && unitBlockSet?.has(vroom.unit_index)
+                const isBlocked = !!(row?.is_blocked || unitBlocked)
                 const priceBrut = Number(row?.price_override ?? room.base_price ?? 0)
                 const priceNet = priceBrut * 0.9
-                const totalStock = room.quantity || 1
+                const totalStock = isUnitRow ? 1 : (room.quantity || 1)
                 const stock = isBlocked ? 0
-                  : (row && typeof row.available_count === 'number' ? row.available_count : totalStock)
+                  : (isUnitRow ? 1
+                    : (row && typeof row.available_count === 'number' ? row.available_count : totalStock))
                 const hasOverride = row?.price_override != null
                 const isSelected = bulkMode && selectedCells.has(cellKey(room.id, iso))
 
@@ -7012,7 +7034,8 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                 )
               })}
             </div>
-          ))}
+          )
+        })}
         </div>
       </div>
 
