@@ -148,7 +148,14 @@ const STYLES = `
 .rm-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#636E72}
 .rm-legend-dot{width:8px;height:8px;border-radius:50%}
 
-.rm-view{flex:1;overflow:auto}
+.rm-view{flex:1;overflow:auto;transition:padding-right .15s ease-out}
+/* When the right-side popover is open, shrink the timeline content to
+   leave the cells visible to the LEFT of the popover. CSS :has() is
+   supported in all evergreen browsers and degrades gracefully (older
+   browsers just see the popover float over the right cells, same as
+   before). 520px = popover width 480 + side gap. */
+.rm-view:has(.rm-info-pop){padding-right:520px}
+@media (max-width:1100px){.rm-view:has(.rm-info-pop){padding-right:460px}}
 
 /* Timeline */
 .rm-tl-header{display:flex;background:white;border-bottom:1px solid #E8E0D8;position:sticky;top:0;z-index:2}
