@@ -6899,18 +6899,30 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
         </div>
       )}
 
-      {/* Grid — fixed room column + DAYS evenly-spaced day columns.
-          Horizontal scroll kicks in below ~900px so the cells never
-          collapse into illegible slivers on tablet portraits. */}
+      {/* Grid — fixed type + room columns + DAYS evenly-spaced day columns.
+          The type column was split out 2026-06-08 so the receptionist
+          can scan room categories (Executive Suite / Standard / Dorm)
+          down a single vertical line instead of decoding stacked badges.
+          Horizontal scroll kicks in below ~960px so cells never collapse
+          into illegible slivers on tablet portraits.
+
+          gridTemplateColumns layout:
+            · 130px → TYPE (room category)
+            · 170px → ROOM (unit identifier + price)
+            · 14 ×  1fr → days
+       */}
       <div className="overflow-x-auto -mx-2 px-2">
-        <div className="min-w-[820px]">
+        <div className="min-w-[960px]">
           {/* Header row — DOW + day number per column.
               In Bulk edit mode, each header becomes a clickable column
               selector:
                 · plain click → replace selection with this column
                 · ⌘/Ctrl+click → add (or remove) this column
                 · Shift+click → range from last anchor to here */}
-          <div className="grid mb-1" style={{ gridTemplateColumns: `180px repeat(${DAYS}, 1fr)` }}>
+          <div className="grid mb-1" style={{ gridTemplateColumns: `130px 170px repeat(${DAYS}, 1fr)` }}>
+            <div className="text-[10px] font-bold uppercase tracking-wide text-gray-400 py-2 px-2 border-b border-gray-200">
+              {t('manage.type', 'Type')}
+            </div>
             <div className="text-[10px] font-bold uppercase tracking-wide text-gray-400 py-2 px-2 border-b border-gray-200">
               {t('manage.room', 'Room')}
             </div>
@@ -6955,10 +6967,19 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
 
           {/* Rows — one per VIRTUAL room (1 per physical unit for non-dorm
               multi-unit rooms, 1 per room otherwise). In bulk mode,
-              clicking a cell toggles it in the selection. */}
-          {virtualRooms.map(vroom => {
+              clicking a cell toggles it in the selection.
+
+              We compute `firstOfGroup` so the TYPE cell only renders
+              the label on the first row of each room (BABA-001 shows
+              "Executive Suite", BABA-002..004 leave the cell blank).
+              Same-type but different rooms (e.g. Nanda dorm + HQ dorm)
+              keep their own label because the group key is the real
+              room.id, not the type string. */}
+          {virtualRooms.map((vroom, vIdx) => {
             const room = vroom              // alias for clarity in older code below
             const isUnitRow = vroom.unit_index != null
+            const prev = vIdx > 0 ? virtualRooms[vIdx - 1] : null
+            const firstOfGroup = !prev || prev.id !== vroom.id
             return (
             <div
               key={vroom.virtual_id}
@@ -6967,16 +6988,39 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
               } ${
                 dragOverRoomId === room.id ? 'ring-2 ring-inset ring-ocean bg-ocean/10' : ''
               }`}
-              style={{ gridTemplateColumns: `180px repeat(${DAYS}, 1fr)` }}
+              style={{ gridTemplateColumns: `130px 170px repeat(${DAYS}, 1fr)` }}
               onDragOver={!bulkMode && !isUnitRow ? (e) => handleRowDragOver(e, room.id) : undefined}
               onDragLeave={!bulkMode && !isUnitRow ? handleRowDragLeave : undefined}
               onDrop={!bulkMode && !isUnitRow ? (e) => handleRowDrop(e, room.id) : undefined}
             >
-              {/* Room info — type label on top, unit identifier below.
+              {/* TYPE column — only rendered on the first row of a
+                  multi-unit group so the column reads like a category
+                  index instead of repeating "Executive Suite × 4".
+                  Subsequent unit rows show a subtle vertical guide line
+                  on the left edge to signal continuation. */}
+              <div
+                className={`py-1.5 px-2 border-b border-r border-gray-100 flex flex-col justify-center bg-deep/[0.015] text-left ${
+                  isUnitRow ? 'pl-3' : ''
+                }`}
+              >
+                {firstOfGroup ? (
+                  <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-ocean/80 truncate leading-tight">
+                    {prettyLabel(room.type) || t('manage.untyped', 'Untyped')}
+                  </span>
+                ) : (
+                  // Continuation indicator — thin vertical line + chevron
+                  // so the eye groups the unit rows together visually.
+                  <span className="text-gray-200 text-[11px] select-none" aria-hidden="true">
+                    ↳
+                  </span>
+                )}
+              </div>
+
+              {/* Room info — unit identifier + price.
                   Layout chosen 2026-06-05 with David: he needs to see
-                  BOTH the room type (Super King, Double, etc.) AND the
-                  specific unit ID (BABA-001) at a glance to manage
-                  4 BABAs distinctly. */}
+                  the specific unit ID (BABA-001) at a glance to manage
+                  4 BABAs distinctly. Type moved to its own column
+                  2026-06-08 for scan-ability. */}
               <div
                 role="button"
                 tabIndex={0}
@@ -6991,20 +7035,14 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                   ? t('manage.timeline_select_row', 'Click to select all future cells in this row')
                   : (isUnitRow ? '' : t('manage.drag_to_reorder', 'Drag to reorder rooms — this order applies on the OTA + every reception view'))}
               >
-                {/* Type badge — small, muted, always visible. Shows the
-                    bookable category (Super King / Double / Single / etc.)
-                    in human-readable form. */}
-                <div className="text-[9px] font-semibold uppercase tracking-[0.08em] text-ocean/70 truncate leading-tight">
-                  {prettyLabel(room.type) || t('manage.untyped', 'Untyped')}
-                </div>
                 {/* Unit identifier — primary label. BABA-001 / Hibrakim-002
                     for multi-unit, just the name for single-unit & dorms. */}
-                <div className="text-sm font-bold text-deep truncate flex items-center gap-1 leading-tight mt-0.5">
+                <div className="text-sm font-bold text-deep truncate flex items-center gap-1 leading-tight">
                   {!bulkMode && !isUnitRow && <span className="text-gray-300 select-none text-xs" aria-hidden="true">⋮⋮</span>}
                   {vroom.display_name}
                 </div>
                 {/* Price line — kept compact under the name */}
-                <div className="text-[10px] text-gray-500 leading-tight">
+                <div className="text-[10px] text-gray-500 leading-tight mt-0.5">
                   ${Number(room.base_price || 0).toFixed(0)}/night
                   {!isUnitRow && ` · ×${room.quantity}`}
                 </div>
