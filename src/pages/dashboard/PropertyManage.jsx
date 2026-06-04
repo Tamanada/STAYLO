@@ -2969,11 +2969,16 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                     const ShapeBtn = ({ shape, icon, label }) => (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); setShape(z, shape) }}
-                        className={`inline-flex items-center justify-center w-9 h-9 rounded-md text-base font-bold transition-all cursor-pointer ${
+                        onPointerDown={(e) => {
+                          e.stopPropagation()
+                          e.preventDefault()
+                          setShape(z, shape)
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className={`inline-flex items-center justify-center w-10 h-10 rounded-md text-lg font-bold transition-all cursor-pointer ${
                           currentShape === shape
                             ? 'bg-ocean text-white shadow-inner'
-                            : 'text-white/80 hover:bg-white/15'
+                            : 'text-white/80 hover:bg-white/15 active:bg-white/25'
                         }`}
                         title={label}
                       >
@@ -2995,8 +3000,13 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                         <span className="w-px h-6 bg-white/20 mx-1" />
                         <button
                           type="button"
-                          onClick={(e) => { e.stopPropagation(); handleZoneDelete(z.id) }}
-                          className="inline-flex items-center justify-center w-9 h-9 rounded-md text-lg font-bold text-sunset hover:bg-sunset/15 cursor-pointer transition-all"
+                          onPointerDown={(e) => {
+                            e.stopPropagation()
+                            e.preventDefault()
+                            handleZoneDelete(z.id)
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center justify-center w-10 h-10 rounded-md text-xl font-bold text-sunset hover:bg-sunset/15 active:bg-sunset/25 cursor-pointer transition-all"
                           title={t('manage.plan_zone_delete', 'Remove this zone')}
                         >
                           ×
@@ -3014,8 +3024,13 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                       boxShadow: '0 0 0 2px rgba(255,255,255,0.7)',
                     }}
                   />
-                  {/* 4 corner handles. NO setPointerCapture so the
-                      canvas's onPointerMove keeps receiving the drag. */}
+                  {/* 4 corner handles — generous 32px hit-target wrapper
+                      around a visible 20px white square. The hit area
+                      extends BEYOND the shape's bounding box so the
+                      user can grab a corner without competing with the
+                      drag surface underneath. e.stopPropagation prevents
+                      the drag surface (sibling) or canvas from
+                      receiving the same pointerdown. */}
                   {['nw', 'ne', 'sw', 'se'].map(handle => {
                     const hx = handle.includes('w') ? left : (cx + w / 2)
                     const hy = handle.includes('n') ? top  : (cy + h / 2)
@@ -3026,14 +3041,19 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                         key={handle}
                         onPointerDown={(e) => {
                           if (e.button !== 0) return
+                          e.stopPropagation()
                           startResize(e, z, handle)
                         }}
-                        className={`absolute w-4 h-4 -translate-x-1/2 -translate-y-1/2 rounded-sm bg-white border-2 border-ocean shadow-lg ${cursor} z-10`}
+                        className={`absolute flex items-center justify-center ${cursor} z-30`}
                         style={{
                           left: `${hx}%`, top: `${hy}%`,
+                          width: 32, height: 32,
+                          marginLeft: -16, marginTop: -16,
                           touchAction: 'none',
                         }}
-                      />
+                      >
+                        <span className="block w-5 h-5 rounded-sm bg-white border-2 border-ocean shadow-lg pointer-events-none" />
+                      </div>
                     )
                   })}
                 </>
