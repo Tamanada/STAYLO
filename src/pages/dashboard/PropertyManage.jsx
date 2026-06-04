@@ -2223,8 +2223,13 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
    *  the zone state nor the DB are touched, so the click leaves the
    *  selection intact and the floater visible/clickable. Above
    *  threshold, the move/resize updates apply normally and the final
-   *  state is persisted on release. */
-  function runDrag(downEvt, zone, canvasRect, mode, handle) {
+   *  state is persisted on release.
+   *
+   *  onClickNoMove (optional) — fires when the gesture ends without
+   *  crossing the 4px threshold. Used by dorm zones to open the bed
+   *  sub-plan modal on a tap, while still supporting full move/resize
+   *  via the same pointerdown. */
+  function runDrag(downEvt, zone, canvasRect, mode, handle, onClickNoMove) {
     const startCx = zone.cx, startCy = zone.cy
     const startW  = zone.w,  startH  = zone.h
     const originX = downEvt.clientX, originY = downEvt.clientY
@@ -2275,11 +2280,15 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
       window.removeEventListener('pointercancel', up)
-      // Only persist when an actual drag happened. A pure click leaves
-      // the floater + handles in place; no save, no onRefresh, no
-      // re-render cascade — so the next click on a floater button
-      // hits the button reliably.
-      if (!hasMoved) return
+      if (!hasMoved) {
+        // Pure click → fire the tap-handler if provided (e.g. dorm
+        // modal opener) and leave state untouched. The floater +
+        // handles remain visible because selectedZoneId was already
+        // set in startMove/startResize.
+        onClickNoMove?.()
+        return
+      }
+      // Real drag → persist the new state.
       setZones(zs => {
         supabase.from('properties')
           .update({ floor_plan_zones: zs })
@@ -2950,23 +2959,18 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
           const shapeIcon = z.shape === 'circle' ? '●' : z.shape === 'square' ? '■' : '▭'
           return (
             <div key={`overlay-${z.id}`} className="contents">
-              {/* Drag surface — covers the shape. Selection happens on
-                  pointerdown (BEFORE the click event) so it can't be
-                  beaten by the canvas's onClick which deselects.
-                  stopPropagation on both pointerdown and click belt-
-                  and-suspenders against bubbling. No pointer capture
-                  so pointermove/up still bubble to the canvas's
-                  drag handlers. */}
+              {/* Drag surface — covers the shape. Pointerdown selects
+                  AND arms a drag with the 4px threshold. For dorms,
+                  the tap-without-drag opens the bed sub-plan modal;
+                  for non-dorms, the tap just selects (no save). */}
               <div
                 onPointerDown={(e) => {
                   if (e.button !== 0) return
                   e.stopPropagation()
-                  if (dorm) {
-                    setDormModal(assigned)
-                    return
-                  }
                   setSelectedZoneId(z.id)
-                  startMove(e, z)
+                  const rect = e.currentTarget.closest('[data-plan-canvas]')?.getBoundingClientRect()
+                  if (!rect) return
+                  runDrag(e, z, rect, 'move', null, dorm ? () => setDormModal(assigned) : null)
                 }}
                 onClick={(e) => { e.stopPropagation() }}
                 className="absolute cursor-move"
@@ -3033,10 +3037,17 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                           pointerEvents: 'auto',
                         }}
                       >
-                        <ShapeBtn shape="rect"   icon="▭" label={t('manage.plan_shape_rect',   'Rectangle')} />
-                        <ShapeBtn shape="square" icon="■" label={t('manage.plan_shape_square', 'Square')} />
-                        <ShapeBtn shape="circle" icon="●" label={t('manage.plan_shape_circle', 'Circle')} />
-                        <span className="w-px h-6 bg-white/20 mx-1" />
+                        {/* Shape selectors only for non-dorm rooms. A dorm
+                            zone IS the dorm room itself; the bed grid is
+                            inside the sub-plan modal. */}
+                        {!dorm && (
+                          <>
+                            <ShapeBtn shape="rect"   icon="▭" label={t('manage.plan_shape_rect',   'Rectangle')} />
+                            <ShapeBtn shape="square" icon="■" label={t('manage.plan_shape_square', 'Square')} />
+                            <ShapeBtn shape="circle" icon="●" label={t('manage.plan_shape_circle', 'Circle')} />
+                            <span className="w-px h-6 bg-white/20 mx-1" />
+                          </>
+                        )}
                         <button
                           type="button"
                           onPointerDown={(e) => {
@@ -3206,13 +3217,20 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         )}
       </div>
 
-      {/* Dorm sub-plan modal — opens when a dorm marker is clicked. */}
+      {/* Dorm sub-plan modal — opens when a dorm zone is clicked. */}
       {dormModal && (
         <DormSubPlanModal
           room={dormModal}
           onClose={() => setDormModal(null)}
           onRemove={() => {
-            // Remove the dorm's single marker from the main plan
+            // V7 — delete the zone assigned to this dorm room.
+            const v7Zone = zones.find(z => !z?.deleted && z?.assigned_room_id === dormModal.id)
+            if (v7Zone) {
+              handleZoneDelete(v7Zone.id)
+            }
+            // V5 backward compat — also clear any legacy marker
+            // position for this room. No-op if the property has
+            // migrated fully to V7 zones.
             const positions = localPositions[dormModal.id] || []
             if (positions[0]) handleMarkerRemove(dormModal.id, positions[0].index)
           }}
