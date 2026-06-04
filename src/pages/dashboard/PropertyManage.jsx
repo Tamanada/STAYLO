@@ -3037,17 +3037,13 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                           pointerEvents: 'auto',
                         }}
                       >
-                        {/* Shape selectors only for non-dorm rooms. A dorm
-                            zone IS the dorm room itself; the bed grid is
-                            inside the sub-plan modal. */}
-                        {!dorm && (
-                          <>
-                            <ShapeBtn shape="rect"   icon="▭" label={t('manage.plan_shape_rect',   'Rectangle')} />
-                            <ShapeBtn shape="square" icon="■" label={t('manage.plan_shape_square', 'Square')} />
-                            <ShapeBtn shape="circle" icon="●" label={t('manage.plan_shape_circle', 'Circle')} />
-                            <span className="w-px h-6 bg-white/20 mx-1" />
-                          </>
-                        )}
+                        {/* Shape selectors apply to every zone, dorms
+                            included — a dorm room can be rectangular,
+                            square, or round depending on the building. */}
+                        <ShapeBtn shape="rect"   icon="▭" label={t('manage.plan_shape_rect',   'Rectangle')} />
+                        <ShapeBtn shape="square" icon="■" label={t('manage.plan_shape_square', 'Square')} />
+                        <ShapeBtn shape="circle" icon="●" label={t('manage.plan_shape_circle', 'Circle')} />
+                        <span className="w-px h-6 bg-white/20 mx-1" />
                         <button
                           type="button"
                           onPointerDown={(e) => {
