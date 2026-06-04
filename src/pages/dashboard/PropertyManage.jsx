@@ -2982,9 +2982,12 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                       Flips BELOW the zone if there's no room above so the
                       buttons never escape the canvas. */}
                   {(() => {
-                    const showBelow = top < 18
+                    // Bigger vertical clearance (24px) so the floater
+                    // never overlaps with the corner handle wrappers
+                    // (which are 32×32px hit areas at each corner).
+                    const showBelow = top < 22
                     const anchorY = showBelow ? (cy + h / 2) : top
-                    const yTransform = showBelow ? 'calc(0% + 10px)' : 'calc(-100% - 10px)'
+                    const yTransform = showBelow ? 'calc(0% + 24px)' : 'calc(-100% - 24px)'
                     const currentShape = z.shape || 'rect'
                     const ShapeBtn = ({ shape, icon, label }) => (
                       <button
@@ -3007,7 +3010,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                     )
                     return (
                       <div
-                        className="absolute flex items-center gap-0.5 px-1.5 py-1.5 rounded-xl bg-deep text-white shadow-2xl ring-1 ring-white/10 z-20"
+                        className="absolute flex items-center gap-0.5 px-1.5 py-1.5 rounded-xl bg-deep text-white shadow-2xl ring-1 ring-white/10 z-40"
                         style={{
                           left: `${cx}%`, top: `${anchorY}%`,
                           transform: `translate(-50%, ${yTransform})`,
