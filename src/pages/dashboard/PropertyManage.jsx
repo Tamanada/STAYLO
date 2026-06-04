@@ -5538,7 +5538,7 @@ function CalendarTab({ rooms, onRefresh }) {
 // Renders via the project's Modal component so it lives at body
 // root — no more clipping by the grid's overflow-x container.
 // ============================================
-function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenReward, onRemoveReward, t }) {
+function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenReward, onRemoveReward, onUnitToggle, unitBlockedSet, t }) {
   // Local form state — initialized from the row when the modal
   // opens, then edited freely. Save builds a delta payload.
   const [price, setPrice] = useState('')
@@ -5553,6 +5553,12 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
     setNote(row?.internal_note || '')
     setIsBlocked(!!row?.is_blocked)
   }, [cell.roomId, cell.iso, row?.price_override, row?.min_stay, row?.internal_note, row?.is_blocked])
+  // Per-unit blocks — set of unit_indexes (1..quantity) that are
+  // currently overridden as blocked. Multi-unit rooms with
+  // quantity > 1 and not a dorm get a row of unit-specific toggles.
+  const dormType = String(room?.type || '').toLowerCase()
+  const isDorm = dormType === 'dormitory' || dormType === 'capsule'
+  const showPerUnit = (room?.quantity || 1) > 1 && !isDorm
 
   if (!room) return null
 
@@ -5659,7 +5665,52 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
               ⛔ {t('manage.blocked', 'Blocked')}
             </button>
           </div>
+          {isBlocked && (
+            <p className="text-[10px] text-deep/40 mt-1.5 italic">
+              {t('manage.editor_block_all_hint', 'Blocks every unit of this room for this date. Use the per-unit toggles below to block only some.')}
+            </p>
+          )}
         </div>
+
+        {/* Per-unit status — only for multi-unit non-dorm rooms.
+            Each chip writes immediately to room_availability at
+            (room_id, date, unit_index) via onUnitToggle. */}
+        {showPerUnit && (
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wide text-deep/60 mb-1.5">
+              🛏️ {t('manage.per_unit_status', 'Per-unit status')} <span className="text-deep/30 font-normal normal-case">({totalStock} {totalStock > 1 ? 'units' : 'unit'})</span>
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: totalStock }, (_, i) => i + 1).map(unitIndex => {
+                const unitBlocked = !!unitBlockedSet?.has(unitIndex) || isBlocked
+                const lockedByType = isBlocked   // can't unblock individual when type-wide is blocked
+                return (
+                  <button
+                    key={unitIndex}
+                    type="button"
+                    disabled={lockedByType || saving}
+                    onClick={() => onUnitToggle?.(unitIndex, !unitBlocked)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border-2 ${
+                      lockedByType
+                        ? 'bg-sunset/10 border-sunset/30 text-sunset/70 cursor-not-allowed'
+                        : unitBlocked
+                          ? 'bg-gradient-to-r from-sunset to-sunset/80 text-white border-transparent shadow-sm'
+                          : 'bg-libre/10 border-libre/30 text-libre hover:bg-libre/20'
+                    }`}
+                    title={lockedByType
+                      ? t('manage.editor_per_unit_locked', 'Locked — un-block the room above first')
+                      : (unitBlocked ? t('manage.editor_per_unit_blocked', 'Click to un-block') : t('manage.editor_per_unit_available', 'Click to block this unit'))}
+                  >
+                    {unitBlocked ? '⛔' : '✓'} {room.name} {unitIndex}
+                  </button>
+                )
+              })}
+            </div>
+            <p className="text-[10px] text-deep/40 mt-1.5">
+              {t('manage.editor_per_unit_hint', 'Click any unit to toggle its block. Saves immediately — no need to use the Save button.')}
+            </p>
+          </div>
+        )}
 
         {/* Price input */}
         <div>
@@ -6010,6 +6061,11 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
     const d = new Date(); d.setHours(0, 0, 0, 0); return d
   })
   const [availByRoom, setAvailByRoom] = useState({})
+  // unitBlocksByCell[roomId][date] = Set of unit_indexes (>0) that are
+  // explicitly blocked. Used by CellEditorModal to render the per-unit
+  // status chips and by the cell rendering to subtract from the
+  // displayed available_count.
+  const [unitBlocksByCell, setUnitBlocksByCell] = useState({})
   const [loading, setLoading] = useState(true)
   // Bulk edit — same idea as Monthly view but cells span room × date.
   // Each entry is "${room_id}|${yyyy-mm-dd}" so the user can mix rooms
@@ -6138,6 +6194,9 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
 
   // Pulled out of the useEffect so bulk-edit handlers can call it after
   // writing rows to refresh the on-screen grid.
+  // Splits the rows into:
+  //   availByRoom[roomId][date]      → the room_unit_index=0 row (type-default)
+  //   unitBlocksByCell[roomId][date] → Set of unit indexes (>0) blocked
   async function refreshAvail() {
     if (rooms.length === 0) { setLoading(false); return }
     setLoading(true)
@@ -6151,12 +6210,63 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
       .gte('date', startISO)
       .lte('date', endISO)
     const map = {}
+    const unitMap = {}
     ;(data || []).forEach(row => {
-      if (!map[row.room_id]) map[row.room_id] = {}
-      map[row.room_id][row.date] = row
+      const unitIdx = Number(row.room_unit_index || 0)
+      if (unitIdx === 0) {
+        if (!map[row.room_id]) map[row.room_id] = {}
+        map[row.room_id][row.date] = row
+      } else if (row.is_blocked) {
+        if (!unitMap[row.room_id]) unitMap[row.room_id] = {}
+        if (!unitMap[row.room_id][row.date]) unitMap[row.room_id][row.date] = new Set()
+        unitMap[row.room_id][row.date].add(unitIdx)
+      }
     })
     setAvailByRoom(map)
+    setUnitBlocksByCell(unitMap)
     setLoading(false)
+  }
+
+  /** Toggle the block state of a specific room unit on a given date.
+   *  Writes to room_availability at (room_id, date, unit_index).
+   *  - blocked=true  → upsert is_blocked=true (insert if missing)
+   *  - blocked=false → either delete the row entirely OR update is_blocked=false.
+   *    We delete to keep the table lean: no row means "no override", falls
+   *    back to the type-default.
+   */
+  async function handleUnitToggle(roomId, iso, unitIndex, blocked) {
+    if (blocked) {
+      // Upsert per-unit block row.
+      const { error: upErr } = await supabase
+        .from('room_availability')
+        .upsert(
+          {
+            room_id: roomId,
+            date: iso,
+            room_unit_index: unitIndex,
+            is_blocked: true,
+            available_count: 0,   // per-unit row, 1 unit, blocked = 0
+          },
+          { onConflict: 'room_id,date,room_unit_index' }
+        )
+      if (upErr) {
+        alert(`Couldn't block unit: ${upErr.message}`)
+        return
+      }
+    } else {
+      // Delete the override row → falls back to type-default.
+      const { error: delErr } = await supabase
+        .from('room_availability')
+        .delete()
+        .eq('room_id', roomId)
+        .eq('date', iso)
+        .eq('room_unit_index', unitIndex)
+      if (delErr) {
+        alert(`Couldn't unblock unit: ${delErr.message}`)
+        return
+      }
+    }
+    await refreshAvail()
   }
 
   useEffect(() => {
@@ -6959,6 +7069,7 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
         cell={editingCell}
         room={rooms.find(r => r.id === editingCell.roomId)}
         row={availByRoom[editingCell.roomId]?.[editingCell.iso]}
+        unitBlockedSet={unitBlocksByCell[editingCell.roomId]?.[editingCell.iso]}
         saving={saving}
         onClose={() => setEditingCell(null)}
         onSave={async (payload, label) => {
@@ -6973,6 +7084,7 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
             new Set([cellKey(editingCell.roomId, editingCell.iso)])
           )
         }}
+        onUnitToggle={(unitIndex, blocked) => handleUnitToggle(editingCell.roomId, editingCell.iso, unitIndex, blocked)}
         t={t}
       />
     )}
