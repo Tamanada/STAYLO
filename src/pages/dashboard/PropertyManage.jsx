@@ -6067,10 +6067,11 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
   // displayed available_count.
   const [unitBlocksByCell, setUnitBlocksByCell] = useState({})
   // Virtual rooms — expand non-dorm multi-unit rooms into N rows.
-  // BABA × 4 → 4 rows ("BABA 1" / "BABA 2" / "BABA 3" / "BABA 4").
-  // Dorms (type 'dormitory' / 'capsule') stay as ONE row (the per-bed
-  // detail lives in the DormSubPlanModal, not the timeline).
-  // Single-unit rooms unchanged.
+  // BABA × 4 → 4 rows ("BABA-001" / "BABA-002" / "BABA-003" / "BABA-004").
+  // Each row carries `display_name` (the unit-numbered identifier shown
+  // in the timeline) and `unit_index` (1..quantity). Dorms stay as ONE
+  // row (per-bed detail lives in DormSubPlanModal). Single-unit rooms
+  // unchanged.
   const virtualRooms = useMemo(() => {
     const out = []
     for (const r of (rooms || [])) {
@@ -6081,10 +6082,13 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
         out.push({ ...r, unit_index: null, display_name: r.name, virtual_id: r.id })
       } else {
         for (let i = 1; i <= qty; i++) {
+          // Zero-padded 3-digit unit ID: BABA-001 / BABA-002 / …
+          // Wide enough for hostels with up to 999 units of the same type.
+          const padded = String(i).padStart(3, '0')
           out.push({
             ...r,
             unit_index: i,
-            display_name: `${r.name} ${i}`,
+            display_name: `${r.name}-${padded}`,
             virtual_id: `${r.id}#${i}`,
           })
         }
@@ -6892,7 +6896,11 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
               onDragLeave={!bulkMode && !isUnitRow ? handleRowDragLeave : undefined}
               onDrop={!bulkMode && !isUnitRow ? (e) => handleRowDrop(e, room.id) : undefined}
             >
-              {/* Room info — name + default price + total stock. */}
+              {/* Room info — type label on top, unit identifier below.
+                  Layout chosen 2026-06-05 with David: he needs to see
+                  BOTH the room type (Super King, Double, etc.) AND the
+                  specific unit ID (BABA-001) at a glance to manage
+                  4 BABAs distinctly. */}
               <div
                 role="button"
                 tabIndex={0}
@@ -6900,17 +6908,26 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                 onDragStart={!bulkMode && !isUnitRow ? (e) => handleRowDragStart(e, room.id) : undefined}
                 onDragEnd={!bulkMode && !isUnitRow ? handleRowDragEnd : undefined}
                 onClick={bulkMode ? () => selectRoomRow(room.id) : undefined}
-                className={`py-2 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02] text-left transition-all ${
+                className={`py-1.5 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02] text-left transition-all ${
                   bulkMode ? 'cursor-pointer hover:bg-ocean/5' : (isUnitRow ? '' : 'cursor-grab active:cursor-grabbing hover:bg-ocean/5')
                 }`}
                 title={bulkMode
                   ? t('manage.timeline_select_row', 'Click to select all future cells in this row')
                   : (isUnitRow ? '' : t('manage.drag_to_reorder', 'Drag to reorder rooms — this order applies on the OTA + every reception view'))}
               >
-                <div className="text-sm font-bold text-deep truncate flex items-center gap-1.5">
-                  {!bulkMode && !isUnitRow && <span className="text-gray-300 select-none" aria-hidden="true">⋮⋮</span>}
+                {/* Type badge — small, muted, always visible. Shows the
+                    bookable category (Super King / Double / Single / etc.)
+                    in human-readable form. */}
+                <div className="text-[9px] font-semibold uppercase tracking-[0.08em] text-ocean/70 truncate leading-tight">
+                  {prettyLabel(room.type) || t('manage.untyped', 'Untyped')}
+                </div>
+                {/* Unit identifier — primary label. BABA-001 / Hibrakim-002
+                    for multi-unit, just the name for single-unit & dorms. */}
+                <div className="text-sm font-bold text-deep truncate flex items-center gap-1 leading-tight mt-0.5">
+                  {!bulkMode && !isUnitRow && <span className="text-gray-300 select-none text-xs" aria-hidden="true">⋮⋮</span>}
                   {vroom.display_name}
                 </div>
+                {/* Price line — kept compact under the name */}
                 <div className="text-[10px] text-gray-500 leading-tight">
                   ${Number(room.base_price || 0).toFixed(0)}/night
                   {!isUnitRow && ` · ×${room.quantity}`}
