@@ -255,13 +255,14 @@ const STYLES = `
    from the row's bounding rect, so it never gets clipped by the
    overflow:auto on the grid container. STAYLO brand styling: dark
    gradient header, soft white body, brand-coloured chips. */
-.rm-info-pop{position:fixed;z-index:5000;width:1020px;max-width:96vw;background:#fff;border-radius:22px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:auto;animation:rm-pop-in .15s ease-out}
+.rm-info-pop{position:fixed;top:140px;right:20px;bottom:20px;z-index:5000;width:480px;max-width:38vw;background:#fff;border-radius:22px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:auto;display:flex;flex-direction:column;animation:rm-pop-in .15s ease-out}
+@media (max-width:1100px){.rm-info-pop{width:420px;max-width:46vw}}
 .rm-info-pop.pinned{box-shadow:0 28px 70px -10px rgba(255,107,0,.4),0 10px 30px -8px rgba(255,60,180,.2);border-color:rgba(255,107,0,.4)}
 /* Three-column body — receptionist sees everything in one glance.
    Packages got the WIDEST middle column so name + description + price
    are all on one line. David: "agrandir les polices, infos lisibles
    en un clin d'oeil". */
-.rm-ip-cols{display:grid;grid-template-columns:200px 280px 1fr;gap:12px;padding:14px 16px 14px;max-height:68vh;overflow-y:auto}
+.rm-ip-cols{display:flex;flex-direction:column;gap:14px;padding:14px 16px 18px;flex:1;overflow-y:auto}
 .rm-ip-col{display:flex;flex-direction:column;gap:11px;min-width:0}
 @keyframes rm-pop-in{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
 .rm-ip-header{padding:16px 18px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative;cursor:grab;user-select:none}
@@ -811,78 +812,27 @@ function SidebarItem({ icon, label, badge, badgeClass, active, onClick }) {
 // steals hover from the row itself — the row continues to drive the
 // open/close state.
 function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, onMouseEnter, onMouseLeave }) {
-  // Drag-to-reposition. The first time the user mouses down on the
-  // header, the popover becomes "pinned" — it stops auto-closing on
-  // row mouseleave and only goes away when the user clicks ×.
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-  const [dragging, setDragging] = useState(false)
-  const [pinned, setPinned] = useState(false)
-  const dragStartRef = useRef(null)
-
-  function handleDragStart(e) {
-    if (e.button !== 0) return
-    // Don't start a drag if the user clicked the close button.
-    if (e.target.closest('.rm-ip-close')) return
-    e.preventDefault()
-    setDragging(true)
-    if (!pinned) {
-      setPinned(true)
-      onPin?.()
-    }
-    dragStartRef.current = {
-      mouseX: e.clientX,
-      mouseY: e.clientY,
-      offX: dragOffset.x,
-      offY: dragOffset.y,
-    }
-    const onMove = ev => {
-      const s = dragStartRef.current
-      if (!s) return
-      setDragOffset({
-        x: s.offX + (ev.clientX - s.mouseX),
-        y: s.offY + (ev.clientY - s.mouseY),
-      })
-    }
-    const onUp = () => {
-      dragStartRef.current = null
-      setDragging(false)
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
-    }
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
-  }
+  // V8 — fixed right-side panel. Position is set entirely by CSS
+  // (.rm-info-pop top/right/bottom). x/y/side props are accepted for
+  // backward compat with existing call sites but unused. Drag-to-move
+  // is gone; the popover is stationary and only updates content as
+  // the receptionist hovers different room rows.
 
   const amenities = Array.isArray(room.amenities) ? room.amenities : []
-  // Map amenity keys → human labels via AMENITY_META so "wifi" reads
-  // as "Free WiFi" and "breakfast_included" → its proper label.
-  // Falls back to the prettified key for any unknown amenity so the
-  // chip still renders.
   const amenityChips = amenities.map(k => {
     const meta = AMENITY_META[k]
     return { key: k, label: meta?.label || prettyLabel(k), Icon: meta?.icon || null }
   })
 
-  // "Side" lets the parent flip the popover left/right depending on
-  // where the row sits in the viewport (so we never get cut off on
-  // the right edge of large monitors). dragOffset shifts it once the
-  // user grabs the header — additive to the anchor position.
-  const style = { left: x + dragOffset.x, top: y + dragOffset.y }
   return (
     <div
-      className={`rm-info-pop${pinned ? ' pinned' : ''}`}
-      style={style}
-      data-side={side}
+      className="rm-info-pop"
       onMouseEnter={onMouseEnter}
-      onMouseLeave={pinned ? undefined : onMouseLeave}
+      onMouseLeave={onMouseLeave}
     >
-      <div
-        className={`rm-ip-header${dragging ? ' dragging' : ''}`}
-        onMouseDown={handleDragStart}
-        title="Drag to reposition · click ✕ to close"
-      >
+      <div className="rm-ip-header" title="Room details">
         <div className="rm-ip-eyebrow">Room details</div>
-        <div className="rm-ip-title">{room.name}</div>
+        <div className="rm-ip-title">{room.display_name || room.name}</div>
         <div className="rm-ip-sub">
           {room.bed_type && <>🛏️ {prettyLabel(room.bed_type)} bed</>}
           {room.max_guests > 0 && <span>· 👤 max {room.max_guests}</span>}
@@ -894,8 +844,6 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
             <span className="rm-ip-price-net">net ${(Number(room.base_price) * 0.9).toFixed(0)}</span>
           </div>
         )}
-        {/* Drag hint + close — only visible when popover is interactive */}
-        {!pinned && <span className="rm-ip-drag-hint">⇕ drag</span>}
         <button
           type="button"
           className="rm-ip-close"
@@ -1200,35 +1148,16 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
   const closeTimerRef = useRef(null)
 
   function handleRowEnter(e, room) {
+    // V8 — fixed right-side panel. We don't compute x/y any more; the
+    // popover docks itself via CSS. Just track which room is currently
+    // hovered so the content updates as the receptionist scans rows.
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
-    // If the popover is pinned and we hover the SAME room, do nothing.
-    // If we hover a different room, swap the anchor (drop the pin so
-    // the new popover positions next to the new row).
-    if (pinned && hovered?.room?.id === room.id) return
-    const rowRect = e.currentTarget.getBoundingClientRect()
-    const POPOVER_W = 1020
-    const GAP = 12
-    const roomColW = 200
-    let x = rowRect.left + roomColW + GAP
-    let side = 'right'
-    if (x + POPOVER_W > window.innerWidth - 8) {
-      x = Math.max(8, rowRect.left + roomColW - POPOVER_W - GAP)
-      side = 'left'
-    }
-    let y = rowRect.top
-    const POPOVER_MAX_H = 480
-    if (y + POPOVER_MAX_H > window.innerHeight - 8) {
-      y = Math.max(8, window.innerHeight - POPOVER_MAX_H - 8)
-    }
-    setHovered({ room, x, y, side })
-    setPinned(false)
+    setHovered({ room })
   }
   function handleRowLeave() {
-    // Pinned = don't auto-close. The popover only goes away when the
-    // user clicks ✕ or hovers a different room.
-    if (pinned) return
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
-    closeTimerRef.current = setTimeout(() => { setHovered(null); closeTimerRef.current = null }, 80)
+    // No auto-close. The right-side panel persists until the user
+    // explicitly clicks ✕ or presses Esc, so they can read it without
+    // racing the cursor.
   }
   function cancelClose() {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
@@ -1352,28 +1281,10 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
 
   function openFor(room, el) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
-    if (pinned && hovered?.room?.id === room.id) return
-    const r = el.getBoundingClientRect()
-    const POPOVER_W = 1020
-    const GAP = 12
-    let x = r.right + GAP
-    let side = 'right'
-    if (x + POPOVER_W > window.innerWidth - 8) {
-      x = Math.max(8, r.left - POPOVER_W - GAP)
-      side = 'left'
-    }
-    let y = r.top
-    const POPOVER_MAX_H = 480
-    if (y + POPOVER_MAX_H > window.innerHeight - 8) {
-      y = Math.max(8, window.innerHeight - POPOVER_MAX_H - 8)
-    }
-    setHovered({ room, x, y, side })
-    setPinned(false)
+    setHovered({ room })
   }
   function closeSoon() {
-    if (pinned) return
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
-    closeTimerRef.current = setTimeout(() => { setHovered(null); closeTimerRef.current = null }, 80)
+    // V8 — fixed right-side panel, no auto-close.
   }
   function cancelClose() {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
