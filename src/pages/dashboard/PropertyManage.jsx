@@ -2809,7 +2809,17 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         data-plan-canvas
         onDragOver={handlePlanDragOver}
         onDrop={handleZoneDrop}
-        onClick={() => setSelectedZoneId(null)}
+        onClick={(e) => {
+          // Only deselect when the click hits the canvas itself —
+          // not when it bubbled up from a child (zone, handle, floater).
+          // Children either have e.stopPropagation() in their own
+          // handlers OR are non-interactive (pointer-events:none, so
+          // the click goes through to the canvas with e.target === the
+          // child, not the canvas).
+          if (e.target === e.currentTarget) {
+            setSelectedZoneId(null)
+          }
+        }}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         className="relative w-full rounded-2xl border-2 border-dashed border-ocean/30 bg-white overflow-hidden select-none"
@@ -2831,7 +2841,14 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
             % coordinate system as the data. viewBox 0..100 matches the
             stored vertices directly, no per-render math needed. */}
         {/* V7 shape zones — rect / circle, with optional legacy polygon
-            support for properties still on V6 polygon vertices. */}
+            support for properties still on V6 polygon vertices.
+            CRITICAL: pointer-events:none MUST be on each child SVG
+            element, not just the parent. The default SVG pointer-events
+            value is `visiblePainted` which intercepts clicks on the
+            painted fill regardless of the parent's CSS. Without this,
+            every click on a zone shape bubbled to the canvas onClick
+            and deselected the zone before its drag surface (a sibling
+            HTML div above the SVG) could process the click. */}
         {zones.filter(z => !z.deleted).length > 0 && (
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none"
@@ -2856,6 +2873,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                     className={colour}
                     strokeWidth="0.4"
                     vectorEffect="non-scaling-stroke"
+                    style={{ pointerEvents: 'none' }}
                   />
                 )
               }
@@ -2869,6 +2887,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                     className={colour}
                     strokeWidth="0.4"
                     vectorEffect="non-scaling-stroke"
+                    style={{ pointerEvents: 'none' }}
                   />
                 )
               }
@@ -2881,6 +2900,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
                   className={colour}
                   strokeWidth="0.4"
                   vectorEffect="non-scaling-stroke"
+                  style={{ pointerEvents: 'none' }}
                 />
               )
             })}
