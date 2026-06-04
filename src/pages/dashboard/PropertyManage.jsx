@@ -5576,6 +5576,16 @@ function CalendarTab({ rooms, onRefresh }) {
 // root — no more clipping by the grid's overflow-x container.
 // ============================================
 function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenReward, onRemoveReward, onUnitToggle, unitBlockedSet, t }) {
+  // Per-unit mode — set when the user clicked a unit-specific row
+  // (BABA-002) rather than a type-level row. In per-unit mode the
+  // Available/Blocked toggle writes ONLY to that physical unit's
+  // override row; the type-default is untouched.
+  // 2026-06-08: removed the "PER-UNIT STATUS" chips section — now
+  // that each unit has its own row in the Timeline, the chips were
+  // redundant and confusing.
+  const isUnit = cell.unitIndex != null
+  const unitBlocked = isUnit && !!unitBlockedSet?.has(cell.unitIndex)
+
   // Local form state — initialized from the row when the modal
   // opens, then edited freely. Save builds a delta payload.
   const [price, setPrice] = useState('')
@@ -5583,28 +5593,30 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
   const [note, setNote] = useState('')
   const [isBlocked, setIsBlocked] = useState(false)
   // Re-seed local state every time the cell changes (e.g. user
-  // closes and opens another cell quickly).
+  // closes and opens another cell quickly). In per-unit mode the
+  // is_blocked source-of-truth is the unit's override row, not the
+  // type-default row.
   useEffect(() => {
     setPrice(row?.price_override != null ? String(row.price_override) : '')
     setMinStay(row?.min_stay != null ? String(row.min_stay) : '')
     setNote(row?.internal_note || '')
-    setIsBlocked(!!row?.is_blocked)
-  }, [cell.roomId, cell.iso, row?.price_override, row?.min_stay, row?.internal_note, row?.is_blocked])
-  // Per-unit blocks — set of unit_indexes (1..quantity) that are
-  // currently overridden as blocked. Multi-unit rooms with
-  // quantity > 1 and not a dorm get a row of unit-specific toggles.
-  const dormType = String(room?.type || '').toLowerCase()
-  const isDorm = dormType === 'dormitory' || dormType === 'capsule'
-  const showPerUnit = (room?.quantity || 1) > 1 && !isDorm
+    setIsBlocked(isUnit ? unitBlocked : !!row?.is_blocked)
+  }, [cell.roomId, cell.iso, cell.unitIndex, row?.price_override, row?.min_stay, row?.internal_note, row?.is_blocked, unitBlocked, isUnit])
 
   if (!room) return null
 
   const dateDisplay = new Date(cell.iso + 'T00:00:00').toLocaleDateString(undefined, {
     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
   })
-  const totalStock = room.quantity || 1
+  // Header name. For a unit row we show "BABA-002" so the hotelier
+  // knows EXACTLY which physical unit they're touching.
+  const headerName = isUnit
+    ? `${room.name}-${String(cell.unitIndex).padStart(3, '0')}`
+    : room.name
+  const totalStock = isUnit ? 1 : (room.quantity || 1)
   const stock = isBlocked ? 0
-    : (row && typeof row.available_count === 'number' ? row.available_count : totalStock)
+    : (isUnit ? 1
+      : (row && typeof row.available_count === 'number' ? row.available_count : totalStock))
   const previewPrice = price.trim() !== '' && Number(price) > 0 ? Number(price) : Number(room.base_price || 0)
   const previewNet = previewPrice * 0.9
   const specials = Array.isArray(row?.specials) ? row.specials : []
@@ -5616,9 +5628,24 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
     : 'bg-gradient-to-r from-libre to-libre/80 text-white'
 
   function handleSave() {
-    // Build payload of CHANGED fields only — passing every field
-    // every time would clobber columns we didn't touch (perk,
-    // promo_label, promo_pct etc. handled by RewardModal).
+    // Per-unit mode: the modal is scoped to ONE physical unit. Only the
+    // Block/Available toggle is actionable — everything else (price,
+    // min-stay, rewards, note) is type-level and not exposed in this
+    // mode. Route through onUnitToggle which writes to the per-unit
+    // override row (room_id, date, unit_index) without touching the
+    // type-default. The other 3 BABAs stay exactly as they were.
+    if (isUnit) {
+      if (isBlocked !== unitBlocked) {
+        onUnitToggle?.(cell.unitIndex, isBlocked)
+      }
+      onClose()
+      return
+    }
+
+    // Type-level mode — original flow. Build payload of CHANGED fields
+    // only — passing every field every time would clobber columns we
+    // didn't touch (perk, promo_label, promo_pct etc. handled by
+    // RewardModal).
     const payload = {}
     const newPrice = price.trim() === '' ? null : Number(price)
     if (newPrice !== null && (!isFinite(newPrice) || newPrice <= 0)) {
@@ -5660,9 +5687,11 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
             <div className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/50">
               {dateDisplay}
             </div>
-            <div className="text-base font-bold text-white truncate mt-0.5">{room.name}</div>
+            <div className="text-base font-bold text-white truncate mt-0.5">{headerName}</div>
             <div className="text-[11px] text-white/40 mt-0.5">
-              {t('manage.default_price', 'Default')}: ${Number(room.base_price || 0).toFixed(0)}/night · ×{totalStock}
+              {isUnit
+                ? `${t('manage.default_price', 'Default')}: $${Number(room.base_price || 0).toFixed(0)}/night · 1 ${t('manage.unit', 'unit')}`
+                : `${t('manage.default_price', 'Default')}: $${Number(room.base_price || 0).toFixed(0)}/night · ×${totalStock}`}
             </div>
           </div>
           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm whitespace-nowrap tracking-wide ${statusPillClass}`}>
@@ -5702,53 +5731,33 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
               ⛔ {t('manage.blocked', 'Blocked')}
             </button>
           </div>
-          {isBlocked && (
+          {isBlocked && !isUnit && (
             <p className="text-[10px] text-deep/40 mt-1.5 italic">
-              {t('manage.editor_block_all_hint', 'Blocks every unit of this room for this date. Use the per-unit toggles below to block only some.')}
+              {t('manage.editor_block_all_hint_v2', 'Blocks every unit of this room for this date. To block only one unit, click its specific row in the Timeline.')}
+            </p>
+          )}
+          {isBlocked && isUnit && (
+            <p className="text-[10px] text-deep/40 mt-1.5 italic">
+              {t('manage.editor_block_unit_hint', 'Blocks {{name}} only. The other units of this room stay bookable.', { name: headerName })}
             </p>
           )}
         </div>
 
-        {/* Per-unit status — only for multi-unit non-dorm rooms.
-            Each chip writes immediately to room_availability at
-            (room_id, date, unit_index) via onUnitToggle. */}
-        {showPerUnit && (
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wide text-deep/60 mb-1.5">
-              🛏️ {t('manage.per_unit_status', 'Per-unit status')} <span className="text-deep/30 font-normal normal-case">({totalStock} {totalStock > 1 ? 'units' : 'unit'})</span>
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {Array.from({ length: totalStock }, (_, i) => i + 1).map(unitIndex => {
-                const unitBlocked = !!unitBlockedSet?.has(unitIndex) || isBlocked
-                const lockedByType = isBlocked   // can't unblock individual when type-wide is blocked
-                return (
-                  <button
-                    key={unitIndex}
-                    type="button"
-                    disabled={lockedByType || saving}
-                    onClick={() => onUnitToggle?.(unitIndex, !unitBlocked)}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border-2 ${
-                      lockedByType
-                        ? 'bg-sunset/10 border-sunset/30 text-sunset/70 cursor-not-allowed'
-                        : unitBlocked
-                          ? 'bg-gradient-to-r from-sunset to-sunset/80 text-white border-transparent shadow-sm'
-                          : 'bg-libre/10 border-libre/30 text-libre hover:bg-libre/20'
-                    }`}
-                    title={lockedByType
-                      ? t('manage.editor_per_unit_locked', 'Locked — un-block the room above first')
-                      : (unitBlocked ? t('manage.editor_per_unit_blocked', 'Click to un-block') : t('manage.editor_per_unit_available', 'Click to block this unit'))}
-                  >
-                    {unitBlocked ? '⛔' : '✓'} {room.name} {unitIndex}
-                  </button>
-                )
-              })}
-            </div>
-            <p className="text-[10px] text-deep/40 mt-1.5">
-              {t('manage.editor_per_unit_hint', 'Click any unit to toggle its block. Saves immediately — no need to use the Save button.')}
-            </p>
+        {/* Price / min-stay / rewards / note are TYPE-LEVEL fields —
+            they always apply to every unit of the room type. In per-
+            unit mode (BABA-002 cell click) we hide them and surface a
+            short hint pointing the hotelier to the right surface to
+            edit those (Monthly view, where the full room type is
+            scoped as a single entity). Avoids the trap where someone
+            sets a price thinking it'll apply only to BABA-002. */}
+        {isUnit && (
+          <div className="text-[11px] text-deep/50 italic px-3 py-2.5 rounded-2xl bg-ocean/[0.04] border border-ocean/10">
+            {t('manage.editor_unit_note', 'Price, rewards, and notes apply to all {{type}} units. Edit those from the Monthly view.', { type: room.name })}
           </div>
         )}
 
+        {!isUnit && (
+        <>
         {/* Price input */}
         <div>
           <label className="block text-xs font-bold uppercase tracking-wide text-deep/60 mb-1.5">
@@ -5851,6 +5860,8 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
             className="w-full px-4 py-2.5 rounded-2xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean resize-none"
           />
         </div>
+        </>
+        )}
       </div>
 
       {/* Footer — Save commits all changes at once */}
@@ -7040,10 +7051,14 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                 // Bulk mode keeps the existing select-toggle behaviour;
                 // outside bulk mode every click opens the editor anchored
                 // on this cell so the hotelier can change anything inline.
+                // unitIndex on the editing cell: null for type-level rows
+                // (single-unit rooms, dorms), 1..N for unit-specific rows
+                // (BABA-002 etc.). The modal uses it to scope the Save
+                // to the per-unit override row instead of the type-default.
                 const onCellClick = !isPast
                   ? (bulkMode
                       ? () => toggleCell(room.id, iso)
-                      : () => setEditingCell({ roomId: room.id, iso }))
+                      : () => setEditingCell({ roomId: room.id, iso, unitIndex: vroom.unit_index }))
                   : undefined
 
                 // Selection ring + cursor cue
