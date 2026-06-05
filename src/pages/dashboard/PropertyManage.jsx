@@ -3282,6 +3282,29 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
 // ============================================
 // ROOMS TAB
 // ============================================
+// Small two-state pill switch used in optional section headers (Long-stay,
+// Hourly / day-use). When OFF the parent disables the section fieldset
+// AND coerces the saved rate values to null. Keeps the typed values in
+// state so the hotelier can flip back without re-entering anything.
+function SectionToggle({ enabled, onChange, labelOn = 'Active', labelOff = 'Inactive' }) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={enabled}
+      onClick={() => onChange(!enabled)}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all ${
+        enabled
+          ? 'bg-libre/15 text-libre border border-libre/30'
+          : 'bg-gray-100 text-gray-500 border border-gray-200 hover:border-gray-300'
+      }`}
+    >
+      <span className={`w-3 h-3 rounded-full transition-colors ${enabled ? 'bg-libre' : 'bg-gray-400'}`} />
+      {enabled ? labelOn : labelOff}
+    </button>
+  )
+}
+
 function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackages }) {
   const { t } = useTranslation()
   const [showForm, setShowForm] = useState(false)
@@ -3321,6 +3344,16 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
   // Stored separately because handleSave's regular flow doesn't touch media.
   const [copiedMedia, setCopiedMedia] = useState({ photo_urls: [], video_urls: [] })
 
+  // Section toggles — UI-only state that lets the hotelier flip the
+  // Long-stay / Hourly blocks ON or OFF without losing the field
+  // values they typed. When OFF the inputs are visually disabled and
+  // handleSave coerces every rate in that section to null, regardless
+  // of the typed value. Default = ON when at least one field is
+  // populated (preserves behaviour for rooms that already had rates),
+  // OFF for fresh blank forms.
+  const [longStayEnabled, setLongStayEnabled] = useState(false)
+  const [hourlyEnabled,   setHourlyEnabled]   = useState(false)
+
   // Helper — keeps the blank form definition in one place so we don't
   // forget to add new fields in two places.
   const blankRoomForm = () => ({
@@ -3346,6 +3379,11 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
     setForm(blankRoomForm())
     setCopiedMedia({ photo_urls: [], video_urls: [] })
     setLinkedPkgs({})
+    // Fresh room → optional sections start OFF. The hotelier opts in
+    // by flipping the toggle, which avoids spurious zero/null writes
+    // for standard nightly-only rooms.
+    setLongStayEnabled(false)
+    setHourlyEnabled(false)
     setShowForm(true)
   }
 
@@ -3424,6 +3462,12 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       day_use_max_hours:   room.day_use_max_hours || 6,
       unit_numbers_raw:    Array.isArray(room.unit_numbers) ? room.unit_numbers.join(', ') : '',
     })
+    // Seed the section toggles from the room's current state — ON when
+    // the room already has a value in the corresponding rate column,
+    // OFF otherwise. Lets the hotelier flip a section off without
+    // losing the typed values.
+    setLongStayEnabled(room.monthly_rate != null && room.monthly_rate !== '')
+    setHourlyEnabled((room.hourly_rate != null && room.hourly_rate !== '') || (room.day_use_rate != null && room.day_use_rate !== ''))
     // Pre-populate linked packages from the decorated room (with qty + dates).
     const seed = {}
     for (const p of (room._packages || [])) {
@@ -3519,15 +3563,21 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
       extra_bed_adults_allowed: !!form.extra_bed_adults_allowed,
       communicating_rooms_available: !!form.communicating_rooms_available,
       communicating_with_room_id:    form.communicating_with_room_id || null,
-      monthly_rate:        form.monthly_rate ? Number(form.monthly_rate) : null,
-      monthly_min_nights:  Number(form.monthly_min_nights) || 28,
-      hourly_rate:         form.hourly_rate ? Number(form.hourly_rate) : null,
-      hourly_min_hours:    Number(form.hourly_min_hours) || 2,
-      hourly_max_hours:    Number(form.hourly_max_hours) || 8,
-      day_use_rate:        form.day_use_rate ? Number(form.day_use_rate) : null,
-      day_use_max_hours:   Number(form.day_use_max_hours) || 6,
-      weekly_discount_pct: Number(form.weekly_discount_pct) || 0,
-      weekly_min_nights:   Number(form.weekly_min_nights) || 7,
+      // Long-stay rate columns are gated on the section toggle —
+      // OFF wipes every related field to null so the OTA / booking
+      // engine never half-applies a stale monthly_rate the hotelier
+      // intended to disable. The typed values are preserved in `form`
+      // state, so flipping the toggle back ON restores them.
+      monthly_rate:        longStayEnabled && form.monthly_rate ? Number(form.monthly_rate) : null,
+      monthly_min_nights:  longStayEnabled ? (Number(form.monthly_min_nights) || 28) : null,
+      // Same pattern for the Hourly / day-use block.
+      hourly_rate:         hourlyEnabled && form.hourly_rate ? Number(form.hourly_rate) : null,
+      hourly_min_hours:    hourlyEnabled ? (Number(form.hourly_min_hours) || 2) : null,
+      hourly_max_hours:    hourlyEnabled ? (Number(form.hourly_max_hours) || 8) : null,
+      day_use_rate:        hourlyEnabled && form.day_use_rate ? Number(form.day_use_rate) : null,
+      day_use_max_hours:   hourlyEnabled ? (Number(form.day_use_max_hours) || 6) : null,
+      weekly_discount_pct: longStayEnabled ? (Number(form.weekly_discount_pct) || 0) : 0,
+      weekly_min_nights:   longStayEnabled ? (Number(form.weekly_min_nights) || 7) : 7,
       // Parse the bulk textarea: split on commas OR newlines, trim, drop blanks,
       // dedupe while preserving the order the hotelier typed them in.
       unit_numbers: (() => {
@@ -3858,7 +3908,7 @@ function RoomEditFormCard({
           <select
             onChange={e => copyFromRoom(e.target.value)}
             defaultValue=""
-            className="w-full px-3 py-2 rounded-lg border border-electric/20 bg-white text-sm text-deep focus:outline-none focus:ring-2 focus:ring-electric/30"
+            className="w-full px-3 py-2 rounded-lg border border-electric/20 bg-white text-sm text-deep focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
           >
             <option value="">— {t('manage.copy_from_none', 'Start blank')} —</option>
             {rooms.map(r => (
@@ -4048,7 +4098,7 @@ function RoomEditFormCard({
                 </label>
                 <input type="number" min={1} max={5} value={form.extra_bed_max_qty}
                   onChange={e => setForm(f => ({ ...f, extra_bed_max_qty: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
@@ -4057,7 +4107,7 @@ function RoomEditFormCard({
                 <input type="number" min={0} step="0.01" value={form.extra_bed_price}
                   onChange={e => setForm(f => ({ ...f, extra_bed_price: e.target.value }))}
                   placeholder="e.g. 15"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
@@ -4146,9 +4196,17 @@ function RoomEditFormCard({
         </div>
 
         {/* ───── Long-stay rates (monthly + weekly tiers) ───── */}
-        <div className="sm:col-span-2 p-4 rounded-xl bg-libre/5 border border-libre/15">
+        <div className={`sm:col-span-2 p-4 rounded-xl bg-libre/5 border border-libre/15 transition-opacity ${longStayEnabled ? '' : 'opacity-60'}`}>
           <h4 className="text-sm font-bold text-deep flex items-center gap-2 mb-1">
             🗓️ {t('manage.long_stay_title', 'Long-stay rates')}
+            {/* Active / inactive switch — the section is the source of
+                truth, the typed values are preserved while OFF. */}
+            <SectionToggle
+              enabled={longStayEnabled}
+              onChange={setLongStayEnabled}
+              labelOn={t('manage.section_active', 'Active')}
+              labelOff={t('manage.section_inactive', 'Inactive')}
+            />
             <span className="text-[11px] text-gray-400 font-normal ml-auto">
               {t('manage.long_stay_hint', 'Optional. Catches digital nomads + monthly travellers.')}
             </span>
@@ -4157,7 +4215,7 @@ function RoomEditFormCard({
             {t('manage.long_stay_desc',
               'Set a monthly rate for stays of ≥ N nights. STAYLO auto-applies the better of (daily × nights) vs (monthly_rate × nights / 30) — guests with long stays pay less, you fill the room.')}
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <fieldset disabled={!longStayEnabled} className="grid grid-cols-2 gap-3 disabled:cursor-not-allowed">
             <div>
               <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
                 {t('manage.monthly_rate', 'Monthly rate (USD per 30 nights)')}
@@ -4165,7 +4223,7 @@ function RoomEditFormCard({
               <input type="number" min={0} step="0.01" value={form.monthly_rate}
                 onChange={e => setForm(f => ({ ...f, monthly_rate: e.target.value }))}
                 placeholder={t('manage.monthly_rate_eg', 'e.g. 600 (= $20/night)')}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30" />
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
@@ -4173,7 +4231,7 @@ function RoomEditFormCard({
               </label>
               <input type="number" min={14} max={90} value={form.monthly_min_nights}
                 onChange={e => setForm(f => ({ ...f, monthly_min_nights: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30" />
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
@@ -4182,7 +4240,7 @@ function RoomEditFormCard({
               <input type="number" min={0} max={80} value={form.weekly_discount_pct}
                 onChange={e => setForm(f => ({ ...f, weekly_discount_pct: e.target.value }))}
                 placeholder="0 = off"
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30" />
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
@@ -4190,10 +4248,10 @@ function RoomEditFormCard({
               </label>
               <input type="number" min={3} max={28} value={form.weekly_min_nights}
                 onChange={e => setForm(f => ({ ...f, weekly_min_nights: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30" />
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-libre/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
             </div>
-          </div>
-          {form.monthly_rate && form.base_price && (
+          </fieldset>
+          {longStayEnabled && form.monthly_rate && form.base_price && (
             <p className="text-[11px] text-libre mt-2 italic">
               ✓ Monthly = ~${(Number(form.monthly_rate) / 30).toFixed(0)}/night
               ({Math.round((1 - (Number(form.monthly_rate) / 30) / Number(form.base_price)) * 100)}% off your daily rate of ${form.base_price})
@@ -4202,9 +4260,15 @@ function RoomEditFormCard({
         </div>
 
         {/* ───── Hourly / day-use rental ───── */}
-        <div className="sm:col-span-2 p-4 rounded-xl bg-electric/5 border border-electric/15">
+        <div className={`sm:col-span-2 p-4 rounded-xl bg-electric/5 border border-electric/15 transition-opacity ${hourlyEnabled ? '' : 'opacity-60'}`}>
           <h4 className="text-sm font-bold text-deep flex items-center gap-2 mb-1">
             🕐 {t('manage.hourly_title', 'Hourly / day-use rental')}
+            <SectionToggle
+              enabled={hourlyEnabled}
+              onChange={setHourlyEnabled}
+              labelOn={t('manage.section_active', 'Active')}
+              labelOff={t('manage.section_inactive', 'Inactive')}
+            />
             <span className="text-[11px] text-gray-400 font-normal ml-auto">
               {t('manage.hourly_hint', 'Optional. Day-use guests, layovers, short stays.')}
             </span>
@@ -4213,7 +4277,7 @@ function RoomEditFormCard({
             {t('manage.hourly_desc',
               'Set a flat per-hour price (and/or a half-day block rate). When a guest books for fewer hours than your day-use cap, the cheaper of (hourly × hours) vs day_use_rate wins automatically.')}
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <fieldset disabled={!hourlyEnabled} className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
                 {t('manage.hourly_rate', 'Hourly rate (USD)')}
@@ -4221,7 +4285,7 @@ function RoomEditFormCard({
               <input type="number" min={0} step="0.01" value={form.hourly_rate}
                 onChange={e => setForm(f => ({ ...f, hourly_rate: e.target.value }))}
                 placeholder={t('manage.hourly_rate_eg', 'e.g. 8 ($/hour)')}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
@@ -4230,7 +4294,7 @@ function RoomEditFormCard({
                 </label>
                 <input type="number" min={1} max={24} value={form.hourly_min_hours}
                   onChange={e => setForm(f => ({ ...f, hourly_min_hours: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
@@ -4238,7 +4302,7 @@ function RoomEditFormCard({
                 </label>
                 <input type="number" min={1} max={24} value={form.hourly_max_hours}
                   onChange={e => setForm(f => ({ ...f, hourly_max_hours: e.target.value }))}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
               </div>
             </div>
             <div>
@@ -4248,7 +4312,7 @@ function RoomEditFormCard({
               <input type="number" min={0} step="0.01" value={form.day_use_rate}
                 onChange={e => setForm(f => ({ ...f, day_use_rate: e.target.value }))}
                 placeholder={t('manage.day_use_rate_eg', 'e.g. 35 (covers up to 6h)')}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
             </div>
             <div>
               <label className="block text-[10px] font-bold uppercase text-gray-400 mb-0.5">
@@ -4256,10 +4320,10 @@ function RoomEditFormCard({
               </label>
               <input type="number" min={2} max={12} value={form.day_use_max_hours}
                 onChange={e => setForm(f => ({ ...f, day_use_max_hours: e.target.value }))}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30" />
+                className="w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-electric/30 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed" />
             </div>
-          </div>
-          {(form.hourly_rate || form.day_use_rate) && (
+          </fieldset>
+          {hourlyEnabled && (form.hourly_rate || form.day_use_rate) && (
             <p className="text-[11px] text-electric mt-2 italic">
               ✓ Available as hourly{form.hourly_rate ? ` from $${form.hourly_rate}/h (min ${form.hourly_min_hours}h)` : ''}
               {form.day_use_rate ? ` · day-use $${form.day_use_rate} for ${form.day_use_max_hours}h` : ''}
