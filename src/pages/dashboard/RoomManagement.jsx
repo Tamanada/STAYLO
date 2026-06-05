@@ -165,7 +165,13 @@ const STYLES = `
 
 /* Timeline */
 .rm-tl-header{display:flex;background:white;border-bottom:1px solid #E8E0D8;position:sticky;top:0;z-index:2}
-.rm-tl-room-col{width:200px;flex-shrink:0;padding:10px 14px;font-size:11px;font-weight:700;color:#636E72;text-transform:uppercase;letter-spacing:.05em;border-right:1px solid #E8E0D8}
+/* TYPE column — split out of room info 2026-06-08 so the receptionist
+   can scan categories down a single line and click the label to
+   collapse / expand every room of that type. Width tuned to fit
+   "EXECUTIVE SUITE" without truncation but stay narrow enough that
+   the date grid still gets the bulk of the viewport. */
+.rm-tl-type-col{width:140px;flex-shrink:0;padding:10px 12px;font-size:11px;font-weight:700;color:#636E72;text-transform:uppercase;letter-spacing:.05em;border-right:1px solid #E8E0D8}
+.rm-tl-room-col{width:160px;flex-shrink:0;padding:10px 14px;font-size:11px;font-weight:700;color:#636E72;text-transform:uppercase;letter-spacing:.05em;border-right:1px solid #E8E0D8}
 .rm-tl-dates{flex:1;display:flex}
 .rm-tl-day{flex:1;min-width:60px;text-align:center;padding:6px 4px;border-right:1px solid #F0EDE8;font-size:11px}
 .rm-tl-day.today{background:#FFF5E6}
@@ -174,7 +180,17 @@ const STYLES = `
 .rm-tl-day.today .rm-tl-date{color:#FF6B00}
 .rm-tl-row{display:flex;border-bottom:1px solid #F0EDE8;position:relative;height:44px;align-items:center;background:white}
 .rm-tl-row:hover{background:#FAFAF8}
-.rm-tl-room-info{width:200px;flex-shrink:0;padding:0 14px;border-right:1px solid #E8E0D8;display:flex;flex-direction:column;justify-content:center;height:100%;overflow:hidden}
+.rm-tl-type-info{width:140px;flex-shrink:0;padding:0 12px;border-right:1px solid #E8E0D8;display:flex;flex-direction:column;justify-content:center;height:100%;overflow:hidden;background:rgba(15,30,45,0.015)}
+.rm-tl-type-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0984E3;cursor:pointer;user-select:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-tl-type-label:hover{color:#FF6B00}
+.rm-tl-type-cont{color:#D1D5DB;font-size:11px;user-select:none}
+/* Collapsed group stub row — single row spanning both fixed cols +
+   the grid. Clicking it re-expands the type. */
+.rm-tl-row-collapsed{display:flex;border-bottom:1px solid #F0EDE8;height:36px;align-items:center;background:rgba(9,132,227,0.04);cursor:pointer}
+.rm-tl-row-collapsed:hover{background:rgba(9,132,227,0.10)}
+.rm-tl-collapsed-info{display:flex;align-items:center;gap:6px;padding:0 12px;flex:1;font-size:11px;color:#636E72}
+.rm-tl-collapsed-info strong{color:#0984E3;text-transform:uppercase;letter-spacing:.06em;font-size:10px;font-weight:700}
+.rm-tl-room-info{width:160px;flex-shrink:0;padding:0 14px;border-right:1px solid #E8E0D8;display:flex;flex-direction:column;justify-content:center;height:100%;overflow:hidden}
 .rm-tl-room-num{font-weight:700;font-size:13px;color:#2D3436;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 .rm-tl-room-type{font-size:11px;color:#636E72;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
 .rm-tl-room-num{font-size:14px;font-weight:700;color:#1A1F2E}
@@ -1064,6 +1080,21 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
 
 // ── Timeline view ──
 function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, onPick, onCheckIn }) {
+  // Per-type collapse — clicking the TYPE label hides every row of
+  // that category and replaces them with a single click-to-expand stub.
+  // Component-local state intentionally: a stale "Dormitory collapsed"
+  // shouldn't persist across visits where the dorms are exactly what
+  // the receptionist came to check.
+  const [collapsedTypes, setCollapsedTypes] = useState(() => new Set())
+  function toggleType(typeStr) {
+    const t = String(typeStr || '').toLowerCase()
+    setCollapsedTypes(prev => {
+      const next = new Set(prev)
+      if (next.has(t)) next.delete(t)
+      else next.add(t)
+      return next
+    })
+  }
   // Expand each non-dorm multi-unit room (e.g. Hibrakim × 3, HQ double
   // bed × 9) into N virtual rows so the receptionist sees one row per
   // physical unit. Dorms stay as one row (per-bed detail lives in the
@@ -1076,12 +1107,13 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
   const virtualRooms = useMemo(() => {
     const out = []
     for (const r of (rooms || [])) {
-      const type = String(r.type || '').toLowerCase()
-      const dorm = type === 'dormitory' || type === 'capsule'
-      const qty  = Math.max(1, Number(r.quantity) || 1)
-      if (dorm || qty <= 1) {
+      const qty = Math.max(1, Number(r.quantity) || 1)
+      if (qty <= 1) {
         out.push({ ...r, unit_index: null, display_name: r.name, virtual_id: r.id })
       } else {
+        // Dorms expand into per-bed rows too (Nanda × 18 → Nanda 1..18).
+        // The dorm guard used to keep them as a single row, which hid
+        // 50 of David's 51 beds in the Reception Timeline. 2026-06-08.
         for (let i = 1; i <= qty; i++) {
           out.push({
             ...r,
@@ -1120,14 +1152,13 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
       byRoom.set(b.room_id, arr)
     })
 
-    // Distribute each room's bookings across its virtual rows.
+    // Distribute each room's bookings across its virtual rows. Dorms
+    // expand the same way as multi-unit rooms now (see virtualRooms
+    // above) so dorm bookings deserve the same per-bed distribution.
     for (const [roomId, list] of byRoom.entries()) {
       const parent = rooms.find(r => r.id === roomId)
-      const type = String(parent?.type || '').toLowerCase()
-      const dorm = type === 'dormitory' || type === 'capsule'
-      const qty  = Math.max(1, Number(parent?.quantity) || 1)
-      if (dorm || qty <= 1) {
-        // All bookings on the single row.
+      const qty = Math.max(1, Number(parent?.quantity) || 1)
+      if (qty <= 1) {
         m.set(roomId, list)
         continue
       }
@@ -1199,9 +1230,36 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
     setHovered(null)
   }
 
+  // Build the visible row list: drop every row whose type is in
+  // collapsedTypes EXCEPT for one stub-per-type that the user can
+  // click to re-expand. Also pre-compute total count + first-of-group
+  // flags so the renderer doesn't recompute them inline.
+  const typeCount = new Map()
+  for (const vr of virtualRooms) {
+    const t = String(vr.type || '').toLowerCase()
+    typeCount.set(t, (typeCount.get(t) || 0) + 1)
+  }
+  const visibleRows = []
+  const emittedCollapseStub = new Set()
+  let prevId = null
+  for (const vr of virtualRooms) {
+    const t = String(vr.type || '').toLowerCase()
+    if (collapsedTypes.has(t)) {
+      if (!emittedCollapseStub.has(t)) {
+        visibleRows.push({ _kind: 'collapsed', type: t, label: vr.type, count: typeCount.get(t) || 0 })
+        emittedCollapseStub.add(t)
+      }
+      prevId = vr.id
+      continue
+    }
+    visibleRows.push({ _kind: 'row', vr, firstOfGroup: vr.id !== prevId })
+    prevId = vr.id
+  }
+
   return (
     <>
       <div className="rm-tl-header">
+        <div className="rm-tl-type-col">Type</div>
         <div className="rm-tl-room-col">Room</div>
         <div className="rm-tl-dates">
           {dates.map((d, i) => {
@@ -1215,7 +1273,25 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
           })}
         </div>
       </div>
-      {virtualRooms.map(room => {
+      {visibleRows.map((entry, ridx) => {
+        if (entry._kind === 'collapsed') {
+          // One-row stub spanning the full width — click to re-expand.
+          return (
+            <div
+              key={`col-${entry.type}-${ridx}`}
+              className="rm-tl-row-collapsed"
+              onClick={() => toggleType(entry.label)}
+              title={`Show ${entry.count} ${entry.label} rooms`}
+            >
+              <div className="rm-tl-collapsed-info">
+                <span>▸</span>
+                <strong>{entry.label || 'Untyped'}</strong>
+                <span>· {entry.count} hidden — click to expand</span>
+              </div>
+            </div>
+          )
+        }
+        const room = entry.vr
         const reservations = resByRoom.get(room.virtual_id) || []
         return (
           <div
@@ -1224,6 +1300,23 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
             onMouseEnter={e => handleRowEnter(e, room)}
             onMouseLeave={handleRowLeave}
           >
+            {/* TYPE cell — label on the first row of each room group
+                (BABA-001 / Hibrakim-001 / Nanda-001…), continuation
+                glyph on the rest. Click the label to collapse every
+                row of this type into the stub above. */}
+            <div className="rm-tl-type-info">
+              {entry.firstOfGroup ? (
+                <span
+                  className="rm-tl-type-label"
+                  onClick={(e) => { e.stopPropagation(); toggleType(room.type) }}
+                  title={`Click to collapse all ${room.type} rooms`}
+                >
+                  {room.type || 'Untyped'}
+                </span>
+              ) : (
+                <span className="rm-tl-type-cont" aria-hidden="true">↳</span>
+              )}
+            </div>
             <div className="rm-tl-room-info">
               <div className="rm-tl-room-num">{room.display_name}</div>
               <div className="rm-tl-room-type">{room.type}</div>
