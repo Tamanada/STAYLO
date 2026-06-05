@@ -842,6 +842,7 @@ export default function RoomManagement() {
                 rewardsByRoom={rewardsByRoom}
                 blockedByRoom={blockedByRoom}
                 enrichRoom={enrichRoomForPanel}
+                hoveredRoom={hoveredRoom}
                 onPick={setSelectedRoomEnriched}
                 onHover={setHoveredRoomEnriched}
                 onCheckIn={(room, date) => startWalkIn(room.id, date)} />
@@ -850,6 +851,7 @@ export default function RoomManagement() {
                 packagesByRoom={packagesByRoom}
                 rewardsByRoom={rewardsByRoom}
                 enrichRoom={enrichRoomForPanel}
+                hoveredRoom={hoveredRoom}
                 onPick={setSelectedRoomEnriched}
                 onHover={setHoveredRoomEnriched}
                 onCheckIn={(room) => startWalkIn(room.id)} />
@@ -1163,7 +1165,7 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
 }
 
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, enrichRoom, onPick, onHover, onCheckIn }) {
+function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, enrichRoom, hoveredRoom, onPick, onHover, onCheckIn }) {
   // Per-type collapse — clicking the TYPE label hides every row of
   // that category and replaces them with a single click-to-expand stub.
   // Component-local state intentionally: a stale "Dormitory collapsed"
@@ -1467,14 +1469,20 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
           </div>
         )
       })}
-      {hovered && (
+      {/* Popover reads from the PARENT's hoveredRoom now (passed in as
+          a prop) — the local hovered state was stuck on the first
+          hovered row when the cursor jumped between rows fast enough
+          that the close-timer/cancel-timer race left local state
+          behind. Parent state is updated via setHoveredRoomEnriched
+          which is a clean direct setter, no timer. The key= forces a
+          full remount on room change so React can never serve a
+          stale render. 2026-06-08. */}
+      {hoveredRoom && (
         <RoomInfoPopover
-          room={hovered.room}
-          packages={packagesByRoom?.get(hovered.room.id) || []}
-          rewards={rewardsByRoom?.get(hovered.room.id) || []}
-          x={hovered.x}
-          y={hovered.y}
-          side={hovered.side}
+          key={hoveredRoom.virtual_id || hoveredRoom.id}
+          room={hoveredRoom}
+          packages={packagesByRoom?.get(hoveredRoom.id) || []}
+          rewards={rewardsByRoom?.get(hoveredRoom.id) || []}
           onMouseEnter={cancelClose}
           onMouseLeave={handleRowLeave}
           onClose={closePopover}
@@ -1486,7 +1494,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
 }
 
 // ── Grid view ──
-function GridView({ floorsMap, packagesByRoom, rewardsByRoom, enrichRoom, onPick, onHover }) {
+function GridView({ floorsMap, packagesByRoom, rewardsByRoom, enrichRoom, hoveredRoom, onPick, onHover }) {
   // Same hover popover wiring as Timeline — the card opens it, popover
   // is rendered once at the view root so we don't get N popovers
   // racing each other.
@@ -1539,14 +1547,14 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, enrichRoom, onPick
           </div>
         </section>
       ))}
-      {hovered && (
+      {/* See TimelineView for why this reads from the parent's
+          hoveredRoom prop instead of GridView's local hovered state. */}
+      {hoveredRoom && (
         <RoomInfoPopover
-          room={hovered.room}
-          packages={packagesByRoom?.get(hovered.room.id) || []}
-          rewards={rewardsByRoom?.get(hovered.room.id) || []}
-          x={hovered.x}
-          y={hovered.y}
-          side={hovered.side}
+          key={hoveredRoom.virtual_id || hoveredRoom.id}
+          room={hoveredRoom}
+          packages={packagesByRoom?.get(hoveredRoom.id) || []}
+          rewards={rewardsByRoom?.get(hoveredRoom.id) || []}
           onMouseEnter={cancelClose}
           onMouseLeave={closeSoon}
           onClose={closePopover}
