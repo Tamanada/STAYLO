@@ -6429,33 +6429,46 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
     }
     setSelectedCells(next)
   }
-  // Select all future cells of ONE virtual row — clicking BABA-002's
-  // ROOM box now narrows to that physical unit. (Used to operate on
-  // room.id, which selected all 4 BABA rows at once.)
+  // Toggle ONE virtual row's future cells — first click selects every
+  // future cell on the row, second click (with the row already fully
+  // selected) clears them. Mirrors the column-header toggle's "click
+  // again to deselect" pattern so the user has a single consistent
+  // interaction model across row / column / type clicks.
   function selectVirtualRow(vid) {
     const today = new Date(); today.setHours(0, 0, 0, 0)
+    const rowKeys = []
+    for (const d of dates) {
+      if (d >= today) rowKeys.push(cellKey(vid, isoOf(d)))
+    }
+    if (rowKeys.length === 0) return
     setSelectedCells(prev => {
+      const fullySelected = rowKeys.every(k => prev.has(k))
       const next = new Set(prev)
-      for (const d of dates) {
-        if (d >= today) next.add(cellKey(vid, isoOf(d)))
-      }
+      if (fullySelected) rowKeys.forEach(k => next.delete(k))
+      else               rowKeys.forEach(k => next.add(k))
       return next
     })
   }
-  // Select every virtual row that shares the clicked TYPE — letting the
-  // hotelier scope a bulk action to "all Executive Suites" or "every
-  // dorm bed" with one click on the TYPE column label.
+  // Toggle every virtual row that shares the clicked TYPE — first click
+  // selects all of them ("all Executive Suites" / "every dorm bed"),
+  // second click deselects them. Same fully-selected → wipe logic as
+  // selectVirtualRow above.
   function selectByType(typeStr) {
     const today = new Date(); today.setHours(0, 0, 0, 0)
     const tnorm = String(typeStr || '').toLowerCase()
-    setSelectedCells(prev => {
-      const next = new Set(prev)
-      for (const vr of virtualRooms) {
-        if (String(vr.type || '').toLowerCase() !== tnorm) continue
-        for (const d of dates) {
-          if (d >= today) next.add(cellKey(vr.virtual_id, isoOf(d)))
-        }
+    const typeKeys = []
+    for (const vr of virtualRooms) {
+      if (String(vr.type || '').toLowerCase() !== tnorm) continue
+      for (const d of dates) {
+        if (d >= today) typeKeys.push(cellKey(vr.virtual_id, isoOf(d)))
       }
+    }
+    if (typeKeys.length === 0) return
+    setSelectedCells(prev => {
+      const fullySelected = typeKeys.every(k => prev.has(k))
+      const next = new Set(prev)
+      if (fullySelected) typeKeys.forEach(k => next.delete(k))
+      else               typeKeys.forEach(k => next.add(k))
       return next
     })
   }
