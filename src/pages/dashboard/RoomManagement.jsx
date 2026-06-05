@@ -292,6 +292,44 @@ const STYLES = `
 .rm-info-pop{position:fixed;top:100px;right:20px;bottom:14px;z-index:5000;width:480px;max-width:38vw;background:#fff;border-radius:20px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:auto;display:flex;flex-direction:column;animation:rm-pop-in .15s ease-out}
 @media (max-width:1100px){.rm-info-pop{width:420px;max-width:46vw}}
 .rm-info-pop.pinned{box-shadow:0 28px 70px -10px rgba(255,107,0,.4),0 10px 30px -8px rgba(255,60,180,.2);border-color:rgba(255,107,0,.4)}
+/* ── BookingDetailModal — opens when a reservation bar is clicked.
+   Centered overlay, scrollable body, sticky header + footer. */
+.rm-bdm-overlay{position:fixed;inset:0;z-index:6000;background:rgba(15,30,50,.55);backdrop-filter:blur(6px);display:flex;align-items:flex-start;justify-content:center;padding:36px 16px;overflow-y:auto;animation:rm-pop-in .15s ease-out}
+.rm-bdm-panel{width:100%;max-width:780px;background:#fff;border-radius:18px;box-shadow:0 30px 70px -12px rgba(0,0,0,.45);overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 72px)}
+.rm-bdm-header{padding:18px 22px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;display:flex;align-items:flex-start;gap:14px}
+.rm-bdm-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:rgba(255,255,255,.55);margin-bottom:2px}
+.rm-bdm-title{font-size:22px;font-weight:800;line-height:1.2;color:#fff;margin-bottom:3px}
+.rm-bdm-sub{font-size:12px;color:rgba(255,255,255,.75);font-weight:500}
+.rm-bdm-status{font-size:10px;font-weight:800;letter-spacing:.08em;color:#fff;padding:5px 11px;border-radius:999px;align-self:flex-start;white-space:nowrap}
+.rm-bdm-close{background:rgba(255,255,255,.12);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px;font-weight:700;line-height:1;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.rm-bdm-close:hover{background:rgba(255,255,255,.22)}
+.rm-bdm-body{padding:18px 22px;overflow-y:auto;flex:1}
+.rm-bdm-section{margin-bottom:18px}
+.rm-bdm-section:last-child{margin-bottom:0}
+.rm-bdm-internal{padding-top:14px;border-top:1px dashed #E8E0D8;opacity:.85}
+.rm-bdm-h4{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#1A1F2E;margin:0 0 10px 0;display:flex;align-items:center;gap:8px}
+.rm-bdm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.rm-bdm-cell{padding:8px 11px;border-radius:9px;background:#F8F6F0;border:1px solid #E8E0D8;min-width:0}
+.rm-bdm-cell.wide{grid-column:1 / -1}
+.rm-bdm-cell-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#636E72;font-weight:700;margin-bottom:2px}
+.rm-bdm-cell-value{font-size:13px;line-height:1.3;word-break:break-word}
+.rm-bdm-guests{display:flex;flex-direction:column;gap:8px}
+.rm-bdm-guest{padding:10px 12px;border-radius:11px;background:linear-gradient(135deg,rgba(108,92,231,.05),rgba(9,132,227,.05));border:1px solid rgba(108,92,231,.18)}
+.rm-bdm-guest-head{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
+.rm-bdm-guest-num{font-size:11px;font-weight:700;color:#636E72}
+.rm-bdm-guest-name{font-size:14px;font-weight:800;color:#1A1F2E;flex:1;min-width:0}
+.rm-bdm-pill{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;background:#6C5CE7;color:#fff;padding:2px 7px;border-radius:999px}
+.rm-bdm-pill.nat{background:rgba(9,132,227,.12);color:#0984E3}
+.rm-bdm-pill.child{background:rgba(255,107,0,.12);color:#FF6B00}
+.rm-bdm-guest-meta{display:flex;flex-wrap:wrap;gap:10px;font-size:11.5px;color:#5A6370}
+.rm-bdm-guest-meta code{background:#1A1F2E;color:#fff;padding:1px 5px;border-radius:4px;font-size:10.5px}
+.rm-bdm-loading,.rm-bdm-empty{font-size:12px;color:#9CA3AF;font-style:italic;padding:14px;text-align:center;border-radius:9px;background:#FAFAF8;border:1px dashed #E8E0D8}
+.rm-bdm-footer{padding:14px 22px;border-top:1px solid #E8E0D8;background:#FAFAF8;display:flex;gap:10px;justify-content:flex-end}
+.rm-bdm-btn{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .15s}
+.rm-bdm-btn-secondary{background:transparent;color:#636E72}
+.rm-bdm-btn-secondary:hover{background:#F0EDE8;color:#1A1F2E}
+.rm-bdm-btn-primary{background:linear-gradient(135deg,#FF6B00,#FF3CB4);color:#fff;box-shadow:0 4px 14px -4px rgba(255,60,180,.4)}
+.rm-bdm-btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px -4px rgba(255,60,180,.5)}
 /* Three-column body — receptionist sees everything in one glance.
    Packages got the WIDEST middle column so name + description + price
    are all on one line. David: "agrandir les polices, infos lisibles
@@ -400,6 +438,13 @@ export default function RoomManagement() {
   // exploring. 2026-06-08: David wanted the right panel to update on
   // hover so he can scan room rates without click-click-click.
   const [hoveredRoom, setHoveredRoom] = useState(null)
+  // Booking whose reservation bar was clicked — opens the detailed
+  // BookingDetailModal. Separate from selectedRoom because clicking
+  // an empty cell should still launch the walk-in flow; only the
+  // green/blue bars open the booking modal. 2026-06-08: David asked
+  // "quand je clique sur le bandeau vert David, je souhaite avoir
+  // acces au compte client, a toutes les informations".
+  const [selectedBooking, setSelectedBooking] = useState(null)
   // Date the cursor is currently scrubbing across — drives the
   // popover's "$X/night · Fri Jun 5" header so David can scan across
   // the Timeline and see each date's effective price. Defaults to
@@ -934,6 +979,7 @@ export default function RoomManagement() {
                 onPick={setSelectedRoomEnriched}
                 onHover={setHoveredRoomEnriched}
                 onHoverDate={setHoveredDate}
+                onBookingClick={setSelectedBooking}
                 onCheckIn={(room, date) => startWalkIn(room.id, date, room.unit_index)} />
             ) : view === 'grid' ? (
               <GridView floorsMap={floorsMap}
@@ -990,6 +1036,25 @@ export default function RoomManagement() {
             </>
           )
         })()}
+
+        {/* Booking detail modal — opens when a reservation bar in the
+            Timeline is clicked. Shows everything we know about the
+            guest + the reservation, including the per-guest TM30
+            registry fetched on mount. */}
+        {selectedBooking && (
+          <BookingDetailModal
+            booking={selectedBooking}
+            room={selectedBooking._room || rooms.find(r => r.id === selectedBooking.room_id)}
+            onClose={() => setSelectedBooking(null)}
+            onEdit={(b) => {
+              // For now, "Edit" routes to the same PMSFrontDesk walk-in
+              // surface with the booking's room/date pre-filled. A
+              // dedicated "edit existing reservation" flow is a follow-up.
+              setSelectedBooking(null)
+              startWalkIn(b.room_id, b.check_in)
+            }}
+          />
+        )}
 
         {/* Walk-in flow lives in PMSFrontDesk (mature multi-guest form
             with full TM30 fields). startWalkIn() navigates there with
@@ -1275,7 +1340,7 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
 }
 
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, packagesByRoom, getRewardsFor, blockedByRoom, startDay, dates, todayDate, enrichRoom, hoveredRoom, onPick, onHover, onHoverDate, onCheckIn }) {
+function TimelineView({ rooms, bookings, packagesByRoom, getRewardsFor, blockedByRoom, startDay, dates, todayDate, enrichRoom, hoveredRoom, onPick, onHover, onHoverDate, onBookingClick, onCheckIn }) {
   // Per-type collapse — clicking the TYPE label hides every row of
   // that category and replaces them with a single click-to-expand stub.
   // Component-local state intentionally: a stale "Dormitory collapsed"
@@ -1578,8 +1643,15 @@ function TimelineView({ rooms, bookings, packagesByRoom, getRewardsFor, blockedB
                       left: `calc(${b.startIdx * cellW}% + 2px)`,
                       width: `calc(${(b.endIdx - b.startIdx) * cellW}% - 4px)`,
                     }}
-                    onClick={() => onPick(room)}
-                    title={`${b.guest_name || 'Guest'} · ${b.check_in} → ${b.check_out}`}>
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      // Prefer the full booking detail when a click handler
+                      // is wired; fall back to opening the room status
+                      // panel so older entry points still work.
+                      if (onBookingClick) onBookingClick({ ...b, _room: room })
+                      else onPick(room)
+                    }}
+                    title={`${b.guest_name || 'Guest'} · ${b.check_in} → ${b.check_out} — click for full details`}>
                     {b.guest_name || 'Guest'}
                   </button>
                 )
@@ -2094,6 +2166,213 @@ function Row({ label, value, valueStyle }) {
     <div className="rm-rp-row">
       <span className="rm-rp-label">{label}</span>
       <span className="rm-rp-val" style={valueStyle}>{value}</span>
+    </div>
+  )
+}
+
+// ============================================================================
+// BookingDetailModal — full guest + reservation detail
+// ============================================================================
+// Opens when a receptionist clicks a green/blue reservation bar in the
+// Reception Timeline. Shows everything we know about the booking + its
+// guests in one place so they don't have to bounce between PMSFrontDesk,
+// the side panel, and the walk-in form.
+//
+// Sections (top → bottom):
+//   1. Header — guest name, dates, status, total, payment
+//   2. Stay   — check-in/out, nights, room, adults/children/extra beds
+//   3. Contact — phone, email, special requests
+//   4. Guests + TM30 — per-guest registry from booking_guests
+//   5. Pricing — total / commission / property net
+//   6. Internal — booking_ref, escrow status, created_at
+//
+// Data sources: the booking row itself (passed in) + a lazy fetch of
+// booking_guests rows on mount. Everything else is in-memory already.
+// ============================================================================
+function BookingDetailModal({ booking, room, onClose, onEdit }) {
+  const [guests, setGuests] = useState([])
+  const [guestsLoading, setGuestsLoading] = useState(true)
+
+  useEffect(() => {
+    if (!booking?.id) return
+    let cancelled = false
+    ;(async () => {
+      const { data, error } = await supabase
+        .from('booking_guests')
+        .select('*')
+        .eq('booking_id', booking.id)
+        .order('is_lead', { ascending: false })
+        .order('created_at', { ascending: true })
+      if (cancelled) return
+      if (!error) setGuests(data || [])
+      setGuestsLoading(false)
+    })()
+    return () => { cancelled = true }
+  }, [booking?.id])
+
+  if (!booking) return null
+
+  const nights = Math.max(1, Math.ceil(
+    (new Date(booking.check_out) - new Date(booking.check_in)) / 86400000
+  ))
+  const statusColor = booking.status === 'confirmed' ? '#00B894'
+    : booking.status === 'checked_in' ? '#6C5CE7'
+    : booking.status === 'pending'    ? '#FF6B00'
+    : booking.status === 'cancelled'  ? '#E74C3C'
+    : '#636E72'
+
+  const fmt = (d) => d ? new Date(d + 'T00:00:00').toLocaleDateString(undefined, {
+    weekday: 'short', month: 'short', day: 'numeric', year: 'numeric',
+  }) : '—'
+
+  return (
+    <div className="rm-bdm-overlay" onClick={onClose}>
+      <div className="rm-bdm-panel" onClick={e => e.stopPropagation()}>
+        {/* Header — guest name + dates + status pill */}
+        <div className="rm-bdm-header">
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="rm-bdm-eyebrow">Reservation #{booking.booking_ref || booking.id.slice(0, 8)}</div>
+            <div className="rm-bdm-title">{booking.guest_name || 'Guest'}</div>
+            <div className="rm-bdm-sub">
+              {fmt(booking.check_in)} → {fmt(booking.check_out)} · {nights} {nights === 1 ? 'night' : 'nights'} · {room?.name || '—'}
+            </div>
+          </div>
+          <span className="rm-bdm-status" style={{ background: statusColor }}>
+            {(booking.status || 'unknown').toUpperCase()}
+          </span>
+          <button className="rm-bdm-close" onClick={onClose} title="Close">✕</button>
+        </div>
+
+        {/* Body — scrollable sections */}
+        <div className="rm-bdm-body">
+          {/* Stay block */}
+          <section className="rm-bdm-section">
+            <h4 className="rm-bdm-h4">🛏️ Stay</h4>
+            <div className="rm-bdm-grid">
+              <Cell label="Check-in" value={fmt(booking.check_in)} />
+              <Cell label="Check-out" value={fmt(booking.check_out)} />
+              <Cell label="Adults" value={booking.adults ?? '—'} />
+              <Cell label="Children" value={booking.children ?? '—'} />
+              <Cell label="Extra beds" value={booking.extra_beds_count ?? booking.extra_beds ?? 0} />
+              <Cell label="Room" value={room?.name || booking.room_id?.slice(0, 8) || '—'} />
+            </div>
+          </section>
+
+          {/* Contact */}
+          <section className="rm-bdm-section">
+            <h4 className="rm-bdm-h4">📞 Contact</h4>
+            <div className="rm-bdm-grid">
+              <Cell label="Email"   value={booking.guest_email || '—'} mono />
+              <Cell label="Phone"   value={booking.guest_phone || '—'} mono />
+              {booking.special_requests && (
+                <Cell label="Special requests" value={booking.special_requests} wide />
+              )}
+            </div>
+          </section>
+
+          {/* Pricing */}
+          <section className="rm-bdm-section">
+            <h4 className="rm-bdm-h4">💰 Pricing</h4>
+            <div className="rm-bdm-grid">
+              <Cell label="Total guest pays" value={`$${Number(booking.total_price || 0).toFixed(2)}`} strong />
+              <Cell label="STAYLO commission" value={`$${Number(booking.commission || 0).toFixed(2)}`} />
+              <Cell label="You receive" value={`$${(Number(booking.total_price || 0) - Number(booking.commission || 0)).toFixed(2)}`} strong color="#00B894" />
+              <Cell label="Payment method" value={booking.payment_method || '—'} />
+              {booking.extra_bed_subtotal > 0 && (
+                <Cell label="Extra beds subtotal" value={`$${Number(booking.extra_bed_subtotal).toFixed(2)}`} />
+              )}
+              <Cell label="Currency" value={booking.currency || 'USD'} mono />
+            </div>
+          </section>
+
+          {/* Guests + TM30 */}
+          <section className="rm-bdm-section">
+            <h4 className="rm-bdm-h4">
+              👥 Guests {!guestsLoading && `· ${guests.length}`}
+              {guests.some(g => g.passport_number) && (
+                <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 600, color: '#0984E3', background: 'rgba(9,132,227,.1)', padding: '2px 7px', borderRadius: 999, textTransform: 'uppercase', letterSpacing: '.06em' }}>TM30 ready</span>
+              )}
+            </h4>
+            {guestsLoading ? (
+              <div className="rm-bdm-loading">Loading guest registry…</div>
+            ) : guests.length === 0 ? (
+              <div className="rm-bdm-empty">No guest registry yet. Add via Edit Reservation.</div>
+            ) : (
+              <div className="rm-bdm-guests">
+                {guests.map((g, i) => (
+                  <div key={g.id || i} className="rm-bdm-guest">
+                    <div className="rm-bdm-guest-head">
+                      <span className="rm-bdm-guest-num">
+                        {g.is_lead ? '👤' : g.is_child ? '👶' : '👤'} {i + 1}
+                      </span>
+                      <span className="rm-bdm-guest-name">
+                        {[g.first_name, g.last_name].filter(Boolean).join(' ') || '(unnamed)'}
+                      </span>
+                      {g.is_lead && <span className="rm-bdm-pill">LEAD</span>}
+                      {g.nationality && <span className="rm-bdm-pill nat">{g.nationality}</span>}
+                      {g.is_child && <span className="rm-bdm-pill child">CHILD</span>}
+                    </div>
+                    <div className="rm-bdm-guest-meta">
+                      {g.passport_number && (
+                        <span>🛂 {g.travel_doc_type || 'Passport'} <code>{g.passport_number}</code></span>
+                      )}
+                      {g.date_of_birth && <span>🎂 {fmt(g.date_of_birth)}</span>}
+                      {g.sex && <span>{g.sex}</span>}
+                      {g.thailand_arrival_date && (
+                        <span>✈️ Arrived TH {fmt(g.thailand_arrival_date)}{g.thailand_port_of_entry ? ` · ${g.thailand_port_of_entry}` : ''}</span>
+                      )}
+                      {g.visa_type && (
+                        <span>📋 {g.visa_type}{g.visa_number ? ` · ${g.visa_number}` : ''}</span>
+                      )}
+                      {g.checkin_status && (
+                        <span style={{ color: g.checkin_status === 'checked_in' ? '#00B894' : '#636E72' }}>
+                          {g.checkin_status === 'checked_in' ? '✓ Checked in' : g.checkin_status}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Internal — booking metadata */}
+          <section className="rm-bdm-section rm-bdm-internal">
+            <h4 className="rm-bdm-h4">⚙️ Internal</h4>
+            <div className="rm-bdm-grid">
+              <Cell label="Booking ref" value={booking.booking_ref || '—'} mono />
+              <Cell label="ID" value={booking.id.slice(0, 13) + '…'} mono />
+              <Cell label="Created" value={booking.created_at ? new Date(booking.created_at).toLocaleString() : '—'} />
+              <Cell label="Escrow" value={booking.escrow_status || '—'} />
+              {booking.release_reason && <Cell label="Release reason" value={booking.release_reason} />}
+              {booking.communicating_rooms_requested && <Cell label="Communicating rooms" value="✓ requested" />}
+            </div>
+          </section>
+        </div>
+
+        {/* Footer actions */}
+        <div className="rm-bdm-footer">
+          <button className="rm-bdm-btn rm-bdm-btn-secondary" onClick={onClose}>Close</button>
+          {onEdit && (
+            <button className="rm-bdm-btn rm-bdm-btn-primary" onClick={() => onEdit(booking)}>
+              ✏️ Edit Reservation
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Cell({ label, value, mono, strong, color, wide }) {
+  return (
+    <div className={`rm-bdm-cell ${wide ? 'wide' : ''}`}>
+      <div className="rm-bdm-cell-label">{label}</div>
+      <div className="rm-bdm-cell-value" style={{
+        fontFamily: mono ? 'ui-monospace, SFMono-Regular, Menlo, monospace' : undefined,
+        fontWeight: strong ? 800 : 600,
+        color: color || '#1A1F2E',
+      }}>{value}</div>
     </div>
   )
 }
