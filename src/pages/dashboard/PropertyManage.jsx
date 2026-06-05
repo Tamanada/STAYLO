@@ -6123,15 +6123,16 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
   const virtualRooms = useMemo(() => {
     const out = []
     for (const r of (rooms || [])) {
-      const t = String(r.type || '').toLowerCase()
-      const isDorm = t === 'dormitory' || t === 'capsule'
       const qty = Math.max(1, Number(r.quantity) || 1)
-      if (isDorm || qty <= 1) {
+      if (qty <= 1) {
         out.push({ ...r, unit_index: null, display_name: r.name, virtual_id: r.id })
       } else {
+        // Expand multi-unit rooms (including dorms) into N rows so each
+        // physical unit / bed gets its own row in the Timeline. Dorm beds
+        // are first-class: Nanda × 18 → NANDA-001..018, each independently
+        // bookable & blockable via the per-unit override row pattern
+        // (room_availability.room_unit_index = 1..N).
         for (let i = 1; i <= qty; i++) {
-          // Zero-padded 3-digit unit ID: BABA-001 / BABA-002 / …
-          // Wide enough for hostels with up to 999 units of the same type.
           const padded = String(i).padStart(3, '0')
           out.push({
             ...r,
@@ -6367,15 +6368,22 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
   }
 
   // ── Bulk-edit handlers ───────────────────────────────────
+  // Cell keys are scoped to VIRTUAL rows so per-unit selection works:
+  // clicking BABA-002 selects only BABA-002, not the 3 other BABAs that
+  // share the same room.id. virtual_id is either:
+  //   · `${room.id}`               — single-unit room / pre-expansion row
+  //   · `${room.id}#${unit_index}` — per-unit row (BABA-001, Nanda-005...)
+  // bulkUpdate parses the key back into (room_id, unit_index) and writes
+  // to the matching row_availability row (room_unit_index column).
   function toggleBulkMode() {
     setBulkMode(b => !b)
     setSelectedCells(new Set())
   }
-  function cellKey(roomId, iso) { return `${roomId}|${iso}` }
-  function toggleCell(roomId, iso) {
+  function cellKey(vid, iso) { return `${vid}|${iso}` }
+  function toggleCell(vid, iso) {
     setSelectedCells(prev => {
       const next = new Set(prev)
-      const k = cellKey(roomId, iso)
+      const k = cellKey(vid, iso)
       if (next.has(k)) next.delete(k)
       else next.add(k)
       return next
@@ -6384,9 +6392,9 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
   function selectAllFuture() {
     const today = new Date(); today.setHours(0, 0, 0, 0)
     const next = new Set()
-    for (const room of rooms) {
+    for (const vr of virtualRooms) {
       for (const d of dates) {
-        if (d >= today) next.add(cellKey(room.id, isoOf(d)))
+        if (d >= today) next.add(cellKey(vr.virtual_id, isoOf(d)))
       }
     }
     setSelectedCells(next)
@@ -6394,22 +6402,42 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
   function selectWeekends() {
     const today = new Date(); today.setHours(0, 0, 0, 0)
     const next = new Set()
-    for (const room of rooms) {
+    for (const vr of virtualRooms) {
       for (const d of dates) {
         const dow = d.getDay()
         if ((dow === 0 || dow === 6) && d >= today) {
-          next.add(cellKey(room.id, isoOf(d)))
+          next.add(cellKey(vr.virtual_id, isoOf(d)))
         }
       }
     }
     setSelectedCells(next)
   }
-  function selectRoomRow(roomId) {
+  // Select all future cells of ONE virtual row — clicking BABA-002's
+  // ROOM box now narrows to that physical unit. (Used to operate on
+  // room.id, which selected all 4 BABA rows at once.)
+  function selectVirtualRow(vid) {
     const today = new Date(); today.setHours(0, 0, 0, 0)
     setSelectedCells(prev => {
       const next = new Set(prev)
       for (const d of dates) {
-        if (d >= today) next.add(cellKey(roomId, isoOf(d)))
+        if (d >= today) next.add(cellKey(vid, isoOf(d)))
+      }
+      return next
+    })
+  }
+  // Select every virtual row that shares the clicked TYPE — letting the
+  // hotelier scope a bulk action to "all Executive Suites" or "every
+  // dorm bed" with one click on the TYPE column label.
+  function selectByType(typeStr) {
+    const today = new Date(); today.setHours(0, 0, 0, 0)
+    const tnorm = String(typeStr || '').toLowerCase()
+    setSelectedCells(prev => {
+      const next = new Set(prev)
+      for (const vr of virtualRooms) {
+        if (String(vr.type || '').toLowerCase() !== tnorm) continue
+        for (const d of dates) {
+          if (d >= today) next.add(cellKey(vr.virtual_id, isoOf(d)))
+        }
       }
       return next
     })
@@ -6426,13 +6454,16 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
   function toggleColumn(iso, e) {
     const today = new Date(); today.setHours(0, 0, 0, 0)
     // Pre-compute the keys this column would add (only future cells
-    // across every room — past cells aren't actionable).
+    // across every virtual row — past cells aren't actionable).
+    // Iterates virtualRooms so multi-unit rooms add ALL their unit
+    // rows' cells (BABA-001..004 + every dorm bed) instead of one
+    // type-level cell per room.
     const dateObj = new Date(iso + 'T00:00:00')
     if (dateObj < today) return
     const additive = !!(e && (e.metaKey || e.ctrlKey))
     const rangeMode = !!(e && e.shiftKey)
     const colKeys = []
-    for (const r of rooms) colKeys.push(cellKey(r.id, iso))
+    for (const vr of virtualRooms) colKeys.push(cellKey(vr.virtual_id, iso))
 
     setSelectedCells(prev => {
       if (rangeMode && lastColAnchorRef.current) {
@@ -6447,7 +6478,7 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
         for (let i = lo; i <= hi; i++) {
           const di = dates[i]
           if (di < today) continue
-          for (const r of rooms) next.add(cellKey(r.id, isoOf(di)))
+          for (const vr of virtualRooms) next.add(cellKey(vr.virtual_id, isoOf(di)))
         }
         return next
       }
@@ -6490,37 +6521,64 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
     if (!isSingleCell && !confirm(`${label} — ${targetSet.size} ${targetSet.size > 1 ? 'cells' : 'cell'}?`)) return
     setSaving(true)
 
-    // Group keys by room_id
-    const byRoom = {}
+    // Group keys by (room_id, unit_index). Virtual ids encode the unit:
+    //   "<uuid>"          → type-level row (room_unit_index = 0)
+    //   "<uuid>#<index>"  → per-unit override row (room_unit_index = N)
+    // Same payload writes to whichever row the cell key references, so
+    // bulk-blocking a mix of cells (Executive Suite type-level + Nanda
+    // bed 5 + Hibrakim-002) in one selection just works — each
+    // (rid, unitIndex) pair gets its own fetch + upsert below.
+    const byCell = {}                              // groupKey → { rid, unitIndex, isos[] }
     targetSet.forEach(k => {
-      const [rid, iso] = k.split('|')
-      if (!byRoom[rid]) byRoom[rid] = []
-      byRoom[rid].push(iso)
+      const [vid, iso] = k.split('|')
+      const hashAt = vid.indexOf('#')
+      const rid = hashAt === -1 ? vid : vid.slice(0, hashAt)
+      const unitIndex = hashAt === -1 ? 0 : Number(vid.slice(hashAt + 1)) || 0
+      const groupKey = `${rid}#${unitIndex}`
+      if (!byCell[groupKey]) byCell[groupKey] = { rid, unitIndex, isos: [] }
+      byCell[groupKey].isos.push(iso)
     })
 
     // Pull meta-actions out — they need per-row processing
     const { add_special, clear_specials, remove_special_at, ...directWrites } = payload
     const touchesSpecials = !!add_special || !!clear_specials || typeof remove_special_at === 'number'
 
-    for (const [roomId, isoList] of Object.entries(byRoom)) {
-      const room = rooms.find(r => r.id === roomId)
+    for (const { rid, unitIndex, isos: isoList } of Object.values(byCell)) {
+      const room = rooms.find(r => r.id === rid)
       if (!room) continue
 
-      // Fetch existing rows for this room × these dates
-      // IMPORTANT: bulkUpdate always operates at the room-TYPE level
-      // (room_unit_index = 0). Per-unit overrides (room_unit_index > 0)
-      // live in their own rows and are managed by handleUnitToggle.
-      // Without this filter, a (room_id, date) lookup returns N+1 rows
-      // for multi-unit rooms (type-default + per-unit overrides), and
-      // `existingByDate[r.date] = r` overwrites — last row wins, so
-      // unblocking the cell could update a per-unit row instead of the
-      // actual type-default. Found 2026-06-08 when David couldn't
-      // un-block 4 BABAs that were type-default blocked.
+      // Specials, price overrides, min-stay, rewards, notes are all
+      // type-level concepts (they ride on the room_unit_index=0 row).
+      // If the user bulk-selected per-unit cells (BABA-002 row) and
+      // applied a non-block payload, write nothing for that unit —
+      // we don't want a per-unit override row to carry a stale price
+      // that contradicts the type default.
+      const isUnitBulk = unitIndex > 0
+      const isTypeOnlyPayload =
+        touchesSpecials ||
+        'price_override' in directWrites ||
+        'min_stay'       in directWrites ||
+        'internal_note'  in directWrites ||
+        'promo_label'    in directWrites ||
+        'promo_pct'      in directWrites ||
+        'perk'           in directWrites
+      if (isUnitBulk && isTypeOnlyPayload && !('is_blocked' in directWrites)) {
+        // Pure type-level change on a unit selection → skip this unit.
+        // (If the payload ALSO carries is_blocked we still want to
+        // write the block to the unit row below.)
+        continue
+      }
+
+      // Fetch existing rows for this (room, unit, dates). Filtering on
+      // room_unit_index keeps the per-unit refactor safe: before this,
+      // a multi-unit room's (room_id, date) lookup pulled N+1 rows and
+      // `existingByDate[r.date] = r` overwrote (last row scanned won),
+      // so the wrong unit's is_blocked could end up updated. Now exact.
       const { data: existing } = await supabase
         .from('room_availability')
         .select('*')
-        .eq('room_id', roomId)
-        .eq('room_unit_index', 0)
+        .eq('room_id', rid)
+        .eq('room_unit_index', unitIndex)
         .in('date', isoList)
       const existingByDate = {}
       ;(existing || []).forEach(r => { existingByDate[r.date] = r })
@@ -6528,11 +6586,14 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
       const toUpdate = isoList.filter(d => existingByDate[d])
       const toInsert = isoList.filter(d => !existingByDate[d])
 
-      // Updates — compute next specials array per row when needed
+      // Updates — per-unit rows only get is_blocked propagated; the
+      // other columns stay null (type-level concepts).
       for (const iso of toUpdate) {
         const row = existingByDate[iso]
-        let rowPayload = directWrites
-        if (touchesSpecials) {
+        let rowPayload = isUnitBulk
+          ? { is_blocked: directWrites.is_blocked }
+          : directWrites
+        if (touchesSpecials && !isUnitBulk) {
           const current = Array.isArray(row.specials) ? row.specials : []
           let next = current
           if (clear_specials) next = []
@@ -6543,13 +6604,18 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
         await supabase.from('room_availability').update(rowPayload).eq('id', row.id)
       }
 
-      // Inserts — fill required NOT NULL columns. Explicitly target the
-      // type-default index (= 0) — the column has a default but being
-      // explicit makes the intent clearer and survives default changes.
+      // Inserts — per-unit rows only carry the block flag, type-level
+      // rows fill every NOT NULL column.
       if (toInsert.length > 0) {
-        const startingSpecials = add_special ? [add_special] : []
-        const rows = toInsert.map(iso => ({
-          room_id: roomId,
+        const startingSpecials = !isUnitBulk && add_special ? [add_special] : []
+        const rows = toInsert.map(iso => isUnitBulk ? ({
+          room_id: rid,
+          date: iso,
+          room_unit_index: unitIndex,
+          available_count: directWrites.is_blocked ? 0 : 1,
+          is_blocked:     directWrites.is_blocked ?? false,
+        }) : ({
+          room_id: rid,
           date: iso,
           room_unit_index: 0,
           available_count: directWrites.is_blocked ? 0 : (room.quantity || 1),
@@ -6566,26 +6632,25 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
       }
 
       // When UN-blocking the type-default, also clear any per-unit
-      // override rows that are still blocked for these dates. Reason:
-      // the cell editor's "Available" toggle is meant to fully reopen
-      // the room for these dates — leaving unit-specific blocks behind
-      // would keep BABA-001..00N visibly blocked even after the user
-      // explicitly said "Available" + Save.
-      if (directWrites.is_blocked === false) {
+      // override rows still blocked for these dates so the cell fully
+      // reopens. Only fires at type level — un-blocking a single unit
+      // shouldn't cascade-clear siblings.
+      if (!isUnitBulk && directWrites.is_blocked === false) {
         await supabase.from('room_availability')
           .delete()
-          .eq('room_id', roomId)
+          .eq('room_id', rid)
           .gt('room_unit_index', 0)
           .eq('is_blocked', true)
           .in('date', isoList)
       }
 
-      // Recompute available_count if is_blocked changed — same safety
-      // net as Monthly view: ensures stock honors in-house bookings.
-      if ('is_blocked' in directWrites) {
+      // Recompute available_count if is_blocked changed (type level only
+      // — per-unit rows are single-stock by definition: 1 unit blocked
+      // or not).
+      if (!isUnitBulk && 'is_blocked' in directWrites) {
         const sorted = [...isoList].sort()
         await supabase.rpc('recompute_room_availability', {
-          p_room_id:   roomId,
+          p_room_id:   rid,
           p_check_in:  sorted[0],
           p_check_out: addDaysISO(sorted[sorted.length - 1], 1),
         })
@@ -6931,11 +6996,12 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
               const isWeekend = d.getDay() === 0 || d.getDay() === 6
               const isToday = iso === todayISO
               const isPastCol = d < today
-              // A column is "selected" iff every (room × this iso) cell
-              // is in selectedCells. Cheap to compute — at most DAYS
-              // headers × rooms ≈ 14 × N cells.
-              const colSelected = bulkMode && rooms.length > 0 &&
-                rooms.every(r => selectedCells.has(cellKey(r.id, iso)))
+              // A column is "selected" iff every (virtual row × this iso)
+              // cell is in selectedCells. Iterates virtualRooms so multi-
+              // unit rooms count each unit row individually (BABA-001..
+              // 004 each must be selected for the column to flag as full).
+              const colSelected = bulkMode && virtualRooms.length > 0 &&
+                virtualRooms.every(vr => selectedCells.has(cellKey(vr.virtual_id, iso)))
               const headerClickable = bulkMode && !isPastCol
               return (
                 <div
@@ -6999,9 +7065,15 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                   Subsequent unit rows show a subtle vertical guide line
                   on the left edge to signal continuation. */}
               <div
-                className={`py-1.5 px-2 border-b border-r border-gray-100 flex flex-col justify-center bg-deep/[0.015] text-left ${
+                role={bulkMode && firstOfGroup ? 'button' : undefined}
+                tabIndex={bulkMode && firstOfGroup ? 0 : undefined}
+                onClick={bulkMode && firstOfGroup ? () => selectByType(room.type) : undefined}
+                title={bulkMode && firstOfGroup
+                  ? t('manage.timeline_select_by_type', 'Click to select every {{type}} on screen', { type: prettyLabel(room.type) || t('manage.untyped', 'Untyped') })
+                  : undefined}
+                className={`py-1.5 px-2 border-b border-r border-gray-100 flex flex-col justify-center bg-deep/[0.015] text-left transition-colors ${
                   isUnitRow ? 'pl-3' : ''
-                }`}
+                } ${bulkMode && firstOfGroup ? 'cursor-pointer hover:bg-ocean/10' : ''}`}
               >
                 {firstOfGroup ? (
                   <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-ocean/80 truncate leading-tight">
@@ -7027,7 +7099,7 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                 draggable={!bulkMode && !isUnitRow}
                 onDragStart={!bulkMode && !isUnitRow ? (e) => handleRowDragStart(e, room.id) : undefined}
                 onDragEnd={!bulkMode && !isUnitRow ? handleRowDragEnd : undefined}
-                onClick={bulkMode ? () => selectRoomRow(room.id) : undefined}
+                onClick={bulkMode ? () => selectVirtualRow(vroom.virtual_id) : undefined}
                 className={`py-1.5 px-2 border-b border-gray-100 flex flex-col justify-center bg-deep/[0.02] text-left transition-all ${
                   bulkMode ? 'cursor-pointer hover:bg-ocean/5' : (isUnitRow ? '' : 'cursor-grab active:cursor-grabbing hover:bg-ocean/5')
                 }`}
@@ -7068,7 +7140,10 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                   : (isUnitRow ? 1
                     : (row && typeof row.available_count === 'number' ? row.available_count : totalStock))
                 const hasOverride = row?.price_override != null
-                const isSelected = bulkMode && selectedCells.has(cellKey(room.id, iso))
+                // Cell-level selection is keyed on the VIRTUAL row so a
+                // mid-row click on BABA-002 highlights only BABA-002's
+                // cell, not the shared room.id cells in BABA-001..004.
+                const isSelected = bulkMode && selectedCells.has(cellKey(vroom.virtual_id, iso))
 
                 // Stock chip color — full = libre, partial = orange, none = sunset
                 const stockChipClass = stock === 0
@@ -7095,7 +7170,7 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
                 // to the per-unit override row instead of the type-default.
                 const onCellClick = !isPast
                   ? (bulkMode
-                      ? () => toggleCell(room.id, iso)
+                      ? () => toggleCell(vroom.virtual_id, iso)
                       : () => setEditingCell({ roomId: room.id, iso, unitIndex: vroom.unit_index }))
                   : undefined
 
