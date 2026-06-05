@@ -597,14 +597,20 @@ export default function RoomManagement() {
   const setHoveredRoomEnriched = useCallback((r) => setHoveredRoom(enrichRoomForPanel(r, hoveredDate)), [enrichRoomForPanel, hoveredDate])
   const setSelectedRoomEnriched = useCallback((r) => setSelectedRoom(typeof r === 'function' ? r : enrichRoomForPanel(r, hoveredDate)), [enrichRoomForPanel, hoveredDate])
 
-  // Group rewards per room, then by reward identity (label + perk) so
-  // a reward applying to 5 days shows ONCE with a date list rather
-  // than 5 cluttering rows. Anonymous discount rows (no label, only
-  // promo_pct/promo_label) become their own group too.
-  const rewardsByRoom = useMemo(() => {
-    const m = new Map()  // roomId -> array of { key, label, perk, min_stay, dates[] }
-    for (const row of upcomingAvail) {
-      const list = m.get(row.room_id) || []
+  // Group rewards per (room, unit). Type-default rows (room_unit_index=0)
+  // produce a list under the bare room.id — those apply to EVERY unit.
+  // Per-unit rows (room_unit_index>0) produce a list under the virtual-id
+  // key `${room_id}#${unitIndex}` — those apply only to that specific
+  // physical unit. The popover lookup later merges the two so BABA-001
+  // shows type-default rewards + its own unit-specific rewards, while
+  // BABA-002 shows type-default + ITS OWN unit-specific rewards.
+  // 2026-06-08: David added Carbon-Neutral Stay on BABA-001 Jun 12 and
+  // it showed up on BABA-002's popover too because the old aggregation
+  // keyed everything by room_id without honouring unit_index.
+  const { rewardsByRoom, rewardsByVirtualId } = useMemo(() => {
+    const byRoom = new Map()         // roomId -> reward list (type-default only)
+    const byVirtual = new Map()      // `${roomId}#${unitIdx}` -> reward list (per-unit)
+    function aggregateInto(list, row) {
       // Stack model — each row can carry an array of specials.
       const items = Array.isArray(row.specials) && row.specials.length > 0
         ? row.specials.map(s => ({ label: s.label, perk: s.perk, min_stay: s.min_stay }))
@@ -632,15 +638,56 @@ export default function RoomManagement() {
         }
         if (!g.dates.includes(row.date)) g.dates.push(row.date)
       }
-      m.set(row.room_id, list)
+    }
+    for (const row of upcomingAvail) {
+      const unitIdx = Number(row.room_unit_index || 0)
+      if (unitIdx === 0) {
+        const list = byRoom.get(row.room_id) || []
+        aggregateInto(list, row)
+        byRoom.set(row.room_id, list)
+      } else {
+        const vid = `${row.room_id}#${unitIdx}`
+        const list = byVirtual.get(vid) || []
+        aggregateInto(list, row)
+        byVirtual.set(vid, list)
+      }
     }
     // Sort dates per group + groups by first occurrence for stable UI.
-    for (const list of m.values()) {
-      list.forEach(g => g.dates.sort())
-      list.sort((a, b) => (a.dates[0] || '').localeCompare(b.dates[0] || ''))
+    const sortMap = (m) => {
+      for (const list of m.values()) {
+        list.forEach(g => g.dates.sort())
+        list.sort((a, b) => (a.dates[0] || '').localeCompare(b.dates[0] || ''))
+      }
     }
-    return m
+    sortMap(byRoom); sortMap(byVirtual)
+    return { rewardsByRoom: byRoom, rewardsByVirtualId: byVirtual }
   }, [upcomingAvail])
+
+  // Returns the rewards the popover should show for a given (possibly
+  // virtual) room: type-default rewards + any per-unit rewards added
+  // specifically to this unit, deduped by (label/perk/promo_pct).
+  const getRewardsFor = useCallback((room) => {
+    if (!room) return []
+    const typeList = rewardsByRoom.get(room.id) || []
+    const virtualId = room.virtual_id || (room.unit_index ? `${room.id}#${room.unit_index}` : null)
+    const unitList = virtualId ? (rewardsByVirtualId.get(virtualId) || []) : []
+    if (unitList.length === 0) return typeList
+    // Merge with dedup. Per-unit dates extend a type-default group if
+    // it already exists (same label/perk/promo_pct); otherwise the
+    // unit-only reward gets its own entry.
+    const merged = typeList.map(g => ({ ...g, dates: [...g.dates] }))
+    for (const ug of unitList) {
+      const existing = merged.find(g => g.key === ug.key)
+      if (existing) {
+        for (const d of ug.dates) if (!existing.dates.includes(d)) existing.dates.push(d)
+        existing.dates.sort()
+      } else {
+        merged.push({ ...ug, dates: [...ug.dates] })
+      }
+    }
+    merged.sort((a, b) => (a.dates[0] || '').localeCompare(b.dates[0] || ''))
+    return merged
+  }, [rewardsByRoom, rewardsByVirtualId])
 
   const types = useMemo(() => {
     const counts = new Map()
@@ -870,7 +917,7 @@ export default function RoomManagement() {
               <TimelineView rooms={filteredRooms} bookings={bookings}
                 startDay={startDay} dates={dates} todayDate={todayDate}
                 packagesByRoom={packagesByRoom}
-                rewardsByRoom={rewardsByRoom}
+                getRewardsFor={getRewardsFor}
                 blockedByRoom={blockedByRoom}
                 enrichRoom={enrichRoomForPanel}
                 hoveredRoom={hoveredRoom}
@@ -881,7 +928,7 @@ export default function RoomManagement() {
             ) : view === 'grid' ? (
               <GridView floorsMap={floorsMap}
                 packagesByRoom={packagesByRoom}
-                rewardsByRoom={rewardsByRoom}
+                getRewardsFor={getRewardsFor}
                 enrichRoom={enrichRoomForPanel}
                 hoveredRoom={hoveredRoom}
                 onPick={setSelectedRoomEnriched}
@@ -1218,7 +1265,7 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
 }
 
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, enrichRoom, hoveredRoom, onPick, onHover, onHoverDate, onCheckIn }) {
+function TimelineView({ rooms, bookings, packagesByRoom, getRewardsFor, blockedByRoom, startDay, dates, todayDate, enrichRoom, hoveredRoom, onPick, onHover, onHoverDate, onCheckIn }) {
   // Per-type collapse — clicking the TYPE label hides every row of
   // that category and replaces them with a single click-to-expand stub.
   // Component-local state intentionally: a stale "Dormitory collapsed"
@@ -1544,7 +1591,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
           key={hoveredRoom.virtual_id || hoveredRoom.id}
           room={hoveredRoom}
           packages={packagesByRoom?.get(hoveredRoom.id) || []}
-          rewards={rewardsByRoom?.get(hoveredRoom.id) || []}
+          rewards={getRewardsFor ? getRewardsFor(hoveredRoom) : []}
           onMouseEnter={cancelClose}
           onMouseLeave={handleRowLeave}
           onClose={closePopover}
@@ -1556,7 +1603,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
 }
 
 // ── Grid view ──
-function GridView({ floorsMap, packagesByRoom, rewardsByRoom, enrichRoom, hoveredRoom, onPick, onHover }) {
+function GridView({ floorsMap, packagesByRoom, getRewardsFor, enrichRoom, hoveredRoom, onPick, onHover }) {
   // Same hover popover wiring as Timeline — the card opens it, popover
   // is rendered once at the view root so we don't get N popovers
   // racing each other.
@@ -1616,7 +1663,7 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, enrichRoom, hovere
           key={hoveredRoom.virtual_id || hoveredRoom.id}
           room={hoveredRoom}
           packages={packagesByRoom?.get(hoveredRoom.id) || []}
-          rewards={rewardsByRoom?.get(hoveredRoom.id) || []}
+          rewards={getRewardsFor ? getRewardsFor(hoveredRoom) : []}
           onMouseEnter={cancelClose}
           onMouseLeave={closeSoon}
           onClose={closePopover}
