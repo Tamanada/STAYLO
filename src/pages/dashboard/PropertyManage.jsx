@@ -5624,7 +5624,10 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
   // that each unit has its own row in the Timeline, the chips were
   // redundant and confusing.
   const isUnit = cell.unitIndex != null
-  const unitBlocked = isUnit && !!unitBlockedSet?.has(cell.unitIndex)
+  // `row` is now the merged effective row (per-unit override on top of
+  // type-default) — see TimelineAvailabilityView.mergeEffectiveRow.
+  // Every field including is_blocked already reflects the unit's
+  // actual state, so we don't need the separate unitBlocked branch.
 
   // Local form state — initialized from the row when the modal
   // opens, then edited freely. Save builds a delta payload.
@@ -5633,15 +5636,13 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
   const [note, setNote] = useState('')
   const [isBlocked, setIsBlocked] = useState(false)
   // Re-seed local state every time the cell changes (e.g. user
-  // closes and opens another cell quickly). In per-unit mode the
-  // is_blocked source-of-truth is the unit's override row, not the
-  // type-default row.
+  // closes and opens another cell quickly).
   useEffect(() => {
     setPrice(row?.price_override != null ? String(row.price_override) : '')
     setMinStay(row?.min_stay != null ? String(row.min_stay) : '')
     setNote(row?.internal_note || '')
-    setIsBlocked(isUnit ? unitBlocked : !!row?.is_blocked)
-  }, [cell.roomId, cell.iso, cell.unitIndex, row?.price_override, row?.min_stay, row?.internal_note, row?.is_blocked, unitBlocked, isUnit])
+    setIsBlocked(!!row?.is_blocked)
+  }, [cell.roomId, cell.iso, cell.unitIndex, row?.price_override, row?.min_stay, row?.internal_note, row?.is_blocked])
 
   if (!room) return null
 
@@ -5704,31 +5705,20 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
     if (newNote !== (row?.internal_note ?? null)) {
       payload.internal_note = newNote
     }
-    // is_blocked SPLIT — in unit mode the block lives on the per-unit
-    // override row so the other 3 BABAs stay free; in type mode it
-    // rides the type-default row like every other field. Keep this
-    // out of `payload` for unit mode so the type-default row isn't
-    // mutated when the user only flipped one unit's status.
-    let unitBlockChanged = false
-    if (isUnit) {
-      if (isBlocked !== unitBlocked) unitBlockChanged = true
-    } else if (isBlocked !== !!row?.is_blocked) {
+    // is_blocked rides the same payload as every other field. The
+    // parent component builds the cell key with a unit suffix when
+    // editingCell.unitIndex is set, so bulkUpdate routes the write to
+    // the per-unit override row (room_unit_index = N). One save path,
+    // one consistent flow regardless of mode.
+    if (isBlocked !== !!row?.is_blocked) {
       payload.is_blocked = isBlocked
     }
-
-    if (Object.keys(payload).length === 0 && !unitBlockChanged) {
+    if (Object.keys(payload).length === 0) {
       // No changes — just close
       onClose()
       return
     }
-    if (unitBlockChanged) {
-      onUnitToggle?.(cell.unitIndex, isBlocked)
-    }
-    if (Object.keys(payload).length > 0) {
-      onSave(payload, 'Update cell')
-    } else {
-      onClose()    // unit-only block change: nothing for onSave to do
-    }
+    onSave(payload, 'Update cell')
   }
 
   return (
@@ -5796,17 +5786,17 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
           )}
         </div>
 
-        {/* Price / min-stay / rewards / note are TYPE-LEVEL fields —
-            they always apply to every unit of the room type. We still
-            EXPOSE them in per-unit mode (David, 2026-06-08: "I want to
-            be able to manage everything from the popup") but show a
-            visible warning so the user knows the change cascades to
-            every sibling unit. Block stays per-unit. */}
+        {/* Per-unit scope hint — David asked 2026-06-08 for price to
+            be per-unit too (not type-level). Block, price, min-stay
+            and note all land on the {room_id, date, unit_index} row
+            and only affect this physical unit. Rewards stay type-
+            level because they're marketing decisions usually applied
+            to the full bookable category. */}
         {isUnit && (
-          <div className="text-[11px] text-deep/60 px-3 py-2.5 rounded-2xl bg-ocean/[0.06] border border-ocean/15 flex items-start gap-2">
-            <span aria-hidden="true">ℹ️</span>
+          <div className="text-[11px] text-deep/60 px-3 py-2.5 rounded-2xl bg-libre/[0.06] border border-libre/15 flex items-start gap-2">
+            <span aria-hidden="true">🔒</span>
             <span>
-              {t('manage.editor_unit_scope_note', 'Block / Available below applies to {{name}} only. Price, min-stay, rewards and notes apply to every {{type}} unit.', { name: headerName, type: room.name })}
+              {t('manage.editor_unit_scope_note_v2', 'Changes here apply to {{name}} only. The other {{type}} units stay on their default. Rewards still apply to all units.', { name: headerName, type: room.name })}
             </span>
           </div>
         )}
@@ -6168,6 +6158,10 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   // status chips and by the cell rendering to subtract from the
   // displayed available_count.
   const [unitBlocksByCell, setUnitBlocksByCell] = useState({})
+  // Full per-unit override rows keyed by [roomId][date][unitIndex].
+  // 2026-06-08: lets us render BABA-001 with its OWN price instead of
+  // the type-level $500 when David set a per-unit override.
+  const [unitOverridesByCell, setUnitOverridesByCell] = useState({})
   // Virtual rooms — expand non-dorm multi-unit rooms into N rows.
   // BABA × 4 → 4 rows ("BABA-001" / "BABA-002" / "BABA-003" / "BABA-004").
   // Each row carries `display_name` (the unit-numbered identifier shown
@@ -6369,8 +6363,10 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   // Pulled out of the useEffect so bulk-edit handlers can call it after
   // writing rows to refresh the on-screen grid.
   // Splits the rows into:
-  //   availByRoom[roomId][date]      → the room_unit_index=0 row (type-default)
-  //   unitBlocksByCell[roomId][date] → Set of unit indexes (>0) blocked
+  //   availByRoom[roomId][date]              → the room_unit_index=0 row (type-default)
+  //   unitOverridesByCell[roomId][date][N]   → the full per-unit override row at index N (any is_blocked)
+  //   unitBlocksByCell[roomId][date]         → Set of unit indexes that are explicitly blocked
+  //                                            (derived for cheap is-blocked lookups in the renderer)
   async function refreshAvail() {
     if (rooms.length === 0) { setLoading(false); return }
     setLoading(true)
@@ -6385,20 +6381,48 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       .lte('date', endISO)
     const map = {}
     const unitMap = {}
+    const unitOverrides = {}
     ;(data || []).forEach(row => {
       const unitIdx = Number(row.room_unit_index || 0)
       if (unitIdx === 0) {
         if (!map[row.room_id]) map[row.room_id] = {}
         map[row.room_id][row.date] = row
-      } else if (row.is_blocked) {
-        if (!unitMap[row.room_id]) unitMap[row.room_id] = {}
-        if (!unitMap[row.room_id][row.date]) unitMap[row.room_id][row.date] = new Set()
-        unitMap[row.room_id][row.date].add(unitIdx)
+      } else {
+        if (!unitOverrides[row.room_id]) unitOverrides[row.room_id] = {}
+        if (!unitOverrides[row.room_id][row.date]) unitOverrides[row.room_id][row.date] = {}
+        unitOverrides[row.room_id][row.date][unitIdx] = row
+        if (row.is_blocked) {
+          if (!unitMap[row.room_id]) unitMap[row.room_id] = {}
+          if (!unitMap[row.room_id][row.date]) unitMap[row.room_id][row.date] = new Set()
+          unitMap[row.room_id][row.date].add(unitIdx)
+        }
       }
     })
     setAvailByRoom(map)
     setUnitBlocksByCell(unitMap)
+    setUnitOverridesByCell(unitOverrides)
     setLoading(false)
+  }
+
+  // Per-unit override row merged on top of the type-default. Called by
+  // the cell renderer + modal so per-unit price / min-stay / note bubble
+  // up where they exist, while empty unit-row fields fall back to the
+  // type default. is_blocked: unit row is source of truth when it
+  // exists (a unit can be "available" even when the type is blocked).
+  function mergeEffectiveRow(typeRow, unitRow) {
+    if (!unitRow) return typeRow || null
+    if (!typeRow) return unitRow
+    return {
+      ...typeRow,
+      id:              unitRow.id,
+      room_unit_index: unitRow.room_unit_index,
+      is_blocked:      unitRow.is_blocked,
+      price_override:  unitRow.price_override ?? typeRow.price_override,
+      min_stay:        unitRow.min_stay ?? typeRow.min_stay,
+      internal_note:   unitRow.internal_note ?? typeRow.internal_note,
+      // Specials stay type-level for now — rewards are usually a
+      // marketing decision that applies to the whole bookable category.
+    }
   }
 
   /** Toggle the block state of a specific room unit on a given date.
@@ -6661,27 +6685,20 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       const room = rooms.find(r => r.id === rid)
       if (!room) continue
 
-      // Specials, price overrides, min-stay, rewards, notes are all
-      // type-level concepts (they ride on the room_unit_index=0 row).
-      // If the user bulk-selected per-unit cells (BABA-002 row) and
-      // applied a non-block payload, write nothing for that unit —
-      // we don't want a per-unit override row to carry a stale price
-      // that contradicts the type default.
+      // 2026-06-08 — per-unit cells now own their own price, min-stay
+      // and note. Specials/rewards stay type-level because they're
+      // marketing decisions that apply to the bookable category.
+      // Saving a payload with only specials from a unit cell would
+      // otherwise create a stub unit row with no real override, so we
+      // skip those.
       const isUnitBulk = unitIndex > 0
-      const isTypeOnlyPayload =
-        touchesSpecials ||
-        'price_override' in directWrites ||
-        'min_stay'       in directWrites ||
-        'internal_note'  in directWrites ||
-        'promo_label'    in directWrites ||
-        'promo_pct'      in directWrites ||
-        'perk'           in directWrites
-      if (isUnitBulk && isTypeOnlyPayload && !('is_blocked' in directWrites)) {
-        // Pure type-level change on a unit selection → skip this unit.
-        // (If the payload ALSO carries is_blocked we still want to
-        // write the block to the unit row below.)
-        continue
-      }
+      const isSpecialsOnly =
+        touchesSpecials &&
+        !('is_blocked'     in directWrites) &&
+        !('price_override' in directWrites) &&
+        !('min_stay'       in directWrites) &&
+        !('internal_note'  in directWrites)
+      if (isUnitBulk && isSpecialsOnly) continue
 
       // Fetch existing rows for this (room, unit, dates). Filtering on
       // room_unit_index keeps the per-unit refactor safe: before this,
@@ -6700,13 +6717,13 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       const toUpdate = isoList.filter(d => existingByDate[d])
       const toInsert = isoList.filter(d => !existingByDate[d])
 
-      // Updates — per-unit rows only get is_blocked propagated; the
-      // other columns stay null (type-level concepts).
+      // Updates — every changed field propagates to both type rows and
+      // unit rows. Specials are the only field that stays type-only:
+      // unit rows ignore touchesSpecials so a per-unit edit doesn't
+      // wipe the type-level rewards array.
       for (const iso of toUpdate) {
         const row = existingByDate[iso]
-        let rowPayload = isUnitBulk
-          ? { is_blocked: directWrites.is_blocked }
-          : directWrites
+        let rowPayload = directWrites
         if (touchesSpecials && !isUnitBulk) {
           const current = Array.isArray(row.specials) ? row.specials : []
           let next = current
@@ -6718,8 +6735,11 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
         await supabase.from('room_availability').update(rowPayload).eq('id', row.id)
       }
 
-      // Inserts — per-unit rows only carry the block flag, type-level
-      // rows fill every NOT NULL column.
+      // Inserts — per-unit rows carry the full editable field set
+      // (block + price + min-stay + note) so a fresh BABA-001 override
+      // can land with a $399 price even when nothing was blocked. Type
+      // rows additionally carry promo / specials / available_count
+      // because they're the public surface OTA reads from.
       if (toInsert.length > 0) {
         const startingSpecials = !isUnitBulk && add_special ? [add_special] : []
         const rows = toInsert.map(iso => isUnitBulk ? ({
@@ -6728,6 +6748,9 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
           room_unit_index: unitIndex,
           available_count: directWrites.is_blocked ? 0 : 1,
           is_blocked:     directWrites.is_blocked ?? false,
+          price_override: directWrites.price_override ?? null,
+          min_stay:       directWrites.min_stay ?? null,
+          internal_note:  directWrites.internal_note ?? null,
         }) : ({
           room_id: rid,
           date: iso,
@@ -7298,14 +7321,15 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
                 const iso = isoOf(d)
                 const isPast = d < today
                 const isToday = iso === todayISO
-                const row = availByRoom[room.id]?.[iso]
-                // Per-unit block check — if this is a unit row AND the
-                // unit's index is in the blocked set for this date, the
-                // cell is blocked. Type-default block on the row applies
-                // to all units.
-                const unitBlockSet = unitBlocksByCell[room.id]?.[iso]
-                const unitBlocked = isUnitRow && unitBlockSet?.has(vroom.unit_index)
-                const isBlocked = !!(row?.is_blocked || unitBlocked)
+                // Per-unit cells merge the unit override on top of the
+                // type-default so BABA-001 with a $399 override shows
+                // $399 while BABA-002 shows the type's $500. Unit rows
+                // without an override fall back to the type-default
+                // for every field (price, min-stay, note, is_blocked).
+                const typeRow = availByRoom[room.id]?.[iso]
+                const unitRow = isUnitRow ? unitOverridesByCell[room.id]?.[iso]?.[vroom.unit_index] : null
+                const row = isUnitRow ? mergeEffectiveRow(typeRow, unitRow) : typeRow
+                const isBlocked = !!row?.is_blocked
                 const priceBrut = Number(row?.price_override ?? room.base_price ?? 0)
                 const priceNet = priceBrut * 0.9
                 const totalStock = isUnitRow ? 1 : (room.quantity || 1)
@@ -7474,16 +7498,33 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       <CellEditorModal
         cell={editingCell}
         room={rooms.find(r => r.id === editingCell.roomId)}
-        row={availByRoom[editingCell.roomId]?.[editingCell.iso]}
+        // Merged effective row — per-unit override + type-default
+        // fallback. The modal seeds price/min-stay/note/is_blocked from
+        // this row, so opening BABA-001 shows its $399 override even
+        // when the type default is still $500.
+        row={mergeEffectiveRow(
+          availByRoom[editingCell.roomId]?.[editingCell.iso],
+          editingCell.unitIndex ? unitOverridesByCell[editingCell.roomId]?.[editingCell.iso]?.[editingCell.unitIndex] : null
+        )}
         unitBlockedSet={unitBlocksByCell[editingCell.roomId]?.[editingCell.iso]}
         saving={saving}
         onClose={() => setEditingCell(null)}
         onSave={async (payload, label) => {
-          await bulkUpdate(payload, label, new Set([cellKey(editingCell.roomId, editingCell.iso)]))
+          // Build the cell key WITH unit_index so bulkUpdate routes the
+          // write to the per-unit override row (room_unit_index = N)
+          // instead of the type-default. Without this every "save price"
+          // from BABA-001's popup overwrote BABA-002..004's price too.
+          const vid = editingCell.unitIndex != null
+            ? `${editingCell.roomId}#${editingCell.unitIndex}`
+            : editingCell.roomId
+          await bulkUpdate(payload, label, new Set([cellKey(vid, editingCell.iso)]))
           setEditingCell(null)
         }}
         onOpenReward={() => singleSetReward(editingCell.roomId, editingCell.iso)}
         onRemoveReward={async (idx) => {
+          // Rewards stay type-level (marketing decisions usually apply
+          // to the whole bookable category), so this still keys on the
+          // bare room.id even when the popup was opened on a unit cell.
           await bulkUpdate(
             { remove_special_at: idx },
             'Remove reward',
