@@ -77,6 +77,17 @@ export function EventsHolidaysModal({ open, onClose, propertyId, country, onChan
     onChange?.()
   }
 
+  // Inline edit of an existing custom event. Patch is merged into the
+  // matching row; we persist on every keystroke so refreshing the modal
+  // mid-edit doesn't lose the change. Day-header chips re-render via the
+  // onChange callback the parent passed in.
+  function updateCustom(id, patch) {
+    const next = custom.map(c => c.id === id ? { ...c, ...patch } : c)
+    setCustom(next)
+    saveCustomEvents(propertyId, next)
+    onChange?.()
+  }
+
   // Date in DD/MM for the catalog list (matches the staff Planning's chip
   // layout). Lunar events show "lunar" since dates float year-to-year.
   function fmtDdMm(ev) {
@@ -156,21 +167,42 @@ export function EventsHolidaysModal({ open, onClose, propertyId, country, onChan
           </div>
         ) : (
           <div className="space-y-3">
-            {/* Custom events list */}
+            {/* Custom events list — every field is inline-editable. The
+                user reported 2026-06-08 that "JE VEUX POUVOIR CHANGER
+                LES INFO" — typos in the emoji / name / date used to mean
+                deleting + re-adding. Now click into any input and type. */}
             {custom.length > 0 ? (
-              <div className="space-y-1 max-h-64 overflow-y-auto pr-1">
+              <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1">
                 {custom.map(c => (
                   <div
                     key={c.id}
-                    className="flex items-center gap-3 px-3 py-2 rounded-lg bg-gray-50"
+                    className="grid grid-cols-12 gap-2 items-center px-2 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100/70 transition-colors"
                   >
-                    <span className="text-base leading-none">{c.em}</span>
-                    <span className="flex-1 text-sm font-medium text-deep">{c.name}</span>
-                    <span className="text-xs font-mono text-gray-400 tabular-nums">{c.date}</span>
+                    <input
+                      type="text"
+                      value={c.em || ''}
+                      onChange={e => updateCustom(c.id, { em: e.target.value.slice(0, 4) })}
+                      className="col-span-2 px-2 py-1.5 rounded-md border border-transparent bg-white text-deep text-base text-center focus:outline-none focus:border-ocean focus:ring-2 focus:ring-ocean/20"
+                      maxLength={4}
+                      title={t('manage.events_emoji', 'Emoji')}
+                    />
+                    <input
+                      type="text"
+                      value={c.name || ''}
+                      onChange={e => updateCustom(c.id, { name: e.target.value })}
+                      className="col-span-6 px-2 py-1.5 rounded-md border border-transparent bg-white text-deep text-sm font-medium focus:outline-none focus:border-ocean focus:ring-2 focus:ring-ocean/20"
+                      placeholder={t('manage.events_name_placeholder', 'Name')}
+                    />
+                    <input
+                      type="date"
+                      value={c.date || ''}
+                      onChange={e => updateCustom(c.id, { date: e.target.value })}
+                      className="col-span-3 px-2 py-1.5 rounded-md border border-transparent bg-white text-deep text-xs font-mono focus:outline-none focus:border-ocean focus:ring-2 focus:ring-ocean/20"
+                    />
                     <button
                       type="button"
                       onClick={() => removeCustom(c.id)}
-                      className="text-gray-300 hover:text-sunset text-lg leading-none w-6 h-6 flex items-center justify-center rounded-md hover:bg-sunset/10 transition-colors"
+                      className="col-span-1 text-gray-300 hover:text-sunset text-lg leading-none w-7 h-7 mx-auto flex items-center justify-center rounded-md hover:bg-sunset/10 transition-colors"
                       title={t('common.remove', 'Remove')}
                     >×</button>
                   </div>
