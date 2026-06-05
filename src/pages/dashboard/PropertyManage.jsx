@@ -6504,15 +6504,23 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       price_override:  unitRow.price_override ?? typeRow.price_override,
       min_stay:        unitRow.min_stay ?? typeRow.min_stay,
       internal_note:   unitRow.internal_note ?? typeRow.internal_note,
-      // Specials: only treat the per-unit override as winning when
-      // it carries an actual entry. Empty array = "no explicit
-      // override at this unit, fall back to type's rewards". The
-      // tradeoff is the hotelier can't EXPLICITLY clear rewards on
-      // a single unit (it would just re-show type's list) — but
-      // that's a rare case and the DB column is NOT NULL anyway so
-      // every unit row gets `[]` by default, which we want to read
-      // as "inherit" not "wipe". 2026-06-08.
-      specials:        (Array.isArray(unitRow.specials) && unitRow.specials.length > 0) ? unitRow.specials : (typeRow.specials || []),
+      // Specials — three-way precedence:
+      //   · unit row absent or specials=[]                    → inherit type
+      //   · unit row carries a {_cleared:true} sentinel       → EXPLICIT empty
+      //     (the hotelier removed every reward; do NOT re-inherit)
+      //   · unit row carries actual rewards                    → use them
+      // The sentinel approach unblocks the David case from 2026-06-08:
+      // remove the last reward × on BABA-002 → specials becomes
+      // [{_cleared:true}] → merge returns [] → reward list stays empty
+      // until he explicitly adds one back.
+      specials:        (() => {
+        const raw = Array.isArray(unitRow.specials) ? unitRow.specials : null
+        if (!raw || raw.length === 0) return typeRow.specials || []
+        const hasCleared = raw.some(s => s?._cleared)
+        const clean = raw.filter(s => !s?._cleared)
+        if (hasCleared) return clean                           // explicit empty (or explicit minus inherits)
+        return clean.length > 0 ? clean : (typeRow.specials || [])
+      })(),
     }
   }
 
@@ -6814,11 +6822,21 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
         const typeRow0 = availByRoom[rid]?.[iso]
         const unitRow0 = isUnitBulk ? unitOverridesByCell[rid]?.[iso]?.[unitIndex] : null
         const effective = isUnitBulk ? mergeEffectiveRow(typeRow0, unitRow0) : (existingByDate[iso] || typeRow0)
-        const current = Array.isArray(effective?.specials) ? effective.specials : []
-        if (clear_specials) return []
-        if (add_special) return [...current, add_special]
-        if (typeof remove_special_at === 'number') return current.filter((_, i) => i !== remove_special_at)
-        return current
+        // Strip any pre-existing sentinel before applying the next op.
+        const current = (Array.isArray(effective?.specials) ? effective.specials : [])
+          .filter(s => !s?._cleared)
+        let next
+        if (clear_specials)                              next = []
+        else if (add_special)                            next = [...current, add_special]
+        else if (typeof remove_special_at === 'number')  next = current.filter((_, i) => i !== remove_special_at)
+        else                                             next = current
+        // Per-unit rows store an EXPLICIT empty-marker so the merge
+        // doesn't re-inherit the type's rewards behind the user's back.
+        // Without this, removing the last reward via × (or hitting
+        // Clear all) makes them all come back as soon as the cell
+        // re-renders. 2026-06-08.
+        if (isUnitBulk && next.length === 0) return [{ _cleared: true }]
+        return next
       }
 
       // Updates — every changed field propagates to both type rows

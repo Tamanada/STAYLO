@@ -671,8 +671,11 @@ export default function RoomManagement() {
     const byVirtual = new Map()      // `${roomId}#${unitIdx}` -> reward list (per-unit)
     function aggregateInto(list, row) {
       // Stack model — each row can carry an array of specials.
+      // {_cleared:true} sentinels (written by per-unit "Clear all"
+      // flows) are NOT rewards — they're the marker that says "this
+      // unit has explicitly no rewards for this date". Strip them.
       const items = Array.isArray(row.specials) && row.specials.length > 0
-        ? row.specials.map(s => ({ label: s.label, perk: s.perk, min_stay: s.min_stay }))
+        ? row.specials.filter(s => !s?._cleared).map(s => ({ label: s.label, perk: s.perk, min_stay: s.min_stay }))
         : []
       // Legacy single-perk / promo fields.
       if (row.perk || row.promo_label) {
