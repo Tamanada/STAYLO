@@ -5766,7 +5766,14 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
       payload.min_stay = newMinStay
     }
     const newNote = note.trim() === '' ? null : note.trim()
-    if (newNote !== (row?.internal_note ?? null)) {
+    // Normalize the existing value so the explicit-empty sentinel ''
+    // (used on per-unit rows that have been cleared, see mergeEffectiveRow)
+    // is treated the same as NULL for the diff check. Without this,
+    // re-opening a cleared unit cell and re-clicking Save would write
+    // null again, which the merge interprets as "inherit" → the type
+    // note would silently come back. Same bug shape David hit before.
+    const currentNote = row?.internal_note ? row.internal_note : null
+    if (newNote !== currentNote) {
       payload.internal_note = newNote
     }
     // is_blocked rides the same payload as every other field. The
@@ -6509,7 +6516,15 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       is_blocked:      unitRow.is_blocked,
       price_override:  unitRow.price_override ?? typeRow.price_override,
       min_stay:        unitRow.min_stay ?? typeRow.min_stay,
-      internal_note:   unitRow.internal_note ?? typeRow.internal_note,
+      // Note inheritance with explicit-empty sentinel. A NULL unit cell
+      // means "inherit the type note". The empty string '' is the
+      // sentinel for "the hotelier explicitly cleared this unit's note"
+      // — without it, clearing a unit note silently re-inherits the
+      // type's note (David hit this 2026-06-08: erased "Peinting" on
+      // BABA-001, it kept coming back). The CellEditorModal's textarea
+      // shows both '' and null as blank via `|| ''`, so the UX stays
+      // identical; only the persistence layer cares about the difference.
+      internal_note:   unitRow.internal_note === '' ? '' : (unitRow.internal_note ?? typeRow.internal_note),
       // Specials — three-way precedence:
       //   · unit row absent or specials=[]                    → inherit type
       //   · unit row carries a {_cleared:true} sentinel       → EXPLICIT empty
@@ -6861,6 +6876,14 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
         if (touchesSpecials) {
           rowPayload = { ...directWrites, specials: nextSpecialsFor(iso) }
         }
+        // Per-unit clear-note sentinel: a NULL note on a unit row would
+        // get masked by the merge (`unitRow.internal_note ?? typeRow.internal_note`).
+        // Persist '' instead so mergeEffectiveRow treats it as "explicit
+        // empty" and stops re-inheriting the type's note. See the
+        // sentinel branch in mergeEffectiveRow for the read side.
+        if (isUnitBulk && 'internal_note' in rowPayload && rowPayload.internal_note === null) {
+          rowPayload = { ...rowPayload, internal_note: '' }
+        }
         const { error } = await supabase.from('room_availability').update(rowPayload).eq('id', row.id)
         if (error) {
           // eslint-disable-next-line no-console
@@ -6889,6 +6912,14 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
           // constraint" when bulkSetPrice fired with no specials op.
           // 2026-06-08 — David's bulk-set-$100 hit this on 14 rows.
           const specialsForRow = touchesSpecials ? nextSpecialsFor(iso) : undefined
+          // Per-unit clear-note sentinel: when the caller passed
+          // internal_note: null explicitly (clear at unit level), we
+          // persist '' instead so mergeEffectiveRow stops re-inheriting
+          // the type row's note. When the field wasn't in the payload
+          // at all, fall through to null (= "inherit").
+          const unitNote = 'internal_note' in directWrites
+            ? (directWrites.internal_note === null ? '' : directWrites.internal_note)
+            : null
           return isUnitBulk ? ({
             room_id: rid,
             date: iso,
@@ -6897,7 +6928,7 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
             is_blocked:     directWrites.is_blocked ?? false,
             price_override: directWrites.price_override ?? null,
             min_stay:       directWrites.min_stay ?? null,
-            internal_note:  directWrites.internal_note ?? null,
+            internal_note:  unitNote,
             ...(specialsForRow !== undefined ? { specials: specialsForRow } : {}),
           }) : ({
             room_id: rid,
