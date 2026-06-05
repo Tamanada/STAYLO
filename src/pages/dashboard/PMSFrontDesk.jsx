@@ -41,8 +41,14 @@ export default function PMSFrontDesk() {
   // the walk-in tab pre-selected. Used once on mount, then we clear the
   // params so a refresh doesn't keep re-opening the modal.
   const [searchParams, setSearchParams] = useSearchParams()
-  const deepLinkRoomId = searchParams.get('room')
-  const deepLinkTab    = searchParams.get('tab')
+  const deepLinkRoomId   = searchParams.get('room')
+  const deepLinkTab      = searchParams.get('tab')
+  const deepLinkUnit     = searchParams.get('unit')
+  const deepLinkCheckin  = searchParams.get('checkin')
+  // Captured deep-link context for the walk-in form — set when the
+  // deep-link effect fires, kept after the URL params are cleared so
+  // the WalkInForm can resolve the per-unit + per-date effective rate.
+  const [walkinContext, setWalkinContext] = useState(null) // { unitIndex, checkin }
   const [properties, setProperties] = useState([])
   const [rooms, setRooms] = useState([])
   const [bookings, setBookings] = useState([])
@@ -117,6 +123,14 @@ export default function PMSFrontDesk() {
     const target = propertyRooms.find(r => r.id === deepLinkRoomId)
     if (!target) return
     setOpenRoom(target)
+    // Capture the unit + check-in date deep-links BEFORE we clear the
+    // URL params — the WalkInForm uses them to fetch the per-unit
+    // effective rate. Without this BABA-002's $66 override stayed
+    // hidden behind the type-default rate.
+    setWalkinContext({
+      unitIndex: deepLinkUnit ? Number(deepLinkUnit) : null,
+      checkin:   deepLinkCheckin || null,
+    })
     // Strip the params from the URL so the next refresh is clean. We
     // keep the tab param a beat longer via initial-tab plumbing below.
     setSearchParams({}, { replace: true })
@@ -746,11 +760,12 @@ export default function PMSFrontDesk() {
       {/* Room detail modal: calendar + walk-in check-in form */}
       <RoomDetailModal
         room={openRoom}
-        onClose={() => setOpenRoom(null)}
+        onClose={() => { setOpenRoom(null); setWalkinContext(null) }}
         bookings={openRoom ? bookings.filter(b => b.room_id === openRoom.id) : []}
         propertyId={selectedProperty}
         userId={user?.id}
-        onSaved={() => { fetchData(); setOpenRoom(null) }}
+        walkinContext={walkinContext}
+        onSaved={() => { fetchData(); setOpenRoom(null); setWalkinContext(null) }}
         onUndoOffer={setUndo}
       />
 
@@ -1422,7 +1437,7 @@ function FolioPanel({ charges, vouchers = [], loading, totals, onAdd, onTogglePa
 //   1. Calendar — 30-day view, shows which days are booked / free / arrival
 //   2. Walk-in  — quick check-in form for guests showing up unannounced
 // ============================================================================
-function RoomDetailModal({ room, onClose, bookings, propertyId, userId, onSaved, onUndoOffer }) {
+function RoomDetailModal({ room, onClose, bookings, propertyId, userId, onSaved, onUndoOffer, walkinContext }) {
   const { t } = useTranslation()
   const [tab, setTab] = useState('calendar')
 
@@ -1466,6 +1481,7 @@ function RoomDetailModal({ room, onClose, bookings, propertyId, userId, onSaved,
             propertyId={propertyId}
             userId={userId}
             existingBookings={bookings}
+            walkinContext={walkinContext}
             onDone={onSaved}
             onCancel={onClose}
             onUndoOffer={onUndoOffer}
@@ -1824,7 +1840,7 @@ function BookingRow({ booking }) {
 // WalkInForm — record a guest who showed up at the front desk.
 // Fields kept minimal so the receptionist can finish in <30 seconds.
 // ────────────────────────────────────────────────────────────────────────
-function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCancel, onUndoOffer }) {
+function WalkInForm({ room, propertyId, userId, existingBookings, walkinContext, onDone, onCancel, onUndoOffer }) {
   const { t } = useTranslation()
   const today = new Date().toISOString().split('T')[0]
   const tomorrow = (() => {
@@ -1857,13 +1873,20 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     return `${hh}:${mm === '00' ? '00' : mm}`
   })()
 
+  // Seed check_in from the deep-link context when the receptionist
+  // launched the walk-in from a Timeline cell. Without this the form
+  // always opened on today's date even if they clicked Sat 6's cell.
+  const seedCheckIn  = walkinContext?.checkin || today
+  const seedCheckOut = walkinContext?.checkin
+    ? (() => { const d = new Date(walkinContext.checkin + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().split('T')[0] })()
+    : tomorrow
   const [form, setForm] = useState({
     guest_name: '',
     guest_phone: '',
     guest_email: '',
     booking_type: 'overnight',          // 'overnight' | 'hourly' | 'day_use'
-    check_in:  today,
-    check_out: tomorrow,
+    check_in:  seedCheckIn,
+    check_out: seedCheckOut,
     check_in_time: nowHM,                // HH:mm — used when not overnight
     hours: hourlyMin,                    // hourly: editable; day_use: locked to dayUseMaxHrs
     adults: 1,
@@ -1875,36 +1898,46 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     special_requests: '',
   })
 
-  // Resolve the EFFECTIVE rate for this room × check-in date. Reads the
-  // type-default override from room_availability (room_unit_index=0)
-  // and uses its price_override when set. Falls back to room.base_price.
-  // Re-runs when the receptionist changes the check-in date so the
-  // displayed Rate per night column always reflects what was set in
-  // Disponibilités. 2026-06-08: David flagged "le prix ne correspond
-  // pas au prix parametre" — the walk-in modal was always reading
-  // room.base_price and ignoring per-date overrides.
+  // Resolve the EFFECTIVE rate for this room × check-in date × unit.
+  // Precedence (mirrors the Disponibilités modal + reception popover):
+  //   1. Per-unit override at (room, date, unit_index)   ← strongest
+  //   2. Type-default override at (room, date, 0)
+  //   3. room.base_price                                  ← fallback
+  // Unit index comes from the deep-link context (walkinContext.unitIndex)
+  // — Reception's TimelineView passes `room.unit_index` when calling
+  // startWalkIn. When unitIndex is missing, the per-unit branch is
+  // skipped and the type-default applies as before. Re-runs whenever
+  // the receptionist changes the check-in date so the rate stays in
+  // sync with Disponibilités. 2026-06-08: David flagged BABA-002's
+  // $66 override was being ignored because the modal only knew about
+  // the type-default ($9).
   useEffect(() => {
     if (!room?.id || !form.check_in) return
     let cancelled = false
     ;(async () => {
+      const unitIdx = walkinContext?.unitIndex || null
+      // Fetch both rows in one round-trip — unit_index in (0, N) if a
+      // unit is in play, else just unit_index = 0.
+      const indices = unitIdx ? [0, unitIdx] : [0]
       const { data, error } = await supabase
         .from('room_availability')
-        .select('price_override')
+        .select('room_unit_index, price_override')
         .eq('room_id', room.id)
         .eq('date', form.check_in)
-        .eq('room_unit_index', 0)
-        .maybeSingle()
+        .in('room_unit_index', indices)
       if (cancelled || error) return
-      const eff = data?.price_override != null
-        ? Number(data.price_override)
-        : (room.base_price ? Number(room.base_price) : null)
-      if (eff != null) {
-        setForm(f => ({ ...f, rate: String(eff) }))
+      const typeRow = (data || []).find(r => r.room_unit_index === 0)
+      const unitRow = unitIdx ? (data || []).find(r => r.room_unit_index === unitIdx) : null
+      // Per-unit override wins, then type-default, then room.base_price.
+      const eff = (unitRow?.price_override ?? typeRow?.price_override ?? null)
+      const finalRate = eff != null ? Number(eff) : (room.base_price ? Number(room.base_price) : null)
+      if (finalRate != null) {
+        setForm(f => ({ ...f, rate: String(finalRate) }))
       }
     })()
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room?.id, form.check_in])
+  }, [room?.id, form.check_in, walkinContext?.unitIndex])
   // Per-guest registry (TM30 compliance + ops). Auto-resized to adults+children.
   // Each entry covers EVERY field Thai Immigration TM30 requires.
   // The first entry is always the lead (booker). See docs/TM30_COMPLIANCE.md.

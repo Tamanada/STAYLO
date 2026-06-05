@@ -412,8 +412,18 @@ export default function RoomManagement() {
   // so the mature multi-guest walk-in form opens pre-filled. We removed
   // the parallel CheckInModal that lived here (it duplicated PMSFrontDesk
   // without the TM30 fields).
-  function startWalkIn(roomId /*, dateIso */) {
-    navigate(`/dashboard/property/${propertyId}/front-desk?room=${roomId}&tab=walkin`)
+  function startWalkIn(roomId, dateIso, unitIndex) {
+    // 2026-06-08: pass the unit_index + check-in date so the walk-in
+    // modal can resolve the PER-UNIT effective rate (not just the
+    // type-default). Without these, clicking BABA-002's cell at $66
+    // opened the modal with the type-default rate ($9) — wrong unit
+    // context. Both params are optional; older entry points (Quick
+    // Check-In from the side panel, Grid card click) don't know the
+    // unit and the modal falls back to type-default.
+    const qs = new URLSearchParams({ room: roomId, tab: 'walkin' })
+    if (dateIso)   qs.set('checkin', dateIso)
+    if (unitIndex) qs.set('unit', String(unitIndex))
+    navigate(`/dashboard/property/${propertyId}/front-desk?${qs.toString()}`)
   }
   // Timeline window
   const [startDay, setStartDay] = useState(() => { const d = new Date(); d.setHours(0,0,0,0); return d })
@@ -924,7 +934,7 @@ export default function RoomManagement() {
                 onPick={setSelectedRoomEnriched}
                 onHover={setHoveredRoomEnriched}
                 onHoverDate={setHoveredDate}
-                onCheckIn={(room, date) => startWalkIn(room.id, date)} />
+                onCheckIn={(room, date) => startWalkIn(room.id, date, room.unit_index)} />
             ) : view === 'grid' ? (
               <GridView floorsMap={floorsMap}
                 packagesByRoom={packagesByRoom}
