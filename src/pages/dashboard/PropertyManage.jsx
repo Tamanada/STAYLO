@@ -2090,14 +2090,45 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
   // ──────────────────────────────────────────────────────────────
   // V7 drag-drop + shape model
   // ──────────────────────────────────────────────────────────────
-  // Count of active (= non-deleted) zones assigned to a given room.
+  // Fast room lookup for the orphan-zone check below.
+  const roomById = useMemo(() => {
+    const m = new Map()
+    for (const r of (rooms || [])) m.set(r.id, r)
+    return m
+  }, [rooms])
+
+  // A zone is "orphan" when the room it points to no longer carries a
+  // matching unit. Two ways that happens:
+  //   1. The assigned room was deleted (no entry in roomById)
+  //   2. The hotelier shrank the room's quantity below the zone's
+  //      unit_index (the 2026-06-08 case: BABA × 4 → × 2 leaves
+  //      zones with unit_index 3 and 4 dangling)
+  // Orphan zones are filtered out of every render below so the floor
+  // plan auto-cleans. We don't hard-delete the JSON entries — that way
+  // bumping the quantity back to 4 brings the BABA-003 / 004 zones
+  // back where the hotelier originally drew them.
+  function isOrphanZone(z) {
+    if (!z.assigned_room_id) return false
+    const r = roomById.get(z.assigned_room_id)
+    if (!r) return true
+    const qty = Math.max(1, Number(r.quantity) || 1)
+    const idx = Number(z.unit_index) || 1
+    return idx > qty
+  }
+
+  // Count of active (= non-deleted, non-orphan) zones assigned to a
+  // given room. Used by the unplaced-tray badge so it accurately shows
+  // how many zones still represent THIS room, not stale ones.
   function assignedCount(roomId) {
-    return zones.filter(z => !z.deleted && z.assigned_room_id === roomId).length
+    return zones.filter(z => !z.deleted && !isOrphanZone(z) && z.assigned_room_id === roomId).length
   }
   // Lowest unused unit_index in 1..max — stable across removals.
+  // Orphan zones are ignored so a quantity drop frees up their slots
+  // (e.g. BABA × 4 → × 2 then × 3 again: the new 3rd unit reuses
+  // index 3, not 5).
   function nextZoneIndexFor(roomId, max) {
     const used = new Set(
-      zones.filter(z => !z.deleted && z.assigned_room_id === roomId).map(z => z.unit_index)
+      zones.filter(z => !z.deleted && !isOrphanZone(z) && z.assigned_room_id === roomId).map(z => z.unit_index)
     )
     for (let i = 1; i <= max; i++) if (!used.has(i)) return i
     return max
@@ -2787,7 +2818,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
               (otherwise it would be a no-op). Hotelier nukes every zone
               without touching the background image — useful after a bad
               AI run or to start fresh tracing. */}
-          {zones.filter(z => !z.deleted).length > 0 && (
+          {zones.filter(z => !z.deleted && !isOrphanZone(z)).length > 0 && (
             <button
               type="button"
               onClick={handleClearAllZones}
@@ -2886,13 +2917,13 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
             every click on a zone shape bubbled to the canvas onClick
             and deselected the zone before its drag surface (a sibling
             HTML div above the SVG) could process the click. */}
-        {zones.filter(z => !z.deleted).length > 0 && (
+        {zones.filter(z => !z.deleted && !isOrphanZone(z)).length > 0 && (
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none"
             viewBox="0 0 100 100"
             preserveAspectRatio="none"
           >
-            {zones.filter(z => !z.deleted).map(z => {
+            {zones.filter(z => !z.deleted && !isOrphanZone(z)).map(z => {
               const assigned = !!z.assigned_room_id
               const room = assigned ? rooms.find(r => r.id === z.assigned_room_id) : null
               const dorm = room && isDormRoom(room)
@@ -2946,7 +2977,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         {/* Per-zone interactive overlay — invisible drag surface covering
             the shape, with a label at the center, resize handles when
             selected, and a shape selector / delete floating above. */}
-        {zones.filter(z => !z.deleted).map(z => {
+        {zones.filter(z => !z.deleted && !isOrphanZone(z)).map(z => {
           const assigned = z.assigned_room_id
             ? rooms.find(r => r.id === z.assigned_room_id)
             : null
@@ -3123,7 +3154,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
             V7 zones yet. Once any zone is dropped, the V7 shape rendering
             (with handles + shape selector) takes over and the V5 pin
             pills would just intercept clicks meant for the shape. */}
-        {zones.filter(z => !z.deleted).length === 0 && markers.map(m => (
+        {zones.filter(z => !z.deleted && !isOrphanZone(z)).length === 0 && markers.map(m => (
           <button
             type="button"
             key={`${m.roomId}-${m.index}`}
@@ -3150,7 +3181,7 @@ function FloorPlanTab({ property, rooms, onRefresh }) {
         ))}
         {/* Empty-state hint — nothing placed (no V5 markers AND no V7
             zones). Once either model has data, the hint disappears. */}
-        {markers.length === 0 && zones.filter(z => !z.deleted).length === 0 && (
+        {markers.length === 0 && zones.filter(z => !z.deleted && !isOrphanZone(z)).length === 0 && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="bg-white/90 backdrop-blur px-4 py-2.5 rounded-full text-xs font-bold text-deep shadow-lg">
               ⬇️ {t('manage.plan_drop_here', 'Drag a room here to place it')}

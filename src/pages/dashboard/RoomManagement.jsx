@@ -1404,14 +1404,26 @@ function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, booki
   // haven't run the V7 editor yet.
   const planUrl = property?.floor_plan_url
   const allZones = Array.isArray(property?.floor_plan_zones) ? property.floor_plan_zones : []
-  const liveZones = allZones.filter(z => !z?.deleted && z?.assigned_room_id)
-  const hasV7 = !!planUrl && liveZones.length > 0
-
   // Build a flat room lookup so we can match each zone to its room
   // status. Rooms in floorsMap already carry the computed status from
   // the parent's per-day pipeline.
   const allRooms = [...floorsMap.values()].flat()
   const roomById = new Map(allRooms.map(r => [r.id, r]))
+  // A zone is live when it points to an existing room AND its
+  // unit_index still fits inside that room's quantity. The unit_index
+  // check is what hides BABA-003 / BABA-004 zones after the hotelier
+  // dropped BABA's quantity from 4 to 2 in PropertyManage (the data
+  // stays put so bumping back to 4 restores them in place — see the
+  // same logic in FloorPlanTab.isOrphanZone). 2026-06-08.
+  const liveZones = allZones.filter(z => {
+    if (!z || z.deleted || !z.assigned_room_id) return false
+    const r = roomById.get(z.assigned_room_id)
+    if (!r) return false
+    const qty = Math.max(1, Number(r.quantity) || 1)
+    const idx = Number(z.unit_index) || 1
+    return idx <= qty
+  })
+  const hasV7 = !!planUrl && liveZones.length > 0
 
   if (hasV7) {
     return (
