@@ -28,7 +28,7 @@
 // state; promotes to a `room_status` table when the back-office needs
 // persistence.
 // ============================================
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useParams, useNavigate, useOutletContext, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { AMENITY_META } from '../../lib/amenityIcons'
@@ -475,17 +475,18 @@ export default function RoomManagement() {
     ;(async () => {
       const { data, error } = await supabase
         .from('room_availability')
-        .select('room_id, date, specials, perk, promo_label, promo_pct, min_stay, is_blocked')
+        .select('room_id, date, room_unit_index, price_override, specials, perk, promo_label, promo_pct, min_stay, is_blocked')
         .in('room_id', roomIds)
         .gte('date', todayISO)
         .lte('date', horizonISO)
       if (cancelled) return
       if (error) { console.warn('room_availability fetch failed:', error); return }
-      // Keep any row that has SOMETHING to surface — a reward OR a block.
-      // Empty rows (just available_count snapshots with no specials/blocks)
-      // are dropped to keep the in-memory set small.
+      // Keep any row that has SOMETHING to surface — a reward, a block,
+      // OR a per-unit price override (so the reception side panel can
+      // display BABA-002's $399 even when the type default stays $500).
       const meaningful = (data || []).filter(r =>
         r.is_blocked ||
+        r.price_override != null ||
         (Array.isArray(r.specials) && r.specials.length > 0) ||
         r.perk || r.promo_label || r.promo_pct
       )
@@ -523,6 +524,54 @@ export default function RoomManagement() {
     }
     return m
   }, [upcomingAvail])
+
+  // Price overrides keyed by [roomId][date][unitIndex] — drives the
+  // side panel's effective-price display. 2026-06-08: David flagged
+  // that BABA-002's per-unit override stayed invisible in the right
+  // panel because the panel read room.base_price (the type-level rate
+  // from the rooms table) and never looked at room_availability.
+  const priceOverridesByCell = useMemo(() => {
+    const m = new Map()
+    for (const row of upcomingAvail) {
+      if (row.price_override == null) continue
+      let perRoom = m.get(row.room_id)
+      if (!perRoom) { perRoom = new Map(); m.set(row.room_id, perRoom) }
+      let perDate = perRoom.get(row.date)
+      if (!perDate) { perDate = new Map(); perRoom.set(row.date, perDate) }
+      perDate.set(Number(row.room_unit_index || 0), Number(row.price_override))
+    }
+    return m
+  }, [upcomingAvail])
+
+  // Resolve the effective price for ANY room object (real or virtual
+  // unit row) on a given ISO date. Per-unit override wins, then type-
+  // default override, then the room's static base_price. Returns null
+  // when nothing is set so callers can fall back to room.base_price.
+  const getEffectivePriceFor = useCallback((room, dateISO) => {
+    if (!room || !dateISO) return null
+    const perDate = priceOverridesByCell.get(room.id)?.get(dateISO)
+    if (!perDate) return null
+    const unitIdx = Number(room.unit_index || 0)
+    // Unit override wins
+    if (unitIdx > 0 && perDate.has(unitIdx)) return perDate.get(unitIdx)
+    // Else type-default override
+    if (perDate.has(0)) return perDate.get(0)
+    return null
+  }, [priceOverridesByCell])
+
+  // Wrap setHoveredRoom + setSelectedRoom so the panel always sees the
+  // effective price for tonight. Without this, the popover renders
+  // room.base_price even when the hotelier set a per-unit override in
+  // Disponibilités.
+  const todayISO = isoDate(new Date())
+  const enrichRoomForPanel = useCallback((room) => {
+    if (!room) return room
+    const eff = getEffectivePriceFor(room, todayISO)
+    if (eff == null || eff === Number(room.base_price)) return room
+    return { ...room, base_price: eff, base_price_default: room.base_price }
+  }, [getEffectivePriceFor, todayISO])
+  const setHoveredRoomEnriched = useCallback((r) => setHoveredRoom(enrichRoomForPanel(r)), [enrichRoomForPanel])
+  const setSelectedRoomEnriched = useCallback((r) => setSelectedRoom(typeof r === 'function' ? r : enrichRoomForPanel(r)), [enrichRoomForPanel])
 
   // Group rewards per room, then by reward identity (label + perk) so
   // a reward applying to 5 days shows ONCE with a date list rather
@@ -792,15 +841,17 @@ export default function RoomManagement() {
                 packagesByRoom={packagesByRoom}
                 rewardsByRoom={rewardsByRoom}
                 blockedByRoom={blockedByRoom}
-                onPick={setSelectedRoom}
-                onHover={setHoveredRoom}
+                enrichRoom={enrichRoomForPanel}
+                onPick={setSelectedRoomEnriched}
+                onHover={setHoveredRoomEnriched}
                 onCheckIn={(room, date) => startWalkIn(room.id, date)} />
             ) : view === 'grid' ? (
               <GridView floorsMap={floorsMap}
                 packagesByRoom={packagesByRoom}
                 rewardsByRoom={rewardsByRoom}
-                onPick={setSelectedRoom}
-                onHover={setHoveredRoom}
+                enrichRoom={enrichRoomForPanel}
+                onPick={setSelectedRoomEnriched}
+                onHover={setHoveredRoomEnriched}
                 onCheckIn={(room) => startWalkIn(room.id)} />
             ) : (
               <FloorPlanView floorsMap={floorsMap} activeFloor={activeFloor}
@@ -809,8 +860,9 @@ export default function RoomManagement() {
                 rewardsByRoom={rewardsByRoom}
                 bookings={bookings}
                 today={today}
-                onPick={setSelectedRoom}
-                onHover={setHoveredRoom} />
+                enrichRoom={enrichRoomForPanel}
+                onPick={setSelectedRoomEnriched}
+                onHover={setHoveredRoomEnriched} />
             )}
           </div>
         </div>
@@ -1100,7 +1152,7 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
 }
 
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, onPick, onHover, onCheckIn }) {
+function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, enrichRoom, onPick, onHover, onCheckIn }) {
   // Per-type collapse — clicking the TYPE label hides every row of
   // that category and replaces them with a single click-to-expand stub.
   // Component-local state intentionally: a stale "Dormitory collapsed"
@@ -1234,8 +1286,13 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
 
   function handleRowEnter(e, room) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
-    setHovered({ room })
-    onHover?.(room)
+    // Enrich the room with its EFFECTIVE tonight price before storing
+    // it in the local hover state. The internal popover reads from
+    // hovered.room, so without this we'd render the type-level
+    // base_price even when a per-unit override exists.
+    const enriched = enrichRoom ? enrichRoom(room) : room
+    setHovered({ room: enriched })
+    onHover?.(enriched)
   }
   function handleRowLeave() {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
@@ -1418,7 +1475,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
 }
 
 // ── Grid view ──
-function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick, onHover }) {
+function GridView({ floorsMap, packagesByRoom, rewardsByRoom, enrichRoom, onPick, onHover }) {
   // Same hover popover wiring as Timeline — the card opens it, popover
   // is rendered once at the view root so we don't get N popovers
   // racing each other.
@@ -1430,8 +1487,9 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick, onHover })
 
   function openFor(room) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
-    setHovered({ room })
-    onHover?.(room)
+    const enriched = enrichRoom ? enrichRoom(room) : room
+    setHovered({ room: enriched })
+    onHover?.(enriched)
   }
   function closeSoon() {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
