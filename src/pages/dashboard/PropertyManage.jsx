@@ -6129,6 +6129,12 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   // in the timeline) and `unit_index` (1..quantity). Dorms stay as ONE
   // row (per-bed detail lives in DormSubPlanModal). Single-unit rooms
   // unchanged.
+  // Type filter — drops the rendered rows + bulk selection scope to one
+  // category at a time. Default 'all' = every type. Persisted only for
+  // the lifetime of the component (intentional — re-opening the tab
+  // should reset, so the hotelier doesn't get surprised by a stale
+  // filter hiding rooms).
+  const [typeFilter, setTypeFilter] = useState('all')
   const virtualRooms = useMemo(() => {
     const out = []
     for (const r of (rooms || [])) {
@@ -6154,6 +6160,33 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
     }
     return out
   }, [rooms])
+
+  // Unique types present in this property, with their virtual-row count.
+  // Drives the type filter dropdown options. Sorted by count desc so the
+  // biggest categories appear first (Dormitory often dwarfs Executive
+  // Suite count). Untyped rooms fall under '__untyped__' so the picker
+  // still surfaces them rather than silently dropping the count.
+  const typeOptions = useMemo(() => {
+    const counts = new Map()
+    for (const vr of virtualRooms) {
+      const key = String(vr.type || '__untyped__').toLowerCase()
+      const slot = counts.get(key) || { key, label: vr.type ? prettyLabel(vr.type) : t('manage.untyped', 'Untyped'), count: 0 }
+      slot.count += 1
+      counts.set(key, slot)
+    }
+    return [...counts.values()].sort((a, b) => b.count - a.count)
+  }, [virtualRooms, t])
+
+  // Virtual rooms after the TYPE filter is applied. Every selection /
+  // rendering hook below operates on THIS list so the filter narrows
+  // both what's shown AND what bulk actions can touch — there's no
+  // surprise of "Select range" picking up hidden BABA rows.
+  const visibleVirtualRooms = useMemo(() => {
+    if (!typeFilter || typeFilter === 'all') return virtualRooms
+    const f = String(typeFilter).toLowerCase()
+    return virtualRooms.filter(vr => String(vr.type || '__untyped__').toLowerCase() === f)
+  }, [virtualRooms, typeFilter])
+
   const [loading, setLoading] = useState(true)
   // Bulk edit — same idea as Monthly view but cells span room × date.
   // Each entry is "${room_id}|${yyyy-mm-dd}" so the user can mix rooms
@@ -6409,7 +6442,10 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   function selectAllFuture() {
     const today = new Date(); today.setHours(0, 0, 0, 0)
     const next = new Set()
-    for (const vr of virtualRooms) {
+    // Acts on the FILTERED list so the user's mental model holds: if
+    // they're zoomed to "Standard" rooms, Select range picks Hibrakim
+    // cells only — not BABA cells that aren't even on screen.
+    for (const vr of visibleVirtualRooms) {
       for (const d of dates) {
         if (d >= today) next.add(cellKey(vr.virtual_id, isoOf(d)))
       }
@@ -6419,7 +6455,7 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   function selectWeekends() {
     const today = new Date(); today.setHours(0, 0, 0, 0)
     const next = new Set()
-    for (const vr of virtualRooms) {
+    for (const vr of visibleVirtualRooms) {
       for (const d of dates) {
         const dow = d.getDay()
         if ((dow === 0 || dow === 6) && d >= today) {
@@ -6457,7 +6493,10 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
     const today = new Date(); today.setHours(0, 0, 0, 0)
     const tnorm = String(typeStr || '').toLowerCase()
     const typeKeys = []
-    for (const vr of virtualRooms) {
+    // Scoped to visible rows so the click can't reach into a type that
+    // the user filtered away — though in practice once a single type
+    // is filtered, every row already shares that type.
+    for (const vr of visibleVirtualRooms) {
       if (String(vr.type || '').toLowerCase() !== tnorm) continue
       for (const d of dates) {
         if (d >= today) typeKeys.push(cellKey(vr.virtual_id, isoOf(d)))
@@ -6493,7 +6532,7 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
     const additive = !!(e && (e.metaKey || e.ctrlKey))
     const rangeMode = !!(e && e.shiftKey)
     const colKeys = []
-    for (const vr of virtualRooms) colKeys.push(cellKey(vr.virtual_id, iso))
+    for (const vr of visibleVirtualRooms) colKeys.push(cellKey(vr.virtual_id, iso))
 
     setSelectedCells(prev => {
       if (rangeMode && lastColAnchorRef.current) {
@@ -6508,7 +6547,7 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
         for (let i = lo; i <= hi; i++) {
           const di = dates[i]
           if (di < today) continue
-          for (const vr of virtualRooms) next.add(cellKey(vr.virtual_id, isoOf(di)))
+          for (const vr of visibleVirtualRooms) next.add(cellKey(vr.virtual_id, isoOf(di)))
         }
         return next
       }
@@ -6942,6 +6981,25 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
           🗓️ {t('manage.events_button', 'Events')}
         </button>
 
+        {/* TYPE filter — narrows the rendered rows + bulk scope to a
+            single room category. With 58 virtual rows (4 BABA + 3 Hibrakim
+            + 18 Nanda beds + 24 HQ single + 9 HQ double), scrolling is the
+            previous default; picking "Dormitory" here shows just the
+            51 beds, "Executive Suite" just the 4 BABAs. */}
+        <select
+          value={typeFilter}
+          onChange={e => setTypeFilter(e.target.value)}
+          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white border border-gray-200 text-gray-600 hover:border-ocean hover:text-ocean cursor-pointer focus:outline-none focus:border-ocean focus:ring-2 focus:ring-ocean/20"
+          title={t('manage.type_filter_hint', 'Filter the Timeline to one room type')}
+        >
+          <option value="all">🛏️ {t('manage.type_filter_all', 'All types')} ({virtualRooms.length})</option>
+          {typeOptions.map(opt => (
+            <option key={opt.key} value={opt.key}>
+              {opt.label} ({opt.count})
+            </option>
+          ))}
+        </select>
+
         {/* Hint — pushed to the right via ml-auto so it doesn't crowd the controls */}
         <span className="text-[11px] text-gray-400 italic ml-auto">
           {bulkMode
@@ -7043,8 +7101,8 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
               // cell is in selectedCells. Iterates virtualRooms so multi-
               // unit rooms count each unit row individually (BABA-001..
               // 004 each must be selected for the column to flag as full).
-              const colSelected = bulkMode && virtualRooms.length > 0 &&
-                virtualRooms.every(vr => selectedCells.has(cellKey(vr.virtual_id, iso)))
+              const colSelected = bulkMode && visibleVirtualRooms.length > 0 &&
+                visibleVirtualRooms.every(vr => selectedCells.has(cellKey(vr.virtual_id, iso)))
               const headerClickable = bulkMode && !isPastCol
               // Catalog + custom events on this date (see lib/events.js).
               // eventsTick forces re-eval after the modal saves. propertyId
@@ -7111,10 +7169,10 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
               Same-type but different rooms (e.g. Nanda dorm + HQ dorm)
               keep their own label because the group key is the real
               room.id, not the type string. */}
-          {virtualRooms.map((vroom, vIdx) => {
+          {visibleVirtualRooms.map((vroom, vIdx) => {
             const room = vroom              // alias for clarity in older code below
             const isUnitRow = vroom.unit_index != null
-            const prev = vIdx > 0 ? virtualRooms[vIdx - 1] : null
+            const prev = vIdx > 0 ? visibleVirtualRooms[vIdx - 1] : null
             const firstOfGroup = !prev || prev.id !== vroom.id
             return (
             <div
