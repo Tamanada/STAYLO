@@ -6729,6 +6729,10 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
     if (targetSet.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
     if (!isSingleCell && !confirm(`${label} — ${targetSet.size} ${targetSet.size > 1 ? 'cells' : 'cell'}?`)) return
     setSaving(true)
+    // Collect per-row errors so a single bad write doesn't silently
+    // abort the batch. The user gets a single alert at the end with
+    // everything that failed — better than a silent half-success.
+    const bulkErrors = []
 
     // Group keys by (room_id, unit_index). Virtual ids encode the unit:
     //   "<uuid>"          → type-level row (room_unit_index = 0)
@@ -6800,13 +6804,21 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       // Updates — every changed field propagates to both type rows
       // and unit rows. Specials use the merged effective row as the
       // source so unit-cell edits stack onto whatever was visible.
+      // Errors are collected (not thrown) so one bad row doesn't
+      // abort the rest of the batch. The user gets a single alert
+      // at the end if anything failed.
       for (const iso of toUpdate) {
         const row = existingByDate[iso]
         let rowPayload = directWrites
         if (touchesSpecials) {
           rowPayload = { ...directWrites, specials: nextSpecialsFor(iso) }
         }
-        await supabase.from('room_availability').update(rowPayload).eq('id', row.id)
+        const { error } = await supabase.from('room_availability').update(rowPayload).eq('id', row.id)
+        if (error) {
+          // eslint-disable-next-line no-console
+          console.error('[bulkUpdate] update failed', { iso, rid, unitIndex, rowPayload, error })
+          bulkErrors.push(`${iso}: ${error.message}`)
+        }
       }
 
       // Inserts — per-unit rows carry the full editable field set
@@ -6847,7 +6859,18 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
             internal_note:  directWrites.internal_note ?? null,
           })
         })
-        await supabase.from('room_availability').insert(rows)
+        // Use upsert with onConflict so concurrent edits or stale
+        // caches don't blow up with a unique-constraint violation:
+        // if the row already exists at (room_id, date, room_unit_index)
+        // we replace its editable fields rather than reject the write.
+        const { error } = await supabase
+          .from('room_availability')
+          .upsert(rows, { onConflict: 'room_id,date,room_unit_index' })
+        if (error) {
+          // eslint-disable-next-line no-console
+          console.error('[bulkUpdate] upsert failed', { rid, unitIndex, rowsLen: rows.length, error })
+          bulkErrors.push(`${rows.length} row(s): ${error.message}`)
+        }
       }
 
       // When UN-blocking the type-default, also clear any per-unit
@@ -6881,6 +6904,15 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
     // Single-cell popover actions must not nuke an in-progress bulk pick.
     if (!customCellSet) setSelectedCells(new Set())
     setSaving(false)
+
+    // Surface anything that didn't apply — silent failure was the
+    // whole "bulk change ne fonctionne pas" complaint. Capped at the
+    // first 5 lines so the alert stays readable when 30 rows fail.
+    if (bulkErrors.length > 0) {
+      const preview = bulkErrors.slice(0, 5).join('\n')
+      const more = bulkErrors.length > 5 ? `\n…and ${bulkErrors.length - 5} more` : ''
+      alert(`${label} — ${bulkErrors.length} write(s) failed:\n\n${preview}${more}\n\nFull details in the browser console.`)
+    }
   }
 
   async function bulkBlock()   { await bulkUpdate({ is_blocked: true  }, t('manage.bulk_block_label', 'Block')) }
