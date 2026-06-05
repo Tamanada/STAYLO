@@ -6484,15 +6484,15 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       price_override:  unitRow.price_override ?? typeRow.price_override,
       min_stay:        unitRow.min_stay ?? typeRow.min_stay,
       internal_note:   unitRow.internal_note ?? typeRow.internal_note,
-      // Specials: explicit override wins (even empty array = "this
-      // unit has no rewards"). null = "fall back to type". 2026-06-08:
-      // David removed a reward from BABA-002 and it vanished from
-      // BABA-001 too — because the old code wrote specials at type
-      // level. Now rewards live per-unit like everything else; insert
-      // path seeds specials: null when no rewards op fires, so a
-      // unit row created just for blocking doesn't accidentally
-      // hide the type's rewards.
-      specials:        Array.isArray(unitRow.specials) ? unitRow.specials : (typeRow.specials || []),
+      // Specials: only treat the per-unit override as winning when
+      // it carries an actual entry. Empty array = "no explicit
+      // override at this unit, fall back to type's rewards". The
+      // tradeoff is the hotelier can't EXPLICITLY clear rewards on
+      // a single unit (it would just re-show type's list) — but
+      // that's a rare case and the DB column is NOT NULL anyway so
+      // every unit row gets `[]` by default, which we want to read
+      // as "inherit" not "wipe". 2026-06-08.
+      specials:        (Array.isArray(unitRow.specials) && unitRow.specials.length > 0) ? unitRow.specials : (typeRow.specials || []),
     }
   }
 
@@ -6833,7 +6833,14 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       // type's rewards — see mergeEffectiveRow above.
       if (toInsert.length > 0) {
         const rows = toInsert.map(iso => {
-          const specialsForRow = touchesSpecials ? nextSpecialsFor(iso) : null
+          // The `specials` column is NOT NULL (default '[]'). Only
+          // include it in the insert payload when the user is actually
+          // touching specials — otherwise omit so the DB default
+          // kicks in. Was writing `null` here which blew up with
+          // "null value in column 'specials' violates not-null
+          // constraint" when bulkSetPrice fired with no specials op.
+          // 2026-06-08 — David's bulk-set-$100 hit this on 14 rows.
+          const specialsForRow = touchesSpecials ? nextSpecialsFor(iso) : undefined
           return isUnitBulk ? ({
             room_id: rid,
             date: iso,
@@ -6843,7 +6850,7 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
             price_override: directWrites.price_override ?? null,
             min_stay:       directWrites.min_stay ?? null,
             internal_note:  directWrites.internal_note ?? null,
-            specials:       specialsForRow,
+            ...(specialsForRow !== undefined ? { specials: specialsForRow } : {}),
           }) : ({
             room_id: rid,
             date: iso,
@@ -6855,7 +6862,10 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
             promo_label:    directWrites.promo_label ?? null,
             promo_pct:      directWrites.promo_pct ?? null,
             perk:           directWrites.perk ?? null,
-            specials:       specialsForRow || (add_special ? [add_special] : []),
+            // Type-level always needs SOMETHING (it's the public
+            // surface). Default to [] when no op, computed array
+            // when adding a special.
+            specials:       specialsForRow !== undefined ? specialsForRow : (add_special ? [add_special] : []),
             internal_note:  directWrites.internal_note ?? null,
           })
         })
