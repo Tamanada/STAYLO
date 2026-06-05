@@ -25,7 +25,7 @@
 // ============================================
 import { useState, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, NavLink, Outlet, useParams, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useParams, useNavigate, useLocation } from 'react-router-dom'
 import {
   ArrowLeft, Sparkles, BarChart3,
   Inbox, Settings, BedDouble,
@@ -59,6 +59,16 @@ const statusColors = {
 export default function PropertyLayout() {
   const { t } = useTranslation()
   const { id } = useParams()
+  const location = useLocation()
+  // Reception views (Chambres, Réservations, Housekeeping) need the
+  // full viewport for their grid + side panel. Other tabs (Photos,
+  // Videos, Manage) keep the narrower 1440px cap so forms stay
+  // readable. David, 2026-06-08: "agrandis le tableau au maximum sur
+  // la page" on the Chambres → Timeline screen.
+  const isWideSurface = /\/(rooms|bookings|housekeeping|reports|front-desk)(\/|$)/.test(location.pathname)
+  const containerWidthClass = isWideSurface
+    ? 'w-full max-w-none px-4'
+    : 'w-[92%] max-w-[1440px] mx-auto px-4'
   const { user } = useAuth()
   const navigate = useNavigate()
   // Shared state — child routes (Rooms, Manage, TM30, Reports, etc.)
@@ -225,7 +235,7 @@ export default function PropertyLayout() {
     // Was max-w-5xl — too tight for the Rooms toolbar + the Timeline
     // 14-day grid; David asked for the room info + filters to live on
     // the same row.
-    <div className="w-[92%] max-w-[1440px] mx-auto px-4 py-5">
+    <div className={`${containerWidthClass} py-5`}>
       {/* Header — back arrow + name + status + location (compact) */}
       <div className="flex items-center gap-3 mb-4">
         <Link
