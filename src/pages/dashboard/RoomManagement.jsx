@@ -964,6 +964,17 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
           <div className="rm-ip-price">
             <span className="rm-ip-price-amt">${Number(room.base_price).toFixed(0)}<span style={{fontSize:11,fontWeight:600,color:'rgba(255,255,255,.7)'}}>/night</span></span>
             <span className="rm-ip-price-net">net ${(Number(room.base_price) * 0.9).toFixed(0)}</span>
+            {/* When the room has a per-unit override active tonight, the
+                enriched object carries the original price as
+                base_price_default. Surface it so the receptionist can
+                see at a glance "tonight $66 (default $500)" — confirms
+                the override is in effect rather than leaving them
+                guessing. */}
+            {room.base_price_default != null && Number(room.base_price_default) !== Number(room.base_price) && (
+              <span style={{display:'block',marginTop:6,fontSize:11,fontWeight:600,color:'rgba(255,255,255,.7)'}}>
+                Default ${Number(room.base_price_default).toFixed(0)}/night
+              </span>
+            )}
           </div>
         )}
         <button
