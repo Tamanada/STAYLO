@@ -155,6 +155,11 @@ const STYLES = `
 .rm-legend-dot{width:8px;height:8px;border-radius:50%}
 
 .rm-view{flex:1;overflow:auto;transition:padding-right .15s ease-out}
+/* React-controlled fallback for the :has() selector below — same
+   visual effect but driven by component state so it works even on
+   browsers that haven't shipped :has(). */
+.rm-view.rm-view--with-popover{padding-right:520px}
+@media (max-width:1100px){.rm-view.rm-view--with-popover{padding-right:460px}}
 /* When the right-side popover is open, shrink the timeline content to
    leave the cells visible to the LEFT of the popover. CSS :has() is
    supported in all evergreen browsers and degrades gracefully (older
@@ -846,8 +851,15 @@ export default function RoomManagement() {
             <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#9CA3AF' }}></div>Blocked</div>
           </div>
 
-          {/* View body */}
-          <div className="rm-view">
+          {/* View body — `rm-view--with-popover` class fallback for browsers
+              where the :has(.rm-info-pop) selector doesn't trigger
+              (Chrome 105+ supports it, but some embedded webviews / older
+              Edge builds don't). React state is the source of truth here:
+              whenever a room is hovered or selected the popover is open,
+              so we add the class and the timeline shrinks its right edge.
+              Without this, dates 12-18 in the 14-day Timeline disappear
+              behind the popover. 2026-06-08. */}
+          <div className={`rm-view ${(hoveredRoom || selectedRoom) ? 'rm-view--with-popover' : ''}`}>
             {loading ? (
               <div style={{ padding: 60, textAlign: 'center', color: '#636E72' }}>Loading rooms…</div>
             ) : rooms.length === 0 ? (
