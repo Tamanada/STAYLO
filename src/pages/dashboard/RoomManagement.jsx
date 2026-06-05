@@ -392,6 +392,13 @@ export default function RoomManagement() {
   // exploring. 2026-06-08: David wanted the right panel to update on
   // hover so he can scan room rates without click-click-click.
   const [hoveredRoom, setHoveredRoom] = useState(null)
+  // Date the cursor is currently scrubbing across — drives the
+  // popover's "$X/night · Fri Jun 5" header so David can scan across
+  // the Timeline and see each date's effective price. Defaults to
+  // today; the cell's onMouseEnter updates it. Resets to today when
+  // the cursor leaves the timeline (so the panel always reads as
+  // tonight's view when nothing specific is hovered).
+  const [hoveredDate, setHoveredDate] = useState(null)
   // Walk-in routing — clicking a Timeline date cell (or "Quick Check-In"
   // on a Grid card) navigates to PMSFrontDesk with ?room=<id>&tab=walkin
   // so the mature multi-guest walk-in form opens pre-filled. We removed
@@ -560,18 +567,27 @@ export default function RoomManagement() {
   }, [priceOverridesByCell])
 
   // Wrap setHoveredRoom + setSelectedRoom so the panel always sees the
-  // effective price for tonight. Without this, the popover renders
-  // room.base_price even when the hotelier set a per-unit override in
-  // Disponibilités.
+  // effective price for the DATE the cursor is scrubbing across.
+  // Without this, the popover renders room.base_price even when the
+  // hotelier set a per-unit override in Disponibilités.
   const todayISO = isoDate(new Date())
-  const enrichRoomForPanel = useCallback((room) => {
+  const enrichRoomForPanel = useCallback((room, dateISO) => {
     if (!room) return room
-    const eff = getEffectivePriceFor(room, todayISO)
-    if (eff == null || eff === Number(room.base_price)) return room
-    return { ...room, base_price: eff, base_price_default: room.base_price }
+    const targetDate = dateISO || todayISO
+    const eff = getEffectivePriceFor(room, targetDate)
+    if (eff == null || eff === Number(room.base_price)) return { ...room, _panel_date: targetDate }
+    return { ...room, base_price: eff, base_price_default: room.base_price, _panel_date: targetDate }
   }, [getEffectivePriceFor, todayISO])
-  const setHoveredRoomEnriched = useCallback((r) => setHoveredRoom(enrichRoomForPanel(r)), [enrichRoomForPanel])
-  const setSelectedRoomEnriched = useCallback((r) => setSelectedRoom(typeof r === 'function' ? r : enrichRoomForPanel(r)), [enrichRoomForPanel])
+  // Re-enrich any pinned/hovered room whenever the displayed date
+  // changes — so moving the cursor right across BABA-002's Fri 5 →
+  // Sat 6 cells updates the popover from $66 to $500 in real time.
+  useEffect(() => {
+    setHoveredRoom(prev => prev ? enrichRoomForPanel(prev, hoveredDate) : prev)
+    setSelectedRoom(prev => prev ? enrichRoomForPanel(prev, hoveredDate) : prev)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hoveredDate, getEffectivePriceFor])
+  const setHoveredRoomEnriched = useCallback((r) => setHoveredRoom(enrichRoomForPanel(r, hoveredDate)), [enrichRoomForPanel, hoveredDate])
+  const setSelectedRoomEnriched = useCallback((r) => setSelectedRoom(typeof r === 'function' ? r : enrichRoomForPanel(r, hoveredDate)), [enrichRoomForPanel, hoveredDate])
 
   // Group rewards per room, then by reward identity (label + perk) so
   // a reward applying to 5 days shows ONCE with a date list rather
@@ -845,6 +861,7 @@ export default function RoomManagement() {
                 hoveredRoom={hoveredRoom}
                 onPick={setSelectedRoomEnriched}
                 onHover={setHoveredRoomEnriched}
+                onHoverDate={setHoveredDate}
                 onCheckIn={(room, date) => startWalkIn(room.id, date)} />
             ) : view === 'grid' ? (
               <GridView floorsMap={floorsMap}
@@ -966,12 +983,33 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
           <div className="rm-ip-price">
             <span className="rm-ip-price-amt">${Number(room.base_price).toFixed(0)}<span style={{fontSize:11,fontWeight:600,color:'rgba(255,255,255,.7)'}}>/night</span></span>
             <span className="rm-ip-price-net">net ${(Number(room.base_price) * 0.9).toFixed(0)}</span>
-            {/* When the room has a per-unit override active tonight, the
-                enriched object carries the original price as
-                base_price_default. Surface it so the receptionist can
-                see at a glance "tonight $66 (default $500)" — confirms
-                the override is in effect rather than leaving them
-                guessing. */}
+            {/* Date the displayed price applies to — David, 2026-06-08:
+                "I want to have the date in the popup". Pulled off the
+                enriched room's _panel_date field (set by the parent's
+                enrichRoomForPanel) so the eyebrow always reflects the
+                cell the cursor is on. Reads as "Tonight · Fri Jun 5"
+                so the receptionist can scan dates without losing
+                context of what the price refers to. */}
+            {room._panel_date && (() => {
+              const dateObj = new Date(room._panel_date + 'T00:00:00')
+              const todayObj = new Date()
+              todayObj.setHours(0, 0, 0, 0)
+              const isToday = dateObj.toDateString() === todayObj.toDateString()
+              const label = dateObj.toLocaleDateString(undefined, {
+                weekday: 'short', month: 'short', day: 'numeric',
+              })
+              return (
+                <span style={{display:'block',marginTop:4,fontSize:10,fontWeight:700,letterSpacing:'.06em',textTransform:'uppercase',color:'rgba(255,255,255,.85)'}}>
+                  {isToday ? `Tonight · ${label}` : label}
+                </span>
+              )
+            })()}
+            {/* When the room has a per-unit override active for the
+                displayed date, the enriched object carries the original
+                price as base_price_default. Surface it so the
+                receptionist can see at a glance "tonight $66 (default
+                $500)" — confirms the override is in effect rather than
+                leaving them guessing. */}
             {room.base_price_default != null && Number(room.base_price_default) !== Number(room.base_price) && (
               <span style={{display:'block',marginTop:6,fontSize:11,fontWeight:600,color:'rgba(255,255,255,.7)'}}>
                 Default ${Number(room.base_price_default).toFixed(0)}/night
@@ -1165,7 +1203,7 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
 }
 
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, enrichRoom, hoveredRoom, onPick, onHover, onCheckIn }) {
+function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, enrichRoom, hoveredRoom, onPick, onHover, onHoverDate, onCheckIn }) {
   // Per-type collapse — clicking the TYPE label hides every row of
   // that category and replaces them with a single click-to-expand stub.
   // Component-local state intentionally: a stale "Dormitory collapsed"
@@ -1312,6 +1350,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
     closeTimerRef.current = setTimeout(() => {
       setHovered(null)
       onHover?.(null)
+      onHoverDate?.(null)  // panel resets to "today" view
       closeTimerRef.current = null
     }, 120)
   }
@@ -1423,9 +1462,16 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
                 // label. blockedByRoom is the Map of roomId → Set<ISO>
                 // built from the same query as rewards (no extra fetch).
                 const isBlocked = blockedByRoom?.get(room.id)?.has(iso)
+                // Cells fire onHoverDate so the right panel's price +
+                // date header track whichever cell the cursor sits on.
+                // 2026-06-08: David asked to "have the date in the
+                // popup" so he could scan across the Timeline and see
+                // each date's effective price.
+                const onCellHover = () => onHoverDate?.(iso)
                 if (isBlocked) {
                   return (
                     <div key={i}
+                      onMouseEnter={onCellHover}
                       className={`rm-tl-cell blocked ${isToday ? 'today' : ''}`}
                       title="This date is blocked for sale (set in Disponibilités → Timeline)"
                     />
@@ -1437,6 +1483,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
                 // in CSS) so they intercept their own clicks.
                 return (
                   <div key={i}
+                    onMouseEnter={onCellHover}
                     className={`rm-tl-cell ${isToday ? 'today' : ''}`}
                     onClick={() => onCheckIn?.(room, iso)}
                     style={{ cursor: 'pointer' }}
