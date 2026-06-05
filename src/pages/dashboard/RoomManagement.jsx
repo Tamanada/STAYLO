@@ -313,6 +313,10 @@ const STYLES = `
 .rm-bdm-cell.wide{grid-column:1 / -1}
 .rm-bdm-cell-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#636E72;font-weight:700;margin-bottom:2px}
 .rm-bdm-cell-value{font-size:13px;line-height:1.3;word-break:break-word}
+.rm-bdm-cell-edit{background:#fff;border-color:#0984E3}
+.rm-bdm-input{width:100%;padding:5px 8px;border:1px solid #D1D5DB;border-radius:6px;font-size:13px;font-family:inherit;background:#fff;color:#1A1F2E;outline:none;transition:border-color .12s,box-shadow .12s}
+.rm-bdm-input:focus{border-color:#0984E3;box-shadow:0 0 0 2px rgba(9,132,227,.18)}
+.rm-bdm-input[type=date],.rm-bdm-input[type=number]{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
 .rm-bdm-guests{display:flex;flex-direction:column;gap:8px}
 .rm-bdm-guest{padding:10px 12px;border-radius:11px;background:linear-gradient(135deg,rgba(108,92,231,.05),rgba(9,132,227,.05));border:1px solid rgba(108,92,231,.18)}
 .rm-bdm-guest-head{display:flex;align-items:center;gap:8px;margin-bottom:5px;flex-wrap:wrap}
@@ -1046,12 +1050,12 @@ export default function RoomManagement() {
             booking={selectedBooking}
             room={selectedBooking._room || rooms.find(r => r.id === selectedBooking.room_id)}
             onClose={() => setSelectedBooking(null)}
-            onEdit={(b) => {
-              // For now, "Edit" routes to the same PMSFrontDesk walk-in
-              // surface with the booking's room/date pre-filled. A
-              // dedicated "edit existing reservation" flow is a follow-up.
+            onSaved={() => {
+              // Refresh the bookings list (lifted into PropertyLayout)
+              // so the Timeline reflects the saved changes, then close
+              // the modal.
+              refetchBookings()
               setSelectedBooking(null)
-              startWalkIn(b.room_id, b.check_in)
             }}
           />
         )}
@@ -2189,9 +2193,17 @@ function Row({ label, value, valueStyle }) {
 // Data sources: the booking row itself (passed in) + a lazy fetch of
 // booking_guests rows on mount. Everything else is in-memory already.
 // ============================================================================
-function BookingDetailModal({ booking, room, onClose, onEdit }) {
+function BookingDetailModal({ booking, room, onClose, onSaved }) {
   const [guests, setGuests] = useState([])
   const [guestsLoading, setGuestsLoading] = useState(true)
+  // Edit mode + draft state — flip via the Edit button. Save writes
+  // every changed field to the bookings table in one update.
+  // 2026-06-08: David found the previous "Edit → route to walk-in"
+  // flow useless because the walk-in form opens blank. Inline edit
+  // keeps the receptionist's context (they see what they're changing).
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [draft, setDraft] = useState({})
 
   useEffect(() => {
     if (!booking?.id) return
@@ -2209,6 +2221,55 @@ function BookingDetailModal({ booking, room, onClose, onEdit }) {
     })()
     return () => { cancelled = true }
   }, [booking?.id])
+
+  // Reset draft whenever a new booking is opened or edit mode toggled on.
+  useEffect(() => {
+    if (!editing || !booking) return
+    setDraft({
+      guest_name:        booking.guest_name || '',
+      guest_email:       booking.guest_email || '',
+      guest_phone:       booking.guest_phone || '',
+      check_in:          booking.check_in || '',
+      check_out:         booking.check_out || '',
+      adults:            booking.adults ?? 1,
+      children:          booking.children ?? 0,
+      total_price:       booking.total_price ?? 0,
+      status:            booking.status || 'confirmed',
+      payment_method:    booking.payment_method || 'manual',
+      special_requests:  booking.special_requests || '',
+    })
+  }, [editing, booking])
+
+  async function handleSave() {
+    setSaving(true)
+    // Build a patch of fields that actually changed so we don't write
+    // columns the receptionist didn't touch (preserves historical
+    // commission, escrow_status, etc.).
+    const patch = {}
+    for (const k of Object.keys(draft)) {
+      const before = booking[k] ?? ''
+      const after  = draft[k]
+      if (String(before) !== String(after)) patch[k] = after
+    }
+    if (Object.keys(patch).length === 0) {
+      setEditing(false)
+      setSaving(false)
+      return
+    }
+    const { error } = await supabase
+      .from('bookings')
+      .update(patch)
+      .eq('id', booking.id)
+    setSaving(false)
+    if (error) {
+      // eslint-disable-next-line no-console
+      console.error('[BookingDetailModal] save failed', error)
+      alert(`Couldn't save: ${error.message}`)
+      return
+    }
+    setEditing(false)
+    onSaved?.()           // tells the parent to refetch + close
+  }
 
   if (!booking) return null
 
@@ -2245,16 +2306,35 @@ function BookingDetailModal({ booking, room, onClose, onEdit }) {
 
         {/* Body — scrollable sections */}
         <div className="rm-bdm-body">
-          {/* Stay block */}
+          {/* Stay block — editable fields when `editing` is true */}
           <section className="rm-bdm-section">
             <h4 className="rm-bdm-h4">🛏️ Stay</h4>
             <div className="rm-bdm-grid">
-              <Cell label="Check-in" value={fmt(booking.check_in)} />
-              <Cell label="Check-out" value={fmt(booking.check_out)} />
-              <Cell label="Adults" value={booking.adults ?? '—'} />
-              <Cell label="Children" value={booking.children ?? '—'} />
-              <Cell label="Extra beds" value={booking.extra_beds_count ?? booking.extra_beds ?? 0} />
-              <Cell label="Room" value={room?.name || booking.room_id?.slice(0, 8) || '—'} />
+              {editing ? (
+                <>
+                  <EditCell label="Check-in" type="date" value={draft.check_in}
+                    onChange={v => setDraft(d => ({ ...d, check_in: v }))} />
+                  <EditCell label="Check-out" type="date" value={draft.check_out}
+                    onChange={v => setDraft(d => ({ ...d, check_out: v }))} />
+                  <EditCell label="Adults" type="number" value={draft.adults}
+                    onChange={v => setDraft(d => ({ ...d, adults: Number(v) || 0 }))} />
+                  <EditCell label="Children" type="number" value={draft.children}
+                    onChange={v => setDraft(d => ({ ...d, children: Number(v) || 0 }))} />
+                  <EditCell label="Status" value={draft.status}
+                    options={['pending','confirmed','checked_in','checked_out','completed','cancelled','no_show']}
+                    onChange={v => setDraft(d => ({ ...d, status: v }))} />
+                  <Cell label="Room" value={room?.name || '—'} />
+                </>
+              ) : (
+                <>
+                  <Cell label="Check-in" value={fmt(booking.check_in)} />
+                  <Cell label="Check-out" value={fmt(booking.check_out)} />
+                  <Cell label="Adults" value={booking.adults ?? '—'} />
+                  <Cell label="Children" value={booking.children ?? '—'} />
+                  <Cell label="Extra beds" value={booking.extra_beds_count ?? booking.extra_beds ?? 0} />
+                  <Cell label="Room" value={room?.name || booking.room_id?.slice(0, 8) || '—'} />
+                </>
+              )}
             </div>
           </section>
 
@@ -2262,10 +2342,25 @@ function BookingDetailModal({ booking, room, onClose, onEdit }) {
           <section className="rm-bdm-section">
             <h4 className="rm-bdm-h4">📞 Contact</h4>
             <div className="rm-bdm-grid">
-              <Cell label="Email"   value={booking.guest_email || '—'} mono />
-              <Cell label="Phone"   value={booking.guest_phone || '—'} mono />
-              {booking.special_requests && (
-                <Cell label="Special requests" value={booking.special_requests} wide />
+              {editing ? (
+                <>
+                  <EditCell label="Guest name" value={draft.guest_name}
+                    onChange={v => setDraft(d => ({ ...d, guest_name: v }))} />
+                  <EditCell label="Email" type="email" value={draft.guest_email}
+                    onChange={v => setDraft(d => ({ ...d, guest_email: v }))} />
+                  <EditCell label="Phone" value={draft.guest_phone}
+                    onChange={v => setDraft(d => ({ ...d, guest_phone: v }))} />
+                  <EditCell label="Special requests" value={draft.special_requests} wide multiline
+                    onChange={v => setDraft(d => ({ ...d, special_requests: v }))} />
+                </>
+              ) : (
+                <>
+                  <Cell label="Email"   value={booking.guest_email || '—'} mono />
+                  <Cell label="Phone"   value={booking.guest_phone || '—'} mono />
+                  {booking.special_requests && (
+                    <Cell label="Special requests" value={booking.special_requests} wide />
+                  )}
+                </>
               )}
             </div>
           </section>
@@ -2274,14 +2369,26 @@ function BookingDetailModal({ booking, room, onClose, onEdit }) {
           <section className="rm-bdm-section">
             <h4 className="rm-bdm-h4">💰 Pricing</h4>
             <div className="rm-bdm-grid">
-              <Cell label="Total guest pays" value={`$${Number(booking.total_price || 0).toFixed(2)}`} strong />
-              <Cell label="STAYLO commission" value={`$${Number(booking.commission || 0).toFixed(2)}`} />
-              <Cell label="You receive" value={`$${(Number(booking.total_price || 0) - Number(booking.commission || 0)).toFixed(2)}`} strong color="#00B894" />
-              <Cell label="Payment method" value={booking.payment_method || '—'} />
-              {booking.extra_bed_subtotal > 0 && (
-                <Cell label="Extra beds subtotal" value={`$${Number(booking.extra_bed_subtotal).toFixed(2)}`} />
+              {editing ? (
+                <>
+                  <EditCell label="Total guest pays" type="number" prefix="$" value={draft.total_price}
+                    onChange={v => setDraft(d => ({ ...d, total_price: Number(v) || 0 }))} />
+                  <EditCell label="Payment method" value={draft.payment_method}
+                    options={['manual','card','lightning']}
+                    onChange={v => setDraft(d => ({ ...d, payment_method: v }))} />
+                </>
+              ) : (
+                <>
+                  <Cell label="Total guest pays" value={`$${Number(booking.total_price || 0).toFixed(2)}`} strong />
+                  <Cell label="STAYLO commission" value={`$${Number(booking.commission || 0).toFixed(2)}`} />
+                  <Cell label="You receive" value={`$${(Number(booking.total_price || 0) - Number(booking.commission || 0)).toFixed(2)}`} strong color="#00B894" />
+                  <Cell label="Payment method" value={booking.payment_method || '—'} />
+                  {booking.extra_bed_subtotal > 0 && (
+                    <Cell label="Extra beds subtotal" value={`$${Number(booking.extra_bed_subtotal).toFixed(2)}`} />
+                  )}
+                  <Cell label="Currency" value={booking.currency || 'USD'} mono />
+                </>
               )}
-              <Cell label="Currency" value={booking.currency || 'USD'} mono />
             </div>
           </section>
 
@@ -2350,13 +2457,24 @@ function BookingDetailModal({ booking, room, onClose, onEdit }) {
           </section>
         </div>
 
-        {/* Footer actions */}
+        {/* Footer actions — Edit / Save+Cancel depending on mode */}
         <div className="rm-bdm-footer">
-          <button className="rm-bdm-btn rm-bdm-btn-secondary" onClick={onClose}>Close</button>
-          {onEdit && (
-            <button className="rm-bdm-btn rm-bdm-btn-primary" onClick={() => onEdit(booking)}>
-              ✏️ Edit Reservation
-            </button>
+          {editing ? (
+            <>
+              <button className="rm-bdm-btn rm-bdm-btn-secondary" disabled={saving}
+                onClick={() => setEditing(false)}>Cancel</button>
+              <button className="rm-bdm-btn rm-bdm-btn-primary" disabled={saving}
+                onClick={handleSave}>
+                {saving ? '⏳ Saving…' : '💾 Save changes'}
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="rm-bdm-btn rm-bdm-btn-secondary" onClick={onClose}>Close</button>
+              <button className="rm-bdm-btn rm-bdm-btn-primary" onClick={() => setEditing(true)}>
+                ✏️ Edit Reservation
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -2373,6 +2491,41 @@ function Cell({ label, value, mono, strong, color, wide }) {
         fontWeight: strong ? 800 : 600,
         color: color || '#1A1F2E',
       }}>{value}</div>
+    </div>
+  )
+}
+
+// Inline editor cell — same visual frame as Cell but renders an input
+// (text / number / date / select / textarea) keyed to the draft state.
+// Keeps the modal layout stable when toggling read ⇄ edit modes.
+function EditCell({ label, value, onChange, type = 'text', options, prefix, wide, multiline }) {
+  return (
+    <div className={`rm-bdm-cell rm-bdm-cell-edit ${wide ? 'wide' : ''}`}>
+      <div className="rm-bdm-cell-label">{label}</div>
+      {options ? (
+        <select className="rm-bdm-input"
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+        >
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : multiline ? (
+        <textarea className="rm-bdm-input"
+          rows={2}
+          value={value || ''}
+          onChange={e => onChange(e.target.value)}
+        />
+      ) : (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {prefix && <span style={{ color: '#9CA3AF', fontWeight: 700 }}>{prefix}</span>}
+          <input className="rm-bdm-input"
+            type={type}
+            value={value ?? ''}
+            onChange={e => onChange(e.target.value)}
+            style={{ flex: 1 }}
+          />
+        </div>
+      )}
     </div>
   )
 }
