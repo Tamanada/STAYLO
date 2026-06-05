@@ -387,6 +387,11 @@ export default function RoomManagement() {
   const [needsActionOnly, setNeedsActionOnly] = useState(false)
   const [search, setSearch] = useState('')
   const [selectedRoom, setSelectedRoom] = useState(null)
+  // Live preview of whichever room the cursor is over — independent of
+  // selectedRoom so a click stays pinned while the mouse can keep
+  // exploring. 2026-06-08: David wanted the right panel to update on
+  // hover so he can scan room rates without click-click-click.
+  const [hoveredRoom, setHoveredRoom] = useState(null)
   // Walk-in routing — clicking a Timeline date cell (or "Quick Check-In"
   // on a Grid card) navigates to PMSFrontDesk with ?room=<id>&tab=walkin
   // so the mature multi-guest walk-in form opens pre-filled. We removed
@@ -788,12 +793,14 @@ export default function RoomManagement() {
                 rewardsByRoom={rewardsByRoom}
                 blockedByRoom={blockedByRoom}
                 onPick={setSelectedRoom}
+                onHover={setHoveredRoom}
                 onCheckIn={(room, date) => startWalkIn(room.id, date)} />
             ) : view === 'grid' ? (
               <GridView floorsMap={floorsMap}
                 packagesByRoom={packagesByRoom}
                 rewardsByRoom={rewardsByRoom}
                 onPick={setSelectedRoom}
+                onHover={setHoveredRoom}
                 onCheckIn={(room) => startWalkIn(room.id)} />
             ) : (
               <FloorPlanView floorsMap={floorsMap} activeFloor={activeFloor}
@@ -802,30 +809,44 @@ export default function RoomManagement() {
                 rewardsByRoom={rewardsByRoom}
                 bookings={bookings}
                 today={today}
-                onPick={setSelectedRoom} />
+                onPick={setSelectedRoom}
+                onHover={setHoveredRoom} />
             )}
           </div>
         </div>
 
-        {/* ── SIDE PANEL ──────────────────────────────────────── */}
-        {selectedRoom && (
-          <>
-            <div className="rm-panel-backdrop" onClick={() => setSelectedRoom(null)} />
-            <RoomPanel
-              room={selectedRoom}
-              bookings={bookings}
-              onClose={() => setSelectedRoom(null)}
-              onSetStatus={(s) => {
-                setRoomStatus(selectedRoom.id, s)
-                setSelectedRoom(r => r ? { ...r, status: s } : r)
-              }}
-              onCheckIn={() => {
-                startWalkIn(selectedRoom.id)
-                setSelectedRoom(null)
-              }}
-            />
-          </>
-        )}
+        {/* ── SIDE PANEL ──────────────────────────────────────────
+            Renders for selectedRoom (pinned, click) OR hoveredRoom
+            (transient preview). The backdrop only shows when pinned
+            so a casual hover doesn't dim everything every time the
+            mouse passes over a row. selected wins over hovered so a
+            click stays put even when the cursor moves on. */}
+        {(selectedRoom || hoveredRoom) && (() => {
+          const panelRoom = selectedRoom || hoveredRoom
+          const isPinned = !!selectedRoom
+          return (
+            <>
+              {isPinned && (
+                <div className="rm-panel-backdrop" onClick={() => setSelectedRoom(null)} />
+              )}
+              <RoomPanel
+                room={panelRoom}
+                bookings={bookings}
+                isPinned={isPinned}
+                onClose={() => { setSelectedRoom(null); setHoveredRoom(null) }}
+                onSetStatus={(s) => {
+                  setRoomStatus(panelRoom.id, s)
+                  if (isPinned) setSelectedRoom(r => r ? { ...r, status: s } : r)
+                }}
+                onCheckIn={() => {
+                  startWalkIn(panelRoom.id)
+                  setSelectedRoom(null)
+                  setHoveredRoom(null)
+                }}
+              />
+            </>
+          )
+        })()}
 
         {/* Walk-in flow lives in PMSFrontDesk (mature multi-guest form
             with full TM30 fields). startWalkIn() navigates there with
@@ -1079,7 +1100,7 @@ function RoomInfoPopover({ room, packages, rewards, x, y, side, onClose, onPin, 
 }
 
 // ── Timeline view ──
-function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, onPick, onCheckIn }) {
+function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedByRoom, startDay, dates, todayDate, onPick, onHover, onCheckIn }) {
   // Per-type collapse — clicking the TYPE label hides every row of
   // that category and replaces them with a single click-to-expand stub.
   // Component-local state intentionally: a stale "Dormitory collapsed"
@@ -1214,11 +1235,13 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
   function handleRowEnter(e, room) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
     setHovered({ room })
+    onHover?.(room)
   }
   function handleRowLeave() {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
     closeTimerRef.current = setTimeout(() => {
       setHovered(null)
+      onHover?.(null)
       closeTimerRef.current = null
     }, 120)
   }
@@ -1395,7 +1418,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, rewardsByRoom, blockedB
 }
 
 // ── Grid view ──
-function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
+function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick, onHover }) {
   // Same hover popover wiring as Timeline — the card opens it, popover
   // is rendered once at the view root so we don't get N popovers
   // racing each other.
@@ -1408,11 +1431,13 @@ function GridView({ floorsMap, packagesByRoom, rewardsByRoom, onPick }) {
   function openFor(room) {
     if (closeTimerRef.current) { clearTimeout(closeTimerRef.current); closeTimerRef.current = null }
     setHovered({ room })
+    onHover?.(room)
   }
   function closeSoon() {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
     closeTimerRef.current = setTimeout(() => {
       setHovered(null)
+      onHover?.(null)
       closeTimerRef.current = null
     }, 120)
   }
@@ -1490,7 +1515,7 @@ function GridCard({ room, onPick, onHoverIn, onHoverOut }) {
 }
 
 // ── Floor plan view ──
-function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, bookings, today, onPick }) {
+function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, bookings, today, onPick, onHover }) {
   // V7 shortcut — if the hotelier has configured zones (drag-drop shapes
   // on the architect plan in PropertyManage), display THAT instead of
   // the auto-layout fallback. The fallback is kept for properties that
@@ -1528,6 +1553,7 @@ function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, booki
         today={today}
         property={property}
         onPick={onPick}
+        onHover={onHover}
       />
     )
   }
@@ -1548,11 +1574,11 @@ function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, booki
       <div className="rm-fp-canvas">
         <div className="rm-floor-plan">
           <div className="rm-fp-row">
-            {list.slice(0, half).map(r => <FpRoom key={r.id} room={r} onPick={onPick} />)}
+            {list.slice(0, half).map(r => <FpRoom key={r.id} room={r} onPick={onPick} onHover={onHover} />)}
           </div>
           <div className="rm-fp-corridor">— {property?.name || 'Corridor'} — Floor {effective} —</div>
           <div className="rm-fp-row">
-            {list.slice(half).map(r => <FpRoom key={r.id} room={r} onPick={onPick} />)}
+            {list.slice(half).map(r => <FpRoom key={r.id} room={r} onPick={onPick} onHover={onHover} />)}
           </div>
         </div>
       </div>
@@ -1564,7 +1590,7 @@ function FloorPlanView({ floorsMap, activeFloor, setActiveFloor, property, booki
 // V7 reception view — architect plan as background, V7 shape zones as
 // clickable status-coloured rectangles/circles/polygons on top.
 // ──────────────────────────────────────────────────────────────────────
-function FloorPlanV7View({ planUrl, zones, roomById, bookings, today, property, onPick }) {
+function FloorPlanV7View({ planUrl, zones, roomById, bookings, today, property, onPick, onHover }) {
   // Per-room booking count active today — used to compute PER-UNIT
   // status instead of inheriting the type-level room.status. Without
   // this, a room with quantity=3 and ONE booking would show all 3
@@ -1749,6 +1775,8 @@ function FloorPlanV7View({ planUrl, zones, roomById, bookings, today, property, 
                 key={`btn-${z.id}`}
                 type="button"
                 onClick={() => onPick(room)}
+                onMouseEnter={() => onHover?.(room)}
+                onMouseLeave={() => onHover?.(null)}
                 title={`${room.name} · ${s.label}${room.guest_name ? ' · ' + room.guest_name : ''}`}
                 style={{
                   position: 'absolute',
@@ -1788,9 +1816,11 @@ function FloorPlanV7View({ planUrl, zones, roomById, bookings, today, property, 
   )
 }
 
-function FpRoom({ room, onPick }) {
+function FpRoom({ room, onPick, onHover }) {
   return (
     <button className={`rm-fp-room ${room.status}`} onClick={() => onPick(room)}
+      onMouseEnter={() => onHover?.(room)}
+      onMouseLeave={() => onHover?.(null)}
       title={`Room ${room.name} · ${room.type}`}>
       <div className="rm-fpr-num">{room.name}</div>
       <div className="rm-fpr-type">{(room.type || '').split(' ')[0]}</div>
@@ -1800,7 +1830,7 @@ function FpRoom({ room, onPick }) {
 }
 
 // ── Side panel ──
-function RoomPanel({ room, bookings, onClose, onSetStatus, onCheckIn }) {
+function RoomPanel({ room, bookings, isPinned = true, onClose, onSetStatus, onCheckIn }) {
   const today = isoDate(new Date())
   const active = bookings.find(b =>
     b.room_id === room.id && b.status !== 'cancelled' &&
