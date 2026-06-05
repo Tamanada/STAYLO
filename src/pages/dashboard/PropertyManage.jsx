@@ -6355,6 +6355,20 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   // Shape: null | { initialValue: string, count: number, onConfirm(value|null) }
   const [noteModal, setNoteModal] = useState(null)
 
+  // ↶ Last-action snapshot, used by the Undo button. Filled by bulkUpdate
+  // after every successful batch (block, clear notes, set price, etc.)
+  // and offered as a one-click revert in the bulk-action bar. Auto-clears
+  // after 30s so a stale snapshot can't surprise the operator (the rows
+  // may have changed under us, restoring would no longer match reality).
+  // 2026-06-08 — David: "il nous faut un bouton retour pour la securite".
+  // Shape: null | { label: string, snapshot: [{ rid, unitIndex, iso, before: row|null }] }
+  const [undo, setUndo] = useState(null)
+  useEffect(() => {
+    if (!undo) return
+    const timer = setTimeout(() => setUndo(null), 30_000)
+    return () => clearTimeout(timer)
+  }, [undo])
+
   // Drag-drop reordering of room rows. The left info column of each
   // row is draggable; drop onto another row's info column swaps the
   // two rooms' display_order. Applies everywhere rooms are listed
@@ -6786,6 +6800,11 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
     // abort the batch. The user gets a single alert at the end with
     // everything that failed — better than a silent half-success.
     const bulkErrors = []
+    // Snapshot of EVERY (rid, unitIndex, iso) we touch, captured BEFORE
+    // any write fires. Used by the Undo button to revert in one click.
+    // `before === null` means the row didn't exist yet — undo will DELETE
+    // the row we created. Otherwise undo restores the previous values.
+    const undoSnapshot = []
 
     // Group keys by (room_id, unit_index). Virtual ids encode the unit:
     //   "<uuid>"          → type-level row (room_unit_index = 0)
@@ -6836,6 +6855,16 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
 
       const toUpdate = isoList.filter(d => existingByDate[d])
       const toInsert = isoList.filter(d => !existingByDate[d])
+
+      // Capture pre-write state for every iso in this (rid, unitIndex)
+      // group. `before` is the full row (so undo can restore every
+      // field) or null when no row existed (so undo deletes the row
+      // we're about to insert). Capturing BEFORE the writes is the
+      // whole point — by the time we'd want to undo, the row's been
+      // mutated and we'd have no way back without this snapshot.
+      isoList.forEach(iso => {
+        undoSnapshot.push({ rid, unitIndex, iso, before: existingByDate[iso] || null })
+      })
 
       // Helper — compute the next specials array for a given iso
       // based on the merged effective row's CURRENT specials. For
@@ -6994,6 +7023,13 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
     if (!customCellSet) setSelectedCells(new Set())
     setSaving(false)
 
+    // Offer Undo only when at least one write succeeded. Suppress for
+    // pure-error batches (the operator sees the alert, not a misleading
+    // "Undo Clear note" they can't actually undo because nothing landed).
+    if (undoSnapshot.length > 0 && bulkErrors.length < undoSnapshot.length) {
+      setUndo({ label, snapshot: undoSnapshot })
+    }
+
     // Surface anything that didn't apply — silent failure was the
     // whole "bulk change ne fonctionne pas" complaint. Capped at the
     // first 5 lines so the alert stays readable when 30 rows fail.
@@ -7006,6 +7042,56 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
 
   async function bulkBlock()   { await bulkUpdate({ is_blocked: true  }, t('manage.bulk_block_label', 'Block')) }
   async function bulkUnblock() { await bulkUpdate({ is_blocked: false }, t('manage.bulk_unblock_label', 'Unblock')) }
+
+  // ↶ Revert the last bulk action by replaying the captured snapshot.
+  // For each (rid, unitIndex, iso): if a row existed before, restore
+  // its full state; otherwise delete the row we created. Mirrors the
+  // Monthly view's handleUndo (line ~5090) but threads room_unit_index
+  // through every operation so it lands on the right per-unit row.
+  async function handleUndo() {
+    if (!undo) return
+    setSaving(true)
+    const undoErrors = []
+    for (const { rid, unitIndex, iso, before } of undo.snapshot) {
+      if (before) {
+        // Row existed — restore every editable field. We pass the FULL
+        // pre-image so even fields not in the original payload (e.g. a
+        // user edited price right before the bulk note clear) get
+        // reverted. That's the safest semantics for a one-click undo.
+        const { error } = await supabase.from('room_availability').update({
+          is_blocked:      before.is_blocked,
+          available_count: before.available_count,
+          price_override:  before.price_override,
+          min_stay:        before.min_stay,
+          promo_label:     before.promo_label,
+          promo_pct:       before.promo_pct,
+          perk:            before.perk,
+          specials:        before.specials ?? [],
+          internal_note:   before.internal_note,
+        }).eq('id', before.id)
+        if (error) undoErrors.push(`${iso}: ${error.message}`)
+      } else {
+        // Row didn't exist before — delete the one bulkUpdate inserted.
+        // Filtering by (room_id, date, room_unit_index) keeps the delete
+        // precise; without the unit filter we'd nuke sibling type/unit
+        // rows that share the same (room_id, date).
+        const { error } = await supabase.from('room_availability')
+          .delete()
+          .eq('room_id', rid)
+          .eq('date', iso)
+          .eq('room_unit_index', unitIndex)
+        if (error) undoErrors.push(`${iso}: ${error.message}`)
+      }
+    }
+    await refreshAvail()
+    setUndo(null)
+    setSaving(false)
+    if (undoErrors.length > 0) {
+      const preview = undoErrors.slice(0, 5).join('\n')
+      const more = undoErrors.length > 5 ? `\n…and ${undoErrors.length - 5} more` : ''
+      alert(`Undo — ${undoErrors.length} revert(s) failed:\n\n${preview}${more}`)
+    }
+  }
 
   async function bulkSetPrice() {
     if (selectedCells.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
@@ -7327,6 +7413,47 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       </div>
 
     <Card>
+      {/* ↶ Undo banner — sits above the bulk toolbar so it survives the
+          post-action selection clear (bulkUpdate wipes selectedCells,
+          which would hide the bulk row entirely). 30s auto-expire from
+          the useEffect on `undo`. Rendered outside bulkMode so the
+          operator who turned off bulk-edit can still revert.
+          David asked for it 2026-06-08: "il nous faut un bouton retour
+          pour la securite". */}
+      {undo && (
+        <div className="mb-3 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-amber-100/70 border border-amber-300 flex items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-lg leading-none">↶</span>
+            <div className="min-w-0">
+              <div className="text-xs font-bold text-amber-900 truncate">
+                {t('manage.undo_label', 'Last action: {{label}} on {{n}} cell(s)', { label: undo.label, n: undo.snapshot.length })}
+              </div>
+              <div className="text-[11px] text-amber-700/80">
+                {t('manage.undo_hint', 'Auto-expires in 30s. Restores every field of every affected cell.')}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={handleUndo}
+              type="button"
+              disabled={saving}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-sm disabled:opacity-50"
+            >
+              ↶ {t('manage.undo', 'Undo')}
+            </button>
+            <button
+              onClick={() => setUndo(null)}
+              type="button"
+              className="px-2 py-1.5 rounded-lg text-xs font-semibold text-amber-700/70 hover:text-amber-900 hover:bg-amber-100 transition-all"
+              title={t('common.dismiss', 'Dismiss')}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Bulk-edit secondary toolbar — quick selects + actions, only
           rendered when bulk mode is ON. The toggle itself moved up
           into the unified header so this row is purely the workspace. */}
