@@ -1898,46 +1898,63 @@ function WalkInForm({ room, propertyId, userId, existingBookings, walkinContext,
     special_requests: '',
   })
 
-  // Resolve the EFFECTIVE rate for this room × check-in date × unit.
-  // Precedence (mirrors the Disponibilités modal + reception popover):
+  // Resolve the AVERAGE effective rate for the FULL stay (check-in →
+  // check-out). Each night's effective price is computed independently
+  // with the standard precedence:
   //   1. Per-unit override at (room, date, unit_index)   ← strongest
   //   2. Type-default override at (room, date, 0)
   //   3. room.base_price                                  ← fallback
-  // Unit index comes from the deep-link context (walkinContext.unitIndex)
-  // — Reception's TimelineView passes `room.unit_index` when calling
-  // startWalkIn. When unitIndex is missing, the per-unit branch is
-  // skipped and the type-default applies as before. Re-runs whenever
-  // the receptionist changes the check-in date so the rate stays in
-  // sync with Disponibilités. 2026-06-08: David flagged BABA-002's
-  // $66 override was being ignored because the modal only knew about
-  // the type-default ($9).
+  // Then we average across the stay so the displayed "Rate per night"
+  // multiplied by the night count matches the real total. Without
+  // this, a 5-night stay where each night has a different override
+  // ($3 / $7 / $12 / $50 / $200) would show the check-in night's $3
+  // and bill the guest $15 instead of $272. David hit this 2026-06-08.
   useEffect(() => {
-    if (!room?.id || !form.check_in) return
+    if (!room?.id || !form.check_in || !form.check_out) return
+    if (form.check_out <= form.check_in) return
     let cancelled = false
     ;(async () => {
+      // Enumerate every night in [check_in, check_out).
+      const nights = []
+      const cur = new Date(form.check_in + 'T00:00:00Z')
+      const end = new Date(form.check_out + 'T00:00:00Z')
+      while (cur < end) {
+        nights.push(cur.toISOString().slice(0, 10))
+        cur.setUTCDate(cur.getUTCDate() + 1)
+      }
+      if (nights.length === 0) return
+
       const unitIdx = walkinContext?.unitIndex || null
-      // Fetch both rows in one round-trip — unit_index in (0, N) if a
-      // unit is in play, else just unit_index = 0.
       const indices = unitIdx ? [0, unitIdx] : [0]
       const { data, error } = await supabase
         .from('room_availability')
-        .select('room_unit_index, price_override')
+        .select('date, room_unit_index, price_override')
         .eq('room_id', room.id)
-        .eq('date', form.check_in)
+        .in('date', nights)
         .in('room_unit_index', indices)
       if (cancelled || error) return
-      const typeRow = (data || []).find(r => r.room_unit_index === 0)
-      const unitRow = unitIdx ? (data || []).find(r => r.room_unit_index === unitIdx) : null
-      // Per-unit override wins, then type-default, then room.base_price.
-      const eff = (unitRow?.price_override ?? typeRow?.price_override ?? null)
-      const finalRate = eff != null ? Number(eff) : (room.base_price ? Number(room.base_price) : null)
-      if (finalRate != null) {
-        setForm(f => ({ ...f, rate: String(finalRate) }))
+
+      // Build per-night effective price → average.
+      const fallback = room.base_price ? Number(room.base_price) : 0
+      let total = 0
+      for (const date of nights) {
+        const unitRow = unitIdx
+          ? (data || []).find(r => r.date === date && r.room_unit_index === unitIdx)
+          : null
+        const typeRow = (data || []).find(r => r.date === date && r.room_unit_index === 0)
+        const nightRate = unitRow?.price_override ?? typeRow?.price_override ?? fallback
+        total += Number(nightRate) || 0
+      }
+      const avg = total / nights.length
+      if (Number.isFinite(avg) && avg > 0) {
+        // Round to 2 decimals so the form's "Rate per night × nights"
+        // matches the per-night total within sub-cent rounding.
+        setForm(f => ({ ...f, rate: String(Math.round(avg * 100) / 100) }))
       }
     })()
     return () => { cancelled = true }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [room?.id, form.check_in, walkinContext?.unitIndex])
+  }, [room?.id, form.check_in, form.check_out, walkinContext?.unitIndex])
   // Per-guest registry (TM30 compliance + ops). Auto-resized to adults+children.
   // Each entry covers EVERY field Thai Immigration TM30 requires.
   // The first entry is always the lead (booker). See docs/TM30_COMPLIANCE.md.
