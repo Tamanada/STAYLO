@@ -7567,20 +7567,14 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       </div>
     </Card>
 
-    {/* Reward picker — shared modal with Monthly view. onApply hands
-        back a payload that bulkUpdate knows how to merge into the
-        specials[] arrays of the selected cells. */}
-    <RewardModal
-      open={rewardModalOpen}
-      onClose={() => setRewardModalOpen(false)}
-      onApply={handleRewardModalApply}
-      selectedCount={rewardCellSet ? rewardCellSet.size : selectedCells.size}
-    />
-
     {/* Per-cell editor — opens on click in non-bulk mode. Inline
         inputs for price / min stay / note + Block/Available toggle,
         plus a Rewards section that opens the RewardModal scoped to
-        this cell. One Save commits all changes at once. */}
+        this cell. One Save commits all changes at once.
+        IMPORTANT: rendered BEFORE the RewardModal so when the reward
+        picker opens from "+ Add" it stacks on top — same z-index
+        (z-50 on the shared Modal component), DOM order decides who
+        wins. David hit this 2026-06-08: "cette page s'ouvre derriere". */}
     {editingCell && (
       <CellEditorModal
         cell={editingCell}
@@ -7625,6 +7619,18 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
         t={t}
       />
     )}
+
+    {/* Reward picker — shared modal with Monthly view. onApply hands
+        back a payload that bulkUpdate knows how to merge into the
+        specials[] arrays of the selected cells. Rendered AFTER the
+        CellEditorModal so it stacks ON TOP via DOM order — both use
+        the shared <Modal> at z-50 so position-in-tree decides. */}
+    <RewardModal
+      open={rewardModalOpen}
+      onClose={() => setRewardModalOpen(false)}
+      onApply={handleRewardModalApply}
+      selectedCount={rewardCellSet ? rewardCellSet.size : selectedCells.size}
+    />
 
     {/* Events & holidays picker — small dropdown-style modal listing
         the catalog + any custom events for this property. onChange
