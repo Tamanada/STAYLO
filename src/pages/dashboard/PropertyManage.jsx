@@ -6342,6 +6342,12 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   const [eventsOpen, setEventsOpen] = useState(false)
   const [eventsTick, setEventsTick] = useState(0)
 
+  // 📝 Internal note editor. Was a native browser prompt() — David rejected
+  // it 2026-06-08 ("fais une belle popup. je veux pouvoir ajouter ou annuler
+  // des notes"). Now a real Modal with a textarea, Save / Clear / Cancel.
+  // Shape: null | { initialValue: string, count: number, onConfirm(value|null) }
+  const [noteModal, setNoteModal] = useState(null)
+
   // Drag-drop reordering of room rows. The left info column of each
   // row is draggable; drop onto another row's info column swaps the
   // two rooms' display_order. Applies everywhere rooms are listed
@@ -7029,21 +7035,44 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   }
 
   // 📝 Internal note — hotelier-only annotation, never shown to guests.
-  async function bulkSetNote() {
+  // 2026-06-08: David rejected the native browser prompt() — too ugly,
+  // doesn't preserve multi-line, no Clear button. Replaced with a real
+  // NoteEditorModal (state below, render at bottom).
+  function bulkSetNote() {
     if (selectedCells.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
-    const input = prompt(
-      t(
-        'manage.bulk_note_prompt',
-        'Internal note for {{n}} selected cell(s). NEVER shown to guests.\n\nExamples: "Wedding Smith — pre-booked", "Maintenance morning of 8am-noon"\n\nLeave blank to clear the note.',
-        { n: selectedCells.size }
-      )
-    )
-    if (input === null) return
-    const note = input.trim() || null
-    await bulkUpdate(
-      { internal_note: note },
-      note ? t('manage.bulk_set_note_label', 'Set internal note') : t('manage.bulk_clear_note_label', 'Clear note')
-    )
+    // Survey the selection. Three pieces of info matter:
+    //   - sameForAll → pre-fill the textarea (safe: editing common ground)
+    //   - cellsWithNote → count the cells that actually have a note today
+    //   - anyHasNote → drives the Clear button. Even if cells disagree on
+    //     content, the user must be able to wipe them all at once. David
+    //     hit this on 2026-06-08: 14 cells selected, 2 with notes, no
+    //     way to clear → "je ne peux pas retirer des notes". Fixed.
+    let sameForAll = true
+    let first = null
+    let cellsWithNote = 0
+    selectedCells.forEach(k => {
+      const [vid, iso] = k.split('|')
+      const hashAt = vid.indexOf('#')
+      const rid = hashAt === -1 ? vid : vid.slice(0, hashAt)
+      const note = availByRoom[rid]?.[iso]?.internal_note ?? null
+      if (note) cellsWithNote++
+      if (first === null) first = note
+      else if (note !== first) sameForAll = false
+    })
+    const initial = sameForAll && first ? first : ''
+    setNoteModal({
+      initialValue: initial,
+      count: selectedCells.size,
+      cellsWithNote,           // > 0 → render Clear button
+      mixed: !sameForAll,      // → show "Notes differ across cells" hint
+      onConfirm: async (newValue) => {
+        const note = (newValue || '').trim() || null
+        await bulkUpdate(
+          { internal_note: note },
+          note ? t('manage.bulk_set_note_label', 'Set internal note') : t('manage.bulk_clear_note_label', 'Clear note')
+        )
+      },
+    })
   }
 
   // ── Single-cell handlers ────────────────────────────────
@@ -7116,20 +7145,24 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
     setRewardCellSet(new Set([cellKey(vid, iso)]))
     setRewardModalOpen(true)
   }
-  function singleSetNote(roomId, iso) {
+  function singleSetNote(roomId, iso, unitIndex) {
     const row = availByRoom[roomId]?.[iso]
     const current = row?.internal_note ?? ''
-    const input = prompt(
-      `Internal note for ${iso} (hotelier-only, never shown to guests).\n\nLeave blank to clear.`,
-      String(current)
-    )
-    if (input === null) return
-    const note = input.trim() || null
-    bulkUpdate(
-      { internal_note: note },
-      note ? 'Set internal note' : 'Clear note',
-      new Set([cellKey(roomId, iso)])
-    )
+    const vid = unitIndex != null ? `${roomId}#${unitIndex}` : roomId
+    setNoteModal({
+      initialValue: String(current),
+      count: 1,
+      cellsWithNote: current ? 1 : 0,
+      mixed: false,
+      onConfirm: async (newValue) => {
+        const note = (newValue || '').trim() || null
+        await bulkUpdate(
+          { internal_note: note },
+          note ? 'Set internal note' : 'Clear note',
+          new Set([cellKey(vid, iso)])
+        )
+      },
+    })
   }
 
   if (rooms.length === 0) {
@@ -7736,7 +7769,152 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       country={country}
       onChange={() => setEventsTick(n => n + 1)}
     />
+
+    {/* 📝 Internal-note editor — replaces the native browser prompt() that
+        David rejected ("fais une belle popup. je veux pouvoir ajouter
+        ou annuler des notes"). Single component used for both single-cell
+        and bulk flows; the trigger fills `noteModal` with the right
+        callback. Save persists, Clear writes null, Cancel exits. */}
+    <NoteEditorModal
+      state={noteModal}
+      onClose={() => setNoteModal(null)}
+      t={t}
+    />
     </>
+  )
+}
+
+// ============================================================================
+// NoteEditorModal — beautiful replacement for native prompt() on
+// internal notes. Opens with the cell's current note pre-filled (or
+// blank when bulk targets disagree). Footer offers three intents:
+//   • Cancel  → leave note unchanged
+//   • Clear   → write null (only shown when there's already text)
+//   • Save    → write the trimmed textarea value (null if empty)
+// onConfirm receives the final value (string or null); the parent
+// runs bulkUpdate and the modal closes.
+// ============================================================================
+function NoteEditorModal({ state, onClose, t }) {
+  const [value, setValue] = useState('')
+
+  // Reset the textarea every time the modal opens for a different cell.
+  useEffect(() => {
+    if (state) setValue(state.initialValue || '')
+  }, [state])
+
+  if (!state) return null
+
+  const { count, onConfirm, cellsWithNote = 0, mixed = false } = state
+  const trimmed = (value || '').trim()
+  // Clear button visibility: ANY selected cell already has a note → expose
+  // a one-click wipe. Fixes David's 2026-06-08 complaint where 14 cells
+  // were selected, 2 with notes, and the modal had no way to clear them.
+  const canClear = cellsWithNote > 0
+
+  async function handleSave() {
+    await onConfirm(trimmed || null)
+    onClose()
+  }
+  async function handleClear() {
+    await onConfirm(null)
+    onClose()
+  }
+
+  return (
+    <Modal open={!!state} onClose={onClose} size="lg">
+      <div className="space-y-4">
+        {/* Header */}
+        <div className="-mt-2">
+          <h3 className="text-lg font-bold text-deep flex items-center gap-2">
+            <span>📝</span>
+            {t('manage.note_modal_title', 'Internal note')}
+          </h3>
+          <p className="text-xs text-gray-500 mt-1">
+            {count > 1
+              ? t('manage.note_modal_sub_bulk', '{{n}} selected cell(s) — never shown to guests.', { n: count })
+              : t('manage.note_modal_sub_single', 'Hotelier-only — never shown to guests.')}
+          </p>
+        </div>
+
+        {/* Mixed-notes warning — when selection spans cells with different
+            notes we show a small banner so the user understands that
+            saving will OVERWRITE everyone, and Clear will WIPE everyone. */}
+        {mixed && cellsWithNote > 0 && (
+          <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900">
+            <span className="text-sm leading-none mt-0.5">⚠️</span>
+            <div>
+              <div className="font-semibold">
+                {t('manage.note_modal_mixed_title', 'Selected cells have different notes')}
+              </div>
+              <div className="text-amber-800/80 mt-0.5">
+                {t(
+                  'manage.note_modal_mixed_body',
+                  '{{withNote}} of {{count}} cell(s) currently have a note. Save overwrites them all. Clear removes them all.',
+                  { withNote: cellsWithNote, count }
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Textarea */}
+        <div>
+          <textarea
+            autoFocus
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            rows={5}
+            placeholder={t(
+              'manage.note_modal_placeholder',
+              'e.g. "Wedding Smith — pre-booked", "Maintenance 8am–noon", "VIP – upgrade if possible"',
+            )}
+            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:border-ocean focus:ring-2 focus:ring-ocean/20 resize-y"
+          />
+          <p className="text-[11px] text-gray-400 mt-1.5">
+            {canClear
+              ? t('manage.note_modal_hint_clear', 'Type to replace · use Clear to remove the note(s) entirely.')
+              : t('manage.note_modal_hint', 'Type to add a note. Cells without a note stay empty until you save.')}
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-deep/70 hover:text-deep hover:bg-gray-50 transition-all"
+          >
+            {t('common.cancel', 'Cancel')}
+          </button>
+          <div className="flex items-center gap-2">
+            {canClear && (
+              <button
+                type="button"
+                onClick={handleClear}
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-sunset bg-sunset/10 hover:bg-sunset/20 transition-all flex items-center gap-1.5"
+                title={
+                  count > 1
+                    ? t('manage.note_modal_clear_tooltip_bulk', 'Remove the internal note from all {{n}} selected cell(s).', { n: count })
+                    : t('manage.note_modal_clear_tooltip', 'Remove the internal note from this cell.')
+                }
+              >
+                🗑️ {count > 1 && cellsWithNote > 0
+                    ? t('manage.note_modal_clear_n', 'Clear {{n}} note(s)', { n: cellsWithNote })
+                    : t('manage.note_modal_clear', 'Clear note')}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!trimmed && !canClear}
+              className="px-5 py-2 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-ocean to-electric shadow-sm hover:shadow-md transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              💾 {t('manage.note_modal_save', 'Save note')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Modal>
   )
 }
 
