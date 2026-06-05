@@ -13,6 +13,8 @@ import { generateFloorPlanSVG, generateOutlineFloorPlanSVG, svgToBlob } from '..
 import { bestRoomMatch } from '../../lib/fuzzyMatch'
 import { centroid as polygonCentroid, polygonArea, verticesToPoints } from '../../lib/floorPlanGeometry'
 import DormSubPlanModal from '../../components/dashboard/DormSubPlanModal'
+import { EventsHolidaysModal } from '../../components/dashboard/EventsHolidaysModal'
+import { getEventsOnDate } from '../../lib/events'
 
 // Dorm rooms behave differently on the floor plan: ONE marker on the
 // main plan (= the physical dorm room itself), and the room.quantity
@@ -334,7 +336,7 @@ export default function PropertyManage() {
       {activeTab === 'rooms' && <RoomsTab propertyId={propertyId} rooms={rooms} packages={propertyPackages} onRefresh={fetchData} onJumpToPackages={() => setActiveTab('packages')} />}
       {activeTab === 'plan' && <FloorPlanTab property={property} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'packages' && <PackagesTab propertyId={propertyId} rooms={rooms} onRefresh={fetchData} />}
-      {activeTab === 'calendar' && <CalendarTab rooms={rooms} onRefresh={fetchData} />}
+      {activeTab === 'calendar' && <CalendarTab rooms={rooms} property={property} onRefresh={fetchData} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'team' && <TeamTab property={property} />}
       {activeTab === 'settings' && <SettingsTab property={property} onRefresh={fetchData} />}
@@ -4655,7 +4657,7 @@ function RoomMediaUploader({ kind, room, propertyId, onChange }) {
 // ============================================
 // CALENDAR TAB
 // ============================================
-function CalendarTab({ rooms, onRefresh }) {
+function CalendarTab({ rooms, property, onRefresh }) {
   const { t } = useTranslation()
   // View mode — 'monthly' (per-room 35-day grid, editor) or 'timeline'
   // (all rooms × 14 days, bird's-eye view). The Timeline view is the
@@ -5141,7 +5143,14 @@ function CalendarTab({ rooms, onRefresh }) {
       )}
 
       {viewMode === 'timeline' ? (
-        <TimelineAvailabilityView rooms={rooms} viewMode={viewMode} setViewMode={setViewMode} onRefresh={onRefresh} />
+        <TimelineAvailabilityView
+          rooms={rooms}
+          propertyId={property?.id}
+          country={property?.country}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          onRefresh={onRefresh}
+        />
       ) : (
       <>
       {/* Room selector */}
@@ -6102,7 +6111,7 @@ function CellHoverPanel_DEPRECATED({
 // block days there. Keeping the heavy editor in one place avoids
 // duplicating the bulk-edit machinery in two layouts.
 // ============================================
-function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
+function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setViewMode, onRefresh }) {
   const { t } = useTranslation()
   const DAYS = 14
   const [startDate, setStartDate] = useState(() => {
@@ -6168,6 +6177,14 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
   // wanted inline fields to "change prices, options" — modal is
   // the right surface for that.
   const [editingCell, setEditingCell] = useState(null) // { roomId, iso } | null
+
+  // Events & holidays — when open, the hotelier toggles catalog events
+  // (Full Moon, Songkran, ...) and adds custom one-offs that ride on
+  // the day column headers as emoji chips. `eventsTick` is just a
+  // version counter we bump after the modal saves so the day-header
+  // memo recomputes from the localStorage source of truth.
+  const [eventsOpen, setEventsOpen] = useState(false)
+  const [eventsTick, setEventsTick] = useState(0)
 
   // Drag-drop reordering of room rows. The left info column of each
   // row is draggable; drop onto another row's info column swaps the
@@ -6899,6 +6916,19 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
           {bulkMode ? `✓ ${t('manage.bulk_edit_on', 'Bulk edit ON')}` : `✏️ ${t('manage.bulk_edit', 'Bulk edit')}`}
         </button>
 
+        {/* Events & holidays — ported from ship.html's Planning. Lets the
+            hotelier toggle public holidays + lunar parties + custom events
+            that ride on the day column headers as emoji chips. Helps with
+            price/stock planning around Full Moon, Songkran, etc. */}
+        <button
+          type="button"
+          onClick={() => setEventsOpen(true)}
+          title={t('manage.events_button_hint', 'Pick which holidays + parties show on day headers')}
+          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-white border border-gray-200 text-gray-600 hover:border-ocean hover:text-ocean"
+        >
+          🗓️ {t('manage.events_button', 'Events')}
+        </button>
+
         {/* Hint — pushed to the right via ml-auto so it doesn't crowd the controls */}
         <span className="text-[11px] text-gray-400 italic ml-auto">
           {bulkMode
@@ -7003,19 +7033,46 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
               const colSelected = bulkMode && virtualRooms.length > 0 &&
                 virtualRooms.every(vr => selectedCells.has(cellKey(vr.virtual_id, iso)))
               const headerClickable = bulkMode && !isPastCol
+              // Catalog + custom events on this date (see lib/events.js).
+              // eventsTick forces re-eval after the modal saves. propertyId
+              // is the storage scope key. Limited to 3 chips per header so
+              // a busy day (Christmas + Full Moon + custom) doesn't blow
+              // the column width — overflow goes into the title tooltip.
+              const evList = propertyId
+                ? getEventsOnDate(propertyId, country, iso)
+                : []
+              // eslint-disable-next-line no-unused-expressions
+              eventsTick // mark dependency
               return (
                 <div
                   key={i}
                   onClick={headerClickable ? (e) => toggleColumn(iso, e) : undefined}
                   title={headerClickable
                     ? 'Click to select this column · ⌘/Ctrl+click to add · Shift+click for range'
-                    : undefined}
+                    : (evList.length > 0 ? evList.map(e => e.name).join(' · ') : undefined)}
                   className={`text-center py-1.5 border-b border-gray-200 transition-colors ${
                     colSelected
                       ? 'bg-ocean/20 ring-1 ring-inset ring-ocean/40'
                       : isToday ? 'bg-ocean/10' : ''
                   } ${headerClickable ? 'cursor-pointer hover:bg-ocean/10' : ''}`}
                 >
+                  {/* Event chips — emoji row above the DOW. Hidden when
+                      empty so single-event columns don't grow taller than
+                      blank columns. */}
+                  {evList.length > 0 && (
+                    <div className="flex items-center justify-center gap-0.5 h-4 mb-0.5"
+                      title={evList.map(e => e.name).join(' · ')}
+                    >
+                      {evList.slice(0, 3).map(ev => (
+                        <span key={ev.id} className="text-[13px] leading-none" aria-hidden="true">
+                          {ev.em}
+                        </span>
+                      ))}
+                      {evList.length > 3 && (
+                        <span className="text-[8px] text-gray-400 font-bold">+{evList.length - 3}</span>
+                      )}
+                    </div>
+                  )}
                   <div className={`text-[10px] font-medium ${isWeekend ? 'text-orange/70' : 'text-gray-400'}`}>
                     {dows[d.getDay()]}
                   </div>
@@ -7321,6 +7378,18 @@ function TimelineAvailabilityView({ rooms, viewMode, setViewMode, onRefresh }) {
         t={t}
       />
     )}
+
+    {/* Events & holidays picker — small dropdown-style modal listing
+        the catalog + any custom events for this property. onChange
+        bumps eventsTick so the day-header memo re-evaluates from the
+        freshly-saved localStorage state. */}
+    <EventsHolidaysModal
+      open={eventsOpen}
+      onClose={() => setEventsOpen(false)}
+      propertyId={propertyId}
+      country={country}
+      onChange={() => setEventsTick(n => n + 1)}
+    />
     </>
   )
 }
