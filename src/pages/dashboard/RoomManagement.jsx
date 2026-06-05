@@ -284,7 +284,7 @@ const STYLES = `
    from the row's bounding rect, so it never gets clipped by the
    overflow:auto on the grid container. STAYLO brand styling: dark
    gradient header, soft white body, brand-coloured chips. */
-.rm-info-pop{position:fixed;top:140px;right:20px;bottom:20px;z-index:5000;width:480px;max-width:38vw;background:#fff;border-radius:22px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:auto;display:flex;flex-direction:column;animation:rm-pop-in .15s ease-out}
+.rm-info-pop{position:fixed;top:100px;right:20px;bottom:14px;z-index:5000;width:480px;max-width:38vw;background:#fff;border-radius:20px;box-shadow:0 24px 60px -10px rgba(26,31,46,.35),0 8px 24px -8px rgba(26,31,46,.15);border:1px solid rgba(26,31,46,.06);overflow:hidden;pointer-events:auto;display:flex;flex-direction:column;animation:rm-pop-in .15s ease-out}
 @media (max-width:1100px){.rm-info-pop{width:420px;max-width:46vw}}
 .rm-info-pop.pinned{box-shadow:0 28px 70px -10px rgba(255,107,0,.4),0 10px 30px -8px rgba(255,60,180,.2);border-color:rgba(255,107,0,.4)}
 /* Three-column body — receptionist sees everything in one glance.
@@ -294,54 +294,57 @@ const STYLES = `
 .rm-ip-cols{display:flex;flex-direction:column;gap:14px;padding:14px 16px 18px;flex:1;overflow-y:auto}
 .rm-ip-col{display:flex;flex-direction:column;gap:11px;min-width:0}
 @keyframes rm-pop-in{from{opacity:0;transform:translateY(4px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
-.rm-ip-header{padding:16px 18px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative;cursor:grab;user-select:none}
+.rm-ip-header{padding:12px 16px;background:linear-gradient(135deg,#1A1F2E 0%,#2A1F4E 60%,#6C5CE7 110%);color:#fff;position:relative;cursor:grab;user-select:none}
 .rm-ip-header.dragging{cursor:grabbing}
 .rm-ip-close{position:absolute;top:10px;right:10px;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;border:none;cursor:pointer;font-size:14px;line-height:1;transition:background .12s}
 .rm-ip-close:hover{background:rgba(255,255,255,.22)}
 .rm-ip-drag-hint{position:absolute;top:11px;right:46px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,.45);pointer-events:none}
-.rm-ip-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin-bottom:3px}
-.rm-ip-title{font-size:20px;font-weight:800;line-height:1.2;color:#fff}
+.rm-ip-eyebrow{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.15em;color:rgba(255,255,255,.5);margin-bottom:2px}
+.rm-ip-title{font-size:17px;font-weight:800;line-height:1.15;color:#fff}
 .rm-ip-sub{font-size:13px;color:rgba(255,255,255,.75);margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.rm-ip-price{margin-top:10px;display:flex;align-items:baseline;justify-content:space-between}
-.rm-ip-price-amt{font-size:24px;font-weight:800;background:linear-gradient(90deg,#FF6B00,#FF3CB4);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
-.rm-ip-price-net{font-size:12px;color:rgba(255,255,255,.65);font-weight:600}
+.rm-ip-price{margin-top:6px;display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 10px}
+.rm-ip-price-amt{font-size:20px;font-weight:800;background:linear-gradient(90deg,#FF6B00,#FF3CB4);-webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+.rm-ip-price-net{font-size:11px;color:rgba(255,255,255,.65);font-weight:600}
 .rm-ip-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;max-height:60vh;overflow-y:auto}
-.rm-ip-cta{padding:11px 16px;background:linear-gradient(135deg,#F8F6F0,#FFF7ED);border-top:1px solid #E8E0D8;font-size:13px;color:#1A1F2E;display:flex;align-items:center;gap:8px;font-weight:600}
+.rm-ip-cta{padding:8px 14px;background:linear-gradient(135deg,#F8F6F0,#FFF7ED);border-top:1px solid #E8E0D8;font-size:11.5px;color:#1A1F2E;display:flex;align-items:center;gap:7px;font-weight:600}
 .rm-ip-cta .pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:#FF6B00;box-shadow:0 0 0 4px rgba(255,107,0,.18);animation:rm-pulse 1.6s ease-in-out infinite}
 @keyframes rm-pulse{0%,100%{box-shadow:0 0 0 4px rgba(255,107,0,.18)}50%{box-shadow:0 0 0 7px rgba(255,107,0,.08)}}
-.rm-ip-section-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#1A1F2E;margin-bottom:7px;display:flex;align-items:center;gap:6px}
-.rm-ip-section-title .dot{width:7px;height:7px;border-radius:50%}
+.rm-ip-section-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:#1A1F2E;margin-bottom:4px;display:flex;align-items:center;gap:5px}
+.rm-ip-section-title .dot{width:6px;height:6px;border-radius:50%}
 .rm-ip-chips{display:flex;flex-wrap:wrap;gap:4px;align-content:flex-start}
 .rm-ip-chip{font-size:12px;padding:3px 9px;border-radius:999px;background:rgba(0,184,148,.10);color:#066e54;font-weight:600;display:inline-flex;align-items:center;gap:4px;border:1px solid rgba(0,184,148,.20);white-space:nowrap}
 .rm-ip-chip svg{width:12px;height:12px;flex-shrink:0}
-.rm-ip-pkg-list{display:flex;flex-direction:column;gap:7px}
-.rm-ip-pkg{padding:10px 12px;border-radius:12px;background:linear-gradient(135deg,rgba(255,107,0,.07),rgba(255,60,180,.07));border:1px solid rgba(255,107,0,.20);line-height:1.4}
-.rm-ip-pkg-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px}
-.rm-ip-pkg-name{font-weight:800;color:#C2410C;display:flex;align-items:center;gap:6px;font-size:14px;min-width:0}
-.rm-ip-pkg-name .qty{font-size:10px;font-weight:800;background:#FF6B00;color:#fff;padding:2px 7px;border-radius:999px;line-height:1.1}
-.rm-ip-pkg-price{font-size:12px;font-weight:800;color:#C2410C;background:rgba(255,107,0,.12);padding:2px 8px;border-radius:999px;white-space:nowrap}
+.rm-ip-pkg-list{display:flex;flex-direction:column;gap:5px}
+.rm-ip-pkg{padding:6px 10px;border-radius:9px;background:linear-gradient(135deg,rgba(255,107,0,.07),rgba(255,60,180,.07));border:1px solid rgba(255,107,0,.20);line-height:1.35}
+.rm-ip-pkg-head{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:1px}
+.rm-ip-pkg-name{font-weight:800;color:#C2410C;display:flex;align-items:center;gap:5px;font-size:12.5px;min-width:0}
+.rm-ip-pkg-name .qty{font-size:9px;font-weight:800;background:#FF6B00;color:#fff;padding:1px 6px;border-radius:999px;line-height:1.1}
+.rm-ip-pkg-price{font-size:11px;font-weight:800;color:#C2410C;background:rgba(255,107,0,.12);padding:1px 7px;border-radius:999px;white-space:nowrap}
 .rm-ip-pkg-price.free{background:rgba(0,184,148,.15);color:#066e54}
-.rm-ip-pkg-desc{color:#5A6370;font-size:12.5px;line-height:1.45}
+.rm-ip-pkg-desc{color:#5A6370;font-size:11px;line-height:1.35;overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical}
 .rm-ip-empty{font-size:12.5px;color:#9CA3AF;font-style:italic;padding:8px 10px;border-radius:10px;background:#FAFAF8;border:1px dashed #E8E0D8}
-.rm-ip-meta{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.rm-ip-meta-cell{padding:9px 11px;border-radius:11px;background:#F8F6F0;border:1px solid #E8E0D8}
-.rm-ip-meta-cell .lab{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#636E72;font-weight:700;margin-bottom:3px}
-.rm-ip-meta-cell .val{font-size:13.5px;font-weight:700;color:#1A1F2E;display:flex;align-items:center;gap:5px}
-.rm-ip-desc{font-size:13px;color:#1A1F2E;line-height:1.5;font-style:italic;padding:9px 12px;border-left:3px solid #FF6B00;background:rgba(255,107,0,.05);border-radius:0 10px 10px 0}
+.rm-ip-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.rm-ip-meta-cell{padding:6px 9px;border-radius:9px;background:#F8F6F0;border:1px solid #E8E0D8}
+.rm-ip-meta-cell .lab{font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#636E72;font-weight:700;margin-bottom:2px}
+.rm-ip-meta-cell .val{font-size:12px;font-weight:700;color:#1A1F2E;display:flex;align-items:center;gap:4px}
+.rm-ip-desc{font-size:12px;color:#1A1F2E;line-height:1.4;font-style:italic;padding:7px 10px;border-left:3px solid #FF6B00;background:rgba(255,107,0,.05);border-radius:0 9px 9px 0}
 /* Full-width rewards row — sits below the 3-column body so we get
    real horizontal real estate. Each card is a compact box that flexes
    to fill the line. ~3-4 fit per row at 1020px popover width. */
-.rm-ip-rewards-row{padding:0 16px 14px;display:flex;flex-direction:column;gap:8px}
-.rm-ip-rewards-grid{display:flex;flex-wrap:wrap;gap:8px}
-.rm-ip-reward-card{flex:1 1 220px;min-width:200px;max-width:300px;padding:9px 11px;border-radius:11px;background:linear-gradient(135deg,rgba(255,60,180,.08),rgba(108,92,231,.08));border:1px solid rgba(255,60,180,.22);display:flex;flex-direction:column;gap:3px}
+.rm-ip-rewards-row{padding:0 14px 10px;display:flex;flex-direction:column;gap:6px}
+.rm-ip-rewards-grid{display:flex;flex-wrap:wrap;gap:6px}
+.rm-ip-reward-card{flex:1 1 220px;min-width:200px;max-width:300px;padding:6px 9px;border-radius:9px;background:linear-gradient(135deg,rgba(255,60,180,.08),rgba(108,92,231,.08));border:1px solid rgba(255,60,180,.22);display:flex;flex-direction:column;gap:1px}
 .rm-ip-reward-card .rwd-head{display:flex;align-items:center;justify-content:space-between;gap:6px}
-.rm-ip-reward-card .rwd-label{font-weight:800;color:#A21CAF;font-size:12.5px;display:flex;align-items:center;gap:4px;min-width:0;flex:1}
+.rm-ip-reward-card .rwd-label{font-weight:800;color:#A21CAF;font-size:11.5px;display:flex;align-items:center;gap:4px;min-width:0;flex:1}
 .rm-ip-reward-card .rwd-label .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rm-ip-reward-card .rwd-days{font-size:10.5px;font-weight:800;color:#A21CAF;background:rgba(255,60,180,.14);padding:2px 7px;border-radius:999px;white-space:nowrap}
+.rm-ip-reward-card .rwd-days{font-size:10px;font-weight:800;color:#A21CAF;background:rgba(255,60,180,.14);padding:1px 6px;border-radius:999px;white-space:nowrap}
 .rm-ip-reward-card .rwd-pct{font-size:9px;font-weight:800;background:#A21CAF;color:#fff;padding:1px 6px;border-radius:999px;line-height:1.1}
-.rm-ip-reward-card .rwd-perk{font-size:11.5px;color:#5A6370;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.rm-ip-reward-card .rwd-dates{font-size:10.5px;color:#7C7F8A;font-style:italic}
-.rm-ip-reward-card .rwd-min{font-size:10.5px;color:#5A6370}
+/* Perk clamped to 1 line (was 2). David, 2026-06-08 — needed more
+   rewards visible at once. The dates line stays so the receptionist
+   can still see WHEN each reward applies. */
+.rm-ip-reward-card .rwd-perk{font-size:10.5px;color:#5A6370;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-ip-reward-card .rwd-dates{font-size:10px;color:#7C7F8A;font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rm-ip-reward-card .rwd-min{font-size:10px;color:#5A6370}
 `
 
 const DAYS_SHOW = 14
