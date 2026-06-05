@@ -134,6 +134,12 @@ const STYLES = `
 .rm-filter-btn{padding:6px 14px;border-radius:8px;border:1px solid #E8E0D8;background:white;font-size:12px;font-weight:600;color:#636E72;cursor:pointer;display:flex;align-items:center;gap:5px}
 .rm-filter-btn:hover{border-color:#FF6B00;color:#FF6B00}
 .rm-filter-btn.active{border-color:#FF6B00;color:#FF6B00;background:#FFF5E6}
+/* Type select — strip browser appearance + drop a small custom
+   chevron on the right so it reads as a dropdown but visually
+   matches the orange-outlined pill of its sibling .rm-filter-btn. */
+.rm-filter-btn.rm-type-select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding-right:28px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path fill='%23636E72' d='M1 3l4 4 4-4z'/></svg>");background-repeat:no-repeat;background-position:right 10px center;background-size:8px}
+.rm-filter-btn.rm-type-select.active{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'><path fill='%23FF6B00' d='M1 3l4 4 4-4z'/></svg>")}
+.rm-filter-btn.rm-type-select:focus{outline:none;border-color:#FF6B00;box-shadow:0 0 0 2px rgba(255,107,0,0.15)}
 .rm-search-box{flex:1;max-width:260px;padding:6px 12px;border-radius:8px;border:1px solid #E8E0D8;font-size:13px;font-family:inherit;outline:none}
 .rm-search-box:focus{border-color:#FF6B00}
 .rm-stats-row{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
@@ -701,8 +707,28 @@ export default function RoomManagement() {
                 <button className="rm-today-btn" onClick={goToday}>Today</button>
               </>
             )}
-            <button className={`rm-filter-btn ${sideTypeFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setSideTypeFilter('all')}>🏠 All Types</button>
+            {/* Type filter dropdown — same UX as the Disponibilités
+                Timeline. Clicking the pill used to reset to All Types
+                only; now it's a real picker so the receptionist can
+                narrow the view to "Executive Suite" or "Dormitory" in
+                one click instead of opening the sidebar.
+                Wears the rm-filter-btn class so it shares the orange
+                outlined pill look with the other toolbar buttons; the
+                `active` modifier kicks in whenever a real type is
+                picked (so "All Types" stays the resting state).
+                David, 2026-06-08: "le bouton all type doit avoir cette
+                meme fonction par type de chambres". */}
+            <select
+              className={`rm-filter-btn rm-type-select ${sideTypeFilter !== 'all' ? 'active' : ''}`}
+              value={sideTypeFilter}
+              onChange={e => setSideTypeFilter(e.target.value)}
+              title="Filter rooms by type"
+            >
+              <option value="all">🏠 All Types ({counts.all || 0})</option>
+              {types.map(([type, n]) => (
+                <option key={type} value={type}>🛏 {type} ({n})</option>
+              ))}
+            </select>
             <button className={`rm-filter-btn ${sideStatusFilter === 'available' ? 'active' : ''}`}
               onClick={() => setSideStatusFilter(sideStatusFilter === 'available' ? 'all' : 'available')}>🟢 Available</button>
             <button className={`rm-filter-btn ${needsActionOnly ? 'active' : ''}`}
