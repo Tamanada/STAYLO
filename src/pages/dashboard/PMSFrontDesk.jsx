@@ -1874,6 +1874,37 @@ function WalkInForm({ room, propertyId, userId, existingBookings, onDone, onCanc
     communicating_rooms_requested: false,
     special_requests: '',
   })
+
+  // Resolve the EFFECTIVE rate for this room × check-in date. Reads the
+  // type-default override from room_availability (room_unit_index=0)
+  // and uses its price_override when set. Falls back to room.base_price.
+  // Re-runs when the receptionist changes the check-in date so the
+  // displayed Rate per night column always reflects what was set in
+  // Disponibilités. 2026-06-08: David flagged "le prix ne correspond
+  // pas au prix parametre" — the walk-in modal was always reading
+  // room.base_price and ignoring per-date overrides.
+  useEffect(() => {
+    if (!room?.id || !form.check_in) return
+    let cancelled = false
+    ;(async () => {
+      const { data, error } = await supabase
+        .from('room_availability')
+        .select('price_override')
+        .eq('room_id', room.id)
+        .eq('date', form.check_in)
+        .eq('room_unit_index', 0)
+        .maybeSingle()
+      if (cancelled || error) return
+      const eff = data?.price_override != null
+        ? Number(data.price_override)
+        : (room.base_price ? Number(room.base_price) : null)
+      if (eff != null) {
+        setForm(f => ({ ...f, rate: String(eff) }))
+      }
+    })()
+    return () => { cancelled = true }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room?.id, form.check_in])
   // Per-guest registry (TM30 compliance + ops). Auto-resized to adults+children.
   // Each entry covers EVERY field Thai Immigration TM30 requires.
   // The first entry is always the lead (booker). See docs/TM30_COMPLIANCE.md.
