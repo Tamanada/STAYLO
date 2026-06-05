@@ -5668,24 +5668,21 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
     : 'bg-gradient-to-r from-libre to-libre/80 text-white'
 
   function handleSave() {
-    // Per-unit mode: the modal is scoped to ONE physical unit. Only the
-    // Block/Available toggle is actionable — everything else (price,
-    // min-stay, rewards, note) is type-level and not exposed in this
-    // mode. Route through onUnitToggle which writes to the per-unit
-    // override row (room_id, date, unit_index) without touching the
-    // type-default. The other 3 BABAs stay exactly as they were.
-    if (isUnit) {
-      if (isBlocked !== unitBlocked) {
-        onUnitToggle?.(cell.unitIndex, isBlocked)
-      }
-      onClose()
-      return
-    }
+    // 2026-06-08 — David asked for "every field manageable from the
+    // popup, not just status". The per-unit modal used to short-circuit
+    // here and only emit onUnitToggle. Now we collect the full payload
+    // regardless of mode, and split the writes at the bottom:
+    //   · is_blocked → per-unit override row when isUnit (the only
+    //     truly unit-scoped field today)
+    //   · price / min-stay / note / specials → type-level row, applied
+    //     to every unit of the room type (the in-modal hint warns the
+    //     user so there's no surprise)
+    // Lets the receptionist tweak BABA's price for next Friday from
+    // BABA-002's cell without leaving for the Monthly view.
 
-    // Type-level mode — original flow. Build payload of CHANGED fields
-    // only — passing every field every time would clobber columns we
-    // didn't touch (perk, promo_label, promo_pct etc. handled by
-    // RewardModal).
+    // Build payload of CHANGED fields only — passing every field every
+    // time would clobber columns we didn't touch (perk, promo_label,
+    // promo_pct etc. handled by RewardModal).
     const payload = {}
     const newPrice = price.trim() === '' ? null : Number(price)
     if (newPrice !== null && (!isFinite(newPrice) || newPrice <= 0)) {
@@ -5707,15 +5704,31 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
     if (newNote !== (row?.internal_note ?? null)) {
       payload.internal_note = newNote
     }
-    if (isBlocked !== !!row?.is_blocked) {
+    // is_blocked SPLIT — in unit mode the block lives on the per-unit
+    // override row so the other 3 BABAs stay free; in type mode it
+    // rides the type-default row like every other field. Keep this
+    // out of `payload` for unit mode so the type-default row isn't
+    // mutated when the user only flipped one unit's status.
+    let unitBlockChanged = false
+    if (isUnit) {
+      if (isBlocked !== unitBlocked) unitBlockChanged = true
+    } else if (isBlocked !== !!row?.is_blocked) {
       payload.is_blocked = isBlocked
     }
-    if (Object.keys(payload).length === 0) {
+
+    if (Object.keys(payload).length === 0 && !unitBlockChanged) {
       // No changes — just close
       onClose()
       return
     }
-    onSave(payload, 'Update cell')
+    if (unitBlockChanged) {
+      onUnitToggle?.(cell.unitIndex, isBlocked)
+    }
+    if (Object.keys(payload).length > 0) {
+      onSave(payload, 'Update cell')
+    } else {
+      onClose()    // unit-only block change: nothing for onSave to do
+    }
   }
 
   return (
@@ -5784,19 +5797,21 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
         </div>
 
         {/* Price / min-stay / rewards / note are TYPE-LEVEL fields —
-            they always apply to every unit of the room type. In per-
-            unit mode (BABA-002 cell click) we hide them and surface a
-            short hint pointing the hotelier to the right surface to
-            edit those (Monthly view, where the full room type is
-            scoped as a single entity). Avoids the trap where someone
-            sets a price thinking it'll apply only to BABA-002. */}
+            they always apply to every unit of the room type. We still
+            EXPOSE them in per-unit mode (David, 2026-06-08: "I want to
+            be able to manage everything from the popup") but show a
+            visible warning so the user knows the change cascades to
+            every sibling unit. Block stays per-unit. */}
         {isUnit && (
-          <div className="text-[11px] text-deep/50 italic px-3 py-2.5 rounded-2xl bg-ocean/[0.04] border border-ocean/10">
-            {t('manage.editor_unit_note', 'Price, rewards, and notes apply to all {{type}} units. Edit those from the Monthly view.', { type: room.name })}
+          <div className="text-[11px] text-deep/60 px-3 py-2.5 rounded-2xl bg-ocean/[0.06] border border-ocean/15 flex items-start gap-2">
+            <span aria-hidden="true">ℹ️</span>
+            <span>
+              {t('manage.editor_unit_scope_note', 'Block / Available below applies to {{name}} only. Price, min-stay, rewards and notes apply to every {{type}} unit.', { name: headerName, type: room.name })}
+            </span>
           </div>
         )}
 
-        {!isUnit && (
+        {/* Price input */}
         <>
         {/* Price input */}
         <div>
@@ -5901,7 +5916,6 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
           />
         </div>
         </>
-        )}
       </div>
 
       {/* Footer — Save commits all changes at once */}
