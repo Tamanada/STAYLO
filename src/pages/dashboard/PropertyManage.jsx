@@ -6484,8 +6484,15 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       price_override:  unitRow.price_override ?? typeRow.price_override,
       min_stay:        unitRow.min_stay ?? typeRow.min_stay,
       internal_note:   unitRow.internal_note ?? typeRow.internal_note,
-      // Specials stay type-level for now — rewards are usually a
-      // marketing decision that applies to the whole bookable category.
+      // Specials: explicit override wins (even empty array = "this
+      // unit has no rewards"). null = "fall back to type". 2026-06-08:
+      // David removed a reward from BABA-002 and it vanished from
+      // BABA-001 too — because the old code wrote specials at type
+      // level. Now rewards live per-unit like everything else; insert
+      // path seeds specials: null when no rewards op fires, so a
+      // unit row created just for blocking doesn't accidentally
+      // hide the type's rewards.
+      specials:        Array.isArray(unitRow.specials) ? unitRow.specials : (typeRow.specials || []),
     }
   }
 
@@ -6749,20 +6756,12 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       const room = rooms.find(r => r.id === rid)
       if (!room) continue
 
-      // 2026-06-08 — per-unit cells now own their own price, min-stay
-      // and note. Specials/rewards stay type-level because they're
-      // marketing decisions that apply to the bookable category.
-      // Saving a payload with only specials from a unit cell would
-      // otherwise create a stub unit row with no real override, so we
-      // skip those.
+      // 2026-06-08 — every editable field is per-unit now, including
+      // rewards/specials. A unit cell that adds/removes a reward
+      // writes to its own (room_id, date, unit_index) row, computed
+      // from the merged effective row's current specials so the user
+      // sees the operation applied to what was visible in the modal.
       const isUnitBulk = unitIndex > 0
-      const isSpecialsOnly =
-        touchesSpecials &&
-        !('is_blocked'     in directWrites) &&
-        !('price_override' in directWrites) &&
-        !('min_stay'       in directWrites) &&
-        !('internal_note'  in directWrites)
-      if (isUnitBulk && isSpecialsOnly) continue
 
       // Fetch existing rows for this (room, unit, dates). Filtering on
       // room_unit_index keeps the per-unit refactor safe: before this,
@@ -6781,54 +6780,73 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       const toUpdate = isoList.filter(d => existingByDate[d])
       const toInsert = isoList.filter(d => !existingByDate[d])
 
-      // Updates — every changed field propagates to both type rows and
-      // unit rows. Specials are the only field that stays type-only:
-      // unit rows ignore touchesSpecials so a per-unit edit doesn't
-      // wipe the type-level rewards array.
+      // Helper — compute the next specials array for a given iso
+      // based on the merged effective row's CURRENT specials. For
+      // type-level edits this is just the type row's specials; for
+      // unit edits this is the merged view (unit override winning
+      // over type), so removing reward index 0 from BABA-002 sees
+      // the same indices as the modal showed.
+      function nextSpecialsFor(iso) {
+        const typeRow0 = availByRoom[rid]?.[iso]
+        const unitRow0 = isUnitBulk ? unitOverridesByCell[rid]?.[iso]?.[unitIndex] : null
+        const effective = isUnitBulk ? mergeEffectiveRow(typeRow0, unitRow0) : (existingByDate[iso] || typeRow0)
+        const current = Array.isArray(effective?.specials) ? effective.specials : []
+        if (clear_specials) return []
+        if (add_special) return [...current, add_special]
+        if (typeof remove_special_at === 'number') return current.filter((_, i) => i !== remove_special_at)
+        return current
+      }
+
+      // Updates — every changed field propagates to both type rows
+      // and unit rows. Specials use the merged effective row as the
+      // source so unit-cell edits stack onto whatever was visible.
       for (const iso of toUpdate) {
         const row = existingByDate[iso]
         let rowPayload = directWrites
-        if (touchesSpecials && !isUnitBulk) {
-          const current = Array.isArray(row.specials) ? row.specials : []
-          let next = current
-          if (clear_specials) next = []
-          else if (add_special) next = [...current, add_special]
-          else if (typeof remove_special_at === 'number') next = current.filter((_, i) => i !== remove_special_at)
-          rowPayload = { ...directWrites, specials: next }
+        if (touchesSpecials) {
+          rowPayload = { ...directWrites, specials: nextSpecialsFor(iso) }
         }
         await supabase.from('room_availability').update(rowPayload).eq('id', row.id)
       }
 
       // Inserts — per-unit rows carry the full editable field set
-      // (block + price + min-stay + note) so a fresh BABA-001 override
-      // can land with a $399 price even when nothing was blocked. Type
-      // rows additionally carry promo / specials / available_count
-      // because they're the public surface OTA reads from.
+      // (block + price + min-stay + note + specials) so a fresh
+      // BABA-002 override can land with a $399 price OR a custom
+      // rewards list even when nothing was blocked. Type rows
+      // additionally carry promo + available_count because they're
+      // the public surface OTA reads from.
+      //
+      // Per-unit `specials` defaults to NULL (not []) so a row
+      // created purely for blocking doesn't accidentally hide the
+      // type's rewards — see mergeEffectiveRow above.
       if (toInsert.length > 0) {
-        const startingSpecials = !isUnitBulk && add_special ? [add_special] : []
-        const rows = toInsert.map(iso => isUnitBulk ? ({
-          room_id: rid,
-          date: iso,
-          room_unit_index: unitIndex,
-          available_count: directWrites.is_blocked ? 0 : 1,
-          is_blocked:     directWrites.is_blocked ?? false,
-          price_override: directWrites.price_override ?? null,
-          min_stay:       directWrites.min_stay ?? null,
-          internal_note:  directWrites.internal_note ?? null,
-        }) : ({
-          room_id: rid,
-          date: iso,
-          room_unit_index: 0,
-          available_count: directWrites.is_blocked ? 0 : (room.quantity || 1),
-          is_blocked:     directWrites.is_blocked ?? false,
-          price_override: directWrites.price_override ?? null,
-          min_stay:       directWrites.min_stay ?? null,
-          promo_label:    directWrites.promo_label ?? null,
-          promo_pct:      directWrites.promo_pct ?? null,
-          perk:           directWrites.perk ?? null,
-          specials:       startingSpecials,
-          internal_note:  directWrites.internal_note ?? null,
-        }))
+        const rows = toInsert.map(iso => {
+          const specialsForRow = touchesSpecials ? nextSpecialsFor(iso) : null
+          return isUnitBulk ? ({
+            room_id: rid,
+            date: iso,
+            room_unit_index: unitIndex,
+            available_count: directWrites.is_blocked ? 0 : 1,
+            is_blocked:     directWrites.is_blocked ?? false,
+            price_override: directWrites.price_override ?? null,
+            min_stay:       directWrites.min_stay ?? null,
+            internal_note:  directWrites.internal_note ?? null,
+            specials:       specialsForRow,
+          }) : ({
+            room_id: rid,
+            date: iso,
+            room_unit_index: 0,
+            available_count: directWrites.is_blocked ? 0 : (room.quantity || 1),
+            is_blocked:     directWrites.is_blocked ?? false,
+            price_override: directWrites.price_override ?? null,
+            min_stay:       directWrites.min_stay ?? null,
+            promo_label:    directWrites.promo_label ?? null,
+            promo_pct:      directWrites.promo_pct ?? null,
+            perk:           directWrites.perk ?? null,
+            specials:       specialsForRow || (add_special ? [add_special] : []),
+            internal_note:  directWrites.internal_note ?? null,
+          })
+        })
         await supabase.from('room_availability').insert(rows)
       }
 
@@ -7009,8 +7027,13 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       new Set([cellKey(roomId, iso)])
     )
   }
-  function singleSetReward(roomId, iso) {
-    setRewardCellSet(new Set([cellKey(roomId, iso)]))
+  function singleSetReward(roomId, iso, unitIndex) {
+    // 2026-06-08 — virtual-id encoding so the reward modal writes to
+    // the per-unit row when invoked from a unit cell. Without the
+    // suffix the add lands on the type-default and applies to every
+    // BABA, which is what David hit when removing one earlier.
+    const vid = unitIndex != null ? `${roomId}#${unitIndex}` : roomId
+    setRewardCellSet(new Set([cellKey(vid, iso)]))
     setRewardModalOpen(true)
   }
   function singleSetNote(roomId, iso) {
@@ -7584,15 +7607,18 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
           await bulkUpdate(payload, label, new Set([cellKey(vid, editingCell.iso)]))
           setEditingCell(null)
         }}
-        onOpenReward={() => singleSetReward(editingCell.roomId, editingCell.iso)}
+        onOpenReward={() => singleSetReward(editingCell.roomId, editingCell.iso, editingCell.unitIndex)}
         onRemoveReward={async (idx) => {
-          // Rewards stay type-level (marketing decisions usually apply
-          // to the whole bookable category), so this still keys on the
-          // bare room.id even when the popup was opened on a unit cell.
+          // Use the virtual-id cell key so removing reward index N
+          // from BABA-002 writes to BABA-002's override row only —
+          // BABA-001, 003, 004 stay on the type's reward list.
+          const vid = editingCell.unitIndex != null
+            ? `${editingCell.roomId}#${editingCell.unitIndex}`
+            : editingCell.roomId
           await bulkUpdate(
             { remove_special_at: idx },
             'Remove reward',
-            new Set([cellKey(editingCell.roomId, editingCell.iso)])
+            new Set([cellKey(vid, editingCell.iso)])
           )
         }}
         onUnitToggle={(unitIndex, blocked) => handleUnitToggle(editingCell.roomId, editingCell.iso, unitIndex, blocked)}
