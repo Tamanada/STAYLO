@@ -7091,7 +7091,17 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
       const [vid, iso] = k.split('|')
       const hashAt = vid.indexOf('#')
       const rid = hashAt === -1 ? vid : vid.slice(0, hashAt)
-      const note = availByRoom[rid]?.[iso]?.internal_note ?? null
+      const unitIndex = hashAt === -1 ? 0 : Number(vid.slice(hashAt + 1))
+      // Read the EFFECTIVE note for this cell — the same value the
+      // timeline icon uses. Without the merge we missed unit-level
+      // notes (BABA-001 having its own override) and the counter
+      // under-reported / the Clear button stayed hidden when only
+      // unit notes were selected. 2026-06-08 — David flagged the
+      // post-save "notes still there" symptom.
+      const typeRow = availByRoom[rid]?.[iso] || null
+      const unitRow = unitIndex > 0 ? (unitOverridesByCell[rid]?.[iso]?.[unitIndex] || null) : null
+      const effective = mergeEffectiveRow(typeRow, unitRow)
+      const note = effective?.internal_note || null
       if (note) cellsWithNote++
       if (first === null) first = note
       else if (note !== first) sameForAll = false
