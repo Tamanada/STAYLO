@@ -5679,7 +5679,7 @@ function CalendarTab({ rooms, property, onRefresh }) {
 // Renders via the project's Modal component so it lives at body
 // root — no more clipping by the grid's overflow-x container.
 // ============================================
-function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenReward, onRemoveReward, onUnitToggle, unitBlockedSet, t }) {
+function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenReward, onRemoveReward, onClearRewards, onUnitToggle, unitBlockedSet, t }) {
   // Per-unit mode — set when the user clicked a unit-specific row
   // (BABA-002) rather than a type-level row. In per-unit mode the
   // Available/Blocked toggle writes ONLY to that physical unit's
@@ -5911,21 +5911,41 @@ function CellEditorModal({ cell, room, row, saving, onClose, onSave, onOpenRewar
           />
         </div>
 
-        {/* Rewards list — read + remove. Add goes through RewardModal. */}
+        {/* Rewards list — read + remove. Add goes through RewardModal.
+            "Clear all" button appears next to "+ Add" whenever the cell
+            has at least one reward — David, 2026-06-08: removing them
+            one by one when there are 5+ rewards on the day was tedious. */}
         <div>
           <div className="flex items-center justify-between mb-1.5">
             <label className="text-xs font-bold uppercase tracking-wide text-deep/60">
               🎁 {t('manage.rewards', 'Rewards')}
               {specials.length > 0 && <span className="ml-1 text-libre">· {specials.length}</span>}
             </label>
-            <button
-              type="button"
-              onClick={onOpenReward}
-              disabled={saving}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl text-xs font-bold text-white bg-gradient-to-r from-libre to-electric shadow-sm hover:shadow-md hover:scale-[1.03] transition-all disabled:opacity-50 cursor-pointer"
-            >
-              + {t('manage.add', 'Add')}
-            </button>
+            <div className="flex items-center gap-2">
+              {specials.length > 0 && onClearRewards && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (confirm(t('manage.editor_clear_rewards_confirm', 'Remove all {{n}} rewards from this cell?', { n: specials.length }))) {
+                      onClearRewards()
+                    }
+                  }}
+                  disabled={saving}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl text-xs font-bold text-sunset border border-sunset/30 bg-sunset/5 hover:bg-sunset/10 transition-all disabled:opacity-50 cursor-pointer"
+                  title={t('manage.editor_clear_rewards_title', 'Remove every reward from this cell')}
+                >
+                  🗑️ {t('manage.editor_clear_all', 'Clear all')}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onOpenReward}
+                disabled={saving}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-2xl text-xs font-bold text-white bg-gradient-to-r from-libre to-electric shadow-sm hover:shadow-md hover:scale-[1.03] transition-all disabled:opacity-50 cursor-pointer"
+              >
+                + {t('manage.add', 'Add')}
+              </button>
+            </div>
           </div>
           {specials.length > 0 ? (
             <div className="space-y-1">
@@ -7654,6 +7674,19 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
           await bulkUpdate(
             { remove_special_at: idx },
             'Remove reward',
+            new Set([cellKey(vid, editingCell.iso)])
+          )
+        }}
+        onClearRewards={async () => {
+          // Same virtual-id scoping as onRemoveReward. clear_specials
+          // is the bulk-update meta-key for "wipe the specials[] array
+          // on this cell" — handled in bulkUpdate's nextSpecialsFor.
+          const vid = editingCell.unitIndex != null
+            ? `${editingCell.roomId}#${editingCell.unitIndex}`
+            : editingCell.roomId
+          await bulkUpdate(
+            { clear_specials: true },
+            'Clear rewards',
             new Set([cellKey(vid, editingCell.iso)])
           )
         }}
