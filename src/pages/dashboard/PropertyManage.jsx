@@ -6754,14 +6754,18 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   //   - remove_special_at: <index> → remove one entry
   // Plain keys (is_blocked, price_override, min_stay, internal_note,
   // promo_label, promo_pct, perk) write directly.
-  async function bulkUpdate(payload, label, customCellSet) {
+  async function bulkUpdate(payload, label, customCellSet, opts = {}) {
     const targetSet = customCellSet || selectedCells
     // Single-cell flows (from the hover popover) skip the confirm —
     // it would be obnoxious for one-click actions. Bulk flows still
     // confirm because they can touch dozens of cells across rooms.
+    // EXCEPT when the caller already showed an explicit confirmation
+    // UI (NoteEditorModal, RewardModal) — David flagged the double
+    // confirm 2026-06-08: "on a pas besoin de confirmer la confirmation".
     const isSingleCell = !!customCellSet && targetSet.size === 1
+    const skipConfirm = !!opts.skipConfirm
     if (targetSet.size === 0) { alert(t('manage.timeline_select_first', 'Select some cells first.')); return }
-    if (!isSingleCell && !confirm(`${label} — ${targetSet.size} ${targetSet.size > 1 ? 'cells' : 'cell'}?`)) return
+    if (!isSingleCell && !skipConfirm && !confirm(`${label} — ${targetSet.size} ${targetSet.size > 1 ? 'cells' : 'cell'}?`)) return
     setSaving(true)
     // Collect per-row errors so a single bad write doesn't silently
     // abort the batch. The user gets a single alert at the end with
@@ -7030,7 +7034,9 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
   async function handleRewardModalApply(payload, label) {
     // If a single-cell popover opened the modal, target that cell.
     // Otherwise fall back to the user's bulk selection.
-    await bulkUpdate(payload, label, rewardCellSet || undefined)
+    // skipConfirm: RewardModal's own Apply button is the user's intent
+    // signal — no need for a second native confirm() on top.
+    await bulkUpdate(payload, label, rewardCellSet || undefined, { skipConfirm: true })
     setRewardCellSet(null)
   }
 
@@ -7069,7 +7075,9 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
         const note = (newValue || '').trim() || null
         await bulkUpdate(
           { internal_note: note },
-          note ? t('manage.bulk_set_note_label', 'Set internal note') : t('manage.bulk_clear_note_label', 'Clear note')
+          note ? t('manage.bulk_set_note_label', 'Set internal note') : t('manage.bulk_clear_note_label', 'Clear note'),
+          undefined,
+          { skipConfirm: true } // NoteEditorModal already showed the count + intent
         )
       },
     })
@@ -7159,7 +7167,8 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
         await bulkUpdate(
           { internal_note: note },
           note ? 'Set internal note' : 'Clear note',
-          new Set([cellKey(vid, iso)])
+          new Set([cellKey(vid, iso)]),
+          { skipConfirm: true }
         )
       },
     })
