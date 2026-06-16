@@ -185,12 +185,15 @@ export default function OTASearch() {
           it perfectly: no crop, no letterbox bands. min-h floor for phones. */}
       <div className="relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex flex-col justify-end">
         {/* STAYLO brand banner */}
-        <img
-          src="/bannerSTAYLO.webp"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/Banner%20Vertical/verticalbannerStaylo.png" />
+          <img
+            src="/bannerSTAYLO.webp"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </picture>
         {/* Soft bottom-gradient overlay only (keep banner art visible at top) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/45" />
 

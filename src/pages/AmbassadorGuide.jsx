@@ -153,6 +153,7 @@ export default function AmbassadorGuide() {
             ensures the browser fetches only the matching image. */}
         <picture>
           <source media="(min-width: 640px)" srcSet="/MakeLoveNotWarPoster.webp" />
+          <source media="(max-width: 639px)" srcSet="/Banner%20Vertical/LenonV.png" />
           <img
             src="/JohnLenon.webp"
             alt=""

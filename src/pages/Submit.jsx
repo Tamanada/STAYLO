@@ -467,12 +467,15 @@ export default function Submit() {
     <>
       {/* ─── Hero — Topoftheworld painting, banner-height band ─── */}
       <section className="relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-center">
-        <img
-          src="/Topoftheworld.webp"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/Banner%20Vertical/TopoftheworldV.png" />
+          <img
+            src="/Topoftheworld.webp"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </picture>
         {/* Minimal scrim — barely there. The painting carries the scene;
             the title/subtitle text-shadow halos carry legibility. */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />

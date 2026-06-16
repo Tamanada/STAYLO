@@ -192,12 +192,15 @@ export default function Splash() {
       >
         {/* Banner band — natural aspect ratio, full visible */}
         <div className="relative w-full" style={{ aspectRatio: '2.5 / 1' }}>
-          <img
-            src="/bannerSTAYLO.webp"
-            alt=""
-            aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
+          <picture>
+            <source media="(max-width: 768px)" srcSet="/Banner%20Vertical/verticalbannerStaylo.png" />
+            <img
+              src="/bannerSTAYLO.webp"
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+          </picture>
 
           {/* Desktop title — anchored near the TOP of the banner, large */}
           <div className="hidden md:block absolute top-6 lg:top-10 left-0 right-0 text-center px-4 z-10">

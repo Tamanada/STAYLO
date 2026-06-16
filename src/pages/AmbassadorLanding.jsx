@@ -73,12 +73,15 @@ export default function AmbassadorLanding() {
           gradient matches the painting's warm edge tones so any
           letterboxing blends invisibly. */}
       <section className="text-white relative overflow-hidden w-full min-h-[440px] sm:aspect-[2.5/1] flex items-stretch">
-        <img
-          src="/LaReveuse.webp"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/Banner%20Vertical/LaReveuseV.png" />
+          <img
+            src="/LaReveuse.webp"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </picture>
         {/* Lighter scrim — painting + side panels stay vibrant, text-shadow
             halos on h1/p do the heavy lifting for legibility */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/15 to-black/40" />
@@ -171,9 +174,12 @@ export default function AmbassadorLanding() {
         {/* 2sides.webp — day/night brand painting. Scrim keeps the white header
             text legible; the calculator card below stays solid white so the
             sliders and figures remain readable. */}
-        <img src="/2sides.webp" alt="" aria-hidden="true"
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover object-center" />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/Banner%20Vertical/2SIDESv.png" />
+          <img src="/2sides.webp" alt="" aria-hidden="true"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover object-center" />
+        </picture>
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/55" />
         <div className="relative max-w-3xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-6">

@@ -316,8 +316,11 @@ export default function Vision() {
         {/* BuddhaBanner.webp — vibrant brand-palette artwork. Fixed-height band
             (h-[576px]) so every section painting renders at an identical size;
             the scrim matches the image height. */}
-        <img src="/BuddhaBanner.webp" alt="" aria-hidden="true" loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover object-center" />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/Banner%20Vertical/BuddhaV.png" />
+          <img src="/BuddhaBanner.webp" alt="" aria-hidden="true" loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover object-center" />
+        </picture>
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-black/40" />
         <UniformBand dark={true} className="relative max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-8">
@@ -406,13 +409,16 @@ export default function Vision() {
       <section id="v-alpha" className="py-12 text-white relative overflow-hidden bg-[#0a0614]">
         {/* Painting as a fixed-height band (h-[576px]) — identical size across
             every section image. Scrim matches. */}
-        <img
-          src="/3Elephants.webp"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/Banner%20Vertical/3ElephnatsBannerV.png" />
+          <img
+            src="/3Elephants.webp"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </picture>
         {/* Dark scrim — lighter than before so more of the painting reads
             through, but still enough to keep body copy legible. */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
@@ -1294,13 +1300,16 @@ export default function Vision() {
       <section id="v-join" className="py-12 text-white relative overflow-hidden bg-[#0a0614]">
         {/* Bob.webp as a fixed-height band (h-[576px]) — identical size across
             every section image. Scrim matches. */}
-        <img
-          src="/Bob.webp"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/Banner%20Vertical/BobV.png" />
+          <img
+            src="/Bob.webp"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </picture>
         {/* Dark scrim — lighter pass so the artwork breathes more,
             still dark enough to keep the doc cards readable */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
