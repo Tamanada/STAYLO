@@ -626,13 +626,16 @@ export default function Vision() {
           journey metaphor pairs naturally with a phased roadmap. White
           phase cards float as jewels above the dark artwork. */}
       <section id="v-roadmap" className="py-12 relative overflow-hidden bg-[#0a0614]">
-        <img
-          src="/UnVoyage.webp"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover object-center"
-        />
+        <picture>
+          <source media="(max-width: 768px)" srcSet="/Banner%20Vertical/UnVoyageV.png" />
+          <img
+            src="/UnVoyage.webp"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+        </picture>
         {/* Light scrim — the painting is already dark, so we just nudge
             the contrast a touch to ensure the title and subtitle read */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/25 to-black/40" />
