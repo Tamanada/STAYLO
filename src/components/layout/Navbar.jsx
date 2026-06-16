@@ -86,12 +86,65 @@ function NavDropdown({ to, label, sections, t }) {
   )
 }
 
+// Mobile menu accordion section — a tappable row with chevron that
+// expands/collapses a list of in-page section anchors. The parent
+// passes `expanded` + `onToggle` so all sections share one accordion
+// state (only one open at a time). The first item inside the dropdown
+// is always the page itself (`to`), so the user can navigate to the
+// full page from the dropdown without leaving the menu.
+function MobileSection({ id, to, label, sections, t, expanded, onToggle, onNavigate }) {
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={expanded}
+        className="w-full flex items-center justify-between py-2.5 text-sm font-medium"
+        style={{ color: expanded ? '#FF6B00' : '#636E72' }}
+      >
+        <span>{label}</span>
+        <ChevronDown
+          size={16}
+          className="transition-transform"
+          style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)' }}
+        />
+      </button>
+      {expanded && (
+        <div className="pl-4 mb-2 space-y-0.5"
+          style={{ borderLeft: '2px solid #F0E8DE' }}>
+          {/* Always-first: take me to the full page */}
+          <Link to={to} onClick={onNavigate}
+            className="block py-1.5 text-sm font-semibold no-underline"
+            style={{ color: '#FF6B00' }}>
+            → {label}
+          </Link>
+          {sections.map(s => (
+            <Link key={s.id} to={`${to}#${s.id}`} onClick={onNavigate}
+              className="block py-1.5 text-sm no-underline"
+              style={{ color: '#9AA0A6' }}>
+              {t(s.key, s.fallback)}
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function Navbar() {
   const { t, i18n } = useTranslation()
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [langOpen, setLangOpen] = useState(false)
+  // 2026-06-08 — David: "menu déroulant pour chaque onglet, ça prend trop
+  // de place". Accordion behavior: only one section's sub-items visible
+  // at a time. null = all collapsed. Stay/About/Ambassador each have a
+  // chevron; simple links (Book/SHIP/Contact) stay direct.
+  const [mobileExpanded, setMobileExpanded] = useState(null)
+  // Reset accordion every time the menu closes so reopening starts clean.
+  function closeMobile() { setMobileOpen(false); setMobileExpanded(null) }
+  function toggleSection(id) { setMobileExpanded(prev => prev === id ? null : id) }
 
   const currentLang = languages.find(l => l.code === i18n.language) || languages[0]
   const flags = getFeatureFlags()
@@ -242,7 +295,8 @@ export function Navbar() {
                   </>
                 )}
               </div>
-              <button className="p-2 rounded-xl" onClick={() => setMobileOpen(!mobileOpen)}
+              <button className="p-2 rounded-xl"
+                onClick={() => mobileOpen ? closeMobile() : setMobileOpen(true)}
                 style={{ color: '#2D3436' }}>
                 {mobileOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
@@ -252,75 +306,107 @@ export function Navbar() {
 
         {/* Mobile menu — sits inside the sticky <nav>. The nav header is
             h-16 (64px) so the open menu is capped at `100vh - 4rem` with
-            its own scroll. Without this, the menu (~28 links: 4 top-level
-            + 3 dropdown groups of sub-sections + auth) overflows the
-            viewport, and because the parent nav is position:sticky the
-            page-level scroll can't reach the bottom items. David hit
-            this 2026-06-08 ("le menu ne scroll pas"). overscroll-contain
-            stops the scroll bleeding back to the page when you hit the
-            top/bottom of the menu. */}
+            its own scroll. overscroll-contain stops the scroll bleeding
+            back to the page when you hit the top/bottom of the menu.
+            2026-06-08 (v2) — David: "menu déroulant pour chaque onglet
+            ça prend trop de place + remonte login/join/dashboard en
+            haut". Auth now sits at the top, and the three sections that
+            have sub-items (Stay / About / Ambassador) collapse into
+            accordion-style dropdowns triggered by tapping the row.
+            Simple links (Book / SHIP / For Hoteliers / Contact) stay
+            inline. */}
         {mobileOpen && (
           <div className="md:hidden bg-white overflow-y-auto overscroll-contain"
                style={{ borderTop: '1.5px solid #E8E0D8', maxHeight: 'calc(100vh - 4rem)' }}>
-            <div className="px-4 py-4 space-y-3">
-              <Link to="/splash" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.home', 'Stay')}</Link>
-              <div className="pl-4 -mt-1 mb-1 space-y-0.5" style={{ borderLeft: '2px solid #F0E8DE' }}>
-                {splashSections.map(s => (
-                  <Link key={s.id} to={`/splash#${s.id}`} onClick={() => setMobileOpen(false)}
-                    className="block py-1.5 text-sm no-underline" style={{ color: '#9AA0A6' }}>
-                    {t(s.key, s.fallback)}
-                  </Link>
-                ))}
-              </div>
-              <Link to="/ota" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.book', 'Book')}</Link>
-              <Link to="/vision" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.vision', 'About')}</Link>
-              {/* Vision sub-sections — quick jump on mobile */}
-              <div className="pl-4 -mt-1 mb-1 space-y-0.5" style={{ borderLeft: '2px solid #F0E8DE' }}>
-                {visionSections.map(s => (
-                  <Link key={s.id} to={`/vision#${s.id}`} onClick={() => setMobileOpen(false)}
-                    className="block py-1.5 text-sm no-underline" style={{ color: '#9AA0A6' }}>
-                    {t(s.key, s.fallback)}
-                  </Link>
-                ))}
-              </div>
-              <Link to="/submit" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.submit', 'For Hoteliers')}</Link>
-              <Link to="/ship" className="block py-2 text-sm font-bold no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.ship', 'SHIP')}</Link>
-              <Link to="/ambassador" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.ambassador', 'Ambassador')}</Link>
-              <div className="pl-4 -mt-1 mb-1 space-y-0.5" style={{ borderLeft: '2px solid #F0E8DE' }}>
-                {ambassadorSections.map(s => (
-                  <Link key={s.id} to={`/ambassador#${s.id}`} onClick={() => setMobileOpen(false)}
-                    className="block py-1.5 text-sm no-underline" style={{ color: '#9AA0A6' }}>
-                    {t(s.key, s.fallback)}
-                  </Link>
-                ))}
-              </div>
-              <a href="mailto:contact@staylo.app" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.contact', 'Contact')}</a>
-              {/* (Review-mode shortcuts removed from mobile menu — same
-                   rationale as desktop above.) */}
+            <div className="px-4 py-4 space-y-2">
 
-              <div className="pt-3 space-y-2" style={{ borderTop: '1.5px solid #E8E0D8' }}>
+              {/* ── Auth (top) ── */}
+              <div className="pb-3 space-y-2" style={{ borderBottom: '1.5px solid #E8E0D8' }}>
                 {user ? (
                   <>
-                    <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
+                    <Link to="/dashboard" onClick={closeMobile}>
                       <button className="w-full px-5 py-2.5 rounded-full text-sm font-semibold"
-                        style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>{t('nav.dashboard', 'Dashboard')}</button>
+                        style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>
+                        {t('nav.dashboard', 'Dashboard')}
+                      </button>
                     </Link>
-                    <button onClick={() => { signOut(); setMobileOpen(false) }} className="w-full text-sm py-2" style={{ color: '#B2BEC3' }}>
+                    <button onClick={() => { signOut(); closeMobile() }}
+                      className="w-full text-sm py-2"
+                      style={{ color: '#B2BEC3' }}>
                       {t('nav.logout', 'Log out')}
                     </button>
                   </>
                 ) : (
                   <>
-                    <Link to="/login" onClick={() => setMobileOpen(false)}>
+                    <Link to="/login" onClick={closeMobile}>
                       <button className="w-full px-5 py-2.5 rounded-full text-sm font-semibold"
-                        style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>{t('nav.login', 'Sign in')}</button>
+                        style={{ border: '1.5px solid #E8E0D8', color: '#2D3436' }}>
+                        {t('nav.login', 'Sign in')}
+                      </button>
                     </Link>
-                    <Link to="/submit" onClick={() => setMobileOpen(false)}>
-                      <button className="btn-primary w-full">{t('nav.register', 'List your hotel')}</button>
+                    <Link to="/submit" onClick={closeMobile}>
+                      <button className="btn-primary w-full">
+                        {t('nav.register', 'List your hotel')}
+                      </button>
                     </Link>
                   </>
                 )}
               </div>
+
+              {/* ── Stay (accordion) ── */}
+              <MobileSection
+                id="stay" to="/splash" label={t('nav.home', 'Stay')}
+                sections={splashSections} t={t}
+                expanded={mobileExpanded === 'stay'}
+                onToggle={() => toggleSection('stay')}
+                onNavigate={closeMobile}
+              />
+
+              {/* ── Book (simple link, no sub-items) ── */}
+              <Link to="/ota" onClick={closeMobile}
+                className="block py-2.5 text-sm font-medium no-underline"
+                style={{ color: '#636E72' }}>
+                {t('nav.book', 'Book')}
+              </Link>
+
+              {/* ── About (accordion) ── */}
+              <MobileSection
+                id="vision" to="/vision" label={t('nav.vision', 'About')}
+                sections={visionSections} t={t}
+                expanded={mobileExpanded === 'vision'}
+                onToggle={() => toggleSection('vision')}
+                onNavigate={closeMobile}
+              />
+
+              {/* ── For Hoteliers (simple link) ── */}
+              <Link to="/submit" onClick={closeMobile}
+                className="block py-2.5 text-sm font-medium no-underline"
+                style={{ color: '#636E72' }}>
+                {t('nav.submit', 'For Hoteliers')}
+              </Link>
+
+              {/* ── SHIP (simple link, bold) ── */}
+              <Link to="/ship" onClick={closeMobile}
+                className="block py-2.5 text-sm font-bold no-underline"
+                style={{ color: '#636E72' }}>
+                {t('nav.ship', 'SHIP')}
+              </Link>
+
+              {/* ── Ambassador (accordion) ── */}
+              <MobileSection
+                id="ambassador" to="/ambassador" label={t('nav.ambassador', 'Ambassador')}
+                sections={ambassadorSections} t={t}
+                expanded={mobileExpanded === 'ambassador'}
+                onToggle={() => toggleSection('ambassador')}
+                onNavigate={closeMobile}
+              />
+
+              {/* ── Contact (simple link) ── */}
+              <a href="mailto:contact@staylo.app" onClick={closeMobile}
+                className="block py-2.5 text-sm font-medium no-underline"
+                style={{ color: '#636E72' }}>
+                {t('nav.contact', 'Contact')}
+              </a>
             </div>
           </div>
         )}
