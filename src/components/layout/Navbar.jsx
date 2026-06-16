@@ -250,9 +250,18 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu — sits inside the sticky <nav>. The nav header is
+            h-16 (64px) so the open menu is capped at `100vh - 4rem` with
+            its own scroll. Without this, the menu (~28 links: 4 top-level
+            + 3 dropdown groups of sub-sections + auth) overflows the
+            viewport, and because the parent nav is position:sticky the
+            page-level scroll can't reach the bottom items. David hit
+            this 2026-06-08 ("le menu ne scroll pas"). overscroll-contain
+            stops the scroll bleeding back to the page when you hit the
+            top/bottom of the menu. */}
         {mobileOpen && (
-          <div className="md:hidden bg-white" style={{ borderTop: '1.5px solid #E8E0D8' }}>
+          <div className="md:hidden bg-white overflow-y-auto overscroll-contain"
+               style={{ borderTop: '1.5px solid #E8E0D8', maxHeight: 'calc(100vh - 4rem)' }}>
             <div className="px-4 py-4 space-y-3">
               <Link to="/splash" className="block py-2 text-sm font-medium no-underline" style={{ color: '#636E72' }} onClick={() => setMobileOpen(false)}>{t('nav.home', 'Stay')}</Link>
               <div className="pl-4 -mt-1 mb-1 space-y-0.5" style={{ borderLeft: '2px solid #F0E8DE' }}>
