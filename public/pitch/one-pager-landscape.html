@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAYLO — Founding Partner Brief · Landscape</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   RESET & BASE
+============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --orange:       #FF6B00;
+  --orange-hi:    #FFAB40;
+  --orange-pale:  #FFF3E8;
+  --pink:         #FF1F70;
+  --pink-deep:    #E91E63;
+  --pink-pale:    #FFF0F5;
+  --purple:       #7E22CE;
+  --purple-deep:  #6B21A8;
+  --cream:        #FFF9F4;
+  --cream-mid:    #FFF0E8;
+  --dark:         #1A1A2E;
+  --mid:          #5A4A5A;
+  --light-border: #F0E0EC;
+  --white:        #FFFFFF;
+  --font-main:    'Inter', 'Noto Sans Thai', sans-serif;
+
+  /* gradient shortcuts */
+  --grad-op:      linear-gradient(135deg, #FF6B00, #FF1F70);
+  --grad-po:      linear-gradient(135deg, #FF1F70, #FF6B00);
+  --grad-full:    linear-gradient(135deg, #FF6B00, #FF1F70, #7E22CE);
+}
+
+body {
+  font-family: var(--font-main);
+  font-size: 9pt;
+  line-height: 1.45;
+  color: var(--dark);
+  background: var(--cream);
+}
+
+/* ============================================================
+   PRINT SETUP — A4 LANDSCAPE
+   Original portrait variant lives at /pitch/one-pager.html.
+   Landscape: 297×210mm (vs portrait 210×297) — 41% wider, 30% shorter.
+   Content lays out side-by-side so nothing wraps awkwardly and the
+   eye reads left-to-right like a magazine spread.
+============================================================ */
+@page {
+  size: A4 landscape;
+  margin: 8mm 10mm 8mm 10mm;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { font-size: 8pt; background: var(--cream); }
+  .page { padding-top: 0; }
+  .hero-section { margin-bottom: 4mm; }
+  .orbital-section { margin-bottom: 4mm; }
+  .columns { gap: 3mm; }
+  .col { padding: 4mm 4mm; }
+  .footer-band { padding: 3mm 5mm; }
+  .quote-block { padding: 3.5mm 5mm; margin: 3mm 0; }
+  .hotel-scene { height: 24mm; }
+}
+
+/* ============================================================
+   SCREEN CONTROLS
+============================================================ */
+.controls {
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  gap: 7px;
+  z-index: 100;
+}
+
+.controls button {
+  padding: 6px 13px;
+  border: 1.5px solid var(--pink);
+  background: var(--white);
+  color: var(--pink);
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: var(--font-main);
+  font-size: 8pt;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: all 0.15s;
+}
+
+.controls button.active,
+.controls button:hover {
+  background: var(--grad-op);
+  border-color: transparent;
+  color: var(--white);
+}
+
+.controls .print-btn {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.controls .print-btn:hover {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: var(--white);
+}
+
+/* ============================================================
+   PAGE WRAPPER
+============================================================ */
+.page {
+  /* 297mm landscape − 2×10mm side margins = 277mm content area */
+  max-width: 277mm;
+  margin: 0 auto;
+  padding: 8mm 0 0 0;
+}
+
+@media screen {
+  body { padding: 8mm 5mm 20mm; }
+  .page { padding-top: 48px; }
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4.5mm;
+}
+
+.logo-wordmark {
+  font-size: 26pt;
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.logo-wordmark .stay-part {
+  color: var(--dark);
+}
+
+.logo-wordmark .lo-part {
+  color: var(--orange);
+}
+
+.header-tagline {
+  font-size: 7.5pt;
+  color: var(--mid);
+  margin-top: 2px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.header-tagline .orange { color: var(--orange); font-weight: 700; }
+.header-tagline .pink   { color: var(--pink);   font-weight: 700; }
+
+.header-right {
+  text-align: right;
+}
+
+.doc-badge {
+  display: inline-block;
+  background: var(--grad-op);
+  color: var(--white);
+  font-size: 6.5pt;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-bottom: 3px;
+}
+
+.doc-title-text {
+  font-size: 10pt;
+  font-weight: 800;
+  color: var(--dark);
+  line-height: 1.2;
+}
+
+.doc-sub {
+  font-size: 7pt;
+  color: var(--mid);
+  margin-top: 1px;
+}
+
+/* ============================================================
+   HERO SECTION — headline + quote
+============================================================ */
+.hero-section {
+  background: linear-gradient(135deg, #FFF9F4 0%, #FFF0F5 100%);
+  border-radius: 10px;
+  padding: 5mm 6mm 4mm;
+  margin-bottom: 4mm;
+  border: 1px solid var(--light-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  background: radial-gradient(circle, rgba(255,107,0,0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.hero-headline {
+  font-size: 20pt;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+  margin-bottom: 3mm;
+}
+
+.hero-headline .orange { color: var(--orange); }
+.hero-headline .pink   { color: var(--pink);   }
+.hero-headline .dark   { color: var(--dark);   }
+
+.hero-sub {
+  display: flex;
+  align-items: center;
+  gap: 5mm;
+}
+
+.hero-bullets {
+  display: flex;
+  flex-direction: column;
+  gap: 2mm;
+  flex: 1;
+}
+
+.hero-bullet {
+  display: flex;
+  align-items: center;
+  gap: 2.5mm;
+  font-size: 8.5pt;
+  font-weight: 500;
+  color: var(--dark);
+}
+
+.bullet-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.bullet-icon.org { background: var(--orange); }
+.bullet-icon.pnk { background: var(--pink); }
+.bullet-icon.pur { background: var(--purple); }
+
+.quote-block {
+  flex: 1.2;
+  background: var(--white);
+  border: 1.5px solid var(--light-border);
+  border-radius: 8px;
+  padding: 4mm 5mm;
+  position: relative;
+}
+
+.quote-block::before {
+  content: '"';
+  font-size: 36pt;
+  color: var(--pink);
+  position: absolute;
+  top: -2mm;
+  left: 3mm;
+  line-height: 1;
+  font-weight: 900;
+  opacity: 0.25;
+}
+
+.quote-text {
+  font-size: 9.5pt;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--dark);
+}
+
+.quote-text .stay-hi {
+  background: var(--grad-op);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.quote-attr {
+  font-size: 7pt;
+  color: var(--mid);
+  margin-top: 1.5mm;
+  font-style: italic;
+}
+
+/* ============================================================
+   ORBITAL COMPOSITION
+============================================================ */
+.orbital-section {
+  margin-bottom: 4mm;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* fixed height so A4 stays predictable */
+  height: 64mm;
+  position: relative;
+}
+
+.orbital-ring {
+  position: relative;
+  width: 56mm;
+  height: 56mm;
+  flex-shrink: 0;
+}
+
+/* SVG ring drawn via background trick — conic-gradient border */
+.orbital-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  padding: 2.5px;
+  background: conic-gradient(
+    from 135deg,
+    #FF6B00 0deg,
+    #FF1F70 120deg,
+    #7E22CE 240deg,
+    #FF6B00 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Center app-icon block */
+.orbital-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 32mm;
+  height: 32mm;
+  background: var(--white);
+  border-radius: 10px;
+  box-shadow: 0 3px 14px rgba(255,107,0,0.18), 0 1px 4px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2.5px;
+  padding: 4px;
+}
+
+.app-icons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+
+.app-icon {
+  width: 13mm;
+  height: 13mm;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-icon.ai-1 { background: linear-gradient(135deg, #FF6B00, #FFAB40); }
+.app-icon.ai-2 { background: linear-gradient(135deg, #FF1F70, #E91E63); }
+.app-icon.ai-3 { background: linear-gradient(135deg, #7E22CE, #6B21A8); }
+.app-icon.ai-4 { background: linear-gradient(135deg, #FFAB40, #FF8C00); }
+
+.center-wordmark {
+  font-size: 14pt;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.center-wordmark .cw-stay { color: var(--dark); }
+.center-wordmark .cw-lo   { color: var(--orange); }
+
+.center-tagline {
+  font-size: 4.2pt;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--mid);
+  text-align: center;
+  line-height: 1.2;
+  max-width: 28mm;
+}
+
+/* Satellite nodes */
+.orbital-satellite {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+/* connector lines drawn via ::before pseudos on satellite */
+.orbital-satellite::before {
+  content: '';
+  position: absolute;
+  background: linear-gradient(to center, rgba(255,107,0,0.3), rgba(255,31,112,0.3));
+  z-index: 0;
+}
+
+/* Satellite positions (ring radius ~28mm, satellite box ~20mm wide) */
+/* Top 12h */
+.sat-top {
+  top: -14mm;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Right 3h */
+.sat-right {
+  right: -22mm;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Bottom-right ~5h */
+.sat-bottom {
+  bottom: -14mm;
+  right: -8mm;
+}
+
+/* Left 9h */
+.sat-left {
+  left: -22mm;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.sat-icon {
+  width: 10mm;
+  height: 10mm;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+.sat-icon.si-orange  { background: linear-gradient(135deg, #FF6B00, #FFAB40); }
+.sat-icon.si-pink    { background: linear-gradient(135deg, #FF1F70, #E91E63); }
+.sat-icon.si-purple  { background: linear-gradient(135deg, #7E22CE, #FF1F70); }
+.sat-icon.si-orange2 { background: linear-gradient(135deg, #FFAB40, #FF6B00); }
+
+.sat-label {
+  font-size: 5.5pt;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--dark);
+  line-height: 1.1;
+}
+
+.sat-label.sl-orange  { color: var(--orange); }
+.sat-label.sl-pink    { color: var(--pink); }
+.sat-label.sl-purple  { color: var(--purple); }
+
+.sat-sub {
+  font-size: 4.8pt;
+  color: var(--mid);
+  line-height: 1.2;
+  max-width: 20mm;
+}
+
+/* Connecting lines from orbital center to each satellite
+   Using absolutely positioned thin divs */
+.orbital-line {
+  position: absolute;
+  transform-origin: 0 50%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255,107,0,0.4), rgba(126,34,206,0.2));
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ============================================================
+   LANGUAGE PANEL
+============================================================ */
+.lang-panel { display: none; }
+.lang-panel.active { display: block; }
+
+/* ============================================================
+   THREE-COLUMN LAYOUT
+============================================================ */
+.columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 3.5mm;
+}
+
+.col {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 4.5mm 4.5mm;
+  border: 1px solid var(--light-border);
+  position: relative;
+  overflow: hidden;
+}
+
+.col::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3.5px;
+  border-radius: 8px 8px 0 0;
+}
+
+.col.pain::before     { background: linear-gradient(90deg, #FF1F70, #7E22CE); }
+.col.solution::before { background: linear-gradient(90deg, #FF6B00, #FF1F70); }
+.col.ask::before      { background: linear-gradient(90deg, #FF6B00, #FFAB40, #FF1F70); }
+
+.col-header {
+  font-size: 6.5pt;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 3.5mm;
+  padding-bottom: 2.5mm;
+  border-bottom: 1px solid var(--light-border);
+}
+
+.col.pain     .col-header { color: var(--pink-deep); }
+.col.solution .col-header { color: var(--orange); }
+.col.ask      .col-header { color: var(--orange); }
+
+/* ============================================================
+   BULLET GROUPS
+============================================================ */
+.bullet-group { margin-bottom: 3.5mm; }
+
+.bullet-group-label {
+  font-size: 6.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--mid);
+  margin-bottom: 1.5px;
+}
+
+ul.bullets {
+  list-style: none;
+  padding: 0;
+}
+
+ul.bullets li {
+  padding-left: 9px;
+  position: relative;
+  margin-bottom: 2px;
+  font-size: 8pt;
+  line-height: 1.4;
+}
+
+ul.bullets li::before {
+  content: "·";
+  position: absolute;
+  left: 0;
+  font-weight: 700;
+}
+
+.col.pain     ul.bullets li::before { color: var(--pink); }
+.col.solution ul.bullets li::before { color: var(--orange); }
+.col.ask      ul.bullets li::before { color: var(--orange); }
+
+strong.n {
+  font-weight: 700;
+}
+
+.col.pain     strong.n { color: var(--pink-deep); }
+.col.solution strong.n { color: var(--orange); }
+.col.ask      strong.n { color: var(--orange); }
+
+/* ============================================================
+   HIGHLIGHT BOXES
+============================================================ */
+.highlight-box {
+  border-radius: 7px;
+  padding: 3mm 4mm;
+  margin-bottom: 3mm;
+  text-align: center;
+}
+
+.highlight-box.red-grad {
+  background: linear-gradient(135deg, #E91E63, #7E22CE);
+  color: var(--white);
+}
+
+.highlight-box.orange-grad {
+  background: linear-gradient(135deg, #FF6B00, #FF1F70);
+  color: var(--white);
+}
+
+.highlight-box.cta-grad {
+  background: linear-gradient(135deg, #FF6B00, #FFAB40, #FF1F70);
+  color: var(--white);
+}
+
+.highlight-box .hb-number {
+  font-size: 17pt;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.highlight-box .hb-label {
+  font-size: 6.5pt;
+  opacity: 0.9;
+  margin-top: 1px;
+  line-height: 1.3;
+}
+
+/* ============================================================
+   PULL QUOTE
+============================================================ */
+.pull-quote {
+  font-size: 7.5pt;
+  font-style: italic;
+  color: var(--mid);
+  border-left: 2.5px solid var(--pink);
+  padding-left: 6px;
+  margin: 2.5mm 0;
+  line-height: 1.5;
+}
+
+/* ============================================================
+   CTA BOX
+============================================================ */
+.cta-box {
+  background: linear-gradient(135deg, #FF6B00, #FF1F70);
+  color: var(--white);
+  border-radius: 8px;
+  padding: 4mm 4mm;
+  margin-bottom: 3mm;
+  text-align: center;
+}
+
+.cta-box .cta-title {
+  font-size: 8pt;
+  font-weight: 700;
+  margin-bottom: 1px;
+  opacity: 0.9;
+  letter-spacing: 0.3px;
+}
+
+.cta-box .cta-price {
+  font-size: 20pt;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--white);
+}
+
+.cta-box .cta-price span {
+  font-size: 10pt;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+.cta-box .cta-sub {
+  font-size: 6.5pt;
+  opacity: 0.85;
+  margin-top: 1.5px;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   COMPARISON TABLE
+============================================================ */
+table.comp {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.5pt;
+  margin: 2.5mm 0;
+}
+
+table.comp th {
+  background: linear-gradient(90deg, #FF6B00, #FF1F70);
+  color: var(--white);
+  padding: 2px 5px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 6.5pt;
+  letter-spacing: 0.3px;
+}
+
+table.comp td {
+  padding: 2px 5px;
+  border-bottom: 1px solid var(--light-border);
+  vertical-align: middle;
+}
+
+table.comp tr:last-child td { border-bottom: none; }
+
+table.comp tr.staylo-row td {
+  background: linear-gradient(90deg, #FFF3E8, #FFF0F5);
+  font-weight: 800;
+  color: var(--orange);
+}
+
+table.comp .rate-bad  { color: var(--pink-deep); font-weight: 600; }
+table.comp .rate-good { color: var(--orange); font-weight: 800; }
+
+/* ============================================================
+   HOTEL SCENE ILLUSTRATION
+============================================================ */
+/* New footer banner — KP shining worldwide */
+.footer-banner-wrap {
+  margin-top: 4mm;
+  margin-bottom: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(126,34,206,0.18);
+  line-height: 0;
+}
+
+.footer-banner-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media print {
+  .footer-banner-wrap { margin-top: 3mm; border-radius: 6px; box-shadow: none; }
+}
+
+/* Legacy — old wave radiant container, kept for safety */
+.hotel-scene-wrap {
+  margin-top: 4mm;
+  margin-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.hotel-scene {
+  width: 100%;
+  height: 28mm;
+  display: block;
+}
+
+/* ============================================================
+   FOOTER BAND — curved/gradient
+============================================================ */
+.footer-band {
+  background: linear-gradient(135deg, #FF6B00 0%, #FF1F70 55%, #7E22CE 100%);
+  border-radius: 0 0 10px 10px;
+  padding: 4mm 6mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2.5mm;
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-band::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='70'%3E%3Cellipse cx='200' cy='85' rx='250' ry='60' fill='rgba(255,255,255,0.06)'/%3E%3C/svg%3E") no-repeat bottom center / cover;
+}
+
+.footer-logo {
+  font-size: 16pt;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.footer-logo .fl-stay { color: var(--white); }
+.footer-logo .fl-lo   { color: #FFAB40; }
+
+.footer-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2mm;
+  flex: 1;
+  justify-content: center;
+}
+
+.footer-pill {
+  background: rgba(255,255,255,0.15);
+  color: var(--white);
+  font-size: 6.5pt;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  line-height: 1.5;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.footer-contact {
+  text-align: right;
+  color: rgba(255,255,255,0.9);
+  font-size: 7pt;
+  line-height: 1.6;
+}
+
+.footer-contact a {
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.footer-disclaimer {
+  width: 100%;
+  font-size: 5.5pt;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  line-height: 1.4;
+  padding-top: 1mm;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  position: relative;
+  z-index: 1;
+}
+
+.footer-band > * { position: relative; z-index: 1; }
+
+/* contact line */
+.contact-line {
+  text-align: center;
+  margin-top: 2.5mm;
+  font-size: 7.5pt;
+  color: var(--mid);
+}
+
+.contact-line a, .contact-line strong {
+  color: var(--pink-deep);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+</style>
+</head>
+<body>
+
+<!-- CONTROLS (screen only) -->
+<div class="controls no-print">
+  <button onclick="setLang('en')" id="btn-en" class="active">EN</button>
+  <button onclick="setLang('fr')" id="btn-fr">FR</button>
+  <button onclick="setLang('th')" id="btn-th">TH</button>
+  <button onclick="window.print()" class="print-btn">Print / PDF</button>
+</div>
+
+<div class="page">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-wordmark"><span class="stay-part">STAY</span><span class="lo-part">LO</span></div>
+      <div class="header-tagline">
+        <span class="orange">By hoteliers.</span>&nbsp; <span class="pink">For hoteliers.</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="doc-badge">Founding Partner Brief</div>
+      <div class="doc-title-text">Koh Phangan — Alpha Round</div>
+      <div class="doc-sub" id="header-sub">Confidential — May 2026</div>
+    </div>
+  </div>
+
+  <!-- HERO SECTION -->
+  <div class="hero-section">
+    <div class="hero-headline">
+      <span class="dark">OTA commissions?</span>&nbsp;
+      <span class="pink">Enough.</span>
+    </div>
+    <div class="hero-sub">
+      <div class="hero-bullets">
+        <div class="hero-bullet">
+          <div class="bullet-icon org">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="1" y="5" width="2" height="6" rx="0.5" fill="white"/><rect x="5" y="3" width="2" height="8" rx="0.5" fill="white"/><rect x="9" y="1" width="2" height="10" rx="0.5" fill="white"/></svg>
+          </div>
+          <span id="hero-b1">You own the hotel. <strong>You should own the platform.</strong></span>
+        </div>
+        <div class="hero-bullet">
+          <div class="bullet-icon pnk">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="4" r="2.5" stroke="white" stroke-width="1.5"/><path d="M1 11c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </div>
+          <span id="hero-b2">No algorithm deciding your fate. <strong>1 property = 1 vote.</strong></span>
+        </div>
+        <div class="hero-bullet">
+          <div class="bullet-icon pur">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5C3.5 1.5 1.5 3.2 1.5 5.3c0 1.3.8 2.4 2 3.1L3 10.5l2.5-1.5c.16.01.33.02.5.02 2.5 0 4.5-1.7 4.5-3.8S8.5 1.5 6 1.5z" stroke="white" stroke-width="1.3" stroke-linejoin="round"/></svg>
+          </div>
+          <span id="hero-b3"><strong>10% commission — locked.</strong> Not 15. Not 25. Ten.</span>
+        </div>
+      </div>
+      <div class="quote-block">
+        <div class="quote-text" id="quote-text">
+          "The money should <span class="stay-hi">STAY</span> in the industry — in your hands, not theirs."
+        </div>
+        <div class="quote-attr" id="quote-attr">The founding principle of STAYLO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LANGUAGE PANEL : ENGLISH -->
+  <div class="lang-panel active" id="panel-en">
+    <div class="columns">
+
+      <!-- COL 1 — THE PROBLEM -->
+      <div class="col pain">
+        <div class="col-header">The Problem</div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">What OTAs actually cost you</div>
+          <ul class="bullets">
+            <li>Booking.com: <strong class="n">18%</strong> per booking</li>
+            <li>Agoda Thailand: <strong class="n">17%</strong></li>
+            <li>Expedia: up to <strong class="n">25%</strong></li>
+            <li>Airbnb: <strong class="n">15%</strong></li>
+          </ul>
+        </div>
+
+        <div class="highlight-box red-grad">
+          <div class="hb-number">$6.3M</div>
+          <div class="hb-label">Leaves Koh Phangan to OTAs every year</div>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">The real cost</div>
+          <ul class="bullets">
+            <li>You own the hotel — they own your customer</li>
+            <li>No say in pricing algorithms or rules</li>
+            <li>Your data belongs to them, not you</li>
+            <li>Direct bookings penalized in rankings</li>
+            <li>Rates change overnight — no vote, no consent</li>
+          </ul>
+        </div>
+
+        <div class="pull-quote">"A platform that books your rooms should work for you — not extract rent from you."</div>
+      </div>
+
+      <!-- COL 2 — THE SOLUTION -->
+      <div class="col solution">
+        <div class="col-header">The Solution</div>
+
+        <div class="highlight-box orange-grad">
+          <div class="hb-number">10%</div>
+          <div class="hb-label">Commission — locked for life. 90% vote required to change.</div>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">A cooperative you actually own</div>
+          <ul class="bullets">
+            <li><strong class="n">1 property = 1 vote</strong> — regardless of size</li>
+            <li>Direct bookings: <strong class="n">0%</strong> commission, always</li>
+            <li>Co-own the platform, share in its profits</li>
+            <li>Annual assembly — full financial transparency</li>
+            <li>Rate parity: same price everywhere, always fair</li>
+          </ul>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Commission comparison</div>
+          <table class="comp">
+            <thead>
+              <tr><th>Platform</th><th>Commission</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Booking.com</td><td class="rate-bad">18%</td></tr>
+              <tr><td>Agoda (TH)</td><td class="rate-bad">17%</td></tr>
+              <tr><td>Airbnb</td><td class="rate-bad">15%</td></tr>
+              <tr><td>Expedia</td><td class="rate-bad">20–25%</td></tr>
+              <tr class="staylo-row"><td><strong>STAYLO</strong></td><td class="rate-good">10% — locked</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">$STAY Token (Month 7 — Raydium $0.10)</div>
+          <ul class="bullets">
+            <li>Earn <strong class="n">$STAY</strong> per night hosted</li>
+            <li>Use to reduce commission to 5% or boost visibility</li>
+            <li>10 billion tokens — fixed supply, no new minting</li>
+            <li>Founding Partners: <strong class="n">30% allocation</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- COL 3 — THE ASK -->
+      <div class="col ask">
+        <div class="col-header">The Ask</div>
+
+        <div class="cta-box">
+          <div class="cta-title">Alpha Share — Koh Phangan Only</div>
+          <div class="cta-price">$1,000 <span>/ share</span></div>
+          <div class="cta-sub">1 share · 1 vote · 10% commission for life</div>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">What you receive</div>
+          <ul class="bullets">
+            <li>Co-ownership of STAYLO — real equity, real votes</li>
+            <li><strong class="n">10% commission — lifetime guarantee</strong></li>
+            <li><img src="/SHIP_LOGO.png" alt="" width="14" height="14" style="vertical-align:-3px; margin-right:3px; border-radius:3px;" /><strong class="n">STAYLO Ship — free operational app</strong> · <em>SHIP = Staylo Hotelier In-Pocket</em> (HR, scheduling, tasks, booking) · saves $3–6K/yr vs Cloudbeds</li>
+            <li>"Founding Member" badge — permanent priority listing</li>
+            <li>1,000 $STAY at token launch (Month 7)</li>
+            <li>Annual dividend (% of net platform profit)</li>
+            <li>Direct line to founders — product decisions</li>
+            <li>2% referral bonus (BTC) for every hotel you refer</li>
+          </ul>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Conditions</div>
+          <ul class="bullets">
+            <li>First <strong class="n">300 hotels</strong> on Koh Phangan only (3,000 shares ÷ max 10/property)</li>
+            <li>Min 1 share / max 10 shares per property</li>
+            <li>Lock-up: 12 months</li>
+            <li>Singapore law (international standard)</li>
+          </ul>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">The moment</div>
+          <ul class="bullets">
+            <li>Platform activates at <strong class="n">500 hotels registered</strong> in Thailand</li>
+            <li>Koh Phangan: the launch island</li>
+            <li>Alpha closes — next round at <strong class="n">$1,500/share</strong></li>
+          </ul>
+        </div>
+
+        <div class="contact-line">
+          Contact David: <a href="mailto:contact@staylo.app">contact@staylo.app</a>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /panel-en -->
+
+
+  <!-- LANGUAGE PANEL : FRENCH -->
+  <div class="lang-panel" id="panel-fr">
+    <div class="columns">
+
+      <div class="col pain">
+        <div class="col-header">Le Problème</div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Ce que les OTA vous coûtent réellement</div>
+          <ul class="bullets">
+            <li>Booking.com : <strong class="n">18%</strong> par réservation</li>
+            <li>Agoda Thaïlande : <strong class="n">17%</strong></li>
+            <li>Expedia : jusqu'à <strong class="n">25%</strong></li>
+            <li>Airbnb : <strong class="n">15%</strong></li>
+          </ul>
+        </div>
+
+        <div class="highlight-box red-grad">
+          <div class="hb-number">$6.3M</div>
+          <div class="hb-label">Quittent Koh Phangan vers les OTA chaque année</div>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Le vrai coût</div>
+          <ul class="bullets">
+            <li>Vous avez l'hôtel — ils ont votre client</li>
+            <li>Aucun droit de regard sur l'algorithme de prix</li>
+            <li>Vos données leur appartiennent, pas à vous</li>
+            <li>Les réservations directes pénalisées en classement</li>
+            <li>Les tarifs changent sans votre accord</li>
+          </ul>
+        </div>
+
+        <div class="pull-quote">« Une plateforme qui vend vos chambres devrait travailler pour vous — pas vous taxer. »</div>
+      </div>
+
+      <div class="col solution">
+        <div class="col-header">La Solution</div>
+
+        <div class="highlight-box orange-grad">
+          <div class="hb-number">10%</div>
+          <div class="hb-label">Commission — garantie à vie. Modifiable uniquement à 90% des voix.</div>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Une coopérative dont vous êtes propriétaire</div>
+          <ul class="bullets">
+            <li><strong class="n">1 propriété = 1 vote</strong> — quelle que soit la taille</li>
+            <li>Réservations directes : <strong class="n">0%</strong> de commission</li>
+            <li>Vous co-possédez la plateforme et ses bénéfices</li>
+            <li>Assemblée annuelle — transparence financière totale</li>
+            <li>Parité tarifaire : même prix partout, toujours</li>
+          </ul>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Comparaison des commissions</div>
+          <table class="comp">
+            <thead>
+              <tr><th>Plateforme</th><th>Commission</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Booking.com</td><td class="rate-bad">18%</td></tr>
+              <tr><td>Agoda (TH)</td><td class="rate-bad">17%</td></tr>
+              <tr><td>Airbnb</td><td class="rate-bad">15%</td></tr>
+              <tr><td>Expedia</td><td class="rate-bad">20–25%</td></tr>
+              <tr class="staylo-row"><td><strong>STAYLO</strong></td><td class="rate-good">10% — garanti</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Token $STAY (Mois 7 — Raydium $0.10)</div>
+          <ul class="bullets">
+            <li>Gagnez des <strong class="n">$STAY</strong> par nuit hébergée</li>
+            <li>Utilisez-les pour descendre à 5% de commission ou booster votre visibilité</li>
+            <li>10 milliards de tokens — offre fixe, jamais renfloué</li>
+            <li>Founding Partners : <strong class="n">30% de l'allocation</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col ask">
+        <div class="col-header">La Proposition</div>
+
+        <div class="cta-box">
+          <div class="cta-title">Part Alpha — Koh Phangan uniquement</div>
+          <div class="cta-price">1 000 $ <span>/ part</span></div>
+          <div class="cta-sub">1 part · 1 vote · 10% de commission à vie</div>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Ce que vous obtenez</div>
+          <ul class="bullets">
+            <li>Co-propriété réelle de STAYLO — actions + votes</li>
+            <li><strong class="n">Commission 10% — garantie à vie</strong></li>
+            <li><img src="/SHIP_LOGO.png" alt="" width="14" height="14" style="vertical-align:-3px; margin-right:3px; border-radius:3px;" /><strong class="n">STAYLO Ship — app opérationnelle gratuite</strong> · <em>SHIP = Staylo Hotelier In-Pocket</em> (RH, planning, tâches, booking) · économise 3–6 K$/an vs Cloudbeds</li>
+            <li>Badge "Founding Member" — priorité permanente</li>
+            <li>1 000 $STAY au lancement du token (Mois 7)</li>
+            <li>Dividende annuel (% du bénéfice net)</li>
+            <li>Ligne directe avec les fondateurs</li>
+            <li>Bonus parrainage 2% (BTC) à vie pour chaque hôtel référé</li>
+          </ul>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Conditions</div>
+          <ul class="bullets">
+            <li>Réservé aux <strong class="n">300 premiers hôtels</strong> de Koh Phangan (3 000 parts ÷ max 10/propriété)</li>
+            <li>Min 1 part / max 10 parts par propriété</li>
+            <li>Période de blocage : 12 mois</li>
+            <li>Droit singapourien (norme internationale)</li>
+          </ul>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">Le moment</div>
+          <ul class="bullets">
+            <li>La plateforme s'active à <strong class="n">500 hôtels inscrits</strong> en Thaïlande</li>
+            <li>Koh Phangan : l'île de lancement</li>
+            <li>Alpha se ferme — tour suivant à <strong class="n">1 500 $/part</strong></li>
+          </ul>
+        </div>
+
+        <div class="contact-line">
+          Contactez David : <a href="mailto:contact@staylo.app">contact@staylo.app</a>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /panel-fr -->
+
+
+  <!-- LANGUAGE PANEL : THAI -->
+  <div class="lang-panel" id="panel-th">
+    <div class="columns">
+
+      <div class="col pain">
+        <div class="col-header">ปัญหา (The Problem)</div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">ค่าคอมมิชชันที่ท่านเสียให้ OTA</div>
+          <ul class="bullets">
+            <li>Booking.com เก็บ <strong class="n">18%</strong> ต่อการจอง</li>
+            <li>Agoda (ไทย): <strong class="n">17%</strong></li>
+            <li>Expedia: สูงถึง <strong class="n">25%</strong></li>
+            <li>Airbnb: <strong class="n">15%</strong></li>
+          </ul>
+        </div>
+
+        <div class="highlight-box red-grad">
+          <div class="hb-number">$6.3M</div>
+          <div class="hb-label">ออกจากเกาะพะงันไปสู่ OTA ทุกปี</div>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">ต้นทุนที่แท้จริง</div>
+          <ul class="bullets">
+            <li>ท่านเป็นเจ้าของโรงแรม — แต่พวกเขาเป็นเจ้าของลูกค้าท่าน</li>
+            <li>ท่านไม่มีสิทธิ์กำหนดราคาหรืออัลกอริทึม</li>
+            <li>ข้อมูลของท่านเป็นของพวกเขา ไม่ใช่ของท่าน</li>
+            <li>การจองตรงถูกลงโทษในการจัดอันดับ</li>
+            <li>ค่าคอมเปลี่ยนได้โดยไม่ต้องขอความเห็นชอบ</li>
+          </ul>
+        </div>
+
+        <div class="pull-quote">"แพลตฟอร์มที่ขายห้องพักของท่านควรทำงานเพื่อท่าน — ไม่ใช่เก็บค่าเช่าจากท่าน"</div>
+      </div>
+
+      <div class="col solution">
+        <div class="col-header">วิธีแก้ปัญหา (The Solution)</div>
+
+        <div class="highlight-box orange-grad">
+          <div class="hb-number">10%</div>
+          <div class="hb-label">ค่าคอมมิชชัน — ล็อคตลอดชีพ เปลี่ยนได้ต่อเมื่อ 90% ของสมาชิกเห็นด้วย</div>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">สหกรณ์ที่ท่านเป็นเจ้าของจริง</div>
+          <ul class="bullets">
+            <li><strong class="n">1 ที่พัก = 1 เสียงโหวต</strong> ไม่ว่าจะใหญ่หรือเล็ก</li>
+            <li>การจองตรง: <strong class="n">0%</strong> ค่าคอมมิชชัน</li>
+            <li>ท่านร่วมเป็นเจ้าของแพลตฟอร์มและรับส่วนแบ่งกำไร</li>
+            <li>ประชุมใหญ่ประจำปี — ตรวจสอบบัญชีอย่างโปร่งใส</li>
+            <li>ราคาเท่ากันทุกช่องทาง — ยุติธรรมกับลูกค้า</li>
+          </ul>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">เปรียบเทียบค่าคอมมิชชัน</div>
+          <table class="comp">
+            <thead>
+              <tr><th>แพลตฟอร์ม</th><th>ค่าคอม</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Booking.com</td><td class="rate-bad">18%</td></tr>
+              <tr><td>Agoda (TH)</td><td class="rate-bad">17%</td></tr>
+              <tr><td>Airbnb</td><td class="rate-bad">15%</td></tr>
+              <tr><td>Expedia</td><td class="rate-bad">20–25%</td></tr>
+              <tr class="staylo-row"><td><strong>STAYLO</strong></td><td class="rate-good">10% — ล็อคตลอดชีพ</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">โทเคน $STAY (เดือนที่ 7 — Raydium $0.10)</div>
+          <ul class="bullets">
+            <li>รับ <strong class="n">$STAY</strong> ต่อคืนที่มีผู้พัก</li>
+            <li>ใช้ลดค่าคอมเหลือ 5% หรือเพิ่มการมองเห็น</li>
+            <li>โทเคนทั้งหมด 10,000 ล้าน — จำนวนคงที่ ไม่มีการสร้างเพิ่ม</li>
+            <li>Founding Partners ได้รับ <strong class="n">30% ของโทเคนทั้งหมด</strong></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="col ask">
+        <div class="col-header">ข้อเสนอ (The Ask)</div>
+
+        <div class="cta-box">
+          <div class="cta-title">หุ้น Alpha — เกาะพะงันเท่านั้น</div>
+          <div class="cta-price">$1,000 <span>/ หุ้น</span></div>
+          <div class="cta-sub">1 หุ้น · 1 เสียงโหวต · ค่าคอม 10% ตลอดชีพ</div>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">สิ่งที่ท่านได้รับ</div>
+          <ul class="bullets">
+            <li>ความเป็นเจ้าของร่วมใน STAYLO — หุ้นจริง + สิทธิ์โหวตจริง</li>
+            <li><strong class="n">ค่าคอม 10% รับประกันตลอดชีพ</strong></li>
+            <li><img src="/SHIP_LOGO.png" alt="" width="14" height="14" style="vertical-align:-3px; margin-right:3px; border-radius:3px;" /><strong class="n">STAYLO Ship — แอปปฏิบัติการฟรี</strong> · <em>SHIP = Staylo Hotelier In-Pocket</em> (HR ตารางงาน งาน จอง) · ประหยัด $3–6K/ปี เทียบ Cloudbeds</li>
+            <li>ตราสัญลักษณ์ "Founding Member" — ลำดับต้นถาวร</li>
+            <li>1,000 $STAY เมื่อเปิดตัวโทเคน (เดือนที่ 7)</li>
+            <li>เงินปันผลประจำปี (% ของกำไรสุทธิ)</li>
+            <li>ช่องทางตรงกับผู้ก่อตั้ง — มีส่วนร่วมในการตัดสินใจ</li>
+            <li>โบนัสแนะนำ 2% (BTC) ตลอดชีพสำหรับทุกโรงแรมที่แนะนำ</li>
+          </ul>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">เงื่อนไข</div>
+          <ul class="bullets">
+            <li>สำหรับ <strong class="n">300 โรงแรมแรก</strong> บนเกาะพะงันเท่านั้น (3,000 หุ้น ÷ สูงสุด 10 หุ้น/โรงแรม)</li>
+            <li>ขั้นต่ำ 1 หุ้น / สูงสุด 10 หุ้นต่อที่พัก</li>
+            <li>ล็อคอัพ: 12 เดือน</li>
+            <li>กฎหมายสิงคโปร์ (มาตรฐานสากล)</li>
+          </ul>
+        </div>
+
+        <div class="bullet-group">
+          <div class="bullet-group-label">โอกาสนี้</div>
+          <ul class="bullets">
+            <li>แพลตฟอร์มเปิดตัวเมื่อมี <strong class="n">500 โรงแรม</strong> ลงทะเบียนในไทย</li>
+            <li>เกาะพะงันคือเกาะเปิดตัว</li>
+            <li>Alpha round ปิดแล้ว — รอบถัดไปราคา <strong class="n">$1,500/หุ้น</strong></li>
+          </ul>
+        </div>
+
+        <div class="contact-line">
+          ติดต่อ David : <a href="mailto:contact@staylo.app">contact@staylo.app</a>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /panel-th -->
+
+
+  <!-- FOOTER BANNER — KP shining worldwide (From one island to the world) -->
+  <div class="footer-banner-wrap">
+    <img src="/bannerSTAYLO.png" alt="STAYLO — From one island to the world" class="footer-banner-img"/>
+  </div>
+
+  <!-- FOOTER BAND -->
+  <div class="footer-band">
+    <div class="footer-logo"><span class="fl-stay">STAY</span><span class="fl-lo">LO</span></div>
+    <div class="footer-pills">
+      <div class="footer-pill">Built by hoteliers, for hoteliers</div>
+      <div class="footer-pill">Fairer commissions. No more racket.</div>
+      <div class="footer-pill">1 property = 1 vote</div>
+      <div class="footer-pill">Own your bookings. Own your future.</div>
+    </div>
+    <div class="footer-contact">
+      David Deveaux — Founder<br>
+      <a href="mailto:contact@staylo.app">contact@staylo.app</a><br>
+      staylo.app
+    </div>
+    <div class="footer-disclaimer">
+      Alpha-stage investment. No guaranteed returns. Consult independent legal and financial counsel before investing. &nbsp;·&nbsp; Staylo Holdings Pte. Ltd. (Singapore, to be incorporated)
+    </div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+function setLang(lang) {
+  document.querySelectorAll('.lang-panel').forEach(function(p) {
+    p.classList.remove('active');
+  });
+  document.querySelectorAll('.controls button[id^="btn-"]').forEach(function(b) {
+    b.classList.remove('active');
+  });
+  var panel = document.getElementById('panel-' + lang);
+  if (panel) panel.classList.add('active');
+  var btn = document.getElementById('btn-' + lang);
+  if (btn) btn.classList.add('active');
+
+  var subtitles = {
+    en: 'Confidential — May 2026',
+    fr: 'Confidentiel — Mai 2026',
+    th: 'เอกสารลับ — พฤษภาคม 2026'
+  };
+  var el = document.getElementById('header-sub');
+  if (el && subtitles[lang]) el.textContent = subtitles[lang];
+
+  // Update static hero text per language
+  var heroText = {
+    en: {
+      headline: '<span class="dark">OTA commissions?</span>&nbsp;<span class="pink">Enough.</span>',
+      b1: 'You own the hotel. <strong>You should own the platform.</strong>',
+      b2: 'No algorithm deciding your fate. <strong>1 property = 1 vote.</strong>',
+      b3: '<strong>10% commission — locked.</strong> Not 15. Not 25. Ten.',
+      quote: '"The money should <span class="stay-hi">STAY</span> in the industry — in your hands, not theirs."',
+      attr: 'The founding principle of STAYLO',
+      satTop:    'Your Margin',
+      satRight:  'Your Visibility',
+      satBottom: 'Your Voice',
+      satLeft:   'Your Control'
+    },
+    fr: {
+      headline: '<span class="dark">Les OTA&nbsp;?</span>&nbsp;<span class="pink">Assez.</span>',
+      b1: 'Vous avez l\'hôtel. <strong>Vous devriez avoir la plateforme.</strong>',
+      b2: 'Fini l\'algorithme qui décide pour vous. <strong>1 propriété = 1 vote.</strong>',
+      b3: '<strong>10% de commission — verrouillé.</strong> Pas 15. Pas 25. Dix.',
+      quote: '"L\'argent devrait <span class="stay-hi">RESTER</span> dans l\'industrie — dans vos mains, pas les leurs."',
+      attr: 'Le principe fondateur de STAYLO',
+      satTop:    'Votre Marge',
+      satRight:  'Votre Visibilité',
+      satBottom: 'Votre Voix',
+      satLeft:   'Votre Contrôle'
+    },
+    th: {
+      headline: '<span class="dark">OTA&nbsp;?</span>&nbsp;<span class="pink">พอแล้ว.</span>',
+      b1: 'ท่านเป็นเจ้าของโรงแรม <strong>ท่านควรเป็นเจ้าของแพลตฟอร์มด้วย</strong>',
+      b2: 'ไม่มีอัลกอริทึมมากำหนดชะตาท่าน <strong>1 ที่พัก = 1 เสียงโหวต</strong>',
+      b3: '<strong>ค่าคอม 10% — ล็อคแน่น</strong> ไม่ใช่ 15 ไม่ใช่ 25 แค่สิบ',
+      quote: '"เงินควร<span class="stay-hi">คง</span>อยู่ในอุตสาหกรรม — ในมือท่าน ไม่ใช่มือพวกเขา"',
+      attr: 'หลักการก่อตั้ง STAYLO',
+      satTop:    'กำไรของท่าน',
+      satRight:  'การมองเห็น',
+      satBottom: 'เสียงของท่าน',
+      satLeft:   'การควบคุม'
+    }
+  };
+
+  var t = heroText[lang];
+  if (!t) return;
+
+  var h = document.querySelector('.hero-headline');
+  if (h) h.innerHTML = t.headline;
+  var b1 = document.getElementById('hero-b1');
+  if (b1) b1.innerHTML = t.b1;
+  var b2 = document.getElementById('hero-b2');
+  if (b2) b2.innerHTML = t.b2;
+  var b3 = document.getElementById('hero-b3');
+  if (b3) b3.innerHTML = t.b3;
+  var qt = document.getElementById('quote-text');
+  if (qt) qt.innerHTML = t.quote;
+  var qa = document.getElementById('quote-attr');
+  if (qa) qa.innerHTML = t.attr;
+
+  // Update satellite labels
+  var sats = [
+    ['sat-label-top',    t.satTop],
+    ['sat-label-right',  t.satRight],
+    ['sat-label-bottom', t.satBottom],
+    ['sat-label-left',   t.satLeft]
+  ];
+  sats.forEach(function(pair) {
+    var el2 = document.getElementById(pair[0]);
+    if (el2) el2.textContent = pair[1];
+  });
+}
+</script>
+
+</body>
+</html>
