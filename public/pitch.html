@@ -300,6 +300,367 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 }
 .callout-band span { color: var(--orange); font-weight: 800; }
 
+/* ── Slide: PAIN v3 — bar chart hero ── */
+.ota-chart {
+  margin-top: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.bar-row {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 20px;
+  align-items: center;
+}
+.bar-label {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--ink);
+  text-align: right;
+  line-height: 1.1;
+}
+.bar-label small {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.bar-track {
+  position: relative;
+  height: 44px;
+  background: #F1F5F9;
+  border-radius: 8px;
+  overflow: visible;
+}
+.bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #DC2626 0%, #EF4444 100%);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 14px;
+  color: white;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.18);
+}
+.bar-row.bar-staylo { margin-top: 8px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.bar-row.bar-staylo .bar-label { color: var(--orange); }
+.bar-row.bar-staylo .bar-label small { color: #B45309; font-weight: 600; }
+.bar-row.bar-staylo .bar-fill {
+  background: linear-gradient(90deg, #FF6B00 0%, #FF1F70 100%);
+  box-shadow: 0 2px 10px rgba(255, 107, 0, 0.28);
+}
+.chart-footnote {
+  margin-top: 22px;
+  font-size: 20px;
+  color: var(--muted);
+  line-height: 1.5;
+  text-align: center;
+}
+.chart-footnote strong { color: var(--orange); font-weight: 800; }
+
+/* ── REASON template (editorial slide style — 2026-06-18) ──
+   Used by "Reasons to join STAYLO" slides. Each slide = one benefit.
+   Left = editorial text. Right = circle + floating bubbles + SVG scene.
+   Bottom = orange→pink gradient strip with 4 feature teasers. */
+/* slide-reason keeps the existing top-left brand bar visible */
+.slide-reason .content { padding: 0 !important; }
+.slide-reason .footer-url { display: none; }
+.slide-reason .slide-num { color: rgba(255,255,255,0.75); right: 24px; bottom: 16px; z-index: 5; }
+/* Subtle decorative gradient blobs to reduce white-space feel */
+.slide-reason::before {
+  content: '';
+  position: absolute;
+  width: 280px; height: 280px;
+  left: -90px; bottom: 220px;
+  background: radial-gradient(circle, rgba(255, 107, 0, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.slide-reason::after {
+  content: '';
+  position: absolute;
+  width: 320px; height: 320px;
+  right: -80px; top: 30%;
+  background: radial-gradient(circle, rgba(255, 31, 112, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.slide-reason .content > * { position: relative; z-index: 1; }
+
+.reason-cols {
+  flex: initial;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 84px 56px 16px;
+  align-items: start;
+  min-height: 0;
+}
+.reason-scene-band {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 90px;
+}
+.reason-scene-band svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.reason-text { display: flex; flex-direction: column; }
+.reason-visual {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.reason-eyebrow {
+  font-size: 13px; font-weight: 800;
+  color: var(--orange);
+  letter-spacing: 2.5px; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.reason-headline {
+  font-size: 60px; font-weight: 900;
+  line-height: 0.96;
+  letter-spacing: -2px;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #FF6B00 0%, #FF1F70 60%, #7E22CE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.reason-divider {
+  width: 64px; height: 4px;
+  background: linear-gradient(90deg, #FF6B00, #FF1F70);
+  border-radius: 2px;
+  margin: 4px 0 14px;
+}
+.reason-lead {
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0 0 12px 0;
+  max-width: 480px;
+}
+.reason-lead strong {
+  background: linear-gradient(135deg, #FF1F70, #FF6B00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+}
+.reason-bullets {
+  list-style: none;
+  margin: 0 0 12px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reason-bullet {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 15px; font-weight: 600;
+  color: var(--ink);
+}
+.reason-bullet-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #FFF4E6, #FFEBD6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.reason-callout {
+  display: inline-flex;
+  align-items: center; gap: 10px;
+  padding: 10px 18px;
+  border: 1.5px solid var(--orange);
+  border-radius: 999px;
+  font-size: 15px; font-weight: 700;
+  color: var(--ink);
+  background: linear-gradient(90deg, rgba(255,107,0,0.04), rgba(255,31,112,0.04));
+  margin: 4px 0 12px;
+  width: fit-content;
+}
+.reason-callout strong {
+  background: linear-gradient(135deg, #FF6B00, #FF1F70);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+}
+.reason-cta {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #FF6B00, #FF1F70);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* Right column visual */
+.reason-circle {
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  position: relative;
+  background:
+    radial-gradient(circle at center, white 0 50%, transparent 50.5%),
+    conic-gradient(from 200deg at 50% 50%, #FF6B00, #FF1F70, #7E22CE, #FF6B00);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  box-shadow: 0 12px 36px rgba(255, 107, 0, 0.18);
+}
+.reason-center {
+  width: 220px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.reason-center img {
+  width: 180px; height: auto;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08));
+}
+.reason-center small {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.3;
+}
+.reason-bubble {
+  position: absolute;
+  width: 140px;
+  padding: 11px 13px 12px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.10);
+  font-size: 11px;
+  line-height: 1.3;
+  color: #64748B;
+}
+.reason-bubble strong {
+  display: block;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 800;
+  margin: 2px 0 2px;
+}
+.reason-bubble-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 16px; font-weight: 800;
+  margin: -22px 0 0 -2px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
+/* Bubbles positioned to ORBIT the circle without overlapping the central logo */
+.reason-bubble.b-top { top: -14px; right: 8px; }
+.reason-bubble.b-right { top: 130px; right: -56px; }
+.reason-bubble.b-bottom { bottom: 0; right: 24px; }
+.reason-bubble.b-left { top: 90px; left: -50px; }
+
+/* Per-topic centerpiece variants (replaces the circle when a topic-specific data viz fits better) */
+.reason-dial-wrap {
+  position: relative;
+  width: 320px; height: 320px;
+  margin-top: 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+.reason-dial-wrap svg.reason-dial { width: 240px; height: 240px; }
+.reason-dial-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.reason-dial-big {
+  font-size: 64px; font-weight: 900;
+  background: linear-gradient(135deg, #FF6B00, #FF1F70);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1; letter-spacing: -2px;
+}
+.reason-dial-small {
+  font-size: 14px; font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase; letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+/* (legacy) right-column SVG hotel scene — kept for compatibility, but the new full-width band is used now */
+.reason-scene {
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+  pointer-events: none;
+}
+
+/* Bottom orange→pink gradient strip with 4 feature teasers */
+.feature-strip {
+  background: linear-gradient(90deg, #FF6B00 0%, #FF1F70 100%);
+  color: white;
+  padding: 14px 56px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  line-height: 1.3;
+  border-right: 1px solid rgba(255, 255, 255, 0.28);
+  padding-right: 16px;
+}
+.feature-item:nth-of-type(4) { border-right: none; padding-right: 8px; }
+.feature-item strong {
+  display: block;
+  font-weight: 800;
+  font-size: 12px;
+  margin-bottom: 1px;
+  letter-spacing: 0.2px;
+}
+.feature-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800;
+  flex-shrink: 0;
+}
+.feature-logo {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1;
+  display: flex; flex-direction: column; align-items: flex-end;
+}
+.feature-logo small {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
 /* ── Slide: THE SHIFT ── */
 .shift-cols {
   display: grid;
@@ -570,10 +931,10 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 .stay-token-network {
   margin-top: 8px; font-size: 17px; color: rgba(255,255,255,0.5);
 }
-.stay-stats { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+.stay-stats { display: flex; flex-direction: column; gap: 5px; margin-top: 14px; }
 .stay-stat {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .stay-stat:last-child { border-bottom: none; }
 .stay-stat-key { font-size: 17px; color: rgba(255,255,255,0.5); }
@@ -806,6 +1167,125 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <body class="lang-en">
 
 <!-- ================================================================
+     SHARED ASSETS for slide-reason slides:
+     - SVG symbol library (palm, bird, sailboat) + gradients
+     - <template> for the horizon SVG band
+     - <template> for the bottom feature strip
+     - Auto-injection script (runs once on load)
+     ================================================================ -->
+<svg width="0" height="0" style="position:absolute; pointer-events:none;" aria-hidden="true">
+  <defs>
+    <linearGradient id="rs-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF6E9"/><stop offset="55%" stop-color="#FFD9B5"/><stop offset="100%" stop-color="#FFB48E"/></linearGradient>
+    <radialGradient id="rs-sun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFE680"/><stop offset="60%" stop-color="#FFB347"/><stop offset="100%" stop-color="#FF6B00"/></radialGradient>
+    <linearGradient id="rs-hotel" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#B9527A"/><stop offset="100%" stop-color="#5E2A78"/></linearGradient>
+    <linearGradient id="rs-hotel-roof" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7E22CE"/><stop offset="100%" stop-color="#5E2A78"/></linearGradient>
+    <linearGradient id="rs-bungalow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C026D3"/><stop offset="100%" stop-color="#7E22CE"/></linearGradient>
+    <linearGradient id="rs-ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF9A5C"/><stop offset="100%" stop-color="#FF5722"/></linearGradient>
+    <linearGradient id="rs-trunk" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#3F2418"/><stop offset="50%" stop-color="#7A4A28"/><stop offset="100%" stop-color="#3F2418"/></linearGradient>
+    <linearGradient id="rs-frond" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1F8A5A"/><stop offset="100%" stop-color="#0F5A36"/></linearGradient>
+    <linearGradient id="rs-frond-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4DAE6F"/><stop offset="100%" stop-color="#2D7A4E"/></linearGradient>
+    <linearGradient id="rs-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFB890"/><stop offset="100%" stop-color="#FF8755"/></linearGradient>
+    <symbol id="palm" viewBox="0 0 100 100" overflow="visible">
+      <path d="M 48 100 Q 42 60 52 18" stroke="url(#rs-trunk)" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <line x1="44" y1="80" x2="48" y2="80" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+      <line x1="44" y1="65" x2="49" y2="65" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+      <line x1="46" y1="48" x2="51" y2="48" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+      <line x1="48" y1="32" x2="52" y2="32" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+      <circle cx="50" cy="18" r="3.5" fill="#5A3818"/>
+      <circle cx="55" cy="20" r="3" fill="#3F2418"/>
+      <circle cx="46" cy="20" r="3" fill="#3F2418"/>
+      <path d="M 52 16 Q 26 -2 5 8 Q 28 6 52 16 Z" fill="url(#rs-frond)"/>
+      <path d="M 52 16 Q 46 -14 32 -22 Q 44 -6 52 16 Z" fill="url(#rs-frond)"/>
+      <path d="M 52 16 Q 70 -10 86 -8 Q 70 4 52 16 Z" fill="url(#rs-frond)"/>
+      <path d="M 52 16 Q 86 16 100 24 Q 80 20 52 16 Z" fill="url(#rs-frond-l)"/>
+      <path d="M 52 16 Q 80 34 94 42 Q 70 30 52 16 Z" fill="url(#rs-frond)"/>
+      <path d="M 52 16 Q 14 14 -2 20 Q 22 20 52 16 Z" fill="url(#rs-frond-l)"/>
+      <path d="M 52 16 Q 28 34 12 44 Q 36 30 52 16 Z" fill="url(#rs-frond)"/>
+      <circle cx="52" cy="16" r="2.5" fill="#0F5A36"/>
+    </symbol>
+    <symbol id="bird-s" viewBox="0 0 24 12" overflow="visible">
+      <path d="M 0 10 Q 5 2 10 6 Q 14 2 19 8 Q 21 9 23 10" stroke="#3D4A5C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="sailboat-s" viewBox="0 0 40 32" overflow="visible">
+      <path d="M 20 4 L 20 24 L 6 24 Z" fill="#FFFFFF" opacity="0.9"/>
+      <path d="M 20 8 L 20 24 L 32 24 Z" fill="#FFE0CC" opacity="0.85"/>
+      <line x1="20" y1="2" x2="20" y2="26" stroke="#3F2418" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M 4 26 Q 20 32 36 26 Z" fill="#5E2A78"/>
+    </symbol>
+    <symbol id="horizon-scene" viewBox="0 0 1280 110" overflow="visible">
+      <rect x="0" y="0" width="1280" height="92" fill="url(#rs-sky)"/>
+      <path d="M 0 78 L 130 56 L 220 70 L 340 50 L 460 72 L 580 60 L 700 76 L 820 58 L 940 74 L 1080 60 L 1200 76 L 1280 70 L 1280 92 L 0 92 Z" fill="#7E5A8A" opacity="0.22"/>
+      <circle cx="430" cy="88" r="46" fill="url(#rs-sun)" opacity="0.96"/>
+      <circle cx="430" cy="88" r="62" fill="url(#rs-sun)" opacity="0.18"/>
+      <use href="#bird-s" x="540" y="14" width="22" height="11"/>
+      <use href="#bird-s" x="592" y="6" width="22" height="11"/>
+      <use href="#bird-s" x="644" y="20" width="22" height="11"/>
+      <use href="#bird-s" x="690" y="10" width="18" height="9"/>
+      <use href="#bird-s" x="980" y="18" width="20" height="10"/>
+      <use href="#sailboat-s" x="218" y="64" width="32" height="26"/>
+      <use href="#sailboat-s" x="328" y="68" width="26" height="22"/>
+      <rect x="0" y="88" width="1280" height="4" fill="url(#rs-sea)" opacity="0.5"/>
+      <g transform="translate(536, 56)"><path d="M -6 8 L 36 -10 L 78 8 Z" fill="#7A4A28"/><rect x="2" y="8" width="68" height="34" fill="url(#rs-bungalow)" rx="3"/><rect x="30" y="22" width="12" height="20" fill="#5E2A78" rx="1"/><rect x="8" y="14" width="11" height="11" fill="#FFE2B0" rx="1.5"/><rect x="51" y="14" width="11" height="11" fill="#FFE2B0" rx="1.5" opacity="0.85"/></g>
+      <g transform="translate(744, 18)">
+        <path d="M 0 18 L 90 -8 L 180 18 Z" fill="url(#rs-hotel-roof)"/>
+        <rect x="84" y="-16" width="12" height="8" fill="#5E2A78"/>
+        <circle cx="90" cy="-18" r="2.5" fill="#FFE680"/>
+        <rect x="0" y="16" width="180" height="74" fill="url(#rs-hotel)" rx="5"/>
+        <line x1="0" y1="38" x2="180" y2="38" stroke="white" stroke-width="0.8" opacity="0.18"/>
+        <line x1="0" y1="62" x2="180" y2="62" stroke="white" stroke-width="0.8" opacity="0.18"/>
+        <g fill="#FFE2B0"><rect x="10" y="22" width="16" height="12" rx="2"/><rect x="36" y="22" width="16" height="12" rx="2" opacity="0.7"/><rect x="62" y="22" width="16" height="12" rx="2"/><rect x="98" y="22" width="16" height="12" rx="2"/><rect x="124" y="22" width="16" height="12" rx="2" opacity="0.7"/><rect x="150" y="22" width="16" height="12" rx="2"/></g>
+        <rect x="80" y="22" width="20" height="12" fill="#FFD9A8" rx="2"/>
+        <g fill="#FFE2B0"><rect x="10" y="44" width="16" height="14" rx="2"/><rect x="36" y="44" width="16" height="14" rx="2"/><rect x="62" y="44" width="16" height="14" rx="2"/><rect x="98" y="44" width="16" height="14" rx="2"/><rect x="124" y="44" width="16" height="14" rx="2"/><rect x="150" y="44" width="16" height="14" rx="2"/></g>
+        <rect x="10" y="68" width="22" height="20" fill="#FFD9A8" rx="2"/>
+        <rect x="42" y="68" width="22" height="20" fill="#FFD9A8" rx="2" opacity="0.9"/>
+        <rect x="78" y="66" width="24" height="22" fill="#FFD9A8" rx="2"/>
+        <path d="M 80 88 L 80 76 Q 90 70 100 76 L 100 88 Z" fill="#FFE680"/>
+        <rect x="112" y="68" width="22" height="20" fill="#FFD9A8" rx="2" opacity="0.9"/>
+        <rect x="144" y="68" width="22" height="20" fill="#FFD9A8" rx="2"/>
+      </g>
+      <use href="#palm" x="80" y="-2" width="120" height="120"/>
+      <use href="#palm" x="248" y="14" width="86" height="86"/>
+      <use href="#palm" x="486" y="38" width="60" height="60"/>
+      <use href="#palm" x="958" y="22" width="74" height="74"/>
+      <use href="#palm" x="1090" y="-2" width="120" height="120"/>
+      <path d="M 0 92 Q 320 84 640 90 T 1280 92 L 1280 110 L 0 110 Z" fill="url(#rs-ground)" opacity="0.95"/>
+      <path d="M 0 96 Q 320 88 640 94 T 1280 96" fill="none" stroke="white" stroke-width="0.9" opacity="0.35"/>
+    </symbol>
+  </defs>
+</svg>
+
+<template id="tpl-reason-band">
+  <div class="reason-scene-band">
+    <svg viewBox="0 0 1280 110" preserveAspectRatio="xMidYMid slice"><use href="#horizon-scene" width="1280" height="110"/></svg>
+  </div>
+</template>
+
+<template id="tpl-reason-strip">
+  <div class="feature-strip">
+    <div class="feature-item"><div class="feature-icon">&#129309;</div><div><strong><span class="en">Built by hoteliers</span><span class="th">สร้างโดยโรงแรม</span></strong><span class="en">For hoteliers.</span><span class="th">เพื่อโรงแรม</span></div></div>
+    <div class="feature-item"><div class="feature-icon">%</div><div><strong><span class="en">Fairer commissions</span><span class="th">คอมมิชชันยุติธรรม</span></strong><span class="en">No more racket.</span><span class="th">ไม่มีค่าโก่ง</span></div></div>
+    <div class="feature-item"><div class="feature-icon">&#128737;</div><div><strong><span class="en">Take back control</span><span class="th">ทวงคืนการควบคุม</span></strong><span class="en">Your business, your way.</span><span class="th">ธุรกิจของคุณ แบบของคุณ</span></div></div>
+    <div class="feature-item"><div class="feature-icon">&#127774;</div><div><strong><span class="en">Together</span><span class="th">ร่วมกัน</span></strong><span class="en">For a fairer future.</span><span class="th">เพื่ออนาคตที่เป็นธรรม</span></div></div>
+    <div class="feature-logo">STAYLO<small><span class="en">Built by &amp; for hoteliers.</span><span class="th">สร้างโดย &amp; เพื่อโรงแรม</span></small></div>
+  </div>
+</template>
+
+<script>
+  (function autoInjectReasonShell(){
+    function inject() {
+      const bandTpl = document.getElementById('tpl-reason-band');
+      const stripTpl = document.getElementById('tpl-reason-strip');
+      document.querySelectorAll('.slide-reason .content').forEach(c => {
+        if (!c.querySelector('.reason-scene-band')) c.appendChild(bandTpl.content.cloneNode(true));
+        if (!c.querySelector('.feature-strip')) c.appendChild(stripTpl.content.cloneNode(true));
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inject);
+    else inject();
+  })();
+</script>
+
+<!-- ================================================================
      SLIDE 1 — COVER
      ================================================================ -->
 <!-- ================================================================
@@ -851,58 +1331,341 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 2 — PAIN — OTA commission bleed
      ================================================================ -->
-<section class="slide" data-slide="2">
+<section class="slide slide-reason" data-slide="2">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
 
-  <div class="content" style="justify-content:flex-start; padding-top:80px;">
-    <div class="label en">The problem</div>
-    <div class="label th">ปัญหา</div>
+  <div class="content">
+    <div class="reason-cols">
+      <!-- LEFT: editorial text -->
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Future.</h1>
+        <h1 class="reason-headline th">อนาคตของคุณ</h1>
+        <div class="reason-divider"></div>
 
-    <h1 class="lg en">It costs you <span class="pain-fraction">1<span class="pain-slash">/</span>5</span><br/>of your sales.</h1>
-    <h1 class="lg th">มันทำให้คุณเสีย <span class="pain-fraction">1<span class="pain-slash">/</span>5</span><br/>ของยอดขาย</h1>
+        <p class="reason-lead en">STAYLO is a cooperative. Hotels own the platform — and the platform protects hotels. Once you're in, you're in. <strong>Forever.</strong></p>
+        <p class="reason-lead th">STAYLO คือสหกรณ์ โรงแรมเป็นเจ้าของแพลตฟอร์ม — และแพลตฟอร์มปกป้องโรงแรม เมื่อคุณเข้าร่วม คุณอยู่<strong>ตลอดไป</strong></p>
 
-    <div class="pain-grid">
-      <div class="pain-card">
-        <div class="pain-card-ota">B</div>
-        <div class="pain-card-body">
-          <div class="pain-card-name">Booking.com</div>
-          <div class="pain-card-rate">18–22%</div>
-          <div class="pain-card-note en">Per booking, every time</div>
-          <div class="pain-card-note th">ต่อการจองทุกครั้ง</div>
-        </div>
+        <ul class="reason-bullets">
+          <li class="reason-bullet">
+            <span class="reason-bullet-icon">&#128737;</span>
+            <span><span class="en">You can't be delisted. Ever.</span><span class="th">ไม่มีวันถูกลบออกจากแพลตฟอร์ม</span></span>
+          </li>
+          <li class="reason-bullet">
+            <span class="reason-bullet-icon">&#128274;</span>
+            <span><span class="en">10% commission. Locked for life.</span><span class="th">ค่าคอมมิชชัน 10% ล็อกตลอดชีวิต</span></span>
+          </li>
+          <li class="reason-bullet">
+            <span class="reason-bullet-icon">&#129309;</span>
+            <span><span class="en">Cooperative wealth, not VC exit.</span><span class="th">ความมั่งคั่งร่วมกัน ไม่ใช่ทางออก VC</span></span>
+          </li>
+        </ul>
+
+        <div class="reason-callout en">&#128154; Built to <strong>last generations.</strong></div>
+        <div class="reason-callout th">&#128154; สร้างเพื่อ<strong>คงอยู่หลายชั่วอายุคน</strong></div>
+
+        <p class="reason-cta en">Hoteliers own the platform.<br/>The platform protects hoteliers.</p>
+        <p class="reason-cta th">โรงแรมเป็นเจ้าของแพลตฟอร์ม<br/>แพลตฟอร์มปกป้องโรงแรม</p>
       </div>
-      <div class="pain-card">
-        <div class="pain-card-ota">A</div>
-        <div class="pain-card-body">
-          <div class="pain-card-name">Agoda</div>
-          <div class="pain-card-rate">17–20%</div>
-          <div class="pain-card-note en">Thailand standard rate</div>
-          <div class="pain-card-note th">อัตราสำหรับประเทศไทย</div>
-        </div>
-      </div>
-      <div class="pain-card">
-        <div class="pain-card-ota">E</div>
-        <div class="pain-card-body">
-          <div class="pain-card-name">Expedia / Hotels.com</div>
-          <div class="pain-card-rate">20–25%</div>
-          <div class="pain-card-note en">Highest fees on the market</div>
-          <div class="pain-card-note th">ค่าธรรมเนียมสูงที่สุดในตลาด</div>
-        </div>
-      </div>
-      <div class="pain-card">
-        <div class="pain-card-ota">Ai</div>
-        <div class="pain-card-body">
-          <div class="pain-card-name">Airbnb</div>
-          <div class="pain-card-rate">15%</div>
-          <div class="pain-card-note en">Plus guest fees on top</div>
-          <div class="pain-card-note th">บวกค่าธรรมเนียมจากแขกเพิ่มเติม</div>
+
+      <!-- RIGHT: circle + bubbles + SVG scene -->
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center">
+            <img src="/STAYLO_logo.png" alt="STAYLO" />
+            <small><span class="en">By hoteliers. For hoteliers.</span><span class="th">โดยโรงแรม เพื่อโรงแรม</span></small>
+          </div>
+
+          <div class="reason-bubble b-top">
+            <div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128737;</div>
+            <strong><span class="en">Can't be delisted</span><span class="th">ไม่ถูกลบออก</span></strong>
+            <span class="en">Protected by statute.</span>
+            <span class="th">คุ้มครองตามกฎ</span>
+          </div>
+          <div class="reason-bubble b-right">
+            <div class="reason-bubble-icon" style="background:linear-gradient(135deg,#F7931A,#FF6B00);">&#8383;</div>
+            <strong><span class="en">Bitcoin Treasury</span><span class="th">คลัง Bitcoin</span></strong>
+            <span class="en">20% of all capital.</span>
+            <span class="th">20% ของทุนทั้งหมด</span>
+          </div>
+          <div class="reason-bubble b-bottom">
+            <div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#128499;</div>
+            <strong><span class="en">1 property = 1 vote</span><span class="th">1 อสังหา = 1 เสียง</span></strong>
+            <span class="en">No buying votes.</span>
+            <span class="th">ไม่มีการซื้อสิทธิ์</span>
+          </div>
+          <div class="reason-bubble b-left">
+            <div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128274;</div>
+            <strong><span class="en">10% commission</span><span class="th">คอมมิชชัน 10%</span></strong>
+            <span class="en">Locked for life.</span>
+            <span class="th">ล็อกตลอดชีวิต</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="callout-band">
-      <span class="en"><span>$6.3 million</span> leaves Koh Phangan every year to OTA shareholders in New York and Singapore. None of it comes back.</span>
-      <span class="th"><span>6.3 ล้านดอลลาร์</span> ออกจากเกาะพะงันทุกปีไปสู่ผู้ถือหุ้น OTA ในนิวยอร์กและสิงคโปร์ ไม่มีแม้แต่บาทเดียวที่กลับมา</span>
+    <!-- FULL-WIDTH SVG HORIZON BAND: warm sunset scene with detailed palms, hotel, bungalow, sailboats, birds -->
+    <div class="reason-scene-band">
+      <svg viewBox="0 0 1280 110" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Sky: warm dawn-to-dusk gradient -->
+          <linearGradient id="rs-sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FFF6E9"/>
+            <stop offset="55%" stop-color="#FFD9B5"/>
+            <stop offset="100%" stop-color="#FFB48E"/>
+          </linearGradient>
+          <radialGradient id="rs-sun" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FFE680"/>
+            <stop offset="60%" stop-color="#FFB347"/>
+            <stop offset="100%" stop-color="#FF6B00"/>
+          </radialGradient>
+          <linearGradient id="rs-hotel" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#B9527A"/>
+            <stop offset="100%" stop-color="#5E2A78"/>
+          </linearGradient>
+          <linearGradient id="rs-hotel-roof" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#7E22CE"/>
+            <stop offset="100%" stop-color="#5E2A78"/>
+          </linearGradient>
+          <linearGradient id="rs-bungalow" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#C026D3"/>
+            <stop offset="100%" stop-color="#7E22CE"/>
+          </linearGradient>
+          <linearGradient id="rs-ground" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FF9A5C"/>
+            <stop offset="100%" stop-color="#FF5722"/>
+          </linearGradient>
+          <linearGradient id="rs-trunk" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#3F2418"/>
+            <stop offset="50%" stop-color="#7A4A28"/>
+            <stop offset="100%" stop-color="#3F2418"/>
+          </linearGradient>
+          <linearGradient id="rs-frond" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1F8A5A"/>
+            <stop offset="100%" stop-color="#0F5A36"/>
+          </linearGradient>
+          <linearGradient id="rs-frond-light" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#4DAE6F"/>
+            <stop offset="100%" stop-color="#2D7A4E"/>
+          </linearGradient>
+          <linearGradient id="rs-sea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#FFB890"/>
+            <stop offset="100%" stop-color="#FF8755"/>
+          </linearGradient>
+
+          <!-- Reusable palm icon symbol — drawn in 100x100 box, anchor at bottom -->
+          <symbol id="palm" viewBox="0 0 100 100" overflow="visible">
+            <!-- trunk: curved with rings -->
+            <path d="M 48 100 Q 42 60 52 18" stroke="url(#rs-trunk)" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <!-- subtle trunk highlights (rings) -->
+            <line x1="44" y1="80" x2="48" y2="80" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="44" y1="65" x2="49" y2="65" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="46" y1="48" x2="51" y2="48" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="48" y1="32" x2="52" y2="32" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+            <!-- coconuts cluster at crown -->
+            <circle cx="50" cy="18" r="3.5" fill="#5A3818"/>
+            <circle cx="55" cy="20" r="3" fill="#3F2418"/>
+            <circle cx="46" cy="20" r="3" fill="#3F2418"/>
+            <!-- 8 fronds as filled leaf shapes, fan around (52, 16) -->
+            <!-- top-left frond -->
+            <path d="M 52 16 Q 26 -2 5 8 Q 28 6 52 16 Z" fill="url(#rs-frond)"/>
+            <path d="M 52 16 Q 28 4 14 12" stroke="url(#rs-frond-light)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <!-- top frond -->
+            <path d="M 52 16 Q 46 -14 32 -22 Q 44 -6 52 16 Z" fill="url(#rs-frond)"/>
+            <path d="M 52 16 Q 44 -2 38 -16" stroke="url(#rs-frond-light)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <!-- top-right frond -->
+            <path d="M 52 16 Q 70 -10 86 -8 Q 70 4 52 16 Z" fill="url(#rs-frond)"/>
+            <path d="M 52 16 Q 70 2 80 -4" stroke="url(#rs-frond-light)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <!-- right frond -->
+            <path d="M 52 16 Q 86 16 100 24 Q 80 20 52 16 Z" fill="url(#rs-frond-light)"/>
+            <path d="M 52 16 Q 80 18 96 22" stroke="url(#rs-frond)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <!-- bottom-right frond -->
+            <path d="M 52 16 Q 80 34 94 42 Q 70 30 52 16 Z" fill="url(#rs-frond)"/>
+            <path d="M 52 16 Q 78 30 90 38" stroke="url(#rs-frond-light)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <!-- left frond -->
+            <path d="M 52 16 Q 14 14 -2 20 Q 22 20 52 16 Z" fill="url(#rs-frond-light)"/>
+            <path d="M 52 16 Q 18 16 4 18" stroke="url(#rs-frond)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <!-- bottom-left frond -->
+            <path d="M 52 16 Q 28 34 12 44 Q 36 30 52 16 Z" fill="url(#rs-frond)"/>
+            <path d="M 52 16 Q 30 30 18 38" stroke="url(#rs-frond-light)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+            <!-- center fan accent -->
+            <circle cx="52" cy="16" r="2.5" fill="#0F5A36"/>
+          </symbol>
+
+          <!-- Bird icon: filled gull silhouette -->
+          <symbol id="bird" viewBox="0 0 24 12" overflow="visible">
+            <path d="M 0 10 Q 5 2 10 6 Q 14 2 19 8 Q 21 9 23 10" stroke="#3D4A5C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </symbol>
+
+          <!-- Sailboat icon -->
+          <symbol id="sailboat" viewBox="0 0 40 32" overflow="visible">
+            <!-- sail -->
+            <path d="M 20 4 L 20 24 L 6 24 Z" fill="#FFFFFF" opacity="0.9"/>
+            <path d="M 20 8 L 20 24 L 32 24 Z" fill="#FFE0CC" opacity="0.85"/>
+            <!-- mast -->
+            <line x1="20" y1="2" x2="20" y2="26" stroke="#3F2418" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- hull -->
+            <path d="M 4 26 Q 20 32 36 26 Z" fill="#5E2A78"/>
+          </symbol>
+        </defs>
+
+        <!-- Sky -->
+        <rect x="0" y="0" width="1280" height="92" fill="url(#rs-sky)"/>
+
+        <!-- Distant mountains for depth -->
+        <path d="M 0 78 L 130 56 L 220 70 L 340 50 L 460 72 L 580 60 L 700 76 L 820 58 L 940 74 L 1080 60 L 1200 76 L 1280 70 L 1280 92 L 0 92 Z" fill="#7E5A8A" opacity="0.22"/>
+
+        <!-- Sun behind horizon, multi-stop radial -->
+        <circle cx="430" cy="88" r="46" fill="url(#rs-sun)" opacity="0.96"/>
+        <!-- Soft sun glow -->
+        <circle cx="430" cy="88" r="62" fill="url(#rs-sun)" opacity="0.18"/>
+
+        <!-- Birds in formation, scattered above sun -->
+        <use href="#bird" x="540" y="14" width="22" height="11"/>
+        <use href="#bird" x="592" y="6" width="22" height="11"/>
+        <use href="#bird" x="644" y="20" width="22" height="11"/>
+        <use href="#bird" x="690" y="10" width="18" height="9"/>
+        <use href="#bird" x="980" y="18" width="20" height="10"/>
+
+        <!-- Sailboats on the horizon -->
+        <use href="#sailboat" x="218" y="64" width="32" height="26"/>
+        <use href="#sailboat" x="328" y="68" width="26" height="22"/>
+
+        <!-- Sea reflection band under sun -->
+        <rect x="0" y="88" width="1280" height="4" fill="url(#rs-sea)" opacity="0.5"/>
+
+        <!-- Bungalow (small, left of center) -->
+        <g transform="translate(536, 56)">
+          <!-- roof: thatched triangle -->
+          <path d="M -6 8 L 36 -10 L 78 8 Z" fill="#7A4A28"/>
+          <path d="M -2 8 L 36 -6 L 74 8" stroke="#3F2418" stroke-width="0.8" fill="none" opacity="0.5"/>
+          <!-- body -->
+          <rect x="2" y="8" width="68" height="34" fill="url(#rs-bungalow)" rx="3"/>
+          <!-- door -->
+          <rect x="30" y="22" width="12" height="20" fill="#5E2A78" rx="1"/>
+          <!-- windows -->
+          <rect x="8" y="14" width="11" height="11" fill="#FFE2B0" rx="1.5"/>
+          <rect x="51" y="14" width="11" height="11" fill="#FFE2B0" rx="1.5" opacity="0.85"/>
+          <!-- window cross -->
+          <line x1="13.5" y1="14" x2="13.5" y2="25" stroke="#5E2A78" stroke-width="0.5"/>
+          <line x1="56.5" y1="14" x2="56.5" y2="25" stroke="#5E2A78" stroke-width="0.5"/>
+        </g>
+
+        <!-- Hotel: detailed building, center-right -->
+        <g transform="translate(744, 18)">
+          <!-- roof: stepped pyramidal -->
+          <path d="M 0 18 L 90 -8 L 180 18 Z" fill="url(#rs-hotel-roof)"/>
+          <rect x="84" y="-16" width="12" height="8" fill="#5E2A78"/>
+          <circle cx="90" cy="-18" r="2.5" fill="#FFE680"/>
+          <!-- main body -->
+          <rect x="0" y="16" width="180" height="74" fill="url(#rs-hotel)" rx="5"/>
+          <!-- vertical separator lines (floors) -->
+          <line x1="0" y1="38" x2="180" y2="38" stroke="white" stroke-width="0.8" opacity="0.18"/>
+          <line x1="0" y1="62" x2="180" y2="62" stroke="white" stroke-width="0.8" opacity="0.18"/>
+          <!-- Row 1: 6 windows -->
+          <g fill="#FFE2B0">
+            <rect x="10" y="22" width="16" height="12" rx="2"/>
+            <rect x="36" y="22" width="16" height="12" rx="2" opacity="0.7"/>
+            <rect x="62" y="22" width="16" height="12" rx="2"/>
+            <rect x="98" y="22" width="16" height="12" rx="2"/>
+            <rect x="124" y="22" width="16" height="12" rx="2" opacity="0.7"/>
+            <rect x="150" y="22" width="16" height="12" rx="2"/>
+          </g>
+          <!-- central balcony entrance row 1 -->
+          <rect x="80" y="22" width="20" height="12" fill="#FFD9A8" rx="2"/>
+          <!-- Row 2: balconies with windows -->
+          <g fill="#FFE2B0">
+            <rect x="10" y="44" width="16" height="14" rx="2"/>
+            <rect x="36" y="44" width="16" height="14" rx="2"/>
+            <rect x="62" y="44" width="16" height="14" rx="2"/>
+            <rect x="98" y="44" width="16" height="14" rx="2"/>
+            <rect x="124" y="44" width="16" height="14" rx="2"/>
+            <rect x="150" y="44" width="16" height="14" rx="2"/>
+          </g>
+          <!-- balcony railings -->
+          <g stroke="#FFE2B0" stroke-width="0.7" opacity="0.6">
+            <line x1="10" y1="58" x2="26" y2="58"/>
+            <line x1="36" y1="58" x2="52" y2="58"/>
+            <line x1="62" y1="58" x2="78" y2="58"/>
+            <line x1="98" y1="58" x2="114" y2="58"/>
+            <line x1="124" y1="58" x2="140" y2="58"/>
+            <line x1="150" y1="58" x2="166" y2="58"/>
+          </g>
+          <!-- Row 3 (ground floor / lobby): bigger windows + door -->
+          <rect x="10" y="68" width="22" height="20" fill="#FFD9A8" rx="2"/>
+          <rect x="42" y="68" width="22" height="20" fill="#FFD9A8" rx="2" opacity="0.9"/>
+          <rect x="78" y="66" width="24" height="22" fill="#FFD9A8" rx="2"/>
+          <!-- entrance arch -->
+          <path d="M 80 88 L 80 76 Q 90 70 100 76 L 100 88 Z" fill="#FFE680"/>
+          <rect x="112" y="68" width="22" height="20" fill="#FFD9A8" rx="2" opacity="0.9"/>
+          <rect x="144" y="68" width="22" height="20" fill="#FFD9A8" rx="2"/>
+        </g>
+
+        <!-- Palms — use symbol instances at various sizes and positions -->
+        <!-- Left big palm -->
+        <use href="#palm" x="80" y="-2" width="120" height="120"/>
+        <!-- Center-left medium palm -->
+        <use href="#palm" x="248" y="14" width="86" height="86"/>
+        <!-- Small palm near bungalow -->
+        <use href="#palm" x="486" y="38" width="60" height="60"/>
+        <!-- Far-right small palm -->
+        <use href="#palm" x="958" y="22" width="74" height="74"/>
+        <!-- Right big palm -->
+        <use href="#palm" x="1090" y="-2" width="120" height="120"/>
+
+        <!-- Ground / dunes -->
+        <path d="M 0 92 Q 320 84 640 90 T 1280 92 L 1280 110 L 0 110 Z" fill="url(#rs-ground)" opacity="0.95"/>
+        <!-- Highlight wave on dune top -->
+        <path d="M 0 96 Q 320 88 640 94 T 1280 96" fill="none" stroke="white" stroke-width="0.9" opacity="0.35"/>
+        <!-- Grass tufts -->
+        <g stroke="#0F5A36" stroke-width="1.4" stroke-linecap="round" opacity="0.7">
+          <path d="M 70 92 q 0 -6 3 -10"/>
+          <path d="M 76 92 q 1 -6 5 -10"/>
+          <path d="M 82 92 q 0 -7 -3 -11"/>
+          <path d="M 460 94 q 0 -6 3 -10"/>
+          <path d="M 466 94 q 1 -6 5 -10"/>
+          <path d="M 700 96 q 0 -6 3 -10"/>
+          <path d="M 1024 96 q 0 -6 3 -10"/>
+          <path d="M 1030 96 q 1 -6 5 -10"/>
+        </g>
+      </svg>
+    </div>
+
+    <!-- BOTTOM: orange→pink feature strip -->
+    <div class="feature-strip">
+      <div class="feature-item">
+        <div class="feature-icon">&#129309;</div>
+        <div>
+          <strong><span class="en">Built by hoteliers</span><span class="th">สร้างโดยโรงแรม</span></strong>
+          <span class="en">For hoteliers.</span>
+          <span class="th">เพื่อโรงแรม</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">%</div>
+        <div>
+          <strong><span class="en">Fairer commissions</span><span class="th">คอมมิชชันยุติธรรม</span></strong>
+          <span class="en">No more racket.</span>
+          <span class="th">ไม่มีค่าโก่ง</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#128737;</div>
+        <div>
+          <strong><span class="en">Take back control</span><span class="th">ทวงคืนการควบคุม</span></strong>
+          <span class="en">Your business, your way.</span>
+          <span class="th">ธุรกิจของคุณ แบบของคุณ</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#127774;</div>
+        <div>
+          <strong><span class="en">Together</span><span class="th">ร่วมกัน</span></strong>
+          <span class="en">For a fairer future.</span>
+          <span class="th">เพื่ออนาคตที่เป็นธรรม</span>
+        </div>
+      </div>
+      <div class="feature-logo">STAYLO<small><span class="en">Built by &amp; for hoteliers.</span><span class="th">สร้างโดย &amp; เพื่อโรงแรม</span></small></div>
     </div>
   </div>
 
@@ -913,74 +1676,212 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 3 — 10% COMMISSION LOCKED — your savings
      ================================================================ -->
-<section class="slide" data-slide="3">
+<section class="slide slide-reason" data-slide="3">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
 
-  <div class="content" style="padding-top:76px;">
-    <div class="label en">Commission structure</div>
-    <div class="label th">โครงสร้างค่าคอมมิชชัน</div>
+  <div class="content">
+    <div class="reason-cols">
+      <!-- LEFT: editorial text -->
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Margin.</h1>
+        <h1 class="reason-headline th">มาร์จิ้นของคุณ</h1>
+        <div class="reason-divider"></div>
 
-    <h1 class="md en">Keep <span class="grad-text">90 cents</span> of every dollar.<br/>Forever.</h1>
-    <h1 class="md th">เก็บ <span class="grad-text">90 สตางค์</span> จากทุกบาท<br/>ตลอดไป</h1>
+        <p class="reason-lead en">OTAs take 22-25% of every booking. STAYLO takes 10% — and locks it <strong>for life</strong> by DAO constitution.</p>
+        <p class="reason-lead th">OTA หัก 22-25% ของทุกการจอง STAYLO หัก 10% — <strong>ล็อกตลอดชีวิต</strong>โดยธรรมนูญ DAO</p>
 
-    <div class="commission-hero">
-      <!-- SVG dial -->
-      <div class="commission-dial">
-        <svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="110" cy="110" r="96" stroke="#E5E7EB" stroke-width="18" fill="none"/>
-          <!-- 90% arc teal (324 deg of 360 = 90%) -->
-          <circle cx="110" cy="110" r="96"
-            stroke="url(#dialGrad)" stroke-width="18" fill="none"
-            stroke-dasharray="603.2 670.2"
-            stroke-dashoffset="167.5"
-            stroke-linecap="round"/>
-          <defs>
-            <linearGradient id="dialGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#00897B"/>
-              <stop offset="100%" stop-color="#26A69A"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <div class="commission-dial-num">
-          <div class="commission-dial-big">90%</div>
-          <div class="commission-dial-tag en">yours</div>
-          <div class="commission-dial-tag th">ของคุณ</div>
-        </div>
+        <ul class="reason-bullets">
+          <li class="reason-bullet">
+            <span class="reason-bullet-icon">&#128274;</span>
+            <span><span class="en">10% commission. Locked for life.</span><span class="th">ค่าคอมมิชชัน 10% ล็อกตลอดชีวิต</span></span>
+          </li>
+          <li class="reason-bullet">
+            <span class="reason-bullet-icon">&#127775;</span>
+            <span><span class="en">DAO constitution. 90% vote to change.</span><span class="th">ธรรมนูญ DAO ต้องโหวต 90% ถึงเปลี่ยนได้</span></span>
+          </li>
+          <li class="reason-bullet">
+            <span class="reason-bullet-icon">&#128176;</span>
+            <span><span class="en">+$30,660 / year vs Booking.com (10 rooms).</span><span class="th">+$30,660 ต่อปี เทียบ Booking.com (10 ห้อง)</span></span>
+          </li>
+        </ul>
+
+        <div class="reason-callout en">&#11088; <strong>Keep 90 cents</strong> of every dollar.</div>
+        <div class="reason-callout th">&#11088; <strong>เก็บ 90 สตางค์</strong> จากทุกบาท</div>
+
+        <p class="reason-cta en">10% for life —<br/>by the people who book it.</p>
+        <p class="reason-cta th">10% ตลอดชีวิต —<br/>โดยคนที่จองให้คุณ</p>
       </div>
 
-      <div class="commission-table">
-        <div class="commission-row">
-          <div class="commission-name">Booking.com</div>
-          <div class="commission-bar"><div class="commission-bar-fill bad" style="width:81%"></div></div>
-          <div class="commission-pct bad">–22%</div>
-        </div>
-        <div class="commission-row">
-          <div class="commission-name">Expedia</div>
-          <div class="commission-bar"><div class="commission-bar-fill bad" style="width:91%"></div></div>
-          <div class="commission-pct bad">–25%</div>
-        </div>
-        <div class="commission-row">
-          <div class="commission-name">Agoda</div>
-          <div class="commission-bar"><div class="commission-bar-fill bad" style="width:74%"></div></div>
-          <div class="commission-pct bad">–17%</div>
-        </div>
-        <div class="commission-row">
-          <div class="commission-name" style="color:var(--teal-d); font-weight:800;">STAYLO</div>
-          <div class="commission-bar"><div class="commission-bar-fill good" style="width:40%"></div></div>
-          <div class="commission-pct good">–10%</div>
-        </div>
+      <!-- RIGHT: 90% dial + bubbles -->
+      <div class="reason-visual">
+        <div class="reason-dial-wrap">
+          <svg class="reason-dial" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="dialGrad3" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#FF6B00"/>
+                <stop offset="50%" stop-color="#FF1F70"/>
+                <stop offset="100%" stop-color="#7E22CE"/>
+              </linearGradient>
+            </defs>
+            <circle cx="110" cy="110" r="96" stroke="#F1F5F9" stroke-width="20" fill="none"/>
+            <circle cx="110" cy="110" r="96"
+              stroke="url(#dialGrad3)" stroke-width="20" fill="none"
+              stroke-dasharray="603.2 670.2"
+              stroke-dashoffset="167.5"
+              stroke-linecap="round"
+              transform="rotate(-90 110 110)"/>
+          </svg>
+          <div class="reason-dial-text">
+            <div class="reason-dial-big">90%</div>
+            <div class="reason-dial-small"><span class="en">yours</span><span class="th">ของคุณ</span></div>
+          </div>
 
-        <div class="lifetime-badge">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L10 6H15L11 9.5L12.5 14.5L8 11.5L3.5 14.5L5 9.5L1 6H6L8 1Z" fill="#15803D"/></svg>
-          <span class="en">Locked for life — by DAO constitution</span>
-          <span class="th">ล็อคตลอดชีพ — โดยธรรมนูญ DAO</span>
+          <div class="reason-bubble b-top">
+            <div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128737;</div>
+            <strong><span class="en">Locked for life</span><span class="th">ล็อกตลอดชีวิต</span></strong>
+            <span class="en">DAO constitution.</span>
+            <span class="th">ธรรมนูญ DAO</span>
+          </div>
+          <div class="reason-bubble b-right">
+            <div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128176;</div>
+            <strong><span class="en">+$30,660 / year</span><span class="th">+$30,660 ต่อปี</span></strong>
+            <span class="en">10 rooms · 70% occ.</span>
+            <span class="th">10 ห้อง · ใช้พัก 70%</span>
+          </div>
+          <div class="reason-bubble b-bottom">
+            <div class="reason-bubble-icon" style="background:linear-gradient(135deg,#DC2626,#991B1B);">&#128201;</div>
+            <strong><span class="en">vs Booking 22%</span><span class="th">vs Booking 22%</span></strong>
+            <span class="en">Agoda 20% · Expedia 25%</span>
+            <span class="th">Agoda 20% · Expedia 25%</span>
+          </div>
+          <div class="reason-bubble b-left">
+            <div class="reason-bubble-icon" style="background:linear-gradient(135deg,#F7931A,#FF6B00);">&#8383;</div>
+            <strong><span class="en">12¢ back</span><span class="th">12¢ คืนทุกบาท</span></strong>
+            <span class="en">On every dollar booked.</span>
+            <span class="th">จากทุกการจอง</span>
+          </div>
         </div>
-
-        <p style="font-size:18px; color:var(--muted); margin-top:12px; line-height:1.5;">
-          <span class="en">10 rooms · $100 avg rate · 70% occupancy &nbsp;=&nbsp; <strong style="color:var(--green);">+$30,660 / year</strong> vs Booking.com</span>
-          <span class="th">10 ห้อง · ราคาเฉลี่ย $100 · อัตราเข้าพัก 70% &nbsp;=&nbsp; <strong style="color:var(--green);">+$30,660 / ปี</strong> เทียบ Booking.com</span>
-        </p>
       </div>
+    </div>
+
+    <!-- FULL-WIDTH SVG HORIZON BAND: shared sunset scene -->
+    <div class="reason-scene-band">
+      <svg viewBox="0 0 1280 110" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="rs-sky-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF6E9"/><stop offset="55%" stop-color="#FFD9B5"/><stop offset="100%" stop-color="#FFB48E"/></linearGradient>
+          <radialGradient id="rs-sun-3" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFE680"/><stop offset="60%" stop-color="#FFB347"/><stop offset="100%" stop-color="#FF6B00"/></radialGradient>
+          <linearGradient id="rs-hotel-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#B9527A"/><stop offset="100%" stop-color="#5E2A78"/></linearGradient>
+          <linearGradient id="rs-hotel-roof-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7E22CE"/><stop offset="100%" stop-color="#5E2A78"/></linearGradient>
+          <linearGradient id="rs-bungalow-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C026D3"/><stop offset="100%" stop-color="#7E22CE"/></linearGradient>
+          <linearGradient id="rs-ground-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF9A5C"/><stop offset="100%" stop-color="#FF5722"/></linearGradient>
+          <linearGradient id="rs-trunk-3" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#3F2418"/><stop offset="50%" stop-color="#7A4A28"/><stop offset="100%" stop-color="#3F2418"/></linearGradient>
+          <linearGradient id="rs-frond-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1F8A5A"/><stop offset="100%" stop-color="#0F5A36"/></linearGradient>
+          <linearGradient id="rs-frond-light-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4DAE6F"/><stop offset="100%" stop-color="#2D7A4E"/></linearGradient>
+          <linearGradient id="rs-sea-3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFB890"/><stop offset="100%" stop-color="#FF8755"/></linearGradient>
+          <symbol id="palm-3" viewBox="0 0 100 100" overflow="visible">
+            <path d="M 48 100 Q 42 60 52 18" stroke="url(#rs-trunk-3)" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <line x1="44" y1="80" x2="48" y2="80" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="44" y1="65" x2="49" y2="65" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="46" y1="48" x2="51" y2="48" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+            <line x1="48" y1="32" x2="52" y2="32" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+            <circle cx="50" cy="18" r="3.5" fill="#5A3818"/>
+            <circle cx="55" cy="20" r="3" fill="#3F2418"/>
+            <circle cx="46" cy="20" r="3" fill="#3F2418"/>
+            <path d="M 52 16 Q 26 -2 5 8 Q 28 6 52 16 Z" fill="url(#rs-frond-3)"/>
+            <path d="M 52 16 Q 46 -14 32 -22 Q 44 -6 52 16 Z" fill="url(#rs-frond-3)"/>
+            <path d="M 52 16 Q 70 -10 86 -8 Q 70 4 52 16 Z" fill="url(#rs-frond-3)"/>
+            <path d="M 52 16 Q 86 16 100 24 Q 80 20 52 16 Z" fill="url(#rs-frond-light-3)"/>
+            <path d="M 52 16 Q 80 34 94 42 Q 70 30 52 16 Z" fill="url(#rs-frond-3)"/>
+            <path d="M 52 16 Q 14 14 -2 20 Q 22 20 52 16 Z" fill="url(#rs-frond-light-3)"/>
+            <path d="M 52 16 Q 28 34 12 44 Q 36 30 52 16 Z" fill="url(#rs-frond-3)"/>
+            <circle cx="52" cy="16" r="2.5" fill="#0F5A36"/>
+          </symbol>
+          <symbol id="bird-3" viewBox="0 0 24 12" overflow="visible">
+            <path d="M 0 10 Q 5 2 10 6 Q 14 2 19 8 Q 21 9 23 10" stroke="#3D4A5C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </symbol>
+          <symbol id="sailboat-3" viewBox="0 0 40 32" overflow="visible">
+            <path d="M 20 4 L 20 24 L 6 24 Z" fill="#FFFFFF" opacity="0.9"/>
+            <path d="M 20 8 L 20 24 L 32 24 Z" fill="#FFE0CC" opacity="0.85"/>
+            <line x1="20" y1="2" x2="20" y2="26" stroke="#3F2418" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M 4 26 Q 20 32 36 26 Z" fill="#5E2A78"/>
+          </symbol>
+        </defs>
+        <rect x="0" y="0" width="1280" height="92" fill="url(#rs-sky-3)"/>
+        <path d="M 0 78 L 130 56 L 220 70 L 340 50 L 460 72 L 580 60 L 700 76 L 820 58 L 940 74 L 1080 60 L 1200 76 L 1280 70 L 1280 92 L 0 92 Z" fill="#7E5A8A" opacity="0.22"/>
+        <circle cx="430" cy="88" r="46" fill="url(#rs-sun-3)" opacity="0.96"/>
+        <circle cx="430" cy="88" r="62" fill="url(#rs-sun-3)" opacity="0.18"/>
+        <use href="#bird-3" x="540" y="14" width="22" height="11"/>
+        <use href="#bird-3" x="592" y="6" width="22" height="11"/>
+        <use href="#bird-3" x="644" y="20" width="22" height="11"/>
+        <use href="#bird-3" x="690" y="10" width="18" height="9"/>
+        <use href="#bird-3" x="980" y="18" width="20" height="10"/>
+        <use href="#sailboat-3" x="218" y="64" width="32" height="26"/>
+        <use href="#sailboat-3" x="328" y="68" width="26" height="22"/>
+        <rect x="0" y="88" width="1280" height="4" fill="url(#rs-sea-3)" opacity="0.5"/>
+        <g transform="translate(536, 56)"><path d="M -6 8 L 36 -10 L 78 8 Z" fill="#7A4A28"/><rect x="2" y="8" width="68" height="34" fill="url(#rs-bungalow-3)" rx="3"/><rect x="30" y="22" width="12" height="20" fill="#5E2A78" rx="1"/><rect x="8" y="14" width="11" height="11" fill="#FFE2B0" rx="1.5"/><rect x="51" y="14" width="11" height="11" fill="#FFE2B0" rx="1.5" opacity="0.85"/></g>
+        <g transform="translate(744, 18)">
+          <path d="M 0 18 L 90 -8 L 180 18 Z" fill="url(#rs-hotel-roof-3)"/>
+          <rect x="84" y="-16" width="12" height="8" fill="#5E2A78"/>
+          <circle cx="90" cy="-18" r="2.5" fill="#FFE680"/>
+          <rect x="0" y="16" width="180" height="74" fill="url(#rs-hotel-3)" rx="5"/>
+          <line x1="0" y1="38" x2="180" y2="38" stroke="white" stroke-width="0.8" opacity="0.18"/>
+          <line x1="0" y1="62" x2="180" y2="62" stroke="white" stroke-width="0.8" opacity="0.18"/>
+          <g fill="#FFE2B0"><rect x="10" y="22" width="16" height="12" rx="2"/><rect x="36" y="22" width="16" height="12" rx="2" opacity="0.7"/><rect x="62" y="22" width="16" height="12" rx="2"/><rect x="98" y="22" width="16" height="12" rx="2"/><rect x="124" y="22" width="16" height="12" rx="2" opacity="0.7"/><rect x="150" y="22" width="16" height="12" rx="2"/></g>
+          <rect x="80" y="22" width="20" height="12" fill="#FFD9A8" rx="2"/>
+          <g fill="#FFE2B0"><rect x="10" y="44" width="16" height="14" rx="2"/><rect x="36" y="44" width="16" height="14" rx="2"/><rect x="62" y="44" width="16" height="14" rx="2"/><rect x="98" y="44" width="16" height="14" rx="2"/><rect x="124" y="44" width="16" height="14" rx="2"/><rect x="150" y="44" width="16" height="14" rx="2"/></g>
+          <rect x="10" y="68" width="22" height="20" fill="#FFD9A8" rx="2"/>
+          <rect x="42" y="68" width="22" height="20" fill="#FFD9A8" rx="2" opacity="0.9"/>
+          <rect x="78" y="66" width="24" height="22" fill="#FFD9A8" rx="2"/>
+          <path d="M 80 88 L 80 76 Q 90 70 100 76 L 100 88 Z" fill="#FFE680"/>
+          <rect x="112" y="68" width="22" height="20" fill="#FFD9A8" rx="2" opacity="0.9"/>
+          <rect x="144" y="68" width="22" height="20" fill="#FFD9A8" rx="2"/>
+        </g>
+        <use href="#palm-3" x="80" y="-2" width="120" height="120"/>
+        <use href="#palm-3" x="248" y="14" width="86" height="86"/>
+        <use href="#palm-3" x="486" y="38" width="60" height="60"/>
+        <use href="#palm-3" x="958" y="22" width="74" height="74"/>
+        <use href="#palm-3" x="1090" y="-2" width="120" height="120"/>
+        <path d="M 0 92 Q 320 84 640 90 T 1280 92 L 1280 110 L 0 110 Z" fill="url(#rs-ground-3)" opacity="0.95"/>
+        <path d="M 0 96 Q 320 88 640 94 T 1280 96" fill="none" stroke="white" stroke-width="0.9" opacity="0.35"/>
+      </svg>
+    </div>
+
+    <!-- BOTTOM: orange→pink feature strip (same as slide 2) -->
+    <div class="feature-strip">
+      <div class="feature-item">
+        <div class="feature-icon">&#129309;</div>
+        <div>
+          <strong><span class="en">Built by hoteliers</span><span class="th">สร้างโดยโรงแรม</span></strong>
+          <span class="en">For hoteliers.</span>
+          <span class="th">เพื่อโรงแรม</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">%</div>
+        <div>
+          <strong><span class="en">Fairer commissions</span><span class="th">คอมมิชชันยุติธรรม</span></strong>
+          <span class="en">No more racket.</span>
+          <span class="th">ไม่มีค่าโก่ง</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#128737;</div>
+        <div>
+          <strong><span class="en">Take back control</span><span class="th">ทวงคืนการควบคุม</span></strong>
+          <span class="en">Your business, your way.</span>
+          <span class="th">ธุรกิจของคุณ แบบของคุณ</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#127774;</div>
+        <div>
+          <strong><span class="en">Together</span><span class="th">ร่วมกัน</span></strong>
+          <span class="en">For a fairer future.</span>
+          <span class="th">เพื่ออนาคตที่เป็นธรรม</span>
+        </div>
+      </div>
+      <div class="feature-logo">STAYLO<small><span class="en">Built by &amp; for hoteliers.</span><span class="th">สร้างโดย &amp; เพื่อโรงแรม</span></small></div>
     </div>
   </div>
 
@@ -991,165 +1892,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 4 — STAYLO SHIP — free operational toolkit
      ================================================================ -->
-<section class="slide" data-slide="4">
+<section class="slide slide-reason" data-slide="4">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <div class="content" style="padding-top:54px;">
-    <div style="display:flex; align-items:center; gap:14px; margin-bottom:6px;">
-      <img src="/SHIP_LOGO.png" alt="STAYLO Ship" width="56" height="56" style="display:block; border-radius:14px; box-shadow:0 6px 16px rgba(126,34,206,0.25);" />
-      <div>
-        <div class="label en" style="margin:0;">Bonus — STAYLO Ship</div>
-        <div class="label th" style="margin:0;">โบนัส — STAYLO Ship</div>
-        <div style="font-size:11px; font-weight:700; letter-spacing:0.4px; color:var(--muted); margin-top:3px;">
-          <strong style="color:var(--ink);">SHIP</strong> — Staylo Hotelier In-Pocket
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Stack.</h1>
+        <h1 class="reason-headline th">แพลตฟอร์มของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">6 SaaS in one — included <strong>free for life</strong>. PMS, channel, payroll, contracts, POS, messenger. No subscriptions. No IT team.</p>
+        <p class="reason-lead th">6 SaaS รวมในที่เดียว — <strong>ฟรีตลอดชีวิต</strong> PMS, channel, payroll, สัญญา, POS, messenger ไม่มีค่ารายเดือน ไม่ต้องมีทีม IT</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128176;</span><span><span class="en">Cloudbeds $250-500/mo. STAYLO $0.</span><span class="th">Cloudbeds $250-500/ด STAYLO $0</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127760;</span><span><span class="en">14 languages. Built for Thai law.</span><span class="th">14 ภาษา สร้างเพื่อกฎหมายไทย</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128241;</span><span><span class="en">Mobile-first. Run from anywhere.</span><span class="th">Mobile-first บริหารจากที่ไหนก็ได้</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>STAYLO Ship</strong> — Hotelier In-Pocket</div>
+        <div class="reason-callout th">&#11088; <strong>STAYLO Ship</strong> — โรงแรมในกระเป๋า</div>
+        <p class="reason-cta en">Run the hotel.<br/>From anywhere.</p>
+        <p class="reason-cta th">บริหารโรงแรม<br/>จากที่ไหนก็ได้</p>
       </div>
-    </div>
-
-    <h1 class="md en">Your hotel <span class="grad-text">in the palm of your hand.</span></h1>
-    <h1 class="md th">โรงแรมของคุณ <span class="grad-text">ในฝ่ามือ</span></h1>
-
-    <!-- 4 mockup screens -->
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:18px;">
-
-      <!-- MOCKUP 1 : SCHEDULE -->
-      <div style="background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-        <div style="padding:9px 12px; background:#1A1A2E; color:white; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; font-weight:800; letter-spacing:0.8px;">📅 Schedule</span>
-          <span style="font-size:9px; opacity:0.6;">Week 22</span>
-        </div>
-        <div style="padding:10px 11px;">
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; font-size:8px; color:var(--muted); font-weight:700; margin-bottom:4px;">
-            <div></div><div style="text-align:center;">M</div><div style="text-align:center;">T</div><div style="text-align:center;">W</div><div style="text-align:center;">T</div><div style="text-align:center;">F</div><div style="text-align:center;">S</div><div style="text-align:center;">S</div>
-          </div>
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; margin-bottom:3px; align-items:center;">
-            <div style="font-size:9px; font-weight:700; color:var(--ink);">Som</div>
-            <div style="height:14px; background:#FF6B00; border-radius:3px;"></div><div style="height:14px; background:#FF6B00; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#FF6B00; border-radius:3px;"></div><div style="height:14px; background:#FF6B00; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:transparent;"></div>
-          </div>
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; margin-bottom:3px; align-items:center;">
-            <div style="font-size:9px; font-weight:700; color:var(--ink);">Pim</div>
-            <div style="height:14px; background:transparent;"></div><div style="height:14px; background:#FF1F70; border-radius:3px;"></div><div style="height:14px; background:#FF1F70; border-radius:3px;"></div><div style="height:14px; background:#FF1F70; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#FF1F70; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div>
-          </div>
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; margin-bottom:3px; align-items:center;">
-            <div style="font-size:9px; font-weight:700; color:var(--ink);">Niran</div>
-            <div style="height:14px; background:#7E22CE; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#7E22CE; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#7E22CE; border-radius:3px;"></div><div style="height:14px; background:#7E22CE; border-radius:3px;"></div><div style="height:14px; background:#7E22CE; border-radius:3px;"></div>
-          </div>
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; align-items:center;">
-            <div style="font-size:9px; font-weight:700; color:var(--ink);">Lek</div>
-            <div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div>
-          </div>
-          <div style="margin-top:8px; padding-top:7px; border-top:1px dashed var(--line); display:flex; justify-content:space-between; font-size:9px;">
-            <span style="color:var(--muted);">Total hours</span>
-            <span style="font-weight:800; color:var(--ink);">192h</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- MOCKUP 2 : CONTRACT (bilingual) -->
-      <div style="background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-        <div style="padding:9px 12px; background:#1A1A2E; color:white; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; font-weight:800; letter-spacing:0.8px;">📄 Contract</span>
-          <span style="font-size:9px; opacity:0.6;">EN + TH</span>
-        </div>
-        <div style="padding:11px;">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:8.5px; line-height:1.4;">
-            <div>
-              <div style="font-size:8px; font-weight:800; letter-spacing:0.6px; color:var(--orange); margin-bottom:3px;">EMPLOYMENT</div>
-              <div style="font-weight:700; color:var(--ink);">Mr. Som Lek</div>
-              <div style="color:var(--muted);">Concierge</div>
-              <div style="margin-top:5px; color:var(--ink);">Start: 1 Jun 2026</div>
-              <div style="color:var(--ink);">Salary: ฿24,000/m</div>
-              <div style="color:var(--ink);">Hours: 48h/wk</div>
-            </div>
-            <div style="font-family:'Noto Sans Thai', sans-serif;">
-              <div style="font-size:8px; font-weight:800; letter-spacing:0.6px; color:var(--orange); margin-bottom:3px;">สัญญาจ้างงาน</div>
-              <div style="font-weight:700; color:var(--ink);">นาย ส้ม เล็ก</div>
-              <div style="color:var(--muted);">พนักงานต้อนรับ</div>
-              <div style="margin-top:5px; color:var(--ink);">เริ่ม: 1 มิ.ย. 2569</div>
-              <div style="color:var(--ink);">เงินเดือน: ฿24,000/ด</div>
-              <div style="color:var(--ink);">ชม.: 48ชม./สัป</div>
-            </div>
-          </div>
-          <div style="margin-top:8px; padding-top:7px; border-top:1px dashed var(--line); display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:9px; color:var(--muted);">Status</span>
-            <span style="font-size:9px; font-weight:800; color:#15803D; background:#DCFCE7; padding:2px 7px; border-radius:8px;">SIGNED ✓</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- MOCKUP 3 : PAYSLIP -->
-      <div style="background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-        <div style="padding:9px 12px; background:#1A1A2E; color:white; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; font-weight:800; letter-spacing:0.8px;">💰 Payslip</span>
-          <span style="font-size:9px; opacity:0.6;">May 2026</span>
-        </div>
-        <div style="padding:11px;">
-          <div style="font-size:9px; font-weight:800; color:var(--ink);">Som Lek</div>
-          <div style="font-size:8.5px; color:var(--muted); margin-bottom:7px;">Concierge · DANCING</div>
-          <div style="font-size:9.5px; line-height:1.6;">
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">Base salary</span><span style="font-weight:600;">฿24,000</span></div>
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">Service charge</span><span style="font-weight:600;">฿3,200</span></div>
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">OT (8h)</span><span style="font-weight:600;">฿1,440</span></div>
-            <div style="border-top:1px dashed var(--line); margin:3px 0; padding-top:3px; display:flex; justify-content:space-between;"><span style="color:var(--muted);">Gross</span><span style="font-weight:700; color:var(--ink);">฿28,640</span></div>
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">SSO</span><span style="font-weight:600; color:#C53030;">−฿750</span></div>
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">Tax</span><span style="font-weight:600; color:#C53030;">−฿180</span></div>
-          </div>
-          <div style="margin-top:7px; padding-top:7px; border-top:2px solid var(--orange); display:flex; justify-content:space-between; align-items:baseline;">
-            <span style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:var(--orange);">Net Pay</span>
-            <span style="font-size:17px; font-weight:900; color:var(--ink);">฿27,710</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- MOCKUP 4 : HOTEL SETTINGS -->
-      <div style="background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-        <div style="padding:9px 12px; background:#1A1A2E; color:white; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; font-weight:800; letter-spacing:0.8px;">⚙️ Hotel</span>
-          <span style="font-size:9px; opacity:0.6;">DANCING</span>
-        </div>
-        <div style="padding:11px;">
-          <div style="font-size:9px; font-weight:800; color:var(--ink); margin-bottom:6px;">Property settings</div>
-          <div style="display:flex; flex-direction:column; gap:5px; font-size:9px;">
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Name</span><span style="font-weight:700; color:var(--ink);">DANCING</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Currency</span><span style="font-weight:700; color:var(--ink);">THB ฿</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Languages</span><span style="font-weight:700; color:var(--ink);">TH·EN·FR</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Departments</span><span style="font-weight:700; color:var(--ink);">5</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Venues</span><span style="font-weight:700; color:var(--ink);">13</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Staff</span><span style="font-weight:700; color:var(--ink);">28</span></div>
-          </div>
-          <div style="margin-top:8px; text-align:center; font-size:9px; padding:5px; background:var(--grad-warm); color:white; border-radius:5px; font-weight:800;">Save changes</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Cost comparison strip -->
-    <div style="margin-top:14px; background:linear-gradient(135deg, #1A1A2E 0%, #2D0A3D 100%); border-radius:10px; padding:12px 18px; display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:center;">
-      <div>
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:4px;">
-          <span class="en">What others charge per month</span>
-          <span class="th">คู่แข่งเก็บต่อเดือน</span>
-        </div>
-        <div style="display:flex; gap:12px; flex-wrap:wrap; font-size:14px; color:rgba(255,255,255,0.85); font-weight:600;">
-          <span>Cloudbeds <strong style="color:#FF6B00;">$250–500</strong></span>
-          <span>Mews <strong style="color:#FF6B00;">$300+</strong></span>
-          <span>Little Hotelier <strong style="color:#FF6B00;">$99–150</strong></span>
-        </div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:1px;">
-          <span class="en">You pay</span>
-          <span class="th">คุณจ่าย</span>
-        </div>
-        <div style="font-size:38px; font-weight:900; line-height:1; background:var(--grad-warm); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-2px;">$0 / mo</div>
-        <div style="font-size:13px; color:rgba(255,255,255,0.7); margin-top:1px;">
-          <span class="en">free forever, included</span>
-          <span class="th">ฟรีตลอดชีพ รวมอยู่แล้ว</span>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><img src="/SHIP_LOGO.png" alt="SHIP" style="width:160px;height:160px;border-radius:24px;box-shadow:0 6px 20px rgba(126,34,206,0.25);" /><small style="margin-top:8px;"><span class="en">All-in-one hotelier OS</span><span class="th">ระบบโรงแรมครบจบ</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128197;</div><strong><span class="en">Schedule</span><span class="th">ตารางงาน</span></strong><span class="en">Weekly grid · OT calc</span><span class="th">ตารางสัปดาห์ · OT</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#128221;</div><strong><span class="en">Contracts</span><span class="th">สัญญา</span></strong><span class="en">EN + TH bilingual</span><span class="th">EN + TH สองภาษา</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128176;</div><strong><span class="en">Payslips</span><span class="th">เงินเดือน</span></strong><span class="en">SSO · tax · service charge</span><span class="th">SSO · ภาษี · เซอร์วิส</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#128181;</div><strong><span class="en">$0 / month</span><span class="th">$0 ต่อเดือน</span></strong><span class="en">Free forever, included</span><span class="th">ฟรีตลอดชีพ รวมแล้ว</span></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">4 / 13</div>
 </section>
@@ -1157,54 +1931,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 5 — 1 PROPERTY = 1 VOTE — your protection
      ================================================================ -->
-<section class="slide" data-slide="5">
+<section class="slide slide-reason" data-slide="5">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <!-- DECO: ballot + checkmark (governance vote) -->
-  <svg style="position:absolute; top:84px; right:84px; width:96px; height:96px; opacity:0.42; z-index:1;" viewBox="0 0 100 100" fill="none" stroke="#FF1F70" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="18" y="36" width="64" height="50" rx="4"/>
-    <path d="M 30 28 L 30 22 L 70 22 L 70 28"/>
-    <line x1="36" y1="32" x2="64" y2="32"/>
-    <path d="M 30 60 L 44 74 L 72 42" stroke="#FF6B00" stroke-width="3"/>
-  </svg>
-
-  <div class="content" style="padding-top:72px; align-items:center; text-align:center;">
-    <div class="label en">Governance</div>
-    <div class="label th">การกำกับดูแล</div>
-
-    <div class="vote-fraction">1</div>
-    <div class="vote-sub en">property &nbsp;=&nbsp; 1 vote</div>
-    <div class="vote-sub th">โรงแรม &nbsp;=&nbsp; 1 เสียง</div>
-
-    <p style="margin-top:16px; font-size:18px; color:var(--muted); max-width:640px;">
-      <span class="en">No matter how many shares you hold, every hotelier has equal say. Sasiwimol's hotel and David's hotel — same vote.</span>
-      <span class="th">ไม่ว่าจะถือหุ้นเท่าไร เจ้าของโรงแรมทุกรายมีสิทธิ์เท่ากัน โรงแรมของสาสิวิมลและโรงแรมของเดวิด — เสียงเท่ากัน</span>
-    </p>
-
-    <div class="vote-rule-list">
-      <div class="vote-rule">
-        <div class="vote-rule-pct">50%+1</div>
-        <div class="vote-rule-label en">Product, features,<br/>partnerships</div>
-        <div class="vote-rule-label th">สินค้า ฟีเจอร์<br/>พันธมิตร</div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Voice.</h1>
+        <h1 class="reason-headline th">เสียงของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">1 property = 1 vote. Whether you own 5 rooms or 500 — your hotel has <strong>one voice</strong> in the DAO. No share-buying votes.</p>
+        <p class="reason-lead th">1 อสังหา = 1 เสียง ไม่ว่าคุณจะมี 5 ห้องหรือ 500 ห้อง โรงแรมของคุณมี<strong>เสียงเดียว</strong>ใน DAO ไม่มีการซื้อสิทธิ์โหวต</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128499;</span><span><span class="en">1 property = 1 vote (sybil-proof).</span><span class="th">1 อสังหา = 1 เสียง (กันบอท)</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128203;</span><span><span class="en">Routine: 10-15% quorum.</span><span class="th">การลงคะแนนทั่วไป: ครบ 10-15%</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127942;</span><span><span class="en">Commission change: 67% supermajority.</span><span class="th">เปลี่ยนคอมมิชชัน: ต้อง 67%</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>Your hotel.</strong> Your vote. Forever.</div>
+        <div class="reason-callout th">&#11088; <strong>โรงแรมของคุณ</strong> เสียงของคุณ ตลอดไป</div>
+        <p class="reason-cta en">The cooperative votes.<br/>The platform listens.</p>
+        <p class="reason-cta th">สหกรณ์โหวต<br/>แพลตฟอร์มฟัง</p>
       </div>
-      <div class="vote-rule">
-        <div class="vote-rule-pct">67%</div>
-        <div class="vote-rule-label en">Commission rate,<br/>ownership structure</div>
-        <div class="vote-rule-label th">อัตราค่าคอม<br/>โครงสร้างความเป็นเจ้าของ</div>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:84px; line-height:1;">&#128499;</div><small style="margin-top:4px;"><span class="en">DAO Governance</span><span class="th">การกำกับดูแล DAO</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128737;</div><strong><span class="en">Founder veto</span><span class="th">ผู้ก่อตั้งวีโต้</span></strong><span class="en">Mission, commission, dissolution</span><span class="th">พันธกิจ คอมมิชชัน ยุติ</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128202;</div><strong><span class="en">Routine</span><span class="th">ทั่วไป</span></strong><span class="en">10-15% quorum</span><span class="th">ครบ 10-15%</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#9888;</div><strong><span class="en">Strategic</span><span class="th">เชิงกลยุทธ์</span></strong><span class="en">67% supermajority</span><span class="th">ต้อง 67%</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#128176;</div><strong><span class="en">Investors</span><span class="th">นักลงทุน</span></strong><span class="en">NO VOTE · dividends only</span><span class="th">ไม่มีสิทธิ์โหวต · ปันผลเท่านั้น</span></div>
+        </div>
       </div>
-      <div class="vote-rule">
-        <div class="vote-rule-pct">90%</div>
-        <div class="vote-rule-label en">Platform dissolution,<br/>fundamental change</div>
-        <div class="vote-rule-label th">ยุบแพลตฟอร์ม<br/>การเปลี่ยนแปลงพื้นฐาน</div>
-      </div>
-    </div>
-
-    <div class="callout-band" style="max-width:680px; margin-top:24px; text-align:left;">
-      <span class="en">The commission rate can <strong>only rise</strong> if <span>90% of all hoteliers agree</span>. In practice — it never will.</span>
-      <span class="th">อัตราค่าคอมมิชชันจะ<strong>ขึ้นได้</strong>ก็ต่อเมื่อ<span>เจ้าของโรงแรม 90% เห็นด้วย</span> ในทางปฏิบัติ — มันจะไม่มีวันเกิดขึ้น</span>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">5 / 13</div>
 </section>
@@ -1212,53 +1970,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 6 — THE SHIFT — built with hoteliers, owned by hoteliers
      ================================================================ -->
-<section class="slide" data-slide="6">
+<section class="slide slide-reason" data-slide="6">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <!-- DECO: community of 3 (built with hoteliers) -->
-  <svg style="position:absolute; top:84px; right:84px; width:96px; height:96px; opacity:0.42; z-index:1;" viewBox="0 0 100 100" fill="none" stroke="#FF6B00" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="50" cy="28" r="11"/>
-    <circle cx="26" cy="68" r="11"/>
-    <circle cx="74" cy="68" r="11"/>
-    <line x1="50" y1="39" x2="26" y2="57"/>
-    <line x1="50" y1="39" x2="74" y2="57"/>
-    <line x1="37" y1="68" x2="63" y2="68"/>
-  </svg>
-
-  <div class="content" style="padding-top:80px;">
-    <div class="label en">The shift</div>
-    <div class="label th">การเปลี่ยนแปลง</div>
-
-    <h1 class="lg en">Built with hoteliers.<br/><span class="grad-text">Owned by hoteliers.</span></h1>
-    <h1 class="lg th">สร้างโดยเจ้าของโรงแรม<br/><span class="grad-text">เป็นเจ้าของโดยเจ้าของโรงแรม</span></h1>
-
-    <div class="shift-wrapper">
-      <div class="shift-cols">
-        <div class="shift-col old">
-          <div class="shift-col-label en">Today — OTA model</div>
-          <div class="shift-col-label th">วันนี้ — โมเดล OTA</div>
-          <div class="shift-col-title en">You rent the shelf.</div>
-          <div class="shift-col-title th">คุณเช่าพื้นที่ขาย</div>
-          <div class="shift-item"><span class="shift-dot"></span><span class="en">Commission rises without your vote</span><span class="th">ค่าคอมมิชชันขึ้นโดยไม่ผ่านเสียงคุณ</span></div>
-          <div class="shift-item"><span class="shift-dot"></span><span class="en">You own zero equity in the platform</span><span class="th">คุณไม่มีหุ้นในแพลตฟอร์มเลย</span></div>
-          <div class="shift-item"><span class="shift-dot"></span><span class="en">Guest data stays with them</span><span class="th">ข้อมูลแขกอยู่กับพวกเขา</span></div>
-          <div class="shift-item"><span class="shift-dot"></span><span class="en">Payout delayed up to 30 days</span><span class="th">การจ่ายเงินล่าช้าถึง 30 วัน</span></div>
-        </div>
-        <div class="shift-col new">
-          <div class="shift-col-label en">STAYLO — cooperative model</div>
-          <div class="shift-col-label th">STAYLO — โมเดลสหกรณ์</div>
-          <div class="shift-col-title en">You own the platform.</div>
-          <div class="shift-col-title th">คุณเป็นเจ้าของแพลตฟอร์ม</div>
-          <div class="shift-item"><span class="shift-dot"></span><span class="en">10% commission, locked by vote</span><span class="th">ค่าคอมมิชชัน 10% ถูกล็อคโดยเสียงโหวต</span></div>
-          <div class="shift-item"><span class="shift-dot"></span><span class="en">Real shares — real ownership</span><span class="th">หุ้นจริง — ความเป็นเจ้าของจริง</span></div>
-          <div class="shift-item"><span class="shift-dot"></span><span class="en">You keep the guest relationship</span><span class="th">คุณดูแลความสัมพันธ์กับแขกเอง</span></div>
-          <div class="shift-item"><span class="shift-dot"></span><span class="en">Payout within 72 hours</span><span class="th">รับเงินภายใน 72 ชั่วโมง</span></div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Control.</h1>
+        <h1 class="reason-headline th">การควบคุมของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">Booking owns your relationship. STAYLO gives it back. <strong>Your guests' emails. Your direct line. Your data.</strong> Always.</p>
+        <p class="reason-lead th">Booking เป็นเจ้าของความสัมพันธ์ของคุณ STAYLO คืนให้คุณ <strong>อีเมลแขก สายตรง ข้อมูล</strong> เป็นของคุณเสมอ</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128231;</span><span><span class="en">Your guests' emails — yours.</span><span class="th">อีเมลแขก — ของคุณ</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128241;</span><span><span class="en">Your direct line — protected.</span><span class="th">สายตรง — คุ้มครอง</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128274;</span><span><span class="en">Your data — never sold.</span><span class="th">ข้อมูล — ไม่ขายให้ใคร</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>Your business.</strong> Your way.</div>
+        <div class="reason-callout th">&#11088; <strong>ธุรกิจของคุณ</strong> แบบของคุณ</div>
+        <p class="reason-cta en">Take back control.<br/>Forever.</p>
+        <p class="reason-cta th">ทวงคืนการควบคุม<br/>ตลอดไป</p>
+      </div>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:84px; line-height:1;">&#128737;</div><small style="margin-top:4px;"><span class="en">Direct relationship</span><span class="th">สายตรงกับแขก</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128231;</div><strong><span class="en">Direct emails</span><span class="th">อีเมลตรง</span></strong><span class="en">Yours — not Booking's</span><span class="th">ของคุณ ไม่ใช่ Booking</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128175;</div><strong><span class="en">No algorithm</span><span class="th">ไม่มี algorithm</span></strong><span class="en">Hotels pick rates, not us</span><span class="th">โรงแรมตั้งราคา ไม่ใช่เรา</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#128274;</div><strong><span class="en">No delisting</span><span class="th">ไม่มีการลบออก</span></strong><span class="en">Protected by statute</span><span class="th">คุ้มครองตามกฎ</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#128202;</div><strong><span class="en">Your data</span><span class="th">ข้อมูลของคุณ</span></strong><span class="en">Never sold. Never shared.</span><span class="th">ไม่ขาย ไม่แชร์</span></div>
         </div>
       </div>
-      <div class="shift-arrow" style="top:50%; left:calc(50% - 0px);">&#8594;</div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">6 / 13</div>
 </section>
@@ -1266,78 +2009,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 7 — THRESHOLD 500 — launch + ambassador flywheel
      ================================================================ -->
-<section class="slide" data-slide="7">
+<section class="slide slide-reason" data-slide="7">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <div class="content" style="padding-top:54px;">
-    <div class="label en">The launch threshold</div>
-    <div class="label th">เกณฑ์การเปิดตัว</div>
-
-    <h1 class="md en">Koh Phangan launches at<br/><span class="grad-text">500 hotels registered.</span></h1>
-    <h1 class="md th">เกาะพะงันเปิดตัวเมื่อ<br/><span class="grad-text">มีโรงแรมลงทะเบียน 500 แห่ง</span></h1>
-
-    <div class="threshold-layout">
-      <div class="threshold-left">
-        <div class="threshold-big">500</div>
-        <div class="threshold-unit en">properties · one island · one market</div>
-        <div class="threshold-unit th">ที่พัก · เกาะเดียว · ตลาดเดียว</div>
-
-        <div class="progress-wrap">
-          <div class="progress-label">
-            <span class="en">Registered</span>
-            <span class="th">ลงทะเบียนแล้ว</span>
-            <span>500</span>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-        </div>
-
-        <div class="threshold-desc">
-          <span class="en">Around <strong>600 properties of all types</strong> operate on Koh Phangan — hotels, resorts, villas, bungalows, hostels, guesthouses. Once 500 are registered, the booking engine goes live and every Founding Partner is immediately visible to travelers worldwide.</span>
-          <span class="th">บนเกาะพะงันมี <strong>ที่พักประมาณ 600 แห่งทุกประเภท</strong> — โรงแรม รีสอร์ท วิลล่า บังกะโล โฮสเทล เกสต์เฮาส์ เมื่อมีที่พักลงทะเบียน 500 แห่ง เครื่องมือจองจะเปิดให้บริการ และ Founding Partner ทุกรายจะปรากฏต่อนักเดินทางทั่วโลกทันที</span>
-        </div>
-
-        <!-- Ambassador flywheel: every guest becomes a paid recruiter (2% BTC for life per referred hotel) -->
-        <div style="margin-top:6px; padding:7px 12px; background:linear-gradient(135deg, rgba(244,81,30,0.08), rgba(0,137,123,0.08)); border-left:3px solid var(--orange); border-radius:6px;">
-          <div style="font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:3px;">
-            <span class="en">The ambassador flywheel · วงล้อแอมบาสเดอร์</span>
-            <span class="th">วงล้อแอมบาสเดอร์ · The ambassador flywheel</span>
-          </div>
-          <div style="font-size:11.5px; line-height:1.4; color:var(--ink);">
-            <span class="en">Every guest — <strong>even on a Booking.com reservation</strong> — opens the STAYLO app for in-hotel services and discovers the <strong>ambassador program</strong>: refer any hotel worldwide → <strong>2% BTC, for life</strong>. Your guests become a paid global sales force. <strong>One hotel = a launchpad for a thousand ambassadors.</strong></span>
-            <span class="th">แขกทุกคน — <strong>แม้จะมาจากการจอง Booking.com</strong> — เปิดแอป STAYLO เพื่อใช้บริการในโรงแรมและพบ <strong>โปรแกรมแอมบาสเดอร์</strong>: แนะนำโรงแรมทั่วโลก → <strong>2% BTC ตลอดชีพ</strong> แขกของคุณกลายเป็นทีมขายระดับโลกที่ได้รับค่าตอบแทน <strong>หนึ่งโรงแรม = ฐานปล่อยแอมบาสเดอร์พันคน</strong></span>
-          </div>
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Network.</h1>
+        <h1 class="reason-headline th">เครือข่ายของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en"><strong>&#127876; X-Mas 2026 launch</strong> — when <strong>400-500 KP hoteliers</strong> OR <strong>500 shares</strong> are reached. Never before end 2026 (tech + payments + corp must be ready first).</p>
+        <p class="reason-lead th"><strong>&#127876; เปิดตัว X-Mas 2026</strong> — เมื่อมี <strong>400-500 โรงแรม KP</strong> หรือ <strong>ขาย 500 หุ้น</strong> ไม่เปิดก่อนปลายปี 2026 (tech + ระบบจ่ายเงิน + บริษัทต้องพร้อมก่อน)</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127876;</span><span><span class="en">X-Mas 2026 launch — never before end 2026.</span><span class="th">เปิด X-Mas 2026 — ไม่ก่อนปลายปี 2026</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127968;</span><span><span class="en">400-500 KP hoteliers OR 500 shares sold.</span><span class="th">400-500 โรงแรม KP หรือ 500 หุ้น</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127757;</span><span><span class="en">KP &rarr; Thailand &rarr; SE Asia &rarr; Globe.</span><span class="th">KP &rarr; ไทย &rarr; SEA &rarr; โลก</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>Twin trigger.</strong> Tech-ready floor.</div>
+        <div class="reason-callout th">&#11088; <strong>สองเงื่อนไข</strong> · tech พร้อมก่อน</div>
+        <p class="reason-cta en">From one island.<br/>To the world.</p>
+        <p class="reason-cta th">จากหนึ่งเกาะ<br/>สู่โลก</p>
       </div>
-
-      <div class="threshold-right">
-        <div class="threshold-card">
-          <div class="threshold-card-title en">Why 500? — One coordinated launch.</div>
-          <div class="threshold-card-title th">ทำไมต้อง 500? — เปิดตัวพร้อมกันครั้งเดียว</div>
-          <div class="threshold-card-body en"><strong>We all start direct marketing the same day.</strong> Every visitor to our first Full Moon party leaves knowing STAYLO — billboards at Thong Sala pier, staff handing out cards, no exception. One island. One platform. One narrative — at the world's biggest beach party.</div>
-          <div class="threshold-card-body th"><strong>เราเริ่มการตลาดโดยตรงพร้อมกันในวันเดียวกัน</strong> นักท่องเที่ยวทุกคนที่มาร่วมงาน Full Moon ครั้งแรกของเราต้องรู้จัก STAYLO — ป้ายโฆษณาที่ท่าเรือท้องศาลา พนักงานแจกการ์ดประจำจุด ไม่มีข้อยกเว้น หนึ่งเกาะ หนึ่งแพลตฟอร์ม หนึ่งเรื่องราว — ในงานปาร์ตี้ชายหาดที่ใหญ่ที่สุดในโลก</div>
-        </div>
-        <div class="threshold-card">
-          <div class="threshold-card-title en">Your role, Sasiwimol</div>
-          <div class="threshold-card-title th">บทบาทของคุณ สาสิวิมล</div>
-          <div class="threshold-card-body en">As president of the Koh Phangan hoteliers association, your role is to <strong>develop our craft and elevate our image</strong>. Raise the standard of hospitality on the island. Make &ldquo;Koh Phangan&rdquo; a name for <strong>quality, dignity, ownership</strong>. STAYLO is your lever — one platform that respects your members&rsquo; work, gives their time back to the guest, and puts the island on the world stage.</div>
-          <div class="threshold-card-body th">ในฐานะประธานสมาคมเจ้าของโรงแรมเกาะพะงัน บทบาทของคุณคือ <strong>พัฒนาวิชาชีพและยกระดับภาพลักษณ์ของเรา</strong> ยกมาตรฐานการต้อนรับบนเกาะ ทำให้คำว่า &ldquo;เกาะพะงัน&rdquo; เป็นชื่อแห่ง <strong>คุณภาพ ศักดิ์ศรี ความเป็นเจ้าของ</strong> STAYLO คือเครื่องมือของคุณ — แพลตฟอร์มเดียวที่เคารพงานของสมาชิก คืนเวลาให้กับแขก และนำเกาะของเราสู่เวทีโลก</div>
-        </div>
-        <div class="threshold-card" style="background:var(--teal-l); border-color:rgba(0,137,123,0.25);">
-          <div class="threshold-card-title" style="color:var(--teal-d);">
-            <span class="en">~600 properties on the island.</span>
-            <span class="th">ที่พักประมาณ 600 แห่งบนเกาะ</span>
-          </div>
-          <div class="threshold-card-body" style="color:var(--teal-d);">
-            <span class="en">Together we reach 500 well before the next Full Moon. D-Day = launch.</span>
-            <span class="th">เราถึง 500 ได้ก่อนงาน Full Moon ครั้งถัดไป วัน D-Day = เปิดตัว</span>
-          </div>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:64px; line-height:1;">&#127876;</div><div style="font-size:32px; font-weight:900; background:linear-gradient(135deg,#FF6B00,#FF1F70); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-top:6px; letter-spacing:-1px; line-height:1;">X-Mas 26</div><small style="margin-top:6px;"><span class="en">Platform launch target</span><span class="th">เป้าหมายเปิดตัว</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#127794;</div><strong><span class="en">400-500 KP</span><span class="th">400-500 KP</span></strong><span class="en">Hoteliers signed-up</span><span class="th">โรงแรมเข้าร่วม</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128181;</div><strong><span class="en">500 shares</span><span class="th">500 หุ้น</span></strong><span class="en">Or shares sold (twin)</span><span class="th">หรือหุ้นขาย (สอง)</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#9203;</div><strong><span class="en">Tech floor</span><span class="th">พื้น tech</span></strong><span class="en">Never before end 2026</span><span class="th">ไม่ก่อนปลาย 2026</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#127757;</div><strong><span class="en">Globe by Y5</span><span class="th">ทั่วโลกปี 5</span></strong><span class="en">SE Asia &rarr; EU &rarr; LATAM</span><span class="th">SEA &rarr; EU &rarr; LATAM</span></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">7 / 13</div>
 </section>
@@ -1345,91 +2048,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 8 — ALPHA SHARE $1,000 — how you join
      ================================================================ -->
-<section class="slide" data-slide="8">
+<section class="slide slide-reason" data-slide="8">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <!-- DECO: certificate + ribbon seal (Alpha share ownership) -->
-  <svg style="position:absolute; top:84px; right:84px; width:96px; height:96px; opacity:0.42; z-index:1;" viewBox="0 0 100 100" fill="none" stroke="#FF6B00" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="18" y="20" width="64" height="56" rx="3"/>
-    <line x1="28" y1="35" x2="72" y2="35"/>
-    <line x1="28" y1="45" x2="72" y2="45"/>
-    <line x1="28" y1="55" x2="58" y2="55"/>
-    <circle cx="68" cy="62" r="9" stroke="#FF1F70"/>
-    <path d="M 64 71 L 64 88 L 68 84 L 72 88 L 72 71" stroke="#FF1F70"/>
-  </svg>
-
-  <div class="content" style="padding-top:76px;">
-    <div class="label en">Alpha round — Koh Phangan only</div>
-    <div class="label th">รอบ Alpha — เฉพาะเกาะพะงันเท่านั้น</div>
-
-    <h1 class="md en">Become a co-owner.<br/><span class="grad-text">$1,000 per share.</span></h1>
-    <h1 class="md th">กลายเป็นเจ้าของร่วม<br/><span class="grad-text">$1,000 ต่อหุ้น</span></h1>
-
-    <div class="alpha-layout">
-      <div class="alpha-price-block">
-        <div class="alpha-price-label en">Alpha share price</div>
-        <div class="alpha-price-label th">ราคาหุ้น Alpha</div>
-        <div class="alpha-price-amount">$1,000</div>
-        <div class="alpha-price-per en">per share · 1 share minimum per property</div>
-        <div class="alpha-price-per th">ต่อหุ้น · ขั้นต่ำ 1 หุ้นต่อ 1 โรงแรม</div>
-        <div class="alpha-supply">
-          <span class="en">Total Alpha supply: &nbsp;<strong>3,000</strong> shares &nbsp;·&nbsp; Koh Phangan only</span>
-          <span class="th">จำนวน Alpha ทั้งหมด: &nbsp;<strong>3,000</strong> หุ้น &nbsp;·&nbsp; เกาะพะงันเท่านั้น</span>
-        </div>
-        <div class="alpha-supply" style="margin-top:8px;">
-          <span class="en">Next round (World): &nbsp;<strong>$1,500</strong> / share globally</span>
-          <span class="th">รอบถัดไป (World): &nbsp;<strong>$1,500</strong> / หุ้น ทั่วโลก</span>
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Ownership.</h1>
+        <h1 class="reason-headline th">สิทธิ์ความเป็นเจ้าของ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">Buy shares as a Founding Partner. <strong>$1,000 / share</strong>. Max 10 per property — so the platform stays in the hands of many, not few.</p>
+        <p class="reason-lead th">ซื้อหุ้นเป็น Founding Partner <strong>$1,000 / หุ้น</strong> สูงสุด 10 หุ้นต่อโรงแรม — แพลตฟอร์มอยู่ในมือคนหลายคน ไม่ใช่ไม่กี่คน</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128181;</span><span><span class="en">$1,000 / share — Alpha · KP only.</span><span class="th">$1,000 / หุ้น — Alpha · เฉพาะ KP</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128737;</span><span><span class="en">Max 10 per hotel (anti-concentration).</span><span class="th">สูงสุด 10/โรงแรม (กันกระจุก)</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128274;</span><span><span class="en">Locked 10% commission for life.</span><span class="th">ล็อกคอมมิชชัน 10% ตลอดชีวิต</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>Own the platform</strong> that books you.</div>
+        <div class="reason-callout th">&#11088; <strong>เป็นเจ้าของแพลตฟอร์ม</strong>ที่จองให้คุณ</div>
+        <p class="reason-cta en">Become a Founding Partner.<br/>Forever Alpha.</p>
+        <p class="reason-cta th">เป็น Founding Partner<br/>Alpha ตลอดไป</p>
       </div>
-
-      <div class="alpha-perks">
-        <div class="alpha-perk">
-          <div class="perk-icon">&#127775;</div>
-          <div>
-            <div class="perk-title en">Founding Member badge — permanent</div>
-            <div class="perk-title th">ป้าย Founding Member — ถาวร</div>
-            <div class="perk-note en">Priority listing in all STAYLO search results</div>
-            <div class="perk-note th">ติดอันดับสูงในผลการค้นหาทุกครั้ง</div>
-          </div>
-        </div>
-        <div class="alpha-perk">
-          <div class="perk-icon">&#9878;</div>
-          <div>
-            <div class="perk-title en">DAO voting rights</div>
-            <div class="perk-title th">สิทธิ์โหวต DAO</div>
-            <div class="perk-note en">Vote on every platform decision from day one</div>
-            <div class="perk-note th">โหวตได้ทุกการตัดสินใจของแพลตฟอร์มตั้งแต่วันแรก</div>
-          </div>
-        </div>
-        <div class="alpha-perk">
-          <div class="perk-icon">&#128176;</div>
-          <div>
-            <div class="perk-title en">Annual dividends (20% net profit)</div>
-            <div class="perk-title th">เงินปันผลรายปี (กำไรสุทธิ 20%)</div>
-            <div class="perk-note en">Pro-rata to shares held — distributed post-audit</div>
-            <div class="perk-note th">ตามสัดส่วนหุ้น — จ่ายหลังการตรวจสอบบัญชี</div>
-          </div>
-        </div>
-        <div class="alpha-perk">
-          <div class="perk-icon">&#8383;</div>
-          <div>
-            <div class="perk-title en">$STAY token allocation (TGE Month 7)</div>
-            <div class="perk-title th">การจัดสรรโทเคน $STAY (TGE เดือนที่ 7)</div>
-            <div class="perk-note en">30% of total supply reserved for Founding Partners</div>
-            <div class="perk-note th">30% ของซัพพลายทั้งหมดสำรองไว้สำหรับ Founding Partners</div>
-          </div>
-        </div>
-
-        <div class="urgency-bar en">
-          Only 3,000 Alpha shares exist. When they close, next entry is $1,500 — with no founder perks.
-        </div>
-        <div class="urgency-bar th">
-          มีหุ้น Alpha เพียง 3,000 หุ้นเท่านั้น เมื่อปิดรอบนี้ รอบต่อไปราคา $1,500 — และไม่มีสิทธิพิเศษ Founder
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:84px; line-height:1;">&#127942;</div><small style="margin-top:4px;"><span class="en">Founding Partner — Alpha · KP</span><span class="th">Founding Partner — Alpha · KP</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128176;</div><strong><span class="en">$1,000 / share</span><span class="th">$1,000 / หุ้น</span></strong><span class="en">Alpha price · locked</span><span class="th">ราคา Alpha · ล็อก</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#127968;</div><strong><span class="en">Max 10 / hotel</span><span class="th">สูงสุด 10/โรงแรม</span></strong><span class="en">Anti-concentration</span><span class="th">กันกระจุก</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#128064;</div><strong><span class="en">3,000 shares</span><span class="th">3,000 หุ้น</span></strong><span class="en">Total Alpha cap</span><span class="th">เพดาน Alpha ทั้งหมด</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#127881;</div><strong><span class="en">30% $STAY</span><span class="th">30% $STAY</span></strong><span class="en">Tokens to FPs at TGE</span><span class="th">โทเค็นให้ FP ที่ TGE</span></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">8 / 13</div>
 </section>
@@ -1437,109 +2087,39 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 9 — CAP TABLE — where you sit
      ================================================================ -->
-<section class="slide" data-slide="9">
+<section class="slide slide-reason" data-slide="9">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <div class="content" style="padding-top:76px;">
-    <div class="label en">Ownership structure</div>
-    <div class="label th">โครงสร้างการถือครอง</div>
-
-    <h1 class="md en"><span class="grad-text">500,000 shares.</span> Four categories.</h1>
-    <h1 class="md th"><span class="grad-text">500,000 หุ้น</span> สี่ประเภท</h1>
-
-    <div class="captable-layout">
-      <div class="captable-visual">
-        <div class="ct-bar-wrap">
-          <div class="ct-bar-label">World<span>69.4% · 347,000 sh.</span></div>
-          <div class="ct-bar-track"><div class="ct-bar-fill" style="width:69.4%; background:#00897B;"></div></div>
-        </div>
-        <div class="ct-bar-wrap" style="margin-top:10px;">
-          <div class="ct-bar-label">Private Investors<span>20% · 100,000 sh.</span></div>
-          <div class="ct-bar-track"><div class="ct-bar-fill" style="width:20%; background:#26A69A;"></div></div>
-        </div>
-        <div class="ct-bar-wrap" style="margin-top:10px;">
-          <div class="ct-bar-label">Founders<span>10% · 50,000 sh.</span></div>
-          <div class="ct-bar-track"><div class="ct-bar-fill" style="width:10%; background:#80CBC4;"></div></div>
-        </div>
-        <div class="ct-bar-wrap" style="margin-top:10px;">
-          <div class="ct-bar-label" style="color:var(--orange); font-weight:800;">Alpha <span style="color:var(--orange);">0.6% · 3,000 sh. ← YOU</span></div>
-          <div class="ct-bar-track"><div class="ct-bar-fill" style="width:0.6%; background:var(--orange);"></div></div>
-        </div>
-
-        <div style="margin-top:20px; padding:14px 16px; background:var(--orange-l); border:1px solid rgba(244,81,30,0.2); border-radius:10px;">
-          <div style="font-size:15px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:6px;">
-            <span class="en">Total authorized capital</span>
-            <span class="th">ทุนจดทะเบียนทั้งหมด</span>
-          </div>
-          <div style="font-size:28px; font-weight:900; color:var(--orange); letter-spacing:-1px;">$523.5M+</div>
-          <div style="font-size:16px; color:var(--muted); margin-top:2px;">
-            <span class="en">at full World round close</span>
-            <span class="th">เมื่อปิด World round ทั้งหมด</span>
-          </div>
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Structure.</h1>
+        <h1 class="reason-headline th">โครงสร้างของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">500,000 shares total · 4 categories. Founder LOCKED. Private NO VOTE. Alpha KP. World Global. <strong>$523.5M+ capital target.</strong></p>
+        <p class="reason-lead th">หุ้นรวม 500,000 · 4 หมวด ผู้ก่อตั้งล็อก นักลงทุนไม่มีสิทธิ์โหวต Alpha KP World ทั่วโลก <strong>เป้าทุน $523.5M+</strong></p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128274;</span><span><span class="en">50k Founder shares — LOCKED non-dilutable.</span><span class="th">50k หุ้นผู้ก่อตั้ง — ล็อกไม่เจือจาง</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127968;</span><span><span class="en">3k Alpha KP — $1,000 · max 10/hotel.</span><span class="th">3k Alpha KP — $1,000 · สูงสุด 10/โรงแรม</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127942;</span><span><span class="en">100k Private — $1,500+ · NO VOTE.</span><span class="th">100k Private — $1,500+ · ไม่มีโหวต</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127757;</span><span><span class="en">347k World — $1,500+ · global open.</span><span class="th">347k World — $1,500+ · เปิดทั่วโลก</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>$523.5M+</strong> · total capital target</div>
+        <div class="reason-callout th">&#11088; <strong>$523.5M+</strong> · เป้าหมายทุนรวม</div>
+        <p class="reason-cta en">4 categories.<br/>Built to last.</p>
+        <p class="reason-cta th">4 หมวด<br/>สร้างเพื่อคงอยู่</p>
       </div>
-
-      <div class="captable-list">
-        <div class="ct-row">
-          <div class="ct-swatch" style="background:#80CBC4;"></div>
-          <div>
-            <div class="ct-name en">Founder</div>
-            <div class="ct-name th">ผู้ก่อตั้ง</div>
-            <div class="ct-detail en">Sweat equity · 12m cliff + 36m vest</div>
-            <div class="ct-detail th">Sweat equity · 12 เดือน cliff + 36 เดือน vest</div>
-          </div>
-          <div>
-            <div class="ct-shares">50,000</div>
-            <div class="ct-capital">10%</div>
-          </div>
-          <div style="font-size:15px; color:var(--muted); text-align:right;">—</div>
-        </div>
-        <div class="ct-row">
-          <div class="ct-swatch" style="background:#26A69A;"></div>
-          <div>
-            <div class="ct-name en">Private Investors</div>
-            <div class="ct-name th">นักลงทุนเอกชน</div>
-            <div class="ct-detail en">Strategic seed · BTC accepted</div>
-            <div class="ct-detail th">Seed เชิงกลยุทธ์ · รับ BTC</div>
-          </div>
-          <div>
-            <div class="ct-shares">100,000</div>
-            <div class="ct-capital">20%</div>
-          </div>
-          <div style="font-size:15px; color:var(--muted); text-align:right;">TBD</div>
-        </div>
-        <div class="ct-row highlight">
-          <div class="ct-swatch" style="background:var(--orange);"></div>
-          <div>
-            <div class="ct-name en">Alpha — Koh Phangan</div>
-            <div class="ct-name th">Alpha — เกาะพะงัน</div>
-            <div class="ct-detail en">10 shares max per property · Founder perks</div>
-            <div class="ct-detail th">สูงสุด 10 หุ้นต่อโรงแรม · สิทธิพิเศษผู้ก่อตั้ง</div>
-          </div>
-          <div>
-            <div class="ct-shares">3,000</div>
-            <div class="ct-capital">0.6% · $1,000</div>
-          </div>
-          <div style="font-size:18px; font-weight:800; color:var(--orange); text-align:right;">OPEN</div>
-        </div>
-        <div class="ct-row">
-          <div class="ct-swatch" style="background:#00897B;"></div>
-          <div>
-            <div class="ct-name en">World — Global</div>
-            <div class="ct-name th">World — ทั่วโลก</div>
-            <div class="ct-detail en">Opens post-Alpha close · SEA + Global</div>
-            <div class="ct-detail th">เปิดหลัง Alpha ปิด · SEA + ทั่วโลก</div>
-          </div>
-          <div>
-            <div class="ct-shares">347,000</div>
-            <div class="ct-capital">69.4% · $1,500</div>
-          </div>
-          <div style="font-size:15px; color:var(--muted); text-align:right; font-weight:600;">NEXT</div>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:64px; font-weight:900; background:linear-gradient(135deg,#FF6B00,#FF1F70); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; letter-spacing:-2px;">500K</div><small style="margin-top:6px;"><span class="en">Shares · 4 categories</span><span class="th">หุ้น · 4 หมวด</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128737;</div><strong><span class="en">50k Founder</span><span class="th">50k ผู้ก่อตั้ง</span></strong><span class="en">LOCKED non-dilutable</span><span class="th">ล็อกไม่เจือจาง</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#127968;</div><strong><span class="en">3k Alpha · KP</span><span class="th">3k Alpha · KP</span></strong><span class="en">$1,000 / share</span><span class="th">$1,000 / หุ้น</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#128181;</div><strong><span class="en">100k Private</span><span class="th">100k Private</span></strong><span class="en">$1,500+ · NO VOTE</span><span class="th">$1,500+ · ไม่มีโหวต</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#127757;</div><strong><span class="en">347k World</span><span class="th">347k World</span></strong><span class="en">$1,500+ · open progressively</span><span class="th">$1,500+ · เปิดทยอย</span></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">9 / 13</div>
 </section>
@@ -1547,108 +2127,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 10 — $STAY TOKEN — long-term reward
      ================================================================ -->
-<section class="slide" data-slide="10">
+<section class="slide slide-reason" data-slide="10">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <!-- DECO: coin with $ + sparkles ($STAY token) -->
-  <svg style="position:absolute; top:84px; right:84px; width:96px; height:96px; opacity:0.42; z-index:1;" viewBox="0 0 100 100" fill="none" stroke="#7E22CE" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="46" cy="54" r="26"/>
-    <text x="46" y="62" text-anchor="middle" font-size="24" font-weight="700" font-family="Inter, sans-serif" fill="#7E22CE" stroke="none">$</text>
-    <path d="M 80 24 L 82 32 L 90 34 L 82 36 L 80 44 L 78 36 L 70 34 L 78 32 Z" fill="#FF6B00" stroke="#FF6B00" stroke-width="1"/>
-    <path d="M 84 64 L 85 68 L 89 69 L 85 70 L 84 74 L 83 70 L 79 69 L 83 68 Z" fill="#FF1F70" stroke="#FF1F70" stroke-width="0.8"/>
-  </svg>
-
-  <div class="content" style="padding-top:54px;">
-    <div class="label en">$STAY token — Solana · TGE Month 7</div>
-    <div class="label th">โทเคน $STAY — Solana · TGE เดือนที่ 7</div>
-
-    <h1 class="md en">Earn while you host.<br/><span class="grad-text">The platform pays you back.</span></h1>
-    <h1 class="md th">รับโทเคนขณะที่คุณให้บริการ<br/><span class="grad-text">แพลตฟอร์มคืนกำไรให้คุณ</span></h1>
-
-    <div class="stay-layout">
-      <div class="stay-token-card">
-        <div class="stay-token-name en">Token</div>
-        <div class="stay-token-name th">โทเคน</div>
-        <div class="stay-token-ticker">$STAY</div>
-        <div class="stay-token-network">Solana SPL Token-2022 · Raydium DEX</div>
-
-        <div class="stay-stats">
-          <div class="stay-stat">
-            <span class="stay-stat-key en">Total supply (fixed)</span>
-            <span class="stay-stat-key th">ซัพพลายทั้งหมด (คงที่)</span>
-            <span class="stay-stat-val">10,000,000,000</span>
-          </div>
-          <div class="stay-stat">
-            <span class="stay-stat-key en">TGE launch price</span>
-            <span class="stay-stat-key th">ราคาเปิดตัว TGE</span>
-            <span class="stay-stat-val green">$0.10</span>
-          </div>
-          <div class="stay-stat">
-            <span class="stay-stat-key en">Founding Partners allocation</span>
-            <span class="stay-stat-key th">จัดสรรให้ Founding Partners</span>
-            <span class="stay-stat-val">30% (3B tokens)</span>
-          </div>
-          <div class="stay-stat">
-            <span class="stay-stat-key en">Earn pool</span>
-            <span class="stay-stat-key th">พูลรางวัล</span>
-            <span class="stay-stat-val">20% (2B tokens)</span>
-          </div>
-          <div class="stay-stat">
-            <span class="stay-stat-key en">New minting</span>
-            <span class="stay-stat-key th">การสร้างใหม่</span>
-            <span class="stay-stat-val" style="color:#F87171;">
-              <span class="en">Never — 90% vote required</span>
-              <span class="th">ไม่มีวันเกิด — ต้องโหวต 90%</span>
-            </span>
-          </div>
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Token.</h1>
+        <h1 class="reason-headline th">โทเค็นของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">$STAY — <strong>10B fixed</strong> supply on Solana. Halves every 4 years. Earned by hoteliers and guests alike. TGE M07 on Raydium @ $0.10.</p>
+        <p class="reason-lead th">$STAY — supply <strong>10B คงที่</strong>บน Solana ลดครึ่งทุก 4 ปี โรงแรมและแขกได้รับเหมือนกัน TGE M07 บน Raydium @ $0.10</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128176;</span><span><span class="en">10B fixed supply · SPL Token-2022.</span><span class="th">10B คงที่ · SPL Token-2022</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127881;</span><span><span class="en">TGE M07 @ $0.10 · FDV $1B.</span><span class="th">TGE M07 @ $0.10 · FDV $1B</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#8383;</span><span><span class="en">50/night baseline · halving 4y.</span><span class="th">50/คืน · ลดครึ่งทุก 4 ปี</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>Bitcoin-style scarcity</strong> · built in.</div>
+        <div class="reason-callout th">&#11088; <strong>ความหายากแบบ Bitcoin</strong> · สร้างมาแบบนี้</div>
+        <p class="reason-cta en">Earn. Vote.<br/>Build the network.</p>
+        <p class="reason-cta th">หา โหวต<br/>สร้างเครือข่าย</p>
       </div>
-
-      <div>
-        <p style="font-size:17px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--teal); margin-bottom:14px;">
-          <span class="en">How you earn $STAY</span>
-          <span class="th">วิธีรับ $STAY</span>
-        </p>
-        <div class="stay-earn-list">
-          <div class="stay-earn-item">
-            <div class="earn-icon">&#127961;</div>
-            <span class="earn-action en">Per night hosted</span>
-            <span class="earn-action th">ต่อคืนที่ให้บริการ</span>
-            <span class="earn-amount">10 $STAY</span>
-          </div>
-          <div class="stay-earn-item">
-            <div class="earn-icon">&#128101;</div>
-            <span class="earn-action en">Refer a hotel</span>
-            <span class="earn-action th">แนะนำโรงแรม</span>
-            <span class="earn-amount">1,000 $STAY</span>
-          </div>
-          <div class="stay-earn-item">
-            <div class="earn-icon">&#9888;</div>
-            <span class="earn-action en">Governance vote</span>
-            <span class="earn-action th">โหวตกำกับดูแล</span>
-            <span class="earn-amount">100 $STAY</span>
-          </div>
-          <div class="stay-earn-item">
-            <div class="earn-icon">&#11088;</div>
-            <span class="earn-action en">Verified guest review</span>
-            <span class="earn-action th">รีวิวจากแขกที่ยืนยันแล้ว</span>
-            <span class="earn-amount">200 $STAY</span>
-          </div>
-          <div class="stay-earn-item">
-            <div class="earn-icon">&#128293;</div>
-            <span class="earn-action en">30-day active streak</span>
-            <span class="earn-action th">ใช้งานต่อเนื่อง 30 วัน</span>
-            <span class="earn-amount">500 $STAY</span>
-          </div>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:48px; font-weight:900; background:linear-gradient(135deg,#FF6B00,#FF1F70); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; letter-spacing:-1.5px;">$STAY</div><small style="margin-top:6px;"><span class="en">10B · Solana SPL · M07 TGE</span><span class="th">10B · Solana SPL · TGE M07</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128176;</div><strong><span class="en">10B supply</span><span class="th">supply 10B</span></strong><span class="en">Fixed forever</span><span class="th">คงที่ตลอดไป</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#127881;</div><strong><span class="en">TGE M07</span><span class="th">TGE M07</span></strong><span class="en">Raydium @ $0.10</span><span class="th">Raydium @ $0.10</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#F7931A,#FF6B00);">&#9203;</div><strong><span class="en">Halving 4y</span><span class="th">ลดครึ่ง 4 ปี</span></strong><span class="en">Bitcoin-style scarcity</span><span class="th">หายากแบบ Bitcoin</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#127775;</div><strong><span class="en">500M pool</span><span class="th">พูล 500M</span></strong><span class="en">Engagement rewards</span><span class="th">รางวัลการมีส่วนร่วม</span></div>
         </div>
-        <p style="font-size:16px; color:var(--muted); margin-top:12px; line-height:1.5;">
-          <span class="en">$STAY can also pay your 10% commission — burning 50% of tokens used, reducing supply over time.</span>
-          <span class="th">$STAY ยังสามารถชำระค่าคอมมิชชัน 10% ได้ — เผาทำลาย 50% ของโทเคนที่ใช้ ลดซัพพลายเมื่อเวลาผ่านไป</span>
-        </p>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">10 / 13</div>
 </section>
@@ -1656,102 +2166,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 11 — PHASE ROADMAP — what comes after hotels
      ================================================================ -->
-<section class="slide" data-slide="11">
+<section class="slide slide-reason" data-slide="11">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <div class="content" style="padding-top:64px;">
-    <div class="label en">After 500 — the roadmap</div>
-    <div class="label th">หลัง 500 — แผนระยะยาว</div>
-
-    <h1 class="md en">Hotels first. Then restaurants. Then tours.<br><span class="grad-text">The cooperative grows by phase.</span></h1>
-    <h1 class="md th">โรงแรมก่อน ตามด้วยร้านอาหาร แล้วทัวร์<br><span class="grad-text">สหกรณ์ขยายเป็นเฟส</span></h1>
-
-    <!-- 4 phase cards -->
-    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-top:24px;">
-
-      <!-- PHASE 1 — HOTELS (LIVE) -->
-      <div style="background:linear-gradient(180deg, rgba(244,81,30,0.10), rgba(244,81,30,0.02)); border:1.5px solid var(--orange); border-radius:12px; padding:14px 14px 12px; position:relative;">
-        <div style="position:absolute; top:-9px; right:12px; background:var(--orange); color:white; font-size:8.5px; font-weight:800; padding:3px 8px; border-radius:10px; letter-spacing:1.2px; text-transform:uppercase;">▶ Live now</div>
-        <div style="font-size:13px; font-weight:800; color:var(--orange); letter-spacing:1.5px; text-transform:uppercase;">Phase 1 · M0–M12</div>
-        <div style="font-size:24px; font-weight:800; color:var(--ink); margin-top:4px; line-height:1;">🏨</div>
-        <div style="font-size:18px; font-weight:800; color:var(--ink); margin-top:4px;">
-          <span class="en">Hotels</span>
-          <span class="th">โรงแรม</span>
-        </div>
-        <div style="height:1px; background:var(--border); margin:9px 0;"></div>
-        <div style="font-size:14px; line-height:1.5; color:var(--muted);">
-          <div><strong style="color:var(--orange);">$STAY</strong> · 10B supply</div>
-          <div style="margin-top:3px;"><span class="en">Threshold: 500 hotels</span><span class="th">เกณฑ์: 500 โรงแรม</span></div>
-          <div style="margin-top:3px;"><span class="en">Disrupts: Booking, Agoda</span><span class="th">แทน: Booking, Agoda</span></div>
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Roadmap.</h1>
+        <h1 class="reason-headline th">โรดแมปของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en"><strong>5 phases. 5 years.</strong> Tech + Singapore Pte Ltd through 2026. <strong>&#127876; Platform launch X-Mas 2026</strong> under twin trigger. Then KP &rarr; Thailand &rarr; SE Asia &rarr; EU &rarr; LATAM.</p>
+        <p class="reason-lead th"><strong>5 เฟส 5 ปี</strong> Tech + Singapore Pte Ltd ตลอดปี 2026 <strong>&#127876; เปิดตัว X-Mas 2026</strong> ภายใต้สองเงื่อนไข แล้ว KP &rarr; ไทย &rarr; SEA &rarr; EU &rarr; LATAM</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127876;</span><span><span class="en">X-Mas 26 — platform launch (400-500 KP OR 500 shares).</span><span class="th">X-Mas 26 — เปิดแพลตฟอร์ม (400-500 KP หรือ 500 หุ้น)</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128640;</span><span><span class="en">Phase 1 · Q1-Q2 27 — 25 hotels + $STAY TGE M07.</span><span class="th">เฟส 1 · Q1-Q2 27 — 25 โรงแรม + $STAY TGE M07</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127757;</span><span><span class="en">Phase 5 · 31 — 10-20K hotels + $1B+ ARR.</span><span class="th">เฟส 5 · 31 — 10-20K โรงแรม + $1B+ ARR</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>5 years.</strong> 5 phases. 10,000 hotels.</div>
+        <div class="reason-callout th">&#11088; <strong>5 ปี</strong> 5 เฟส 10,000 โรงแรม</div>
+        <p class="reason-cta en">One phase at a time.<br/>Each one compounds.</p>
+        <p class="reason-cta th">ทีละเฟส<br/>ทบต้นต่อเนื่อง</p>
       </div>
-
-      <!-- PHASE 2 — RESTAURANTS / F&B -->
-      <div style="background:var(--teal-l); border:1.5px solid rgba(0,137,123,0.25); border-radius:12px; padding:14px 14px 12px; position:relative;">
-        <div style="position:absolute; top:-9px; right:12px; background:var(--teal-d); color:white; font-size:8.5px; font-weight:800; padding:3px 8px; border-radius:10px; letter-spacing:1.2px; text-transform:uppercase;">Next</div>
-        <div style="font-size:13px; font-weight:800; color:var(--teal-d); letter-spacing:1.5px; text-transform:uppercase;">Phase 2 · M12–M24</div>
-        <div style="font-size:24px; font-weight:800; color:var(--ink); margin-top:4px; line-height:1;">🍽️</div>
-        <div style="font-size:18px; font-weight:800; color:var(--ink); margin-top:4px;">
-          <span class="en">Restaurants &amp; F&amp;B</span>
-          <span class="th">ร้านอาหาร</span>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:84px; line-height:1;">&#128197;</div><small style="margin-top:4px;"><span class="en">5 phases · 5 years</span><span class="th">5 เฟส · 5 ปี</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128295;</div><strong><span class="en">Phase 0 · 2026</span><span class="th">เฟส 0 · 2026</span></strong><span class="en">Tech + corp setup</span><span class="th">Tech + ตั้งบริษัท</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#127876;</div><strong><span class="en">X-Mas 26 launch</span><span class="th">X-Mas 26 เปิด</span></strong><span class="en">Twin trigger met</span><span class="th">ตรงสองเงื่อนไข</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#127942;</div><strong><span class="en">Phase 3 · 28</span><span class="th">เฟส 3 · 28</span></strong><span class="en">500 hotels Thailand</span><span class="th">500 โรงแรมไทย</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#127757;</div><strong><span class="en">Phase 5 · 31</span><span class="th">เฟส 5 · 31</span></strong><span class="en">10-20K hotels global</span><span class="th">10-20K โรงแรมทั่วโลก</span></div>
         </div>
-        <div style="height:1px; background:var(--border); margin:9px 0;"></div>
-        <div style="font-size:14px; line-height:1.5; color:var(--muted);">
-          <div><strong style="color:var(--teal-d);">$TASTE</strong> · 5B supply</div>
-          <div style="margin-top:3px;"><span class="en">Threshold: 200 restos</span><span class="th">เกณฑ์: 200 ร้าน</span></div>
-          <div style="margin-top:3px;"><span class="en">Disrupts: TheFork, OpenTable, Hungry Hub</span><span class="th">แทน: TheFork, OpenTable, Hungry Hub</span></div>
-        </div>
-      </div>
-
-      <!-- PHASE 3 — TOURS / EXPERIENCES -->
-      <div style="background:#F0F9FF; border:1.5px solid rgba(56,189,248,0.30); border-radius:12px; padding:14px 14px 12px; position:relative;">
-        <div style="position:absolute; top:-9px; right:12px; background:#0284C7; color:white; font-size:8.5px; font-weight:800; padding:3px 8px; border-radius:10px; letter-spacing:1.2px; text-transform:uppercase;">M+24</div>
-        <div style="font-size:13px; font-weight:800; color:#0369A1; letter-spacing:1.5px; text-transform:uppercase;">Phase 3 · M24–M36</div>
-        <div style="font-size:24px; font-weight:800; color:var(--ink); margin-top:4px; line-height:1;">🎯</div>
-        <div style="font-size:18px; font-weight:800; color:var(--ink); margin-top:4px;">
-          <span class="en">Tours &amp; Experiences</span>
-          <span class="th">ทัวร์และประสบการณ์</span>
-        </div>
-        <div style="height:1px; background:var(--border); margin:9px 0;"></div>
-        <div style="font-size:14px; line-height:1.5; color:var(--muted);">
-          <div><strong style="color:#0369A1;">$TOUR</strong> · 3B supply</div>
-          <div style="margin-top:3px;"><span class="en">Threshold: 100 operators</span><span class="th">เกณฑ์: ผู้ประกอบการ 100 ราย</span></div>
-          <div style="margin-top:3px;"><span class="en">Disrupts: Klook, GetYourGuide, Viator</span><span class="th">แทน: Klook, GetYourGuide, Viator</span></div>
-        </div>
-      </div>
-
-      <!-- PHASE 4 — NATIONAL / SEA -->
-      <div style="background:#FAF5FF; border:1.5px solid rgba(168,85,247,0.25); border-radius:12px; padding:14px 14px 12px; position:relative;">
-        <div style="position:absolute; top:-9px; right:12px; background:#7E22CE; color:white; font-size:8.5px; font-weight:800; padding:3px 8px; border-radius:10px; letter-spacing:1.2px; text-transform:uppercase;">M+36</div>
-        <div style="font-size:13px; font-weight:800; color:#7E22CE; letter-spacing:1.5px; text-transform:uppercase;">Phase 4 · M36+</div>
-        <div style="font-size:24px; font-weight:800; color:var(--ink); margin-top:4px; line-height:1;">🌏</div>
-        <div style="font-size:18px; font-weight:800; color:var(--ink); margin-top:4px;">
-          <span class="en">National &amp; SEA</span>
-          <span class="th">ทั่วประเทศและอาเซียน</span>
-        </div>
-        <div style="height:1px; background:var(--border); margin:9px 0;"></div>
-        <div style="font-size:14px; line-height:1.5; color:var(--muted);">
-          <div><strong style="color:#7E22CE;">Multi-token</strong> via Raydium</div>
-          <div style="margin-top:3px;"><span class="en">Phuket → Samui → BKK → SEA</span><span class="th">ภูเก็ต → สมุย → กรุงเทพ → อาเซียน</span></div>
-          <div style="margin-top:3px;"><span class="en">3 000+ properties target</span><span class="th">เป้า 3,000+ ที่พัก</span></div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Tokenomics + early-investor advantage callout -->
-    <div style="margin-top:20px; padding:14px 18px; background:linear-gradient(135deg, rgba(244,81,30,0.06), rgba(0,137,123,0.06)); border-radius:10px; border-left:4px solid var(--orange);">
-      <div style="font-size:14px; font-weight:800; text-transform:uppercase; letter-spacing:1.5px; color:var(--orange); margin-bottom:5px;">
-        <span class="en">Why this matters to a Phase 1 hotelier · เหตุใดสำคัญสำหรับโรงแรม Phase 1</span>
-        <span class="th">เหตุใดสำคัญสำหรับโรงแรม Phase 1 · Why this matters to a Phase 1 hotelier</span>
-      </div>
-      <div style="font-size:16px; line-height:1.5; color:var(--ink);">
-        <span class="en">Each phase has its own Alpha round at <strong>$1,000/share</strong>. <strong>Phase 1 hoteliers get priority access to Phase 2 and Phase 3 Alpha rounds</strong> — first in line, before the public. Tokens are swappable via Raydium: 1 $STAY ↔ X $TASTE ↔ Y $TOUR by market rate. <strong>Your Koh Phangan investment is also your option to compound into restaurants and tours.</strong></span>
-        <span class="th">แต่ละเฟสมีรอบ Alpha ของตัวเองที่ <strong>$1,000 ต่อหุ้น</strong> <strong>โรงแรม Phase 1 ได้สิทธิ์เข้าถึง Alpha รอบ Phase 2 และ Phase 3 ก่อน</strong> — ลำดับแรก ก่อนสาธารณะ โทเค็นสามารถสลับผ่าน Raydium: 1 $STAY ↔ X $TASTE ↔ Y $TOUR ตามอัตราตลาด <strong>การลงทุนเกาะพะงันของคุณคือสิทธิ์ทบต้นเข้าสู่ร้านอาหารและทัวร์</strong></span>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">11 / 13</div>
 </section>
@@ -1814,84 +2260,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 13 — QR / CONTACT
      ================================================================ -->
-<section class="slide" data-slide="13">
+<section class="slide slide-reason" data-slide="13">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <div class="content" style="padding-top:76px;">
-    <div class="label en">Next step — right now</div>
-    <div class="label th">ก้าวถัดไป — ตอนนี้เลย</div>
-
-    <h1 class="md en">Scan. Register.<br/><span class="grad-text">Become a co-owner.</span></h1>
-    <h1 class="md th">สแกน ลงทะเบียน<br/><span class="grad-text">กลายเป็นเจ้าของร่วม</span></h1>
-
-    <div class="contact-layout">
-      <div class="contact-list">
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
-              <line x1="14" y1="14" x2="14" y2="17"/><line x1="17" y1="14" x2="21" y2="14"/><line x1="14" y1="20" x2="17" y2="20"/><line x1="20" y1="17" x2="20" y2="21"/>
-            </svg>
-          </div>
-          <div>
-            <div class="contact-title en">Scan the QR code</div>
-            <div class="contact-title th">สแกน QR Code</div>
-            <div class="contact-detail">staylo.app/welcome · ref: STAYLO-N3CK007</div>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="none">
-              <path d="M20.52 3.48A12 12 0 0 0 3.48 20.52L2 22l1.55-.41A12 12 0 1 0 20.52 3.48zM12 21.5a9.5 9.5 0 0 1-4.84-1.32l-.35-.21-3.59.94.96-3.5-.23-.36A9.5 9.5 0 1 1 12 21.5z"/>
-              <path d="M17.5 14.4c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.68-2.08-.18-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.07-.15-.68-1.65-.94-2.27-.25-.6-.5-.52-.68-.53l-.58-.01c-.2 0-.53.07-.8.37-.28.3-1.05 1.03-1.05 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.27-.2-.57-.35z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="contact-title en">WhatsApp David — right now</div>
-            <div class="contact-title th">WhatsApp David — ตอนนี้เลย</div>
-            <div class="contact-detail en">English / Thai · Koh Phangan based</div>
-            <div class="contact-detail th">ภาษาอังกฤษ / ไทย · ประจำเกาะพะงัน</div>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-              <line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/>
-            </svg>
-          </div>
-          <div>
-            <div class="contact-title en">Coffee on Koh Phangan</div>
-            <div class="contact-title th">กาแฟบนเกาะพะงัน</div>
-            <div class="contact-detail en">Founder lives here — no VC office, no pitch theater</div>
-            <div class="contact-detail th">ผู้ก่อตั้งอยู่ที่นี่ — ไม่มีสำนักงาน VC ไม่มีการแสดง</div>
-          </div>
-        </div>
-        <div style="padding:16px 0; border-top:1px solid var(--line);">
-          <p style="font-size:19px; font-weight:600; color:var(--ink); line-height:1.6;">
-            <span class="en">"Built with hoteliers, for hoteliers.<br/>Who owns the platform, makes the rules."</span>
-            <span class="th">"สร้างร่วมกับเจ้าของโรงแรม เพื่อเจ้าของโรงแรม<br/>ผู้เป็นเจ้าของแพลตฟอร์ม คือผู้กำหนดกฎ"</span>
-          </p>
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Pre-seed open</span><span class="th">Pre-seed เปิดรอบ</span></div>
+        <h1 class="reason-headline en">Your Ask.</h1>
+        <h1 class="reason-headline th">ขั้นต่อไปของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">Pre-seed <strong>$250-500K</strong>. SAFE + $STAY warrant. $5M post-money cap. 20% discount. Targeting close <strong>Q4 2026</strong>.</p>
+        <p class="reason-lead th">Pre-seed <strong>$250-500K</strong> SAFE + warrant $STAY เพดาน post-money $5M ส่วนลด 20% ปิดรอบ <strong>Q4 2026</strong></p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128221;</span><span><span class="en">SAFE + $STAY token warrant.</span><span class="th">SAFE + warrant โทเค็น $STAY</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128181;</span><span><span class="en">$5M post-money cap · 20% discount.</span><span class="th">เพดาน $5M post-money · ส่วนลด 20%</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#9203;</span><span><span class="en">Close Q4 2026 · 1.0&times; warrant ratio.</span><span class="th">ปิด Q4 2026 · อัตรา warrant 1.0&times;</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>contact@staylo.app</strong></div>
+        <div class="reason-callout th">&#11088; <strong>contact@staylo.app</strong></div>
+        <p class="reason-cta en">Pre-seed open.<br/>Close Q4 2026.</p>
+        <p class="reason-cta th">Pre-seed เปิด<br/>ปิด Q4 2026</p>
       </div>
-
-      <div class="qr-wrap">
-        <img
-          src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fstaylo.app%2Fwelcome%3Fref%3DSTAYLO-N3CK007%26utm_source%3Dpitch_qr%26utm_campaign%3Dfounding_close&size=200x200&margin=2&color=1A1A2E&bgcolor=FAFAF8"
-          alt="staylo.app/welcome"
-        />
-        <div class="qr-label">staylo.app/welcome</div>
-        <div class="qr-code-ref">ref: STAYLO-N3CK007</div>
-        <div style="margin-top:8px; padding:8px 14px; background:var(--green-l); border-radius:8px; text-align:center;">
-          <div style="font-size:15px; font-weight:700; color:var(--green); line-height:1.5;">
-            <span class="en">Every signup via this code<br/>funds the STAYLO Foundation</span>
-            <span class="th">การลงทะเบียนทุกครั้งผ่านโค้ดนี้<br/>สนับสนุน STAYLO Foundation</span>
-          </div>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:84px; line-height:1;">&#129309;</div><small style="margin-top:4px;"><span class="en">Pre-seed round open</span><span class="th">รอบ Pre-seed เปิด</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128176;</div><strong><span class="en">$250-500K</span><span class="th">$250-500K</span></strong><span class="en">Pre-seed target</span><span class="th">เป้าหมาย Pre-seed</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128221;</div><strong><span class="en">SAFE + warrant</span><span class="th">SAFE + warrant</span></strong><span class="en">$STAY 1.0&times; ratio</span><span class="th">$STAY อัตรา 1.0&times;</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#127942;</div><strong><span class="en">$5M cap</span><span class="th">เพดาน $5M</span></strong><span class="en">Post-money · 20% disc</span><span class="th">Post-money · ส่วนลด 20%</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#9203;</div><strong><span class="en">Q4 2026 close</span><span class="th">ปิด Q4 2026</span></strong><span class="en">Targeting close</span><span class="th">ตั้งเป้าปิด</span></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">13 / 13</div>
 </section>
