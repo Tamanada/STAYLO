@@ -350,56 +350,112 @@ export default function Vision() {
         </UniformBand>
       </section>
 
-      {/* Bitcoin Strategy */}
-      <section id="v-bitcoin" className="py-8 sm:py-12 bg-gradient-to-br from-[#F7931A]/5 via-white to-[#F7931A]/10">
+      {/* Fund Allocation — Founders, discover how you will invest in STAYLO
+          ────────────────────────────────────────────────────────────────
+          Each row in the allocation table expands inline to reveal a
+          detail panel that explains the strategic reasoning for that
+          slice of the raise. BTC carries 3 illustrative charts, the
+          others carry icon-grid breakdowns.
+          One row open at a time (setExpandedAlloc) keeps mobile clean. */}
+      <section id="v-invest" className="py-8 bg-white">
         <UniformBand className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-8">
-            <Badge variant="golden" className="mb-3">{t('vision.btc_badge', 'Bitcoin-Native')}</Badge>
-            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-3">{t('vision.btc_title', 'Bitcoin at the Core')}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.btc_subtitle', 'Staylo is a Bitcoin-native cooperative platform. BTC as payment rail, treasury reserve, and investment currency.')}</p>
+          <div className="text-center mb-3">
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.fund_title', 'Founders, discover how you will invest in STAYLO')}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency. Click any line to discover the strategy behind it.')}</p>
           </div>
 
-          <div className="grid sm:grid-cols-3 gap-6">
-            <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
-              <div className="w-14 h-14 bg-[#F7931A]/10 rounded-2xl flex items-center justify-center mb-4">
-                <CreditCard size={28} className="text-[#F7931A]" />
-              </div>
-              <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_payment_title', 'BTC as Payment Rail')}</h3>
-              <p className="text-sm text-gray-500">{t('vision.btc_payment_desc', 'Travelers pay by card, PayPal, bank transfer — or in Bitcoin via Lightning Network. Hoteliers receive THB, USD, EUR, or BTC. Their choice.')}</p>
-            </Card>
+          <Card className="p-6 max-w-3xl mx-auto">
+            <h3 className="text-xl font-bold text-deep text-center mb-5">{t('vision.capital_table_title', 'Use of Alpha Capital — $3M')}</h3>
 
-            <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
-              <div className="w-14 h-14 bg-[#F7931A]/10 rounded-2xl flex items-center justify-center mb-4">
-                <Lock size={28} className="text-[#F7931A]" />
-              </div>
-              <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_treasury_title', 'BTC as Treasury Reserve')}</h3>
-              <p className="text-sm text-gray-500">{t('vision.btc_treasury_desc', '20% of ALL capital raised goes to a permanent Bitcoin reserve. Written into company statutes. 90% shareholder vote to change. At full scale: $134.7M in BTC. Never sold.')}</p>
-            </Card>
+            {/* 100% stacked bar — capital split at a glance. Each segment is
+                clickable: it toggles the matching line's detail row in the
+                table below (ids mirror the table row ids exactly). Widths
+                mirror the table %s, which doubles as the full legend. */}
+            <div className="flex w-full h-11 rounded-xl overflow-hidden mb-6 shadow-sm ring-1 ring-black/5">
+              {[
+                { id: 'btc',          pct: 20, color: '#F7931A' },
+                { id: 'acquisitions', pct: 25, color: '#FF6B00' },
+                { id: 'tech',         pct: 22, color: '#6C5CE7' },
+                { id: 'operations',   pct: 23, color: '#00B894' },
+                { id: 'marketing',    pct: 10, color: '#636E72' },
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setExpandedAlloc(prev => prev === s.id ? null : s.id)}
+                  aria-label={`${s.pct}% — open details`}
+                  className={`flex items-center justify-center text-white text-[11px] sm:text-xs font-bold cursor-pointer transition-all hover:brightness-110 focus:outline-none ${
+                    expandedAlloc === s.id ? 'brightness-110 ring-2 ring-white ring-inset' : ''
+                  }`}
+                  style={{ width: `${s.pct}%`, background: s.color }}
+                >
+                  {s.pct}%
+                </button>
+              ))}
+            </div>
 
-            <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
-              <div className="w-14 h-14 bg-[#F7931A]/10 rounded-2xl flex items-center justify-center mb-4">
-                <Coins size={28} className="text-[#F7931A]" />
-              </div>
-              <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_investment_title', 'BTC as Investment Currency')}</h3>
-              <p className="text-sm text-gray-500">{t('vision.btc_investment_desc', 'Founding Partners buy shares WITH Bitcoin. $1,000 in BTC = 1 Alpha share. Annual dividends claimable in BTC.')}</p>
-            </Card>
-          </div>
-
-          {/* Market stats */}
-          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              { stat: '15%', label: t('vision.btc_stat1', 'Bookings paid in crypto · emerging markets · 2027') },
-              { stat: '+30%', label: t('vision.btc_stat2', 'Higher order value, crypto vs fiat (Triple-A)') },
-              { stat: '2.5×', label: t('vision.btc_stat3', 'Crypto travelers spend per booking (Travala)') },
-              { stat: '$8.7B', label: t('vision.btc_stat4', 'Crypto travel payments by 2033 · 24.6% CAGR') },
-            ].map((item, i) => (
-              <div key={i} className="text-center p-4 bg-white rounded-2xl border border-[#F7931A]/10 shadow-sm">
-                <p className="text-2xl font-black text-[#F7931A]">{item.stat}</p>
-                <p className="text-xs text-gray-500 mt-1">{item.label}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-[10px] text-gray-400 text-center mt-3 italic">{t('vision.btc_sources', 'Sources: CoinsPaid (2025), Triple-A (2024), Travala (2024), MarketIntelo (2024)')}</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="text-left py-2 pr-4 font-semibold text-deep">{t('vision.capital_col_item', 'Line Item')}</th>
+                    <th className="text-right py-2 px-2 font-semibold text-deep">{t('vision.capital_col_amount', 'Amount')}</th>
+                    <th className="text-right py-2 px-2 font-semibold text-deep">{t('vision.capital_col_pct', '%')}</th>
+                  </tr>
+                </thead>
+                <tbody className="text-gray-600">
+                  {[
+                    { id: 'btc',          label: t('vision.capital_btc', '₿ Bitcoin Reserve'),                        amount: '$600K', pct: '20%', color: '#F7931A' },
+                    { id: 'acquisitions', label: t('vision.capital_acquisitions', 'Acquisitions — Flagship Hotels KP'),amount: '$750K', pct: '25%', color: '#FF6B00' },
+                    { id: 'tech',         label: t('vision.capital_tech', 'Product & Tech'),                          amount: '$660K', pct: '22%', color: '#6C5CE7' },
+                    { id: 'operations',   label: t('vision.capital_operations', 'Operations Runway'),                 amount: '$690K', pct: '23%', color: '#00B894' },
+                    { id: 'marketing',    label: t('vision.capital_marketing', 'Marketing & Legal'),                  amount: '$300K', pct: '10%', color: '#636E72' },
+                  ].map((row) => {
+                    const isOpen = expandedAlloc === row.id
+                    return (
+                      <Fragment key={row.id}>
+                        <tr
+                          className="border-b border-gray-100 cursor-pointer hover:bg-orange/5 transition-colors"
+                          onClick={() => setExpandedAlloc(isOpen ? null : row.id)}
+                          role="button"
+                          tabIndex={0}
+                          aria-expanded={isOpen}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedAlloc(isOpen ? null : row.id) } }}
+                        >
+                          <td className="py-3 pr-4 font-medium">
+                            <div className="flex items-center gap-2">
+                              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: row.color }} />
+                              <span>{row.label}</span>
+                              <ChevronDown size={16} className={`ml-auto sm:ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} style={{ color: row.color }} />
+                            </div>
+                          </td>
+                          <td className="text-right py-3 px-2 font-bold">{row.amount}</td>
+                          <td className="text-right py-3 px-2 font-bold" style={{ color: row.color }}>{row.pct}</td>
+                        </tr>
+                        {isOpen && (
+                          <tr key={row.id + '-detail'} className="border-b border-gray-100" style={{ backgroundColor: row.color + '08' }}>
+                            <td colSpan={3} className="px-2 py-5 sm:px-4">
+                              {row.id === 'btc'          && <BtcDetail t={t} />}
+                              {row.id === 'acquisitions' && <AcquisitionsDetail t={t} />}
+                              {row.id === 'tech'         && <TechDetail t={t} />}
+                              {row.id === 'operations'   && <OperationsDetail t={t} />}
+                              {row.id === 'marketing'    && <MarketingDetail t={t} />}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    )
+                  })}
+                  <tr className="border-t-2 border-gray-300 font-black text-deep">
+                    <td className="py-3 pr-4">{t('vision.capital_col_total', 'TOTAL')}</td>
+                    <td className="text-right py-3 px-2">$3,000K</td>
+                    <td className="text-right py-3 px-2">100%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-gray-400 text-center mt-3 italic">{t('vision.capital_note', 'Acquisitions = signing 500 flagship hoteliers KP before M06. Commission = 10% revenue per booking (separate).')}</p>
+          </Card>
         </UniformBand>
       </section>
 
@@ -512,112 +568,56 @@ export default function Vision() {
         </UniformBand>
       </section>
 
-      {/* Fund Allocation — Founders, discover how you will invest in STAYLO
-          ────────────────────────────────────────────────────────────────
-          Each row in the allocation table expands inline to reveal a
-          detail panel that explains the strategic reasoning for that
-          slice of the raise. BTC carries 3 illustrative charts, the
-          others carry icon-grid breakdowns.
-          One row open at a time (setExpandedAlloc) keeps mobile clean. */}
-      <section id="v-invest" className="py-8 bg-white">
+      {/* Bitcoin Strategy */}
+      <section id="v-bitcoin" className="py-8 sm:py-12 bg-gradient-to-br from-[#F7931A]/5 via-white to-[#F7931A]/10">
         <UniformBand className="max-w-5xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-3">
-            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-4">{t('vision.fund_title', 'Founders, discover how you will invest in STAYLO')}</h2>
-            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.fund_subtitle', 'Every dollar invested in Staylo funds the platform that replaces your OTA dependency. Click any line to discover the strategy behind it.')}</p>
+          <div className="text-center mb-8">
+            <Badge variant="golden" className="mb-3">{t('vision.btc_badge', 'Bitcoin-Native')}</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold text-deep mb-3">{t('vision.btc_title', 'Bitcoin at the Core')}</h2>
+            <p className="text-gray-500 max-w-2xl mx-auto text-lg">{t('vision.btc_subtitle', 'Staylo is a Bitcoin-native cooperative platform. BTC as payment rail, treasury reserve, and investment currency.')}</p>
           </div>
 
-          <Card className="p-6 max-w-3xl mx-auto">
-            <h3 className="text-xl font-bold text-deep text-center mb-5">{t('vision.capital_table_title', 'Use of Alpha Capital — $3M')}</h3>
+          <div className="grid sm:grid-cols-3 gap-6">
+            <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
+              <div className="w-14 h-14 bg-[#F7931A]/10 rounded-2xl flex items-center justify-center mb-4">
+                <CreditCard size={28} className="text-[#F7931A]" />
+              </div>
+              <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_payment_title', 'BTC as Payment Rail')}</h3>
+              <p className="text-sm text-gray-500">{t('vision.btc_payment_desc', 'Travelers pay by card, PayPal, bank transfer — or in Bitcoin via Lightning Network. Hoteliers receive THB, USD, EUR, or BTC. Their choice.')}</p>
+            </Card>
 
-            {/* 100% stacked bar — capital split at a glance. Each segment is
-                clickable: it toggles the matching line's detail row in the
-                table below (ids mirror the table row ids exactly). Widths
-                mirror the table %s, which doubles as the full legend. */}
-            <div className="flex w-full h-11 rounded-xl overflow-hidden mb-6 shadow-sm ring-1 ring-black/5">
-              {[
-                { id: 'btc',          pct: 20, color: '#F7931A' },
-                { id: 'acquisitions', pct: 25, color: '#FF6B00' },
-                { id: 'tech',         pct: 22, color: '#6C5CE7' },
-                { id: 'operations',   pct: 23, color: '#00B894' },
-                { id: 'marketing',    pct: 10, color: '#636E72' },
-              ].map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setExpandedAlloc(prev => prev === s.id ? null : s.id)}
-                  aria-label={`${s.pct}% — open details`}
-                  className={`flex items-center justify-center text-white text-[11px] sm:text-xs font-bold cursor-pointer transition-all hover:brightness-110 focus:outline-none ${
-                    expandedAlloc === s.id ? 'brightness-110 ring-2 ring-white ring-inset' : ''
-                  }`}
-                  style={{ width: `${s.pct}%`, background: s.color }}
-                >
-                  {s.pct}%
-                </button>
-              ))}
-            </div>
+            <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
+              <div className="w-14 h-14 bg-[#F7931A]/10 rounded-2xl flex items-center justify-center mb-4">
+                <Lock size={28} className="text-[#F7931A]" />
+              </div>
+              <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_treasury_title', 'BTC as Treasury Reserve')}</h3>
+              <p className="text-sm text-gray-500">{t('vision.btc_treasury_desc', '20% of ALL capital raised goes to a permanent Bitcoin reserve. Written into company statutes. 90% shareholder vote to change. At full scale: $134.7M in BTC. Never sold.')}</p>
+            </Card>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-2 pr-4 font-semibold text-deep">{t('vision.capital_col_item', 'Line Item')}</th>
-                    <th className="text-right py-2 px-2 font-semibold text-deep">{t('vision.capital_col_amount', 'Amount')}</th>
-                    <th className="text-right py-2 px-2 font-semibold text-deep">{t('vision.capital_col_pct', '%')}</th>
-                  </tr>
-                </thead>
-                <tbody className="text-gray-600">
-                  {[
-                    { id: 'btc',          label: t('vision.capital_btc', '₿ Bitcoin Reserve'),                        amount: '$600K', pct: '20%', color: '#F7931A' },
-                    { id: 'acquisitions', label: t('vision.capital_acquisitions', 'Acquisitions — Flagship Hotels KP'),amount: '$750K', pct: '25%', color: '#FF6B00' },
-                    { id: 'tech',         label: t('vision.capital_tech', 'Product & Tech'),                          amount: '$660K', pct: '22%', color: '#6C5CE7' },
-                    { id: 'operations',   label: t('vision.capital_operations', 'Operations Runway'),                 amount: '$690K', pct: '23%', color: '#00B894' },
-                    { id: 'marketing',    label: t('vision.capital_marketing', 'Marketing & Legal'),                  amount: '$300K', pct: '10%', color: '#636E72' },
-                  ].map((row) => {
-                    const isOpen = expandedAlloc === row.id
-                    return (
-                      <Fragment key={row.id}>
-                        <tr
-                          className="border-b border-gray-100 cursor-pointer hover:bg-orange/5 transition-colors"
-                          onClick={() => setExpandedAlloc(isOpen ? null : row.id)}
-                          role="button"
-                          tabIndex={0}
-                          aria-expanded={isOpen}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpandedAlloc(isOpen ? null : row.id) } }}
-                        >
-                          <td className="py-3 pr-4 font-medium">
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: row.color }} />
-                              <span>{row.label}</span>
-                              <ChevronDown size={16} className={`ml-auto sm:ml-2 transition-transform ${isOpen ? 'rotate-180' : ''}`} style={{ color: row.color }} />
-                            </div>
-                          </td>
-                          <td className="text-right py-3 px-2 font-bold">{row.amount}</td>
-                          <td className="text-right py-3 px-2 font-bold" style={{ color: row.color }}>{row.pct}</td>
-                        </tr>
-                        {isOpen && (
-                          <tr key={row.id + '-detail'} className="border-b border-gray-100" style={{ backgroundColor: row.color + '08' }}>
-                            <td colSpan={3} className="px-2 py-5 sm:px-4">
-                              {row.id === 'btc'          && <BtcDetail t={t} />}
-                              {row.id === 'acquisitions' && <AcquisitionsDetail t={t} />}
-                              {row.id === 'tech'         && <TechDetail t={t} />}
-                              {row.id === 'operations'   && <OperationsDetail t={t} />}
-                              {row.id === 'marketing'    && <MarketingDetail t={t} />}
-                            </td>
-                          </tr>
-                        )}
-                      </Fragment>
-                    )
-                  })}
-                  <tr className="border-t-2 border-gray-300 font-black text-deep">
-                    <td className="py-3 pr-4">{t('vision.capital_col_total', 'TOTAL')}</td>
-                    <td className="text-right py-3 px-2">$3,000K</td>
-                    <td className="text-right py-3 px-2">100%</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p className="text-xs text-gray-400 text-center mt-3 italic">{t('vision.capital_note', 'Acquisitions = signing 500 flagship hoteliers KP before M06. Commission = 10% revenue per booking (separate).')}</p>
-          </Card>
+            <Card className="p-6 border-2 border-[#F7931A]/20 hover:border-[#F7931A]/40 transition-all">
+              <div className="w-14 h-14 bg-[#F7931A]/10 rounded-2xl flex items-center justify-center mb-4">
+                <Coins size={28} className="text-[#F7931A]" />
+              </div>
+              <h3 className="text-lg font-bold text-deep mb-2">{t('vision.btc_investment_title', 'BTC as Investment Currency')}</h3>
+              <p className="text-sm text-gray-500">{t('vision.btc_investment_desc', 'Founding Partners buy shares WITH Bitcoin. $1,000 in BTC = 1 Alpha share. Annual dividends claimable in BTC.')}</p>
+            </Card>
+          </div>
+
+          {/* Market stats */}
+          <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {[
+              { stat: '15%', label: t('vision.btc_stat1', 'Bookings paid in crypto · emerging markets · 2027') },
+              { stat: '+30%', label: t('vision.btc_stat2', 'Higher order value, crypto vs fiat (Triple-A)') },
+              { stat: '2.5×', label: t('vision.btc_stat3', 'Crypto travelers spend per booking (Travala)') },
+              { stat: '$8.7B', label: t('vision.btc_stat4', 'Crypto travel payments by 2033 · 24.6% CAGR') },
+            ].map((item, i) => (
+              <div key={i} className="text-center p-4 bg-white rounded-2xl border border-[#F7931A]/10 shadow-sm">
+                <p className="text-2xl font-black text-[#F7931A]">{item.stat}</p>
+                <p className="text-xs text-gray-500 mt-1">{item.label}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-400 text-center mt-3 italic">{t('vision.btc_sources', 'Sources: CoinsPaid (2025), Triple-A (2024), Travala (2024), MarketIntelo (2024)')}</p>
         </UniformBand>
       </section>
 
