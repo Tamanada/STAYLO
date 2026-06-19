@@ -373,10 +373,10 @@ export default function Vision() {
                 mirror the table %s, which doubles as the full legend. */}
             <div className="flex w-full h-11 rounded-xl overflow-hidden mb-6 shadow-sm ring-1 ring-black/5">
               {[
-                { id: 'btc',          pct: 20, color: '#F7931A' },
                 { id: 'acquisitions', pct: 25, color: '#FF6B00' },
-                { id: 'tech',         pct: 22, color: '#6C5CE7' },
                 { id: 'operations',   pct: 23, color: '#00B894' },
+                { id: 'tech',         pct: 22, color: '#6C5CE7' },
+                { id: 'btc',          pct: 20, color: '#F7931A' },
                 { id: 'marketing',    pct: 10, color: '#636E72' },
               ].map((s) => (
                 <button
@@ -405,10 +405,10 @@ export default function Vision() {
                 </thead>
                 <tbody className="text-gray-600">
                   {[
-                    { id: 'btc',          label: t('vision.capital_btc', '₿ Bitcoin Reserve'),                        amount: '$600K', pct: '20%', color: '#F7931A' },
                     { id: 'acquisitions', label: t('vision.capital_acquisitions', 'Acquisitions — Flagship Hotels KP'),amount: '$750K', pct: '25%', color: '#FF6B00' },
-                    { id: 'tech',         label: t('vision.capital_tech', 'Product & Tech'),                          amount: '$660K', pct: '22%', color: '#6C5CE7' },
                     { id: 'operations',   label: t('vision.capital_operations', 'Operations Runway'),                 amount: '$690K', pct: '23%', color: '#00B894' },
+                    { id: 'tech',         label: t('vision.capital_tech', 'Product & Tech'),                          amount: '$660K', pct: '22%', color: '#6C5CE7' },
+                    { id: 'btc',          label: t('vision.capital_btc', '₿ Bitcoin Reserve'),                        amount: '$600K', pct: '20%', color: '#F7931A' },
                     { id: 'marketing',    label: t('vision.capital_marketing', 'Marketing & Legal'),                  amount: '$300K', pct: '10%', color: '#636E72' },
                   ].map((row) => {
                     const isOpen = expandedAlloc === row.id
