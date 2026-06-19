@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>STAYLO — Executive Summary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+
+:root {
+  --orange: #FF6B00; --pink: #FF1F70; --purple: #7E22CE; --purple-d: #581C87;
+  --btc: #F7931A; --deep: #1A1A2E; --ink: #2C2C3E; --muted: #6B7280;
+  --line: #E5E7EB; --cream: #FAFAF8; --green: #15803D; --red: #DC2626;
+  --grad-main: linear-gradient(135deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%);
+  --grad-warm: linear-gradient(135deg, #FF6B00 0%, #FF1F70 100%);
+  --grad-cool: linear-gradient(135deg, #FF1F70 0%, #7E22CE 100%);
+  --grad-btc: linear-gradient(135deg, #F7931A 0%, #FFB347 100%);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #111827; font-family: 'Inter', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; color: var(--ink); }
+@media screen { body { display: flex; flex-direction: column; align-items: center; padding: 24px 0; gap: 12px; } .page { box-shadow: 0 8px 40px rgba(0,0,0,0.35); } }
+.page { width: 210mm; min-height: 297mm; background: white; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+.page-landscape { width: 297mm; min-height: 210mm; }
+.header { background: white; color: var(--ink); padding: 12mm 14mm 8mm; position: relative; border-bottom: 1px solid var(--line); }
+.header-top { display: flex; align-items: center; justify-content: space-between; gap: 8mm; }
+.logo-img { height: 18mm; width: auto; display: block; border-radius: 4mm; box-shadow: 0 4px 14px rgba(126,34,206,0.18); }
+.header-meta { text-align: right; font-size: 9px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); line-height: 1.55; }
+.tagline { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; margin-top: 4mm; color: var(--ink); line-height: 1.15; }
+.tagline em { font-style: italic; font-weight: 800; background: var(--grad-main); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.doc-title { font-size: 28px; font-weight: 900; letter-spacing: -1px; margin-top: 4mm; line-height: 1.1; background: var(--grad-main); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.doc-subtitle { font-size: 13px; font-weight: 600; color: var(--muted); margin-top: 2mm; line-height: 1.45; }
+.kpi-strip { background: var(--deep); color: white; padding: 7mm 10mm; display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+.kpi { text-align: center; min-width: 0; }
+.kpi-num { font-size: 24px; font-weight: 900; letter-spacing: -1.4px; line-height: 1.1; background: var(--grad-warm); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; }
+.kpi-num.btc { background: var(--grad-btc); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.kpi-label { font-size: 8.5px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: rgba(255,255,255,0.55); margin-top: 2mm; line-height: 1.4; }
+.body { padding: 7mm 14mm; flex: 1; display: flex; flex-direction: column; gap: 5mm; }
+.label { font-size: 9.5px; font-weight: 800; letter-spacing: 1.8px; text-transform: uppercase; color: var(--orange); margin-bottom: 2mm; }
+h2.section { font-size: 16px; font-weight: 900; color: var(--ink); margin-bottom: 2mm; letter-spacing: -0.3px; }
+p, li { font-size: 10.5px; line-height: 1.55; color: var(--ink); }
+p { margin-bottom: 2mm; }
+ul, ol { margin: 0 0 2mm 4mm; }
+li { margin-bottom: 1mm; }
+strong { color: var(--ink); font-weight: 700; }
+em { font-style: italic; color: var(--orange); }
+.callout { background: #FFF7ED; border-left: 4px solid var(--orange); padding: 4mm 5mm; border-radius: 0 6px 6px 0; }
+.callout strong { color: var(--orange); font-weight: 700; }
+.callout-purple { background: linear-gradient(135deg, rgba(126,34,206,0.06), rgba(255,31,112,0.04)); border-left: 4px solid var(--purple); padding: 4mm 5mm; border-radius: 0 6px 6px 0; }
+.callout-btc { background: linear-gradient(135deg, rgba(247,147,26,0.08), rgba(255,107,0,0.05)); border-left: 4px solid var(--btc); padding: 4mm 5mm; border-radius: 0 6px 6px 0; }
+.tile-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+.tile-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3mm; }
+.tile-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2mm; }
+.tile { background: white; border: 1px solid var(--line); border-radius: 6px; padding: 4mm; }
+.tile-dark { background: linear-gradient(135deg, #0F0F1E 0%, #1A1A2E 100%); color: white; padding: 4mm; border-radius: 6px; border: 1px solid rgba(247,147,26,0.35); }
+.tile-cat { font-size: 8.5px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.tile-dark .tile-cat { color: var(--btc); }
+.tile-name { font-size: 12.5px; font-weight: 800; color: var(--ink); margin-top: 1mm; line-height: 1.2; }
+.tile-dark .tile-name { color: white; }
+.tile-pct { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; line-height: 1; margin-top: 2mm; background: var(--grad-warm); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.tile.locked .tile-pct { background: var(--grad-btc); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.tile-detail { font-size: 9.5px; color: var(--muted); margin-top: 1.5mm; line-height: 1.4; }
+.tile-dark .tile-detail { color: rgba(255,255,255,0.7); }
+.tile-dark .tile-detail strong { color: var(--btc); }
+table.dat { width: 100%; border-collapse: collapse; font-size: 10px; }
+table.dat th { background: #F1F5F9; padding: 2.5mm 3mm; font-weight: 800; text-align: left; color: var(--ink); border: 1px solid var(--line); font-size: 9.5px; letter-spacing: 0.4px; text-transform: uppercase; }
+table.dat td { padding: 2.5mm 3mm; border: 1px solid var(--line); color: var(--ink); vertical-align: top; }
+table.dat tr:nth-child(even) td { background: #FAFAFA; }
+table.dat td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+table.dat td.green { color: var(--green); font-weight: 700; }
+table.dat td.red { color: var(--red); font-weight: 700; }
+.footer-row { display: grid; grid-template-columns: 2fr 1fr; gap: 4mm; margin-top: auto; padding-top: 4mm; border-top: 2px solid var(--line); }
+.ask-box { background: linear-gradient(135deg, rgba(247,147,26,0.08), rgba(255,107,0,0.05)); border: 1px solid var(--btc); border-radius: 8px; padding: 4mm 5mm; }
+.ask-label { font-size: 9px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; color: var(--btc); }
+.ask-amount { font-size: 24px; font-weight: 900; letter-spacing: -1px; color: var(--ink); margin-top: 1mm; line-height: 1; }
+.ask-detail { font-size: 9.5px; color: var(--muted); margin-top: 1.5mm; line-height: 1.55; }
+.contact-box { background: var(--deep); color: white; border-radius: 8px; padding: 4mm 5mm; }
+.contact-name { font-size: 12px; font-weight: 800; }
+.contact-role { font-size: 9px; color: rgba(255,255,255,0.6); margin-top: 0.5mm; }
+.contact-line { font-size: 9.5px; margin-top: 2mm; line-height: 1.6; }
+.contact-line a { color: white; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.25); }
+.legal { margin-top: 4mm; font-size: 7.5px; color: var(--muted); text-align: center; font-style: italic; line-height: 1.5; }
+.page-footer { padding: 5mm 14mm; border-top: 1px solid var(--line); font-size: 8.5px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+.page-footer strong { color: var(--ink); font-weight: 800; letter-spacing: 0.5px; }
+.page-num { font-weight: 800; color: var(--orange); }
+@media print { body { background: white; padding: 0; display: block; gap: 0; } .page { box-shadow: none; page-break-after: always; } .page:last-child { page-break-after: auto; } }
+
+@page { size: A4 portrait; margin: 0; }
+
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="header">
+    <div class="header-top">
+      <img class="logo-img" src="/STAYLO_logo.png" alt="STAYLO" />
+      <div class="header-meta">
+        EXECUTIVE SUMMARY<br/>JUNE 2026 · CONFIDENTIAL<br/>SINGAPORE / KOH PHANGAN
+      </div>
+    </div>
+    <div class="tagline">Built with hoteliers, <em>for hoteliers.</em></div>
+    <div class="doc-title">Executive Summary</div>
+    <div class="doc-subtitle">Bitcoin-native cooperative hotel booking platform · Pre-seed $250K-$500K · X-Mas 2026 launch target</div>
+  </div>
+
+
+
+  <div class="kpi-strip">
+    <div class="kpi"><div class="kpi-num">$1.8T</div><div class="kpi-label">Global Hotel<br/>Market TAM</div></div>
+    <div class="kpi"><div class="kpi-num">10%</div><div class="kpi-label">Commission<br/>locked for life</div></div>
+    <div class="kpi"><div class="kpi-num">$523.5M+</div><div class="kpi-label">Total capital<br/>target raise</div></div>
+    <div class="kpi"><div class="kpi-num btc">₿ 20%</div><div class="kpi-label">Of capital → permanent<br/>BTC reserve</div></div>
+  </div>
+
+  <div class="body">
+
+    <section>
+      <div class="label">The Opportunity</div>
+      <div class="callout">
+        <p><strong>$6.3M leaves Koh Phangan every year</strong> to OTAs in Amsterdam, New York, Singapore. 800,000+ hotels worldwide pay 17–25% commission to platforms they don't own, can't vote on, and can be delisted from. STAYLO captures Koh Phangan first (420 active hotels) — then SEA, then global. <strong>Hoteliers pay 10% commission locked for life, become co-owners protected by statute, vote on every decision, and receive annual dividends in BTC.</strong></p>
+      </div>
+    </section>
+
+    <section>
+      <div class="label">The Product</div>
+      <p>STAYLO is a <strong>cooperative booking platform</strong> built on three layers: (1) booking engine + channel manager (replaces Booking.com / Agoda), (2) <strong>STAYLO Ship</strong> — an all-in-one hotelier OS (PMS, payroll, contracts, POS, messenger, tip pool) included free for life, replacing 6 SaaS subscriptions, (3) guest PWA with passport check-in, vouchers, and verified reviews. Built for Thai hospitality (PDPA, TM30, bilingual EN+TH). Mobile-first, run from anywhere.</p>
+    </section>
+
+    <section>
+      <div class="label">Bitcoin-native by design · 3 constitutional pillars</div>
+      <div class="tile-grid-3">
+        <div class="tile-dark"><div class="tile-cat">Pillar 01</div><div class="tile-name">Payment Rail</div><div class="tile-detail">Lightning · any wallet, any chain. Travelers pay in sats; hoteliers settle in THB/USD/EUR/<strong>BTC</strong>.</div></div>
+        <div class="tile-dark"><div class="tile-cat">Pillar 02</div><div class="tile-name">Treasury Reserve</div><div class="tile-detail"><strong>20% of all investor capital</strong> → permanent BTC reserve. <strong>$149.7M target.</strong> 90% supermajority to touch.</div></div>
+        <div class="tile-dark"><div class="tile-cat">Pillar 03</div><div class="tile-name">Investment Currency</div><div class="tile-detail">Shares + dividends in BTC. <strong>2% referral in BTC for life</strong> · hoteliers AND travelers.</div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="label">Share Structure · 500,000 shares · 4 categories</div>
+      <div class="tile-grid-4">
+        <div class="tile locked"><div class="tile-cat">Founder</div><div class="tile-name">Locked<br/>non-dilutable</div><div class="tile-pct">10%</div><div class="tile-detail">50,000 shares<br/>President à vie + véto</div></div>
+        <div class="tile"><div class="tile-cat">Private Strategic</div><div class="tile-name">No vote</div><div class="tile-pct">20%</div><div class="tile-detail">100,000 × $1,500+<br/>negotiated · dividends only</div></div>
+        <div class="tile"><div class="tile-cat">Alpha · KP</div><div class="tile-name">Founding<br/>Partners</div><div class="tile-pct">0.6%</div><div class="tile-detail">3,000 × $1,000<br/>= $3.0M</div></div>
+        <div class="tile"><div class="tile-cat">World · Global</div><div class="tile-name">Open<br/>progressively</div><div class="tile-pct">69.4%</div><div class="tile-detail">347,000 × $1,500+<br/>= $520.5M+</div></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="label">Launch Plan · 🎄 X-Mas 2026 · Twin Trigger</div>
+      <div class="callout-purple">
+        <p>Phase 0 (now → end 2026): <strong>tech ready floor</strong> — payment solution, Singapore Pte Ltd incorporation, sync engine, Airbnb iCal. Booking engine goes live <strong>X-Mas 2026</strong> when the twin trigger is met: <strong>400-500 KP hoteliers signed up OR 500 Alpha shares sold</strong> (whichever comes first). Never before end 2026 regardless of demand.</p>
+      </div>
+    </section>
+
+
+    <div class="footer-row">
+      <div class="ask-box">
+        <div class="ask-label">Current Round · Pre-Seed</div>
+        <div class="ask-amount">$250K — $500K</div>
+        <div class="ask-detail">
+          SAFE + $STAY token warrant · $5M post-money cap · 20% discount on seed · 1.0× warrant ratio · TGE M07 conversion · Targeting close Q4 2026 · Bridge to Alpha Round ($3M, KP Founding Partners).
+        </div>
+      </div>
+      <div class="contact-box">
+        <div class="contact-name">David Deveaux</div>
+        <div class="contact-role">Founder · President à vie</div>
+        <div class="contact-line">
+          <a href="mailto:david@staylo.app">david@staylo.app</a><br/>
+          <a href="https://staylo.app">staylo.app</a><br/>
+          Koh Phangan, Thailand
+        </div>
+      </div>
+    </div>
+
+    <div class="legal">Confidential. Not an offer to sell securities. Consult legal counsel before investing.</div>
+
+
+  </div>
+
+</div>
+
+
+</div>
+
+</body>
+</html>
