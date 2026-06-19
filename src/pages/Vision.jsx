@@ -454,7 +454,7 @@ export default function Vision() {
                 </tbody>
               </table>
             </div>
-            <p className="text-xs text-gray-400 text-center mt-3 italic">{t('vision.capital_note', 'Acquisitions = signing 500 flagship hoteliers KP before M06. Commission = 10% revenue per booking (separate).')}</p>
+            <p className="text-xs text-gray-400 text-center mt-3 italic">{t('vision.capital_note', 'Acquisitions = signing 400-500 KP hoteliers OR 500 Alpha shares → 🎄 X-Mas 2026 platform launch. Commission = 10% revenue per booking (separate).')}</p>
           </Card>
         </UniformBand>
       </section>
@@ -486,7 +486,7 @@ export default function Vision() {
         <UniformBand dark={true} className="relative max-w-4xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-5">
             <h2 className="text-3xl sm:text-4xl font-bold mb-3">{t('vision.share_sale_title', 'Alpha Share Whitelisting')}</h2>
-            <p className="text-white/70">{t('vision.share_sale_subtitle', 'Phase Alpha — Founding Partners only. Limited to 3,000 shares.')}</p>
+            <p className="text-white/70">{t('vision.share_sale_subtitle', 'Phase Alpha — Founding Partners only · Koh Phangan first · Limited to 3,000 shares · 🎄 X-Mas 2026 launch trigger.')}</p>
           </div>
 
           {/* Big counter */}

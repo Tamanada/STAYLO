@@ -49,6 +49,8 @@ NEW_VISION_EN = {
     "gov_fp_protection": "🛡️ FP protection",
     "gov_fp_protection_val": "<strong>Founding Partners cannot be delisted from the platform.</strong> Ever. Protection written into statutes — vs OTAs which can delist at will.",
     "urgency_title": "🎄 X-Mas 2026 launch. 400-500 KP hoteliers OR 500 shares. Do the math.",
+    "capital_note": "Acquisitions = signing 400-500 KP hoteliers OR 500 Alpha shares → 🎄 X-Mas 2026 platform launch. Commission = 10% revenue per booking (separate).",
+    "share_sale_subtitle": "Phase Alpha — Founding Partners only · Koh Phangan first · Limited to 3,000 shares · 🎄 X-Mas 2026 launch trigger.",
 }
 
 # French translations
@@ -71,6 +73,8 @@ NEW_VISION_FR = {
     "gov_fp_protection": "🛡️ Protection FP",
     "gov_fp_protection_val": "<strong>Les Founding Partners ne peuvent pas être délistés de la plateforme.</strong> Jamais. Protection inscrite dans les statuts — vs les OTAs qui peuvent délister à volonté.",
     "urgency_title": "🎄 Lancement X-Mas 2026. 400-500 hôteliers KP OU 500 parts. Faites le calcul.",
+    "capital_note": "Acquisitions = signer 400-500 hôteliers KP OU 500 parts Alpha → 🎄 lancement plateforme X-Mas 2026. Commission = 10% du revenu par réservation (séparé).",
+    "share_sale_subtitle": "Phase Alpha — Founding Partners uniquement · Koh Phangan en premier · Limité à 3 000 parts · 🎄 déclencheur lancement X-Mas 2026.",
 }
 
 # Thai translations
@@ -93,6 +97,8 @@ NEW_VISION_TH = {
     "gov_fp_protection": "🛡️ การคุ้มครอง FP",
     "gov_fp_protection_val": "<strong>Founding Partners ไม่สามารถถูกลบออกจากแพลตฟอร์มได้</strong> ไม่มีวัน คุ้มครองตามกฎ — เทียบกับ OTA ที่ลบได้ตามใจ",
     "urgency_title": "🎄 เปิดตัว X-Mas 2026 · 400-500 โรงแรม KP หรือ 500 หุ้น · คิดเลขดู",
+    "capital_note": "การซื้อกิจการ = เซ็น 400-500 โรงแรม KP หรือ ขายหุ้น Alpha 500 หุ้น → 🎄 เปิดแพลตฟอร์ม X-Mas 2026 · ค่าคอมมิชชัน = 10% ของรายได้ต่อการจอง (แยกต่างหาก)",
+    "share_sale_subtitle": "Phase Alpha — เฉพาะ Founding Partners · เกาะพะงันก่อน · จำกัด 3,000 หุ้น · 🎄 เปิดตัว X-Mas 2026",
 }
 
 LOCALES = ["fr", "th", "zh", "de", "es", "ja", "ru", "it", "pt", "ar", "hi", "id", "my"]
