@@ -50,7 +50,7 @@ export function AlphaBanner() {
         ✦ {t('alpha_banner.headline', 'ALPHA ROUND OPEN · KOH PHANGAN')} ✦
       </p>
       <p className={`${isThai ? 'text-lg sm:text-xl' : 'text-base'} mt-1`} style={{ color: '#636E72' }}>
-        {t('alpha_banner.subline', '3,000 shares · $1,000/share · World Round opens at $1,500')}
+        {t('alpha_banner.subline', '3,000 shares · $1,000/share · 🎄 X-Mas 2026 launch · 400-500 KP OR 500 shares')}
       </p>
     </div>,
     host
