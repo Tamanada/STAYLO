@@ -5,7 +5,7 @@
 > investors-deck designers) should align to this doc. Updates require a
 > commit so the change is dated and visible.
 >
-> **Last updated:** 2026-05-23
+> **Last updated:** 2026-06-18 (canonical lock — see [[project_staylo_canonical_locked]] in agent memory)
 
 ---
 
@@ -68,13 +68,18 @@ This is the most-confused area. **Memorize this table.**
 
 | Role | Definition | Pricing | Rights |
 |---|---|---|---|
-| **Hotelier** | Owns or operates a hotel listed on STAYLO. The customer. | Free to join + 10% commission per booking | Vote in Solana DAO (1 hotel = 1 vote) |
-| **Founding Partner (FP)** | First-cohort hotelier who buys Alpha shares ($1,000/share, up to 10/hotel). | $5K–$10K typical investment | Vote + dividends + commission rate locked at 10% for life |
-| **Founder** | Member of the founding team (David et al.). | Sweat equity, vested | Vote in early phase; Founder Seats sunset at M36 if conditions met |
-| **Private Investor** | Non-hotelier investor (World Round @ $1,500/share). | $1,500/share | Vote + dividends + BTC treasury benefit |
-| **Ambassador** | Refers other hoteliers to STAYLO. | Free | Earns 2% commission for life on referred hotels' bookings (paid in BTC) |
+| **Hotelier** | Owns or operates a hotel listed on STAYLO. The customer. | Free to join + 10% commission per booking | Vote in Solana DAO (1 property = 1 vote) · **Cannot be delisted** |
+| **Founding Partner (FP)** | First-cohort hotelier who buys Alpha shares ($1,000/share, up to 10/hotel). 3,000 shares total. | $1K–$10K | Vote + dividends + 10% commission locked for life · **Cannot be delisted (protected by statute)** |
+| **Founder** | **David Deveaux only.** 50,000 shares LOCKED non-dilutable. Lifetime President of the Conseil. | Founder package | LOCKED shares + 10M $STAY (12m cliff + 36m vest) + véto rights on commission / dissolution / mission |
+| **Private Strategic Investor** | Non-hotelier investor — 100,000 shares total, negotiated entry. | **$1,500+ / share (negotiated minimum)** | **NO VOTE · dividends only** · BTC treasury benefit |
+| **World Round Investor** | Global open round — 347,000 shares. Opens progressively post-Alpha. | $1,500+ / share | Vote + dividends + BTC treasury benefit |
+| **Ambassador** | Refers other hoteliers (and travelers) to STAYLO. | Free | Earns **2% commission for life** on referred hotels' bookings (paid in BTC) |
 | **Guest** | Books a stay at a STAYLO hotel via app.staylo.app. | Free | $STAY rewards + loyalty tier across the network |
-| **Staff** | Works at a STAYLO hotel (manager, front desk, F&B, housekeeping, etc.). Uses the staff messenger. | Salaried by their hotel | Earns tips via the Pool (by points × hours), $STAY rewards |
+| **Staff** | Works at a STAYLO hotel. Uses the staff messenger. | Salaried by their hotel | Earns tips via the Pool (by points × hours), $STAY rewards |
+
+### 🛡️ Hotelier protection — cannot be delisted (lock 2026-06-18)
+
+Once a hotelier joins as a **Founding Partner**, they **cannot be delisted** from the platform. Ever. The protection is written into the statutes. Booking.com / Agoda / Expedia can delist a hotel at will (ToS violations, scoring algorithm, payment disputes). STAYLO removes that sword: you are a co-owner, not a vendor on a marketplace. Use this point in every hotelier outreach — it is one of the strongest differentiators vs traditional OTAs.
 
 ### Common mistakes
 
@@ -93,14 +98,19 @@ This is the most-confused area. **Memorize this table.**
 |---|---|---|
 | **$STAY** (with `$`) | Always with the dollar sign in copy | Distinguishes the token from the verb "stay". |
 | **Solana SPL Token-2022** | Full technical name when precision matters | Use when talking to crypto-literate audience or in legal/term sheet. |
-| **Token supply** | 10 billion (10,000,000,000), fixed forever | Bitcoin-style halving every 4 years on the earn-pool emissions. |
+| **Token supply** | 10 billion (10,000,000,000), fixed forever | Bitcoin-style **halving every 4 years** on ALL emissions. |
 | **TGE** (Token Generation Event) | M07 on Raydium DEX | Target launch price $0.10, FDV $1B. |
-| **Founding Partner Earn Pool** | 30% of supply (3,000,000,000 $STAY) | Rewards for Alpha FP hotels. |
-| **Alpha share** | $1,000/share, max 3,000 shares, max 10 per hotel | The Founding Partner round. Locks 10% commission for life. |
-| **World Round** | $1,500/share | Opens after the Alpha round. Non-hotelier investors. |
-| **BTC Treasury** | 20% of every raise, permanent reserve | Written into company statutes. Requires 90% supermajority to change. |
+| **Founding Partner allocation at TGE** | 30% of supply (3,000,000,000 $STAY) — **distributed at TGE** to Alpha FP hotels | Not an earn pool over time — one-shot distribution at Month 7. |
+| **Engagement earn pool** | **5% of supply (500,000,000 $STAY)** — released over time to hoteliers and guests via actions | Per-night baseline (50/night) + action grid (roommate scan 100, profile 50, etc.) Halves every 4 years. |
+| **Alpha share** | $1,000/share, max 3,000 shares, max 10 per hotel — **Koh Phangan only** | The Founding Partner round. Locks 10% commission for life. |
+| **World Round share** | $1,500+/share · 347,000 shares · opens progressively | Global open round post-Alpha. |
+| **Private Strategic share** | $1,500+/share (negotiated min) · 100,000 shares · **NO VOTE, dividends only** | Strategic non-voting capital. |
+| **Founder shares** | 50,000 LOCKED non-dilutable — David Deveaux only | President à vie + véto rights. |
+| **Total shares** | **500,000 across 4 categories** · capital target $523.5M+ | Founder 10% · Alpha 0.6% · Private 20% · World 69.4% |
+| **BTC Treasury** | **20% of every investor raise**, permanent reserve · target $149.7M at full scale | Written into statutes. **90% supermajority to change.** |
 | **Commission** | 10% per booking, for Founding Partners, **for life** | Compare: Booking.com 22%, Agoda 25%. |
-| **Dividends** | 20% of net annual profit, distributed proportionally | Currency choice: USD / THB / BTC (shareholder's choice). |
+| **Commission split (10%)** | Ambassador 20% · Operations 25% · Dividends 25% · Growth 20% · Reserve 10% | No auto-burn. Coop-first, not tokenomic-first. |
+| **Dividends** | 25% of commission revenue, distributed proportionally | Currency choice: USD / THB / BTC (shareholder's choice). |
 
 ### The numbers to ALWAYS use (canonical figures)
 
@@ -192,11 +202,12 @@ bundles for shared reference.)
 
 | Tagline | Use when |
 |---|---|
+| **"Built with hoteliers, for hoteliers."** ⭐ canonical | **Master tagline for all investor + brand docs** (lock 2026-06-08). Use on the pitch decks, one-pagers, exec summary, term sheet. |
 | **"One app. Every hotel of the network. Forever yours."** | Guest-facing (welcome screen, app.staylo.app) |
 | **"The booking platform owned by hoteliers."** | Marketing site (staylo.app) hero |
 | **"10% commission for life, locked by the people who book it."** | Hotelier outreach, cold meetings |
 
-Never mix taglines. One screen = one tagline.
+Never mix taglines. One screen = one tagline. The canonical "Built with hoteliers, for hoteliers." wins on any investor surface.
 
 ---
 
@@ -328,42 +339,42 @@ Stop guessing what these mean. One canonical expansion each.
 
 ## 13. Roadmap & milestones
 
-This is the canonical timeline. Don't invent dates, don't shift months
-without updating this section.
+This is the canonical timeline (lock 2026-06-18). Phase-based, not month-based.
 
-| Milestone | Code | Timeline | What ships |
+### 5 Phases — calendar timeline
+
+| Phase | Window | What ships | Hotel count |
 |---|---|---|---|
-| **Alpha launch** | M01 | Month 0 → 6 | First 100 hotels in Koh Phangan, hotelier dashboard, staff messenger, guest PWA live |
-| **Launch threshold (booking engine goes live)** | M0X | When reached | **400 Koh Phangan hotels registered OR 500 paid Alpha shares (whichever comes first).** This is the minimum-viable threshold that triggers shipping the booking engine to production — decoupled from the full $3M raise. |
-| **Founding Partner round close** | M03 | Month 3 (target) | 3,000 Alpha shares sold (or window closes), commission 10% locked for FPs. NOT the same as the launch threshold above. |
-| **BTC Wallet** | M03 | Month 3 | In-app wallet (Lightning Network), pay bookings + dividends + referrals in BTC |
-| **V2 — F&B layer** | M06–M12 | Month 6 → 12 | Pulse POS hub mature, restaurant booking, $STAY rewards live |
-| **TGE** | M07 | Month 7 | $STAY token launches on Raydium @ $0.10, FDV $1B |
-| **V3 — Activity layer** | M12–M18 | Month 12 → 18 | Activities + concierge full integration, 1,000 hotel target |
-| **V4 — Transport layer** | M18–M24 | Month 18 → 24 | Plane/transfer/taxi bookings, 5,000 hotel target |
-| **V5 — Global** | M24+ | Month 24+ | Multi-region rollout, Capacitor native apps, 16,000+ hotels |
-| **Founder Seat sunset** | M36 | Month 36 | If >10K active Hotel Seats, Founder Seats can be abolished by 51% Hotel-Seat vote |
+| **Phase 0** | **2026 (now → end of year)** | Tech + payments solution + Singapore Pte Ltd incorporation + Airbnb iCal + Booking Connectivity Partner submitted. **No booking engine live yet — tech floor.** | 5 KP signed (informal) |
+| **🎄 X-Mas 2026 Launch** | **Dec 25, 2026** (target) | **Booking engine goes live to production** when twin trigger met: **400-500 KP hoteliers signed-up OR 500 Alpha shares sold** (whichever comes first). Never before end of 2026 regardless of count. | Threshold met |
+| **Phase 1** | Q1-Q2 2027 | 25 hotels live + **$STAY TGE M07 on Raydium @ $0.10** + Booking via aggregator + BTC treasury active | 25 hotels |
+| **Phase 2** | Q3-Q4 2027 | 100 hotels coop launch + Direct Booking certification + DAO live + Agoda direct | 100 hotels |
+| **Phase 3** | 2028 | 500 hotels Thailand + Yield AI + Accounting module + open-source channel-kit + $30M+ ARR | 500 hotels |
+| **Phase 4-5** | 2029-2031 | SEA → EU → LATAM rollout + 10-20K hotels + $500M+ token cap + $1B+ ARR | 10-20K hotels |
 
-### Important: Launch threshold vs FP round close (added 2026-05-25)
+### 🎄 The X-Mas 2026 launch twin trigger
 
-These two milestones are **NOT the same** and must not be conflated in marketing copy:
+The booking engine goes live to production when **both** of the following hold:
+1. **Tech floor:** all tech ready (payment solution, Singapore Pte Ltd incorporated, sync engine running, Airbnb iCal adapter live)
+2. **Demand floor:** either 400-500 KP hoteliers signed up **OR** 500 Alpha shares sold (whichever first)
 
-| | Launch threshold | FP round close |
-|---|---|---|
-| **What triggers it** | 400 KP hotels registered OR 500 paid shares | All 3,000 Alpha shares sold (or window closes administratively) |
-| **What ships** | The booking engine goes live to production | The Alpha share sale ends; 10% commission lock takes effect for all who bought in |
-| **Order** | Comes FIRST (lower bar) | Comes SECOND (full sell-out) |
-| **Why decoupled** | We don't need the full $3M before shipping. A few hundred committed hotels + ~$500K in cash is enough to deploy and start booking. The remaining shares fund continued growth. |
+**Why this matters:**
+- **Never ship before end 2026 regardless of signup count.** Shipping a half-finished platform destroys trust. Tech ready > rushed launch.
+- **Twin trigger is decoupled from the full $3M Alpha raise.** A few hundred committed hotels + ~$500K in shares is enough to deploy meaningfully. The remaining 2,500 Alpha shares fund continued growth post-launch.
+- **In marketing copy:** "Platform launches X-Mas 2026" not "Platform launches when 3,000 shares are sold". The launch trigger is the lower bar; the FP round can close later.
 
-In the splash page roadmap (`splash.timeline_build_*`), the "build/launch" milestone refers to the **launch threshold**, NOT the FP round close. Don't say "we launch when 3,000 shares are sold" — that's the round close, not the launch.
+### Founder Seat — locked, not sunset
+
+The earlier draft mentioned a "Founder Seat sunset at M36 if >10K hotels". **Removed.** Per canonical 2026-06-08: Founder shares (50,000) are **LOCKED non-dilutable**, lifetime President, with véto rights on commission / dissolution / mission. No sunset clause.
 
 ### Phase letters used in the marketing copy
 
-- **Alpha** = Founding Partner round only (3,000 shares max, $1,000 each)
-- **World Round** = post-Alpha public-ish round ($1,500/share, non-hoteliers welcome)
-- **V2 / V3 / V4 / V5** = product phases (feature layers)
+- **Phase 0 / Phase 1 / Phase 2 / Phase 3 / Phase 4-5** = calendar-phase canonical
+- **Alpha** = Founding Partner round only (3,000 shares max, $1,000 each, Koh Phangan only)
+- **Private Strategic** = 100,000 shares · $1,500+ negotiated · NO VOTE
+- **World Round** = post-Alpha public-ish round (347,000 shares · $1,500+) — opens progressively
 
-These are NOT interchangeable. "Alpha" is investment cohort; "V2" is product version.
+These are NOT interchangeable. Phase 0-5 = calendar timeline; Alpha / Private / World = investment cohorts.
 
 ---
 
@@ -520,31 +531,37 @@ chosen because they're industry-leading for their function. Names appear
 The recurring one-liners we use across pitches, copy, and team talk. If
 you write a new one, add it here so we can reuse it everywhere.
 
-### The 5 official punchlines
+### The 6 official punchlines
 
-1. **"The booking platform owned by hoteliers."**
+1. ⭐ **"Built with hoteliers, for hoteliers."** ← canonical master tagline (lock 2026-06-08)
+   *Every investor doc. Every long-form. The master signature.*
+
+2. **"The booking platform owned by hoteliers."**
    *Marketing hero, 1st impression. Communicates ownership + booking + hotelier-first.*
 
-2. **"One app. Every hotel of the network. Forever yours."**
+3. **"One app. Every hotel of the network. Forever yours."**
    *Guest welcome screen. Communicates permanence + network effect.*
 
-3. **"10% commission for life — locked by the people who book it."**
+4. **"10% commission for life — locked by the people who book it."**
    *Hotelier cold meeting opener. The economic hook.*
 
-4. **"Singapore for legal certainty. Thailand for everything that happens on the ground."**
+5. **"Singapore for legal certainty. Thailand for everything that happens on the ground."**
    *Investor / legal pitch — the structure summary.*
 
-5. **"We're not building a better Booking.com. We're building the one you own."**
+6. **"We're not building a better Booking.com. We're building the one you own."**
    *Closing line. Reframes the entire conversation.*
 
 ### Supporting one-liners (use as needed)
 
+- ⭐ **"You can't be delisted. Ever."** *(Hotelier protection — vs OTAs that can delist at will.)*
 - "Your guests, not their guests."
 - "Direct relationship. Direct payment. Direct upside."
 - "From locataire to copropriétaire." *(FR-only, plays on the rent/owner contrast)*
 - "Earn $STAY on every stay. Spend it on the next."
 - "Bitcoin in the treasury. Code in the platform. Hoteliers in the driver's seat."
 - "We replace 6 SaaS subscriptions with 1 cooperative." *(when pitching the staff messenger)*
+- ⭐ **"Bitcoin-style scarcity, built in."** *(For $STAY token: halving every 4 years on all emissions.)*
+- ⭐ **"X-Mas 2026 launch. Twin trigger. Tech-ready floor."** *(For the launch timing canonical.)*
 
 ### Phrases to AVOID
 
@@ -568,7 +585,8 @@ you write a new one, add it here so we can reuse it everywhere.
 | Date | Commit | Change |
 |---|---|---|
 | 2026-05-23 | `5907bfe` | Initial creation (11 sections) + Singapore/Thailand fix |
-| 2026-05-23 | *(this commit)* | Extended to 19 sections: feature catalog, acronyms, roadmap, visual ID, competitor positioning, formats, vendor stack, canonical phrases |
+| 2026-05-23 | (prior) | Extended to 19 sections: feature catalog, acronyms, roadmap, visual ID, competitor positioning, formats, vendor stack, canonical phrases |
+| **2026-06-18** | *(this commit)* | **Canonical lock 2026-06-08 reconciliation:** §4 audiences updated (Founder = David 50k LOCKED · Private Strategic NO VOTE · cannot-be-delisted protection) · §5 token economics (FP allocation 30% TGE ≠ Engagement pool 5%/500M · halving 4y · 4-category shares · commission split detailed) · §9 + §18 tagline canonical "Built with hoteliers, for hoteliers." · §13 roadmap rewrite (Phase 0-5 + 🎄 X-Mas 2026 twin-trigger launch · Founder Seat sunset removed) |
 
 ---
 

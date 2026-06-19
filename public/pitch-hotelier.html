@@ -242,6 +242,294 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
   letter-spacing: 1px; text-transform: uppercase;
 }
 
+/* ── REASON template (editorial slide style — 2026-06-18) ──
+   Used by "Reasons to join STAYLO" slides. Each slide = one benefit.
+   Left = editorial text. Right = circle + floating bubbles + SVG scene.
+   Bottom = orange→pink gradient strip with 4 feature teasers. */
+/* slide-reason keeps the existing top-left brand bar visible */
+.slide-reason .content { padding: 0 !important; }
+.slide-reason .footer-url { display: none; }
+.slide-reason .slide-num { color: rgba(255,255,255,0.75); right: 24px; bottom: 16px; z-index: 5; }
+/* Subtle decorative gradient blobs to reduce white-space feel */
+.slide-reason::before {
+  content: '';
+  position: absolute;
+  width: 280px; height: 280px;
+  left: -90px; bottom: 220px;
+  background: radial-gradient(circle, rgba(255, 107, 0, 0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.slide-reason::after {
+  content: '';
+  position: absolute;
+  width: 320px; height: 320px;
+  right: -80px; top: 30%;
+  background: radial-gradient(circle, rgba(255, 31, 112, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.slide-reason .content > * { position: relative; z-index: 1; }
+
+.reason-cols {
+  flex: initial;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  padding: 84px 56px 16px;
+  align-items: start;
+  min-height: 0;
+}
+.reason-scene-band {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  min-height: 90px;
+}
+.reason-scene-band svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.reason-text { display: flex; flex-direction: column; }
+.reason-visual {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+.reason-eyebrow {
+  font-size: 13px; font-weight: 800;
+  color: var(--orange);
+  letter-spacing: 2.5px; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.reason-headline {
+  font-size: 60px; font-weight: 900;
+  line-height: 0.96;
+  letter-spacing: -2px;
+  margin: 0 0 8px 0;
+  background: linear-gradient(135deg, #FF6B00 0%, #FF1F70 60%, #7E22CE 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.reason-divider {
+  width: 64px; height: 4px;
+  background: linear-gradient(90deg, #FF6B00, #FF1F70);
+  border-radius: 2px;
+  margin: 4px 0 14px;
+}
+.reason-lead {
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.55;
+  margin: 0 0 12px 0;
+  max-width: 480px;
+}
+.reason-lead strong {
+  background: linear-gradient(135deg, #FF1F70, #FF6B00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+}
+.reason-bullets {
+  list-style: none;
+  margin: 0 0 12px 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reason-bullet {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 15px; font-weight: 600;
+  color: var(--ink);
+}
+.reason-bullet-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #FFF4E6, #FFEBD6);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.reason-callout {
+  display: inline-flex;
+  align-items: center; gap: 10px;
+  padding: 10px 18px;
+  border: 1.5px solid var(--orange);
+  border-radius: 999px;
+  font-size: 15px; font-weight: 700;
+  color: var(--ink);
+  background: linear-gradient(90deg, rgba(255,107,0,0.04), rgba(255,31,112,0.04));
+  margin: 4px 0 12px;
+  width: fit-content;
+}
+.reason-callout strong {
+  background: linear-gradient(135deg, #FF6B00, #FF1F70);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 900;
+}
+.reason-cta {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.2;
+  background: linear-gradient(135deg, #FF6B00, #FF1F70);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* Right column visual */
+.reason-circle {
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  position: relative;
+  background:
+    radial-gradient(circle at center, white 0 50%, transparent 50.5%),
+    conic-gradient(from 200deg at 50% 50%, #FF6B00, #FF1F70, #7E22CE, #FF6B00);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  box-shadow: 0 12px 36px rgba(255, 107, 0, 0.18);
+}
+.reason-center {
+  width: 220px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.reason-center img {
+  width: 180px; height: auto;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08));
+}
+.reason-center small {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.3;
+}
+.reason-bubble {
+  position: absolute;
+  width: 140px;
+  padding: 11px 13px 12px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.10);
+  font-size: 11px;
+  line-height: 1.3;
+  color: #64748B;
+}
+.reason-bubble strong {
+  display: block;
+  color: var(--ink);
+  font-size: 12.5px;
+  font-weight: 800;
+  margin: 2px 0 2px;
+}
+.reason-bubble-icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 16px; font-weight: 800;
+  margin: -22px 0 0 -2px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+}
+/* Bubbles positioned to ORBIT the circle without overlapping the central logo */
+.reason-bubble.b-top { top: -14px; right: 8px; }
+.reason-bubble.b-right { top: 130px; right: -56px; }
+.reason-bubble.b-bottom { bottom: 0; right: 24px; }
+.reason-bubble.b-left { top: 90px; left: -50px; }
+
+/* Per-topic centerpiece variants (replaces the circle when a topic-specific data viz fits better) */
+.reason-dial-wrap {
+  position: relative;
+  width: 320px; height: 320px;
+  margin-top: 4px;
+  display: flex; align-items: center; justify-content: center;
+}
+.reason-dial-wrap svg.reason-dial { width: 240px; height: 240px; }
+.reason-dial-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  pointer-events: none;
+}
+.reason-dial-big {
+  font-size: 64px; font-weight: 900;
+  background: linear-gradient(135deg, #FF6B00, #FF1F70);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1; letter-spacing: -2px;
+}
+.reason-dial-small {
+  font-size: 14px; font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase; letter-spacing: 2px;
+  margin-top: 4px;
+}
+
+/* Bottom orange→pink gradient strip with 4 feature teasers */
+.feature-strip {
+  background: linear-gradient(90deg, #FF6B00 0%, #FF1F70 100%);
+  color: white;
+  padding: 14px 56px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+}
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  line-height: 1.3;
+  border-right: 1px solid rgba(255, 255, 255, 0.28);
+  padding-right: 16px;
+}
+.feature-item:nth-of-type(4) { border-right: none; padding-right: 8px; }
+.feature-item strong {
+  display: block;
+  font-weight: 800;
+  font-size: 12px;
+  margin-bottom: 1px;
+  letter-spacing: 0.2px;
+}
+.feature-icon {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800;
+  flex-shrink: 0;
+}
+.feature-logo {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  line-height: 1;
+  display: flex; flex-direction: column; align-items: flex-end;
+}
+.feature-logo small {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  opacity: 0.85;
+  margin-top: 4px;
+}
+
 /* ── Slide: PAIN ── */
 .pain-fraction {
   display: inline-block;
@@ -805,6 +1093,127 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <body class="lang-en">
 
 <!-- ================================================================
+     SHARED ASSETS for slide-reason slides:
+     - SVG symbol library (palm, bird, sailboat) + gradients
+     - <template> for the horizon SVG band
+     - <template> for the bottom feature strip
+     - Auto-injection script (runs once on load)
+     ================================================================ -->
+<svg width="0" height="0" style="position:absolute; pointer-events:none;" aria-hidden="true">
+  <defs>
+    <linearGradient id="rs-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF6E9"/><stop offset="55%" stop-color="#FFD9B5"/><stop offset="100%" stop-color="#FFB48E"/></linearGradient>
+    <radialGradient id="rs-sun" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFE680"/><stop offset="60%" stop-color="#FFB347"/><stop offset="100%" stop-color="#FF6B00"/></radialGradient>
+    <linearGradient id="rs-hotel" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#B9527A"/><stop offset="100%" stop-color="#5E2A78"/></linearGradient>
+    <linearGradient id="rs-hotel-roof" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7E22CE"/><stop offset="100%" stop-color="#5E2A78"/></linearGradient>
+    <linearGradient id="rs-bungalow" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C026D3"/><stop offset="100%" stop-color="#7E22CE"/></linearGradient>
+    <linearGradient id="rs-ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF9A5C"/><stop offset="100%" stop-color="#FF5722"/></linearGradient>
+    <linearGradient id="rs-trunk" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#3F2418"/><stop offset="50%" stop-color="#7A4A28"/><stop offset="100%" stop-color="#3F2418"/></linearGradient>
+    <linearGradient id="rs-frond" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1F8A5A"/><stop offset="100%" stop-color="#0F5A36"/></linearGradient>
+    <linearGradient id="rs-frond-l" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4DAE6F"/><stop offset="100%" stop-color="#2D7A4E"/></linearGradient>
+    <linearGradient id="rs-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFB890"/><stop offset="100%" stop-color="#FF8755"/></linearGradient>
+    <symbol id="palm" viewBox="0 0 100 100" overflow="visible">
+      <path d="M 48 100 Q 42 60 52 18" stroke="url(#rs-trunk)" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <line x1="44" y1="80" x2="48" y2="80" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+      <line x1="44" y1="65" x2="49" y2="65" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+      <line x1="46" y1="48" x2="51" y2="48" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+      <line x1="48" y1="32" x2="52" y2="32" stroke="#2A180E" stroke-width="1.2" stroke-linecap="round" opacity="0.5"/>
+      <circle cx="50" cy="18" r="3.5" fill="#5A3818"/>
+      <circle cx="55" cy="20" r="3" fill="#3F2418"/>
+      <circle cx="46" cy="20" r="3" fill="#3F2418"/>
+      <path d="M 52 16 Q 26 -2 5 8 Q 28 6 52 16 Z" fill="url(#rs-frond)"/>
+      <path d="M 52 16 Q 46 -14 32 -22 Q 44 -6 52 16 Z" fill="url(#rs-frond)"/>
+      <path d="M 52 16 Q 70 -10 86 -8 Q 70 4 52 16 Z" fill="url(#rs-frond)"/>
+      <path d="M 52 16 Q 86 16 100 24 Q 80 20 52 16 Z" fill="url(#rs-frond-l)"/>
+      <path d="M 52 16 Q 80 34 94 42 Q 70 30 52 16 Z" fill="url(#rs-frond)"/>
+      <path d="M 52 16 Q 14 14 -2 20 Q 22 20 52 16 Z" fill="url(#rs-frond-l)"/>
+      <path d="M 52 16 Q 28 34 12 44 Q 36 30 52 16 Z" fill="url(#rs-frond)"/>
+      <circle cx="52" cy="16" r="2.5" fill="#0F5A36"/>
+    </symbol>
+    <symbol id="bird-s" viewBox="0 0 24 12" overflow="visible">
+      <path d="M 0 10 Q 5 2 10 6 Q 14 2 19 8 Q 21 9 23 10" stroke="#3D4A5C" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="sailboat-s" viewBox="0 0 40 32" overflow="visible">
+      <path d="M 20 4 L 20 24 L 6 24 Z" fill="#FFFFFF" opacity="0.9"/>
+      <path d="M 20 8 L 20 24 L 32 24 Z" fill="#FFE0CC" opacity="0.85"/>
+      <line x1="20" y1="2" x2="20" y2="26" stroke="#3F2418" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M 4 26 Q 20 32 36 26 Z" fill="#5E2A78"/>
+    </symbol>
+    <symbol id="horizon-scene" viewBox="0 0 1280 110" overflow="visible">
+      <rect x="0" y="0" width="1280" height="92" fill="url(#rs-sky)"/>
+      <path d="M 0 78 L 130 56 L 220 70 L 340 50 L 460 72 L 580 60 L 700 76 L 820 58 L 940 74 L 1080 60 L 1200 76 L 1280 70 L 1280 92 L 0 92 Z" fill="#7E5A8A" opacity="0.22"/>
+      <circle cx="430" cy="88" r="46" fill="url(#rs-sun)" opacity="0.96"/>
+      <circle cx="430" cy="88" r="62" fill="url(#rs-sun)" opacity="0.18"/>
+      <use href="#bird-s" x="540" y="14" width="22" height="11"/>
+      <use href="#bird-s" x="592" y="6" width="22" height="11"/>
+      <use href="#bird-s" x="644" y="20" width="22" height="11"/>
+      <use href="#bird-s" x="690" y="10" width="18" height="9"/>
+      <use href="#bird-s" x="980" y="18" width="20" height="10"/>
+      <use href="#sailboat-s" x="218" y="64" width="32" height="26"/>
+      <use href="#sailboat-s" x="328" y="68" width="26" height="22"/>
+      <rect x="0" y="88" width="1280" height="4" fill="url(#rs-sea)" opacity="0.5"/>
+      <g transform="translate(536, 56)"><path d="M -6 8 L 36 -10 L 78 8 Z" fill="#7A4A28"/><rect x="2" y="8" width="68" height="34" fill="url(#rs-bungalow)" rx="3"/><rect x="30" y="22" width="12" height="20" fill="#5E2A78" rx="1"/><rect x="8" y="14" width="11" height="11" fill="#FFE2B0" rx="1.5"/><rect x="51" y="14" width="11" height="11" fill="#FFE2B0" rx="1.5" opacity="0.85"/></g>
+      <g transform="translate(744, 18)">
+        <path d="M 0 18 L 90 -8 L 180 18 Z" fill="url(#rs-hotel-roof)"/>
+        <rect x="84" y="-16" width="12" height="8" fill="#5E2A78"/>
+        <circle cx="90" cy="-18" r="2.5" fill="#FFE680"/>
+        <rect x="0" y="16" width="180" height="74" fill="url(#rs-hotel)" rx="5"/>
+        <line x1="0" y1="38" x2="180" y2="38" stroke="white" stroke-width="0.8" opacity="0.18"/>
+        <line x1="0" y1="62" x2="180" y2="62" stroke="white" stroke-width="0.8" opacity="0.18"/>
+        <g fill="#FFE2B0"><rect x="10" y="22" width="16" height="12" rx="2"/><rect x="36" y="22" width="16" height="12" rx="2" opacity="0.7"/><rect x="62" y="22" width="16" height="12" rx="2"/><rect x="98" y="22" width="16" height="12" rx="2"/><rect x="124" y="22" width="16" height="12" rx="2" opacity="0.7"/><rect x="150" y="22" width="16" height="12" rx="2"/></g>
+        <rect x="80" y="22" width="20" height="12" fill="#FFD9A8" rx="2"/>
+        <g fill="#FFE2B0"><rect x="10" y="44" width="16" height="14" rx="2"/><rect x="36" y="44" width="16" height="14" rx="2"/><rect x="62" y="44" width="16" height="14" rx="2"/><rect x="98" y="44" width="16" height="14" rx="2"/><rect x="124" y="44" width="16" height="14" rx="2"/><rect x="150" y="44" width="16" height="14" rx="2"/></g>
+        <rect x="10" y="68" width="22" height="20" fill="#FFD9A8" rx="2"/>
+        <rect x="42" y="68" width="22" height="20" fill="#FFD9A8" rx="2" opacity="0.9"/>
+        <rect x="78" y="66" width="24" height="22" fill="#FFD9A8" rx="2"/>
+        <path d="M 80 88 L 80 76 Q 90 70 100 76 L 100 88 Z" fill="#FFE680"/>
+        <rect x="112" y="68" width="22" height="20" fill="#FFD9A8" rx="2" opacity="0.9"/>
+        <rect x="144" y="68" width="22" height="20" fill="#FFD9A8" rx="2"/>
+      </g>
+      <use href="#palm" x="80" y="-2" width="120" height="120"/>
+      <use href="#palm" x="248" y="14" width="86" height="86"/>
+      <use href="#palm" x="486" y="38" width="60" height="60"/>
+      <use href="#palm" x="958" y="22" width="74" height="74"/>
+      <use href="#palm" x="1090" y="-2" width="120" height="120"/>
+      <path d="M 0 92 Q 320 84 640 90 T 1280 92 L 1280 110 L 0 110 Z" fill="url(#rs-ground)" opacity="0.95"/>
+      <path d="M 0 96 Q 320 88 640 94 T 1280 96" fill="none" stroke="white" stroke-width="0.9" opacity="0.35"/>
+    </symbol>
+  </defs>
+</svg>
+
+<template id="tpl-reason-band">
+  <div class="reason-scene-band">
+    <svg viewBox="0 0 1280 110" preserveAspectRatio="xMidYMid slice"><use href="#horizon-scene" width="1280" height="110"/></svg>
+  </div>
+</template>
+
+<template id="tpl-reason-strip">
+  <div class="feature-strip">
+    <div class="feature-item"><div class="feature-icon">&#129309;</div><div><strong><span class="en">Built by hoteliers</span><span class="th">สร้างโดยโรงแรม</span></strong><span class="en">For hoteliers.</span><span class="th">เพื่อโรงแรม</span></div></div>
+    <div class="feature-item"><div class="feature-icon">%</div><div><strong><span class="en">Fairer commissions</span><span class="th">คอมมิชชันยุติธรรม</span></strong><span class="en">No more racket.</span><span class="th">ไม่มีค่าโก่ง</span></div></div>
+    <div class="feature-item"><div class="feature-icon">&#128737;</div><div><strong><span class="en">Take back control</span><span class="th">ทวงคืนการควบคุม</span></strong><span class="en">Your business, your way.</span><span class="th">ธุรกิจของคุณ แบบของคุณ</span></div></div>
+    <div class="feature-item"><div class="feature-icon">&#127774;</div><div><strong><span class="en">Together</span><span class="th">ร่วมกัน</span></strong><span class="en">For a fairer future.</span><span class="th">เพื่ออนาคตที่เป็นธรรม</span></div></div>
+    <div class="feature-logo">STAYLO<small><span class="en">Built by &amp; for hoteliers.</span><span class="th">สร้างโดย &amp; เพื่อโรงแรม</span></small></div>
+  </div>
+</template>
+
+<script>
+  (function autoInjectReasonShell(){
+    function inject() {
+      const bandTpl = document.getElementById('tpl-reason-band');
+      const stripTpl = document.getElementById('tpl-reason-strip');
+      document.querySelectorAll('.slide-reason .content').forEach(c => {
+        if (!c.querySelector('.reason-scene-band')) c.appendChild(bandTpl.content.cloneNode(true));
+        if (!c.querySelector('.feature-strip')) c.appendChild(stripTpl.content.cloneNode(true));
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', inject);
+    else inject();
+  })();
+</script>
+
+
+
+<!-- ================================================================
      SLIDE 1 — COVER
      ================================================================ -->
 <!-- ================================================================
@@ -840,61 +1249,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 2 — PAIN — OTA commission bleed
      ================================================================ -->
-<section class="slide" data-slide="2">
+<section class="slide slide-reason" data-slide="2">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <div class="content" style="justify-content:flex-start; padding-top:80px;">
-    <div class="label en">The problem</div>
-    <div class="label th">ปัญหา</div>
-
-    <h1 class="lg en">It costs you <span class="pain-fraction">15%</span><br/>of your sales.</h1>
-    <h1 class="lg th">มันทำให้คุณเสีย <span class="pain-fraction">15%</span><br/>ของยอดขาย</h1>
-
-    <div class="pain-grid">
-      <div class="pain-card">
-        <div class="pain-card-ota">B</div>
-        <div class="pain-card-body">
-          <div class="pain-card-name">Booking.com</div>
-          <div class="pain-card-rate">18–22%</div>
-          <div class="pain-card-note en">Per booking, every time</div>
-          <div class="pain-card-note th">ต่อการจองทุกครั้ง</div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Future.</h1>
+        <h1 class="reason-headline th">อนาคตของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">STAYLO is a cooperative. Hotels own the platform — and the platform protects hotels. Once you're in, you're in. <strong>Forever.</strong></p>
+        <p class="reason-lead th">STAYLO คือสหกรณ์ โรงแรมเป็นเจ้าของแพลตฟอร์ม — และแพลตฟอร์มปกป้องโรงแรม เมื่อคุณเข้าร่วม คุณอยู่<strong>ตลอดไป</strong></p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128737;</span><span><span class="en">You can't be delisted. Ever.</span><span class="th">ไม่มีวันถูกลบออกจากแพลตฟอร์ม</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128274;</span><span><span class="en">10% commission. Locked for life.</span><span class="th">ค่าคอมมิชชัน 10% ล็อกตลอดชีวิต</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#129309;</span><span><span class="en">Cooperative wealth, not VC exit.</span><span class="th">ความมั่งคั่งร่วมกัน ไม่ใช่ทางออก VC</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#128154; Built to <strong>last generations.</strong></div>
+        <div class="reason-callout th">&#128154; สร้างเพื่อ<strong>คงอยู่หลายชั่วอายุคน</strong></div>
+        <p class="reason-cta en">Hoteliers own the platform.<br/>The platform protects hoteliers.</p>
+        <p class="reason-cta th">โรงแรมเป็นเจ้าของแพลตฟอร์ม<br/>แพลตฟอร์มปกป้องโรงแรม</p>
+      </div>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><img src="/STAYLO_logo.png" alt="STAYLO" style="width:180px;height:auto;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.08));" /><small style="margin-top:8px;"><span class="en">By hoteliers. For hoteliers.</span><span class="th">โดยโรงแรม เพื่อโรงแรม</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128737;</div><strong><span class="en">Can't be delisted</span><span class="th">ไม่ถูกลบออก</span></strong><span class="en">Protected by statute.</span><span class="th">คุ้มครองตามกฎ</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#F7931A,#FF6B00);">&#8383;</div><strong><span class="en">Bitcoin Treasury</span><span class="th">คลัง Bitcoin</span></strong><span class="en">20% of all capital.</span><span class="th">20% ของทุนทั้งหมด</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#128499;</div><strong><span class="en">1 property = 1 vote</span><span class="th">1 อสังหา = 1 เสียง</span></strong><span class="en">No buying votes.</span><span class="th">ไม่มีการซื้อสิทธิ์</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128274;</div><strong><span class="en">10% commission</span><span class="th">คอมมิชชัน 10%</span></strong><span class="en">Locked for life.</span><span class="th">ล็อกตลอดชีวิต</span></div>
         </div>
       </div>
-      <div class="pain-card">
-        <div class="pain-card-ota">A</div>
-        <div class="pain-card-body">
-          <div class="pain-card-name">Agoda</div>
-          <div class="pain-card-rate">17–20%</div>
-          <div class="pain-card-note en">Thailand standard rate</div>
-          <div class="pain-card-note th">อัตราสำหรับประเทศไทย</div>
-        </div>
-      </div>
-      <div class="pain-card">
-        <div class="pain-card-ota">E</div>
-        <div class="pain-card-body">
-          <div class="pain-card-name">Expedia / Hotels.com</div>
-          <div class="pain-card-rate">20–25%</div>
-          <div class="pain-card-note en">Highest fees on the market</div>
-          <div class="pain-card-note th">ค่าธรรมเนียมสูงที่สุดในตลาด</div>
-        </div>
-      </div>
-      <div class="pain-card">
-        <div class="pain-card-ota">Ai</div>
-        <div class="pain-card-body">
-          <div class="pain-card-name">Airbnb</div>
-          <div class="pain-card-rate">15%</div>
-          <div class="pain-card-note en">Plus guest fees on top</div>
-          <div class="pain-card-note th">บวกค่าธรรมเนียมจากแขกเพิ่มเติม</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="callout-band">
-      <span class="en"><span>$6.3 million</span> leaves Koh Phangan every year to OTA shareholders in New York and Singapore. None of it comes back.</span>
-      <span class="th"><span>6.3 ล้านดอลลาร์</span> ออกจากเกาะพะงันทุกปีไปสู่ผู้ถือหุ้น OTA ในนิวยอร์กและสิงคโปร์ ไม่มีแม้แต่บาทเดียวที่กลับมา</span>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">2 / 9</div>
 </section>
@@ -902,77 +1288,46 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 3 — 10% COMMISSION LOCKED — your savings
      ================================================================ -->
-<section class="slide" data-slide="3">
+<section class="slide slide-reason" data-slide="3">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <div class="content" style="padding-top:76px;">
-    <div class="label en">Commission structure</div>
-    <div class="label th">โครงสร้างค่าคอมมิชชัน</div>
-
-    <h1 class="md en">Keep <span class="grad-text">90 cents</span> of every dollar.<br/>Forever.</h1>
-    <h1 class="md th">เก็บ <span class="grad-text">90 สตางค์</span> จากทุกบาท<br/>ตลอดไป</h1>
-
-    <div class="commission-hero">
-      <!-- SVG dial -->
-      <div class="commission-dial">
-        <svg viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="110" cy="110" r="96" stroke="#E5E7EB" stroke-width="18" fill="none"/>
-          <!-- 90% arc teal (324 deg of 360 = 90%) -->
-          <circle cx="110" cy="110" r="96"
-            stroke="url(#dialGrad)" stroke-width="18" fill="none"
-            stroke-dasharray="603.2 670.2"
-            stroke-dashoffset="167.5"
-            stroke-linecap="round"/>
-          <defs>
-            <linearGradient id="dialGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#00897B"/>
-              <stop offset="100%" stop-color="#26A69A"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <div class="commission-dial-num">
-          <div class="commission-dial-big">90%</div>
-          <div class="commission-dial-tag en">yours</div>
-          <div class="commission-dial-tag th">ของคุณ</div>
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Margin.</h1>
+        <h1 class="reason-headline th">มาร์จิ้นของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">OTAs take 22-25% of every booking. STAYLO takes 10% — and locks it <strong>for life</strong> by DAO constitution.</p>
+        <p class="reason-lead th">OTA หัก 22-25% ของทุกการจอง STAYLO หัก 10% — <strong>ล็อกตลอดชีวิต</strong>โดยธรรมนูญ DAO</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128274;</span><span><span class="en">10% commission. Locked for life.</span><span class="th">ค่าคอมมิชชัน 10% ล็อกตลอดชีวิต</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127775;</span><span><span class="en">DAO constitution. 90% vote to change.</span><span class="th">ธรรมนูญ DAO ต้องโหวต 90% ถึงเปลี่ยนได้</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128176;</span><span><span class="en">+$30,660 / year vs Booking.com (10 rooms).</span><span class="th">+$30,660 ต่อปี เทียบ Booking.com (10 ห้อง)</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>Keep 90 cents</strong> of every dollar.</div>
+        <div class="reason-callout th">&#11088; <strong>เก็บ 90 สตางค์</strong> จากทุกบาท</div>
+        <p class="reason-cta en">10% for life —<br/>by the people who book it.</p>
+        <p class="reason-cta th">10% ตลอดชีวิต —<br/>โดยคนที่จองให้คุณ</p>
       </div>
-
-      <div class="commission-table">
-        <div class="commission-row">
-          <div class="commission-name">Booking.com</div>
-          <div class="commission-bar"><div class="commission-bar-fill bad" style="width:81%"></div></div>
-          <div class="commission-pct bad">–22%</div>
+      <div class="reason-visual">
+        <div class="reason-dial-wrap">
+          <svg class="reason-dial" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="dialGradH3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#FF6B00"/><stop offset="50%" stop-color="#FF1F70"/><stop offset="100%" stop-color="#7E22CE"/></linearGradient></defs>
+            <circle cx="110" cy="110" r="96" stroke="#F1F5F9" stroke-width="20" fill="none"/>
+            <circle cx="110" cy="110" r="96" stroke="url(#dialGradH3)" stroke-width="20" fill="none" stroke-dasharray="603.2 670.2" stroke-dashoffset="167.5" stroke-linecap="round" transform="rotate(-90 110 110)"/>
+          </svg>
+          <div class="reason-dial-text">
+            <div class="reason-dial-big">90%</div>
+            <div class="reason-dial-small"><span class="en">yours</span><span class="th">ของคุณ</span></div>
+          </div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128737;</div><strong><span class="en">Locked for life</span><span class="th">ล็อกตลอดชีวิต</span></strong><span class="en">DAO constitution.</span><span class="th">ธรรมนูญ DAO</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128176;</div><strong><span class="en">+$30,660 / year</span><span class="th">+$30,660 ต่อปี</span></strong><span class="en">10 rooms · 70% occ.</span><span class="th">10 ห้อง · ใช้พัก 70%</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#DC2626,#991B1B);">&#128201;</div><strong><span class="en">vs Booking 22%</span><span class="th">vs Booking 22%</span></strong><span class="en">Agoda 20% · Expedia 25%</span><span class="th">Agoda 20% · Expedia 25%</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#F7931A,#FF6B00);">&#8383;</div><strong><span class="en">12¢ back</span><span class="th">12¢ คืนทุกบาท</span></strong><span class="en">On every dollar booked.</span><span class="th">จากทุกการจอง</span></div>
         </div>
-        <div class="commission-row">
-          <div class="commission-name">Expedia</div>
-          <div class="commission-bar"><div class="commission-bar-fill bad" style="width:91%"></div></div>
-          <div class="commission-pct bad">–25%</div>
-        </div>
-        <div class="commission-row">
-          <div class="commission-name">Agoda</div>
-          <div class="commission-bar"><div class="commission-bar-fill bad" style="width:74%"></div></div>
-          <div class="commission-pct bad">–17%</div>
-        </div>
-        <div class="commission-row">
-          <div class="commission-name" style="color:var(--teal-d); font-weight:800;">STAYLO</div>
-          <div class="commission-bar"><div class="commission-bar-fill good" style="width:40%"></div></div>
-          <div class="commission-pct good">–10%</div>
-        </div>
-
-        <div class="lifetime-badge">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L10 6H15L11 9.5L12.5 14.5L8 11.5L3.5 14.5L5 9.5L1 6H6L8 1Z" fill="#15803D"/></svg>
-          <span class="en">Locked for life — by DAO constitution</span>
-          <span class="th">ล็อคตลอดชีพ — โดยธรรมนูญ DAO</span>
-        </div>
-
-        <p style="font-size:18px; color:var(--muted); margin-top:12px; line-height:1.5;">
-          <span class="en">10 rooms · $100 avg rate · 70% occupancy &nbsp;=&nbsp; <strong style="color:var(--green);">+$30,660 / year</strong> vs Booking.com</span>
-          <span class="th">10 ห้อง · ราคาเฉลี่ย $100 · อัตราเข้าพัก 70% &nbsp;=&nbsp; <strong style="color:var(--green);">+$30,660 / ปี</strong> เทียบ Booking.com</span>
-        </p>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">3 / 9</div>
 </section>
@@ -980,165 +1335,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 4 — STAYLO SHIP — free operational toolkit
      ================================================================ -->
-<section class="slide" data-slide="4">
+<section class="slide slide-reason" data-slide="4">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <div class="content" style="padding-top:54px;">
-    <div style="display:flex; align-items:center; gap:14px; margin-bottom:6px;">
-      <img src="/SHIP_LOGO.png" alt="STAYLO Ship" width="56" height="56" style="display:block; border-radius:14px; box-shadow:0 6px 16px rgba(126,34,206,0.25);" />
-      <div>
-        <div class="label en" style="margin:0;">Bonus — STAYLO Ship</div>
-        <div class="label th" style="margin:0;">โบนัส — STAYLO Ship</div>
-        <div style="font-size:11px; font-weight:700; letter-spacing:0.4px; color:var(--muted); margin-top:3px;">
-          <strong style="color:var(--ink);">SHIP</strong> — Staylo Hotelier In-Pocket
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Stack.</h1>
+        <h1 class="reason-headline th">แพลตฟอร์มของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">6 SaaS in one — included <strong>free for life</strong>. PMS, channel, payroll, contracts, POS, messenger. No subscriptions. No IT team.</p>
+        <p class="reason-lead th">6 SaaS รวมในที่เดียว — <strong>ฟรีตลอดชีวิต</strong> PMS, channel, payroll, สัญญา, POS, messenger ไม่มีค่ารายเดือน ไม่ต้องมีทีม IT</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128176;</span><span><span class="en">Cloudbeds $250-500/mo. STAYLO $0.</span><span class="th">Cloudbeds $250-500/ด STAYLO $0</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127760;</span><span><span class="en">14 languages. Built for Thai law.</span><span class="th">14 ภาษา สร้างเพื่อกฎหมายไทย</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128241;</span><span><span class="en">Mobile-first. Run from anywhere.</span><span class="th">Mobile-first บริหารจากที่ไหนก็ได้</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>STAYLO Ship</strong> — Hotelier In-Pocket</div>
+        <div class="reason-callout th">&#11088; <strong>STAYLO Ship</strong> — โรงแรมในกระเป๋า</div>
+        <p class="reason-cta en">Run the hotel.<br/>From anywhere.</p>
+        <p class="reason-cta th">บริหารโรงแรม<br/>จากที่ไหนก็ได้</p>
       </div>
-    </div>
-
-    <h1 class="md en">Your hotel <span class="grad-text">in the palm of your hand.</span></h1>
-    <h1 class="md th">โรงแรมของคุณ <span class="grad-text">ในฝ่ามือ</span></h1>
-
-    <!-- 4 mockup screens -->
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:18px;">
-
-      <!-- MOCKUP 1 : SCHEDULE -->
-      <div style="background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-        <div style="padding:9px 12px; background:#1A1A2E; color:white; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; font-weight:800; letter-spacing:0.8px;">📅 Schedule</span>
-          <span style="font-size:9px; opacity:0.6;">Week 22</span>
-        </div>
-        <div style="padding:10px 11px;">
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; font-size:8px; color:var(--muted); font-weight:700; margin-bottom:4px;">
-            <div></div><div style="text-align:center;">M</div><div style="text-align:center;">T</div><div style="text-align:center;">W</div><div style="text-align:center;">T</div><div style="text-align:center;">F</div><div style="text-align:center;">S</div><div style="text-align:center;">S</div>
-          </div>
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; margin-bottom:3px; align-items:center;">
-            <div style="font-size:9px; font-weight:700; color:var(--ink);">Som</div>
-            <div style="height:14px; background:#FF6B00; border-radius:3px;"></div><div style="height:14px; background:#FF6B00; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#FF6B00; border-radius:3px;"></div><div style="height:14px; background:#FF6B00; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:transparent;"></div>
-          </div>
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; margin-bottom:3px; align-items:center;">
-            <div style="font-size:9px; font-weight:700; color:var(--ink);">Pim</div>
-            <div style="height:14px; background:transparent;"></div><div style="height:14px; background:#FF1F70; border-radius:3px;"></div><div style="height:14px; background:#FF1F70; border-radius:3px;"></div><div style="height:14px; background:#FF1F70; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#FF1F70; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div>
-          </div>
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; margin-bottom:3px; align-items:center;">
-            <div style="font-size:9px; font-weight:700; color:var(--ink);">Niran</div>
-            <div style="height:14px; background:#7E22CE; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#7E22CE; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#7E22CE; border-radius:3px;"></div><div style="height:14px; background:#7E22CE; border-radius:3px;"></div><div style="height:14px; background:#7E22CE; border-radius:3px;"></div>
-          </div>
-          <div style="display:grid; grid-template-columns:50px repeat(7,1fr); gap:2px; align-items:center;">
-            <div style="font-size:9px; font-weight:700; color:var(--ink);">Lek</div>
-            <div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div><div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:#26A69A; border-radius:3px;"></div><div style="height:14px; background:transparent;"></div>
-          </div>
-          <div style="margin-top:8px; padding-top:7px; border-top:1px dashed var(--line); display:flex; justify-content:space-between; font-size:9px;">
-            <span style="color:var(--muted);">Total hours</span>
-            <span style="font-weight:800; color:var(--ink);">192h</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- MOCKUP 2 : CONTRACT (bilingual) -->
-      <div style="background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-        <div style="padding:9px 12px; background:#1A1A2E; color:white; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; font-weight:800; letter-spacing:0.8px;">📄 Contract</span>
-          <span style="font-size:9px; opacity:0.6;">EN + TH</span>
-        </div>
-        <div style="padding:11px;">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; font-size:8.5px; line-height:1.4;">
-            <div>
-              <div style="font-size:8px; font-weight:800; letter-spacing:0.6px; color:var(--orange); margin-bottom:3px;">EMPLOYMENT</div>
-              <div style="font-weight:700; color:var(--ink);">Mr. Som Lek</div>
-              <div style="color:var(--muted);">Concierge</div>
-              <div style="margin-top:5px; color:var(--ink);">Start: 1 Jun 2026</div>
-              <div style="color:var(--ink);">Salary: ฿24,000/m</div>
-              <div style="color:var(--ink);">Hours: 48h/wk</div>
-            </div>
-            <div style="font-family:'Noto Sans Thai', sans-serif;">
-              <div style="font-size:8px; font-weight:800; letter-spacing:0.6px; color:var(--orange); margin-bottom:3px;">สัญญาจ้างงาน</div>
-              <div style="font-weight:700; color:var(--ink);">นาย ส้ม เล็ก</div>
-              <div style="color:var(--muted);">พนักงานต้อนรับ</div>
-              <div style="margin-top:5px; color:var(--ink);">เริ่ม: 1 มิ.ย. 2569</div>
-              <div style="color:var(--ink);">เงินเดือน: ฿24,000/ด</div>
-              <div style="color:var(--ink);">ชม.: 48ชม./สัป</div>
-            </div>
-          </div>
-          <div style="margin-top:8px; padding-top:7px; border-top:1px dashed var(--line); display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:9px; color:var(--muted);">Status</span>
-            <span style="font-size:9px; font-weight:800; color:#15803D; background:#DCFCE7; padding:2px 7px; border-radius:8px;">SIGNED ✓</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- MOCKUP 3 : PAYSLIP -->
-      <div style="background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-        <div style="padding:9px 12px; background:#1A1A2E; color:white; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; font-weight:800; letter-spacing:0.8px;">💰 Payslip</span>
-          <span style="font-size:9px; opacity:0.6;">May 2026</span>
-        </div>
-        <div style="padding:11px;">
-          <div style="font-size:9px; font-weight:800; color:var(--ink);">Som Lek</div>
-          <div style="font-size:8.5px; color:var(--muted); margin-bottom:7px;">Concierge · DANCING</div>
-          <div style="font-size:9.5px; line-height:1.6;">
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">Base salary</span><span style="font-weight:600;">฿24,000</span></div>
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">Service charge</span><span style="font-weight:600;">฿3,200</span></div>
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">OT (8h)</span><span style="font-weight:600;">฿1,440</span></div>
-            <div style="border-top:1px dashed var(--line); margin:3px 0; padding-top:3px; display:flex; justify-content:space-between;"><span style="color:var(--muted);">Gross</span><span style="font-weight:700; color:var(--ink);">฿28,640</span></div>
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">SSO</span><span style="font-weight:600; color:#C53030;">−฿750</span></div>
-            <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted);">Tax</span><span style="font-weight:600; color:#C53030;">−฿180</span></div>
-          </div>
-          <div style="margin-top:7px; padding-top:7px; border-top:2px solid var(--orange); display:flex; justify-content:space-between; align-items:baseline;">
-            <span style="font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.6px; color:var(--orange);">Net Pay</span>
-            <span style="font-size:17px; font-weight:900; color:var(--ink);">฿27,710</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- MOCKUP 4 : HOTEL SETTINGS -->
-      <div style="background:white; border:1px solid var(--line); border-radius:12px; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.06);">
-        <div style="padding:9px 12px; background:#1A1A2E; color:white; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:11px; font-weight:800; letter-spacing:0.8px;">⚙️ Hotel</span>
-          <span style="font-size:9px; opacity:0.6;">DANCING</span>
-        </div>
-        <div style="padding:11px;">
-          <div style="font-size:9px; font-weight:800; color:var(--ink); margin-bottom:6px;">Property settings</div>
-          <div style="display:flex; flex-direction:column; gap:5px; font-size:9px;">
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Name</span><span style="font-weight:700; color:var(--ink);">DANCING</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Currency</span><span style="font-weight:700; color:var(--ink);">THB ฿</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Languages</span><span style="font-weight:700; color:var(--ink);">TH·EN·FR</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Departments</span><span style="font-weight:700; color:var(--ink);">5</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Venues</span><span style="font-weight:700; color:var(--ink);">13</span></div>
-            <div style="display:flex; justify-content:space-between; padding:4px 7px; background:#F8F4ED; border-radius:4px;"><span style="color:var(--muted);">Staff</span><span style="font-weight:700; color:var(--ink);">28</span></div>
-          </div>
-          <div style="margin-top:8px; text-align:center; font-size:9px; padding:5px; background:var(--grad-warm); color:white; border-radius:5px; font-weight:800;">Save changes</div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- Cost comparison strip -->
-    <div style="margin-top:14px; background:linear-gradient(135deg, #1A1A2E 0%, #2D0A3D 100%); border-radius:10px; padding:12px 18px; display:grid; grid-template-columns:1.6fr 1fr; gap:20px; align-items:center;">
-      <div>
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:4px;">
-          <span class="en">What others charge per month</span>
-          <span class="th">คู่แข่งเก็บต่อเดือน</span>
-        </div>
-        <div style="display:flex; gap:12px; flex-wrap:wrap; font-size:14px; color:rgba(255,255,255,0.85); font-weight:600;">
-          <span>Cloudbeds <strong style="color:#FF6B00;">$250–500</strong></span>
-          <span>Mews <strong style="color:#FF6B00;">$300+</strong></span>
-          <span>Little Hotelier <strong style="color:#FF6B00;">$99–150</strong></span>
-        </div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:1px;">
-          <span class="en">You pay</span>
-          <span class="th">คุณจ่าย</span>
-        </div>
-        <div style="font-size:38px; font-weight:900; line-height:1; background:var(--grad-warm); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-2px;">$0 / mo</div>
-        <div style="font-size:13px; color:rgba(255,255,255,0.7); margin-top:1px;">
-          <span class="en">free forever, included</span>
-          <span class="th">ฟรีตลอดชีพ รวมอยู่แล้ว</span>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><img src="/SHIP_LOGO.png" alt="SHIP" style="width:160px;height:160px;border-radius:24px;box-shadow:0 6px 20px rgba(126,34,206,0.25);" /><small style="margin-top:8px;"><span class="en">All-in-one hotelier OS</span><span class="th">ระบบโรงแรมครบจบ</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128197;</div><strong><span class="en">Schedule</span><span class="th">ตารางงาน</span></strong><span class="en">Weekly grid · OT calc</span><span class="th">ตารางสัปดาห์ · OT</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#128221;</div><strong><span class="en">Contracts</span><span class="th">สัญญา</span></strong><span class="en">EN + TH bilingual</span><span class="th">EN + TH สองภาษา</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128176;</div><strong><span class="en">Payslips</span><span class="th">เงินเดือน</span></strong><span class="en">SSO · tax · service</span><span class="th">SSO · ภาษี · เซอร์วิส</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#128181;</div><strong><span class="en">$0 / month</span><span class="th">$0 ต่อเดือน</span></strong><span class="en">Free forever, included</span><span class="th">ฟรีตลอดชีพ รวมแล้ว</span></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">4 / 9</div>
 </section>
@@ -1146,80 +1374,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 5 — A DAY AT YOUR HOTEL — operational timeline
      ================================================================ -->
-<section class="slide" data-slide="5">
+<section class="slide slide-reason" data-slide="5">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-  <img src="/favicon.png" alt="STAYLO" style="position:absolute; top:24px; right:48px; width:42px; height:42px; border-radius:9px; z-index:5;"/>
-
-  <div class="content" style="padding-top:64px;">
-    <div class="label en">A day at your hotel · with STAYLO Ship</div>
-    <div class="label th">หนึ่งวันที่โรงแรมของคุณ · กับ STAYLO Ship</div>
-
-    <h1 class="md en">From sunrise to last guest — <span class="grad-text">one app, your whole hotel.</span></h1>
-    <h1 class="md th">ตั้งแต่พระอาทิตย์ขึ้นจนแขกคนสุดท้าย — <span class="grad-text">หนึ่งแอป โรงแรมทั้งหมด</span></h1>
-
-    <!-- Timeline horizontal — 5 moments across the day -->
-    <div style="position:relative; margin-top:38px; padding:0 8px;">
-      <!-- Gradient line connecting all 5 nodes -->
-      <div style="position:absolute; top:34px; left:48px; right:48px; height:3px; background:linear-gradient(90deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%); border-radius:2px; z-index:0;"></div>
-
-      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:18px; position:relative; z-index:1;">
-
-        <!-- 7:00 AM -->
-        <div style="text-align:center;">
-          <div style="width:72px; height:72px; margin:0 auto; background:linear-gradient(135deg, #FF6B00, #FF8C42); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(255,107,0,0.35); position:relative;">
-            <div style="font-size:11px; font-weight:900; color:white; line-height:1;">7AM</div>
-          </div>
-          <div style="margin-top:14px; font-size:15px; font-weight:800; color:var(--ink);"><span class="en">Coffee &amp; bookings</span><span class="th">กาแฟและการจอง</span></div>
-          <div style="margin-top:5px; font-size:13px; color:var(--muted); line-height:1.45;"><span class="en">You wake up. Open Ship. See today's check-ins, occupancy, revenue. 30 seconds.</span><span class="th">คุณตื่นนอน เปิด Ship เห็นเช็คอินวันนี้ การเข้าพัก รายได้ 30 วินาที</span></div>
-        </div>
-
-        <!-- 9:00 AM -->
-        <div style="text-align:center;">
-          <div style="width:72px; height:72px; margin:0 auto; background:linear-gradient(135deg, #FF8C42, #FF1F70); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(255,31,112,0.35);">
-            <div style="font-size:11px; font-weight:900; color:white; line-height:1;">9AM</div>
-          </div>
-          <div style="margin-top:14px; font-size:15px; font-weight:800; color:var(--ink);"><span class="en">Staff clock-in</span><span class="th">พนักงานเข้างาน</span></div>
-          <div style="margin-top:5px; font-size:13px; color:var(--muted); line-height:1.45;"><span class="en">Som scans the QR. Sees today's tasks per zone. No paper, no chasing.</span><span class="th">ส้มสแกน QR เห็นงานวันนี้แยกตามพื้นที่ ไม่มีกระดาษ ไม่ต้องตาม</span></div>
-        </div>
-
-        <!-- 12:00 PM -->
-        <div style="text-align:center;">
-          <div style="width:72px; height:72px; margin:0 auto; background:linear-gradient(135deg, #FF1F70, #C2185B); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(194,24,91,0.35);">
-            <div style="font-size:11px; font-weight:900; color:white; line-height:1;">12PM</div>
-          </div>
-          <div style="margin-top:14px; font-size:15px; font-weight:800; color:var(--ink);"><span class="en">Guest check-in</span><span class="th">แขกเช็คอิน</span></div>
-          <div style="margin-top:5px; font-size:13px; color:var(--muted); line-height:1.45;"><span class="en">Guest scans hotel QR. Onboarded to app. Discovers room service, spa, ambassador.</span><span class="th">แขกสแกน QR ของโรงแรม ใช้แอป พบบริการห้องพัก สปา แอมบาสเดอร์</span></div>
-        </div>
-
-        <!-- 4:00 PM -->
-        <div style="text-align:center;">
-          <div style="width:72px; height:72px; margin:0 auto; background:linear-gradient(135deg, #C2185B, #7E22CE); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(126,34,206,0.35);">
-            <div style="font-size:11px; font-weight:900; color:white; line-height:1;">4PM</div>
-          </div>
-          <div style="margin-top:14px; font-size:15px; font-weight:800; color:var(--ink);"><span class="en">Tech ticket</span><span class="th">แจ้งซ่อม</span></div>
-          <div style="margin-top:5px; font-size:13px; color:var(--muted); line-height:1.45;"><span class="en">AC broken in room 12. Receptionist opens task, photo attached, maintenance pinged.</span><span class="th">แอร์เสียห้อง 12 รีเซปชั่นเปิดงาน แนบรูป ช่างได้รับแจ้ง</span></div>
-        </div>
-
-        <!-- 11:00 PM -->
-        <div style="text-align:center;">
-          <div style="width:72px; height:72px; margin:0 auto; background:linear-gradient(135deg, #7E22CE, #4A148C); border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 8px 24px rgba(74,20,140,0.35);">
-            <div style="font-size:11px; font-weight:900; color:white; line-height:1;">11PM</div>
-          </div>
-          <div style="margin-top:14px; font-size:15px; font-weight:800; color:var(--ink);"><span class="en">Auto closing</span><span class="th">ปิดร้านอัตโนมัติ</span></div>
-          <div style="margin-top:5px; font-size:13px; color:var(--muted); line-height:1.45;"><span class="en">Daily report generated. Tomorrow's schedule confirmed. You sleep. Ship works.</span><span class="th">รายงานสร้างขึ้นอัตโนมัติ ตารางพรุ่งนี้ยืนยันแล้ว คุณหลับ Ship ทำงานต่อ</span></div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Day.</h1>
+        <h1 class="reason-headline th">วันของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">A day at your hotel with STAYLO Ship: <strong>walk in, see everything, fix anything.</strong> Reservations, housekeeping, messages, payments — one screen.</p>
+        <p class="reason-lead th">หนึ่งวันที่โรงแรมของคุณกับ STAYLO Ship: <strong>เดินเข้ามา เห็นทุกอย่าง แก้ได้ทุกอย่าง</strong> การจอง แม่บ้าน ข้อความ การจ่ายเงิน — หน้าจอเดียว</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127769;</span><span><span class="en">Walk in. One screen. See everything.</span><span class="th">เดินเข้า หน้าจอเดียว เห็นทุกอย่าง</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127968;</span><span><span class="en">Front desk · housekeeping · F&amp;B in sync.</span><span class="th">เคาน์เตอร์ · แม่บ้าน · F&amp;B ซิงค์กัน</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128241;</span><span><span class="en">From your phone, your tablet, the front desk.</span><span class="th">จากมือถือ แท็บเล็ต หรือเคาน์เตอร์</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>One pocket.</strong> Whole hotel.</div>
+        <div class="reason-callout th">&#11088; <strong>กระเป๋าเดียว</strong> ทั้งโรงแรม</div>
+        <p class="reason-cta en">Less software.<br/>More hospitality.</p>
+        <p class="reason-cta th">ซอฟต์แวร์น้อยลง<br/>การบริการมากขึ้น</p>
+      </div>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:84px; line-height:1;">&#128737;</div><small style="margin-top:4px;"><span class="en">Run your day · one screen</span><span class="th">วันของคุณ · หน้าจอเดียว</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128197;</div><strong><span class="en">Reservations</span><span class="th">การจอง</span></strong><span class="en">Calendar live + sync</span><span class="th">ปฏิทิน + ซิงค์</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128715;</div><strong><span class="en">Housekeeping</span><span class="th">แม่บ้าน</span></strong><span class="en">Room status live</span><span class="th">สถานะห้องสด</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#127869;</div><strong><span class="en">F&amp;B Pulse</span><span class="th">F&amp;B Pulse</span></strong><span class="en">POS · tip pool · revenue</span><span class="th">POS · ทิป · รายได้</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#128172;</div><strong><span class="en">Staff chat</span><span class="th">แชตทีมงาน</span></strong><span class="en">Channels · DMs · tickets</span><span class="th">ห้อง · DM · ตั๋ว</span></div>
         </div>
       </div>
     </div>
-
-    <!-- Closing line -->
-    <div style="margin-top:32px; padding:14px 22px; background:linear-gradient(135deg, rgba(255,107,0,0.08), rgba(126,34,206,0.08)); border-left:4px solid var(--orange); border-radius:8px;">
-      <p style="font-size:17px; color:var(--ink); line-height:1.55; margin:0;">
-        <span class="en"><strong>16 hours of hotel operation</strong>, run from your phone. <strong>Zero subscription</strong>. Your team adopts it in an afternoon — the interface speaks Thai, English, French, Chinese, and 10 more languages.</span>
-        <span class="th"><strong>16 ชั่วโมงการดำเนินงานโรงแรม</strong> บริหารจากโทรศัพท์ของคุณ <strong>ไม่มีค่าสมาชิก</strong> ทีมของคุณเรียนรู้ภายในบ่ายเดียว — แอปพูดได้ ไทย อังกฤษ ฝรั่งเศส จีน และอีก 10 ภาษา</span>
-      </p>
-    </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">5 / 9</div>
 </section>
@@ -1227,67 +1413,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 6 — YOUR STAFF THRIVE — HR / contracts / payroll
      ================================================================ -->
-<section class="slide" data-slide="6">
+<section class="slide slide-reason" data-slide="6">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-  <img src="/favicon.png" alt="STAYLO" style="position:absolute; top:24px; right:48px; width:42px; height:42px; border-radius:9px; z-index:5;"/>
-
-  <div class="content" style="padding-top:64px;">
-    <div class="label en">Your team — the heart of your hotel</div>
-    <div class="label th">ทีมงานของคุณ — หัวใจของโรงแรม</div>
-
-    <h1 class="md en">Your staff <span class="grad-text">thrive.</span></h1>
-    <h1 class="md th">ทีมของคุณ <span class="grad-text">เติบโต</span></h1>
-
-    <p style="font-size:17px; color:var(--muted); margin-top:8px; max-width:780px; line-height:1.5;">
-      <span class="en">The hardest part of running a hotel isn't the guests — it's the team. Bilingual contracts. Payroll. Schedule conflicts. Training. STAYLO Ship takes care of it.</span>
-      <span class="th">ส่วนที่ยากที่สุดในการบริหารโรงแรมไม่ใช่แขก — แต่คือทีมงาน สัญญาสองภาษา เงินเดือน ตารางขัดแย้ง การฝึกอบรม STAYLO Ship จัดการให้</span>
-    </p>
-
-    <!-- 4 staff benefit cards -->
-    <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-top:22px;">
-
-      <div style="background:white; border:1.5px solid #FFE0CC; border-radius:12px; padding:16px 14px; box-shadow:0 4px 16px rgba(255,107,0,0.08);">
-        <div style="font-size:26px; font-weight:900; color:var(--orange); line-height:1;">30s</div>
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:var(--orange); margin-top:3px;">Contract</div>
-        <div style="font-size:16px; font-weight:800; color:var(--ink); margin-top:6px;"><span class="en">Bilingual, in 30 seconds</span><span class="th">สองภาษา ใน 30 วินาที</span></div>
-        <div style="font-size:13px; color:var(--muted); margin-top:5px; line-height:1.45;"><span class="en">TH + EN side-by-side, signed digitally, legally compliant Labor Protection Act 2541.</span><span class="th">TH + EN คู่กัน ลงนามดิจิทัล สอดคล้อง พ.ร.บ. คุ้มครองแรงงาน 2541</span></div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Team.</h1>
+        <h1 class="reason-headline th">ทีมของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">The heart of your hotel. STAYLO Ship runs HR end-to-end: <strong>contracts, payroll, schedule, tip pool.</strong> Bilingual EN+TH, built for Thai labor law.</p>
+        <p class="reason-lead th">หัวใจของโรงแรม STAYLO Ship จัดการ HR ครบวงจร: <strong>สัญญา เงินเดือน ตาราง พูลทิป</strong> สองภาษา EN+TH สร้างตามกฎหมายแรงงานไทย</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128221;</span><span><span class="en">Bilingual contracts (EN + TH).</span><span class="th">สัญญาสองภาษา (EN + TH)</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128176;</span><span><span class="en">Auto payslip · SSO · service charge.</span><span class="th">เงินเดือนอัตโนมัติ · SSO · เซอร์วิส</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#127942;</span><span><span class="en">Tip Pool — fair, transparent, points × hours.</span><span class="th">พูลทิป — เป็นธรรม โปร่งใส แต้ม × ชั่วโมง</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>Happy team.</strong> Happy guests.</div>
+        <div class="reason-callout th">&#11088; <strong>ทีมมีความสุข</strong> แขกมีความสุข</div>
+        <p class="reason-cta en">Pay them right.<br/>Keep them long.</p>
+        <p class="reason-cta th">จ่ายให้ถูกต้อง<br/>เก็บไว้นาน</p>
       </div>
-
-      <div style="background:white; border:1.5px solid #FCE4EC; border-radius:12px; padding:16px 14px; box-shadow:0 4px 16px rgba(255,31,112,0.08);">
-        <div style="font-size:26px; font-weight:900; color:#FF1F70; line-height:1;">0</div>
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:#FF1F70; margin-top:3px;">Payroll</div>
-        <div style="font-size:16px; font-weight:800; color:var(--ink); margin-top:6px;"><span class="en">Zero calculator math</span><span class="th">ไม่ต้องคำนวณ</span></div>
-        <div style="font-size:13px; color:var(--muted); margin-top:5px; line-height:1.45;"><span class="en">Base + service charge + OT + tips + SSO + tax. Auto-calculated, ready to print.</span><span class="th">ฐาน + Service Charge + OT + ทิป + SSO + ภาษี คำนวณอัตโนมัติ พร้อมพิมพ์</span></div>
-      </div>
-
-      <div style="background:white; border:1.5px solid #F3E8FF; border-radius:12px; padding:16px 14px; box-shadow:0 4px 16px rgba(126,34,206,0.08);">
-        <div style="font-size:26px; font-weight:900; color:var(--teal); line-height:1;">7d</div>
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:var(--teal); margin-top:3px;">Schedule</div>
-        <div style="font-size:16px; font-weight:800; color:var(--ink); margin-top:6px;"><span class="en">Weekly transparent</span><span class="th">รายสัปดาห์ โปร่งใส</span></div>
-        <div style="font-size:13px; color:var(--muted); margin-top:5px; line-height:1.45;"><span class="en">Every employee sees their week. Conflict detection. No more WhatsApp chaos.</span><span class="th">พนักงานทุกคนเห็นกะตัวเอง ตรวจหาความขัดแย้ง ไม่ต้องส่ง WhatsApp วุ่นวาย</span></div>
-      </div>
-
-      <div style="background:linear-gradient(135deg, rgba(255,107,0,0.08), rgba(126,34,206,0.08)); border:1.5px solid var(--orange); border-radius:12px; padding:16px 14px;">
-        <div style="font-size:26px; font-weight:900; background:linear-gradient(135deg, #FF6B00, #7E22CE); -webkit-background-clip:text; background-clip:text; color:transparent; line-height:1;">∞</div>
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:var(--orange); margin-top:3px;">Fiches</div>
-        <div style="font-size:16px; font-weight:800; color:var(--ink); margin-top:6px;"><span class="en">Knowledge stays</span><span class="th">ความรู้คงอยู่</span></div>
-        <div style="font-size:13px; color:var(--muted); margin-top:5px; line-height:1.45;"><span class="en">Recipes, SOPs, spa rituals — dept-locked. New staff onboarded in 1 day, not 1 month.</span><span class="th">สูตรอาหาร SOP พิธีกรรมสปา — ล็อคตามแผนก พนักงานใหม่เข้างานใน 1 วัน ไม่ใช่ 1 เดือน</span></div>
-      </div>
-    </div>
-
-    <!-- Owner quote / testimonial style -->
-    <div style="margin-top:22px; padding:16px 22px; background:#1A1A2E; color:white; border-radius:10px; display:flex; align-items:center; gap:18px;">
-      <div style="font-size:34px; line-height:1; opacity:0.4;">"</div>
-      <div style="flex:1;">
-        <div style="font-size:16px; line-height:1.5; color:white;">
-          <span class="en">My Head of Housekeeping no longer chases me at 9pm for next week's schedule. She opens Ship, drafts it, I approve in 2 taps. <strong style="color:#FF6B00;">I got my evenings back.</strong></span>
-          <span class="th">หัวหน้าแม่บ้านของฉันไม่ต้องวิ่งตามฉันตอน 3 ทุ่มเพื่อตารางสัปดาห์หน้าอีกแล้ว เธอเปิด Ship ร่างตาราง ฉันอนุมัติด้วย 2 แตะ <strong style="color:#FF6B00;">ฉันได้คืนเวลาตอนเย็น</strong></span>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:84px; line-height:1;">&#129489;&#8205;&#127859;</div><small style="margin-top:4px;"><span class="en">HR end-to-end</span><span class="th">HR ครบวงจร</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128221;</div><strong><span class="en">Contracts</span><span class="th">สัญญา</span></strong><span class="en">EN + TH · auto</span><span class="th">EN + TH · อัตโนมัติ</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#128197;</div><strong><span class="en">Schedule</span><span class="th">ตาราง</span></strong><span class="en">Drag-drop weekly</span><span class="th">ลากวางรายสัปดาห์</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#127942;</div><strong><span class="en">Tip Pool</span><span class="th">พูลทิป</span></strong><span class="en">Points × hours fair</span><span class="th">แต้ม × ชั่วโมง</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#128176;</div><strong><span class="en">Payslips</span><span class="th">เงินเดือน</span></strong><span class="en">Auto SSO · tax · OT</span><span class="th">อัตโนมัติ SSO · ภาษี · OT</span></div>
         </div>
-        <div style="font-size:13px; color:rgba(255,255,255,0.55); margin-top:6px; font-weight:600;">— Owner · 22-room boutique · Koh Phangan</div>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">6 / 9</div>
 </section>
@@ -1295,96 +1452,38 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 7 — YOUR GUESTS COME BACK — service + ambassador
      ================================================================ -->
-<section class="slide" data-slide="7">
+<section class="slide slide-reason" data-slide="7">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-  <img src="/favicon.png" alt="STAYLO" style="position:absolute; top:24px; right:48px; width:42px; height:42px; border-radius:9px; z-index:5;"/>
-
-  <div class="content" style="padding-top:64px;">
-    <div class="label en">Your guests — your best marketing</div>
-    <div class="label th">แขกของคุณ — การตลาดที่ดีที่สุด</div>
-
-    <h1 class="md en">Your guests <span class="grad-text">come back.</span></h1>
-    <h1 class="md th">แขกของคุณ <span class="grad-text">กลับมาอีก</span></h1>
-
-    <p style="font-size:17px; color:var(--muted); margin-top:8px; max-width:780px; line-height:1.5;">
-      <span class="en">Booking.com keeps your guest's email. STAYLO doesn't. The relationship is yours — and so is the loop that brings them back, and brings their friends with them.</span>
-      <span class="th">Booking.com เก็บอีเมลของแขก STAYLO ไม่ทำเช่นนั้น ความสัมพันธ์เป็นของคุณ — และวงจรที่พาแขกกลับมา พร้อมเพื่อนๆ ก็เป็นของคุณ</span>
-    </p>
-
-    <!-- Guest journey — 4 steps connected -->
-    <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:0; margin-top:22px; align-items:stretch;">
-
-      <!-- Step 1 -->
-      <div style="background:white; border:1.5px solid #FFE0CC; border-radius:12px 0 0 12px; padding:14px; position:relative;">
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:var(--orange);">Step 1</div>
-        <div style="font-size:15px; font-weight:800; color:var(--ink); margin-top:6px;"><span class="en">Guest arrives</span><span class="th">แขกมาถึง</span></div>
-        <div style="font-size:13px; color:var(--muted); margin-top:5px; line-height:1.45;"><span class="en">Even from Booking.com. They scan your hotel QR. The Ship app opens.</span><span class="th">แม้จะมาจาก Booking.com แขกสแกน QR ของโรงแรม แอป Ship เปิด</span></div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Reason to join</span><span class="th">เหตุผลในการเข้าร่วม</span></div>
+        <h1 class="reason-headline en">Your Guests.</h1>
+        <h1 class="reason-headline th">แขกของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">Your best marketing. Every guest on STAYLO becomes an <strong>ambassador</strong> — they earn 2% BTC for life on every hotel they refer. <strong>Direct guest emails — yours.</strong></p>
+        <p class="reason-lead th">การตลาดที่ดีที่สุด แขกทุกคนบน STAYLO เป็น<strong>ทูตของคุณ</strong> — รับ 2% BTC ตลอดชีพจากโรงแรมที่แนะนำ <strong>อีเมลแขก — ของคุณ</strong></p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128231;</span><span><span class="en">Direct guest emails — yours forever.</span><span class="th">อีเมลแขก — ของคุณตลอดไป</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#8383;</span><span><span class="en">2% BTC referral for life · guests &amp; hoteliers.</span><span class="th">2% BTC ตลอดชีพ · แขกและโรงแรม</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#11088;</span><span><span class="en">Verified reviews · loyalty across the network.</span><span class="th">รีวิวยืนยัน · สมาชิกข้ามเครือข่าย</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>Your guests, not their guests.</strong></div>
+        <div class="reason-callout th">&#11088; <strong>แขกของคุณ ไม่ใช่ของพวกเขา</strong></div>
+        <p class="reason-cta en">Direct relationship.<br/>Direct upside.</p>
+        <p class="reason-cta th">ความสัมพันธ์ตรง<br/>ผลประโยชน์ตรง</p>
       </div>
-
-      <!-- Arrow -->
-      <div style="display:flex; align-items:center; justify-content:center; background:linear-gradient(90deg, #FFE0CC, #FCE4EC); border-top:1.5px solid #FCE4EC; border-bottom:1.5px solid #FCE4EC; padding:0 4px; position:relative;">
-        <div style="font-size:24px; font-weight:900; color:#FF1F70;">→</div>
-      </div>
-
-      <!-- Step 2 -->
-      <div style="background:white; border:1.5px solid #FCE4EC; border-left:none; padding:14px; position:relative;">
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:#FF1F70;">Step 2</div>
-        <div style="font-size:15px; font-weight:800; color:var(--ink); margin-top:6px;"><span class="en">They use everything</span><span class="th">ใช้ทุกอย่าง</span></div>
-        <div style="font-size:13px; color:var(--muted); margin-top:5px; line-height:1.45;"><span class="en">Room service · Spa · Restaurant · Tours. All in your app. Tip goes to <em>your</em> staff.</span><span class="th">รูมเซอร์วิส · สปา · ร้านอาหาร · ทัวร์ ทั้งหมดในแอปของคุณ ทิปไปที่พนักงาน<em>ของคุณ</em></span></div>
-      </div>
-
-      <!-- Arrow -->
-      <div style="display:flex; align-items:center; justify-content:center; background:linear-gradient(90deg, #FCE4EC, #F3E8FF); padding:0 4px; border-top:1.5px solid #F3E8FF; border-bottom:1.5px solid #F3E8FF;">
-        <div style="font-size:24px; font-weight:900; color:#7E22CE;">→</div>
-      </div>
-
-    </div>
-
-    <!-- Steps 3 and 4 with the ambassador moment -->
-    <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:0; margin-top:0; align-items:stretch;">
-
-      <!-- Step 3 -->
-      <div style="background:white; border:1.5px solid #F3E8FF; border-top:none; border-radius:0 0 0 12px; padding:14px; position:relative;">
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:#7E22CE;">Step 3</div>
-        <div style="font-size:15px; font-weight:800; color:var(--ink); margin-top:6px;"><span class="en">They become ambassadors</span><span class="th">กลายเป็นแอมบาสเดอร์</span></div>
-        <div style="font-size:13px; color:var(--muted); margin-top:5px; line-height:1.45;"><span class="en">In the app, they discover: refer any hotel worldwide → <strong style="color:#7E22CE;">2% BTC for life</strong>.</span><span class="th">ในแอปพวกเขาพบ: แนะนำโรงแรมที่ไหนก็ได้ → <strong style="color:#7E22CE;">2% BTC ตลอดชีพ</strong></span></div>
-      </div>
-
-      <!-- Arrow -->
-      <div style="display:flex; align-items:center; justify-content:center; background:linear-gradient(90deg, #F3E8FF, rgba(255,107,0,0.10)); padding:0 4px; border-top:1.5px solid rgba(255,107,0,0.2); border-bottom:1.5px solid rgba(255,107,0,0.2); border-bottom-color:transparent;">
-        <div style="font-size:24px; font-weight:900; color:var(--orange);">↺</div>
-      </div>
-
-      <!-- Step 4 -->
-      <div style="background:linear-gradient(135deg, rgba(255,107,0,0.08), rgba(126,34,206,0.08)); border:1.5px solid var(--orange); border-radius:0 0 12px 0; padding:14px; grid-column:span 2; position:relative;">
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase; color:var(--orange);">Step 4 — the loop</div>
-        <div style="font-size:15px; font-weight:800; color:var(--ink); margin-top:6px;"><span class="en">They book again. They bring friends.</span><span class="th">พวกเขาจองอีก พาเพื่อนมา</span></div>
-        <div style="font-size:13px; color:var(--muted); margin-top:5px; line-height:1.45;"><span class="en">Next year, they book your hotel <strong>direct on STAYLO</strong> — you keep 90%. Their referrals sign hotels worldwide. <strong>The loop pays you forever.</strong></span><span class="th">ปีหน้าพวกเขาจองโรงแรมของคุณ<strong>โดยตรงบน STAYLO</strong> — คุณเก็บ 90% การแนะนำของพวกเขาเซ็นโรงแรมทั่วโลก <strong>วงจรจ่ายให้คุณตลอดไป</strong></span></div>
-      </div>
-    </div>
-
-    <!-- Launch context strip -->
-    <div style="margin-top:18px; padding:11px 22px; background:#1A1A2E; border-radius:10px; display:flex; justify-content:space-between; align-items:center; gap:18px;">
-      <div>
-        <div style="font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:rgba(255,255,255,0.55); margin-bottom:3px;">
-          <span class="en">When does this start?</span>
-          <span class="th">เริ่มเมื่อไหร่?</span>
-        </div>
-        <div style="font-size:15px; color:rgba(255,255,255,0.9); line-height:1.45;">
-          <span class="en">Platform launches when <strong style="color:#FF6B00;">500 hotels</strong> are registered. Koh Phangan first. First Full Moon party post-launch — every traveler leaves knowing STAYLO.</span>
-          <span class="th">แพลตฟอร์มเปิดตัวเมื่อมีโรงแรมลงทะเบียน <strong style="color:#FF6B00;">500 แห่ง</strong> เกาะพะงันก่อน งาน Full Moon ครั้งแรกหลังเปิดตัว — นักท่องเที่ยวทุกคนจะรู้จัก STAYLO</span>
-        </div>
-      </div>
-      <div style="text-align:right; flex-shrink:0;">
-        <div style="font-size:38px; font-weight:900; line-height:1; background:var(--grad-warm); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-2px;">500</div>
-        <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:1px;">
-          <span class="en">D-Day threshold</span>
-          <span class="th">เกณฑ์วัน D-Day</span>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:84px; line-height:1;">&#128104;&#8205;&#129309;&#8205;&#128105;</div><small style="margin-top:4px;"><span class="en">Direct relationship</span><span class="th">ความสัมพันธ์ตรง</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128231;</div><strong><span class="en">Direct emails</span><span class="th">อีเมลตรง</span></strong><span class="en">Yours, not Booking's</span><span class="th">ของคุณ ไม่ใช่ Booking</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#F7931A,#FF6B00);">&#8383;</div><strong><span class="en">2% BTC referral</span><span class="th">2% BTC แนะนำ</span></strong><span class="en">For life · paid in Bitcoin</span><span class="th">ตลอดชีพ · จ่ายด้วย BTC</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#11088;</div><strong><span class="en">Verified reviews</span><span class="th">รีวิวยืนยัน</span></strong><span class="en">Verified guests only</span><span class="th">เฉพาะแขกที่ยืนยัน</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#127968;</div><strong><span class="en">Loyalty network</span><span class="th">สมาชิกข้ามเครือข่าย</span></strong><span class="en">Earn at one. Spend at all.</span><span class="th">หาที่หนึ่ง ใช้ได้ทั้งหมด</span></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
   <div class="slide-num">7 / 9</div>
 </section>
@@ -1446,86 +1545,40 @@ p.lead { font-size: 22px; color: var(--ink); line-height: 1.5; }
 <!-- ================================================================
      SLIDE 9 — QR / CONTACT
      ================================================================ -->
-<section class="slide" data-slide="9">
+<section class="slide slide-reason" data-slide="9">
   <div class="brand"><div class="brand-mark">S</div><span class="brand-name">STAYLO</span></div>
-
-  <div class="content" style="padding-top:76px;">
-    <div class="label en">Next step — right now</div>
-    <div class="label th">ก้าวถัดไป — ตอนนี้เลย</div>
-
-    <h1 class="md en">Scan. Register.<br/><span class="grad-text">Become a co-owner.</span></h1>
-    <h1 class="md th">สแกน ลงทะเบียน<br/><span class="grad-text">กลายเป็นเจ้าของร่วม</span></h1>
-
-    <div class="contact-layout">
-      <div class="contact-list">
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
-              <line x1="14" y1="14" x2="14" y2="17"/><line x1="17" y1="14" x2="21" y2="14"/><line x1="14" y1="20" x2="17" y2="20"/><line x1="20" y1="17" x2="20" y2="21"/>
-            </svg>
-          </div>
-          <div>
-            <div class="contact-title en">Scan the QR code</div>
-            <div class="contact-title th">สแกน QR Code</div>
-            <div class="contact-detail">staylo.app/welcome · ref: STAYLO-N3CK007</div>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="white" stroke="none">
-              <path d="M20.52 3.48A12 12 0 0 0 3.48 20.52L2 22l1.55-.41A12 12 0 1 0 20.52 3.48zM12 21.5a9.5 9.5 0 0 1-4.84-1.32l-.35-.21-3.59.94.96-3.5-.23-.36A9.5 9.5 0 1 1 12 21.5z"/>
-              <path d="M17.5 14.4c-.3-.15-1.78-.88-2.06-.98-.28-.1-.48-.15-.68.15-.2.3-.78.98-.96 1.18-.18.2-.35.22-.65.07-.3-.15-1.27-.47-2.42-1.5-.9-.8-1.5-1.78-1.68-2.08-.18-.3-.02-.46.13-.61.14-.13.3-.35.45-.52.15-.18.2-.3.3-.5.1-.2.05-.38-.02-.53-.07-.15-.68-1.65-.94-2.27-.25-.6-.5-.52-.68-.53l-.58-.01c-.2 0-.53.07-.8.37-.28.3-1.05 1.03-1.05 2.5 0 1.47 1.07 2.9 1.22 3.1.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.78-.73 2.03-1.43.25-.7.25-1.3.18-1.43-.08-.13-.27-.2-.57-.35z"/>
-            </svg>
-          </div>
-          <div>
-            <div class="contact-title en">WhatsApp David — right now</div>
-            <div class="contact-title th">WhatsApp David — ตอนนี้เลย</div>
-            <div class="contact-detail en">English / Thai · Koh Phangan based</div>
-            <div class="contact-detail th">ภาษาอังกฤษ / ไทย · ประจำเกาะพะงัน</div>
-          </div>
-        </div>
-        <div class="contact-item">
-          <div class="contact-icon">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/>
-              <line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/>
-            </svg>
-          </div>
-          <div>
-            <div class="contact-title en">Coffee on Koh Phangan</div>
-            <div class="contact-title th">กาแฟบนเกาะพะงัน</div>
-            <div class="contact-detail en">Founder lives here — no VC office, no pitch theater</div>
-            <div class="contact-detail th">ผู้ก่อตั้งอยู่ที่นี่ — ไม่มีสำนักงาน VC ไม่มีการแสดง</div>
-          </div>
-        </div>
-        <div style="padding:16px 0; border-top:1px solid var(--line);">
-          <p style="font-size:19px; font-weight:600; color:var(--ink); line-height:1.6;">
-            <span class="en">"Built with hoteliers, for hoteliers.<br/>Who owns the platform, makes the rules."</span>
-            <span class="th">"สร้างร่วมกับเจ้าของโรงแรม เพื่อเจ้าของโรงแรม<br/>ผู้เป็นเจ้าของแพลตฟอร์ม คือผู้กำหนดกฎ"</span>
-          </p>
-        </div>
+  <div class="content">
+    <div class="reason-cols">
+      <div class="reason-text">
+        <div class="reason-eyebrow"><span class="en">Founding Partner round</span><span class="th">รอบ Founding Partner</span></div>
+        <h1 class="reason-headline en">Your First Step.</h1>
+        <h1 class="reason-headline th">ก้าวแรกของคุณ</h1>
+        <div class="reason-divider"></div>
+        <p class="reason-lead en">Become a Founding Partner. <strong>$1,000 / share</strong> · max 10 per hotel · Koh Phangan only. 3,000 shares total. Locks 10% commission for life.</p>
+        <p class="reason-lead th">เป็น Founding Partner <strong>$1,000 / หุ้น</strong> · สูงสุด 10 หุ้นต่อโรงแรม · เฉพาะเกาะพะงัน 3,000 หุ้นรวม ล็อกคอมมิชชัน 10% ตลอดชีพ</p>
+        <ul class="reason-bullets">
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128176;</span><span><span class="en">$1,000 / share · Alpha cohort · KP only.</span><span class="th">$1,000 / หุ้น · Alpha · เฉพาะ KP</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128737;</span><span><span class="en">Max 10 per hotel (anti-concentration).</span><span class="th">สูงสุด 10/โรงแรม (กันกระจุก)</span></span></li>
+          <li class="reason-bullet"><span class="reason-bullet-icon">&#128274;</span><span><span class="en">10% commission locked for life by DAO.</span><span class="th">คอมมิชชัน 10% ล็อกตลอดชีพโดย DAO</span></span></li>
+        </ul>
+        <div class="reason-callout en">&#11088; <strong>contact@staylo.app</strong></div>
+        <div class="reason-callout th">&#11088; <strong>contact@staylo.app</strong></div>
+        <p class="reason-cta en">Founding Partner round open.<br/>Koh Phangan first.</p>
+        <p class="reason-cta th">รอบ Founding Partner เปิด<br/>เกาะพะงันก่อน</p>
       </div>
-
-      <div class="qr-wrap">
-        <img
-          src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fstaylo.app%2Fwelcome%3Fref%3DSTAYLO-N3CK007%26utm_source%3Dpitch_qr%26utm_campaign%3Dfounding_close&size=200x200&margin=2&color=1A1A2E&bgcolor=FAFAF8"
-          alt="staylo.app/welcome"
-        />
-        <div class="qr-label">staylo.app/welcome</div>
-        <div class="qr-code-ref">ref: STAYLO-N3CK007</div>
-        <div style="margin-top:8px; padding:8px 14px; background:var(--green-l); border-radius:8px; text-align:center;">
-          <div style="font-size:15px; font-weight:700; color:var(--green); line-height:1.5;">
-            <span class="en">Every signup via this code<br/>funds the STAYLO Foundation</span>
-            <span class="th">การลงทะเบียนทุกครั้งผ่านโค้ดนี้<br/>สนับสนุน STAYLO Foundation</span>
-          </div>
+      <div class="reason-visual">
+        <div class="reason-circle">
+          <div class="reason-center"><div style="font-size:84px; line-height:1;">&#127942;</div><small style="margin-top:4px;"><span class="en">Founding Partner — Alpha · KP</span><span class="th">Founding Partner — Alpha · KP</span></small></div>
+          <div class="reason-bubble b-top"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF6B00,#FF9F50);">&#128176;</div><strong><span class="en">$1,000 / share</span><span class="th">$1,000 / หุ้น</span></strong><span class="en">Alpha price · locked</span><span class="th">ราคา Alpha · ล็อก</span></div>
+          <div class="reason-bubble b-right"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#10B981,#059669);">&#127968;</div><strong><span class="en">Max 10 / hotel</span><span class="th">สูงสุด 10/โรงแรม</span></strong><span class="en">Anti-concentration</span><span class="th">กันกระจุก</span></div>
+          <div class="reason-bubble b-bottom"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#7E22CE,#5E2A78);">&#127876;</div><strong><span class="en">X-Mas 26 launch</span><span class="th">X-Mas 26 เปิดตัว</span></strong><span class="en">400-500 KP OR 500 shares</span><span class="th">400-500 KP หรือ 500 หุ้น</span></div>
+          <div class="reason-bubble b-left"><div class="reason-bubble-icon" style="background:linear-gradient(135deg,#FF1F70,#C026D3);">&#128274;</div><strong><span class="en">10% for life</span><span class="th">10% ตลอดชีพ</span></strong><span class="en">Locked by DAO statute</span><span class="th">ล็อกโดยธรรมนูญ DAO</span></div>
         </div>
       </div>
     </div>
   </div>
-
   <div class="footer-url"><a href="https://staylo.app">staylo.app</a></div>
-  <div class="slide-num"> 9 / 9 </div>
+  <div class="slide-num">9 / 9</div>
 </section>
 
 <!-- ================================================================
