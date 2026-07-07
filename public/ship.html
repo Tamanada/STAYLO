@@ -4786,6 +4786,14 @@ function finishOnboarding(){
   if(audience==='staff'){
     role = selectedRole;
     dept = ROLE_TO_DEPT[role] || 'Reception';
+    // Block self-promotion to privileged roles on a live hotel.
+    // HR_ROLES carry full salary / contract / payroll access.
+    // In demo mode (is_live falsy) any role is allowed so demos work.
+    const existingSettings = lsGet(`staylo_hotel_${hotelCode}`, {});
+    if(existingSettings.is_live && HR_ROLES.includes(role)){
+      alert('⚠️ Management roles require a manager invitation.\nAsk your General Manager to go to Settings → Invite Staff and generate a QR code for your account.');
+      return;
+    }
   } else if(audience==='ambassador'){
     role = 'Ambassador'; dept = 'Ambassador';
   } else {
@@ -9019,8 +9027,8 @@ function switchChannel(id){
   // mark previous as read
   State.lastSeen[State.channel] = new Date().toISOString();
   State.unread[id] = 0;
-  lsSet('staylo_unread',State.unread);
-  lsSet('staylo_lastseen',State.lastSeen);
+  lsSet(_hkey('staylo_unread'),State.unread);
+  lsSet(_hkey('staylo_lastseen'),State.lastSeen);
   State.channel = id;
   renderChannels();
   renderChat();
@@ -9250,7 +9258,7 @@ function cardCommission(d){
         el('div',{class:'amount'},'$'+(d.commission||0)),
         el('div',{style:'font-size:11px;color:#666;margin-top:2px'}, t('app.cards.commission_booking_amt',{n: d.amount||0})),
       ),
-      el('button',{class:'btn-mini'}, t('app.cards.commission_view_earnings')),
+      el('button',{class:'btn-mini',onclick:()=>setView('me','finance')}, t('app.cards.commission_view_earnings')),
     ),
   );
 }
@@ -9318,7 +9326,7 @@ function cardFeedback(d){
     ),
     el('div',{class:'card-foot'},
       el('span',{class:'chip gold'}, t('app.cards.feedback_rating',{n: d.rating||5})),
-      el('button',{class:'btn-mini'}, t('app.cards.feedback_btn_followup')),
+      el('button',{class:'btn-mini',onclick:()=>switchChannel('guest-feedback')}, t('app.cards.feedback_btn_followup')),
     ),
   );
 }
@@ -9494,7 +9502,7 @@ function insertMessageLocal(m){
   // unread tracking
   if(m.channel!==State.channel && !isFromMe){
     State.unread[m.channel] = (State.unread[m.channel]||0)+1;
-    lsSet('staylo_unread',State.unread);
+    lsSet(_hkey('staylo_unread'),State.unread);
     notifyAlert(m);
   }
   // 🚨 EMERGENCY: full-stack alarm (siren + flash + vibration + sticky notif)
@@ -9516,7 +9524,7 @@ function persistMessages(){
   // Cap at 100/channel to keep localStorage sane
   const out = {};
   for(const k in State.messages) out[k] = State.messages[k].slice(-100);
-  lsSet('staylo_messages',out);
+  lsSet(_hkey('staylo_messages'),out);
 }
 
 function refreshAlerts(){
@@ -11587,7 +11595,16 @@ function upsertEmployee(emp){
 function deleteEmployee(id){saveEmployees(getEmployees().filter(e=>e.id!==id))}
 
 function getSchedules(){return lsGet(_hkey('staylo_schedules'),[])}
-function saveSchedules(a){lsSet(_hkey('staylo_schedules'),a)}
+function saveSchedules(a){
+  if(!lsSetVerify(_hkey('staylo_schedules'),a)){
+    try{
+      const msg = t('app.roster.quota_exceeded');
+      alert(msg !== 'app.roster.quota_exceeded'
+        ? msg
+        : 'Storage full — schedule changes may not be saved.\n\nTry removing large ID scans or photos from employee records.');
+    }catch(_){}
+  }
+}
 /* One-time cleanup: collapse any duplicate (employee_id, date) rows that
  * may exist from earlier seeds when upsertSchedule wasn't composite-key
  * aware. Absence wins over work; otherwise the more recent one wins. */
@@ -13196,6 +13213,7 @@ function renderTeamView(body, title, subtitle, tabs){
       if(_hrTab === id) return;   // already active — no-op
       tabs.querySelectorAll('.cv-tab').forEach(t => t.classList.remove('on'));
       btn.classList.add('on');
+      _hrEmployeeId = null;
       requestAnimationFrame(() => setView('team', id));
     });
     tabs.appendChild(btn);
@@ -18583,7 +18601,10 @@ function showRecipeView(r){
         v.src = url; v.controls = true; v.className = 'recipe-view-video';
         return v;
       }
-      return el('a',{href:url,target:'_blank',style:'display:inline-block;padding:8px 14px;background:var(--purple);color:#fff;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px'},'🎥 Open video link →');
+      return /^https:\/\//i.test(url)
+        ? el('a',{href:url,target:'_blank',rel:'noopener noreferrer',style:'display:inline-block;padding:8px 14px;background:var(--purple);color:#fff;border-radius:var(--r-pill);font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px'},'🎥 Open video link →')
+        : el('span',{style:'display:inline-block;padding:8px 14px;background:#e55;color:#fff;border-radius:var(--r-pill);font-size:12px;font-weight:700;margin-bottom:10px'},'⚠️ Invalid video URL (must start with https://)');
+
     })() : null,
     // Stats: managers see full breakdown (cost/sell/margin); staff see ONLY yield.
     isMgr
@@ -22953,11 +22974,12 @@ function applyOffShiftMode(){
   if(todayShift && todayShift.kind !== 'absence'){
     const start = timeToMinutes(todayShift.start_time);
     const end   = timeToMinutes(todayShift.end_time);
-    if(now < start - 15) nextLine = `Next shift today: <b>${todayShift.start_time}–${todayShift.end_time}</b> (in ${start - now - 15}min you can clock in)`;
+    const eT = s => escapeHtml(String(s||''));
+    if(now < start - 15) nextLine = `Next shift today: <b>${eT(todayShift.start_time)}–${eT(todayShift.end_time)}</b> (in ${start - now - 15}min you can clock in)`;
     else if(now <= end + 30){
-      nextLine = `Today's shift: <b>${todayShift.start_time}–${todayShift.end_time}</b>`;
+      nextLine = `Today's shift: <b>${eT(todayShift.start_time)}–${eT(todayShift.end_time)}</b>`;
       canClockIn = true;
-    } else nextLine = `Today's shift ended at ${todayShift.end_time}. Next: ${findNextShiftLabel(emp)}`;
+    } else nextLine = `Today's shift ended at ${eT(todayShift.end_time)}. Next: ${findNextShiftLabel(emp)}`;
   } else if(emp){
     nextLine = findNextShiftLabel(emp);
   }
@@ -22991,7 +23013,7 @@ function findNextShiftLabel(emp){
   if(!next) return 'No upcoming shifts scheduled.';
   const dt = new Date(next.date+'T00:00:00Z');
   const dateLbl = next.date === today ? 'today' : dt.toLocaleDateString(undefined,{weekday:'long',month:'short',day:'numeric',timeZone:'UTC'});
-  return `Next shift: <b>${dateLbl} at ${next.start_time}</b>`;
+  return `Next shift: <b>${escapeHtml(dateLbl)} at ${escapeHtml(next.start_time)}</b>`;
 }
 
 // Refresh the open Schedule tab every 30s so the dashboard's live
@@ -23900,7 +23922,12 @@ function showSettingsModal(){
               `  • ${realTasks} task${realTasks===1?'':'s'} you created\n` +
               `  • All hotel settings + pools + clock-in events for kept staff\n\n` +
               `After this, demo will NOT auto-load on next boot. Continue?`;
-            if(!confirm(msg)) return;
+            const typed = prompt(msg + '\n\nTo confirm, type LIVE exactly:', '');
+            if(typed === null) return;
+            if(typed.trim().toUpperCase() !== 'LIVE'){
+              alert('Cancelled — type LIVE exactly to confirm switching to live mode.');
+              return;
+            }
             // SAFETY NET — auto-download a JSON snapshot of ALL demo data
             // BEFORE wipe. If the user clicked through by accident (demo
             // misclick risk identified in audit), they can re-import. The
@@ -24665,9 +24692,9 @@ async function _bootAppInner(){
   }
   $('#app').classList.add('ready');
   // Load persisted state
-  State.messages = lsGet('staylo_messages',{});
-  State.unread = lsGet('staylo_unread',{});
-  State.lastSeen = lsGet('staylo_lastseen',{});
+  State.messages = lsGet(_hkey('staylo_messages'),{});
+  State.unread = lsGet(_hkey('staylo_unread'),{});
+  State.lastSeen = lsGet(_hkey('staylo_lastseen'),{});
   // Default channel by audience
   const defaultByAud = { staff:'general', ambassador:'ambassadors', guest:'concierge' };
   State.channel = defaultByAud[State.user.audience] || 'general';
