@@ -3446,7 +3446,8 @@
       "edit_tooltip": "Edit",
       "delete_tooltip": "Delete",
       "service_cross_dept": "Cross-department",
-      "service_other": "Other"
+      "service_other": "Other",
+      "search_placeholder": "🔍 Search tasks…"
     },
     "msg_preview": {
       "room_status": "🛏️ Room status update",

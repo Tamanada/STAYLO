@@ -4211,16 +4211,16 @@ function showDateWheelPicker(opts, onCommit, onClear){
   const close = () => { modal.remove(); };
 
   const commitBtn = el('button', {class:'dwp-primary'},
-    t('app.date_picker.define', {default:'Définir'}));
+    t('app.date_picker.define'));
   commitBtn.addEventListener('click', () => {
     const yy = state.yy, mm = state.mm, dd = state.dd;
     const iso = `${yy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
     if(minISO && iso < minISO){
-      alert(t('app.date_picker.too_early', {default:'Date trop ancienne (min: '+minISO+')'}));
+      alert(t('app.date_picker.too_early') || ('Date too early (min: '+minISO+')'));
       return;
     }
     if(maxISO && iso > maxISO){
-      alert(t('app.date_picker.too_late', {default:'Date trop tardive (max: '+maxISO+')'}));
+      alert(t('app.date_picker.too_late') || ('Date too late (max: '+maxISO+')'));
       return;
     }
     if(typeof onCommit === 'function') onCommit(iso);
@@ -4228,13 +4228,13 @@ function showDateWheelPicker(opts, onCommit, onClear){
   });
 
   const cancelBtn = el('button', {},
-    t('app.date_picker.cancel', {default:'Annuler'}));
+    t('app.date_picker.cancel'));
   cancelBtn.addEventListener('click', close);
 
   const actionBtns = [cancelBtn];
   if(allowClear){
     const clearBtn = el('button', {class:'dwp-danger'},
-      t('app.date_picker.clear', {default:'Effacer'}));
+      t('app.date_picker.clear'));
     clearBtn.addEventListener('click', () => {
       if(typeof onClear === 'function') onClear();
       close();
@@ -4244,7 +4244,7 @@ function showDateWheelPicker(opts, onCommit, onClear){
   actionBtns.push(commitBtn);
 
   const panel = el('div', {class:'dwp-panel'},
-    el('div', {class:'dwp-title'}, t('app.date_picker.title', {default:'Définir la date'})),
+    el('div', {class:'dwp-title'}, t('app.date_picker.title')),
     el('div', {class:'dwp-wheels'}, dayColEl, monthColEl, yearColEl),
     el('div', {class:'dwp-actions'}, ...actionBtns),
   );
@@ -4275,7 +4275,7 @@ function dateInputWithWheel(opts){
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'date-display-btn';
-  const placeholder = opts.placeholder || t('app.date_picker.placeholder', {default:'Choisir une date…'});
+  const placeholder = opts.placeholder || t('app.date_picker.placeholder');
   const refreshLabel = () => {
     if(hidden.value && /^\d{4}-\d{2}-\d{2}$/.test(hidden.value)){
       const d = new Date(hidden.value + 'T00:00:00Z');
@@ -5065,7 +5065,12 @@ function renderTeamLanding(body, title, subtitle){
   // they all live in the same modal and share the global state. Wrapping the
   // setView calls below ensures every top-level tile resets the per-employee
   // focus before navigating.
-  const goTeam = (arg) => () => { _hrEmployeeId = null; setView('team', arg); };
+  const goTeam = (arg) => () => {
+    _hrEmployeeId = null;
+    if(arg === 'roster') _rosterFilterDept = 'all';
+    if(arg === 'schedule'){ _schedFilterDept = 'all'; _schedFilterOutlet = 'all'; }
+    setView('team', arg);
+  };
   if(canManageRoster()){
     tiles.push({em:'👥', nm:t('app.team.tile.roster_t'), desc:t('app.team.tile.roster_d'),
                 onClick: goTeam('roster')});
@@ -7265,8 +7270,12 @@ function pulseConfirmDeleteRecipe(recipe, onDone){
     style:`position:fixed;inset:0;background:rgba(20,20,40,.55);z-index:99998;
       display:flex;align-items:center;justify-content:center;padding:16px;
       backdrop-filter:blur(4px);`,
-    onclick:(e)=>{ if(e.target===bg) bg.remove(); }
   });
+  let _mdTarget = null;
+  bg.addEventListener('mousedown', e => { _mdTarget = e.target; });
+  bg.addEventListener('click', e => { if(e.target === bg && _mdTarget === bg) bg.remove(); });
+  const _escHandler = e => { if(e.key === 'Escape'){ bg.remove(); document.removeEventListener('keydown', _escHandler); } };
+  document.addEventListener('keydown', _escHandler);
   const card = el('div',{
     style:`background:#fff;border-radius:18px;max-width:440px;width:100%;
       padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:inherit;`,
@@ -10378,17 +10387,22 @@ const EMPTY_EMP = {
 // — staff with accept_status='accepted' but tc_version<this will be re-prompted.
 const STAYLO_TC_VERSION = '2026-05-01';
 function _hkey(prefix){return `${prefix}_${State.user?.hotelCode||'DEFAULT'}`}
+let _empMigrationDone = false;
 function getEmployees(){
   const arr = lsGet(_hkey('staylo_employees'),[]);
   // Migrations applied transparently on read so old data stays usable.
-  let migrated = false;
-  for(const e of arr){
-    // Legacy 'Kitchen' department renamed to 'F&B' (covers BoH + FoH F&B).
-    if(e.department === 'Kitchen'){ e.department = 'F&B'; migrated = true; }
-    // Role rename: "Maître d'" → "Maître d'hôtel" (full title for clarity)
-    if(e.role === "Maître d'"){ e.role = "Maître d'hôtel"; migrated = true; }
+  // Guard prevents the O(n) loop from running on every call after first pass.
+  if(!_empMigrationDone){
+    let migrated = false;
+    for(const e of arr){
+      // Legacy 'Kitchen' department renamed to 'F&B' (covers BoH + FoH F&B).
+      if(e.department === 'Kitchen'){ e.department = 'F&B'; migrated = true; }
+      // Role rename: "Maître d'" → "Maître d'hôtel" (full title for clarity)
+      if(e.role === "Maître d'"){ e.role = "Maître d'hôtel"; migrated = true; }
+    }
+    if(migrated) lsSet(_hkey('staylo_employees'), arr);
+    _empMigrationDone = true;
   }
-  if(migrated) lsSet(_hkey('staylo_employees'), arr);
   return arr;
 }
 
@@ -11216,6 +11230,9 @@ function seedTasksIfEmpty(){
 function seedDemoDataIfNeeded(){
   const settings = getHotelSettings();
   if(settings.is_live === true || settings.is_live === 'true') return;
+  // Guard: if real (non-demo) employees already exist, treat as live and prevent re-seed.
+  const _existingReal = getEmployees().filter(function(e){ return !e.is_demo; });
+  if(_existingReal.length > 0){ lsSet(_hkey('is_live'), true); return; }
   // INDEPENDENT GATES — each data type re-seeds on its own emptiness. This
   // kills the recurring "Schedules/Tasks/Recipes disappeared" regression
   // where a partial wipe (manager edits → clears one table) prevented
@@ -11507,7 +11524,7 @@ function seedBigHotelTeam(){
     return {
       ...EMPTY_EMP, ...tpl,
       id: 'emp-'+Date.now()+'-'+i+'-'+Math.floor(Math.random()*9999),
-      invite_token: (crypto.randomUUID ? crypto.randomUUID() : 'inv-'+Date.now()+'-'+i+Math.random()).slice(0,18),
+      invite_token: (crypto.randomUUID ? crypto.randomUUID() : 'inv-'+Date.now()+'-'+i+Math.random()),
       invite_used: true,
       created_at: _now,
       created_by: State.user?.name || 'demo',
@@ -11574,7 +11591,7 @@ function upsertEmployee(emp){
   const all = getEmployees();
   if(!emp.id){
     emp.id = 'emp-'+Date.now()+'-'+Math.floor(Math.random()*9999);
-    emp.invite_token = (crypto.randomUUID?crypto.randomUUID():'inv-'+Date.now()+Math.random()).slice(0,18);
+    emp.invite_token = (crypto.randomUUID?crypto.randomUUID():'inv-'+Date.now()+Math.random());
     emp.invite_used = false;
     emp.created_at = new Date().toISOString();
     emp.created_by = State.user.name;
@@ -12156,7 +12173,7 @@ function ficheCategoryLabel(slug){
 }
 
 function getRecipes(){ return lsGet(_hkey('staylo_recipes'), []); }
-function saveRecipes(arr){ lsSet(_hkey('staylo_recipes'), arr); }
+function saveRecipes(arr){ if(!lsSetVerify(_hkey('staylo_recipes'), arr)){ alert('Storage full — recipe changes could not be saved.'); } }
 function findRecipe(id){ return getRecipes().find(r => r.id === id) || null; }
 function upsertRecipe(r){
   const all = getRecipes();
@@ -12232,7 +12249,7 @@ function recipeTotals(r){
  * for each calendar day.
  * ============================================================================ */
 function getTasks(){ return lsGet(_hkey('staylo_tasks'), []); }
-function saveTasks(arr){ lsSet(_hkey('staylo_tasks'), arr); }
+function saveTasks(arr){ if(!lsSetVerify(_hkey('staylo_tasks'), arr)){ alert('Storage full — task changes could not be saved.'); } }
 /* Task execution log — Start/End timing + end photo captured from the SHIP
  * fiche, so the manager can see how long a task took and a photo of the
  * finished work. Keyed by "taskId|date" → {started_at, ended_at, duration_min,
@@ -12320,7 +12337,7 @@ function tasksAssignedToEmployee(tasks, emp){
   });
 }
 function getTimesheet(empId){return lsGet(_hkey('staylo_ts')+'_'+empId,[])}
-function saveTimesheet(empId,events){lsSet(_hkey('staylo_ts')+'_'+empId,events)}
+function saveTimesheet(empId,events){ if(!lsSetVerify(_hkey('staylo_ts')+'_'+empId,events)){ alert('Storage full — timesheet changes could not be saved.'); } }
 
 /* ============================================================================
  * PAYROLL — monthly payslips
@@ -12344,7 +12361,7 @@ const OT_RATE_DEFAULT     = 1.5;     // Thailand: OT paid at 1.5× hourly
 const OT_THRESHOLD_PER_WK = 48;      // Hours/week before OT kicks in (TH max)
 
 function getPayslips(){return lsGet(_hkey('staylo_payslips'),[])}
-function savePayslips(arr){lsSet(_hkey('staylo_payslips'),arr)}
+function savePayslips(arr){ if(!lsSetVerify(_hkey('staylo_payslips'),arr)){ alert('Storage full — payslip changes could not be saved.'); } }
 function findPayslip(empId, month){return getPayslips().find(p => p.emp_id===empId && p.month===month) || null}
 function upsertPayslip(p){
   const all = getPayslips();
@@ -12380,7 +12397,7 @@ function getServicePools(){
   const fallbackId = firstFbPool ? firstFbPool.id : 'pool-default-service';
   return arr.map(r => r.pool_id ? r : { ...r, pool_id: fallbackId });
 }
-function saveServicePools(arr){lsSet(_hkey('staylo_service_pools'),arr)}
+function saveServicePools(arr){ if(!lsSetVerify(_hkey('staylo_service_pools'),arr)){ alert('Storage full — service pool changes could not be saved.'); } }
 /* Legacy: find the single pool record for a period (returns first match
  * regardless of pool_id — kept for callers that haven't been refactored yet). */
 function findServicePool(period){return getServicePools().find(p => p.period === period) || null}
@@ -13236,14 +13253,10 @@ function renderTeamView(body, title, subtitle, tabs){
  * For now they fall back to their existing modal show* functions so nothing
  * breaks while the migration is staged. */
 function renderSettingsView(body){
-  body.appendChild(el('div',{style:'padding:24px;color:var(--gray);font-size:13px'},
-    'Settings view migration in progress. Opening modal for now…'));
-  setTimeout(() => { try { showSettingsModal(); } catch {} }, 50);
+  try { showSettingsModal(); } catch(e){ console.warn('showSettingsModal failed', e); }
 }
 function renderTimesheetView(body){
-  body.appendChild(el('div',{style:'padding:24px;color:var(--gray);font-size:13px'},
-    'Timesheet view migration in progress. Opening modal for now…'));
-  setTimeout(() => { try { showTimesheetModal(); } catch {} }, 50);
+  try { showTimesheetModal(); } catch(e){ console.warn('showTimesheetModal failed', e); }
 }
 function renderProfileView(body){
   const u = State.user || {};
@@ -13318,7 +13331,7 @@ function getFinanceData(){
   if(!raw.months) raw.months = {};
   return raw;
 }
-function saveFinanceData(d){ lsSet(_hkey('staylo_finance'), d); }
+function saveFinanceData(d){ if(!lsSetVerify(_hkey('staylo_finance'), d)){ alert('Storage full — finance data could not be saved.'); } }
 
 function exportFinanceCSV(cur, month, payrollTotal, sym){
   const rows = [['Section','Label','Amount ('+sym+')']];
@@ -13369,10 +13382,9 @@ function renderFinanceView(body){
   //     storage. Each render refreshes the CURRENT month's snapshot, but
   //     prior months are NEVER touched — so the M-o-M delta uses the
   //     payroll the manager actually had at the time, not today's roster.
-  const empCount = getEmployees().filter(e => !e.is_self_user).length;
-  const livePayroll = getEmployees()
-    .filter(e => !e.is_self_user)
-    .reduce((sum, e) => sum + (parseFloat(e.monthly_salary_thb) || 0), 0);
+  const _empSnap = getEmployees().filter(e => !e.is_self_user);
+  const empCount = _empSnap.length;
+  const livePayroll = _empSnap.reduce((sum, e) => sum + (parseFloat(e.monthly_salary_thb) || 0), 0);
   if(cur.payroll_snapshot !== livePayroll){
     cur.payroll_snapshot = livePayroll;
     saveFinanceData(all);
@@ -13753,8 +13765,8 @@ function renderPayrollTab(){
 
   // Visible employees: HR/GM see the whole hotel filtered via the dropdown;
   // dept managers see their own dept only (no dropdown shown).
-  let allEmps = (isHRGM ? getEmployees() : getEmployees().filter(e => e.department === myDept))
-    .slice();
+  const _allEmpsRaw = getEmployees();
+  let allEmps = (isHRGM ? _allEmpsRaw : _allEmpsRaw.filter(e => e.department === myDept)).slice();
   if(isHRGM && _payrollFilterDept !== 'all'){
     allEmps = allEmps.filter(e => e.department === _payrollFilterDept);
   }
@@ -13768,7 +13780,7 @@ function renderPayrollTab(){
       // ── Department filter — same look & feel as the schedule's dept
       // dropdown. Visible to HR/GM only (dept managers are auto-scoped). ──
       isHRGM ? (() => {
-        const allHotelEmps = getEmployees();
+        const allHotelEmps = _allEmpsRaw;
         const counts = {};
         for(const e of allHotelEmps) counts[e.department] = (counts[e.department]||0)+1;
         const depts = Object.keys(counts).sort();
@@ -15286,7 +15298,7 @@ function printPayslipSheet(emp, slip, c, totals, monthLabel){
   // Open print window with full styles
   const w = window.open('', '_blank', 'width=900,height=1100');
   if(!w){ alert(t('app.dialogs.popup_blocked')); return; }
-  w.document.write(`<!DOCTYPE html><html><head><title>Payslip — ${escTitle(emp.first_name)} ${escTitle(emp.last_name||'')} · ${escTitle(monthLabel)}</title>
+  w.document.write(`<!DOCTYPE html><html><head><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src data: 'self'; script-src 'none'"><title>Payslip — ${escTitle(emp.first_name)} ${escTitle(emp.last_name||'')} · ${escTitle(monthLabel)}</title>
 <style>
   *{box-sizing:border-box}
   body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1A1F2E;margin:0;padding:14mm;font-size:11px;background:#fff}
@@ -15432,7 +15444,17 @@ function renderRosterTab(){
     const emptyMsg = (isHR && _rosterFilterDept !== 'all')
       ? t('app.roster.empty_state_filtered', {dept: _rosterFilterDept})
       : t('app.roster.empty_state');
-    list.appendChild(el('div',{class:'empty-state'}, emptyMsg));
+    const _rosterEmptyDiv = el('div',{class:'empty-state'});
+    _rosterEmptyDiv.appendChild(document.createTextNode(emptyMsg));
+    if(isHR && _rosterFilterDept !== 'all'){
+      _rosterEmptyDiv.appendChild(el('br'));
+      _rosterEmptyDiv.appendChild(el('button',{
+        class:'btn-secondary',
+        style:'margin-top:10px;padding:6px 14px;font-size:12px',
+        onclick:()=>{ _rosterFilterDept='all'; renderRosterTab(); }
+      }, 'Clear filter'));
+    }
+    list.appendChild(_rosterEmptyDiv);
   } else {
     for(const e of emps){
       // Outlet shown ONLY when set (F&B staff who've been assigned to a
@@ -16154,7 +16176,7 @@ function renderEmployeeForm(root,emp){
             onclick:()=>{
               if(!confirm(`🔄 Reset device binding for ${emp.first_name} ${emp.last_name||''}?\n\nThis will:\n  • Clear the current device fingerprint\n  • Generate a NEW invite token (the old QR/link becomes invalid)\n  • Force the staff to re-claim on whatever device they use next\n\nUse this when they get a new phone, lose access, or you suspect account sharing. Continue?`)) return;
               // New invite_token + clear bind + reset accept_status to pending
-              const newToken = (crypto.randomUUID ? crypto.randomUUID() : 'inv-'+Date.now()+Math.random()).slice(0,18);
+              const newToken = (crypto.randomUUID ? crypto.randomUUID() : 'inv-'+Date.now()+Math.random());
               const now = new Date().toISOString();
               emp.invite_token = newToken;
               emp.invite_used = false;
@@ -16772,7 +16794,7 @@ async function showContractAndQR(emp){
         }
         // window.location.href triggers the OS handler; window.open is cleaner
         // (doesn't navigate away from the contract modal)
-        const w = window.open(mailtoUrl, '_blank');
+        const w = window.open(mailtoUrl, '_blank', 'noopener,noreferrer');
         if(!w) location.href = mailtoUrl;
       },
     },'📧 Email invite to staff'),
@@ -16856,8 +16878,8 @@ function buildContractSheet(emp,inviteUrl,qrSvg){
     <div class="c-qr-title">Scan to activate your Staylo account</div>
     <div class="c-qr-sub">สแกนเพื่อเปิดใช้งานบัญชี Staylo ของคุณ</div>
     <div class="c-qr">${qrSvg}</div>
-    <div class="c-qr-token">Invite token: <code>${emp.invite_token}</code></div>
-    <div class="c-qr-url">${inviteUrl}</div>`;
+    <div class="c-qr-token">Invite token: <code>${escapeHtml(emp.invite_token)}</code></div>
+    <div class="c-qr-url">${escapeHtml(inviteUrl.length>60?inviteUrl.slice(0,60)+'…':inviteUrl)}</div>`;
   sheet.appendChild(qrWrap);
   return sheet;
 }
@@ -17125,6 +17147,7 @@ let _schedWeekStart = null;    // anchor date YYYY-MM-DD (Mon of week, or 1st of
 let _schedFilterDept = 'all';
 let _schedFilterOutlet = 'all';     // F&B sub-venue filter (e.g. "Sunset Bar")
 let _schedViewMode = 'fortnight';   // 'day' | 'week' | 'fortnight' | 'month'
+let _schedViewModeLoaded = false;   // true after first localStorage read post-login
 
 function getMonthStart(dateStr){ return dateStr.slice(0,8) + '01'; }
 function daysInMonth(monthStart){
@@ -17166,6 +17189,7 @@ function setSchedViewMode(mode){
   if(mode === _schedViewMode) return;
   const today = new Date().toISOString().slice(0,10);
   _schedViewMode = mode;
+  try { lsSet(_hkey('sched_view_mode'), mode); } catch(_){}
   // Snap anchor to a sensible boundary for the new mode
   if(mode === 'day')        _schedWeekStart = _schedWeekStart || today;
   else if(mode === 'month') _schedWeekStart = getMonthStart(_schedWeekStart || today);
@@ -17549,6 +17573,7 @@ function renderScheduleTab(){
   const u = State.user;
   const today = new Date().toISOString().slice(0,10);
   if(!_schedWeekStart) gotoTodayAnchor();
+  if(!_schedViewModeLoaded){ const _sv = lsGet(_hkey('sched_view_mode')); if(_sv) _schedViewMode = _sv; _schedViewModeLoaded = true; }
 
   const canEdit = canManageSchedule();   // only MGMT_ROLES can change shifts
   const isHR    = HR_ROLES.includes(u.role);
@@ -17772,12 +17797,22 @@ function renderScheduleTab(){
   // Empty state — show sticky head so the user can still change the filter
   if(!visibleEmps.length){
     root.appendChild(stickyHead);
-    root.appendChild(el('div',{class:'empty-state'},
+    const _schedEmptyDiv = el('div',{class:'empty-state'});
+    _schedEmptyDiv.appendChild(document.createTextNode(
       isHR && _schedFilterDept!=='all'
         ? `No employees in the ${_schedFilterDept} department yet.`
         : canManageHR()
           ? 'No employees yet. Add team members in the Roster tab first.'
           : 'No team members in your department yet. Ask HR/GM to add them.'));
+    if(canManageHR() && !visibleEmps.length){
+      _schedEmptyDiv.appendChild(el('br'));
+      _schedEmptyDiv.appendChild(el('button',{
+        class:'btn-primary',
+        style:'margin-top:12px;padding:8px 20px;font-size:13px',
+        onclick:()=>setView('team','roster')
+      }, '→ Open Roster tab'));
+    }
+    root.appendChild(_schedEmptyDiv);
     return;
   }
 
@@ -19399,8 +19434,12 @@ function openFicheCategoryCreateModal(onCreated){
     style:`position:fixed;inset:0;background:rgba(20,20,40,.55);z-index:99998;
       display:flex;align-items:center;justify-content:center;padding:16px;
       backdrop-filter:blur(4px);`,
-    onclick:(e)=>{ if(e.target===bg) bg.remove(); }
   });
+  let _mdTargetFiche = null;
+  bg.addEventListener('mousedown', e => { _mdTargetFiche = e.target; });
+  bg.addEventListener('click', e => { if(e.target === bg && _mdTargetFiche === bg) bg.remove(); });
+  const _escFiche = e => { if(e.key === 'Escape'){ bg.remove(); document.removeEventListener('keydown', _escFiche); } };
+  document.addEventListener('keydown', _escFiche);
   const card = el('div',{
     style:`background:#fff;border-radius:18px;max-width:440px;width:100%;
       padding:24px;box-shadow:0 24px 60px rgba(0,0,0,.35);font-family:inherit;`,
@@ -20459,9 +20498,19 @@ function renderTasksTab(){
     // Two distinct empty states: nothing at all on this date, vs filter
     // removed everything. Give the user a clear next-action either way.
     if(myDayTasks.length === 0){
-      root.appendChild(el('div',{class:'empty-state'},
-        isMgr ? t('app.tasks_tab.empty_mgr')
-              : t('app.tasks_tab.empty_staff')));
+      if(isMgr){
+        const emptyDiv = el('div',{class:'empty-state'});
+        emptyDiv.appendChild(document.createTextNode(t('app.tasks_tab.empty_mgr')));
+        emptyDiv.appendChild(el('br'));
+        emptyDiv.appendChild(el('button',{
+          class:'btn-primary',
+          style:'margin-top:12px;padding:8px 20px;font-size:13px',
+          onclick:()=>showTaskEditor(null)
+        }, t('app.tasks_tab.new_task') || '+ New task'));
+        root.appendChild(emptyDiv);
+      } else {
+        root.appendChild(el('div',{class:'empty-state'}, t('app.tasks_tab.empty_staff')));
+      }
     } else {
       const emptyMsg = el('div',{class:'empty-state'},
         el('div',{}, t('app.tasks_tab.empty_filter') || 'No tasks match the current filter.'),
@@ -20650,9 +20699,10 @@ function showTaskEditor(task){
   // Front Office or Housekeeping names. ──
   const isHRGM = canManageHR();
   const userDept = State.user.department;
-  const allEmps = isHRGM ? getEmployees() : getEmployees().filter(e => e.department === userDept);
+  const _allEmpsRaw = getEmployees();
+  const allEmps = isHRGM ? _allEmpsRaw : _allEmpsRaw.filter(e => e.department === userDept);
   const allRoles = [...new Set(allEmps.map(e=>e.role))].sort();
-  const allDepts = isHRGM ? [...new Set(getEmployees().map(e=>e.department))].sort() : [userDept];
+  const allDepts = isHRGM ? [...new Set(_allEmpsRaw.map(e=>e.department))].sort() : [userDept];
 
   const inp = (id,type,val,ph)=>{
     const i = type==='textarea' ? document.createElement('textarea') : document.createElement('input');
@@ -21265,11 +21315,11 @@ function showShiftEditor(emp, day, shift){
     // Picking ANY chip other than 'today' fires onChange with the new key,
     // which the caller wires to days.setAll() (the "min 1 week" rule).
     const opts = [
-      {key:'until',     lbl:t('app.shift_editor.repeat_until_label',  {default:'Jusqu\'au :'})},
+      {key:'until',     lbl:t('app.shift_editor.repeat_until_label')},
       {key:'today',     lbl:t('app.shift_editor.repeat_today')},
       {key:'this_week', lbl:t('app.shift_editor.repeat_this')},
-      {key:'next_week', lbl:t('app.shift_editor.repeat_next_week_only',{default:'Sem. suivante'})},
-      {key:'two_weeks', lbl:t('app.shift_editor.repeat_two_weeks',     {default:'Deux semaines'})},
+      {key:'next_week', lbl:t('app.shift_editor.repeat_next_week_only')},
+      {key:'two_weeks', lbl:t('app.shift_editor.repeat_two_weeks')},
       {key:'month',     lbl:t('app.shift_editor.repeat_month')},
       {key:'year',      lbl:t('app.shift_editor.repeat_year')},
     ];
@@ -22953,7 +23003,7 @@ function showSkipBreakReviewModal(){
 }
 
 // Refresh clock every minute so on-shift time keeps ticking
-setInterval(()=>{
+window._stayloClockTick = setInterval(()=>{
   if($('#clock-widget') && State.user){ renderClockWidget(); applyOffShiftMode(); }
 },60000);
 
@@ -23029,7 +23079,7 @@ function findNextShiftLabel(emp){
 // confusing double-state. By bailing while any modal is mounted, we
 // preserve in-flight work AND skip a useless re-render that the
 // manager couldn't see anyway (the modal covers the schedule).
-setInterval(()=>{
+window._stayloSchedTick = setInterval(()=>{
   if(!$('#hr-modal') || _hrTab !== 'schedule') return;
   // Modal selectors that, if present, mean the schedule is occluded
   // and a refresh would destroy in-progress work.
@@ -23213,8 +23263,8 @@ function showBreakReminderBanner(text, shift, level){
 }
 
 // Tick every minute
-setInterval(evaluateShiftReminder, 60000);
-setInterval(evaluateBreakReminder, 60000);
+window._stayloShiftReminderTick = setInterval(evaluateShiftReminder, 60000);
+window._stayloBreakReminderTick = setInterval(evaluateBreakReminder, 60000);
 
 /* J-1 reminder: notify the staff member ~24h before their next shift so
  * they can plan transport, sleep, etc. Fires once per (shift) per day,
@@ -23238,7 +23288,7 @@ function evaluateNextDayShiftReminder(){
     `${dayLbl} · ${tShift.start_time}–${tShift.end_time}. Plan your sleep & transport.`);
   lsSet(`staylo_j1_${emp.id}_${today}`, true);
 }
-setInterval(evaluateNextDayShiftReminder, 60000);
+window._stayloJ1ReminderTick = setInterval(evaluateNextDayShiftReminder, 60000);
 
 function showTimesheetModal(){
   const emp = getMyEmployee();
@@ -23879,7 +23929,7 @@ function showSettingsModal(){
                   _hrEmployeeId = null;
                   _schedFilterDept = 'all';
                   _schedFilterOutlet = 'all';
-                  _schedViewMode = 'fortnight';
+                  _schedViewMode = 'fortnight'; _schedViewModeLoaded = false;
                   _rosterFilterDept = 'all';
                   _payrollFilterDept = 'all';
                 } catch {}
@@ -24419,6 +24469,7 @@ function startDemo(){
    SHELL EVENTS
    ============================================================= */
 function initShell(){
+  if(window.__staylo_shell_bound) return; window.__staylo_shell_bound = true;
   // Show role-gated rail buttons. Settings/Timesheet are tiles inside the Me
   // landing now — those elements no longer exist on the bottom bar. Only
   // #rail-team is still a top-level entry; permission-gated tiles inside the
@@ -24816,6 +24867,18 @@ async function _bootAppInner(){
 }
 
 async function init(){
+  // Purge stale per-day sentinel keys (staylo_remind_*, staylo_break_*, staylo_j1_*)
+  // that accumulate ~471 keys/day and would saturate localStorage in weeks.
+  try {
+    const _todayPurge = new Date().toISOString().slice(0,10);
+    Object.keys(localStorage).forEach(function(k){
+      if(/^(staylo_remind_|staylo_break_|staylo_j1_)/.test(k)){
+        var parts = k.split('_'); var dp = parts[parts.length-1];
+        if(dp !== _todayPurge && /^\d{4}-\d{2}-\d{2}$/.test(dp)) localStorage.removeItem(k);
+      }
+    });
+  } catch(_){}
+
   // i18n MUST be loaded before any UI renders (onboarding, claim flow, etc.)
   // — otherwise dynamic strings (audience picker, role grid, code-step copy)
   // would render in EN literals and never get re-translated. Static [data-i18n]

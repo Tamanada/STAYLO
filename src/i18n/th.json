@@ -1883,7 +1883,7 @@
     "title_1": "มากกว่าแพลตฟอร์มจอง",
     "title_2": "มันคือแพลตฟอร์มของ",
     "title_highlight": "คุณ",
-    "title_3": "",
+    "title_3": " platform.",
     "prop1_title": "คอมมิชชั่น 10% — ตลอดไป",
     "prop1_desc": "ล็อกที่ 10% ไม่มีค่าธรรมเนียมแอบแฝง เปลี่ยนได้เฉพาะโหวต 90% ของสมาชิก",
     "prop2_title": "1 ที่พัก = 1 โหวต",
@@ -3448,7 +3448,8 @@
       "edit_tooltip": "แก้ไข",
       "delete_tooltip": "ลบ",
       "service_cross_dept": "ข้ามแผนก",
-      "service_other": "อื่นๆ"
+      "service_other": "อื่นๆ",
+      "search_placeholder": "🔍 ค้นหางาน…"
     },
     "msg_preview": {
       "room_status": "🛏️ อัพเดทสถานะห้อง",

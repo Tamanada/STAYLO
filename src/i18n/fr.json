@@ -3990,7 +3990,8 @@
       "edit_tooltip": "Modifier",
       "delete_tooltip": "Supprimer",
       "service_cross_dept": "Inter-services",
-      "service_other": "Autre"
+      "service_other": "Autre",
+      "search_placeholder": "🔍 Rechercher des tâches…"
     },
     "msg_preview": {
       "room_status": "🛏️ Mise à jour statut chambre",
