@@ -62,15 +62,11 @@ function NavDropdown({ to, label, sections, t, accent = '#FF6B00' }) {
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <Link to={to}
-        className="flex items-center gap-1.5 text-sm font-medium no-underline transition-colors relative"
-        style={{ color: open ? accent : '#636E72' }}>
-        <span aria-hidden="true" style={{
-          display: 'inline-block',
-          width: 6, height: 6, borderRadius: 999,
-          background: accent,
-          boxShadow: open ? `0 0 0 3px ${accent}22` : 'none',
-          transition: 'box-shadow 180ms ease',
-        }} />
+        className="flex items-center gap-1 text-sm font-semibold no-underline transition-all rounded-full px-3 py-1.5"
+        style={{
+          color: accent,
+          background: open ? `${accent}14` : 'transparent',
+        }}>
         {label}
         <ChevronDown size={13} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </Link>
@@ -93,22 +89,18 @@ function NavDropdown({ to, label, sections, t, accent = '#FF6B00' }) {
   )
 }
 
-// Simple link with brand-color dot + hover accent
+// Simple link — label always in its accent color, soft pill background on hover
 function NavLink({ to, label, accent, bold = false }) {
   const [hover, setHover] = useState(false)
   return (
     <Link to={to}
-      className={`flex items-center gap-1.5 text-sm no-underline transition-colors ${bold ? 'font-bold' : 'font-medium'}`}
-      style={{ color: hover ? accent : '#636E72' }}
+      className={`text-sm no-underline transition-all rounded-full px-3 py-1.5 ${bold ? 'font-bold' : 'font-semibold'}`}
+      style={{
+        color: accent,
+        background: hover ? `${accent}14` : 'transparent',
+      }}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}>
-      <span aria-hidden="true" style={{
-        display: 'inline-block',
-        width: 6, height: 6, borderRadius: 999,
-        background: accent,
-        boxShadow: hover ? `0 0 0 3px ${accent}22` : 'none',
-        transition: 'box-shadow 180ms ease',
-      }} />
       {label}
     </Link>
   )
