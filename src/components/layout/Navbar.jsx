@@ -57,13 +57,20 @@ const ambassadorSections = [
 // Reusable navbar dropdown: a top-level link with a hover menu of in-page
 // section anchors. Each item links to `${to}#${section.id}`; the target page
 // (via useHashScroll) smooth-scrolls there. Self-manages its open state.
-function NavDropdown({ to, label, sections, t }) {
+function NavDropdown({ to, label, sections, t, accent = '#FF6B00' }) {
   const [open, setOpen] = useState(false)
   return (
     <div className="relative" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
       <Link to={to}
-        className="flex items-center gap-1 text-sm font-medium no-underline transition-colors"
-        style={{ color: open ? '#FF6B00' : '#636E72' }}>
+        className="flex items-center gap-1.5 text-sm font-medium no-underline transition-colors relative"
+        style={{ color: open ? accent : '#636E72' }}>
+        <span aria-hidden="true" style={{
+          display: 'inline-block',
+          width: 6, height: 6, borderRadius: 999,
+          background: accent,
+          boxShadow: open ? `0 0 0 3px ${accent}22` : 'none',
+          transition: 'box-shadow 180ms ease',
+        }} />
         {label}
         <ChevronDown size={13} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
       </Link>
@@ -74,7 +81,7 @@ function NavDropdown({ to, label, sections, t }) {
               <Link key={s.id} to={`${to}#${s.id}`} onClick={() => setOpen(false)}
                 className="block px-4 py-2 text-sm no-underline transition-colors whitespace-nowrap"
                 style={{ color: '#636E72' }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#FF6B00'; e.currentTarget.style.background = 'rgba(255,107,0,0.05)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = accent; e.currentTarget.style.background = `${accent}0C` }}
                 onMouseLeave={e => { e.currentTarget.style.color = '#636E72'; e.currentTarget.style.background = 'transparent' }}>
                 {t(s.key, s.fallback)}
               </Link>
@@ -83,6 +90,27 @@ function NavDropdown({ to, label, sections, t }) {
         </div>
       )}
     </div>
+  )
+}
+
+// Simple link with brand-color dot + hover accent
+function NavLink({ to, label, accent, bold = false }) {
+  const [hover, setHover] = useState(false)
+  return (
+    <Link to={to}
+      className={`flex items-center gap-1.5 text-sm no-underline transition-colors ${bold ? 'font-bold' : 'font-medium'}`}
+      style={{ color: hover ? accent : '#636E72' }}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}>
+      <span aria-hidden="true" style={{
+        display: 'inline-block',
+        width: 6, height: 6, borderRadius: 999,
+        background: accent,
+        boxShadow: hover ? `0 0 0 3px ${accent}22` : 'none',
+        transition: 'box-shadow 180ms ease',
+      }} />
+      {label}
+    </Link>
   )
 }
 
@@ -181,29 +209,15 @@ export function Navbar() {
               />
             </Link>
 
-            {/* Desktop nav */}
+            {/* Desktop nav — each item gets a brand-color dot for a subtle
+                accent that also disambiguates the item visually. */}
             <div className="hidden md:flex items-center gap-6">
-              <NavDropdown to="/splash" label={t('nav.home', 'Stay')} sections={splashSections} t={t} />
-              <Link to="/ota" className="text-sm font-medium no-underline transition-colors"
-                style={{ color: '#636E72' }}
-                onMouseEnter={e => e.target.style.color = '#FF6B00'}
-                onMouseLeave={e => e.target.style.color = '#636E72'}>
-                {t('nav.book', 'Book')}
-              </Link>
-              <NavDropdown to="/vision" label={t('nav.vision', 'About')} sections={visionSections} t={t} />
-              <Link to="/submit" className="text-sm font-medium no-underline transition-colors"
-                style={{ color: '#636E72' }}
-                onMouseEnter={e => e.target.style.color = '#FF6B00'}
-                onMouseLeave={e => e.target.style.color = '#636E72'}>
-                {t('nav.submit', 'For Hoteliers')}
-              </Link>
-              <Link to="/ship" className="text-sm font-bold no-underline transition-colors"
-                style={{ color: '#636E72' }}
-                onMouseEnter={e => e.target.style.color = '#00B894'}
-                onMouseLeave={e => e.target.style.color = '#636E72'}>
-                {t('nav.ship', 'SHIP')}
-              </Link>
-              <NavDropdown to="/ambassador" label={t('nav.ambassador', 'Ambassador')} sections={ambassadorSections} t={t} />
+              <NavDropdown to="/splash" label={t('nav.home', 'Stay')} sections={splashSections} t={t} accent="#FF6B00" />
+              <NavLink to="/ota" label={t('nav.book', 'Book')} accent="#00B894" />
+              <NavDropdown to="/vision" label={t('nav.vision', 'About')} sections={visionSections} t={t} accent="#7E22CE" />
+              <NavLink to="/submit" label={t('nav.submit', 'For Hoteliers')} accent="#FF1F70" />
+              <NavLink to="/ship" label={t('nav.ship', 'SHIP')} accent="#F7931A" bold />
+              <NavDropdown to="/ambassador" label={t('nav.ambassador', 'Ambassador')} sections={ambassadorSections} t={t} accent="#6C5CE7" />
 
               {/* (Review-mode shortcuts Dashboard/Messenger/Guest App/Admin
                   removed — they were used for the internal walk-through
