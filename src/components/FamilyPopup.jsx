@@ -76,53 +76,36 @@ export default function FamilyPopup() {
           animation: 'staylo-fp-pop 420ms cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
-        {/* ────────── HEADER: full brand gradient with particles + palm silhouettes ────────── */}
+        {/* ────────── HEADER: 3Elephants artwork with scrim for legibility ────────── */}
         <div style={{
           position: 'relative',
           height: 168,
-          background: 'linear-gradient(135deg, #FF6B00 0%, #FF3B7E 45%, #C026D3 80%, #7E22CE 100%)',
+          background: 'linear-gradient(135deg, #FF6B00 0%, #FF3B7E 45%, #7E22CE 100%)',
           overflow: 'hidden',
         }}>
-          {/* SVG scene: palm silhouettes + soft sun + floating particles */}
-          <svg viewBox="0 0 600 168" preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
-            {/* Sun glow (top-right) */}
-            <circle cx="530" cy="30" r="70" fill="rgba(255,255,255,0.16)" />
-            <circle cx="530" cy="30" r="34" fill="rgba(255,246,208,0.28)" />
-            {/* Palm silhouette left */}
-            <g transform="translate(20, 40)" opacity="0.28" fill="white">
-              <rect x="26" y="60" width="6" height="90" rx="2" />
-              <path d="M 29 60 Q 5 45 -8 55 Q 12 52 29 62 Z" />
-              <path d="M 29 60 Q 60 45 76 55 Q 50 52 29 62 Z" />
-              <path d="M 29 60 Q 20 30 6 20 Q 22 42 30 62 Z" />
-              <path d="M 29 60 Q 42 30 58 22 Q 40 44 29 62 Z" />
-            </g>
-            {/* Palm silhouette right */}
-            <g transform="translate(510, 60)" opacity="0.22" fill="white">
-              <rect x="26" y="60" width="6" height="90" rx="2" />
-              <path d="M 29 60 Q 5 45 -8 55 Q 12 52 29 62 Z" />
-              <path d="M 29 60 Q 60 45 76 55 Q 50 52 29 62 Z" />
-              <path d="M 29 60 Q 20 30 6 20 Q 22 42 30 62 Z" />
-              <path d="M 29 60 Q 42 30 58 22 Q 40 44 29 62 Z" />
-            </g>
-            {/* Floating sparkle particles — different sizes for depth */}
-            <g fill="white">
-              <circle cx="90" cy="30" r="2.5" opacity="0.85" />
-              <circle cx="140" cy="80" r="1.8" opacity="0.55" />
-              <circle cx="200" cy="24" r="3.2" opacity="0.9" />
-              <circle cx="270" cy="60" r="1.5" opacity="0.5" />
-              <circle cx="360" cy="26" r="2.2" opacity="0.7" />
-              <circle cx="430" cy="70" r="2.8" opacity="0.85" />
-              <circle cx="480" cy="120" r="1.9" opacity="0.55" />
-              <circle cx="320" cy="130" r="2.4" opacity="0.7" />
-              <circle cx="130" cy="140" r="2" opacity="0.6" />
-            </g>
-            {/* Bigger 4-point star sparkles */}
-            <g fill="white">
-              <path d="M 155 45 L 158 52 L 165 55 L 158 58 L 155 65 L 152 58 L 145 55 L 152 52 Z" opacity="0.9" />
-              <path d="M 395 105 L 397 110 L 402 112 L 397 114 L 395 119 L 393 114 L 388 112 L 393 110 Z" opacity="0.85" />
-              <path d="M 260 100 L 263 106 L 269 108 L 263 110 L 260 116 L 257 110 L 251 108 L 257 106 Z" opacity="0.75" />
-            </g>
-          </svg>
+          {/* Hero artwork — <picture> so we serve webp when supported */}
+          <picture>
+            <source srcSet="/3Elephants.webp" type="image/webp" />
+            <img
+              src="/3Elephants.png"
+              alt=""
+              aria-hidden="true"
+              style={{
+                position: 'absolute', inset: 0,
+                width: '100%', height: '100%',
+                objectFit: 'cover',
+                objectPosition: 'center 40%',
+              }}
+            />
+          </picture>
+          {/* Dark scrim so the STAYLO FAMILY badge + close button stay legible
+              over any part of the image. Stronger at top corners, softer in
+              the middle where the icon lives. */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(180deg, rgba(15,8,30,0.35) 0%, rgba(15,8,30,0.15) 45%, rgba(15,8,30,0.05) 100%)',
+            pointerEvents: 'none',
+          }} />
 
           {/* Small "family" badge top-left */}
           <div style={{
