@@ -1,15 +1,20 @@
 /*
-  FamilyPopup — landing page modal that appears once per session on Home /
-  Splash / OTA. Message: "Alone, it is impossible. Together, we are
-  unstoppable." — invites hoteliers to stop wasting time on their own
-  booking pages and join STAYLO.
+  FamilyPopup v2 — explosive, memorable, colorful, balanced.
 
-  Dismiss = writes localStorage flag so it doesn't re-fire the same session
-  (session-key includes today's date to allow re-showing after 24h).
+  Structure:
+  - Big card 600x auto with 28px radius
+  - Top half: full brand gradient header (orange → pink → purple) with
+    floating sparkle particles + palm silhouettes; big hands-together
+    icon in white circle "floating" over the seam.
+  - Bottom half: white content zone with editorial typography — small
+    italic prelude, MASSIVE headline with "Together" in gradient, warm
+    body, gradient CTA with arrow slide, quiet "Not now" link.
+
+  Session dismiss: localStorage flag keyed by today's date.
 */
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { X, Sparkles } from 'lucide-react'
+import { X, ArrowRight, Heart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 const SESSION_KEY_PREFIX = 'staylo_family_popup_seen_'
@@ -25,9 +30,7 @@ export default function FamilyPopup() {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    try {
-      if (localStorage.getItem(todayKey())) return
-    } catch {}
+    try { if (localStorage.getItem(todayKey())) return } catch {}
     const timer = setTimeout(() => setOpen(true), SHOW_DELAY_MS)
     return () => clearTimeout(timer)
   }, [])
@@ -39,6 +42,12 @@ export default function FamilyPopup() {
 
   if (!open) return null
 
+  // Title's "Together" word gets a gradient treatment — split for that
+  const raw = t('family_popup.title', 'Alone, it is impossible. Together, we are unstoppable.')
+  const parts = raw.split(/(?=\bTogether\b|\bEnsemble\b|\bJuntos\b|\bZusammen\b|\bInsieme\b|\bВместе\b|\b共に\b|\b众志\b|\b共同\b|\bمعًا\b|\bसाथ\b|\bBersama\b|\bအတူ\b|\bร่วม\b)/i)
+  const before = parts[0] || raw
+  const rest = parts[1] || ''
+
   return (
     <div
       role="dialog"
@@ -48,127 +57,235 @@ export default function FamilyPopup() {
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'rgba(15, 8, 30, 0.55)',
-        backdropFilter: 'blur(6px)',
-        WebkitBackdropFilter: 'blur(6px)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px',
-        animation: 'staylo-fade-in 240ms ease',
+        animation: 'staylo-fp-fade 260ms ease',
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          maxWidth: 520, width: '100%',
+          maxWidth: 600, width: '100%',
           background: 'white',
-          borderRadius: 24,
+          borderRadius: 28,
           overflow: 'hidden',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.32)',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08)',
           position: 'relative',
-          animation: 'staylo-slide-up 320ms cubic-bezier(0.22, 1, 0.36, 1)',
+          animation: 'staylo-fp-pop 420ms cubic-bezier(0.22, 1, 0.36, 1)',
         }}
       >
-        {/* Gradient header band */}
+        {/* ────────── HEADER: full brand gradient with particles + palm silhouettes ────────── */}
         <div style={{
-          height: 6,
-          background: 'linear-gradient(90deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%)',
-        }} />
+          position: 'relative',
+          height: 168,
+          background: 'linear-gradient(135deg, #FF6B00 0%, #FF3B7E 45%, #C026D3 80%, #7E22CE 100%)',
+          overflow: 'hidden',
+        }}>
+          {/* SVG scene: palm silhouettes + soft sun + floating particles */}
+          <svg viewBox="0 0 600 168" preserveAspectRatio="xMidYMid slice" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+            {/* Sun glow (top-right) */}
+            <circle cx="530" cy="30" r="70" fill="rgba(255,255,255,0.16)" />
+            <circle cx="530" cy="30" r="34" fill="rgba(255,246,208,0.28)" />
+            {/* Palm silhouette left */}
+            <g transform="translate(20, 40)" opacity="0.28" fill="white">
+              <rect x="26" y="60" width="6" height="90" rx="2" />
+              <path d="M 29 60 Q 5 45 -8 55 Q 12 52 29 62 Z" />
+              <path d="M 29 60 Q 60 45 76 55 Q 50 52 29 62 Z" />
+              <path d="M 29 60 Q 20 30 6 20 Q 22 42 30 62 Z" />
+              <path d="M 29 60 Q 42 30 58 22 Q 40 44 29 62 Z" />
+            </g>
+            {/* Palm silhouette right */}
+            <g transform="translate(510, 60)" opacity="0.22" fill="white">
+              <rect x="26" y="60" width="6" height="90" rx="2" />
+              <path d="M 29 60 Q 5 45 -8 55 Q 12 52 29 62 Z" />
+              <path d="M 29 60 Q 60 45 76 55 Q 50 52 29 62 Z" />
+              <path d="M 29 60 Q 20 30 6 20 Q 22 42 30 62 Z" />
+              <path d="M 29 60 Q 42 30 58 22 Q 40 44 29 62 Z" />
+            </g>
+            {/* Floating sparkle particles — different sizes for depth */}
+            <g fill="white">
+              <circle cx="90" cy="30" r="2.5" opacity="0.85" />
+              <circle cx="140" cy="80" r="1.8" opacity="0.55" />
+              <circle cx="200" cy="24" r="3.2" opacity="0.9" />
+              <circle cx="270" cy="60" r="1.5" opacity="0.5" />
+              <circle cx="360" cy="26" r="2.2" opacity="0.7" />
+              <circle cx="430" cy="70" r="2.8" opacity="0.85" />
+              <circle cx="480" cy="120" r="1.9" opacity="0.55" />
+              <circle cx="320" cy="130" r="2.4" opacity="0.7" />
+              <circle cx="130" cy="140" r="2" opacity="0.6" />
+            </g>
+            {/* Bigger 4-point star sparkles */}
+            <g fill="white">
+              <path d="M 155 45 L 158 52 L 165 55 L 158 58 L 155 65 L 152 58 L 145 55 L 152 52 Z" opacity="0.9" />
+              <path d="M 395 105 L 397 110 L 402 112 L 397 114 L 395 119 L 393 114 L 388 112 L 393 110 Z" opacity="0.85" />
+              <path d="M 260 100 L 263 106 L 269 108 L 263 110 L 260 116 L 257 110 L 251 108 L 257 106 Z" opacity="0.75" />
+            </g>
+          </svg>
 
-        {/* Close button */}
-        <button
-          type="button"
-          onClick={dismiss}
-          aria-label={t('family_popup.close', 'Close')}
-          style={{
-            position: 'absolute', top: 18, right: 18,
-            background: 'rgba(0,0,0,0.05)',
-            border: 'none', borderRadius: 999,
-            width: 36, height: 36,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-            transition: 'background 160ms ease',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.10)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.05)'}
-        >
-          <X size={18} color="#636E72" />
-        </button>
-
-        <div style={{ padding: '36px 32px 28px' }}>
-          {/* Sparkle icon in gradient circle */}
+          {/* Small "family" badge top-left */}
           <div style={{
-            width: 56, height: 56, borderRadius: 16,
-            background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            marginBottom: 18,
-            boxShadow: '0 8px 24px rgba(255, 107, 0, 0.25)',
+            position: 'absolute', top: 18, left: 20,
+            background: 'rgba(255,255,255,0.18)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            color: 'white',
+            fontSize: 11, fontWeight: 800, letterSpacing: 1.5,
+            padding: '5px 12px', borderRadius: 999,
+            textTransform: 'uppercase',
+            border: '1px solid rgba(255,255,255,0.25)',
           }}>
-            <Sparkles size={28} color="white" strokeWidth={2.4} />
+            🌴 STAYLO Family
           </div>
 
-          {/* Title */}
-          <h2 id="family-popup-title" style={{
-            fontSize: 26, fontWeight: 900, lineHeight: 1.2,
-            color: '#1A1A2E', letterSpacing: '-0.5px',
-            margin: '0 0 12px 0',
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={dismiss}
+            aria-label={t('family_popup.close', 'Close')}
+            style={{
+              position: 'absolute', top: 16, right: 16,
+              background: 'rgba(255,255,255,0.18)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              border: '1px solid rgba(255,255,255,0.25)',
+              borderRadius: 999,
+              width: 36, height: 36,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'background 160ms ease, transform 160ms ease',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.28)'; e.currentTarget.style.transform = 'rotate(90deg)' }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.18)'; e.currentTarget.style.transform = 'rotate(0)' }}
+          >
+            <X size={18} color="white" strokeWidth={2.4} />
+          </button>
+        </div>
+
+        {/* ────────── FLOATING ICON (straddles the seam) ────────── */}
+        <div style={{
+          position: 'absolute', top: 128, left: '50%',
+          transform: 'translateX(-50%)',
+          width: 96, height: 96, borderRadius: 24,
+          background: 'white',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 12px 32px rgba(126,34,206,0.25), 0 0 0 6px white',
+          animation: 'staylo-fp-float 3.6s ease-in-out infinite',
+        }}>
+          <div style={{
+            width: 68, height: 68, borderRadius: 18,
+            background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 55%, #7E22CE 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 36,
+            boxShadow: 'inset 0 -6px 12px rgba(0,0,0,0.12)',
           }}>
-            {t('family_popup.title', 'Alone, it is impossible. Together, we are unstoppable.')}
+            <span style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }}>🤝</span>
+          </div>
+        </div>
+
+        {/* ────────── BODY: white content zone ────────── */}
+        <div style={{ padding: '68px 36px 30px', textAlign: 'center' }}>
+
+          {/* Massive title with gradient word */}
+          <h2 id="family-popup-title" style={{
+            fontSize: 32, fontWeight: 900, lineHeight: 1.12,
+            color: '#1A1A2E', letterSpacing: '-0.8px',
+            margin: '0 0 14px 0',
+          }}>
+            {before}
+            {rest && (
+              <span style={{
+                background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%)',
+                WebkitBackgroundClip: 'text',
+                backgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontStyle: 'italic',
+              }}>
+                {rest}
+              </span>
+            )}
           </h2>
 
           {/* Body message */}
           <p style={{
-            fontSize: 15, lineHeight: 1.55, color: '#4A5568',
-            margin: '0 0 22px 0',
+            fontSize: 16, lineHeight: 1.55, color: '#4A5568',
+            margin: '0 auto 26px', maxWidth: 460,
           }}>
             {t('family_popup.body', 'Stop wasting your time to make your web site loading bookings, join the family!')}
           </p>
 
           {/* Actions */}
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' }}>
             <Link
               to="/submit"
               onClick={dismiss}
+              className="staylo-fp-cta"
               style={{
-                flex: 1, minWidth: 180,
                 textDecoration: 'none',
-                background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 100%)',
+                background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 55%, #C026D3 100%)',
+                backgroundSize: '200% 200%',
                 color: 'white',
-                fontWeight: 800, fontSize: 15,
-                padding: '13px 20px',
+                fontWeight: 800, fontSize: 16,
+                padding: '15px 28px',
                 borderRadius: 999,
-                textAlign: 'center',
-                boxShadow: '0 8px 20px rgba(255, 107, 0, 0.35)',
-                transition: 'transform 160ms ease, box-shadow 160ms ease',
+                boxShadow: '0 10px 28px rgba(255, 31, 112, 0.35)',
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                transition: 'transform 180ms ease, box-shadow 180ms ease, background-position 400ms ease',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 12px 28px rgba(255, 107, 0, 0.42)' }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(255, 107, 0, 0.35)' }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)'
+                e.currentTarget.style.boxShadow = '0 14px 36px rgba(255, 31, 112, 0.5)'
+                e.currentTarget.style.backgroundPosition = '100% 100%'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0) scale(1)'
+                e.currentTarget.style.boxShadow = '0 10px 28px rgba(255, 31, 112, 0.35)'
+                e.currentTarget.style.backgroundPosition = '0% 0%'
+              }}
             >
               {t('family_popup.cta_join', 'Join the family')}
+              <ArrowRight size={18} strokeWidth={2.6} />
             </Link>
+
             <button
               type="button"
               onClick={dismiss}
               style={{
                 background: 'transparent',
-                color: '#636E72',
-                fontWeight: 600, fontSize: 14,
-                padding: '13px 20px',
+                color: '#8892A0',
+                fontWeight: 600, fontSize: 13,
+                padding: '10px 14px',
                 borderRadius: 999,
-                border: '1px solid #E0E0E0',
+                border: 'none',
                 cursor: 'pointer',
-                transition: 'background 160ms ease',
+                textDecoration: 'underline',
+                textDecorationColor: 'rgba(0,0,0,0.15)',
+                transition: 'color 160ms ease',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#1A1A2E'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#8892A0'}
             >
               {t('family_popup.cta_later', 'Maybe later')}
             </button>
+          </div>
+
+          {/* Footer heart tag */}
+          <div style={{
+            marginTop: 22, fontSize: 11, color: '#A0A8B0',
+            display: 'inline-flex', alignItems: 'center', gap: 6,
+            letterSpacing: 0.5,
+          }}>
+            <Heart size={11} fill="#FF1F70" color="#FF1F70" strokeWidth={0} />
+            <span>staylo.app — Built with hoteliers, <em style={{ color: '#FF6B00', fontStyle: 'italic', fontWeight: 700 }}>for hoteliers.</em></span>
           </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes staylo-fade-in { from { opacity: 0 } to { opacity: 1 } }
-        @keyframes staylo-slide-up { from { opacity: 0; transform: translateY(20px) scale(0.98) } to { opacity: 1; transform: translateY(0) scale(1) } }
+        @keyframes staylo-fp-fade { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes staylo-fp-pop { from { opacity: 0; transform: translateY(24px) scale(0.94) } to { opacity: 1; transform: translateY(0) scale(1) } }
+        @keyframes staylo-fp-float { 0%, 100% { transform: translateX(-50%) translateY(0) } 50% { transform: translateX(-50%) translateY(-6px) } }
       `}</style>
     </div>
   )
