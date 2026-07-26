@@ -4803,5 +4803,12 @@
   "alpha_banner": {
     "headline": "TOUR ALPHA OUVERT · KOH PHANGAN",
     "subline": "3 000 parts · 1 000 $/part · Le Tour Mondial ouvre à 1 500 $"
+  },
+  "family_popup": {
+    "title": "Seul, c'est impossible. Ensemble, nous sommes imparables.",
+    "body": "Arrête de perdre ton temps à faire charger les réservations sur ton site web, rejoins la famille !",
+    "cta_join": "Rejoindre la famille",
+    "cta_later": "Peut-être plus tard",
+    "close": "Fermer"
   }
 }

@@ -55,7 +55,7 @@
     "deal_guests": "直接客户关系",
     "deal_guests_sub": "保留您的客户数据，建立忠诚度",
     "deal_commission": "10% 佣金",
-    "deal_commission_sub": "永久锁定——对比 OTA 的 17–22%",
+    "deal_commission_sub": "永久锁定——对比 OTA 的 15–17%",
     "deal_founding": "创始合伙人",
     "deal_founding_sub": "身份——永久保留",
     "deal_limited": "仅 3,000 股 Alpha 份额可供认购",
@@ -591,7 +591,7 @@
     "share_transferable_value": "是 — 可自由转让",
     "alpha_shares": "可用 Alpha 股份",
     "avg_roi": "第一年平均回报率",
-    "commission_compare": "佣金（对比 17-22%）",
+    "commission_compare": "佣金（对比 15-17%）",
     "cta_sign": "我加入 — 签署 LOI",
     "form_title": "您的信息",
     "label_full_name": "全名",
@@ -1111,5 +1111,12 @@
   "alpha_banner": {
     "headline": "ALPHA轮开放认购 · 帕岸岛",
     "subline": "3,000股 · 1,000美元/股 · 全球轮起步价1,500美元"
+  },
+  "family_popup": {
+    "title": "独自一人不可能。众志成城无可阻挡。",
+    "body": "别再浪费时间处理自己网站上的预订了,加入我们大家庭吧!",
+    "cta_join": "加入大家庭",
+    "cta_later": "稍后再说",
+    "close": "关闭"
   }
 }

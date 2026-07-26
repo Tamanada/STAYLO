@@ -591,7 +591,7 @@
     "share_transferable_value": "はい — 自由に譲渡可能",
     "alpha_shares": "利用可能なアルファ株",
     "avg_roi": "初年度平均ROI",
-    "commission_compare": "コミッション（17-22%との比較）",
+    "commission_compare": "コミッション（15-17%との比較）",
     "cta_sign": "参加します — LOIに署名する",
     "form_title": "あなたの情報",
     "label_full_name": "氏名",
@@ -1111,5 +1111,12 @@
   "alpha_banner": {
     "headline": "ALPHAラウンド受付中 · コパンガン島",
     "subline": "3,000株 · 1株1,000ドル · ワールドラウンドは1,500ドルから"
+  },
+  "family_popup": {
+    "title": "一人では不可能。共に、私たちは止められない。",
+    "body": "自分のサイトでの予約対応に時間を無駄にせず、ファミリーに参加しましょう!",
+    "cta_join": "ファミリーに参加",
+    "cta_later": "後で",
+    "close": "閉じる"
   }
 }

@@ -55,7 +55,7 @@
     "deal_guests": "Hubungan Langsung dengan Tamu",
     "deal_guests_sub": "Simpan data tamu Anda dan bangun loyalitas",
     "deal_commission": "Komisi 10%",
-    "deal_commission_sub": "Terkunci selamanya — vs 17–22% OTA",
+    "deal_commission_sub": "Terkunci selamanya — vs 15–17% OTA",
     "deal_founding": "Mitra Pendiri",
     "deal_founding_sub": "Status — selamanya",
     "deal_limited": "Hanya 3.000 saham alpha tersedia",
@@ -807,7 +807,7 @@
     "share_transferable_value": "Ya — bebas dialihkan",
     "alpha_shares": "Saham alpha tersedia",
     "avg_roi": "Rata-rata ROI tahun 1",
-    "commission_compare": "Komisi (vs 17-22%)",
+    "commission_compare": "Komisi (vs 15-17%)",
     "cta_sign": "Saya ikut — Biarkan saya tanda tangani LOI",
     "form_title": "Informasi Anda",
     "label_full_name": "Nama lengkap",
@@ -1111,5 +1111,12 @@
   "alpha_banner": {
     "headline": "PUTARAN ALPHA DIBUKA · KOH PHANGAN",
     "subline": "3.000 saham · $1.000/saham · Putaran Dunia dibuka di $1.500"
+  },
+  "family_popup": {
+    "title": "Sendirian mustahil. Bersama, kita tak terbendung.",
+    "body": "Berhenti buang waktu mengurus pemesanan di situs web Anda sendiri, gabung keluarga kami!",
+    "cta_join": "Gabung keluarga",
+    "cta_later": "Mungkin nanti",
+    "close": "Tutup"
   }
 }

@@ -57,7 +57,7 @@
     "deal_guests": "Direct Guest Relationships",
     "deal_guests_sub": "Keep your guest data and build loyalty",
     "deal_commission": "10% Commission",
-    "deal_commission_sub": "Locked forever — vs 17–22% OTA",
+    "deal_commission_sub": "Locked forever — vs 15–17% OTA",
     "deal_founding": "Founding Partner",
     "deal_founding_sub": "Status — forever",
     "deal_ship": "STAYLO Ship (Staylo Hotelier In-Pocket)",
@@ -711,7 +711,7 @@
     "facebook": "Facebook",
     "copy_link": "Copy Link",
     "copied": "Copied!",
-    "wa_hotelier_msg": "Hey! I just joined Staylo — a new booking platform built with hoteliers, for hoteliers. We pay 10% commission instead of 22% on Booking.com — locked for life. And we can't be delisted. The platform is owned by hoteliers — that changes everything! 🌴 Check it out: {{link}}",
+    "wa_hotelier_msg": "Hey! I just joined Staylo — a new booking platform built with hoteliers, for hoteliers. We pay 10% commission instead of 17% on Booking.com — locked for life. And we can't be delisted. The platform is owned by hoteliers — that changes everything! 🌴 Check it out: {{link}}",
     "wa_ambassador_msg": "Hey! I'm on Staylo and looking for ambassadors. Earn 2% lifetime passive income on every hotel you bring to the platform. Join here: {{link}}",
     "show_qr": "Show QR Code",
     "hide_qr": "Hide QR Code",
@@ -1247,7 +1247,7 @@
     "share_transferable_value": "Yes — freely transferable",
     "alpha_shares": "Alpha shares available",
     "avg_roi": "Average ROI year 1",
-    "commission_compare": "Commission (vs 17-22%)",
+    "commission_compare": "Commission (vs 15-17%)",
     "cta_sign": "I'm in — Let me sign the LOI",
     "form_title": "Your Information",
     "label_full_name": "Full name",
@@ -4327,5 +4327,12 @@
   "alpha_banner": {
     "headline": "ALPHA ROUND OPEN · KOH PHANGAN",
     "subline": "3,000 shares · $1,000/share · World Round opens at $1,500"
+  },
+  "family_popup": {
+    "title": "Alone, it is impossible. Together, we are unstoppable.",
+    "body": "Stop wasting your time to make your web site loading bookings, join the family!",
+    "cta_join": "Join the family",
+    "cta_later": "Maybe later",
+    "close": "Close"
   }
 }

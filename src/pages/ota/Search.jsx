@@ -12,6 +12,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { matchRegion, propertyMatchesRegion } from '../../lib/regions'
 import { getAmenityMeta, aggregatePropertyAmenities } from '../../lib/amenityIcons'
 import GuestPicker from '../../components/ota/GuestPicker'
+import FamilyPopup from '../../components/FamilyPopup'
 
 
 const DESTINATIONS = [
@@ -179,6 +180,7 @@ export default function OTASearch() {
 
   return (
     <div className="min-h-screen bg-[#f5f6fa]">
+      <FamilyPopup />
 
       {/* ─── Hero Search — banner at its native 2.5:1 ratio ─── */}
       {/* aspect-[2.5/1] = the banner's exact ratio, so object-cover fills

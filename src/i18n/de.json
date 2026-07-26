@@ -55,7 +55,7 @@
     "deal_guests": "Direkte Gästebeziehungen",
     "deal_guests_sub": "Behalten Sie Ihre Gästedaten und bauen Sie Kundenbindung auf",
     "deal_commission": "10% Provision",
-    "deal_commission_sub": "Für immer festgeschrieben — statt 17–22% bei OTAs",
+    "deal_commission_sub": "Für immer festgeschrieben — statt 15–17% bei OTAs",
     "deal_founding": "Gründungspartner",
     "deal_founding_sub": "Status — für immer",
     "deal_limited": "Nur 3.000 Alpha-Anteile verfügbar",
@@ -807,7 +807,7 @@
     "share_transferable_value": "Ja — frei übertragbar",
     "alpha_shares": "Alpha-Anteile verfügbar",
     "avg_roi": "Durchschnittlicher ROI im 1. Jahr",
-    "commission_compare": "Provision (vs. 17-22%)",
+    "commission_compare": "Provision (vs. 15-17%)",
     "cta_sign": "Ich bin dabei — Absichtserklärung unterschreiben",
     "form_title": "Ihre Informationen",
     "label_full_name": "Vollständiger Name",
@@ -1111,5 +1111,12 @@
   "alpha_banner": {
     "headline": "ALPHA-RUNDE OFFEN · KOH PHANGAN",
     "subline": "3.000 Anteile · 1.000 $/Anteil · Weltrunde öffnet bei 1.500 $"
+  },
+  "family_popup": {
+    "title": "Allein ist es unmöglich. Zusammen sind wir unaufhaltsam.",
+    "body": "Verschwende keine Zeit mehr mit Buchungen auf deiner eigenen Website — werde Teil der Familie!",
+    "cta_join": "Der Familie beitreten",
+    "cta_later": "Vielleicht später",
+    "close": "Schließen"
   }
 }

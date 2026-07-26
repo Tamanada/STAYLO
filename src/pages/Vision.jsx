@@ -15,7 +15,7 @@ const phases = [
     key: 'phase1', icon: Hotel, iconSrc: '/staylo-icon.svg', gradient: 'from-[#FF6B00] to-[#FF3CB4]', status: 'Alpha', timeline: 'Now',
     title: 'Stay',
     desc: 'Hotels, guesthouses, resorts — fair booking with low commissions',
-    long: 'The foundation: book hotels, guesthouses, resorts and bungalows directly through STAYLO. 10% commission for life — versus 22% on Booking.com and Agoda. Hoteliers keep more revenue, guests pay fair prices, and Founding Partners own a piece of the platform itself.',
+    long: 'The foundation: book hotels, guesthouses, resorts and bungalows directly through STAYLO. 10% commission for life — versus 17% on Booking.com and Agoda. Hoteliers keep more revenue, guests pay fair prices, and Founding Partners own a piece of the platform itself.',
   },
   {
     key: 'phase_ship', icon: Smartphone, iconSrc: '/SHIP_LOGO.webp', gradient: 'from-[#00B894] to-[#6C5CE7]', status: 'Alpha', timeline: 'Now',

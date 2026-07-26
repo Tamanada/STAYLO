@@ -57,7 +57,7 @@
     "deal_guests": "ความสัมพันธ์โดยตรงกับแขก",
     "deal_guests_sub": "เก็บข้อมูลแขกของคุณและสร้างความภักดี",
     "deal_commission": "ค่าคอมมิชชัน 10%",
-    "deal_commission_sub": "ล็อกตลอดไป — เทียบกับ 17–22% ของ OTA",
+    "deal_commission_sub": "ล็อกตลอดไป — เทียบกับ 15–17% ของ OTA",
     "deal_founding": "พันธมิตรผู้ก่อตั้ง",
     "deal_founding_sub": "สถานะ — ตลอดไป",
     "deal_ship": "STAYLO Ship (Staylo Hotelier In-Pocket)",
@@ -1270,7 +1270,7 @@
     "share_transferable_value": "ได้ — โอนได้อย่างอิสระ",
     "alpha_shares": "หุ้น Alpha ที่มีอยู่",
     "avg_roi": "ROI เฉลี่ยปีที่ 1",
-    "commission_compare": "ค่าคอมมิชชัน (เทียบกับ 17-22%)",
+    "commission_compare": "ค่าคอมมิชชัน (เทียบกับ 15-17%)",
     "cta_sign": "ฉันพร้อม — ลงนาม LOI",
     "form_title": "ข้อมูลของคุณ",
     "label_full_name": "ชื่อ-นามสกุล",
@@ -4329,5 +4329,12 @@
   "alpha_banner": {
     "headline": "เปิดรอบ ALPHA · เกาะพะงัน",
     "subline": "3,000 หุ้น · 1,000 USD/หุ้น · รอบ World เปิดที่ 1,500 USD"
+  },
+  "family_popup": {
+    "title": "คนเดียวไม่มีทาง แต่ร่วมกันเรายิ่งใหญ่ไม่มีขีดจำกัด",
+    "body": "หยุดเสียเวลาทำเว็บไซต์รับจองเอง มาร่วมครอบครัวของเรา!",
+    "cta_join": "เข้าร่วมครอบครัว",
+    "cta_later": "ไว้ทีหลัง",
+    "close": "ปิด"
   }
 }

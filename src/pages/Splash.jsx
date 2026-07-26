@@ -12,6 +12,7 @@ import { Card } from '../components/ui/Card'
 import { Badge } from '../components/ui/Badge'
 import { Button } from '../components/ui/Button'
 import { supabase } from '../lib/supabase'
+import FamilyPopup from '../components/FamilyPopup'
 
 export default function Splash() {
   const { t } = useTranslation()
@@ -64,6 +65,7 @@ export default function Splash() {
 
   return (
     <div>
+      <FamilyPopup />
       {/* ==================== SECTION 1: HERO ==================== */}
       {/* ThePath artwork as full-bleed background — same scrim treatment
           as the artwork-backed sections on /vision so the page feels

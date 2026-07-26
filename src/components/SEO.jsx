@@ -35,7 +35,7 @@ export default function SEO({
     ? `${title} | STAYLO`
     : 'STAYLO Hotels — Hotelier-owned booking platform · 10% commission for life'
   const fullDesc = description
-    || "STAYLO is the booking platform owned by hoteliers. Pay 10% commission instead of Booking.com's 22% — locked for life."
+    || "STAYLO is the booking platform owned by hoteliers. Pay 10% commission instead of Booking.com's 17% — locked for life."
   const url = path ? `${SITE_URL}${path}` : SITE_URL
   const ogImage = image || DEFAULT_OG_IMAGE
 

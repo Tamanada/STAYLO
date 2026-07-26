@@ -55,7 +55,7 @@
     "deal_guests": "Relacionamento Direto com Hóspedes",
     "deal_guests_sub": "Mantenha os dados dos seus hóspedes e construa fidelidade",
     "deal_commission": "Comissão de 10%",
-    "deal_commission_sub": "Fixa para sempre — contra 17–22% das OTAs",
+    "deal_commission_sub": "Fixa para sempre — contra 15–17% das OTAs",
     "deal_founding": "Parceiro Fundador",
     "deal_founding_sub": "Status — para sempre",
     "deal_limited": "Apenas 3.000 ações alpha disponíveis",
@@ -591,7 +591,7 @@
     "share_transferable_value": "Sim — livremente transferíveis",
     "alpha_shares": "Ações Alpha disponíveis",
     "avg_roi": "ROI médio no 1º ano",
-    "commission_compare": "Comissão (vs 17-22%)",
+    "commission_compare": "Comissão (vs 15-17%)",
     "cta_sign": "Estou dentro — Assinar a LOI",
     "form_title": "Suas informações",
     "label_full_name": "Nome completo",
@@ -1111,5 +1111,12 @@
   "alpha_banner": {
     "headline": "RODADA ALPHA ABERTA · KOH PHANGAN",
     "subline": "3.000 cotas · US$1.000/cota · A Rodada Mundial abre em US$1.500"
+  },
+  "family_popup": {
+    "title": "Sozinho é impossível. Juntos somos imparáveis.",
+    "body": "Pare de perder tempo carregando reservas no seu próprio site, junte-se à família!",
+    "cta_join": "Junte-se à família",
+    "cta_later": "Talvez mais tarde",
+    "close": "Fechar"
   }
 }

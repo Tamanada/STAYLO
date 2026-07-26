@@ -158,7 +158,7 @@ export default function LOI() {
               <div className="rounded-2xl p-5 text-center" style={{ background: 'rgba(108,92,231,0.06)' }}>
                 <Shield size={24} className="mx-auto mb-2" style={{ color: '#6C5CE7' }} />
                 <p className="text-2xl font-bold text-deep">10%</p>
-                <p className="text-xs text-gray-500">{t('loi.commission_compare', 'Commission (vs 17-22%)')}</p>
+                <p className="text-xs text-gray-500">{t('loi.commission_compare', 'Commission (vs 15-17%)')}</p>
               </div>
             </div>
           </Card>

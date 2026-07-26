@@ -108,7 +108,7 @@ Once a hotelier joins as a **Founding Partner**, they **cannot be delisted** fro
 | **Founder shares** | 50,000 LOCKED non-dilutable — David Deveaux only | President à vie + véto rights. |
 | **Total shares** | **500,000 across 4 categories** · capital target $523.5M+ | Founder 10% · Alpha 0.6% · Private 20% · World 69.4% |
 | **BTC Treasury** | **20% of every investor raise**, permanent reserve · target $149.7M at full scale | Written into statutes. **90% supermajority to change.** |
-| **Commission** | 10% per booking, for Founding Partners, **for life** | Compare: Booking.com 22%, Agoda 25%. |
+| **Commission** | 10% per booking, for Founding Partners, **for life** | Compare: Booking.com 17%, Agoda 25%. |
 | **Commission split (10%)** | Ambassador 20% · Operations 25% · Dividends 25% · Growth 20% · Reserve 10% | No auto-burn. Coop-first, not tokenomic-first. |
 | **Dividends** | 25% of commission revenue, distributed proportionally | Currency choice: USD / THB / BTC (shareholder's choice). |
 
@@ -433,7 +433,7 @@ Used on: DEMO banner top, messenger bottom-nav, guest welcome screen, "List your
 **The framing:** they're not enemies. They're a comparison point. Hotels will keep using them in parallel for the first 2-3 years until STAYLO has enough direct demand.
 
 ✅ **Allowed phrasings:**
-- "Booking.com charges 22% commission. We charge 10%."
+- "Booking.com charges 17% commission. We charge 10%."
 - "OTAs are great for discovery. STAYLO is great for retention."
 - "You can keep your Booking.com listing. We don't ask for exclusivity."
 - "Booking.com keeps the guest's email. STAYLO sends it to you."

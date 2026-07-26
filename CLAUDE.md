@@ -17,7 +17,7 @@ Booking.com, Airbnb, TripAdvisor and OpenTable combined.
 ### The core idea
 Hoteliers pay 15–22% commission to Booking.com and Agoda every month.
 That money leaves Thailand forever. Staylo proposes:
-- Commission of **10%** (vs 17–22%)
+- Commission of **10%** (vs 15–17%)
 - Hoteliers invest the equivalent of **1 month of commission** to become
   **shareholders** of the platform
 - **1 property = 1 vote** in governance (regardless of shares held)

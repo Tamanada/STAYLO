@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 const ROW_KEYS = [
   {
     featureKey: 'commission_rate',
-    booking: '17-22%', agoda: '17%', airbnb: '15%',
+    booking: '15-17%', agoda: '17%', airbnb: '15%',
     stayloKey: 'staylo_commission',
   },
   {
