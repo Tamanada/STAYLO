@@ -176,17 +176,20 @@ export default function FamilyPopup() {
             color: '#1A1A2E', letterSpacing: '-0.8px',
             margin: '0 0 14px 0',
           }}>
-            {before}
+            {before.trim()}
             {rest && (
-              <span style={{
-                background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%)',
-                WebkitBackgroundClip: 'text',
-                backgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                fontStyle: 'italic',
-              }}>
-                {rest}
-              </span>
+              <>
+                <br />
+                <span style={{
+                  background: 'linear-gradient(135deg, #FF6B00 0%, #FF1F70 50%, #7E22CE 100%)',
+                  WebkitBackgroundClip: 'text',
+                  backgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontStyle: 'italic',
+                }}>
+                  {rest}
+                </span>
+              </>
             )}
           </h2>
 
