@@ -18,7 +18,7 @@ import { X, ArrowRight, Heart } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 
 const SESSION_KEY_PREFIX = 'staylo_family_popup_seen_'
-const SHOW_DELAY_MS = 1200
+const SHOW_DELAY_MS = 400
 
 function todayKey() {
   const d = new Date()
