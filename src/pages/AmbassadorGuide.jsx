@@ -93,7 +93,7 @@ export default function AmbassadorGuide() {
       icon: Coffee,
       title: t('ambassador_guide.script_casual_title', 'The Casual Approach'),
       context: t('ambassador_guide.script_casual_context', 'For travelers staying at the hotel'),
-      script: t('ambassador_guide.script_casual_text', "Hey, I just discovered this new platform called Staylo. It's like Booking.com but they only charge 10% instead of 22%. Hotels actually own the platform. Have you heard about it?"),
+      script: t('ambassador_guide.script_casual_text', "Hey, I just discovered this new platform called Staylo. It's like Booking.com but they only charge 10% instead of 17%. Hotels actually own the platform. Have you heard about it?"),
       color: 'ocean',
     },
     {

@@ -1,7 +1,7 @@
 {
   "splash": {
     "badge": "Putaran 1 — Mitra Pendiri",
-    "title_line1": "Berhenti bayar 22% ke Booking.com.",
+    "title_line1": "Berhenti bayar 17% ke Booking.com.",
     "subtitle": "Jadilah pemilik platformnya.",
     "description": "Platform pemesanan pertama yang dibuat dan dibiayai oleh pelaku perhotelan Koh Phangan. Bayar hanya 10% komisi — miliki platformnya. Era pemerasan sudah berakhir.",
     "types": "Hotel · Guesthouse · Hostel · Resort · Bungalow",
@@ -358,7 +358,7 @@
     "facebook": "Facebook",
     "copy_link": "Salin Tautan",
     "copied": "Tersalin!",
-    "wa_hotelier_msg": "Hai! Saya baru saja bergabung dengan Staylo — platform pemesanan baru di mana pelaku perhotelan hanya membayar komisi 10% alih-alih 22% di Booking.com. Kami benar-benar MEMILIKI platformnya! 🌴 Cek di sini: {{link}}",
+    "wa_hotelier_msg": "Hai! Saya baru saja bergabung dengan Staylo — platform pemesanan baru di mana pelaku perhotelan hanya membayar komisi 10% alih-alih 17% di Booking.com. Kami benar-benar MEMILIKI platformnya! 🌴 Cek di sini: {{link}}",
     "wa_ambassador_msg": "Hai! Saya di Staylo dan mencari duta. Dapatkan 2% penghasilan pasif seumur hidup dari setiap hotel yang Anda bawa ke platform. Bergabung di sini: {{link}}",
     "show_qr": "Tampilkan Kode QR",
     "hide_qr": "Sembunyikan Kode QR",
@@ -910,7 +910,7 @@
     "scripts_subtitle": "Tiga skrip percakapan yang terbukti untuk situasi berbeda.",
     "script_casual_title": "Pendekatan Santai",
     "script_casual_context": "Untuk wisatawan yang menginap di hotel",
-    "script_casual_text": "Hei, saya baru saja menemukan platform baru bernama Staylo. Seperti Booking.com tapi mereka hanya membebankan 10% bukan 22%. Hotel benar-benar memiliki platformnya. Sudah pernah dengar?",
+    "script_casual_text": "Hei, saya baru saja menemukan platform baru bernama Staylo. Seperti Booking.com tapi mereka hanya membebankan 10% bukan 17%. Hotel benar-benar memiliki platformnya. Sudah pernah dengar?",
     "script_business_title": "Pendekatan Bisnis",
     "script_business_context": "Untuk kontak langsung dengan manajemen",
     "script_business_text": "Halo, saya mewakili Staylo — platform pemesanan koperasi baru di mana pemilik hotel membayar komisi 10% bukan 15-25%. Kami sedang mendaftarkan anggota pendiri di wilayah Anda. Apakah Anda punya 5 menit untuk mendengar cara kerjanya?",

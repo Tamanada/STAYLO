@@ -252,7 +252,7 @@ export default function PMSReports() {
         <StatCard icon={TrendingDown} iconColor="bg-red-100 text-red-600"
           label={t('pms.commission', 'STAYLO Commission (10%)')}
           value={`$${commission.toFixed(0)}`}
-          subvalue={t('pms.commission_note', 'vs. $' + (totalRevenue * 0.22).toFixed(0) + ' on Booking.com (22%)')} />
+          subvalue={t('pms.commission_note', 'vs. $' + (totalRevenue * 0.17).toFixed(0) + ' on Booking.com (17%)')} />
       </div>
 
       {/* Revenue chart */}

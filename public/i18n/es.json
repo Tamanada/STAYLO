@@ -1,7 +1,7 @@
 {
   "splash": {
     "badge": "Round 1 — Socios Fundadores",
-    "title_line1": "Deja de pagar el 22% a Booking.com.",
+    "title_line1": "Deja de pagar el 17% a Booking.com.",
     "subtitle": "Sé dueño de la plataforma.",
     "description": "La primera plataforma de reservas creada y financiada por hoteleros de Koh Phangan. Paga solo el 10% de comisión — sé copropietario. Se acabó el abuso.",
     "types": "Hoteles · Casas de huéspedes · Hostales · Resorts · Bungalows",
@@ -358,7 +358,7 @@
     "facebook": "Facebook",
     "copy_link": "Copiar enlace",
     "copied": "¡Copiado!",
-    "wa_hotelier_msg": "¡Hola! Acabo de unirme a Staylo — una nueva plataforma de reservas donde los hoteleros pagan solo el 10% de comisión en vez del 22% de Booking.com. ¡Realmente SOMOS dueños de la plataforma! 🌴 Míralo: {{link}}",
+    "wa_hotelier_msg": "¡Hola! Acabo de unirme a Staylo — una nueva plataforma de reservas donde los hoteleros pagan solo el 10% de comisión en vez del 17% de Booking.com. ¡Realmente SOMOS dueños de la plataforma! 🌴 Míralo: {{link}}",
     "wa_ambassador_msg": "¡Hola! Estoy en Staylo y busco embajadores. Gana un 2% de ingresos pasivos de por vida por cada hotel que traigas a la plataforma. Únete aquí: {{link}}",
     "show_qr": "Mostrar código QR",
     "hide_qr": "Ocultar código QR",
@@ -739,7 +739,7 @@
     "scripts_subtitle": "Tres guiones de conversación probados para diferentes situaciones.",
     "script_casual_title": "El enfoque casual",
     "script_casual_context": "Para viajeros hospedados en el hotel",
-    "script_casual_text": "Oye, acabo de descubrir una nueva plataforma llamada Staylo. Es como Booking.com pero solo cobran el 10% en vez del 22%. Los hoteles realmente son dueños de la plataforma. ¿Has oído hablar de ella?",
+    "script_casual_text": "Oye, acabo de descubrir una nueva plataforma llamada Staylo. Es como Booking.com pero solo cobran el 10% en vez del 17%. Los hoteles realmente son dueños de la plataforma. ¿Has oído hablar de ella?",
     "script_business_title": "El enfoque de negocios",
     "script_business_context": "Para contacto directo con la gerencia",
     "script_business_text": "Hola, represento a Staylo — una nueva plataforma de reservas cooperativa donde los hoteleros pagan 10% de comisión en lugar de 15-25%. Estamos incorporando miembros fundadores en tu región. ¿Tendrías 5 minutos para saber cómo funciona?",

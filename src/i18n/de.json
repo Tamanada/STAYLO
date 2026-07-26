@@ -1,7 +1,7 @@
 {
   "splash": {
     "badge": "Runde 1 — Gründungspartner",
-    "title_line1": "Hören Sie auf, 22% an Booking.com zu zahlen.",
+    "title_line1": "Hören Sie auf, 17% an Booking.com zu zahlen.",
     "subtitle": "Werden Sie Eigentümer der Plattform.",
     "description": "Die erste Buchungsplattform, die von Hoteliers auf Koh Phangan geschaffen und finanziert wird. Zahlen Sie nur 10% Provision — und besitzen Sie die Plattform. Der Preiskampf ist vorbei.",
     "types": "Hotels · Pensionen · Hostels · Resorts · Bungalows",
@@ -358,7 +358,7 @@
     "facebook": "Facebook",
     "copy_link": "Link kopieren",
     "copied": "Kopiert!",
-    "wa_hotelier_msg": "Hey! Ich bin gerade Staylo beigetreten — eine neue Buchungsplattform, bei der Hoteliers nur 10% Provision zahlen statt 22% bei Booking.com. Wir BESITZEN die Plattform tatsächlich! 🌴 Schau mal: {{link}}",
+    "wa_hotelier_msg": "Hey! Ich bin gerade Staylo beigetreten — eine neue Buchungsplattform, bei der Hoteliers nur 10% Provision zahlen statt 17% bei Booking.com. Wir BESITZEN die Plattform tatsächlich! 🌴 Schau mal: {{link}}",
     "wa_ambassador_msg": "Hey! Ich bin bei Staylo und suche Botschafter. Verdiene 2% lebenslang passives Einkommen für jedes Hotel, das du zur Plattform bringst. Tritt hier bei: {{link}}",
     "show_qr": "QR-Code anzeigen",
     "hide_qr": "QR-Code ausblenden",
@@ -910,7 +910,7 @@
     "scripts_subtitle": "Drei bewährte Gesprächsskripte für verschiedene Situationen.",
     "script_casual_title": "Der lockere Ansatz",
     "script_casual_context": "Für Reisende, die im Hotel übernachten",
-    "script_casual_text": "Hey, ich habe gerade eine neue Plattform namens Staylo entdeckt. Sie ist wie Booking.com, aber sie berechnen nur 10% statt 22%. Die Hotels besitzen die Plattform tatsächlich. Haben Sie davon gehört?",
+    "script_casual_text": "Hey, ich habe gerade eine neue Plattform namens Staylo entdeckt. Sie ist wie Booking.com, aber sie berechnen nur 10% statt 17%. Die Hotels besitzen die Plattform tatsächlich. Haben Sie davon gehört?",
     "script_business_title": "Der geschäftliche Ansatz",
     "script_business_context": "Für direkten Kontakt mit dem Management",
     "script_business_text": "Hallo, ich vertrete Staylo — eine neue genossenschaftliche Buchungsplattform, bei der Hoteliers 10% Provision zahlen statt 15-25%. Wir nehmen Gründungsmitglieder in Ihrer Region auf. Hätten Sie 5 Minuten Zeit zu hören, wie es funktioniert?",

@@ -13,7 +13,7 @@ Each slide below has:
 
 ## Slide 1 · Hook
 
-**Title:** You make the bed. Booking takes 22%.
+**Title:** You make the bed. Booking takes 17%.
 
 **Subtitle:** A booking platform built by hoteliers, for hoteliers.
 
@@ -29,7 +29,7 @@ Each slide below has:
 **Title:** The OTA tax is bleeding your business.
 
 **Body:**
-- Booking.com: **22% commission**
+- Booking.com: **17% commission**
 - Agoda: **18 – 25%**
 - Expedia / Hotels.com: **20 – 25%**
 - Plus payment fees, paid ads, and bidding wars on your own brand name
@@ -167,7 +167,7 @@ Each slide below has:
 
 | Icon | Benefit |
 |------|---------|
-| 🔒 | **10% commission, locked for life** (rest of market: 22% and climbing) |
+| 🔒 | **10% commission, locked for life** (rest of market: 17% and climbing) |
 | 🗳️ | **Voting rights** on every platform decision |
 | 💰 | **Profit share** when STAYLO scales beyond Thailand |
 | 🏅 | **Founding Member badge** displayed on your guest-facing listing |
@@ -199,7 +199,7 @@ Each slide below has:
 **Visual:** Big QR code on the right (linking to `https://staylo.app/submit?utm_source=pitch&utm_campaign=hotelier_deck`), three CTAs stacked on the left.
 
 **Spoken:**
-> "I'll leave you with this. The 22% you give Booking today is a choice. So is the 10% you'll give STAYLO tomorrow. Most hoteliers will keep paying 22% out of habit. The smart ones will switch. The smartest ones will become founding members and own a piece of what comes next. Which group are you?"
+> "I'll leave you with this. The 17% you give Booking today is a choice. So is the 10% you'll give STAYLO tomorrow. Most hoteliers will keep paying 17% out of habit. The smart ones will switch. The smartest ones will become founding members and own a piece of what comes next. Which group are you?"
 
 ---
 

@@ -1,7 +1,7 @@
 {
   "splash": {
     "badge": "Round 1 — Founding Partners",
-    "title_line1": "Stop paying 22% to Booking.com.",
+    "title_line1": "Stop paying 17% to Booking.com.",
     "subtitle": "Own the platform instead.",
     "description": "Break free from OTAs. Own the platform with us. A booking system built by hoteliers, for hoteliers. It's time to take back control of our industry.",
     "types": "Hotels · Guesthouses · Hostels · Resorts · Bungalows",
@@ -1168,7 +1168,7 @@
     "flow_staylo_where": "Where does it go?",
     "flow_staylo_community": "Your community",
     "flow_more_revenue": "more revenue vs OTAs",
-    "flow_disclaimer": "Based on average 22% OTA commission. Actual savings depend on your current platform and rates.",
+    "flow_disclaimer": "Based on average 17% OTA commission. Actual savings depend on your current platform and rates.",
     "projections_badge": "Financial Projections",
     "projections_title": "The Roadmap to $1B",
     "projections_subtitle": "Transparent data. Real numbers. Built for trust.",
@@ -1447,7 +1447,7 @@
     "scripts_subtitle": "Three proven conversation scripts for different situations.",
     "script_casual_title": "The Casual Approach",
     "script_casual_context": "For travelers staying at the hotel",
-    "script_casual_text": "Hey, I just discovered this new platform called Staylo. It's like Booking.com but they only charge 10% instead of 22%. Hotels actually own the platform. Have you heard about it?",
+    "script_casual_text": "Hey, I just discovered this new platform called Staylo. It's like Booking.com but they only charge 10% instead of 17%. Hotels actually own the platform. Have you heard about it?",
     "script_business_title": "The Business Approach",
     "script_business_context": "For direct contact with management",
     "script_business_text": "Hi, I represent Staylo — a new cooperative booking platform where hoteliers pay 10% commission instead of 15-25%. We're onboarding founding members in your region. Would you have 5 minutes to hear how it works?",

@@ -1,7 +1,7 @@
 {
   "splash": {
     "badge": "第一轮 — 创始合伙人",
-    "title_line1": "别再给 Booking.com 交 22% 的佣金了。",
+    "title_line1": "别再给 Booking.com 交 17% 的佣金了。",
     "subtitle": "成为平台的主人。",
     "description": "第一个由 Koh Phangan 酒店业者创建和出资的预订平台。只需 10% 佣金——拥有平台所有权。垄断时代结束了。",
     "types": "酒店 · 宾馆 · 青旅 · 度假村 · 小木屋",
@@ -358,7 +358,7 @@
     "facebook": "Facebook",
     "copy_link": "复制链接",
     "copied": "已复制！",
-    "wa_hotelier_msg": "嘿！我刚加入了 Staylo——一个新的预订平台，酒店业主只需支付 10% 佣金，而不是 Booking.com 上的 22%。我们真正拥有这个平台！🌴 来看看：{{link}}",
+    "wa_hotelier_msg": "嘿！我刚加入了 Staylo——一个新的预订平台，酒店业主只需支付 10% 佣金，而不是 Booking.com 上的 17%。我们真正拥有这个平台！🌴 来看看：{{link}}",
     "wa_ambassador_msg": "嘿！我在 Staylo 上寻找大使。每引荐一家酒店加入平台，终身获得 2% 被动收入。在这里加入：{{link}}",
     "show_qr": "显示二维码",
     "hide_qr": "隐藏二维码",
@@ -739,7 +739,7 @@
     "scripts_subtitle": "三个经过验证的不同场景对话脚本。",
     "script_casual_title": "休闲方式",
     "script_casual_context": "适合住在酒店的旅客",
-    "script_casual_text": "嘿，我刚发现一个叫 Staylo 的新平台。像 Booking.com 但只收 10% 而不是 22%。酒店真正拥有这个平台。你听说过吗？",
+    "script_casual_text": "嘿，我刚发现一个叫 Staylo 的新平台。像 Booking.com 但只收 10% 而不是 17%。酒店真正拥有这个平台。你听说过吗？",
     "script_business_title": "商务方式",
     "script_business_context": "适合与管理层直接联系",
     "script_business_text": "您好，我代表 Staylo——一个新的合作预订平台，酒店业者支付 10% 佣金而不是 15-25%。我们正在您的地区招募创始成员。有 5 分钟了解一下吗？",

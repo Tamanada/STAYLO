@@ -15,7 +15,7 @@ Booking.com, Airbnb, TripAdvisor and OpenTable combined.
 **Stage:** Alpha (validation + onboarding tool, NOT a full booking engine yet)
 
 ### The core idea
-Hoteliers pay 15–22% commission to Booking.com and Agoda every month.
+Hoteliers pay 15–20% commission to Booking.com and Agoda every month (Booking 15-17% typical with Preferred Program, Agoda 20%).
 That money leaves Thailand forever. Staylo proposes:
 - Commission of **10%** (vs 15–17%)
 - Hoteliers invest the equivalent of **1 month of commission** to become
@@ -344,7 +344,7 @@ Topics they DO NOT vote on (handled in DAO Layer 2 by hoteliers):
 
 | Feature | Booking.com / Airbnb | Travala | **Staylo** |
 |---------|----------------------|---------|------------|
-| Commission | 14–22% | 0–5% | **10% LOCKED for life** |
+| Commission | 15–20% (Booking 17% typical, Agoda 20%) | 0–5% | **10% LOCKED for life** |
 | Hotelier ownership | None | None | **Real shares** |
 | Governance vote | None | None | **1 property = 1 vote** |
 | Annual dividends | None | None | **20% net profit/year** |

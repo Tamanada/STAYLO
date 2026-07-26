@@ -233,7 +233,7 @@ export default function Vision() {
     <div className="relative">
       <SEO
         title="Vision — A booking platform owned by hoteliers"
-        description="Why STAYLO exists: 22% commissions are killing hotel margins. We're building a hotelier-owned cooperative where members vote, share revenue, and pay 10% for life. Roadmap, milestones, and ownership model."
+        description="Why STAYLO exists: 17% commissions are killing hotel margins. We're building a hotelier-owned cooperative where members vote, share revenue, and pay 10% for life. Roadmap, milestones, and ownership model."
         path="/vision"
       />
       {/* Hero — EnjoyLife.webp as background (consistent with the rest
@@ -877,7 +877,7 @@ export default function Vision() {
               </div>
             </div>
 
-            <p className="text-center text-xs text-gray-400 mt-3">{t('vision.flow_disclaimer', 'Based on average 22% OTA commission. Actual savings depend on your current platform and rates.')}</p>
+            <p className="text-center text-xs text-gray-400 mt-3">{t('vision.flow_disclaimer', 'Based on average 17% OTA commission. Actual savings depend on your current platform and rates.')}</p>
           </div>
 
         </UniformBand>

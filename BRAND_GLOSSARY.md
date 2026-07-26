@@ -116,7 +116,7 @@ Once a hotelier joins as a **Founding Partner**, they **cannot be delisted** fro
 
 | Stat | Figure | Source / context |
 |---|---|---|
-| Booking.com commission | **22%** | OTA average for SE Asia hotels |
+| Booking.com commission | **17%** typical (base 15% + Preferred Program +2%) | Real average a Booking hotelier pays. Lock 2026-06-18. |
 | Agoda commission | **25%** | OTA average for SE Asia hotels |
 | STAYLO commission | **10%** | Locked for life for FPs |
 | Hotel target Y1 | 500 hotels | Network-effect threshold |
@@ -230,7 +230,7 @@ NEVER claim a specific % discount for guests vs OTAs. Reasons:
 2. **Promising what we don't control = broken trust.** A guest who lands on a STAYLO hotel at the same price as Booking.com (because the hotelier kept the savings) feels deceived if we said "20% cheaper".
 3. **The ETHICAL angle is stronger.** "90% goes to your hotelier (not Wall Street)" is a verifiable, brand-aligned claim that resonates with the rising "conscious traveler" demographic. It re-frames the value from "I save money" to "my money goes to the right place" — a more durable and defensible message.
 
-If you need to put a number on the comparison, the ONLY safe number is the **commission split** (10% STAYLO vs 22% Booking → 12 percentage-point delta on the hotelier side). That's a fact. Anything translated to "guest savings" is speculation.
+If you need to put a number on the comparison, the ONLY safe number is the **commission split** (10% STAYLO vs 17% Booking typical → 7 percentage-point delta on the hotelier side). That's a fact. Anything translated to "guest savings" is speculation.
 
 When in doubt: **say less, deliver more.** Promises broken in pitch = trust lost.
 
@@ -477,7 +477,7 @@ These exist (e.g. "HotelDAO", various Web3 hotel projects). Most are vaporware o
 ### Numbers
 
 - **Prices:** comma thousands separator → `$1,000` / `1 000 €` / `฿1,000`
-- **Percentages:** integer when possible → "10%", "22%". Decimals only when meaningful → "22.5%".
+- **Percentages:** integer when possible → "10%", "17%". Decimals only when meaningful → "22.5%".
 - **Token amounts:** comma thousands → `10,000,000,000 $STAY`
 - **Hotel counts, guest counts:** abbreviate above 1K → "1,247 hotels", "142K guests", "1.2M bookings"
 

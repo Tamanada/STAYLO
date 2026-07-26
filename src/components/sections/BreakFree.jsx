@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Frown, Smile } from 'lucide-react'
 
 const oldPlatforms = [
-  { name: 'Booking.com', fee: '22%', painKey: 0 },
+  { name: 'Booking.com', fee: '17%', painKey: 0 },
   { name: 'Expedia', fee: '18%', painKey: 1 },
   { name: 'Airbnb', fee: '15%', painKey: 2 },
   { name: 'Agoda', fee: '20%', painKey: 3 },
