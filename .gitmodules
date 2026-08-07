@@ -1,0 +1,3 @@
+[submodule "public/ship-core"]
+	path = public/ship-core
+	url = https://github.com/Tamanada/staylo-ship-core.git

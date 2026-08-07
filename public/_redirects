@@ -1,0 +1,15 @@
+# ────────────────────────────────────────────────────────────
+# STAYLO — Netlify redirects
+# ────────────────────────────────────────────────────────────
+# SHIP backward-compat: after moving ship.html + assets to the
+# `staylo-ship-core` git submodule at public/ship-core/, keep
+# the old top-level URLs working transparently (200 = rewrite,
+# URL bar stays as before — external links and internal <a href="/ship.html">
+# continue to resolve).
+# ────────────────────────────────────────────────────────────
+
+/ship.html         /ship-core/ship.html         200
+/SHIP_LOGO.png     /ship-core/SHIP_LOGO.png     200
+/SHIP_LOGO.webp    /ship-core/SHIP_LOGO.webp    200
+/ShipBanner.png    /ship-core/ShipBanner.png    200
+/ShipBanner.webp   /ship-core/ShipBanner.webp   200
