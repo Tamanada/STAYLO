@@ -1,67 +1,22 @@
 /*
   Step 3 — Property type
   ======================
-  Wraps PropertyTypePicker. On selection: creates the ship_hotels row (owner
-  is the auth user from Step 1) + ship_hotel_members row (self as owner),
-  populates data.hotelId + data.hotelSlug, then advances.
+  Wraps PropertyTypePicker. On selection: calls create_ship_hotel() RPC
+  which atomically inserts the ship_hotels row + owner ship_hotel_members
+  row server-side (SECURITY DEFINER, so it bypasses RLS but still enforces
+  auth.uid() != null). Populates data.hotelId + data.hotelSlug, then advances.
 
-  Slug generation retry:
-    - Base slug from ship_slugify() Postgres helper called client-side via
-      slugifyClient() (mirror of the SQL logic — kept in sync manually).
-    - On unique-constraint conflict, append -2, -3 … until it lands.
+  Why an RPC and not direct .insert():
+    Client-side RLS INSERTs against ship_hotels were failing intermittently
+    with "new row violates row-level security policy" during real signups,
+    even when the caller had a valid session. The RPC pattern is more
+    robust: single server round-trip, atomic transaction, no JWT-context
+    race conditions.
 */
 import { useState } from 'react'
 import { Loader2, AlertCircle } from 'lucide-react'
 import PropertyTypePicker from '../PropertyTypePicker'
 import { supabase } from '../../../lib/supabase'
-
-// Mirror of the Postgres ship_slugify() function — kept manually in sync.
-// Duplicated here so signup can preview the slug and craft the email
-// forwarding address for Step 4 without a server round-trip per keystroke.
-function slugifyClient(input) {
-  let s = (input || '').toLowerCase()
-  s = s.replace(/[^a-z0-9]+/g, '-')
-  s = s.replace(/^-+|-+$/g, '')
-  s = s.slice(0, 40)
-  if (!s) s = 'hotel'
-  return s
-}
-
-async function createHotelWithSlug({ data, userId, maxRetries = 8 }) {
-  const baseSlug = slugifyClient(data.hotelName)
-  let slug = baseSlug
-  let attempt = 0
-
-  while (attempt < maxRetries) {
-    const { data: hotel, error } = await supabase
-      .from('ship_hotels')
-      .insert({
-        slug,
-        name: data.hotelName,
-        country: data.country,
-        city: data.city,
-        currency: data.currency,
-        timezone: data.timezone,
-        property_type_main: data.propertyType.category_main,
-        property_type_sub: data.propertyType.category_sub,
-        property_type_custom: data.propertyType.category_custom ?? null,
-        created_by: userId,
-      })
-      .select('id, slug')
-      .single()
-
-    if (!error) return hotel
-
-    // Unique violation on slug → retry with suffix
-    if (error.code === '23505' && error.message.includes('slug')) {
-      attempt += 1
-      slug = `${baseSlug}-${attempt + 1}`
-      continue
-    }
-    throw error
-  }
-  throw new Error('Could not generate a unique slug after 8 attempts')
-}
 
 export default function Step3PropertyType({ data, patch, goNext }) {
   const [submitting, setSubmitting] = useState(false)
@@ -88,31 +43,27 @@ export default function Step3PropertyType({ data, patch, goNext }) {
         return
       }
 
-      const userId = session.user.id
+      // Atomic hotel + owner-membership via SECURITY DEFINER RPC.
+      // Server-side auth.uid() check + slug retry + transaction — no
+      // client-side RLS pitfalls.
+      const { data: rpcRows, error: rpcErr } = await supabase.rpc(
+        'create_ship_hotel',
+        {
+          p_name: data.hotelName,
+          p_country: data.country,
+          p_city: data.city,
+          p_currency: data.currency,
+          p_timezone: data.timezone,
+          p_property_type_main: propertyType.category_main,
+          p_property_type_sub: propertyType.category_sub,
+          p_property_type_custom: propertyType.category_custom ?? null,
+        }
+      )
+      if (rpcErr) throw rpcErr
+      const row = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows
+      if (!row?.hotel_id) throw new Error('RPC returned no hotel_id')
 
-      // Create hotel + owner membership (2 inserts in sequence — if the
-      // second fails we'd have an orphan hotel, so we compensate)
-      const hotel = await createHotelWithSlug({
-        data: { ...data, propertyType },
-        userId,
-      })
-
-      const { error: memberErr } = await supabase
-        .from('ship_hotel_members')
-        .insert({
-          hotel_id: hotel.id,
-          user_id: userId,
-          role: 'owner',
-          joined_at: new Date().toISOString(),
-        })
-
-      if (memberErr) {
-        // Compensate: remove the hotel row so the user can retry cleanly
-        await supabase.from('ship_hotels').delete().eq('id', hotel.id)
-        throw memberErr
-      }
-
-      patch({ hotelId: hotel.id, hotelSlug: hotel.slug })
+      patch({ hotelId: row.hotel_id, hotelSlug: row.slug })
       goNext()
     } catch (err) {
       console.error('[Step3] hotel creation failed', err)

@@ -41,15 +41,14 @@ import {
 // Each section has a `visible` predicate computed from user state.
 // Items inside inherit their parent section's visibility.
 
-// REVIEW MODE — all sections forced visible so the full feature set can be
-// walked through during a "faire le point" review / demo. The original
-// adaptive predicates are preserved in comments next to each section so
-// restoring conditional visibility is a one-line revert per section:
-//   Hosting  → visible: ({ hasProperties }) => hasProperties
-//   Investor → visible: ({ hasShares })     => hasShares
+// Section visibility is role-aware — the sidebar only shows tools the user
+// can actually act on. Fresh SHIP customers who signed up via /downloadapp
+// see just the "STAYLO Ship" launcher; STAYLO cooperative hoteliers see
+// Hosting; investors see the Investor section; admins see Admin. This
+// keeps the dashboard from feeling like a mystery menu to newcomers.
 const SECTIONS = [
   {
-    // Section 1 — everyone gets these
+    // Section 1 — everyone gets Overview + My Trips
     visible: () => true,
     items: [
       { to: '/dashboard',          icon: LayoutDashboard, labelKey: 'dashboard.nav_overview',    label: 'Overview', end: true },
@@ -57,31 +56,26 @@ const SECTIONS = [
     ],
   },
   {
-    // Section 2 — Hosting tools (REVIEW: forced visible; was: hasProperties)
-    // Trimmed to "My Properties" only — Front Desk / Housekeeping / Reports
-    // / Banking were removed from the menu at David's request. The routes
-    // themselves still exist (PMSFrontDesk, PMSHousekeeping, Reports,
-    // Banking pages remain mounted in App.jsx) so direct URLs still work;
-    // they're just not surfaced in the sidebar.
+    // Section 2 — Hosting tools (STAYLO cooperative properties only)
     label: 'Hosting',
     labelKey: 'dashboard.section_hosting',
-    visible: () => true,
+    visible: ({ hasProperties }) => hasProperties,
     items: [
       { to: '/dashboard/properties',   icon: Building2,     labelKey: 'dashboard.nav_properties',   label: 'My Properties' },
     ],
   },
   {
-    // Section 3 — Investor (REVIEW: forced visible; was: hasShares)
+    // Section 3 — Investor (STAYLO share holders only)
     label: 'Investor',
     labelKey: 'dashboard.section_investor',
-    visible: () => true,
+    visible: ({ hasShares }) => hasShares,
     items: [
       { to: '/dashboard/shares', icon: Gem,     labelKey: 'dashboard.nav_shares',      label: 'My Shares' },
       { to: '/dashboard/kit',    icon: Package, labelKey: 'dashboard.sidebar_kit',     label: 'My Kit' },
     ],
   },
   {
-    // Section 4 — Community (everyone)
+    // Section 4 — Community (everyone can refer)
     visible: () => true,
     items: [
       { to: '/dashboard/referrals', icon: Share2, labelKey: 'dashboard.nav_referrals', label: 'Referrals' },
@@ -99,6 +93,7 @@ export function DashboardSidebar() {
   // Adaptive flags — query Supabase once on mount.
   const [hasProperties, setHasProperties] = useState(false)
   const [hasShares, setHasShares] = useState(false)
+  const [hasShipHotels, setHasShipHotels] = useState(false)  // SHIP standalone customers
   const [stateLoaded, setStateLoaded] = useState(false)
   // Mini-list of the user's properties for the sidebar dropdown.
   // Lightweight payload (id + name) — the full Properties page still
@@ -130,11 +125,16 @@ export function DashboardSidebar() {
         .eq('user_id', user.id)
         .eq('status', 'active'),
       supabase.from('shares').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
-    ]).then(async ([propRes, shareRes]) => {
+      supabase.from('ship_hotel_members')
+        .select('hotel_id', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('status', 'active'),
+    ]).then(async ([propRes, shareRes, shipRes]) => {
       if (cancelled) return
       const memberRows = propRes.data || []
       setHasProperties(memberRows.length > 0)
       setHasShares((shareRes.count || 0) > 0)
+      setHasShipHotels((shipRes.count || 0) > 0)
       setStateLoaded(true)
       // Fetch the property names for the dropdown list. Cheap query —
       // we only ask for id + name + status so the payload stays tiny.
@@ -148,10 +148,13 @@ export function DashboardSidebar() {
         if (!cancelled) setPropertyList(props || [])
       }
     }).catch(() => {
-      // On error fail open — show everything (defensive: don't lock the user out)
+      // On query error, fail CLOSED — only show the always-visible sections.
+      // Prevents accidentally exposing investor/admin surfaces to a plain
+      // signup that just failed a lookup. Users can retry after refresh.
       if (!cancelled) {
-        setHasProperties(true)
-        setHasShares(true)
+        setHasProperties(false)
+        setHasShares(false)
+        setHasShipHotels(false)
         setStateLoaded(true)
       }
     })
@@ -164,8 +167,13 @@ export function DashboardSidebar() {
     navigate('/')
   }
 
-  const userState = { hasProperties, hasShares }
+  const userState = { hasProperties, hasShares, hasShipHotels }
   const visibleSections = SECTIONS.filter(s => s.visible(userState))
+  const isAdmin = profile?.role === 'admin'
+  // Team Tools section (Ship banner + Guest App) is only meaningful to
+  // people who own or work at a hotel — either a STAYLO cooperative
+  // property or a SHIP standalone hotel.
+  const showTeamTools = hasProperties || hasShipHotels
 
   const sidebarContent = (
     <>
@@ -315,53 +323,57 @@ export function DashboardSidebar() {
           </div>
         )}
 
-        {/* Messenger — opens the static single-file app (public/ship.html)
-            in a new tab. Visible to every signed-in user for now (matches the
-            demo flow); we can tighten visibility behind hasProperties later
-            once the messenger has real auth wired to Supabase. The path is
-            a static asset served by Vercel — bypasses the SPA router. */}
-        <div className="pt-4 pb-1 px-4">
-          <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-electric/60">
-            {t('dashboard.section_team_tools', 'Team tools')}
-          </p>
-        </div>
-        <a
-          href="/ship.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => setMobileOpen(false)}
-          title={t('dashboard.nav_messenger', 'Staff Messenger') + ' — Open ↗'}
-          aria-label={t('dashboard.nav_messenger', 'Staff Messenger')}
-          className="block rounded-xl overflow-hidden border border-electric/20 hover:border-electric/50 transition-all duration-200 hover:shadow-lg hover:shadow-electric/20 group"
-        >
-          <img
-            src="/ShipBanner.webp"
-            alt={t('dashboard.nav_messenger', 'Staff Messenger')}
-            loading="lazy"
-            className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
-          />
-        </a>
+        {/* Team Tools — only for people who actually operate a hotel.
+            The Ship banner opens the static single-file app (public/ship.html);
+            Guest App is the STAYLO cooperative guest PWA and only makes sense
+            when the user has a STAYLO property. */}
+        {showTeamTools && (
+          <>
+            <div className="pt-4 pb-1 px-4">
+              <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-electric/60">
+                {t('dashboard.section_team_tools', 'Team tools')}
+              </p>
+            </div>
+            <a
+              href="/ship.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileOpen(false)}
+              title={t('dashboard.nav_messenger', 'Staff Messenger') + ' — Open ↗'}
+              aria-label={t('dashboard.nav_messenger', 'Staff Messenger')}
+              className="block rounded-xl overflow-hidden border border-electric/20 hover:border-electric/50 transition-all duration-200 hover:shadow-lg hover:shadow-electric/20 group"
+            >
+              <img
+                src="/ShipBanner.webp"
+                alt={t('dashboard.nav_messenger', 'Staff Messenger')}
+                loading="lazy"
+                className="w-full h-auto block transition-transform duration-300 group-hover:scale-105"
+              />
+            </a>
 
-        {/* Guest App — opens the guest-facing PWA (app.staylo.app). Added so
-            the full product surface is reachable from one place during the
-            review / demo. Opens in a new tab. */}
-        <a
-          href="https://app.staylo.app/"
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => setMobileOpen(false)}
-          className="flex items-center gap-3 px-4 py-3 mt-1 rounded-xl text-sm font-semibold no-underline transition-all duration-200 text-libre/80 hover:text-libre hover:bg-libre/10 border border-libre/20"
-        >
-          <Smartphone size={18} />
-          <span>{t('dashboard.nav_guest_app', 'Guest App')}</span>
-          <span className="ml-auto text-[10px] uppercase font-bold opacity-60">Open ↗</span>
-        </a>
+            {/* Guest App — the guest-facing PWA (app.staylo.app). Only
+                relevant to STAYLO cooperative properties, not SHIP standalone
+                customers who have their own guest surface. */}
+            {hasProperties && (
+              <a
+                href="https://app.staylo.app/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-3 px-4 py-3 mt-1 rounded-xl text-sm font-semibold no-underline transition-all duration-200 text-libre/80 hover:text-libre hover:bg-libre/10 border border-libre/20"
+              >
+                <Smartphone size={18} />
+                <span>{t('dashboard.nav_guest_app', 'Guest App')}</span>
+                <span className="ml-auto text-[10px] uppercase font-bold opacity-60">Open ↗</span>
+              </a>
+            )}
+          </>
+        )}
 
-        {/* Admin shortcut — REVIEW MODE: forced visible (was: profile?.role === 'admin').
-            Restore the role gate before shipping to real users — admin pages
-            are still RLS-enforced server-side, so this only exposes the LINK,
-            not the data. */}
-        {true && (
+        {/* Admin shortcut — only for users with profile.role === 'admin'.
+            Admin pages are also RLS-enforced server-side; this just avoids
+            teasing the link to non-admins. */}
+        {isAdmin && (
           <>
             <div className="pt-4 pb-1 px-4">
               <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-sunset/60">Admin</p>
