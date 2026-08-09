@@ -235,6 +235,8 @@ CREATE TABLE IF NOT EXISTS public.ship_bookings (
 );
 
 -- Deduplication constraint (partial: only when external_id present)
+-- NOTE: superseded by 20260809000001_ship_bookings_full_unique.sql because
+-- partial indexes can't be used as ON CONFLICT targets by supabase-js.
 CREATE UNIQUE INDEX IF NOT EXISTS ship_bookings_source_external_unique
   ON public.ship_bookings(hotel_id, source, external_id)
   WHERE external_id IS NOT NULL;
