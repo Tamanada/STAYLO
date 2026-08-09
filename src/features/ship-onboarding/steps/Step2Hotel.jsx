@@ -97,10 +97,12 @@ export default function Step2Hotel({ data, patch, goNext }) {
               value={country}
               onChange={handleCountryChange}
               required
-              className="w-full pl-11 pr-4 py-3.5 rounded-xl border-2 outline-none transition-colors text-base appearance-none bg-no-repeat"
+              className="w-full pl-11 pr-4 py-3.5 rounded-xl border-2 outline-none transition-colors text-base appearance-none"
               style={{
-                borderColor: '#E8E0D8', background: 'white',
+                borderColor: '#E8E0D8',
+                backgroundColor: 'white',
                 backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'8\' viewBox=\'0 0 12 8\'%3E%3Cpath fill=\'none\' stroke=\'%238892A0\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M1 1.5l5 5 5-5\'/%3E%3C/svg%3E")',
+                backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 16px center',
                 backgroundSize: '12px',
                 paddingRight: '40px',
