@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth'
 import { useReferral } from '../hooks/useReferral'
 import { supabase } from '../lib/supabase'
 import WelcomeCall from './dashboard/WelcomeCall'
+import ShipDashboard from '../features/ship-onboarding/ShipDashboard'
 
 // Currency config by language (same as Survey.jsx)
 const currencyByLang = {
@@ -95,6 +96,14 @@ export default function Dashboard() {
   const [calcRate, setCalcRate]           = useState(50)
   const [calcOccupancy, setCalcOccupancy] = useState(65)
   const [calcEdited, setCalcEdited]       = useState(false)
+  // Classifies the user for the /dashboard root:
+  //   'staylo' — coop hotelier / investor (existing dashboard below)
+  //   'ship'   — SHIP standalone customer only (renders ShipDashboard)
+  //   'plain'  — neither yet (falls through to existing dashboard, which
+  //              gracefully handles the empty state with its "become a
+  //              host" CTA)
+  //   null     — still loading, render nothing to avoid flicker
+  const [audience, setAudience] = useState(null)
 
   useEffect(() => {
     if (!authLoading && !user) navigate('/login')
@@ -112,6 +121,30 @@ export default function Dashboard() {
         if (data) navigate('/dashboard/ambassador')
       })
   }, [user, navigate])
+
+  // Classify the user for dashboard branching. Runs once on user load.
+  //   staylo  → any STAYLO signal (coop property membership OR ≥1 share)
+  //   ship    → no STAYLO signal AND ≥1 ship_hotel_member row
+  //   plain   → no signal in either direction; keep the existing dashboard
+  //             (its own empty-state CTAs handle it)
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+    ;(async () => {
+      const [propRes, shareRes, shipRes] = await Promise.all([
+        supabase.from('property_members').select('property_id', { count: 'exact', head: true })
+          .eq('user_id', user.id).eq('status', 'active'),
+        supabase.from('shares').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('ship_hotel_members').select('hotel_id', { count: 'exact', head: true })
+          .eq('user_id', user.id).eq('status', 'active'),
+      ])
+      if (cancelled) return
+      const isStaylo = (propRes.count || 0) > 0 || (shareRes.count || 0) > 0
+      const isShip = (shipRes.count || 0) > 0
+      setAudience(isStaylo ? 'staylo' : isShip ? 'ship' : 'plain')
+    })()
+    return () => { cancelled = true }
+  }, [user])
 
   useEffect(() => {
     if (!user) return
@@ -224,6 +257,16 @@ export default function Dashboard() {
         : 'not_signed'
 
   const StatusConfig = loiStatusKeys[loiStatus]
+
+  // ────────── Audience branching ──────────
+  // Wait for the classification query before rendering — prevents a
+  // millisecond of STAYLO "Founding Member" UI flashing to a SHIP-only user.
+  if (audience === null) {
+    return <div className="max-w-4xl mx-auto px-4 py-12 text-gray-400 animate-pulse">Loading…</div>
+  }
+  if (audience === 'ship') {
+    return <ShipDashboard />
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
