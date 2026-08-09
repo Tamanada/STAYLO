@@ -3353,7 +3353,6 @@ body.off-shift .quick-actions{display:none !important}
       <span id="p1" class="done"></span>
       <span id="p2"></span>
       <span id="p3"></span>
-      <span id="p4"></span>
     </div>
 
     <div class="ob-step active" data-step="1">
@@ -3377,21 +3376,11 @@ body.off-shift .quick-actions{display:none !important}
     </div>
 
     <div class="ob-step" data-step="3">
-      <h2 id="ob-code-title">Hotel code</h2>
-      <p class="hint" id="ob-code-hint">Get this from your manager (e.g. KP001 for Koh Phangan property #1).</p>
-      <input type="text" class="ob-input" id="ob-hotel" placeholder="KP001" maxlength="10" style="text-transform:uppercase;letter-spacing:2px;font-family:monospace" autocomplete="off" />
-      <div class="ob-actions">
-        <button class="ob-back" data-go="2" data-i18n="app.onboarding.btn_back">← Back</button>
-        <button class="ob-next" id="ob-code-next" disabled data-i18n="app.onboarding.btn_continue">Continue</button>
-      </div>
-    </div>
-
-    <div class="ob-step" data-step="4">
       <h2 data-i18n="app.onboarding.step_role_title">Your role</h2>
       <p class="hint" data-i18n="app.onboarding.step_role_hint">Pick the one that matches your day-to-day.</p>
       <div class="ob-roles" id="ob-roles"></div>
       <div class="ob-actions">
-        <button class="ob-back" data-go="3" data-i18n="app.onboarding.btn_back">← Back</button>
+        <button class="ob-back" data-go="2" data-i18n="app.onboarding.btn_back">← Back</button>
         <button class="ob-next" id="ob-finish" disabled data-i18n="app.onboarding.btn_finish">Enter Staylo →</button>
       </div>
     </div>
@@ -4755,32 +4744,27 @@ function selectAudience(id,card){
   $$('.aud-card.selected').forEach(c=>c.classList.remove('selected'));
   card.classList.add('selected');
   $('#ob-aud-next').disabled=false;
-  // Adapt the code-step copy + the finish flow based on audience.
-  // Pull from i18n bundle; fall back to EN literals if a key is missing.
-  const tFb = (k, fb) => { const v = t(k); return v.startsWith('app.') ? fb : v; };
-  const fallback = {
-    staff:    {t:'Hotel code',      h:'Get this from your manager (e.g. KP001 for Koh Phangan property #1).', ph:'KP001'},
-    ambassador:{t:'Ambassador code', h:'Your personal Staylo Ambassador ID (e.g. AMB-7421).',                  ph:'AMB-0001'},
-    guest:    {t:'Booking or hotel code', h:'From your reservation confirmation, or just the hotel code if you\'re curious.', ph:'KP001 or BK-9F2A'},
-  };
-  const fb = fallback[id];
-  $('#ob-code-title').textContent = tFb('app.onboarding.code_'+id+'_title',       fb.t);
-  $('#ob-code-hint').textContent  = tFb('app.onboarding.code_'+id+'_hint',        fb.h);
-  $('#ob-hotel').setAttribute('placeholder', tFb('app.onboarding.code_'+id+'_placeholder', fb.ph));
 }
 function gotoStep(n){
-  // Step 4 (role grid) is staff-only — finish directly otherwise
-  if(n===4 && selectedAudience!=='staff'){ finishOnboarding(); return; }
+  // Step 3 (role grid) is staff-only — finish directly otherwise.
+  // Non-staff audiences (guest, ambassador) skip straight to finish
+  // after the name step.
+  if(n===3 && selectedAudience!=='staff'){ finishOnboarding(); return; }
   $$('.ob-step').forEach(s=>s.classList.remove('active'));
   $(`.ob-step[data-step="${n}"]`).classList.add('active');
-  for(let i=1;i<=4;i++){
+  for(let i=1;i<=3;i++){
     $(`#p${i}`).classList.toggle('done', i<=n);
   }
-  if(n===4 && !$('#ob-roles').children.length) renderRoleGrid();
+  if(n===3 && !$('#ob-roles').children.length) renderRoleGrid();
 }
 function finishOnboarding(){
   const name = $('#ob-name').value.trim();
-  const hotelCode = $('#ob-hotel').value.trim();
+  // Hotel code is no longer collected in onboarding — the SHIP standalone
+  // signup wizard (staylo.app/ship-signup) already provisions the hotel row
+  // in ship_hotels. For local-storage keying we derive a stable slug from
+  // the user's name; this keeps per-user settings scoped without asking
+  // for another identifier.
+  const hotelCode = (name || 'DEFAULT').replace(/\s+/g,'').toUpperCase().slice(0,10) || 'DEFAULT';
   const audience = selectedAudience || 'staff';
   let role, dept;
   if(audience==='staff'){
@@ -4810,15 +4794,10 @@ function initOnboarding(){
   $('#ob-name').addEventListener('input',e=>{
     $('.ob-step[data-step="2"] .ob-next').disabled = e.target.value.trim().length<2;
   });
-  $('#ob-hotel').addEventListener('input',e=>{
-    e.target.value = e.target.value.toUpperCase().replace(/\s/g,'');
-    $('#ob-code-next').disabled = e.target.value.trim().length<3;
-  });
-  // The code step's "Continue" button: route to role grid (staff) or finish (others)
-  $('#ob-code-next').addEventListener('click',()=>gotoStep(4));
-  // Other Continue buttons follow declared data-go
+  // Continue buttons follow declared data-go. Non-staff audiences skip
+  // step 3 (role) via the gotoStep(3) guard → straight to finish.
   $$('.ob-next').forEach(b=>{
-    if(b.id==='ob-finish' || b.id==='ob-code-next') return;
+    if(b.id==='ob-finish') return;
     b.addEventListener('click',()=>gotoStep(parseInt(b.dataset.go)));
   });
   $$('.ob-back').forEach(b=>b.addEventListener('click',()=>gotoStep(parseInt(b.dataset.go))));
