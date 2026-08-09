@@ -24671,6 +24671,28 @@ function initShell(){
 /* =============================================================
    BOOT
    ============================================================= */
+/* URL-param recovery hooks — read once at first module load so a stuck
+ * user can always self-recover without needing DevTools:
+ *   ?reset=1     → wipe localStorage for this origin then continue
+ *   ?demo=off    → skip the auto-seed of ~140 demo staff / schedules /
+ *                  tasks / recipes (the seed can bust the 5-10 MB
+ *                  quota, especially with base64 photos). Sets is_live
+ *                  on the current hotel so future boots also skip it.
+ *   ?wipe-hotel=1 → wipe just the current hotel's demo data (softer)
+ * Combine e.g.: /ship.html?reset=1&demo=off */
+(function shipRecoveryFlags(){
+  try {
+    const q = new URLSearchParams(location.search);
+    if(q.get('reset') === '1'){
+      try { localStorage.clear(); } catch(_) {}
+    }
+    // The `?demo=off` flag is picked up in _bootAppInner via
+    // window.__shipDisableDemo — set here so the flag survives the
+    // between-tick window before bootApp() reads it.
+    if(q.get('demo') === 'off'){ window.__shipDisableDemo = true; }
+  } catch(_) { /* no URL support, ignore */ }
+})();
+
 async function bootApp(){
   // Load EN baseline + the user's saved language (if not EN). Fire-and-forget
   // is fine because t() falls back gracefully to the key if the bundle isn't
@@ -24699,8 +24721,18 @@ async function _bootAppInner(){
   refreshCustomRoles();
   // Auto-seed demo employees / recipes / tasks for fresh hotels (so the UI
   // is never empty on first login). Skipped once the manager flips
-  // "Switch to LIVE" in Hotel Settings.
-  if(State.user.audience === 'staff'){
+  // "Switch to LIVE" in Hotel Settings — or via ?demo=off URL param
+  // (for real SHIP customers who never want the demo weight).
+  if(window.__shipDisableDemo){
+    // Persistently mark this hotel as LIVE so subsequent boots skip the
+    // seed even without the URL param. One-time flip per hotel.
+    try {
+      const _code = (State.user && State.user.hotelCode) || 'DEFAULT';
+      const _cur = lsGet(`staylo_hotel_${_code}`, {});
+      lsSet(`staylo_hotel_${_code}`, { ..._cur, is_live: true });
+    } catch(_) {}
+  }
+  if(State.user.audience === 'staff' && !window.__shipDisableDemo){
     // Async chunked seed with splash — yields between phases so the browser
     // stays responsive even while writing ~14k schedules. The splash is only
     // visible on the first-boot path (when the hotel has 0 employees).

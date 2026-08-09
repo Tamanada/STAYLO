@@ -335,7 +335,7 @@ export function DashboardSidebar() {
               </p>
             </div>
             <a
-              href="/ship.html"
+              href={hasShipHotels && !hasProperties ? '/ship.html?demo=off' : '/ship.html'}
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setMobileOpen(false)}
