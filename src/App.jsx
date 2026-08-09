@@ -57,6 +57,7 @@ import MyBookings from './pages/dashboard/MyBookings'
 import IncomingBookings from './pages/dashboard/IncomingBookings'
 import Banking from './pages/dashboard/Banking'
 import Splash from './pages/Splash'
+import DownloadApp from './features/ship-onboarding/DownloadApp'
 import ResetPassword from './pages/ResetPassword'
 import VerifyEmail from './pages/VerifyEmail'
 import Welcome from './pages/Welcome'
@@ -161,6 +162,7 @@ export default function App() {
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="/splash" element={<Splash />} />
             <Route path="/ship" element={<ShipLanding />} />
+            <Route path="/downloadapp" element={<DownloadApp />} />
             <Route path="/ambassador" element={<AmbassadorLanding />} />
             <Route path="/ambassador/register" element={<AmbassadorRegister />} />
             <Route path="/ambassador/guide" element={<AmbassadorGuide />} />
