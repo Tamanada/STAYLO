@@ -1,11 +1,6 @@
 {
   "rewrites": [
-    { "source": "/ship.html",       "destination": "/ship-core/ship.html" },
-    { "source": "/SHIP_LOGO.png",   "destination": "/ship-core/SHIP_LOGO.png" },
-    { "source": "/SHIP_LOGO.webp",  "destination": "/ship-core/SHIP_LOGO.webp" },
-    { "source": "/ShipBanner.png",  "destination": "/ship-core/ShipBanner.png" },
-    { "source": "/ShipBanner.webp", "destination": "/ship-core/ShipBanner.webp" },
-    { "source": "/(.*)",            "destination": "/" }
+    { "source": "/((?!ship\\.html|SHIP_LOGO\\.png|SHIP_LOGO\\.webp|ShipBanner\\.png|ShipBanner\\.webp).*)", "destination": "/" }
   ],
   "headers": [
     {
