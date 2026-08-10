@@ -2308,12 +2308,27 @@ body.sched-landscape-fs #hr-modal,
 body.sched-landscape-fs #hr-body,
 body.sched-landscape-fs .content-view{
   position: fixed !important; inset: 0 !important;
-  padding: 0 !important; margin: 0 !important;
+  margin: 0 !important;
   width: 100vw !important; height: 100dvh !important; max-width: none !important;
   z-index: 9990 !important; background: #fff !important;
   overflow: auto !important;
+  /* Safe-area insets: Android edge-gesture zones + iOS notches eat pixels
+   * on the left/right of the visual viewport. Padding these prevents the
+   * "TEAM MEMBER" column and the right-most day column from being clipped
+   * behind the gesture zone. */
+  padding-left: env(safe-area-inset-left, 0px) !important;
+  padding-right: env(safe-area-inset-right, 0px) !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  box-sizing: border-box !important;
 }
 body.sched-landscape-fs .sched-grid-wrap{ max-height: 100dvh; }
+/* Also ensure the sticky left emp-cell stays glued to the SAFE left edge,
+ * not to viewport 0 (which sits under the gesture zone). */
+body.sched-landscape-fs .sched-grid .emp-cell,
+body.sched-landscape-fs .sched-date-strip .cell.side:first-child{
+  left: 0 !important;
+}
 /* MONTH view — date stacked on the LEFT, the 3 occupancy pills stacked
    VERTICALLY on the RIGHT. Lets us pack 31 columns into the typical
    viewport width without forcing horizontal scroll.
