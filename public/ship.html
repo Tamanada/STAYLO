@@ -25150,9 +25150,10 @@ function showLockScreen(shift){
       el('h2',{},'You\'re off the clock'),
       el('p',{innerHTML:msg}),
       el('p',{class:'lock-emergency'},'Emergencies still reach you via push. Managers can override the lock if needed.'),
-      el('button',{class:'lock-logout',onclick:()=>{
-        localStorage.removeItem('staylo_user'); location.reload();
-      }},'Switch user'),
+      // "Switch user" removed — the app is personal (1 device = 1 account
+      // bound at contract signing). If the wrong person is signed in, the
+      // manager resets the device binding from the fiche staff; this is not
+      // a self-service action.
     ),
   );
   document.body.appendChild(lock);
