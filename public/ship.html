@@ -2304,31 +2304,32 @@ body.sched-landscape-fs #global-mobile-menu-btn,
 body.sched-landscape-fs .sched-nav,
 body.sched-landscape-fs .sched-head,
 body.sched-landscape-fs .sched-handle{ display: none !important; }
-body.sched-landscape-fs #hr-modal,
-body.sched-landscape-fs #hr-body,
-body.sched-landscape-fs .content-view{
-  position: fixed !important; inset: 0 !important;
-  margin: 0 !important;
+/* Only #hr-modal gets fixed/full-screen positioning; children fill it
+ * normally with width:100%. Avoids double-padding + prevents the
+ * "sticky left column clipped" bug David hit when both #hr-modal AND
+ * #hr-body had position:fixed with safe-area padding. */
+body.sched-landscape-fs #hr-modal{
+  position: fixed !important; top: 0 !important; left: 0 !important;
   width: 100vw !important; height: 100dvh !important; max-width: none !important;
+  margin: 0 !important; padding: 0 !important;
   z-index: 9990 !important; background: #fff !important;
-  overflow: auto !important;
-  /* Safe-area insets: Android edge-gesture zones + iOS notches eat pixels
-   * on the left/right of the visual viewport. Padding these prevents the
-   * "TEAM MEMBER" column and the right-most day column from being clipped
-   * behind the gesture zone. */
-  padding-left: env(safe-area-inset-left, 0px) !important;
-  padding-right: env(safe-area-inset-right, 0px) !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
+  overflow-x: hidden !important;   /* prevents rogue negative offsets */
   box-sizing: border-box !important;
 }
-body.sched-landscape-fs .sched-grid-wrap{ max-height: 100dvh; }
-/* Also ensure the sticky left emp-cell stays glued to the SAFE left edge,
- * not to viewport 0 (which sits under the gesture zone). */
-body.sched-landscape-fs .sched-grid .emp-cell,
-body.sched-landscape-fs .sched-date-strip .cell.side:first-child{
-  left: 0 !important;
+body.sched-landscape-fs #hr-body,
+body.sched-landscape-fs .content-view{
+  position: static !important;
+  width: 100% !important; max-width: 100% !important;
+  margin: 0 !important; padding: 0 !important;
+  height: 100% !important; overflow: auto !important;
+  box-sizing: border-box !important;
 }
+body.sched-landscape-fs .sched-grid-wrap,
+body.sched-landscape-fs .date-strip-wrap{
+  width: 100% !important; max-width: 100% !important;
+  margin: 0 !important; padding: 0 !important;
+}
+body.sched-landscape-fs .sched-grid-wrap{ max-height: calc(100dvh - 60px); }
 /* MONTH view — date stacked on the LEFT, the 3 occupancy pills stacked
    VERTICALLY on the RIGHT. Lets us pack 31 columns into the typical
    viewport width without forcing horizontal scroll.
@@ -19889,7 +19890,21 @@ function _updateScheduleFullscreenClass(){
   const isSmall = window.matchMedia && window.matchMedia('(max-height: 600px)').matches;
   const onSched = !!document.querySelector('#hr-body.tab-schedule');
   const shouldEnter = isLandscape && isSmall && onSched;
+  const wasIn = document.body.classList.contains('sched-landscape-fs');
   document.body.classList.toggle('sched-landscape-fs', shouldEnter);
+  // When entering fullscreen, reset any stale horizontal scroll positions
+  // so the sticky "TEAM MEMBER" column starts glued to the visible left
+  // edge instead of appearing clipped behind an offscreen scroll offset.
+  if(shouldEnter && !wasIn){
+    setTimeout(() => {
+      try {
+        document.querySelectorAll('.sched-grid-wrap, .date-strip-wrap, #hr-body, .content-view').forEach(el => {
+          el.scrollLeft = 0;
+        });
+        window.scrollTo(0, window.scrollY);
+      } catch(_) {}
+    }, 60);
+  }
 }
 // Hook the class off when the user leaves the schedule tab. Called from
 // renderRosterTab / renderTasksTab / renderFichesTab etc via a small mixin.
