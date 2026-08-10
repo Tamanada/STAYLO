@@ -25116,13 +25116,33 @@ function showTimesheetModal(){
   document.body.appendChild(modal);
 }
 
-/* ----- Shift window lock ----- */
+/* ----- Shift window lock -----
+ * Only "front-line, on-premise" departments get the strict lock. The idea
+ * is: staff who MUST be physically at the property during their shift
+ * shouldn't be using the app for anything else the rest of the day
+ * (compliance, presence, and morale). Other departments — F&B pros
+ * planning menus, spa therapists checking bookings, sales & marketing
+ * following up leads, finance closing books — legitimately need access
+ * outside their scheduled hours.
+ *
+ * Departments in LOCK_DEPTS enforce the shift window (unlock 15 min
+ * before start, grace 30 min after end). Every other department bypasses.
+ * Managers + HR always bypass (existing rule preserved).
+ * ============================================================================ */
+const LOCK_DEPTS = ['Reception', 'Housekeeping', 'Security', 'Maintenance'];
+
 function shouldLockForShift(){
   if(State.user.audience!=='staff') return null;
   if(MGMT_ROLES.includes(State.user.role)) return null;
   if(HR_ROLES.includes(State.user.role)) return null;
   const emp = getMyEmployee();
   if(!emp) return null;     // ad-hoc users not bound to schedule (don't lock)
+  // Department gate — see LOCK_DEPTS above. Use emp.department (canonical
+  // for scheduling) with State.user.department as a fallback for legacy
+  // sessions where the emp record dept was mutated after the user session
+  // was written.
+  const dept = emp.department || State.user.department;
+  if(!LOCK_DEPTS.includes(dept)) return null;
   const today = new Date().toISOString().slice(0,10);
   const shift = getTodayShift(emp.id);
   if(!shift){
