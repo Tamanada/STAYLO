@@ -3552,6 +3552,16 @@ body.off-shift .quick-actions{display:none !important}
       </svg>
       <span class="rail-lbl" data-i18n="app.shell.bottom.me">Me</span>
     </button>
+    <!-- Daily Expenses shortcut — hidden by default; JS unhides it at boot
+         when canManageHR() is true (Owner, GM, Ops Manager, HR). -->
+    <button class="rail-btn" data-pane="de" id="rail-de" title="Daily Expenses" style="display:none">
+      <!-- Notebook / ledger (Lucide "book-open-check" tweaked) -->
+      <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+      </svg>
+      <span class="rail-lbl">DE</span>
+    </button>
   </nav>
 
 </div>
@@ -4938,13 +4948,13 @@ function setView(view, args){
   // and lets the bottom-bar reflect the active tab.
   document.body.classList.remove(
     'view-channel','view-team','view-me','view-alerts','view-ship',
-    'view-settings','view-timesheet','view-profile'
+    'view-settings','view-timesheet','view-profile','view-de'
   );
   document.body.classList.add('view-' + State.activeView);
   // Sync the bottom-bar active state (channel → channels button)
   try {
     const map = {channel:'channels', team:'team', me:'me', alerts:'alerts', ship:'ship',
-                 settings:'me', timesheet:'me', profile:'me'};
+                 settings:'me', timesheet:'me', profile:'me', de:'de'};
     const pane = map[State.activeView] || 'channels';
     document.querySelectorAll('.rail-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.pane === pane);
@@ -5052,6 +5062,19 @@ function renderActiveView(){
         renderMeLanding(body, title, subtitle);
       }
     }
+  } else if(v === 'de'){
+    // Daily Expenses ledger — the full accounting book (cash register +
+    // per-receipt entries with payment method + proof upload). HR gate is
+    // enforced at rail render time (button hidden for non-authorised users),
+    // and again here as a defence-in-depth: if a non-HR user URL-hacks
+    // their way in, we bounce them back to Me.
+    if(!canManageHR()){
+      setView('me');
+      return;
+    }
+    title.textContent = '📒 Daily Expenses';
+    subtitle.textContent = State.user.hotelCode || '';
+    renderDailyExpensesLedger(body);
   } else if(v === 'alerts'){
     title.textContent = t('app.alerts_view.title');
     subtitle.textContent = t('app.alerts_view.subtitle');
@@ -13538,6 +13561,98 @@ async function parseReceiptWithAI(dataUrl, currencyHint){
 }
 
 /* ============================================================================
+ * CASHBOOK — cash-in-hand register
+ * ============================================================================
+ * Tracks the physical cash the hotel holds at reception. Balance =
+ *   opening balance + all top-ups + adjustments − all cash-paid expenses
+ * The cash-paid expenses live in staylo_expenses with payment_method='cash',
+ * so we don't double-book them here; only inflows are recorded.
+ *
+ * Schema: staylo_cashbook per hotel = {
+ *   opening_balance: number,     // "float" of cash the day the hotel opened / took inventory
+ *   opening_date: 'YYYY-MM-DD',
+ *   movements: [{
+ *     id, date: 'YYYY-MM-DD', kind: 'topup'|'adjustment',
+ *     amount: number, source, note, created_at
+ *   }]
+ * }
+ * Adjustments carry a signed amount (negative for cash-outs like a bank
+ * deposit) so managers can correct drift without editing history.
+ * ============================================================================ */
+const PAYMENT_METHODS = [
+  { id: 'cash',          label: 'Cash',           em: '💵' },
+  { id: 'qr',            label: 'QR / mobile pay', em: '📱' },
+  { id: 'crypto',        label: 'Crypto',         em: '₿'  },
+  { id: 'bank_transfer', label: 'Bank transfer',  em: '🏦' },
+];
+function _paymentMethod(id){
+  return PAYMENT_METHODS.find(p => p.id === id) || PAYMENT_METHODS[0];
+}
+
+function getCashbook(){
+  const raw = lsGet(_hkey('staylo_cashbook'), null);
+  if(!raw) return { opening_balance: 0, opening_date: null, movements: [] };
+  if(!raw.movements) raw.movements = [];
+  return raw;
+}
+function saveCashbook(cb){
+  if(!lsSetVerify(_hkey('staylo_cashbook'), cb)){
+    alert('Storage full — cashbook change could not be saved.');
+  }
+}
+function setOpeningBalance(amount, date){
+  const cb = getCashbook();
+  cb.opening_balance = parseFloat(amount) || 0;
+  cb.opening_date = date || new Date().toISOString().slice(0, 10);
+  saveCashbook(cb);
+}
+function addCashMovement(mv){
+  const cb = getCashbook();
+  mv.id = mv.id || 'cm-' + Date.now() + '-' + Math.floor(Math.random() * 9999);
+  mv.date = mv.date || new Date().toISOString().slice(0, 10);
+  mv.created_at = new Date().toISOString();
+  cb.movements.push(mv);
+  saveCashbook(cb);
+  return mv;
+}
+function deleteCashMovement(id){
+  const cb = getCashbook();
+  cb.movements = cb.movements.filter(m => m.id !== id);
+  saveCashbook(cb);
+}
+/* Cash balance up to (and including) the given date. Omit `upTo` to get
+ * the running total. Cash-mode expenses across ALL months are subtracted. */
+function computeCashBalance(upTo){
+  const cb = getCashbook();
+  const limit = upTo || new Date().toISOString().slice(0, 10);
+  let bal = cb.opening_balance || 0;
+  for(const mv of cb.movements){
+    if(mv.date <= limit) bal += parseFloat(mv.amount) || 0;
+  }
+  // Subtract cash-paid expenses
+  const all = getExpensesData();
+  for(const monthKey of Object.keys(all.months)){
+    for(const e of all.months[monthKey]){
+      if(e.payment_method === 'cash' && (e.date || '') <= limit){
+        bal -= parseFloat(e.amount) || 0;
+      }
+    }
+  }
+  return bal;
+}
+function sumExpensesByMethodForMonth(month){
+  const list = getExpensesForMonth(month);
+  const out = { cash: 0, qr: 0, crypto: 0, bank_transfer: 0, total: 0 };
+  for(const e of list){
+    const m = e.payment_method || 'cash';
+    if(out[m] === undefined) out[m] = 0;
+    out[m] += parseFloat(e.amount) || 0;
+    out.total += parseFloat(e.amount) || 0;
+  }
+  return out;
+}
+
+/* ============================================================================
  * Add Expense modal — photo capture with AI auto-fill + editable form
  * ============================================================================ */
 function showAddExpenseModal(month, onSaved){
@@ -13560,6 +13675,8 @@ function showAddExpenseModal(month, onSaved){
     currency: defaultCur,
     category: 'other',
     description: '',
+    payment_method: 'cash',
+    payment_proof_thumb: null,
     ai_confidence: null,
   };
 
@@ -13590,6 +13707,78 @@ function showAddExpenseModal(month, onSaved){
     if(c.id === state.category) o.selected = true;
     catSel.appendChild(o);
   }
+
+  // Payment method dropdown — determines whether the expense hits the
+  // cashbook and whether we prompt for a bank-transfer proof screenshot.
+  const paySel = document.createElement('select');
+  paySel.id = 'exp-paymethod';
+  paySel.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+  for(const p of PAYMENT_METHODS){
+    const o = document.createElement('option');
+    o.value = p.id; o.textContent = p.em + ' ' + p.label;
+    if(p.id === state.payment_method) o.selected = true;
+    paySel.appendChild(o);
+  }
+
+  // Bank-transfer proof — separate file input + preview, shown only when
+  // payment_method === 'bank_transfer'. Same downscale pipeline as the
+  // receipt photo so localStorage stays sane.
+  const proofFileIn = document.createElement('input');
+  proofFileIn.type = 'file';
+  proofFileIn.accept = 'image/*';
+  proofFileIn.style.display = 'none';
+  const proofPreview = el('div', {
+    id: 'exp-proof-preview',
+    style: 'display:none;margin-top:8px;padding:10px;background:#EFF6FF;border:1px dashed #93C5FD;border-radius:10px'
+  });
+  const proofBtn = el('button', {
+    class: 'btn-secondary',
+    style: 'width:100%;font-size:13px;padding:8px 12px;margin-top:8px;display:none',
+    onclick: () => proofFileIn.click(),
+  }, '🏦 Attach bank transfer proof (screenshot)');
+  const updateProofPreview = () => {
+    proofPreview.innerHTML = '';
+    if(state.payment_proof_thumb){
+      const img = document.createElement('img');
+      img.src = state.payment_proof_thumb;
+      img.style.cssText = 'max-width:100%;max-height:140px;border-radius:6px;display:block;margin:0 auto 6px';
+      proofPreview.appendChild(img);
+      proofPreview.appendChild(el('div', { style: 'display:flex;gap:6px;justify-content:center' },
+        el('button', { class: 'btn-secondary', style: 'font-size:11px;padding:4px 8px', onclick: () => proofFileIn.click() }, '🔄 Change'),
+        el('button', { class: 'btn-secondary', style: 'font-size:11px;padding:4px 8px', onclick: () => { state.payment_proof_thumb = null; updateProofPreview(); } }, '🗑 Remove'),
+      ));
+      proofPreview.style.display = '';
+    } else {
+      proofPreview.style.display = 'none';
+    }
+  };
+  proofFileIn.addEventListener('change', async (ev) => {
+    const f = ev.target.files && ev.target.files[0];
+    if(!f) return;
+    try {
+      const thumb = await _downscaleImageFile(f, 1200);
+      state.payment_proof_thumb = thumb;
+      updateProofPreview();
+    } catch(err){
+      console.error('[expense] proof processing failed', err);
+      alert('Could not read the proof image — try again.');
+    }
+  });
+
+  paySel.addEventListener('change', () => {
+    state.payment_method = paySel.value;
+    // Only bank_transfer prompts for a proof screenshot; the others are
+    // instant (cash) or already digitally verifiable (QR / crypto have
+    // their own paper trail).
+    if(state.payment_method === 'bank_transfer'){
+      proofBtn.style.display = '';
+      updateProofPreview();
+    } else {
+      proofBtn.style.display = 'none';
+      state.payment_proof_thumb = null;
+      updateProofPreview();
+    }
+  });
 
   // Photo capture zone
   const photoPreview = el('div', { id: 'exp-photo-preview', style: 'margin-bottom:10px;text-align:center;background:#F7F5F0;border-radius:12px;padding:12px;min-height:80px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px' },
@@ -13693,6 +13882,14 @@ function showAddExpenseModal(month, onSaved){
       el('div', {}, label('Currency'), currencyIn),
     ),
 
+    el('div', { style: 'margin-top:12px' },
+      label('Paid with'),
+      paySel,
+      proofBtn,
+      proofFileIn,
+      proofPreview,
+    ),
+
     el('div', { style: 'margin-top:12px' }, label('Short description (optional)'), descIn),
 
     el('div', { class: 'row-actions', style: 'margin-top:20px' },
@@ -13701,6 +13898,9 @@ function showAddExpenseModal(month, onSaved){
         const amount = parseFloat(amountIn.value);
         if(!vendorIn.value.trim()){ alert('Vendor is required.'); return; }
         if(!(amount > 0)){ alert('Amount must be greater than 0.'); return; }
+        if(paySel.value === 'bank_transfer' && !state.payment_proof_thumb){
+          if(!confirm('No bank transfer screenshot attached. Save without proof?')) return;
+        }
         const exp = {
           date: dateIn.value || new Date().toISOString().slice(0,10),
           vendor: vendorIn.value.trim(),
@@ -13709,6 +13909,8 @@ function showAddExpenseModal(month, onSaved){
           category: catSel.value,
           description: descIn.value.trim() || null,
           photo_thumb: state.photo_thumb || null,
+          payment_method: paySel.value || 'cash',
+          payment_proof_thumb: paySel.value === 'bank_transfer' ? state.payment_proof_thumb : null,
           ai_confidence: state.ai_confidence,
         };
         // File into the month of the receipt date, not the current month —
@@ -13730,81 +13932,325 @@ function showAddExpenseModal(month, onSaved){
 function renderExpensesSection(container, month, onChange){
   const sym = (typeof curSym === 'function') ? curSym() : '฿';
   const fmt = (n) => sym + ' ' + Math.round(n || 0).toLocaleString('en-US');
-  const expenses = getExpensesForMonth(month)
-    .slice()
-    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const expenses = getExpensesForMonth(month);
   const total = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+  const cashBalance = computeCashBalance();
 
-  // Breakdown by category
-  const byCat = {};
-  for(const e of expenses){
-    const c = e.category || 'other';
-    byCat[c] = (byCat[c] || 0) + (parseFloat(e.amount) || 0);
-  }
-  const topCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  // Summary card only in the Accounting tab. Full CRUD lives in the DE
+  // (Daily Expenses) rail pane — the manager clicks to jump there.
+  const sec = el('section', { class: 'finance-sec', style: 'border:2px solid #FF6B0033;background:linear-gradient(180deg,#FFF9F2,#fff);cursor:pointer;transition:transform 160ms ease' });
+  sec.addEventListener('mouseenter', () => { sec.style.transform = 'translateY(-1px)'; });
+  sec.addEventListener('mouseleave', () => { sec.style.transform = 'translateY(0)'; });
+  sec.addEventListener('click', () => setView('de'));
 
-  const sec = el('section', { class: 'finance-sec', style: 'border:2px solid #FF6B0033;background:linear-gradient(180deg,#FFF9F2,#fff)' });
   sec.appendChild(el('div', { class: 'finance-sec-head' },
-    el('div', { class: 'finance-sec-title' }, '📸 Daily expenses (receipts)'),
+    el('div', { class: 'finance-sec-title' }, '📒 Daily expenses ledger'),
     el('div', { class: 'finance-sec-total' }, fmt(total)),
   ));
 
-  const addBtn = el('button', { class: 'btn-primary', style: 'width:100%;padding:14px;margin-bottom:12px;font-weight:800;background:linear-gradient(135deg,#FF6B00,#FF1F70);color:#fff;border:0;border-radius:12px;font-size:15px;cursor:pointer;box-shadow:0 6px 16px rgba(255,31,112,.25)' },
-    '📸 Add a receipt');
-  addBtn.addEventListener('click', () => {
-    showAddExpenseModal(month, () => { if(onChange) onChange(); });
-  });
-  sec.appendChild(addBtn);
+  sec.appendChild(el('div', {
+    style: 'display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px 4px'
+  },
+    el('div', {},
+      el('div', { style: 'font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted,#666);margin-bottom:4px' },
+        expenses.length + (expenses.length === 1 ? ' receipt' : ' receipts') + ' this month'),
+      el('div', { style: 'font-size:14px;color:var(--fg,#1A1A2E)' },
+        'Click to open the ledger →'),
+    ),
+    el('div', { style: 'text-align:right' },
+      el('div', { style: 'font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted,#666);margin-bottom:4px' }, '💵 Cash in hand'),
+      el('div', { style: 'font-size:18px;font-weight:800;color:' + (cashBalance < 0 ? '#DC2626' : '#059669') },
+        fmt(cashBalance)),
+    ),
+  ));
 
-  // Category chips
-  if(topCats.length){
-    const chips = el('div', { style: 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px' });
-    for(const [cat, amt] of topCats){
-      const c = _expenseCategory(cat);
-      chips.appendChild(el('span', {
-        style: 'display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border,#E8E0D8);border-radius:99px;padding:4px 10px;font-size:12px;font-weight:600'
-      }, c.em + ' ' + c.label + ' · ' + fmt(amt)));
-    }
-    sec.appendChild(chips);
-  }
-
-  // Expense list
-  const list = el('div', { class: 'finance-rows' });
-  if(!expenses.length){
-    list.appendChild(el('div', { class: 'finance-empty', style: 'padding:20px;text-align:center;color:var(--muted,#666);font-size:13px' },
-      'No receipts yet this month. Click "Add a receipt" to snap the first one.'));
-  } else {
-    for(const e of expenses){
-      const c = _expenseCategory(e.category);
-      const row = el('div', {
-        style: 'display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--border,#E8E0D8);border-radius:10px;background:#fff;margin-bottom:6px'
-      },
-        el('div', { style: 'font-size:22px', title: c.label }, c.em),
-        el('div', { style: 'display:flex;flex-direction:column;gap:2px;min-width:0' },
-          el('div', { style: 'font-weight:700;color:var(--fg,#1A1A2E);white-space:nowrap;overflow:hidden;text-overflow:ellipsis' }, e.vendor || '—'),
-          el('div', { style: 'font-size:11px;color:var(--muted,#666)' },
-            (e.date || '?') + (e.description ? ' · ' + e.description : '')),
-        ),
-        el('div', { style: 'font-weight:800;color:var(--fg,#1A1A2E);text-align:right;white-space:nowrap' },
-          fmt(e.amount) + (e.currency && e.currency !== ((getHotelSettings().currency_code || '').toUpperCase()) ? ' (' + e.currency + ')' : '')),
-        (() => {
-          const btn = el('button', {
-            title: 'Delete this expense',
-            style: 'background:transparent;border:0;color:var(--muted,#999);cursor:pointer;padding:4px 8px;border-radius:6px;font-size:16px'
-          }, '×');
-          btn.addEventListener('click', () => {
-            if(!confirm('Delete this receipt entry?')) return;
-            deleteExpense(month, e.id);
-            if(onChange) onChange();
-          });
-          return btn;
-        })(),
-      );
-      list.appendChild(row);
-    }
-  }
-  sec.appendChild(list);
   container.appendChild(sec);
+}
+
+/* ============================================================================
+ * Cash top-up + opening balance modal
+ * ============================================================================ */
+function showCashMovementModal(mode, onSaved){
+  const ex = $('#cash-mv-modal'); if(ex) ex.remove();
+  const modal = el('div', { class: 'shift-editor-bg', id: 'cash-mv-modal' });
+  bindSafeBackdropClose(modal, 'cash-mv-modal');
+
+  const sym = (typeof curSym === 'function') ? curSym() : '฿';
+  const cb = getCashbook();
+  const isOpening = mode === 'opening';
+
+  const dateI = document.createElement('input');
+  dateI.type = 'date';
+  dateI.value = (isOpening ? (cb.opening_date || new Date().toISOString().slice(0,10)) : new Date().toISOString().slice(0,10));
+  dateI.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+
+  const amountI = document.createElement('input');
+  amountI.type = 'number';
+  amountI.step = '0.01';
+  amountI.min = isOpening ? '0' : undefined;
+  amountI.value = isOpening ? (cb.opening_balance || '') : '';
+  amountI.placeholder = '0';
+  amountI.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+
+  const sourceI = document.createElement('input');
+  sourceI.type = 'text';
+  sourceI.placeholder = isOpening ? 'e.g. "Initial float"' : 'e.g. "David personal cash", "Bank withdrawal"';
+  sourceI.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+
+  const noteI = document.createElement('input');
+  noteI.type = 'text';
+  noteI.placeholder = 'Note (optional)';
+  noteI.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+
+  const label = (t) => el('label', { style: 'display:block;font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--muted,#666);text-transform:uppercase;margin-bottom:6px' }, t);
+
+  const panel = el('div', { class: 'shift-editor-panel', style: 'max-width:460px' },
+    el('h3', { style: 'margin:0 0 4px' }, isOpening ? '🎯 Set opening cash balance' : '💵 Add cash top-up'),
+    el('p', { class: 'sub', style: 'margin:0 0 16px' }, isOpening
+      ? 'The initial cash amount you had when starting the ledger. This anchors every future balance calculation.'
+      : 'Injecting cash into the register (from an owner, bank withdrawal, safe transfer, etc.). Negative amounts allowed for cash outflows (e.g. bank deposit).'),
+
+    el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:12px' },
+      el('div', {}, label('Date'), dateI),
+      el('div', {}, label('Amount (' + sym + ')'), amountI),
+    ),
+    el('div', { style: 'margin-top:12px' }, label(isOpening ? 'Label' : 'Source'), sourceI),
+    isOpening ? null : el('div', { style: 'margin-top:12px' }, label('Note'), noteI),
+
+    el('div', { class: 'row-actions', style: 'margin-top:20px' },
+      el('button', { class: 'btn-secondary', onclick: () => modal.remove() }, 'Cancel'),
+      el('button', { class: 'btn-primary', onclick: () => {
+        const amount = parseFloat(amountI.value);
+        if(isNaN(amount)){ alert('Amount is required.'); return; }
+        if(isOpening){
+          setOpeningBalance(amount, dateI.value);
+        } else {
+          addCashMovement({
+            date: dateI.value,
+            kind: amount >= 0 ? 'topup' : 'adjustment',
+            amount: amount,
+            source: sourceI.value.trim() || null,
+            note: noteI.value.trim() || null,
+          });
+        }
+        modal.remove();
+        if(onSaved) onSaved();
+      } }, 'Save'),
+    ),
+  );
+  modal.appendChild(panel);
+  document.body.appendChild(modal);
+}
+
+/* ============================================================================
+ * Full Daily Expenses ledger — rendered in the DE rail pane
+ * ============================================================================ */
+let _deMonth = null;
+let _deFilterMethod = 'all';
+function _curDeMonth(){ return _deMonth || _curFinMonth(); }
+
+function renderDailyExpensesLedger(body){
+  body.innerHTML = '';
+  const month = _curDeMonth();
+  const sym = (typeof curSym === 'function') ? curSym() : '฿';
+  const fmt = (n) => sym + ' ' + Math.round(n || 0).toLocaleString('en-US');
+  const rerender = () => renderDailyExpensesLedger(body);
+
+  const cb = getCashbook();
+  const cashBalance = computeCashBalance();
+  const cashBalanceThisMonth = computeCashBalance(month + '-31');
+
+  // Filter by payment method (server would do this at scale; local for now).
+  const monthExpenses = getExpensesForMonth(month).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const filtered = _deFilterMethod === 'all'
+    ? monthExpenses
+    : monthExpenses.filter(e => (e.payment_method || 'cash') === _deFilterMethod);
+
+  const byMethod = sumExpensesByMethodForMonth(month);
+
+  const wrap = el('div', { class: 'finance-wrap', style: 'padding:16px;max-width:900px;margin:0 auto' });
+
+  // ── Period switcher ──
+  wrap.appendChild(el('div', { class: 'finance-period', style: 'margin-bottom:16px' },
+    el('button', {
+      class: 'finance-period-nav',
+      onclick: () => { _deMonth = _shiftMonthKey(month, -1); rerender(); }
+    }, '←'),
+    el('div', { class: 'finance-period-label' }, _fmtMonthLabel(month)),
+    el('button', {
+      class: 'finance-period-nav',
+      onclick: () => { _deMonth = _shiftMonthKey(month, +1); rerender(); }
+    }, '→'),
+    el('button', {
+      class: 'finance-period-nav today',
+      onclick: () => { _deMonth = null; rerender(); }
+    }, 'This month'),
+  ));
+
+  // ── Cash register KPI card ──
+  const kpiCard = el('section', {
+    style: 'background:linear-gradient(135deg,#FF6B00,#FF1F70,#7E22CE);color:#fff;padding:20px;border-radius:16px;margin-bottom:16px;box-shadow:0 12px 32px rgba(255,31,112,0.25)'
+  });
+  kpiCard.appendChild(el('div', {
+    style: 'display:grid;grid-template-columns:1fr 1fr;gap:16px'
+  },
+    el('div', {},
+      el('div', { style: 'font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.85;margin-bottom:4px' }, '💵 Cash in hand'),
+      el('div', { style: 'font-size:32px;font-weight:900;line-height:1' },
+        fmt(cashBalance)),
+      el('div', { style: 'font-size:11px;margin-top:6px;opacity:.75' },
+        cb.opening_balance ? 'Opening: ' + fmt(cb.opening_balance) + ' · ' + (cb.opening_date || '—') : 'No opening balance set'),
+    ),
+    el('div', { style: 'text-align:right' },
+      el('div', { style: 'font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.85;margin-bottom:4px' }, 'This month spent'),
+      el('div', { style: 'font-size:32px;font-weight:900;line-height:1' },
+        fmt(byMethod.total)),
+      el('div', { style: 'font-size:11px;margin-top:6px;opacity:.75' },
+        monthExpenses.length + ' operation' + (monthExpenses.length === 1 ? '' : 's')),
+    ),
+  ));
+  wrap.appendChild(kpiCard);
+
+  // ── Action buttons ──
+  const actions = el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px' });
+  const addExpBtn = el('button', {
+    style: 'padding:14px;font-weight:800;background:linear-gradient(135deg,#FF6B00,#FF1F70);color:#fff;border:0;border-radius:12px;font-size:15px;cursor:pointer;box-shadow:0 6px 16px rgba(255,31,112,.25)'
+  }, '📸 Add expense');
+  addExpBtn.addEventListener('click', () => showAddExpenseModal(month, rerender));
+
+  const topupBtn = el('button', {
+    style: 'padding:14px;font-weight:800;background:#fff;color:#059669;border:2px solid #059669;border-radius:12px;font-size:15px;cursor:pointer'
+  }, '💵 Add cash top-up');
+  topupBtn.addEventListener('click', () => showCashMovementModal('topup', rerender));
+
+  actions.appendChild(addExpBtn);
+  actions.appendChild(topupBtn);
+  wrap.appendChild(actions);
+
+  if(!cb.opening_balance && !cb.opening_date){
+    const openBtn = el('button', {
+      style: 'width:100%;padding:12px;font-weight:700;background:#FFF7ED;color:#9A3412;border:2px dashed #FDBA74;border-radius:12px;font-size:14px;cursor:pointer;margin-bottom:16px'
+    }, '🎯 Set opening balance (recommended first step)');
+    openBtn.addEventListener('click', () => showCashMovementModal('opening', rerender));
+    wrap.appendChild(openBtn);
+  } else {
+    const editOpenBtn = el('button', {
+      style: 'font-size:11px;background:transparent;border:0;color:var(--muted,#666);cursor:pointer;padding:4px 0;margin-bottom:12px;text-decoration:underline'
+    }, '✏️ Edit opening balance');
+    editOpenBtn.addEventListener('click', () => showCashMovementModal('opening', rerender));
+    wrap.appendChild(editOpenBtn);
+  }
+
+  // ── Payment method filter tabs ──
+  const filters = el('div', { style: 'display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px' });
+  const mkFilterBtn = (id, label, count) => {
+    const active = _deFilterMethod === id;
+    const btn = el('button', {
+      style: 'flex-shrink:0;padding:6px 12px;border-radius:99px;border:2px solid ' +
+             (active ? '#FF6B00' : '#E8E0D8') +
+             ';background:' + (active ? 'linear-gradient(135deg,#FF6B00,#FF1F70)' : '#fff') +
+             ';color:' + (active ? '#fff' : '#1A1A2E') +
+             ';font-weight:700;font-size:12px;cursor:pointer'
+    }, label + (count > 0 ? ' (' + count + ')' : ''));
+    btn.addEventListener('click', () => { _deFilterMethod = id; rerender(); });
+    return btn;
+  };
+  filters.appendChild(mkFilterBtn('all', 'All', monthExpenses.length));
+  for(const p of PAYMENT_METHODS){
+    const n = monthExpenses.filter(e => (e.payment_method || 'cash') === p.id).length;
+    filters.appendChild(mkFilterBtn(p.id, p.em + ' ' + p.label, n));
+  }
+  wrap.appendChild(filters);
+
+  // ── Chronological list: expenses + cash movements interleaved by date ──
+  const monthMovements = (cb.movements || []).filter(m => (m.date || '').slice(0,7) === month);
+  const combined = [];
+  for(const e of filtered){
+    combined.push({ kind: 'expense', date: e.date, data: e });
+  }
+  if(_deFilterMethod === 'all' || _deFilterMethod === 'cash'){
+    for(const m of monthMovements){
+      combined.push({ kind: 'movement', date: m.date, data: m });
+    }
+  }
+  combined.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  const list = el('div', { style: 'display:flex;flex-direction:column;gap:6px' });
+  if(!combined.length){
+    list.appendChild(el('div', {
+      style: 'padding:32px;text-align:center;color:var(--muted,#666);font-size:14px;background:#F7F5F0;border-radius:12px'
+    }, 'No operations this month. Snap your first receipt above!'));
+  } else {
+    for(const item of combined){
+      if(item.kind === 'movement'){
+        const m = item.data;
+        const isTopup = m.amount >= 0;
+        list.appendChild(el('div', {
+          style: 'display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid #A7F3D0;background:#F0FDF4;border-radius:10px'
+        },
+          el('div', { style: 'font-size:24px' }, isTopup ? '💵' : '🏦'),
+          el('div', {},
+            el('div', { style: 'font-weight:700;color:#065F46' },
+              isTopup ? ('Cash top-up' + (m.source ? ' · ' + m.source : '')) : ('Cash out' + (m.source ? ' · ' + m.source : ''))),
+            el('div', { style: 'font-size:11px;color:#059669' },
+              (m.date || '?') + (m.note ? ' · ' + m.note : '')),
+          ),
+          el('div', {
+            style: 'font-weight:800;color:' + (isTopup ? '#059669' : '#DC2626')
+          }, (isTopup ? '+ ' : '') + fmt(m.amount)),
+          (() => {
+            const b = el('button', {
+              style: 'background:transparent;border:0;color:#999;cursor:pointer;padding:4px 8px;font-size:16px',
+              title: 'Delete this movement',
+            }, '×');
+            b.addEventListener('click', () => {
+              if(!confirm('Delete this cash movement?')) return;
+              deleteCashMovement(m.id);
+              rerender();
+            });
+            return b;
+          })(),
+        ));
+      } else {
+        const e = item.data;
+        const c = _expenseCategory(e.category);
+        const p = _paymentMethod(e.payment_method || 'cash');
+        list.appendChild(el('div', {
+          style: 'display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--border,#E8E0D8);background:#fff;border-radius:10px'
+        },
+          el('div', { style: 'font-size:24px', title: c.label }, c.em),
+          el('div', { style: 'min-width:0' },
+            el('div', { style: 'font-weight:700;color:var(--fg,#1A1A2E);white-space:nowrap;overflow:hidden;text-overflow:ellipsis' }, e.vendor || '—'),
+            el('div', { style: 'font-size:11px;color:var(--muted,#666);display:flex;gap:8px;flex-wrap:wrap' },
+              el('span', {}, e.date || '?'),
+              el('span', { style: 'color:#7E22CE;font-weight:700' }, p.em + ' ' + p.label),
+              e.description ? el('span', {}, '· ' + e.description) : null,
+              e.payment_proof_thumb ? el('span', { style: 'color:#059669;font-weight:700' }, '🏦 proof') : null,
+              e.photo_thumb ? el('span', { style: 'color:#7E22CE' }, '📸') : null,
+            ),
+          ),
+          el('div', {
+            style: 'font-weight:800;color:var(--fg,#1A1A2E);text-align:right;white-space:nowrap'
+          }, fmt(e.amount) + (e.currency && e.currency !== ((getHotelSettings().currency_code || '').toUpperCase()) ? ' ' + e.currency : '')),
+          (() => {
+            const b = el('button', {
+              style: 'background:transparent;border:0;color:#999;cursor:pointer;padding:4px 8px;font-size:16px',
+              title: 'Delete this expense',
+            }, '×');
+            b.addEventListener('click', () => {
+              if(!confirm('Delete this expense?')) return;
+              deleteExpense(month, e.id);
+              rerender();
+            });
+            return b;
+          })(),
+        ));
+      }
+    }
+  }
+  wrap.appendChild(list);
+
+  body.appendChild(wrap);
 }
 
 function renderFinanceView(body){
@@ -24938,6 +25384,14 @@ function initShell(){
   // Team landing handle the rest.
   if(State.user.audience==='staff'){
     $('#rail-team')?.style && ($('#rail-team').style.display = 'flex');
+    // Daily Expenses shortcut — only for HR-tier roles (Owner, GM,
+    // Ops Manager, HR). Other staff never see the button. Not merely
+    // cosmetic: renderActiveView also blocks the 'de' view for non-HR
+    // to defeat direct URL / manual state hacks.
+    if(canManageHR()){
+      const _de = document.getElementById('rail-de');
+      if(_de) _de.style.display = 'flex';
+    }
   }
   // Initialize the content-view (back-to-chat button binding)
   try { initContentView(); } catch {}
@@ -24972,6 +25426,9 @@ function initShell(){
       setView('ship', null);
     } else if(pane === 'alerts'){
       setView('alerts');
+    } else if(pane === 'de'){
+      // Extra defence-in-depth against non-HR staff URL-hacking their way in
+      if(canManageHR()) setView('de');
     }
     if(isNarrow()) showContent();
   }));
