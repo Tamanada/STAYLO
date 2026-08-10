@@ -2231,6 +2231,45 @@ body.daygrid-resizing{cursor:col-resize !important;user-select:none}
    * safe to make scrollable. */
   .sched-grid-wrap{ max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch }
   .date-strip-wrap{ max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch }
+
+  /* ── Employee fiche — collapse every multi-col grid to fill viewport ── */
+  .emp-form{ padding: 0 4px; gap: 4px }
+  .emp-form h3{ font-size: 17px }
+  .emp-form .sec-title{ font-size: 11px; margin-top: 10px; letter-spacing: 1px }
+  /* Collapse all field grids to single column so labels + inputs get room */
+  .emp-form .grid2,
+  .emp-form .grid3,
+  .emp-form .grid4,
+  .emp-form .grid-id,
+  .emp-form .grid-contact,
+  .emp-form .grid-job-trio,
+  .emp-form .grid-dates,
+  .emp-form .grid-housing,
+  .emp-form .grid-housing4,
+  .emp-form .grid-meals,
+  .emp-form .grid-job3{
+    grid-template-columns: 1fr !important; gap: 8px;
+  }
+  /* Dates + numbers row: 2×2 pairs is more usable than 5 stacked or 5 squeezed */
+  .emp-form .grid-dates5{ grid-template-columns: 1fr 1fr !important; gap: 8px }
+  /* The photo | job grid at the top — stack photo above job for readability */
+  .emp-form > div[style*="grid-template-columns:auto 1fr"]{
+    display: flex !important; flex-direction: column !important; gap: 12px !important;
+  }
+  .emp-form > div[style*="grid-template-columns:auto 1fr"] > div:first-child{
+    align-self: center; min-width: 0 !important;
+  }
+  /* Row-span cells that spanned 2/3/4 cols on desktop collapse to full width */
+  .emp-form .fld.span2, .emp-form .fld.span3, .emp-form .fld.span4{ grid-column: span 1 }
+  /* Standalone .fld rows lose their cap so they use full mobile width */
+  .emp-form > .fld{ max-width: 100% }
+  /* Inputs a bit taller on touch for easier tapping */
+  .emp-form .fld input,
+  .emp-form .fld select,
+  .emp-form .fld textarea{ min-height: 40px; font-size: 15px }
+  /* Save button in the fiche header — full-width on mobile */
+  .emp-form-head{ gap: 8px }
+  .emp-form-save-top{ width: 100%; padding: 12px; font-size: 15px }
   /* CV header (Planning · Tâches · Fiches tabs) — reduce padding so the row fits */
   .cv-head{ padding: 6px 10px !important }
   .cv-tab{ padding: 6px 10px !important; font-size: 12px !important }
