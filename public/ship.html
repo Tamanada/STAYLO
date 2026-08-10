@@ -3664,15 +3664,18 @@ async function syncHotelStateToServer(hotelCode){
     if(lookErr){ console.warn('[state sync] hotel lookup failed', lookErr.message); return { ok:false }; }
     if(!hotel){ return { ok:false, skip:true }; }
     const blob = _collectHotelStateFromLocal(hotelCode);
+    const nowIso = new Date().toISOString();
     const { error: upErr } = await State.supa
       .from('ship_hotel_state')
       .upsert({
         hotel_id: hotel.id,
         hotel_slug: hotelCode,
         state_blob: blob,
-        updated_at: new Date().toISOString(),
+        updated_at: nowIso,
       }, { onConflict: 'hotel_id' });
     if(upErr){ console.warn('[state sync] upsert failed', upErr.message); return { ok:false, err:upErr }; }
+    // Mark the push timestamp so the realtime handler ignores its own echo.
+    _lastPushedAt = new Date(nowIso).getTime();
     return { ok:true, keys: Object.keys(blob).length };
   } catch(e){ console.warn('[state sync] threw', e); return { ok:false, err:e }; }
 }
@@ -3688,7 +3691,66 @@ function scheduleStateSyncToServer(){
     // stale local view.
     if(!_hydrationDone || _lastHydrationSlug !== slug) return;
     syncHotelStateToServer(slug).catch(()=>{});
-  }, 5000);
+  }, 2000);   // 2s debounce — fast enough to feel real-time, slow enough to batch bursts
+}
+
+/* ============================================================================
+ * REALTIME — auto-hydrate when another device pushes an update
+ * ============================================================================
+ * Supabase Postgres Changes subscription on ship_hotel_state. Fires on any
+ * INSERT/UPDATE for THIS hotel. On event, we skip if the update was from
+ * our own device (we track _lastPushedAt to dedupe), otherwise hydrate the
+ * blob and dispatch a `ship:state-hydrated` custom event so views that
+ * care (Team roster, Planning, Tasks) can re-render.
+ * ============================================================================ */
+let _realtimeChannel = null;
+let _lastPushedAt = 0;
+let _realtimeRerenderBound = false;
+function _installRealtimeStateSync(hotelCode){
+  // Bind the auto-rerender listener once per session (idempotent).
+  if(!_realtimeRerenderBound){
+    _realtimeRerenderBound = true;
+    window.addEventListener('ship:state-hydrated', () => {
+      // Re-render whatever view is currently open so data updates flow to
+      // the UI without the user having to refresh. renderActiveView is a
+      // no-op if we're on the plain Chat view — fine, chat has its own
+      // realtime channel.
+      try { if(typeof renderActiveView === 'function') renderActiveView(); } catch(_){}
+      // Also refresh the channels sidebar since new schedules/tasks/
+      // employees can change the visible channels.
+      try { if(typeof renderChannels === 'function') renderChannels(); } catch(_){}
+    });
+  }
+  if(!State.supa || !hotelCode) return;
+  // Only one channel at a time — tear down previous if we're switching hotels.
+  if(_realtimeChannel){
+    try { State.supa.removeChannel(_realtimeChannel); } catch(_){}
+    _realtimeChannel = null;
+  }
+  _realtimeChannel = State.supa.channel(`ship-state:${hotelCode}`)
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'ship_hotel_state',
+      filter: `hotel_slug=eq.${hotelCode}`,
+    }, (payload) => {
+      try {
+        const rowUpdatedAt = payload && payload.new && payload.new.updated_at;
+        // Ignore echoes of our own push (within 3s of last push).
+        if(rowUpdatedAt){
+          const t = new Date(rowUpdatedAt).getTime();
+          if(Math.abs(t - _lastPushedAt) < 3000) return;
+        }
+        const blob = payload && payload.new && payload.new.state_blob;
+        if(!blob) return;
+        const n = _writeBlobToLocal(blob);
+        console.log('[realtime]', hotelCode, 'hydrated', n, 'keys from remote push');
+        // Fire event so open views can re-render themselves. Views wire up
+        // window.addEventListener('ship:state-hydrated', …) individually.
+        try { window.dispatchEvent(new CustomEvent('ship:state-hydrated', { detail: { hotelCode, keys: n } })); } catch(_){}
+      } catch(err){ console.warn('[realtime] handler failed', err); }
+    })
+    .subscribe();
 }
 
 async function hydrateHotelStateFromServerAuthenticated(hotelCode){
@@ -26697,6 +26759,9 @@ async function _bootAppInner(){
     }
     if(State.supa && State.user && State.user.hotelCode){
       await hydrateHotelStateFromServerAuthenticated(State.user.hotelCode);
+      // Subscribe to server-side pushes from OTHER devices → auto-hydrate
+      // + fire ship:state-hydrated event for open views to re-render.
+      _installRealtimeStateSync(State.user.hotelCode);
     }
   } catch(err){ console.warn('[boot] hydration failed', err); }
   // Merge per-hotel custom roles into ROLE_TO_DEPT/EMOJI lookups
@@ -27035,9 +27100,18 @@ async function init(){
           try { await hydrateHotelStateFromInviteToken(inviteToken); }
           catch(err){ console.warn('[invite hydrate]', err); }
           // Mark hydration done for this hotelCode so the state-sync push
-          // (which runs 5s after any subsequent write) has a reference.
+          // (which runs 2s after any subsequent write) has a reference.
           _hydrationDone = true;
           _lastHydrationSlug = u.hotelCode;
+          // Subscribe to server pushes for this hotel — even staff phones
+          // get real-time updates when the manager makes changes on desktop.
+          // Requires State.supa; we create it on demand.
+          try {
+            if(!State.supa && !DEMO_MODE && typeof supabase !== 'undefined'){
+              State.supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            if(State.supa) _installRealtimeStateSync(u.hotelCode);
+          } catch(err){ console.warn('[invite realtime install]', err); }
           $('#onboarding').style.display='none';
           _removeInviteSplash();
           bootApp();
