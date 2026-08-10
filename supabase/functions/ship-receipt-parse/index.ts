@@ -18,7 +18,11 @@
 // ============================================================================
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 
-const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
+// Prefer the SHIP-scoped key so cost tracking is isolated per project;
+// fall back to the shared ANTHROPIC_API_KEY if the SHIP-specific one isn't
+// set (e.g. staging environments).
+const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY_SHIP')
+                       || Deno.env.get('ANTHROPIC_API_KEY')
 const MODEL = 'claude-haiku-4-5-20251001'
 
 const CORS = {
