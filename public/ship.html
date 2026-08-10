@@ -15630,6 +15630,330 @@ function renderDailyExpensesLedger(body){
   body.appendChild(wrap);
 }
 
+/* ============================================================================
+ * MONTHLY REPORT — full P&L + ledger + cashbook + commissions bundle
+ * ============================================================================
+ * One function generates the full report data (revenues, expenses, DE, cash-
+ * book, commissions, payroll snapshot). Three renderers turn it into HTML
+ * (print / PDF-ready), CSV (accountant-friendly flat), and JSON (raw).
+ * The modal shows the HTML preview + three download buttons.
+ * ============================================================================ */
+function buildMonthlyReport(month){
+  const sym = (typeof curSym === 'function') ? curSym() : '฿';
+  const cur = (getFinanceData().months || {})[month] || _emptyFinMonth();
+  const emps = getEmployees().filter(e => !e.is_self_user);
+  const payroll = emps.reduce((s, e) => s + (parseFloat(e.monthly_salary_thb) || 0), 0);
+  const sumOf = (arr) => (arr || []).reduce((s, x) => s + (parseFloat(x.amount) || 0), 0);
+  const expenses = getExpensesForMonth(month);
+  const cashbook = getCashbook();
+  const cashMovements = (cashbook.movements || []).filter(m => (m.date || '').slice(0,7) === month);
+  const cashBalance = computeCashBalance(month + '-31');
+  const revEvents = getRevenueEventsForMonth(month);
+  const commissions = computeCommissionsForMonth(month);
+
+  // Group DE expenses by category
+  const byCat = {};
+  for(const e of expenses){
+    const c = e.category || 'other';
+    (byCat[c] = byCat[c] || []).push(e);
+  }
+  const perCatTotals = Object.keys(byCat).map(catId => ({
+    catId, def: _expenseCategory(catId),
+    total: byCat[catId].reduce((s, e) => s + (parseFloat(e.amount) || 0), 0),
+    count: byCat[catId].length,
+  })).sort((a, b) => b.total - a.total);
+
+  const revenues = {
+    lodging: sumOf(cur.rev_lodging),
+    fnb:     sumOf(cur.rev_fnb),
+    ancillary: sumOf(cur.rev_ancillary),
+    shop:    sumOf(cur.rev_shop),
+    events:  revEvents.reduce((s, e) => s + (parseFloat(e.revenue) || 0), 0),
+  };
+  revenues.total = revenues.lodging + revenues.fnb + revenues.ancillary + revenues.shop + revenues.events;
+
+  const expensesTotals = {
+    manualFixed: sumOf(cur.fixed),
+    autoFixed:   sumDeFixedForMonth(month),
+    payroll,
+    dailyOps:    sumDeNonFixedForMonth(month),
+  };
+  expensesTotals.total = expensesTotals.manualFixed + expensesTotals.autoFixed
+                       + expensesTotals.payroll + expensesTotals.dailyOps;
+
+  return {
+    hotel: {
+      slug: State.user && State.user.hotelCode,
+      name: (typeof getHotelSettings === 'function') ? (getHotelSettings().name || '') : '',
+      currency: sym,
+    },
+    period: {
+      month,
+      label: _fmtMonthLabel(month),
+      generatedAt: new Date().toISOString(),
+    },
+    revenues,
+    expenses: expensesTotals,
+    net: revenues.total - expensesTotals.total,
+    payroll: {
+      total: payroll,
+      employees: emps.length,
+    },
+    fixed: cur.fixed || [],
+    revLodging: cur.rev_lodging || [],
+    revFnb: cur.rev_fnb || [],
+    revAncillary: cur.rev_ancillary || [],
+    revShop: cur.rev_shop || [],
+    de: {
+      expenses,
+      byCategory: perCatTotals,
+    },
+    cashbook: {
+      opening: cashbook.opening_balance || 0,
+      openingDate: cashbook.opening_date || null,
+      movements: cashMovements,
+      balance: cashBalance,
+    },
+    revenueEvents: revEvents,
+    commissions,
+  };
+}
+
+function _fmtMoney(n, sym){ return sym + ' ' + Math.round(n || 0).toLocaleString('en-US'); }
+
+function _reportToHTML(r){
+  const sym = r.hotel.currency;
+  const fmt = (n) => _fmtMoney(n, sym);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const netColor = r.net >= 0 ? '#059669' : '#DC2626';
+  const rowSummary = (label, amount, note) =>
+    `<tr><td>${esc(label)}</td><td style="text-align:right;font-weight:700">${fmt(amount)}</td>${note ? `<td style="color:#666;font-size:12px">${esc(note)}</td>` : '<td></td>'}</tr>`;
+
+  let html = `<!doctype html><html><head><meta charset="utf-8"><title>Monthly Report — ${esc(r.hotel.name || r.hotel.slug)} · ${esc(r.period.label)}</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1A1A2E;background:#fff;padding:24px;max-width:900px;margin:0 auto;font-size:13px;line-height:1.5}
+h1{font-size:26px;margin:0 0 4px;background:linear-gradient(135deg,#FF6B00,#FF1F70);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:900}
+h2{font-size:16px;margin:28px 0 10px;padding-bottom:6px;border-bottom:2px solid #E8E0D8;color:#7E22CE;letter-spacing:.5px;text-transform:uppercase}
+.meta{color:#666;font-size:12px;margin-bottom:20px}
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0 28px}
+.kpi > div{padding:14px;border:1px solid #E8E0D8;border-radius:10px;background:#FAFAF7}
+.kpi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;font-weight:800}
+.kpi .val{font-size:20px;font-weight:900;margin-top:4px}
+.kpi .net{color:${netColor}}
+table{width:100%;border-collapse:collapse;margin-bottom:8px}
+th,td{padding:6px 8px;border-bottom:1px solid #E8E0D8;text-align:left;vertical-align:top}
+th{background:#F7F5F0;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#666;font-weight:800}
+td.right, th.right{text-align:right}
+.subtotal{background:#FFF9F2;font-weight:800}
+.grand{background:#FFF4EA;font-weight:900;font-size:15px}
+.tag{display:inline-block;padding:1px 6px;border-radius:4px;background:#F0EDF7;color:#7E22CE;font-size:10px;font-weight:700;margin-right:4px}
+footer{margin-top:32px;padding-top:16px;border-top:1px solid #E8E0D8;color:#999;font-size:11px;text-align:center}
+@media print{ body{padding:12px;max-width:none} h2{page-break-after:avoid} table{page-break-inside:avoid} }
+</style></head><body>`;
+
+  html += `<h1>Monthly Report</h1>
+<div class="meta">
+  <div><strong>${esc(r.hotel.name || r.hotel.slug || 'Hotel')}</strong> · ${esc(r.period.label)}</div>
+  <div>Generated ${new Date(r.period.generatedAt).toLocaleString()}</div>
+</div>`;
+
+  // KPI row
+  html += `<section class="kpi">
+    <div><div class="lbl">Revenues</div><div class="val">${fmt(r.revenues.total)}</div></div>
+    <div><div class="lbl">Expenses</div><div class="val">${fmt(r.expenses.total)}</div></div>
+    <div><div class="lbl">Net ${r.net >= 0 ? 'Profit' : 'Loss'}</div><div class="val net">${fmt(r.net)}</div></div>
+    <div><div class="lbl">Cash in hand</div><div class="val">${fmt(r.cashbook.balance)}</div></div>
+  </section>`;
+
+  // Revenues
+  html += `<h2>💰 Revenues</h2><table>
+    ${rowSummary('Hotel / lodging', r.revenues.lodging)}
+    ${rowSummary('F&B', r.revenues.fnb)}
+    ${rowSummary('Ancillary', r.revenues.ancillary)}
+    ${rowSummary('Shop', r.revenues.shop)}
+    ${rowSummary('Revenue events (from DE)', r.revenues.events, r.revenueEvents.length + ' event(s)')}
+    <tr class="grand"><td>Total</td><td class="right">${fmt(r.revenues.total)}</td><td></td></tr>
+  </table>`;
+
+  // Expenses
+  html += `<h2>📤 Expenses</h2><table>
+    ${rowSummary('Fixed expenses (manual)', r.expenses.manualFixed)}
+    ${rowSummary('Fixed from DE (rent / utilities / insurance)', r.expenses.autoFixed)}
+    ${rowSummary('Payroll', r.expenses.payroll, r.payroll.employees + ' employee(s)')}
+    ${rowSummary('Daily operational expenses', r.expenses.dailyOps, r.de.expenses.length + ' receipt(s)')}
+    <tr class="grand"><td>Total</td><td class="right">${fmt(r.expenses.total)}</td><td></td></tr>
+  </table>`;
+
+  // DE by category
+  if(r.de.byCategory.length){
+    html += `<h2>📸 Daily Expenses by category</h2><table>
+      <thead><tr><th>Category</th><th class="right">Count</th><th class="right">Amount</th></tr></thead><tbody>`;
+    for(const x of r.de.byCategory){
+      html += `<tr><td>${x.def.em} ${esc(x.def.label)}</td><td class="right">${x.count}</td><td class="right">${fmt(x.total)}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+
+  // Cashbook
+  html += `<h2>💵 Cashbook</h2><table>
+    ${rowSummary('Opening balance', r.cashbook.opening, r.cashbook.openingDate || '—')}`;
+  for(const m of r.cashbook.movements){
+    html += `<tr><td>${esc(m.date)} · ${esc(m.source || (m.kind === 'topup' ? 'Top-up' : 'Adjustment'))}${m.note ? ' <span style="color:#888;font-style:italic">' + esc(m.note) + '</span>' : ''}</td><td class="right" style="color:${m.amount >= 0 ? '#059669' : '#DC2626'}">${m.amount >= 0 ? '+' : ''}${fmt(m.amount)}</td><td></td></tr>`;
+  }
+  html += `<tr class="grand"><td>Balance end of period</td><td class="right">${fmt(r.cashbook.balance)}</td><td></td></tr></table>`;
+
+  // Commissions
+  if(r.commissions.rows.length){
+    html += `<h2>🤝 Commissions owed</h2><table>
+      <thead><tr><th>Employee</th><th>Role</th><th class="right">Total</th></tr></thead><tbody>`;
+    for(const c of r.commissions.rows){
+      html += `<tr><td>${esc((c.emp.first_name || '') + ' ' + (c.emp.last_name || ''))}</td><td>${esc(c.emp.role || '')}</td><td class="right">${fmt(c.total)}</td></tr>`;
+    }
+    html += `<tr class="grand"><td colspan="2">Total commissions owed</td><td class="right">${fmt(r.commissions.total)}</td></tr></tbody></table>`;
+  }
+
+  // Revenue events detail
+  if(r.revenueEvents.length){
+    html += `<h2>🎉 Revenue events</h2><table>
+      <thead><tr><th>Date</th><th>Kind</th><th>Label</th><th class="right">Revenue</th><th class="right">Cost</th></tr></thead><tbody>`;
+    for(const e of r.revenueEvents){
+      const k = _revenueKind(e.kind);
+      html += `<tr><td>${esc(e.date)}</td><td>${k.em} ${esc(k.label)}</td><td>${esc(e.label)}${e.tag ? ' <span class="tag">' + esc(e.tag) + '</span>' : ''}</td><td class="right">${fmt(e.revenue)}</td><td class="right">${e.cost ? fmt(e.cost) : '—'}</td></tr>`;
+    }
+    html += `</tbody></table>`;
+  }
+
+  // Detailed DE list
+  if(r.de.expenses.length){
+    html += `<h2>🧾 Detailed expense list</h2><table>
+      <thead><tr><th>Date</th><th>Vendor</th><th>Category</th><th>Paid</th><th class="right">Amount</th><th>Proof</th></tr></thead><tbody>`;
+    const sortedDE = r.de.expenses.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    for(const e of sortedDE){
+      const c = _expenseCategory(e.category);
+      const p = _paymentMethod(e.payment_method || 'cash');
+      const photoLink = (e.photo_url || e.photo_thumb) ? '📷' : '';
+      const proofLink = (e.payment_proof_url || e.payment_proof_thumb) ? ' 🏦' : '';
+      const urls = [];
+      if(e.photo_url) urls.push(`<a href="${esc(e.photo_url)}" target="_blank" style="color:#7E22CE">receipt</a>`);
+      if(e.payment_proof_url) urls.push(`<a href="${esc(e.payment_proof_url)}" target="_blank" style="color:#059669">proof</a>`);
+      html += `<tr><td>${esc(e.date)}</td><td>${esc(e.vendor || '—')}${e.description ? '<br><span style="color:#888;font-size:11px">' + esc(e.description) + '</span>' : ''}</td><td>${c.em} ${esc(c.label)}</td><td>${p.em} ${esc(p.label)}</td><td class="right">${fmt(e.amount)}</td><td>${urls.join(' · ') || (photoLink + proofLink) || '—'}</td></tr>`;
+    }
+    html += `<tr class="grand"><td colspan="4">Total daily expenses</td><td class="right">${fmt(r.de.expenses.reduce((s,e)=>s+(parseFloat(e.amount)||0),0))}</td><td></td></tr></tbody></table>`;
+  }
+
+  html += `<footer>Generated by SHIP · ${esc(r.hotel.name || r.hotel.slug || '')} · ${new Date(r.period.generatedAt).toLocaleDateString()}</footer></body></html>`;
+  return html;
+}
+
+function _reportToCSV(r){
+  const rows = [];
+  const push = (...cells) => rows.push(cells.map(c => '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"').join(','));
+  push('Monthly report', r.hotel.name || r.hotel.slug || '', r.period.label);
+  push('Generated', r.period.generatedAt);
+  push('');
+  push('=== SUMMARY ===');
+  push('Total revenues', r.revenues.total, r.hotel.currency);
+  push('Total expenses', r.expenses.total, r.hotel.currency);
+  push('Net', r.net, r.hotel.currency);
+  push('Cash in hand', r.cashbook.balance, r.hotel.currency);
+  push('');
+  push('=== REVENUES ===');
+  push('Category', 'Amount');
+  push('Hotel/lodging', r.revenues.lodging);
+  push('F&B', r.revenues.fnb);
+  push('Ancillary', r.revenues.ancillary);
+  push('Shop', r.revenues.shop);
+  push('Revenue events (DE)', r.revenues.events);
+  push('');
+  push('=== EXPENSES ===');
+  push('Category', 'Amount', 'Note');
+  push('Fixed manual', r.expenses.manualFixed);
+  push('Fixed auto (DE)', r.expenses.autoFixed);
+  push('Payroll', r.expenses.payroll, r.payroll.employees + ' emp');
+  push('Daily operational', r.expenses.dailyOps, r.de.expenses.length + ' rcpt');
+  push('');
+  push('=== DE by category ===');
+  push('Category', 'Count', 'Amount');
+  for(const x of r.de.byCategory){ push(x.def.label, x.count, x.total); }
+  push('');
+  push('=== Cashbook ===');
+  push('Date', 'Kind', 'Amount', 'Source', 'Note');
+  push(r.cashbook.openingDate || '', 'opening', r.cashbook.opening, '', '');
+  for(const m of r.cashbook.movements){ push(m.date, m.kind, m.amount, m.source || '', m.note || ''); }
+  push('', 'balance', r.cashbook.balance, '', '');
+  push('');
+  push('=== Commissions ===');
+  push('Employee', 'Role', 'Total');
+  for(const c of r.commissions.rows){
+    push((c.emp.first_name || '') + ' ' + (c.emp.last_name || ''), c.emp.role || '', c.total);
+  }
+  push('');
+  push('=== Detailed expenses ===');
+  push('Date', 'Vendor', 'Category', 'Payment', 'Amount', 'Currency', 'Description', 'Photo URL', 'Proof URL');
+  const sortedDE = r.de.expenses.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+  for(const e of sortedDE){
+    push(e.date, e.vendor || '', e.category || '', e.payment_method || '', e.amount, e.currency || '',
+         e.description || '', e.photo_url || '', e.payment_proof_url || '');
+  }
+  return rows.join('\n');
+}
+
+function _reportToJSON(r){ return JSON.stringify(r, null, 2); }
+
+function _downloadFile(filename, mime, content){
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function showMonthlyReportModal(month){
+  const ex = document.getElementById('monthly-report-modal'); if(ex) ex.remove();
+  const r = buildMonthlyReport(month);
+  const html = _reportToHTML(r);
+  const csv = _reportToCSV(r);
+  const json = _reportToJSON(r);
+  const fnameBase = 'ship-report-' + (r.hotel.slug || 'hotel') + '-' + month;
+
+  const modal = document.createElement('div');
+  modal.id = 'monthly-report-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,8,30,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.addEventListener('click', (ev) => { if(ev.target === modal) modal.remove(); });
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'width:100%;max-width:920px;max-height:92vh;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)';
+
+  const toolbar = document.createElement('div');
+  toolbar.style.cssText = 'padding:14px 18px;background:linear-gradient(135deg,#FF6B00,#FF1F70);color:#fff;display:flex;gap:8px;flex-wrap:wrap;align-items:center';
+  toolbar.innerHTML =
+    '<div style="flex:1;font-weight:800">📊 Monthly report · ' + _fmtMonthLabel(month) + '</div>' +
+    '<button id="_mr-print" style="padding:8px 14px;font-weight:800;background:#fff;color:#7E22CE;border:0;border-radius:8px;cursor:pointer">🖨 Print / PDF</button>' +
+    '<button id="_mr-csv" style="padding:8px 14px;font-weight:800;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;cursor:pointer">⬇ CSV</button>' +
+    '<button id="_mr-json" style="padding:8px 14px;font-weight:800;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;cursor:pointer">⬇ JSON</button>' +
+    '<button id="_mr-close" style="padding:8px 14px;font-weight:800;background:transparent;color:#fff;border:0;font-size:20px;cursor:pointer">×</button>';
+
+  const preview = document.createElement('iframe');
+  preview.style.cssText = 'flex:1;width:100%;border:0;background:#F7F5F0';
+  preview.srcdoc = html;
+
+  panel.appendChild(toolbar);
+  panel.appendChild(preview);
+  modal.appendChild(panel);
+  document.body.appendChild(modal);
+
+  document.getElementById('_mr-close').addEventListener('click', () => modal.remove());
+  document.getElementById('_mr-csv').addEventListener('click', () => _downloadFile(fnameBase + '.csv', 'text/csv;charset=utf-8', csv));
+  document.getElementById('_mr-json').addEventListener('click', () => _downloadFile(fnameBase + '.json', 'application/json;charset=utf-8', json));
+  document.getElementById('_mr-print').addEventListener('click', () => {
+    try {
+      const win = preview.contentWindow;
+      if(win){ win.focus(); win.print(); }
+    } catch(err){ console.warn('[report] print failed', err); alert('Could not open print dialog — download CSV / JSON instead.'); }
+  });
+}
+
 function renderFinanceView(body){
   body.innerHTML = '';
   const month = _curFinMonth();
@@ -15742,6 +16066,13 @@ function renderFinanceView(body){
       title:t('app.charges.export_tooltip'),
       onclick:()=>exportFinanceCSV(cur, month, payrollTotal, sym),
     }, t('app.charges.export_csv')),
+    // Full monthly report with Print / Save-as-PDF + CSV + JSON exports.
+    // Includes P&L, DE ledger, cashbook, commissions, revenue events.
+    el('button',{class:'finance-action',
+      style:'background:linear-gradient(135deg,#FF6B00,#FF1F70);color:#fff;font-weight:800',
+      title:'Full monthly report — print, PDF, CSV or JSON',
+      onclick:()=>showMonthlyReportModal(month),
+    }, '📊 Monthly report'),
   );
   wrap.appendChild(el('div',{class:'finance-toolbar'}, periodBar, actionBar));
 
