@@ -24732,17 +24732,23 @@ async function _bootAppInner(){
       lsSet(`staylo_hotel_${_code}`, { ..._cur, is_live: true });
     } catch(_) {}
   }
-  if(State.user.audience === 'staff' && !window.__shipDisableDemo){
-    // Async chunked seed with splash — yields between phases so the browser
-    // stays responsive even while writing ~14k schedules. The splash is only
-    // visible on the first-boot path (when the hotel has 0 employees).
-    try { await seedDemoDataIfNeededWithSplash(); } catch(e){ console.warn('Demo seed failed', e); }
-    // Auto-link the logged-in user to a real employee record (creating one
-    // if missing). Without this, a manager who signs up at a fresh hotel
-    // would be invisible to himself: empty roster, no schedule, no payslip.
+  if(State.user.audience === 'staff'){
+    // Demo seed is gated by ?demo=off — but the self-link and dedupe steps
+    // MUST run regardless. Without ensureSelfEmployeeRecord() the logged-in
+    // manager has no employees row → empty roster, empty supervisor dropdowns
+    // for anyone they try to hire, no clock-in target.
+    if(!window.__shipDisableDemo){
+      // Async chunked seed with splash — yields between phases so the browser
+      // stays responsive even while writing ~14k schedules. The splash is only
+      // visible on the first-boot path (when the hotel has 0 employees).
+      try { await seedDemoDataIfNeededWithSplash(); } catch(e){ console.warn('Demo seed failed', e); }
+    }
+    // Always: auto-link the logged-in user to a real employee record
+    // (creating one if missing). This is what makes the manager visible
+    // to themselves, schedulable, payable, and pickable as supervisor.
     try { ensureSelfEmployeeRecord(); } catch(e){ console.warn('Self-employee link failed', e); }
-    // Collapse any duplicate (employee, date) shifts left by an older
-    // upsertSchedule that pushed instead of upserting on composite key.
+    // Always: collapse any duplicate (employee, date) shifts left by an
+    // older upsertSchedule that pushed instead of upserting on composite key.
     try { dedupeSchedulesOnce(); } catch(e){ console.warn('Dedupe failed', e); }
   }
   // Shift-window lock: staff who aren't managers must be inside their shift
