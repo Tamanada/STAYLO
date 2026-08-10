@@ -3315,8 +3315,8 @@
         "profile_d": "Your account & role",
         "timesheet_t": "My timesheet",
         "timesheet_d": "Hours worked, clock in/out",
-        "charges_t": "Charges",
-        "charges_d": "Expenses, payroll, revenues, P&L",
+        "charges_t": "Accounting",
+        "charges_d": "Receipts, expenses, payroll, P&L",
         "settings_t": "Hotel Settings",
         "settings_d": "Hotel-wide configuration",
         "inventory_t": "Inventory",
@@ -3886,9 +3886,9 @@
       "dash_absences": "Absences {period}"
     },
     "charges": {
-      "title": "Charges",
-      "tile_desc": "Expenses, payroll, revenues, P&L",
-      "subtitle": "{hotelCode} · monthly P&L",
+      "title": "Accounting",
+      "tile_desc": "Daily expenses, receipts, payroll, P&L",
+      "subtitle": "{hotelCode} · monthly ledger",
       "total_expenses": "TOTAL EXPENSES",
       "total_revenues": "TOTAL REVENUES",
       "net_profit": "NET PROFIT",

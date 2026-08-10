@@ -13404,6 +13404,409 @@ function exportFinanceCSV(cur, month, payrollTotal, sym){
   URL.revokeObjectURL(url);
 }
 
+/* ============================================================================
+ * DAILY EXPENSES — receipt-first ledger with Claude Vision auto-parse
+ * ============================================================================
+ * Manager snaps a receipt → Claude Vision extracts vendor / date / amount /
+ * category / description → editable review → saved as one row per receipt.
+ * The month total feeds the "Fixed expenses" KPI so the P&L stays coherent.
+ *
+ * Storage: per-hotel per-month localStorage key `staylo_expenses_<hotel>`
+ * Schema: { months: { 'YYYY-MM': [{id, date, vendor, amount, currency,
+ *          category, description, photo_thumb?, ai_confidence?, note?,
+ *          created_at}, ...] } }
+ *
+ * The photo thumb is a downscaled JPEG (max ~150 KB) — the full-res image
+ * is discarded after parsing so localStorage doesn't balloon.
+ * ============================================================================ */
+const EXPENSE_CATEGORIES = [
+  { id: 'food_beverage',    label: 'Food & Beverage',   em: '🍽️' },
+  { id: 'cleaning_laundry', label: 'Cleaning & Laundry', em: '🧹' },
+  { id: 'maintenance',      label: 'Maintenance',        em: '🔧' },
+  { id: 'utilities',        label: 'Utilities',          em: '⚡' },
+  { id: 'office',           label: 'Office & Supplies',  em: '🖨️' },
+  { id: 'marketing',        label: 'Marketing',          em: '📣' },
+  { id: 'travel',           label: 'Travel & Fuel',      em: '⛽' },
+  { id: 'insurance',        label: 'Insurance',          em: '🛡️' },
+  { id: 'rent',             label: 'Rent',               em: '🏠' },
+  { id: 'payroll',          label: 'Payroll',            em: '👥' },
+  { id: 'bank_fees',        label: 'Bank & Fees',        em: '🏦' },
+  { id: 'other',            label: 'Other',              em: '📦' },
+];
+
+function _expenseCategory(id){
+  return EXPENSE_CATEGORIES.find(c => c.id === id) || EXPENSE_CATEGORIES[EXPENSE_CATEGORIES.length - 1];
+}
+
+function getExpensesData(){
+  let raw = lsGet(_hkey('staylo_expenses'), null);
+  if(!raw) raw = { months: {} };
+  if(!raw.months) raw.months = {};
+  return raw;
+}
+function saveExpensesData(d){
+  if(!lsSetVerify(_hkey('staylo_expenses'), d)){
+    alert('Storage full — expense could not be saved.\n\nRemove some receipts or old data first.');
+  }
+}
+function getExpensesForMonth(month){
+  const all = getExpensesData();
+  return all.months[month] || [];
+}
+function sumExpensesForMonth(month){
+  return getExpensesForMonth(month).reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+}
+function addExpense(month, exp){
+  const all = getExpensesData();
+  if(!all.months[month]) all.months[month] = [];
+  exp.id = exp.id || ('exp-' + Date.now() + '-' + Math.floor(Math.random() * 9999));
+  exp.created_at = exp.created_at || new Date().toISOString();
+  all.months[month].push(exp);
+  saveExpensesData(all);
+  return exp;
+}
+function updateExpense(month, id, patch){
+  const all = getExpensesData();
+  const list = all.months[month] || [];
+  const i = list.findIndex(e => e.id === id);
+  if(i >= 0){
+    list[i] = { ...list[i], ...patch, updated_at: new Date().toISOString() };
+    saveExpensesData(all);
+    return list[i];
+  }
+  return null;
+}
+function deleteExpense(month, id){
+  const all = getExpensesData();
+  if(!all.months[month]) return;
+  all.months[month] = all.months[month].filter(e => e.id !== id);
+  saveExpensesData(all);
+}
+
+/* Downscale + JPEG-compress an image File to a data URL fit for the
+ * Claude Vision request. Keeps aspect ratio; longest edge capped at
+ * `maxDim` (default 1400 px). Quality 0.85 → ~150-400 KB per receipt. */
+async function _downscaleImageFile(file, maxDim){
+  maxDim = maxDim || 1400;
+  const dataUrl = await new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.round(img.width * scale);
+      const h = Math.round(img.height * scale);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+async function parseReceiptWithAI(dataUrl, currencyHint){
+  try {
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/ship-receipt-parse`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: dataUrl, currency_hint: currencyHint || null }),
+    });
+    if(r.status === 503){
+      const err = await r.json().catch(() => ({}));
+      return { ok: false, code: 'no_api_key', message: err.error || 'AI not configured' };
+    }
+    if(!r.ok){
+      const body = await r.text().catch(() => '');
+      return { ok: false, code: 'http_' + r.status, message: body.slice(0, 200) };
+    }
+    const data = await r.json();
+    return { ok: true, data };
+  } catch(e){
+    return { ok: false, code: 'network', message: String(e) };
+  }
+}
+
+/* ============================================================================
+ * Add Expense modal — photo capture with AI auto-fill + editable form
+ * ============================================================================ */
+function showAddExpenseModal(month, onSaved){
+  const ex = $('#add-expense-modal'); if(ex) ex.remove();
+  const modal = el('div', { class: 'shift-editor-bg', id: 'add-expense-modal' });
+  bindSafeBackdropClose(modal, 'add-expense-modal');
+
+  const sym = (typeof curSym === 'function') ? curSym() : '฿';
+  const defaultCur = (() => {
+    try { return (getHotelSettings().currency_code || '').toUpperCase() || 'THB'; }
+    catch { return 'THB'; }
+  })();
+
+  const state = {
+    photo_thumb: null,
+    parsing: false,
+    date: new Date().toISOString().slice(0, 10),
+    vendor: '',
+    amount: '',
+    currency: defaultCur,
+    category: 'other',
+    description: '',
+    ai_confidence: null,
+  };
+
+  // ── UI builders ──
+  const label = (text) => el('label', { style: 'display:block;font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--muted,#666);text-transform:uppercase;margin-bottom:6px' }, text);
+  const input = (id, val, opts) => {
+    const i = document.createElement('input');
+    i.id = id;
+    i.value = val || '';
+    Object.assign(i, opts || {});
+    i.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+    return i;
+  };
+
+  const dateIn   = input('exp-date', state.date, { type: 'date' });
+  const vendorIn = input('exp-vendor', state.vendor, { type: 'text', placeholder: 'e.g. Big C, Global House…' });
+  const amountIn = input('exp-amount', state.amount, { type: 'number', placeholder: '0', step: '0.01', min: '0' });
+  const currencyIn = input('exp-currency', state.currency, { type: 'text', maxLength: 3, style: 'text-transform:uppercase' });
+  currencyIn.style.cssText += ';text-transform:uppercase;font-family:monospace';
+  const descIn = input('exp-desc', state.description, { type: 'text', placeholder: 'Short note (optional)' });
+
+  const catSel = document.createElement('select');
+  catSel.id = 'exp-category';
+  catSel.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+  for(const c of EXPENSE_CATEGORIES){
+    const o = document.createElement('option');
+    o.value = c.id; o.textContent = c.em + ' ' + c.label;
+    if(c.id === state.category) o.selected = true;
+    catSel.appendChild(o);
+  }
+
+  // Photo capture zone
+  const photoPreview = el('div', { id: 'exp-photo-preview', style: 'margin-bottom:10px;text-align:center;background:#F7F5F0;border-radius:12px;padding:12px;min-height:80px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px' },
+    el('div', { style: 'font-size:32px;opacity:.6' }, '📷'),
+    el('div', { style: 'font-size:13px;color:var(--muted,#666)' }, 'No photo yet'),
+  );
+
+  const fileIn = document.createElement('input');
+  fileIn.type = 'file';
+  fileIn.accept = 'image/*';
+  fileIn.capture = 'environment';   // triggers back-camera on phones
+  fileIn.style.display = 'none';
+
+  const aiStatusEl = el('div', { id: 'exp-ai-status', style: 'font-size:12px;margin-top:6px;color:var(--muted,#666);min-height:16px' }, '');
+
+  const setAIStatus = (text, color) => {
+    aiStatusEl.textContent = text || '';
+    aiStatusEl.style.color = color || 'var(--muted,#666)';
+  };
+
+  const updatePreview = (thumb) => {
+    photoPreview.innerHTML = '';
+    if(thumb){
+      const img = document.createElement('img');
+      img.src = thumb;
+      img.style.cssText = 'max-width:100%;max-height:180px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.15)';
+      photoPreview.appendChild(img);
+      const btnBar = el('div', { style: 'display:flex;gap:8px' },
+        el('button', { class: 'btn-secondary', style: 'font-size:12px;padding:6px 12px', onclick: () => fileIn.click() }, '🔄 Change'),
+        el('button', { class: 'btn-secondary', style: 'font-size:12px;padding:6px 12px', onclick: () => { state.photo_thumb = null; updatePreview(null); setAIStatus(''); } }, '🗑 Remove'),
+      );
+      photoPreview.appendChild(btnBar);
+    } else {
+      photoPreview.appendChild(el('div', { style: 'font-size:32px;opacity:.6' }, '📷'));
+      photoPreview.appendChild(el('div', { style: 'font-size:13px;color:var(--muted,#666)' }, 'No photo yet'));
+    }
+  };
+
+  fileIn.addEventListener('change', async (ev) => {
+    const f = ev.target.files && ev.target.files[0];
+    if(!f) return;
+    setAIStatus('📸 Preparing image…');
+    try {
+      const thumb = await _downscaleImageFile(f, 1400);
+      state.photo_thumb = thumb;
+      updatePreview(thumb);
+      setAIStatus('🤖 Asking Claude to read the receipt…', '#7E22CE');
+      state.parsing = true;
+      const result = await parseReceiptWithAI(thumb, state.currency);
+      state.parsing = false;
+      if(!result.ok){
+        if(result.code === 'no_api_key'){
+          setAIStatus('⚠️ AI not configured — please enter the details manually.', '#B45309');
+        } else {
+          setAIStatus('⚠️ AI could not parse the receipt (' + result.code + ') — enter manually.', '#B45309');
+        }
+        return;
+      }
+      const d = result.data || {};
+      // Populate fields; user can still edit before Save.
+      if(d.date)        { state.date = d.date;         dateIn.value = d.date; }
+      if(d.vendor)      { state.vendor = d.vendor;     vendorIn.value = d.vendor; }
+      if(typeof d.amount === 'number') { state.amount = d.amount; amountIn.value = d.amount; }
+      if(d.currency)    { state.currency = d.currency; currencyIn.value = d.currency; }
+      if(d.category)    { state.category = d.category; catSel.value = d.category; }
+      if(d.description) { state.description = d.description; descIn.value = d.description; }
+      state.ai_confidence = d.confidence || null;
+      const conf = d.confidence === 'high' ? '✅ Confidence: high' :
+                   d.confidence === 'medium' ? '🟡 Confidence: medium — please review' :
+                   '🟠 Confidence: low — please double-check';
+      setAIStatus(conf, d.confidence === 'high' ? '#059669' : d.confidence === 'medium' ? '#B45309' : '#DC2626');
+    } catch(err){
+      state.parsing = false;
+      console.error('[expense] file processing failed', err);
+      setAIStatus('⚠️ Could not read the file — try again.', '#DC2626');
+    }
+  });
+
+  const takePhotoBtn = el('button', { class: 'btn-primary', style: 'width:100%;margin-bottom:10px', onclick: () => fileIn.click() }, '📸 Take / upload receipt photo');
+
+  const panel = el('div', { class: 'shift-editor-panel', style: 'max-width:520px' },
+    el('h3', { style: 'margin:0 0 4px' }, '➕ Add expense'),
+    el('p', { class: 'sub', style: 'margin:0 0 16px' }, 'Snap the receipt — AI fills the fields, you review, then save.'),
+
+    takePhotoBtn,
+    fileIn,
+    photoPreview,
+    aiStatusEl,
+
+    el('div', { style: 'height:12px' }),
+
+    el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:12px' },
+      el('div', {}, label('Date'), dateIn),
+      el('div', {}, label('Category'), catSel),
+    ),
+
+    el('div', { style: 'margin-top:12px' }, label('Vendor / merchant'), vendorIn),
+
+    el('div', { style: 'display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:12px' },
+      el('div', {}, label('Total amount'), amountIn),
+      el('div', {}, label('Currency'), currencyIn),
+    ),
+
+    el('div', { style: 'margin-top:12px' }, label('Short description (optional)'), descIn),
+
+    el('div', { class: 'row-actions', style: 'margin-top:20px' },
+      el('button', { class: 'btn-secondary', onclick: () => modal.remove() }, 'Cancel'),
+      el('button', { class: 'btn-primary', onclick: () => {
+        const amount = parseFloat(amountIn.value);
+        if(!vendorIn.value.trim()){ alert('Vendor is required.'); return; }
+        if(!(amount > 0)){ alert('Amount must be greater than 0.'); return; }
+        const exp = {
+          date: dateIn.value || new Date().toISOString().slice(0,10),
+          vendor: vendorIn.value.trim(),
+          amount: amount,
+          currency: (currencyIn.value || defaultCur).toUpperCase().slice(0,3),
+          category: catSel.value,
+          description: descIn.value.trim() || null,
+          photo_thumb: state.photo_thumb || null,
+          ai_confidence: state.ai_confidence,
+        };
+        // File into the month of the receipt date, not the current month —
+        // so a January receipt entered in March lands in January's ledger.
+        const targetMonth = (exp.date || month).slice(0, 7);
+        addExpense(targetMonth, exp);
+        modal.remove();
+        if(onSaved) onSaved(exp, targetMonth);
+      } }, 'Save expense'),
+    ),
+  );
+  modal.appendChild(panel);
+  document.body.appendChild(modal);
+}
+
+/* ============================================================================
+ * Daily Expenses section — rendered inside the Accounting view
+ * ============================================================================ */
+function renderExpensesSection(container, month, onChange){
+  const sym = (typeof curSym === 'function') ? curSym() : '฿';
+  const fmt = (n) => sym + ' ' + Math.round(n || 0).toLocaleString('en-US');
+  const expenses = getExpensesForMonth(month)
+    .slice()
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const total = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+
+  // Breakdown by category
+  const byCat = {};
+  for(const e of expenses){
+    const c = e.category || 'other';
+    byCat[c] = (byCat[c] || 0) + (parseFloat(e.amount) || 0);
+  }
+  const topCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  const sec = el('section', { class: 'finance-sec', style: 'border:2px solid #FF6B0033;background:linear-gradient(180deg,#FFF9F2,#fff)' });
+  sec.appendChild(el('div', { class: 'finance-sec-head' },
+    el('div', { class: 'finance-sec-title' }, '📸 Daily expenses (receipts)'),
+    el('div', { class: 'finance-sec-total' }, fmt(total)),
+  ));
+
+  const addBtn = el('button', { class: 'btn-primary', style: 'width:100%;padding:14px;margin-bottom:12px;font-weight:800;background:linear-gradient(135deg,#FF6B00,#FF1F70);color:#fff;border:0;border-radius:12px;font-size:15px;cursor:pointer;box-shadow:0 6px 16px rgba(255,31,112,.25)' },
+    '📸 Add a receipt');
+  addBtn.addEventListener('click', () => {
+    showAddExpenseModal(month, () => { if(onChange) onChange(); });
+  });
+  sec.appendChild(addBtn);
+
+  // Category chips
+  if(topCats.length){
+    const chips = el('div', { style: 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px' });
+    for(const [cat, amt] of topCats){
+      const c = _expenseCategory(cat);
+      chips.appendChild(el('span', {
+        style: 'display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border,#E8E0D8);border-radius:99px;padding:4px 10px;font-size:12px;font-weight:600'
+      }, c.em + ' ' + c.label + ' · ' + fmt(amt)));
+    }
+    sec.appendChild(chips);
+  }
+
+  // Expense list
+  const list = el('div', { class: 'finance-rows' });
+  if(!expenses.length){
+    list.appendChild(el('div', { class: 'finance-empty', style: 'padding:20px;text-align:center;color:var(--muted,#666);font-size:13px' },
+      'No receipts yet this month. Click "Add a receipt" to snap the first one.'));
+  } else {
+    for(const e of expenses){
+      const c = _expenseCategory(e.category);
+      const row = el('div', {
+        style: 'display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--border,#E8E0D8);border-radius:10px;background:#fff;margin-bottom:6px'
+      },
+        el('div', { style: 'font-size:22px', title: c.label }, c.em),
+        el('div', { style: 'display:flex;flex-direction:column;gap:2px;min-width:0' },
+          el('div', { style: 'font-weight:700;color:var(--fg,#1A1A2E);white-space:nowrap;overflow:hidden;text-overflow:ellipsis' }, e.vendor || '—'),
+          el('div', { style: 'font-size:11px;color:var(--muted,#666)' },
+            (e.date || '?') + (e.description ? ' · ' + e.description : '')),
+        ),
+        el('div', { style: 'font-weight:800;color:var(--fg,#1A1A2E);text-align:right;white-space:nowrap' },
+          fmt(e.amount) + (e.currency && e.currency !== ((getHotelSettings().currency_code || '').toUpperCase()) ? ' (' + e.currency + ')' : '')),
+        (() => {
+          const btn = el('button', {
+            title: 'Delete this expense',
+            style: 'background:transparent;border:0;color:var(--muted,#999);cursor:pointer;padding:4px 8px;border-radius:6px;font-size:16px'
+          }, '×');
+          btn.addEventListener('click', () => {
+            if(!confirm('Delete this receipt entry?')) return;
+            deleteExpense(month, e.id);
+            if(onChange) onChange();
+          });
+          return btn;
+        })(),
+      );
+      list.appendChild(row);
+    }
+  }
+  sec.appendChild(list);
+  container.appendChild(sec);
+}
+
 function renderFinanceView(body){
   body.innerHTML = '';
   const month = _curFinMonth();
@@ -13452,7 +13855,8 @@ function renderFinanceView(body){
 
   const sumOf = (arr) => (arr||[]).reduce((s,x) => s + (parseFloat(x.amount)||0), 0);
 
-  const totalExpenses = sumOf(cur.fixed) + payrollTotal;
+  const dailyExpensesTotal = sumExpensesForMonth(month);
+  const totalExpenses = sumOf(cur.fixed) + payrollTotal + dailyExpensesTotal;
   // Live POS revenue (Loyverse) gets folded into the month's total
   // automatically: we read from the in-memory cache so the first render
   // is 0 (or last-known), then the async fetch below re-renders with the
@@ -13464,16 +13868,17 @@ function renderFinanceView(body){
                       + loyverseTotal;
   const grandTotal = totalRevenues - totalExpenses;
 
-  let priorExpensesFixed = 0, priorRevenues = 0;
+  let priorExpensesFixed = 0, priorRevenues = 0, priorDailyExpenses = 0;
   if(prior){
     priorExpensesFixed = sumOf(prior.fixed);
     priorRevenues = sumOf(prior.rev_lodging) + sumOf(prior.rev_fnb)
                   + sumOf(prior.rev_ancillary) + sumOf(prior.rev_shop);
+    priorDailyExpenses = sumExpensesForMonth(priorMonth);
   }
   // Use the historical priorPayroll if we have one; only fall back to today's
   // payroll when prior month is brand new (no snapshot was ever taken).
   const priorPayrollForDelta = (priorPayroll != null) ? priorPayroll : payrollTotal;
-  const priorExpenses = prior ? (priorExpensesFixed + priorPayrollForDelta) : null;
+  const priorExpenses = prior ? (priorExpensesFixed + priorPayrollForDelta + priorDailyExpenses) : null;
   const priorNet = (prior !== undefined && prior !== null) ? (priorRevenues - priorExpenses) : null;
 
   const wrap = el('div',{class:'finance-wrap'});
@@ -13584,6 +13989,10 @@ function renderFinanceView(body){
   };
 
   wrap.appendChild(editableSection(t('app.charges.section.fixed'),     '💸', 'fixed',         t('app.charges.placeholder.fixed')));
+
+  // Daily expenses (receipts) — AI-parsed + manual, one row per bill.
+  // Sums into totalExpenses above so the P&L stays coherent.
+  renderExpensesSection(wrap, month, () => renderFinanceView(body));
 
   // Payroll (auto, read-only)
   const payrollSec = el('section',{class:'finance-sec'});
