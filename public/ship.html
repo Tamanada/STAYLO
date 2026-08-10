@@ -3567,6 +3567,69 @@ const SUPABASE_URL = 'https://xicxajwqzlndqtzuvttd.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhpY3hhandxemxuZHF0enV2dHRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNDg0MzksImV4cCI6MjA4OTgyNDQzOX0.uNgo9xpzgHRClrKQFP_X8HT8zHIWz4K5anSXQuYGPBs';
 const DEMO_MODE = !SUPABASE_URL.startsWith('https://');
 
+/* ============================================================================
+ * SHIP standalone: cross-device staff invite sync (2026-08-10)
+ * ============================================================================
+ * Persists staff invites to Supabase so a QR generated on the manager's
+ * device can be redeemed by staff on their own phone. Schema + RPC contracts
+ * in migration 20260810000000_ship_staff_invites.sql.
+ *
+ * Every helper fails soft — the app must continue working offline, and
+ * legacy demo hotels (no matching ship_hotels row) get silently skipped.
+ * ============================================================================ */
+async function shipUpsertInviteRemote(hotelSlug, emp){
+  if(!hotelSlug || !emp || !emp.invite_token) return {ok:false, skip:true};
+  try {
+    if(!State.supa) return {ok:false, skip:true};
+    const { error } = await State.supa.rpc('ship_upsert_staff_invite', {
+      p_hotel_slug:   hotelSlug,
+      p_invite_token: emp.invite_token,
+      p_first_name:   emp.first_name || 'Staff',
+      p_last_name:    emp.last_name || '',
+      p_role:         emp.role || 'Staff',
+      p_department:   emp.department || null,
+    });
+    if(error){ console.warn('[shipUpsertInviteRemote]', error.message); return {ok:false, err:error}; }
+    return {ok:true};
+  } catch(e){ console.warn('[shipUpsertInviteRemote] threw', e); return {ok:false, err:e}; }
+}
+
+async function shipLookupInviteRemote(token){
+  // Anon-callable RPC. Direct fetch so it works before State.supa exists
+  // (this runs in the pre-boot invite handler).
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ship_lookup_invite`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_token: token }),
+    });
+    if(!r.ok) return null;
+    const rows = await r.json();
+    return Array.isArray(rows) && rows.length ? rows[0] : null;
+  } catch(e){ console.warn('[shipLookupInviteRemote]', e); return null; }
+}
+
+async function shipAcceptInviteRemote(token, deviceHash){
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ship_accept_invite`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_token: token, p_device_hash: deviceHash }),
+    });
+    if(!r.ok) return {ok:false, reason:'http_'+r.status};
+    const rows = await r.json();
+    return Array.isArray(rows) && rows.length ? rows[0] : {ok:false, reason:'empty'};
+  } catch(e){ console.warn('[shipAcceptInviteRemote]', e); return {ok:false, reason:'fetch_error'}; }
+}
+
 /* ---------- Roles & departments ----------
  * Each service is broken into proper grades: manager → supervisor →
  * senior → standard → trainee. The role name is the JOB TITLE printed on
@@ -4761,10 +4824,12 @@ function finishOnboarding(){
   const name = $('#ob-name').value.trim();
   // Hotel code is no longer collected in onboarding — the SHIP standalone
   // signup wizard (staylo.app/ship-signup) already provisions the hotel row
-  // in ship_hotels. For local-storage keying we derive a stable slug from
-  // the user's name; this keeps per-user settings scoped without asking
-  // for another identifier.
-  const hotelCode = (name || 'DEFAULT').replace(/\s+/g,'').toUpperCase().slice(0,10) || 'DEFAULT';
+  // in ship_hotels and passes the slug as ?hotel=<slug> to /ship.html.
+  // Priority order:
+  //   1. URL param `?hotel=<slug>` — real ship_hotels.slug for SHIP customers
+  //   2. Name-derived fallback — legacy demos / local-only use
+  const hotelCode = window.__shipHotelOverride
+    || ((name || 'DEFAULT').replace(/\s+/g,'').toUpperCase().slice(0,10) || 'DEFAULT');
   const audience = selectedAudience || 'staff';
   let role, dept;
   if(audience==='staff'){
@@ -11586,7 +11651,16 @@ function upsertEmployee(emp){
       emp = next;
     }
   }
-  saveEmployees(all); return emp;
+  saveEmployees(all);
+  // Cross-device invite sync — fire-and-forget. Real SHIP customers
+  // whose hotelCode maps to a ship_hotels.slug get their invite mirrored
+  // to Supabase, so staff scanning the QR from a different device can
+  // resolve it. Legacy demos with no ship_hotels row error out on the
+  // RPC and the shipUpsertInviteRemote helper swallows it silently.
+  if(emp.invite_token && State.user && State.user.hotelCode){
+    shipUpsertInviteRemote(State.user.hotelCode, emp).catch(()=>{});
+  }
+  return emp;
 }
 function deleteEmployee(id){saveEmployees(getEmployees().filter(e=>e.id!==id))}
 
@@ -24690,6 +24764,16 @@ function initShell(){
     // window.__shipDisableDemo — set here so the flag survives the
     // between-tick window before bootApp() reads it.
     if(q.get('demo') === 'off'){ window.__shipDisableDemo = true; }
+    // `?hotel=<slug>` — forces the session's hotelCode to this exact slug,
+    // regardless of what the user typed during onboarding. Two callers:
+    //   1. SHIP standalone customers landing from staylo.app/dashboard's
+    //      "Open SHIP" CTA (slug = their ship_hotels.slug, e.g. "la-belle-vie")
+    //   2. QR invites for staff (slug = the same, propagated as &hotel=)
+    // Without this, ship.html derives hotelCode from the user's name
+    // ("David" → "DAVID"), which never matches a Supabase ship_hotels row
+    // and breaks cross-device invite sync.
+    const h = (q.get('hotel') || '').trim().toLowerCase();
+    if(h && /^[a-z0-9][a-z0-9-]*$/.test(h)) window.__shipHotelOverride = h;
   } catch(_) { /* no URL support, ignore */ }
 })();
 
@@ -24702,6 +24786,15 @@ async function bootApp(){
   return _bootAppInner();
 }
 async function _bootAppInner(){
+  // ?hotel=<slug> override — align State.user.hotelCode with the URL param
+  // so localStorage keys + Supabase invite sync all use the real
+  // ship_hotels.slug (e.g. "la-belle-vie") instead of the name-derived
+  // fallback ("DAVID"). Runs once per boot; persists via lsSet.
+  if(window.__shipHotelOverride && State.user
+     && State.user.hotelCode !== window.__shipHotelOverride){
+    State.user.hotelCode = window.__shipHotelOverride;
+    lsSet('staylo_user', State.user);
+  }
   // Backwards compat: legacy localStorage users (pre-audience) — infer
   // audience from their old role so a "Guest" user from v1 doesn't keep
   // staff-channel access by accident.
@@ -24909,11 +25002,52 @@ async function init(){
   // pre-filled one) and they're in.
   const params = new URLSearchParams(location.search);
   const inviteToken = params.get('invite');
-  const inviteHotel = params.get('hotel');
-  if(inviteToken && inviteHotel){
-    // Look up the employee record in localStorage for this hotel
-    const empList = lsGet(`staylo_employees_${inviteHotel}`,[]);
-    const emp = empList.find(e=>e.invite_token===inviteToken);
+  // inviteHotel is optional — the server-side RPC returns the hotel_slug
+  // from the invite token itself, so a bare ?invite=<token> URL works.
+  // If the URL includes ?hotel=<slug>, we still try the localStorage path
+  // first (fast, offline-capable) before hitting Supabase.
+  let inviteHotel = params.get('hotel');
+  if(inviteToken){
+    // Local lookup first (fast path — works when the same device already
+    // has the manager's employees list). Only attempted when we know the
+    // hotel; otherwise we skip straight to the Supabase resolver.
+    let emp = null;
+    if(inviteHotel){
+      const empList = lsGet(`staylo_employees_${inviteHotel}`,[]);
+      emp = empList.find(e=>e.invite_token===inviteToken);
+    }
+    // Cross-device fallback: query Supabase. If it resolves, synthesise a
+    // minimal `emp` object with the same shape the local branch produces —
+    // and mirror it into localStorage so subsequent boots hit the fast path.
+    if(!emp){
+      try {
+        const remote = await shipLookupInviteRemote(inviteToken);
+        if(remote){
+          inviteHotel = remote.hotel_slug;  // trust the server, ignore URL hotel
+          emp = {
+            id: 'emp-remote-'+inviteToken.slice(0,8),
+            first_name: remote.first_name,
+            last_name:  remote.last_name || '',
+            role:       remote.role,
+            department: remote.department || ROLE_TO_DEPT[remote.role] || 'Reception',
+            invite_token: inviteToken,
+            accept_status: remote.accept_status,
+            bound_device_hash: remote.bound_device_hash || null,
+          };
+          // Mirror into local employees list so the manager UI on THIS
+          // device (if any) shows the same record — and subsequent scans
+          // resolve via localStorage without a round-trip.
+          try {
+            const key = `staylo_employees_${inviteHotel}`;
+            const list = lsGet(key, []);
+            if(!list.some(x => x.invite_token === inviteToken)){
+              list.push(emp);
+              lsSet(key, list);
+            }
+          } catch(_) {}
+        }
+      } catch(e){ console.warn('[invite] remote lookup failed', e); }
+    }
     if(emp){
       // ── New "direct boot" flow ──
       // The contract is signed on paper at hire time → the QR is the
@@ -24952,6 +25086,11 @@ async function init(){
             emp.accepted_at     = emp.accepted_at || new Date().toISOString();
             emp.invite_used     = true;
             try { persistClaimUpdate(emp, inviteHotel); } catch (e) { console.warn(e); }
+            // Cross-device: mirror the accept + device binding to Supabase
+            // so the manager's dashboard on any device shows "✓ Onboarded"
+            // and future scans from other devices are correctly refused.
+            // Fire-and-forget — soft-fails if hotel isn't a SHIP customer.
+            shipAcceptInviteRemote(inviteToken, currentHash).catch(()=>{});
           }
           // Build the user session straight from the contract data.
           const u = {

@@ -123,7 +123,7 @@ export default function ShipDashboard() {
 
       {/* ────────── Big Open SHIP CTA ────────── */}
       <a
-        href="/ship.html?demo=off"
+        href={`/ship.html?demo=off&hotel=${encodeURIComponent(hotel.slug)}`}
         target="_blank"
         rel="noopener noreferrer"
         className="block mb-6 p-6 rounded-2xl no-underline transition-all"

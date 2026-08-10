@@ -94,6 +94,7 @@ export function DashboardSidebar() {
   const [hasProperties, setHasProperties] = useState(false)
   const [hasShares, setHasShares] = useState(false)
   const [hasShipHotels, setHasShipHotels] = useState(false)  // SHIP standalone customers
+  const [shipHotelSlug, setShipHotelSlug] = useState(null)   // for /ship.html?hotel=<slug>
   const [stateLoaded, setStateLoaded] = useState(false)
   // Mini-list of the user's properties for the sidebar dropdown.
   // Lightweight payload (id + name) — the full Properties page still
@@ -126,15 +127,18 @@ export function DashboardSidebar() {
         .eq('status', 'active'),
       supabase.from('shares').select('id', { count: 'exact', head: true }).eq('user_id', user.id),
       supabase.from('ship_hotel_members')
-        .select('hotel_id', { count: 'exact', head: true })
+        .select('hotel_id, ship_hotels(slug)')
         .eq('user_id', user.id)
-        .eq('status', 'active'),
+        .eq('status', 'active')
+        .limit(1),
     ]).then(async ([propRes, shareRes, shipRes]) => {
       if (cancelled) return
       const memberRows = propRes.data || []
+      const shipRows = shipRes.data || []
       setHasProperties(memberRows.length > 0)
       setHasShares((shareRes.count || 0) > 0)
-      setHasShipHotels((shipRes.count || 0) > 0)
+      setHasShipHotels(shipRows.length > 0)
+      setShipHotelSlug(shipRows[0]?.ship_hotels?.slug || null)
       setStateLoaded(true)
       // Fetch the property names for the dropdown list. Cheap query —
       // we only ask for id + name + status so the payload stays tiny.
@@ -155,6 +159,7 @@ export function DashboardSidebar() {
         setHasProperties(false)
         setHasShares(false)
         setHasShipHotels(false)
+        setShipHotelSlug(null)
         setStateLoaded(true)
       }
     })
@@ -335,7 +340,13 @@ export function DashboardSidebar() {
               </p>
             </div>
             <a
-              href={hasShipHotels && !hasProperties ? '/ship.html?demo=off' : '/ship.html'}
+              href={
+                hasShipHotels && !hasProperties && shipHotelSlug
+                  ? `/ship.html?demo=off&hotel=${encodeURIComponent(shipHotelSlug)}`
+                  : hasShipHotels && !hasProperties
+                    ? '/ship.html?demo=off'
+                    : '/ship.html'
+              }
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => setMobileOpen(false)}
