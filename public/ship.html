@@ -3807,34 +3807,71 @@ function _writeBlobToLocal(blob){
 }
 
 async function syncHotelStateToServer(hotelCode){
-  if(!hotelCode || !State.supa) return { ok:false, skip:true };
-  try {
-    // Look up hotel_id from slug — required for the FK-scoped RLS check.
-    const { data: hotel, error: lookErr } = await State.supa
-      .from('ship_hotels')
-      .select('id')
-      .eq('slug', hotelCode)
-      .maybeSingle();
-    if(lookErr){ console.warn('[state sync] hotel lookup failed', lookErr.message); return { ok:false }; }
-    if(!hotel){ return { ok:false, skip:true }; }
-    const blob = _collectHotelStateFromLocal(hotelCode);
-    const nowIso = new Date().toISOString();
-    const { error: upErr } = await State.supa
-      .from('ship_hotel_state')
-      .upsert({
-        hotel_id: hotel.id,
-        hotel_slug: hotelCode,
-        state_blob: blob,
-        updated_at: nowIso,
-      }, { onConflict: 'hotel_id' });
-    if(upErr){ console.warn('[state sync] upsert failed', upErr.message); return { ok:false, err:upErr }; }
-    // Mark the push timestamp so the realtime handler ignores its own echo.
-    _lastPushedAt = new Date(nowIso).getTime();
-    // Fan out via broadcast so every other device on the same hotel channel
-    // knows to re-hydrate. Bypasses RLS (no publication or policy needed).
-    _broadcastStateUpdate(hotelCode, nowIso);
-    return { ok:true, keys: Object.keys(blob).length };
-  } catch(e){ console.warn('[state sync] threw', e); return { ok:false, err:e }; }
+  if(!hotelCode) return { ok:false, skip:true };
+  const blob = _collectHotelStateFromLocal(hotelCode);
+  const nowIso = new Date().toISOString();
+
+  // Try authenticated path first — real hotel members (owner / manager
+  // logged in via ship-signup) go through RLS-gated table upsert.
+  let authOk = false;
+  if(State.supa){
+    try {
+      const sess = await State.supa.auth.getSession().catch(() => null);
+      if(sess && sess.data && sess.data.session){
+        const { data: hotel, error: lookErr } = await State.supa
+          .from('ship_hotels')
+          .select('id')
+          .eq('slug', hotelCode)
+          .maybeSingle();
+        if(!lookErr && hotel){
+          const { error: upErr } = await State.supa
+            .from('ship_hotel_state')
+            .upsert({
+              hotel_id: hotel.id,
+              hotel_slug: hotelCode,
+              state_blob: blob,
+              updated_at: nowIso,
+            }, { onConflict: 'hotel_id' });
+          if(!upErr) authOk = true;
+          else console.warn('[state sync] auth upsert failed', upErr.message);
+        }
+      }
+    } catch(e){ console.warn('[state sync] auth path threw', e); }
+  }
+
+  // Fallback for anon staff phones (scanned QR, no Supabase session) —
+  // push via ship_put_hotel_state_by_invite using the invite_token that
+  // brought them into the app. Same last-write-wins semantics; RPC
+  // validates the token is 'accepted'.
+  if(!authOk){
+    const inviteToken = State.user && State.user.__invite_token_used;
+    if(!inviteToken){
+      return { ok:false, skip:true, reason:'no_auth_and_no_invite' };
+    }
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ship_put_hotel_state_by_invite`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ p_token: inviteToken, p_blob: blob }),
+      });
+      if(!r.ok){
+        const body = await r.text().catch(() => '');
+        console.warn('[state sync] anon upsert failed', r.status, body.slice(0, 200));
+        return { ok:false, code:'http_'+r.status };
+      }
+    } catch(e){ console.warn('[state sync] anon path threw', e); return { ok:false, err:e }; }
+  }
+
+  // Mark the push timestamp so the realtime handler ignores its own echo.
+  _lastPushedAt = new Date(nowIso).getTime();
+  // Fan out via broadcast so every other device on the same hotel channel
+  // knows to re-hydrate. Bypasses RLS (no publication or policy needed).
+  _broadcastStateUpdate(hotelCode, nowIso);
+  return { ok:true, keys: Object.keys(blob).length, path: authOk ? 'auth' : 'anon' };
 }
 
 function scheduleStateSyncToServer(){
