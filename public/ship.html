@@ -14075,6 +14075,27 @@ function getExpensesForMonth(month){
 function sumExpensesForMonth(month){
   return getExpensesForMonth(month).reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
 }
+/* Categories that auto-feed the "Fixed expenses" section of the Accounting
+ * P&L view — recurring monthly bills that don't need a separate manual
+ * entry in Charges. Everything else lives as "operational / daily
+ * expenses". Kept in one place so future tweaks (e.g. add "bank_fees")
+ * only touch this constant. */
+const DE_FIXED_CATEGORIES = ['rent', 'utilities', 'insurance'];
+function sumDeByCategory(month, categoryId){
+  return getExpensesForMonth(month)
+    .filter(e => (e.category || 'other') === categoryId)
+    .reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+}
+function sumDeFixedForMonth(month){
+  return getExpensesForMonth(month)
+    .filter(e => DE_FIXED_CATEGORIES.includes(e.category))
+    .reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+}
+function sumDeNonFixedForMonth(month){
+  return getExpensesForMonth(month)
+    .filter(e => !DE_FIXED_CATEGORIES.includes(e.category))
+    .reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+}
 function addExpense(month, exp){
   const all = getExpensesData();
   if(!all.months[month]) all.months[month] = [];
@@ -15170,6 +15191,7 @@ function showCashMovementModal(mode, onSaved){
  * ============================================================================ */
 let _deMonth = null;
 let _deFilterMethod = 'all';
+let _deFilterCategory = 'all';
 let _deTab = 'expenses';   // 'expenses' | 'revenues' | 'commissions'
 function _curDeMonth(){ return _deMonth || _curFinMonth(); }
 
@@ -15375,11 +15397,13 @@ function renderDailyExpensesLedger(body){
   const cashBalance = computeCashBalance();
   const cashBalanceThisMonth = computeCashBalance(month + '-31');
 
-  // Filter by payment method (server would do this at scale; local for now).
+  // Filters (payment method + category — both AND'd)
   const monthExpenses = getExpensesForMonth(month).slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-  const filtered = _deFilterMethod === 'all'
-    ? monthExpenses
-    : monthExpenses.filter(e => (e.payment_method || 'cash') === _deFilterMethod);
+  const filtered = monthExpenses.filter(e => {
+    if(_deFilterMethod !== 'all' && (e.payment_method || 'cash') !== _deFilterMethod) return false;
+    if(_deFilterCategory !== 'all' && (e.category || 'other') !== _deFilterCategory) return false;
+    return true;
+  });
 
   const byMethod = sumExpensesByMethodForMonth(month);
 
@@ -15462,6 +15486,36 @@ function renderDailyExpensesLedger(body){
     filters.appendChild(mkFilterBtn(p.id, p.em + ' ' + p.label, n));
   }
   wrap.appendChild(filters);
+
+  // ── Category filter chips ── (second strip, same UX as payment method)
+  // Only categories with ≥1 expense show up; keeps the chip strip tight
+  // on hotels where only 3-4 categories are actually used.
+  const catCounts = {};
+  for(const e of monthExpenses){
+    const c = e.category || 'other';
+    catCounts[c] = (catCounts[c] || 0) + 1;
+  }
+  const activeCats = EXPENSE_CATEGORIES.filter(c => catCounts[c.id] > 0);
+  if(activeCats.length){
+    const catFilters = el('div', { style: 'display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px' });
+    const mkCatBtn = (id, label, count) => {
+      const active = _deFilterCategory === id;
+      const btn = el('button', {
+        style: 'flex-shrink:0;padding:6px 12px;border-radius:99px;border:2px solid ' +
+               (active ? '#7E22CE' : '#E8E0D8') +
+               ';background:' + (active ? 'linear-gradient(135deg,#7E22CE,#C026D3)' : '#fff') +
+               ';color:' + (active ? '#fff' : '#1A1A2E') +
+               ';font-weight:700;font-size:12px;cursor:pointer'
+      }, label + (count > 0 ? ' (' + count + ')' : ''));
+      btn.addEventListener('click', () => { _deFilterCategory = id; rerender(); });
+      return btn;
+    };
+    catFilters.appendChild(mkCatBtn('all', 'All categories', monthExpenses.length));
+    for(const c of activeCats){
+      catFilters.appendChild(mkCatBtn(c.id, c.em + ' ' + c.label, catCounts[c.id]));
+    }
+    wrap.appendChild(catFilters);
+  }
 
   // ── Chronological list: expenses + cash movements interleaved by date ──
   const monthMovements = (cb.movements || []).filter(m => (m.date || '').slice(0,7) === month);
@@ -15624,8 +15678,13 @@ function renderFinanceView(body){
 
   const sumOf = (arr) => (arr||[]).reduce((s,x) => s + (parseFloat(x.amount)||0), 0);
 
-  const dailyExpensesTotal = sumExpensesForMonth(month);
-  const totalExpenses = sumOf(cur.fixed) + payrollTotal + dailyExpensesTotal;
+  // Split DE ledger expenses between "fixed" (rent/utilities/insurance —
+  // auto-fed into the Fixed expenses section below) and "daily/operational"
+  // (everything else — shown as a summary card). Prevents double-counting.
+  const dailyExpensesNonFixed = sumDeNonFixedForMonth(month);
+  const dailyExpensesFixed = sumDeFixedForMonth(month);
+  const dailyExpensesTotal = dailyExpensesNonFixed + dailyExpensesFixed;
+  const totalExpenses = sumOf(cur.fixed) + dailyExpensesFixed + payrollTotal + dailyExpensesNonFixed;
   // Live POS revenue (Loyverse) gets folded into the month's total
   // automatically: we read from the in-memory cache so the first render
   // is 0 (or last-known), then the async fetch below re-renders with the
@@ -15642,6 +15701,8 @@ function renderFinanceView(body){
     priorExpensesFixed = sumOf(prior.fixed);
     priorRevenues = sumOf(prior.rev_lodging) + sumOf(prior.rev_fnb)
                   + sumOf(prior.rev_ancillary) + sumOf(prior.rev_shop);
+    // Prior-month DE total for the M-o-M delta — includes both fixed +
+    // non-fixed since totalExpenses on the current side sums both too.
     priorDailyExpenses = sumExpensesForMonth(priorMonth);
   }
   // Use the historical priorPayroll if we have one; only fall back to today's
@@ -15757,7 +15818,71 @@ function renderFinanceView(body){
     return sec;
   };
 
-  wrap.appendChild(editableSection(t('app.charges.section.fixed'),     '💸', 'fixed',         t('app.charges.placeholder.fixed')));
+  // ── Fixed expenses section: manual editable rows + auto-fed rows from
+  //    DE ledger (rent, utilities, insurance). Combined total shown in
+  //    the section header. Auto-rows are non-editable (delete would break
+  //    the DE ledger); tap opens the DE view scoped to that category.
+  (() => {
+    const manualFixedTotal = sumOf(cur.fixed);
+    const perCatTotals = DE_FIXED_CATEGORIES.map(catId => ({
+      catId,
+      total: sumDeByCategory(month, catId),
+      def: _expenseCategory(catId),
+    })).filter(x => x.total > 0);
+    const deFixedTotal = perCatTotals.reduce((s, x) => s + x.total, 0);
+    const combinedFixedTotal = manualFixedTotal + deFixedTotal;
+
+    const sec = el('section', { class: 'finance-sec' });
+    sec.appendChild(el('div', { class: 'finance-sec-head' },
+      el('div', { class: 'finance-sec-title' }, '💸 ' + t('app.charges.section.fixed')),
+      el('div', { class: 'finance-sec-total' }, fmt(combinedFixedTotal)),
+    ));
+
+    // Auto-fed DE rows FIRST — each is a read-only summary line.
+    if(perCatTotals.length){
+      const autoList = el('div', {
+        style: 'display:flex;flex-direction:column;gap:4px;margin-bottom:8px;padding:8px;background:#F7F5F0;border-radius:8px'
+      });
+      autoList.appendChild(el('div', {
+        style: 'font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted,#666);margin-bottom:2px'
+      }, '📎 Auto-fed from DE ledger'));
+      for(const x of perCatTotals){
+        const row = el('div', {
+          style: 'display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:6px 8px;background:#fff;border-radius:6px;cursor:pointer;font-size:13px',
+          title: 'Tap to open the ' + x.def.label + ' expenses in the DE ledger',
+        },
+          el('span', { style: 'font-size:16px' }, x.def.em),
+          el('div', {},
+            el('div', { style: 'font-weight:700;color:var(--fg,#1A1A2E)' }, x.def.label),
+            el('div', { style: 'font-size:10px;color:var(--muted,#888)' }, 'from Daily Expenses ledger'),
+          ),
+          el('div', { style: 'font-weight:800;color:var(--fg,#1A1A2E)' }, fmt(x.total)),
+        );
+        row.addEventListener('click', () => {
+          if(typeof _deFilterMethod !== 'undefined'){ _deFilterMethod = 'all'; }
+          if(typeof _deFilterCategory !== 'undefined'){ _deFilterCategory = x.catId; }
+          if(typeof _deTab !== 'undefined'){ _deTab = 'expenses'; }
+          if(typeof setView === 'function') setView('de');
+        });
+        autoList.appendChild(row);
+      }
+      sec.appendChild(autoList);
+    }
+
+    // Manual editable rows — same UI as before via editableSection, minus
+    // the outer wrapping (we already have the header + auto-rows above).
+    // Simplest: render into a sub-container and pull only the rows +
+    // "add line" button out of the returned section.
+    const inner = editableSection(t('app.charges.section.fixed'), '💸', 'fixed', t('app.charges.placeholder.fixed'));
+    // Strip the duplicated header from `inner` — we already rendered one
+    // with the combined total.
+    const _innerHead = inner.querySelector('.finance-sec-head');
+    if(_innerHead) _innerHead.remove();
+    // Move inner's remaining children into sec
+    while(inner.firstChild){ sec.appendChild(inner.firstChild); }
+
+    wrap.appendChild(sec);
+  })();
 
   // Daily expenses (receipts) — AI-parsed + manual, one row per bill.
   // Sums into totalExpenses above so the P&L stays coherent.
