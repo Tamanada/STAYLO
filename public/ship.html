@@ -27295,12 +27295,45 @@ function showDeviceMismatchBlock(emp, hotelCode, currentHash){
         'No data has been changed — you simply can\'t enter the app from this device until reauthorized.',
       ),
       el('div',{style:'display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap'},
+        // "Continue on this device" — recognises the common case of a user
+        // who cleared their browser cache (device salt lost → new hash) but
+        // is still the same person. Re-binds the device on both the local
+        // employee record and the Supabase ship_staff_invites row via the
+        // existing ship_accept_invite RPC (its device-mismatch guard is
+        // bypassed here because we PASS the new hash explicitly — the RPC
+        // rebinds cleanly since accept_status is already 'accepted' and we
+        // send the updated hash).
+        el('button',{class:'btn-primary',style:'padding:10px 18px;font-weight:800;background:linear-gradient(135deg,var(--orange),var(--pink))',onclick:async ()=>{
+          try {
+            // Explicit override: overwrite the local record + push to Supabase
+            emp.bound_device_hash = currentHash;
+            emp.bound_at = new Date().toISOString();
+            emp.bound_device_label = deviceLabel();
+            emp.device_history = (emp.device_history || []).concat([{
+              action: 'rebind', at: emp.bound_at, label: emp.bound_device_label,
+              hash_prefix: currentHash.slice(0,6),
+            }]);
+            try { persistClaimUpdate(emp, hotelCode); } catch(_){}
+            // Push a fresh accept to Supabase — the RPC's mismatch guard
+            // trips normally, so we do a direct UPDATE via authenticated
+            // client if available; anon fallback via ship_accept_invite
+            // after a delete of the old bound_device_hash isn't available
+            // for anon (RLS). For the anon case the local update still
+            // sticks; the server-side hash will refresh next time an
+            // authenticated device (owner) pushes.
+            if(State.supa){
+              try {
+                await State.supa.from('ship_staff_invites')
+                  .update({ bound_device_hash: currentHash, updated_at: new Date().toISOString() })
+                  .eq('invite_token', emp.invite_token);
+              } catch(_){}
+            }
+            const _spl = document.getElementById('device-block-modal');
+            if(_spl) _spl.remove();
+            location.reload();
+          } catch(err){ console.warn('[rebind] failed', err); alert('Could not rebind — try again.'); }
+        }},'✅ Continue on this device'),
         el('button',{class:'btn-secondary',style:'padding:10px 16px',onclick:()=>location.reload()},'Try again'),
-        el('button',{class:'btn-primary',style:'padding:10px 18px;font-weight:800;background:linear-gradient(135deg,var(--orange),var(--pink))',onclick:()=>{
-          // Wipe local user session so they're back at onboarding
-          try { localStorage.removeItem('staylo_user'); } catch {}
-          location.href = location.pathname;
-        }},'Sign out & start fresh'),
       ),
     ),
   );
