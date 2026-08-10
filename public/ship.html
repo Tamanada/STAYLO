@@ -24758,7 +24758,21 @@ function initShell(){
   try {
     const q = new URLSearchParams(location.search);
     if(q.get('reset') === '1'){
-      try { localStorage.clear(); } catch(_) {}
+      // Preserve the Supabase auth session across the wipe — without it,
+      // any cross-device RPC (ship_upsert_staff_invite, etc.) would fail
+      // with 'not authenticated' after reset and the manager would have
+      // to log in again on staylo.app before returning here.
+      try {
+        const preserved = {};
+        for(let i=0; i<localStorage.length; i++){
+          const k = localStorage.key(i);
+          if(k && k.startsWith('sb-') && k.includes('-auth-token')){
+            preserved[k] = localStorage.getItem(k);
+          }
+        }
+        localStorage.clear();
+        for(const k in preserved){ localStorage.setItem(k, preserved[k]); }
+      } catch(_) {}
     }
     // The `?demo=off` flag is picked up in _bootAppInner via
     // window.__shipDisableDemo — set here so the flag survives the
