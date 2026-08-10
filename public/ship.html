@@ -3923,6 +3923,60 @@ function lsSetVerify(k,v){
 }
 
 /* ============================================================================
+ * warnStorageFullOnce() — one-shot recovery modal instead of alert-fest
+ * ============================================================================
+ * Ten separate savers all pop their own blocking alert() on quota-exceeded.
+ * On mobile, when the quota is already busted at boot, that fired 10× in a
+ * row and the user couldn't even reach the app. Show ONE modal per session
+ * with a clear "Wipe local data & reload" button that runs the standard
+ * reset URL — same path as ?reset=1&demo=off, but without requiring the
+ * user to type an address.
+ * ============================================================================ */
+window.__storageFullShown = false;
+function warnStorageFullOnce(msg){
+  try { console.warn('[storage-full]', msg || 'quota exceeded'); } catch(_) {}
+  if(window.__storageFullShown) return;
+  window.__storageFullShown = true;
+  // Defer to next tick so the caller's stack unwinds first (avoids
+  // interrupting whatever save-loop just failed).
+  setTimeout(() => {
+    try {
+      const bg = document.createElement('div');
+      bg.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px';
+      const card = document.createElement('div');
+      card.style.cssText = 'background:#fff;color:#1A1A2E;border-radius:16px;max-width:420px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.35);font-family:system-ui,-apple-system,sans-serif';
+      card.innerHTML =
+        '<div style="font-size:40px;text-align:center;margin-bottom:8px">💾</div>' +
+        '<h3 style="margin:0 0 8px;text-align:center;font-size:20px;font-weight:800">Local storage is full</h3>' +
+        '<p style="margin:0 0 16px;color:#555;font-size:14px;line-height:1.5;text-align:center">Your device can\'t save any more app data. Reset local state (your login stays) and reload to keep going.</p>' +
+        '<div style="display:flex;gap:8px;flex-direction:column">' +
+        '  <button id="_sf-reset" style="padding:14px;font-weight:800;background:linear-gradient(135deg,#FF6B00,#FF1F70);color:#fff;border:0;border-radius:12px;font-size:15px;cursor:pointer">🔁 Reset local data & reload</button>' +
+        '  <button id="_sf-later" style="padding:10px;font-weight:600;background:transparent;color:#666;border:0;font-size:13px;cursor:pointer">Not now</button>' +
+        '</div>';
+      bg.appendChild(card);
+      document.body.appendChild(bg);
+      document.getElementById('_sf-reset').onclick = () => {
+        // Preserve Supabase auth tokens across the wipe, same as the ?reset=1
+        // flag does — so the user doesn\'t get bounced back to /login.
+        try {
+          const preserved = {};
+          for(let i=0; i<localStorage.length; i++){
+            const k = localStorage.key(i);
+            if(k && k.startsWith('sb-') && k.includes('-auth-token')){
+              preserved[k] = localStorage.getItem(k);
+            }
+          }
+          localStorage.clear();
+          for(const k in preserved){ localStorage.setItem(k, preserved[k]); }
+        } catch(_) {}
+        location.reload();
+      };
+      document.getElementById('_sf-later').onclick = () => { bg.remove(); };
+    } catch(err){ console.warn('storage-full modal failed', err); }
+  }, 0);
+}
+
+/* ============================================================================
  * DEVICE FINGERPRINT — anti-fraud: 1 employee account = 1 device.
  * ============================================================================
  * Fingerprint = SHA-256 of (userAgent + screen + timezone + per-device salt),
@@ -11646,10 +11700,7 @@ function saveEmployees(a){
   const ok = lsSetVerify(_hkey('staylo_employees'), a);
   if(!ok){
     try{
-      const msg = t('app.roster.quota_exceeded');
-      alert(msg !== 'app.roster.quota_exceeded'
-        ? msg
-        : 'Storage full — your last save could not be persisted.\n\nTry: remove the largest scans (ID / work permit) from existing employees, or export your data and reload.');
+      warnStorageFullOnce('roster save');
     }catch(_){}
   }
   return ok;
@@ -11692,10 +11743,7 @@ function getSchedules(){return lsGet(_hkey('staylo_schedules'),[])}
 function saveSchedules(a){
   if(!lsSetVerify(_hkey('staylo_schedules'),a)){
     try{
-      const msg = t('app.roster.quota_exceeded');
-      alert(msg !== 'app.roster.quota_exceeded'
-        ? msg
-        : 'Storage full — schedule changes may not be saved.\n\nTry removing large ID scans or photos from employee records.');
+      warnStorageFullOnce('schedule save');
     }catch(_){}
   }
 }
@@ -12250,7 +12298,7 @@ function ficheCategoryLabel(slug){
 }
 
 function getRecipes(){ return lsGet(_hkey('staylo_recipes'), []); }
-function saveRecipes(arr){ if(!lsSetVerify(_hkey('staylo_recipes'), arr)){ alert('Storage full — recipe changes could not be saved.'); } }
+function saveRecipes(arr){ if(!lsSetVerify(_hkey('staylo_recipes'), arr)){ warnStorageFullOnce('recipes'); } }
 function findRecipe(id){ return getRecipes().find(r => r.id === id) || null; }
 function upsertRecipe(r){
   const all = getRecipes();
@@ -12326,7 +12374,7 @@ function recipeTotals(r){
  * for each calendar day.
  * ============================================================================ */
 function getTasks(){ return lsGet(_hkey('staylo_tasks'), []); }
-function saveTasks(arr){ if(!lsSetVerify(_hkey('staylo_tasks'), arr)){ alert('Storage full — task changes could not be saved.'); } }
+function saveTasks(arr){ if(!lsSetVerify(_hkey('staylo_tasks'), arr)){ warnStorageFullOnce('tasks'); } }
 /* Task execution log — Start/End timing + end photo captured from the SHIP
  * fiche, so the manager can see how long a task took and a photo of the
  * finished work. Keyed by "taskId|date" → {started_at, ended_at, duration_min,
@@ -12414,7 +12462,7 @@ function tasksAssignedToEmployee(tasks, emp){
   });
 }
 function getTimesheet(empId){return lsGet(_hkey('staylo_ts')+'_'+empId,[])}
-function saveTimesheet(empId,events){ if(!lsSetVerify(_hkey('staylo_ts')+'_'+empId,events)){ alert('Storage full — timesheet changes could not be saved.'); } }
+function saveTimesheet(empId,events){ if(!lsSetVerify(_hkey('staylo_ts')+'_'+empId,events)){ warnStorageFullOnce('timesheet'); } }
 
 /* ============================================================================
  * PAYROLL — monthly payslips
@@ -12438,7 +12486,7 @@ const OT_RATE_DEFAULT     = 1.5;     // Thailand: OT paid at 1.5× hourly
 const OT_THRESHOLD_PER_WK = 48;      // Hours/week before OT kicks in (TH max)
 
 function getPayslips(){return lsGet(_hkey('staylo_payslips'),[])}
-function savePayslips(arr){ if(!lsSetVerify(_hkey('staylo_payslips'),arr)){ alert('Storage full — payslip changes could not be saved.'); } }
+function savePayslips(arr){ if(!lsSetVerify(_hkey('staylo_payslips'),arr)){ warnStorageFullOnce('payslips'); } }
 function findPayslip(empId, month){return getPayslips().find(p => p.emp_id===empId && p.month===month) || null}
 function upsertPayslip(p){
   const all = getPayslips();
@@ -12474,7 +12522,7 @@ function getServicePools(){
   const fallbackId = firstFbPool ? firstFbPool.id : 'pool-default-service';
   return arr.map(r => r.pool_id ? r : { ...r, pool_id: fallbackId });
 }
-function saveServicePools(arr){ if(!lsSetVerify(_hkey('staylo_service_pools'),arr)){ alert('Storage full — service pool changes could not be saved.'); } }
+function saveServicePools(arr){ if(!lsSetVerify(_hkey('staylo_service_pools'),arr)){ warnStorageFullOnce('service pools'); } }
 /* Legacy: find the single pool record for a period (returns first match
  * regardless of pool_id — kept for callers that haven't been refactored yet). */
 function findServicePool(period){return getServicePools().find(p => p.period === period) || null}
@@ -13408,7 +13456,7 @@ function getFinanceData(){
   if(!raw.months) raw.months = {};
   return raw;
 }
-function saveFinanceData(d){ if(!lsSetVerify(_hkey('staylo_finance'), d)){ alert('Storage full — finance data could not be saved.'); } }
+function saveFinanceData(d){ if(!lsSetVerify(_hkey('staylo_finance'), d)){ warnStorageFullOnce('finance'); } }
 
 function exportFinanceCSV(cur, month, payrollTotal, sym){
   const rows = [['Section','Label','Amount ('+sym+')']];
@@ -13470,7 +13518,7 @@ function getExpensesData(){
 }
 function saveExpensesData(d){
   if(!lsSetVerify(_hkey('staylo_expenses'), d)){
-    alert('Storage full — expense could not be saved.\n\nRemove some receipts or old data first.');
+    warnStorageFullOnce('expense');
   }
 }
 function getExpensesForMonth(month){
@@ -13644,7 +13692,7 @@ function getCashbook(){
 }
 function saveCashbook(cb){
   if(!lsSetVerify(_hkey('staylo_cashbook'), cb)){
-    alert('Storage full — cashbook change could not be saved.');
+    warnStorageFullOnce('cashbook');
   }
 }
 function setOpeningBalance(amount, date){
