@@ -26718,6 +26718,34 @@ async function init(){
   // pre-filled one) and they're in.
   const params = new URLSearchParams(location.search);
   const inviteToken = params.get('invite');
+
+  // As soon as we know an invite token is in the URL, HIDE the onboarding
+  // form and show a small "resolving invite…" screen. The onboarding div is
+  // display:flex by default and the invite resolution is async (device
+  // fingerprint + Supabase round-trip = ~200-500ms), so without this hide
+  // the user sees the audience/name/role form and starts typing before we
+  // boot them in as the correct employee. If the invite fails we re-show
+  // onboarding at the bottom, so this is safe.
+  if(inviteToken){
+    const _ob = document.getElementById('onboarding');
+    if(_ob){ _ob.style.display = 'none'; }
+    // Fullscreen loading splash so the visitor knows something IS happening
+    if(!document.getElementById('invite-splash')){
+      const splash = document.createElement('div');
+      splash.id = 'invite-splash';
+      splash.style.cssText = 'position:fixed;inset:0;z-index:9998;background:linear-gradient(135deg,#FFFDF8,#FFE9D6);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;font-family:system-ui,-apple-system,sans-serif;color:#1A1A2E';
+      splash.innerHTML =
+        '<div style="font-size:36px;font-weight:800;letter-spacing:-1px"><span style="color:#1A1A2E">Stay</span><span style="background:linear-gradient(135deg,#FF6B00,#FF1F70);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">lo</span></div>' +
+        '<div style="width:36px;height:36px;border:3px solid #E8E0D8;border-top-color:#FF6B00;border-radius:50%;animation:_inv-spin 900ms linear infinite"></div>' +
+        '<div style="font-size:13px;color:#666;font-weight:600">Opening your account…</div>' +
+        '<style>@keyframes _inv-spin{to{transform:rotate(360deg)}}</style>';
+      document.body.appendChild(splash);
+    }
+  }
+  const _removeInviteSplash = () => {
+    const s = document.getElementById('invite-splash');
+    if(s) s.remove();
+  };
   // inviteHotel is optional — the server-side RPC returns the hotel_slug
   // from the invite token itself, so a bare ?invite=<token> URL works.
   // If the URL includes ?hotel=<slug>, we still try the localStorage path
@@ -26778,6 +26806,9 @@ async function init(){
       // from a second phone — first scan binds the device, later scans
       // from a different device hit the re-auth screen.
       if(emp.accept_status === 'declined'){
+        _removeInviteSplash();
+        const _ob = document.getElementById('onboarding');
+        if(_ob){ _ob.style.display = 'flex'; }
         alert(t('app.dialogs.invite_declined'));
         history.replaceState({},'',location.pathname);
       } else {
@@ -26822,8 +26853,17 @@ async function init(){
           State.user = u;
           history.replaceState({},'',location.pathname);
           $('#onboarding').style.display='none';
+          _removeInviteSplash();
           bootApp();
-        })();
+        })().catch(err => {
+          // Any unexpected error in the async chain: log + take the splash
+          // down so the user isn't stuck on it forever.
+          console.error('[invite] boot chain failed', err);
+          _removeInviteSplash();
+          alert('Could not open your account (' + ((err && err.message) || 'unknown error') + '). Please contact your manager.');
+          const _ob = document.getElementById('onboarding');
+          if(_ob){ _ob.style.display = 'flex'; }
+        });
         return;
       }
     } else {
@@ -26842,6 +26882,7 @@ async function init(){
       // force a clean state so it's obvious the invite didn't work.
       try { localStorage.removeItem('staylo_user'); } catch(_) {}
       State.user = null;
+      _removeInviteSplash();
       alert(
         (t('app.dialogs.invite_unrecognized',{hotel:inviteHotel}) || 'Invite link not recognised.') +
         '\n\n' +
@@ -26972,6 +27013,8 @@ function showDeviceMismatchBlock(emp, hotelCode, currentHash){
   document.body.appendChild(modal);
   // Stop the rest of the boot — this modal IS the screen now
   $('#onboarding').style.display = 'none';
+  const _spl = document.getElementById('invite-splash');
+  if(_spl) _spl.remove();
 }
 
 document.addEventListener('DOMContentLoaded', init);
