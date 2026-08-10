@@ -3588,6 +3588,149 @@ const DEMO_MODE = !SUPABASE_URL.startsWith('https://');
  * Every helper fails soft — the app must continue working offline, and
  * legacy demo hotels (no matching ship_hotels row) get silently skipped.
  * ============================================================================ */
+/* ============================================================================
+ * HOTEL STATE SYNC — one jsonb blob, per-hotel, cross-device
+ * ============================================================================
+ * Wraps localStorage so every staylo_*_<hotelCode> write eventually mirrors
+ * to ship_hotel_state.state_blob on Supabase. Any device booting into the
+ * same hotel pulls the blob and hydrates its own localStorage before render.
+ *
+ * Timing model:
+ *   · Debounced push: 5s after the last write burst → single upsert
+ *   · Hydrate on boot: before bootApp() so the first render is fresh
+ *   · Staff QR flow: RPC ship_get_hotel_state_by_invite(token) — anon-safe
+ *     read using the invite_token as the credential (no Supabase session
+ *     required on the staff phone)
+ *
+ * Trade-offs (accepted for V1):
+ *   · Last-write-wins on the whole blob — two devices editing at once =
+ *     the later push clobbers the earlier one. Fine for solo owner / small
+ *     team; needs per-record CRUD when we scale to 500+ hotels.
+ *   · Sync is fire-and-forget — writes never block the UI. Errors are
+ *     logged but don't surface to the user (localStorage still holds the
+ *     truth locally).
+ * ============================================================================ */
+const _SYNC_KEY_PREFIX = 'staylo_';
+let _syncTimer = null;
+let _hydrationDone = false;
+let _lastHydrationSlug = null;
+
+function _collectHotelStateFromLocal(hotelCode){
+  const suffix = '_' + hotelCode;
+  const state = {};
+  try {
+    for(let i=0; i<localStorage.length; i++){
+      const k = localStorage.key(i);
+      if(!k || !k.startsWith(_SYNC_KEY_PREFIX)) continue;
+      // Skip per-device / session-scoped keys.
+      if(k === 'staylo_user') continue;
+      if(k === 'staylo-lang') continue;
+      if(k.startsWith('staylo_remind_') || k.startsWith('staylo_break_') || k.startsWith('staylo_j1_')) continue;
+      // Only take keys scoped to THIS hotel (hotelCode-suffixed).
+      if(!k.endsWith(suffix)) continue;
+      try { state[k] = JSON.parse(localStorage.getItem(k)); }
+      catch { /* skip malformed */ }
+    }
+  } catch(_) {}
+  return state;
+}
+
+function _writeBlobToLocal(blob){
+  if(!blob || typeof blob !== 'object') return 0;
+  let n = 0;
+  for(const k of Object.keys(blob)){
+    try {
+      localStorage.setItem(k, JSON.stringify(blob[k]));
+      n++;
+    } catch(err){
+      // Storage-full during hydration would break the whole boot; surface
+      // via the same recovery modal the app already uses.
+      warnStorageFullOnce('hydrate:' + k);
+      return n;
+    }
+  }
+  return n;
+}
+
+async function syncHotelStateToServer(hotelCode){
+  if(!hotelCode || !State.supa) return { ok:false, skip:true };
+  try {
+    // Look up hotel_id from slug — required for the FK-scoped RLS check.
+    const { data: hotel, error: lookErr } = await State.supa
+      .from('ship_hotels')
+      .select('id')
+      .eq('slug', hotelCode)
+      .maybeSingle();
+    if(lookErr){ console.warn('[state sync] hotel lookup failed', lookErr.message); return { ok:false }; }
+    if(!hotel){ return { ok:false, skip:true }; }
+    const blob = _collectHotelStateFromLocal(hotelCode);
+    const { error: upErr } = await State.supa
+      .from('ship_hotel_state')
+      .upsert({
+        hotel_id: hotel.id,
+        hotel_slug: hotelCode,
+        state_blob: blob,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'hotel_id' });
+    if(upErr){ console.warn('[state sync] upsert failed', upErr.message); return { ok:false, err:upErr }; }
+    return { ok:true, keys: Object.keys(blob).length };
+  } catch(e){ console.warn('[state sync] threw', e); return { ok:false, err:e }; }
+}
+
+function scheduleStateSyncToServer(){
+  if(_syncTimer) clearTimeout(_syncTimer);
+  _syncTimer = setTimeout(() => {
+    _syncTimer = null;
+    const slug = State.user && State.user.hotelCode;
+    if(!slug) return;
+    // Only sync if hydration has completed for THIS slug — otherwise the
+    // first debounced push after boot could overwrite the server with a
+    // stale local view.
+    if(!_hydrationDone || _lastHydrationSlug !== slug) return;
+    syncHotelStateToServer(slug).catch(()=>{});
+  }, 5000);
+}
+
+async function hydrateHotelStateFromServerAuthenticated(hotelCode){
+  if(!hotelCode || !State.supa) return { ok:false, skip:true };
+  try {
+    const { data, error } = await State.supa
+      .from('ship_hotel_state')
+      .select('state_blob, updated_at')
+      .eq('hotel_slug', hotelCode)
+      .maybeSingle();
+    if(error){ console.warn('[state hydrate] fetch failed', error.message); return { ok:false }; }
+    if(!data || !data.state_blob){ _hydrationDone = true; _lastHydrationSlug = hotelCode; return { ok:true, empty:true }; }
+    const n = _writeBlobToLocal(data.state_blob);
+    _hydrationDone = true;
+    _lastHydrationSlug = hotelCode;
+    console.log('[state hydrate]', hotelCode, '→', n, 'keys restored');
+    return { ok:true, keys:n };
+  } catch(e){ console.warn('[state hydrate] threw', e); return { ok:false, err:e }; }
+}
+
+async function hydrateHotelStateFromInviteToken(inviteToken){
+  if(!inviteToken) return { ok:false, skip:true };
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/ship_get_hotel_state_by_invite`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ p_token: inviteToken }),
+    });
+    if(!r.ok) return { ok:false, code:'http_'+r.status };
+    const blob = await r.json();
+    if(!blob || typeof blob !== 'object') return { ok:false, code:'empty' };
+    const n = _writeBlobToLocal(blob);
+    _hydrationDone = true;   // slug unknown here — set after State.user
+    console.log('[state hydrate via invite]', n, 'keys restored');
+    return { ok:true, keys:n };
+  } catch(e){ console.warn('[state hydrate via invite] threw', e); return { ok:false, err:e }; }
+}
+
 async function shipUpsertInviteRemote(hotelSlug, emp){
   if(!hotelSlug || !emp || !emp.invite_token) return {ok:false, skip:true};
   try {
@@ -3911,15 +4054,34 @@ const State = {
  * which returns true/false so the caller can warn the user instead of
  * losing data. See saveEmployees() for the canonical pattern. */
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
-function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function lsSet(k,v){
+  try{ localStorage.setItem(k,JSON.stringify(v)); _maybeQueueStateSync(k); }
+  catch(_){}
+}
 function lsSetVerify(k,v){
   try{
     localStorage.setItem(k,JSON.stringify(v));
+    _maybeQueueStateSync(k);
     return true;
   }catch(e){
     console.error('[lsSetVerify] write failed for key', k, e?.name || e);
     return false;
   }
+}
+// Called after every localStorage write. If the key is hotel-scoped (ends
+// with _<current-hotelCode>) queue a debounced push to ship_hotel_state so
+// other devices booting the same hotel pull the latest state. Skips per-
+// device keys and pre-hydration writes (see scheduleStateSyncToServer).
+function _maybeQueueStateSync(k){
+  try {
+    if(!k || !k.startsWith('staylo_')) return;
+    if(k === 'staylo_user' || k === 'staylo-lang') return;
+    if(k.startsWith('staylo_remind_') || k.startsWith('staylo_break_') || k.startsWith('staylo_j1_')) return;
+    const slug = (typeof State !== 'undefined' && State.user && State.user.hotelCode) || null;
+    if(!slug) return;
+    if(!k.endsWith('_' + slug)) return;
+    if(typeof scheduleStateSyncToServer === 'function') scheduleStateSyncToServer();
+  } catch(_) {}
 }
 
 /* ============================================================================
@@ -26523,7 +26685,23 @@ async function _bootAppInner(){
     State.user.department = 'F&B';
     lsSet('staylo_user', State.user);
   }
+  // Cross-device hydration — pull the hotel state blob from Supabase before
+  // any renders touch localStorage. Required so a manager who set up
+  // employees / schedules / tasks on device A sees them on device B the
+  // moment they open the app. Chicken-and-egg with initSupabase() (which
+  // fires later inside this same function) — so create the Supabase client
+  // NOW if it doesn't exist, then hydrate.
+  try {
+    if(!State.supa && !DEMO_MODE && typeof supabase !== 'undefined'){
+      State.supa = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    if(State.supa && State.user && State.user.hotelCode){
+      await hydrateHotelStateFromServerAuthenticated(State.user.hotelCode);
+    }
+  } catch(err){ console.warn('[boot] hydration failed', err); }
   // Merge per-hotel custom roles into ROLE_TO_DEPT/EMOJI lookups
+  // (must come AFTER hydration — the custom roles blob is one of the keys
+  //  pulled from the server).
   refreshCustomRoles();
   // Auto-seed demo employees / recipes / tasks for fresh hotels (so the UI
   // is never empty on first login). Skipped once the manager flips
@@ -26849,6 +27027,17 @@ async function init(){
           lsSet('staylo_user', u);
           State.user = u;
           history.replaceState({},'',location.pathname);
+          // Cross-device state — the staff phone has no employees list, no
+          // schedules, no tasks. Pull the manager's snapshot via the anon-
+          // callable RPC (invite_token is the credential). Populates
+          // localStorage before render so the roster / planning / task
+          // views are up to date the first time they open.
+          try { await hydrateHotelStateFromInviteToken(inviteToken); }
+          catch(err){ console.warn('[invite hydrate]', err); }
+          // Mark hydration done for this hotelCode so the state-sync push
+          // (which runs 5s after any subsequent write) has a reference.
+          _hydrationDone = true;
+          _lastHydrationSlug = u.hotelCode;
           $('#onboarding').style.display='none';
           _removeInviteSplash();
           bootApp();
