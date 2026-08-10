@@ -2296,7 +2296,14 @@ body.sched-landscape-fs .hr-dashboard,
 body.sched-landscape-fs .hr-filters,
 body.sched-landscape-fs .cp-hotel,
 body.sched-landscape-fs .rail-btn,
-body.sched-landscape-fs #global-mobile-menu-btn{ display: none !important; }
+body.sched-landscape-fs #global-mobile-menu-btn,
+/* Schedule-specific chrome to hide too — David: "je veux seulement le
+ * tableau". The nav strip (Prev / Today / Next / Day-Week-2wk-Month /
+ * services / events), the sched-head label and the "Expand calendar"
+ * pull-up handle all disappear so only the grid + date strip remain. */
+body.sched-landscape-fs .sched-nav,
+body.sched-landscape-fs .sched-head,
+body.sched-landscape-fs .sched-handle{ display: none !important; }
 body.sched-landscape-fs #hr-modal,
 body.sched-landscape-fs #hr-body,
 body.sched-landscape-fs .content-view{
