@@ -3676,6 +3676,9 @@ async function syncHotelStateToServer(hotelCode){
     if(upErr){ console.warn('[state sync] upsert failed', upErr.message); return { ok:false, err:upErr }; }
     // Mark the push timestamp so the realtime handler ignores its own echo.
     _lastPushedAt = new Date(nowIso).getTime();
+    // Fan out via broadcast so every other device on the same hotel channel
+    // knows to re-hydrate. Bypasses RLS (no publication or policy needed).
+    _broadcastStateUpdate(hotelCode, nowIso);
     return { ok:true, keys: Object.keys(blob).length };
   } catch(e){ console.warn('[state sync] threw', e); return { ok:false, err:e }; }
 }
@@ -3695,62 +3698,90 @@ function scheduleStateSyncToServer(){
 }
 
 /* ============================================================================
- * REALTIME — auto-hydrate when another device pushes an update
+ * REALTIME — Broadcast-based hotel state sync
  * ============================================================================
- * Supabase Postgres Changes subscription on ship_hotel_state. Fires on any
- * INSERT/UPDATE for THIS hotel. On event, we skip if the update was from
- * our own device (we track _lastPushedAt to dedupe), otherwise hydrate the
- * blob and dispatch a `ship:state-hydrated` custom event so views that
- * care (Team roster, Planning, Tasks) can re-render.
+ * Supabase Postgres Changes would need the table in the supabase_realtime
+ * publication AND an RLS SELECT policy for the subscriber's role. Anon
+ * staff phones (invite-scan flow) fail both requirements.
+ *
+ * Broadcast bypasses all of that: any client on the same channel name
+ * receives all messages, no RLS. Manager pushes state → also broadcasts
+ * "hotel-updated" → every other device on the same channel re-hydrates.
+ * Works uniformly for authenticated managers and anon-scanned staff.
  * ============================================================================ */
 let _realtimeChannel = null;
-let _lastPushedAt = 0;
+let _lastPushedAt = 0;                 // ms — dedupes our own broadcast echo
 let _realtimeRerenderBound = false;
+let _pendingHotelSlug = null;          // slug the current channel is bound to
+
 function _installRealtimeStateSync(hotelCode){
   // Bind the auto-rerender listener once per session (idempotent).
   if(!_realtimeRerenderBound){
     _realtimeRerenderBound = true;
     window.addEventListener('ship:state-hydrated', () => {
       // Re-render whatever view is currently open so data updates flow to
-      // the UI without the user having to refresh. renderActiveView is a
-      // no-op if we're on the plain Chat view — fine, chat has its own
-      // realtime channel.
+      // the UI without the user having to refresh. Chat has its own
+      // realtime channel; renderActiveView is a no-op there.
       try { if(typeof renderActiveView === 'function') renderActiveView(); } catch(_){}
-      // Also refresh the channels sidebar since new schedules/tasks/
-      // employees can change the visible channels.
       try { if(typeof renderChannels === 'function') renderChannels(); } catch(_){}
     });
   }
   if(!State.supa || !hotelCode) return;
-  // Only one channel at a time — tear down previous if we're switching hotels.
+  // Same hotel + already subscribed → no-op (avoid duplicate channels).
+  if(_realtimeChannel && _pendingHotelSlug === hotelCode) return;
+  // Tear down previous channel (hotel switched — rare but supported).
   if(_realtimeChannel){
     try { State.supa.removeChannel(_realtimeChannel); } catch(_){}
     _realtimeChannel = null;
   }
-  _realtimeChannel = State.supa.channel(`ship-state:${hotelCode}`)
-    .on('postgres_changes', {
-      event: '*',
-      schema: 'public',
-      table: 'ship_hotel_state',
-      filter: `hotel_slug=eq.${hotelCode}`,
-    }, (payload) => {
-      try {
-        const rowUpdatedAt = payload && payload.new && payload.new.updated_at;
-        // Ignore echoes of our own push (within 3s of last push).
-        if(rowUpdatedAt){
-          const t = new Date(rowUpdatedAt).getTime();
-          if(Math.abs(t - _lastPushedAt) < 3000) return;
-        }
-        const blob = payload && payload.new && payload.new.state_blob;
-        if(!blob) return;
-        const n = _writeBlobToLocal(blob);
-        console.log('[realtime]', hotelCode, 'hydrated', n, 'keys from remote push');
-        // Fire event so open views can re-render themselves. Views wire up
-        // window.addEventListener('ship:state-hydrated', …) individually.
-        try { window.dispatchEvent(new CustomEvent('ship:state-hydrated', { detail: { hotelCode, keys: n } })); } catch(_){}
-      } catch(err){ console.warn('[realtime] handler failed', err); }
-    })
-    .subscribe();
+  _pendingHotelSlug = hotelCode;
+  _realtimeChannel = State.supa.channel(`ship-hotel:${hotelCode}`, {
+    config: { broadcast: { self: false } },    // don't loop our own broadcasts back
+  });
+  _realtimeChannel.on('broadcast', { event: 'state-updated' }, async (msg) => {
+    try {
+      // Self-echo guard even with self:false, in case another tab on the
+      // same device pushed within our debounce window.
+      const at = msg?.payload?.updated_at ? new Date(msg.payload.updated_at).getTime() : 0;
+      if(at && Math.abs(at - _lastPushedAt) < 3000) return;
+
+      // Two paths: authenticated members re-fetch via the RLS-gated table;
+      // anon invite-scanned staff use the invite-token RPC.
+      const inviteToken = msg?.payload?.invite_token_hint    // future use — sender includes if available
+                       || (State.user && State.user.__invite_token_used)
+                       || null;
+      let hydrated = null;
+      const sess = await State.supa.auth.getSession().catch(() => null);
+      if(sess && sess.data && sess.data.session){
+        hydrated = await hydrateHotelStateFromServerAuthenticated(hotelCode);
+      } else if(inviteToken){
+        hydrated = await hydrateHotelStateFromInviteToken(inviteToken);
+      } else {
+        // Fallback: try authenticated first, then anon RPC (anon RPC requires
+        // an invite token — will silently no-op if we have none).
+        hydrated = await hydrateHotelStateFromServerAuthenticated(hotelCode);
+      }
+      if(hydrated && hydrated.ok){
+        try { window.dispatchEvent(new CustomEvent('ship:state-hydrated', { detail: { hotelCode, source: 'broadcast' } })); } catch(_){}
+      }
+    } catch(err){ console.warn('[realtime broadcast] handler failed', err); }
+  });
+  _realtimeChannel.subscribe((status) => {
+    if(status === 'SUBSCRIBED') console.log('[realtime] subscribed to ship-hotel:'+hotelCode);
+  });
+}
+
+/* Called by syncHotelStateToServer after a successful push — tell every
+ * other device on the same channel that fresh state is available. */
+function _broadcastStateUpdate(hotelCode, updatedAtIso){
+  if(!_realtimeChannel || _pendingHotelSlug !== hotelCode) return;
+  try {
+    _realtimeChannel.send({
+      type: 'broadcast',
+      event: 'state-updated',
+      payload: { updated_at: updatedAtIso },
+    });
+  } catch(err){ console.warn('[realtime broadcast] send failed', err); }
 }
 
 async function hydrateHotelStateFromServerAuthenticated(hotelCode){
@@ -27103,6 +27134,10 @@ async function init(){
           // (which runs 2s after any subsequent write) has a reference.
           _hydrationDone = true;
           _lastHydrationSlug = u.hotelCode;
+          // Stash the invite token so the realtime broadcast handler can
+          // re-hydrate via the anon RPC on subsequent server pushes.
+          u.__invite_token_used = inviteToken;
+          lsSet('staylo_user', u);
           // Subscribe to server pushes for this hotel — even staff phones
           // get real-time updates when the manager makes changes on desktop.
           // Requires State.supa; we create it on demand.
