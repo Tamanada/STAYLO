@@ -3317,13 +3317,40 @@ body.off-shift .quick-actions{display:none !important}
   border:1px solid var(--border);transition:all .15s;
 }
 .gallery-thumb:hover{transform:scale(1.05);border-color:var(--orange);box-shadow:0 2px 8px rgba(0,0,0,.15)}
-/* Fullscreen photo viewer */
+/* Fullscreen photo viewer with pinch-zoom + wheel-zoom + drag-to-pan */
 .photo-lightbox{
   position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,.92);
-  display:flex;align-items:center;justify-content:center;cursor:zoom-out;
-  animation:fadeUp .2s ease-out;
+  display:flex;align-items:center;justify-content:center;
+  animation:fadeUp .2s ease-out;overflow:hidden;
+  touch-action:none;   /* we handle all pointers ourselves */
 }
-.photo-lightbox img{max-width:96vw;max-height:96vh;border-radius:8px;box-shadow:0 16px 60px rgba(0,0,0,.5)}
+.photo-lightbox .lb-viewport{
+  width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;cursor:grab;
+}
+.photo-lightbox .lb-viewport.dragging{cursor:grabbing}
+.photo-lightbox img{
+  max-width:96vw;max-height:96vh;border-radius:8px;box-shadow:0 16px 60px rgba(0,0,0,.5);
+  transform-origin:center center;transition:transform .12s ease-out;
+  user-select:none;-webkit-user-drag:none;pointer-events:none;
+}
+.photo-lightbox .lb-toolbar{
+  position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:2;
+}
+.photo-lightbox .lb-btn{
+  width:44px;height:44px;border:0;border-radius:50%;
+  background:rgba(0,0,0,.55);color:#fff;font-size:22px;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  transition:background .15s;
+}
+.photo-lightbox .lb-btn:hover{background:rgba(0,0,0,.75)}
+.photo-lightbox .lb-btn:active{transform:scale(.94)}
+.photo-lightbox .lb-hint{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  color:#fff;font-size:11px;opacity:.6;letter-spacing:.5px;text-transform:uppercase;
+  pointer-events:none;
+}
 .recipe-form .add-line{
   margin-top:4px;background:rgba(108,92,231,.1);color:var(--purple);
   font-size:11px;font-weight:700;padding:6px 12px;border-radius:var(--r-pill);
@@ -20359,10 +20386,142 @@ function toggleScheduleFullscreen(forceState){
 /* Open a photo fullscreen on click */
 function showPhotoLightbox(src){
   const ex = $('#photo-lightbox'); if(ex) ex.remove();
-  const lb = el('div',{class:'photo-lightbox',id:'photo-lightbox',onclick:()=>lb.remove()},
-    el('img',{src,alt:''}),
-  );
+
+  // State: scale + pan offset, applied via a single transform per frame.
+  const state = { scale: 1, tx: 0, ty: 0 };
+  const MIN = 1, MAX = 6;
+
+  const img = el('img', { src, alt: '' });
+  const viewport = el('div', { class: 'lb-viewport' }, img);
+  const hint = el('div', { class: 'lb-hint' }, 'Pinch or double-tap to zoom · drag to pan');
+
+  const applyTransform = () => {
+    img.style.transform = `translate(${state.tx}px, ${state.ty}px) scale(${state.scale})`;
+  };
+  const setScale = (nextScale, focusX, focusY) => {
+    const s = Math.max(MIN, Math.min(MAX, nextScale));
+    // Zoom around a focus point (mouse position / pinch centre). Adjust the
+    // pan so the pixel under the cursor stays under the cursor.
+    if(focusX != null && focusY != null){
+      const rect = viewport.getBoundingClientRect();
+      const cx = rect.width / 2 + state.tx;
+      const cy = rect.height / 2 + state.ty;
+      const dx = focusX - rect.left - cx;
+      const dy = focusY - rect.top - cy;
+      const ratio = s / state.scale;
+      state.tx -= dx * (ratio - 1);
+      state.ty -= dy * (ratio - 1);
+    }
+    state.scale = s;
+    // Snap pan back to zero when fully zoomed out so the image re-centres.
+    if(s === 1){ state.tx = 0; state.ty = 0; }
+    applyTransform();
+  };
+  const reset = () => { state.scale = 1; state.tx = 0; state.ty = 0; applyTransform(); };
+
+  // ── Toolbar ──
+  const closeBtn = el('button', { class: 'lb-btn', title: 'Close', 'aria-label': 'Close' }, '×');
+  const zoomInBtn = el('button', { class: 'lb-btn', title: 'Zoom in', 'aria-label': 'Zoom in' }, '+');
+  const zoomOutBtn = el('button', { class: 'lb-btn', title: 'Zoom out', 'aria-label': 'Zoom out' }, '−');
+  const resetBtn = el('button', { class: 'lb-btn', title: 'Fit', 'aria-label': 'Fit to screen', style: 'font-size:14px' }, '1x');
+  const toolbar = el('div', { class: 'lb-toolbar' }, resetBtn, zoomOutBtn, zoomInBtn, closeBtn);
+
+  const lb = el('div', { class: 'photo-lightbox', id: 'photo-lightbox' }, toolbar, viewport, hint);
   document.body.appendChild(lb);
+  applyTransform();
+
+  // ── Interactions ──
+  closeBtn.addEventListener('click', () => lb.remove());
+  zoomInBtn.addEventListener('click', () => setScale(state.scale * 1.4));
+  zoomOutBtn.addEventListener('click', () => setScale(state.scale / 1.4));
+  resetBtn.addEventListener('click', reset);
+
+  // Wheel zoom (desktop) — scroll to zoom around cursor.
+  viewport.addEventListener('wheel', (ev) => {
+    ev.preventDefault();
+    const delta = -ev.deltaY;
+    const factor = delta > 0 ? 1.12 : 1 / 1.12;
+    setScale(state.scale * factor, ev.clientX, ev.clientY);
+  }, { passive: false });
+
+  // Double-tap / double-click → toggle 1x ↔ 2.5x centered on tap point.
+  viewport.addEventListener('dblclick', (ev) => {
+    ev.preventDefault();
+    if(state.scale > 1.05) reset();
+    else setScale(2.5, ev.clientX, ev.clientY);
+  });
+
+  // Pointer tracking: single-pointer = drag pan, two-pointer = pinch zoom.
+  const pointers = new Map();
+  let pinchStartDist = 0, pinchStartScale = 1;
+  let panStart = null;   // { x, y, tx, ty }
+
+  const distanceOf2 = () => {
+    const [a, b] = Array.from(pointers.values());
+    const dx = a.x - b.x, dy = a.y - b.y;
+    return Math.hypot(dx, dy);
+  };
+
+  viewport.addEventListener('pointerdown', (ev) => {
+    pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    try { viewport.setPointerCapture(ev.pointerId); } catch(_) {}
+    if(pointers.size === 2){
+      pinchStartDist = distanceOf2();
+      pinchStartScale = state.scale;
+      panStart = null;
+    } else if(pointers.size === 1){
+      panStart = { x: ev.clientX, y: ev.clientY, tx: state.tx, ty: state.ty };
+      viewport.classList.add('dragging');
+    }
+  });
+  viewport.addEventListener('pointermove', (ev) => {
+    if(!pointers.has(ev.pointerId)) return;
+    pointers.set(ev.pointerId, { x: ev.clientX, y: ev.clientY });
+    if(pointers.size === 2){
+      const d = distanceOf2();
+      if(pinchStartDist > 0){
+        // Pinch centre for zoom focus
+        const [a, b] = Array.from(pointers.values());
+        const cx = (a.x + b.x) / 2, cy = (a.y + b.y) / 2;
+        setScale(pinchStartScale * (d / pinchStartDist), cx, cy);
+      }
+    } else if(pointers.size === 1 && panStart && state.scale > 1){
+      state.tx = panStart.tx + (ev.clientX - panStart.x);
+      state.ty = panStart.ty + (ev.clientY - panStart.y);
+      img.style.transition = 'none';
+      applyTransform();
+    }
+  });
+  const endPointer = (ev) => {
+    if(!pointers.has(ev.pointerId)) return;
+    pointers.delete(ev.pointerId);
+    try { viewport.releasePointerCapture(ev.pointerId); } catch(_) {}
+    if(pointers.size < 2){ pinchStartDist = 0; }
+    if(pointers.size === 0){
+      panStart = null;
+      viewport.classList.remove('dragging');
+      img.style.transition = '';   // restore for the next controlled setScale
+    }
+  };
+  viewport.addEventListener('pointerup', endPointer);
+  viewport.addEventListener('pointercancel', endPointer);
+
+  // Background tap (outside viewport controls) closes. Toolbar clicks bubble
+  // stopped in the button handlers above so this only fires on the black
+  // gutter around the image.
+  lb.addEventListener('click', (ev) => {
+    if(ev.target === lb) lb.remove();
+  });
+
+  // ESC to close, +/-/0 shortcuts
+  const onKey = (ev) => {
+    if(!document.getElementById('photo-lightbox')){ document.removeEventListener('keydown', onKey); return; }
+    if(ev.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', onKey); }
+    else if(ev.key === '+' || ev.key === '=') { ev.preventDefault(); setScale(state.scale * 1.4); }
+    else if(ev.key === '-') { ev.preventDefault(); setScale(state.scale / 1.4); }
+    else if(ev.key === '0') { ev.preventDefault(); reset(); }
+  };
+  document.addEventListener('keydown', onKey);
 }
 /* Migrate legacy single photo_url into the new photos[] array */
 function recipePhotos(r){
