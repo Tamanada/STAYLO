@@ -10474,6 +10474,15 @@ const EMPTY_EMP = {
   // Set to a number 0-7 to override the hotel-wide default for this person
   // (e.g. probationary period gets 1, exceptional performer gets +1, etc.)
   pool_points_override: null,
+  // ── Revenus extra (commissions) ─────────────────────────────────────
+  // Variable-earnings rules on top of the base salary. Each rule points at
+  // a source of revenue (event, F&B, ticket, rental, custom) and defines
+  // how the employee earns from it. See ship_revenue_events for the
+  // per-event log the compute engine multiplies these rules against.
+  // Shape: [{id, label, source_kind, rate_kind, rate_value, basis,
+  //          filter_tag?, shared_with_employee_id?, shared_pct?, note?,
+  //          active, created_at}]
+  extra_revenues: [],
   // ── DEPRECATED: kept for back-compat reads only (new code writes pool_points_override)
   service_pool_points_override: null,
   // Housing (staff accommodation)
@@ -13748,6 +13757,460 @@ function sumExpensesByMethodForMonth(month){
 }
 
 /* ============================================================================
+ * REVENUE EVENTS + COMMISSION COMPUTE
+ * ============================================================================
+ * Two layers stack:
+ *
+ * 1. Rules  (per employee, stored on emp.extra_revenues[]) — declare HOW
+ *    the employee earns extra: label + source_kind + rate + basis + optional
+ *    filter tag + optional split partner.
+ *
+ * 2. Events (per hotel per month, stored in staylo_revenue_events) — LOG of
+ *    actual revenue-generating happenings: this specific wedding earned X,
+ *    that ticket batch sold Y units, etc.
+ *
+ * The compute engine walks every rule for a given employee, filters events
+ * that match (by source_kind + optional tag), applies the rate against the
+ * basis (revenue / margin / units), applies the share split, and sums.
+ *
+ * Storage schema: staylo_revenue_events per hotel = {
+ *   months: { 'YYYY-MM': [{id, date, kind, label, tag, revenue, cost,
+ *                          units, currency, attributed_to:[empId,...]?,
+ *                          note, created_at}] }
+ * }
+ * ============================================================================ */
+const REVENUE_KINDS = [
+  { id: 'event',   label: 'Event / Function',    em: '🎉' },
+  { id: 'fnb',     label: 'F&B service',         em: '🍽️' },
+  { id: 'ticket',  label: 'Ticket sales',        em: '🎟️' },
+  { id: 'rental',  label: 'Rental',              em: '🛥️' },
+  { id: 'custom',  label: 'Custom',              em: '💼' },
+];
+function _revenueKind(id){ return REVENUE_KINDS.find(k => k.id === id) || REVENUE_KINDS[REVENUE_KINDS.length-1]; }
+
+const BASIS_OPTIONS = [
+  { id: 'revenue', label: 'Gross revenue' },
+  { id: 'margin',  label: 'Margin (revenue − cost)' },
+  { id: 'unit',    label: 'Per unit sold' },
+];
+
+function getRevenueEventsData(){
+  let raw = lsGet(_hkey('staylo_revenue_events'), null);
+  if(!raw) raw = { months: {} };
+  if(!raw.months) raw.months = {};
+  return raw;
+}
+function saveRevenueEventsData(d){
+  if(!lsSetVerify(_hkey('staylo_revenue_events'), d)){ warnStorageFullOnce('revenue events'); }
+}
+function getRevenueEventsForMonth(month){
+  const all = getRevenueEventsData();
+  return all.months[month] || [];
+}
+function addRevenueEvent(month, evt){
+  const all = getRevenueEventsData();
+  if(!all.months[month]) all.months[month] = [];
+  evt.id = evt.id || ('rev-' + Date.now() + '-' + Math.floor(Math.random() * 9999));
+  evt.created_at = evt.created_at || new Date().toISOString();
+  all.months[month].push(evt);
+  saveRevenueEventsData(all);
+  return evt;
+}
+function deleteRevenueEvent(month, id){
+  const all = getRevenueEventsData();
+  if(!all.months[month]) return;
+  all.months[month] = all.months[month].filter(e => e.id !== id);
+  saveRevenueEventsData(all);
+}
+
+/* Apply one rule to one event → returns the raw amount the rule would
+ * generate for this event (before split). Returns 0 if the rule doesn't
+ * match the event's source_kind / filter_tag. */
+function _commissionForEventRule(evt, rule){
+  if(!rule || !rule.active) return 0;
+  if(rule.source_kind && rule.source_kind !== evt.kind) return 0;
+  if(rule.filter_tag && rule.filter_tag.trim() && (evt.tag || '').toLowerCase() !== rule.filter_tag.trim().toLowerCase()) return 0;
+
+  let basisValue = 0;
+  if(rule.basis === 'revenue')       basisValue = parseFloat(evt.revenue) || 0;
+  else if(rule.basis === 'margin')   basisValue = (parseFloat(evt.revenue) || 0) - (parseFloat(evt.cost) || 0);
+  else if(rule.basis === 'unit')     basisValue = parseFloat(evt.units) || 0;
+
+  const rateValue = parseFloat(rule.rate_value) || 0;
+  if(rule.rate_kind === 'fixed'){
+    // Fixed amount per unit (or per event if basis is revenue/margin)
+    if(rule.basis === 'unit') return rateValue * basisValue;
+    return rateValue;
+  }
+  // percent — rate is a % of the basis value
+  return (basisValue * rateValue) / 100;
+}
+
+/* Given an employee id and a month, walk every rule × every event and
+ * return per-rule breakdown + grand total. If the event has an
+ * `attributed_to` list and the employee isn't in it, skip. */
+function computeCommissionsForEmployee(empId, month){
+  const emp = findEmployee(empId);
+  if(!emp || !Array.isArray(emp.extra_revenues) || emp.extra_revenues.length === 0){
+    return { total: 0, byRule: [] };
+  }
+  const events = getRevenueEventsForMonth(month);
+  const byRule = [];
+  let grand = 0;
+  for(const rule of emp.extra_revenues){
+    let ruleTotal = 0;
+    const matches = [];
+    for(const evt of events){
+      // Manual attribution overrides rule matching — if the event says
+      // "only these employees", other employees earn 0 from it.
+      if(Array.isArray(evt.attributed_to) && evt.attributed_to.length > 0
+         && !evt.attributed_to.includes(empId)){
+        continue;
+      }
+      const raw = _commissionForEventRule(evt, rule);
+      if(raw <= 0) continue;
+      // Split: if rule shares with another employee, this employee keeps (100 - shared_pct)%
+      let net = raw;
+      if(rule.shared_with_employee_id && rule.shared_pct > 0){
+        net = raw * (1 - (parseFloat(rule.shared_pct) || 0) / 100);
+      }
+      ruleTotal += net;
+      matches.push({ event: evt, raw, net });
+    }
+    if(ruleTotal > 0 || matches.length > 0){
+      byRule.push({ rule, total: ruleTotal, matches });
+      grand += ruleTotal;
+    }
+  }
+  return { total: grand, byRule };
+}
+
+/* Roll-up: for a given month, compute the commission earned by every
+ * employee with at least one rule. Used by the DE Commissions tab. */
+function computeCommissionsForMonth(month){
+  const emps = getEmployees();
+  const rows = [];
+  let grand = 0;
+  for(const emp of emps){
+    if(!Array.isArray(emp.extra_revenues) || emp.extra_revenues.length === 0) continue;
+    const r = computeCommissionsForEmployee(emp.id, month);
+    if(r.total > 0){
+      rows.push({ emp, total: r.total, byRule: r.byRule });
+      grand += r.total;
+    }
+  }
+  rows.sort((a, b) => b.total - a.total);
+  return { rows, total: grand };
+}
+
+function sumRevenueEventsForMonth(month){
+  const events = getRevenueEventsForMonth(month);
+  return events.reduce((s, e) => s + (parseFloat(e.revenue) || 0), 0);
+}
+
+/* ============================================================================
+ * Add / edit commission RULE modal (per employee)
+ * ============================================================================ */
+function showExtraRevenueRuleModal(emp, ruleOrNull, onSaved){
+  const ex = $('#extra-rev-rule-modal'); if(ex) ex.remove();
+  const modal = el('div', { class: 'shift-editor-bg', id: 'extra-rev-rule-modal' });
+  bindSafeBackdropClose(modal, 'extra-rev-rule-modal');
+
+  const isEdit = !!ruleOrNull;
+  const rule = ruleOrNull || {
+    id: null,
+    label: '',
+    source_kind: 'event',
+    rate_kind: 'percent',
+    rate_value: '',
+    basis: 'revenue',
+    filter_tag: '',
+    shared_with_employee_id: '',
+    shared_pct: '',
+    note: '',
+    active: true,
+  };
+
+  const sym = (typeof curSym === 'function') ? curSym() : '฿';
+  const label = (t) => el('label', { style: 'display:block;font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--muted,#666);text-transform:uppercase;margin-bottom:6px' }, t);
+
+  const mkInput = (val, opts) => {
+    const i = document.createElement('input');
+    i.value = val || '';
+    Object.assign(i, opts || {});
+    i.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+    return i;
+  };
+  const mkSelect = (opts, selected) => {
+    const s = document.createElement('select');
+    s.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+    for(const o of opts){
+      const el2 = document.createElement('option');
+      el2.value = o.value; el2.textContent = o.label;
+      if(o.value === selected) el2.selected = true;
+      s.appendChild(el2);
+    }
+    return s;
+  };
+
+  const labelIn  = mkInput(rule.label,       { type: 'text', placeholder: 'e.g. Event organisation commission' });
+  const sourceIn = mkSelect(REVENUE_KINDS.map(k => ({ value: k.id, label: k.em + ' ' + k.label })), rule.source_kind);
+  const rateKindIn = mkSelect([
+    { value: 'percent', label: 'Percentage (%)' },
+    { value: 'fixed',   label: 'Fixed amount (' + sym + ')' },
+  ], rule.rate_kind);
+  const rateValueIn = mkInput(rule.rate_value, { type: 'number', step: '0.01', placeholder: '5' });
+  const basisIn = mkSelect(BASIS_OPTIONS.map(b => ({ value: b.id, label: b.label })), rule.basis);
+  const filterTagIn = mkInput(rule.filter_tag, { type: 'text', placeholder: 'e.g. wedding (leave blank = all)' });
+  const noteIn = mkInput(rule.note, { type: 'text', placeholder: 'Optional context…' });
+
+  // Colleagues picker for split partner
+  const others = getEmployees().filter(e => e.id !== emp.id);
+  const partnerOptions = [{ value: '', label: '— No split —' }].concat(
+    others.map(e => ({ value: e.id, label: `${e.first_name} ${e.last_name || ''} · ${e.role || ''}`.trim() }))
+  );
+  const partnerIn = mkSelect(partnerOptions, rule.shared_with_employee_id || '');
+  const sharedPctIn = mkInput(rule.shared_pct, { type: 'number', min: '0', max: '100', step: '1', placeholder: '30' });
+
+  const activeIn = document.createElement('input');
+  activeIn.type = 'checkbox';
+  activeIn.checked = rule.active !== false;
+  activeIn.id = 'extra-rev-active';
+
+  const panel = el('div', { class: 'shift-editor-panel', style: 'max-width:560px' },
+    el('h3', { style: 'margin:0 0 4px' }, isEdit ? '✏️ Edit commission rule' : '➕ Add commission rule'),
+    el('p', { class: 'sub', style: 'margin:0 0 16px' }, 'For ' + (emp.first_name || '?') + ' ' + (emp.last_name || '')),
+
+    el('div', { style: 'margin-bottom:12px' }, label('Label'), labelIn),
+
+    el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px' },
+      el('div', {}, label('Applies to'), sourceIn),
+      el('div', {}, label('Only for tag (optional)'), filterTagIn),
+    ),
+
+    el('div', { style: 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px' },
+      el('div', {}, label('Rate type'), rateKindIn),
+      el('div', {}, label('Rate value'), rateValueIn),
+      el('div', {}, label('Calculated on'), basisIn),
+    ),
+
+    el('div', { class: 'sec-title', style: 'font-size:12px;margin-top:8px' }, '🤝 Share with a partner (optional)'),
+    el('div', { style: 'display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:12px' },
+      el('div', {}, label('Split with'), partnerIn),
+      el('div', {}, label('Their % of the commission'), sharedPctIn),
+    ),
+
+    el('div', { style: 'margin-bottom:12px' }, label('Note'), noteIn),
+
+    el('label', { style: 'display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#333;cursor:pointer;margin-top:8px' },
+      activeIn,
+      'Rule is active (uncheck to pause without deleting)',
+    ),
+
+    el('div', { class: 'row-actions', style: 'margin-top:20px' },
+      isEdit ? el('button', {
+        style: 'background:transparent;border:0;color:#DC2626;font-weight:700;cursor:pointer;padding:0 12px;font-size:13px',
+        onclick: () => {
+          if(!confirm('Delete this commission rule?')) return;
+          const arr = (emp.extra_revenues || []).filter(r => r.id !== rule.id);
+          upsertEmployee({ ...emp, extra_revenues: arr });
+          modal.remove();
+          if(onSaved) onSaved();
+        },
+      }, '🗑 Delete') : el('span'),
+      el('div', { style: 'flex:1' }),
+      el('button', { class: 'btn-secondary', onclick: () => modal.remove() }, 'Cancel'),
+      el('button', { class: 'btn-primary', onclick: () => {
+        const lbl = labelIn.value.trim();
+        const rateV = parseFloat(rateValueIn.value);
+        if(!lbl){ alert('Label is required.'); return; }
+        if(!(rateV > 0)){ alert('Rate value must be greater than 0.'); return; }
+
+        const arr = [...(emp.extra_revenues || [])];
+        const updated = {
+          id: rule.id || 'rule-' + Date.now() + '-' + Math.floor(Math.random() * 9999),
+          label: lbl,
+          source_kind: sourceIn.value,
+          rate_kind: rateKindIn.value,
+          rate_value: rateV,
+          basis: basisIn.value,
+          filter_tag: filterTagIn.value.trim() || null,
+          shared_with_employee_id: partnerIn.value || null,
+          shared_pct: partnerIn.value ? (parseFloat(sharedPctIn.value) || 0) : null,
+          note: noteIn.value.trim() || null,
+          active: !!activeIn.checked,
+          created_at: rule.created_at || new Date().toISOString(),
+        };
+        if(isEdit){
+          const idx = arr.findIndex(r => r.id === rule.id);
+          if(idx >= 0) arr[idx] = updated; else arr.push(updated);
+        } else {
+          arr.push(updated);
+        }
+        upsertEmployee({ ...emp, extra_revenues: arr });
+        modal.remove();
+        if(onSaved) onSaved();
+      } }, 'Save rule'),
+    ),
+  );
+  modal.appendChild(panel);
+  document.body.appendChild(modal);
+}
+
+/* ============================================================================
+ * Add / edit revenue EVENT modal — logs one revenue-generating happening
+ * (a wedding, a batch of tickets, one rental period, etc.)
+ * ============================================================================ */
+function showAddRevenueEventModal(month, eventOrNull, onSaved){
+  const ex = $('#rev-event-modal'); if(ex) ex.remove();
+  const modal = el('div', { class: 'shift-editor-bg', id: 'rev-event-modal' });
+  bindSafeBackdropClose(modal, 'rev-event-modal');
+
+  const sym = (typeof curSym === 'function') ? curSym() : '฿';
+  const defaultCur = (() => {
+    try { return (getHotelSettings().currency_code || '').toUpperCase() || 'THB'; }
+    catch { return 'THB'; }
+  })();
+
+  const isEdit = !!eventOrNull;
+  const evt = eventOrNull || {
+    date: new Date().toISOString().slice(0, 10),
+    kind: 'event',
+    label: '',
+    tag: '',
+    revenue: '',
+    cost: '',
+    units: '',
+    currency: defaultCur,
+    attributed_to: [],
+    note: '',
+  };
+
+  const mkInput = (val, opts) => {
+    const i = document.createElement('input');
+    i.value = val || '';
+    Object.assign(i, opts || {});
+    i.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+    return i;
+  };
+  const label = (t) => el('label', { style: 'display:block;font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--muted,#666);text-transform:uppercase;margin-bottom:6px' }, t);
+
+  const dateIn = mkInput(evt.date, { type: 'date' });
+  const kindSel = document.createElement('select');
+  kindSel.style.cssText = 'width:100%;padding:10px 12px;border-radius:8px;border:2px solid var(--border,#E8E0D8);font-size:14px;font-family:inherit;background:#fff';
+  for(const k of REVENUE_KINDS){
+    const o = document.createElement('option');
+    o.value = k.id; o.textContent = k.em + ' ' + k.label;
+    if(k.id === evt.kind) o.selected = true;
+    kindSel.appendChild(o);
+  }
+
+  const labelIn = mkInput(evt.label, { type: 'text', placeholder: 'e.g. Smith Wedding' });
+  const tagIn   = mkInput(evt.tag,   { type: 'text', placeholder: 'e.g. wedding (optional; used by rule filters)' });
+  const revenueIn = mkInput(evt.revenue, { type: 'number', step: '0.01', min: '0', placeholder: '0' });
+  const costIn    = mkInput(evt.cost,    { type: 'number', step: '0.01', min: '0', placeholder: '0' });
+  const unitsIn   = mkInput(evt.units,   { type: 'number', step: '1', min: '0', placeholder: 'For per-unit rules (tickets, rentals)' });
+  const currencyIn = mkInput(evt.currency, { type: 'text', maxLength: 3 });
+  currencyIn.style.cssText += ';text-transform:uppercase;font-family:monospace';
+  const noteIn = mkInput(evt.note, { type: 'text', placeholder: 'Note (optional)' });
+
+  // Multi-select for attributed_to (checkbox list of employees)
+  const attribList = el('div', {
+    style: 'max-height:160px;overflow-y:auto;background:#fff;border:2px solid var(--border,#E8E0D8);border-radius:8px;padding:8px'
+  });
+  const emps = getEmployees().filter(e => !e.is_demo || true);   // include demo for now
+  const currentAttr = new Set(evt.attributed_to || []);
+  const attribCheckboxes = {};
+  if(emps.length === 0){
+    attribList.appendChild(el('div', { style: 'padding:6px;font-size:12px;color:#999' }, 'No employees yet.'));
+  } else {
+    for(const e of emps){
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = currentAttr.has(e.id);
+      attribCheckboxes[e.id] = cb;
+      const row = el('label', {
+        style: 'display:flex;align-items:center;gap:8px;padding:4px 6px;border-radius:6px;cursor:pointer;font-size:13px'
+      }, cb, `${e.first_name} ${e.last_name || ''} · ${e.role || ''}`.trim());
+      attribList.appendChild(row);
+    }
+  }
+
+  const panel = el('div', { class: 'shift-editor-panel', style: 'max-width:560px' },
+    el('h3', { style: 'margin:0 0 4px' }, isEdit ? '✏️ Edit revenue event' : '➕ Log revenue event'),
+    el('p', { class: 'sub', style: 'margin:0 0 16px' }, 'Records one revenue-generating happening. Commissions computed from the rules on each employee.'),
+
+    el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px' },
+      el('div', {}, label('Date'), dateIn),
+      el('div', {}, label('Kind'), kindSel),
+    ),
+
+    el('div', { style: 'margin-bottom:12px' }, label('Label / name'), labelIn),
+    el('div', { style: 'margin-bottom:12px' }, label('Tag (optional, used by rule filters)'), tagIn),
+
+    el('div', { style: 'display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px' },
+      el('div', {}, label('Revenue (' + sym + ')'), revenueIn),
+      el('div', {}, label('Cost (optional, for margin)'), costIn),
+      el('div', {}, label('Units (tickets/rentals)'), unitsIn),
+    ),
+
+    el('div', { style: 'display:grid;grid-template-columns:1fr 2fr;gap:12px;margin-bottom:12px' },
+      el('div', {}, label('Currency'), currencyIn),
+      el('div', {}, label('Note'), noteIn),
+    ),
+
+    el('div', { style: 'margin-bottom:12px' },
+      label('Attribute to specific employees (leave all UNchecked = every rule that matches earns)'),
+      attribList,
+    ),
+
+    el('div', { class: 'row-actions', style: 'margin-top:20px' },
+      isEdit ? el('button', {
+        style: 'background:transparent;border:0;color:#DC2626;font-weight:700;cursor:pointer;padding:0 12px;font-size:13px',
+        onclick: () => {
+          if(!confirm('Delete this revenue event?')) return;
+          deleteRevenueEvent(evt.date.slice(0,7), evt.id);
+          modal.remove();
+          if(onSaved) onSaved();
+        },
+      }, '🗑 Delete') : el('span'),
+      el('div', { style: 'flex:1' }),
+      el('button', { class: 'btn-secondary', onclick: () => modal.remove() }, 'Cancel'),
+      el('button', { class: 'btn-primary', onclick: () => {
+        if(!labelIn.value.trim()){ alert('Label is required.'); return; }
+        const attr = Object.keys(attribCheckboxes).filter(id => attribCheckboxes[id].checked);
+        const record = {
+          id: evt.id || null,
+          date: dateIn.value || new Date().toISOString().slice(0,10),
+          kind: kindSel.value,
+          label: labelIn.value.trim(),
+          tag: tagIn.value.trim() || null,
+          revenue: parseFloat(revenueIn.value) || 0,
+          cost: parseFloat(costIn.value) || 0,
+          units: parseFloat(unitsIn.value) || 0,
+          currency: (currencyIn.value || defaultCur).toUpperCase().slice(0,3),
+          attributed_to: attr,
+          note: noteIn.value.trim() || null,
+          created_at: evt.created_at || null,
+        };
+        const targetMonth = record.date.slice(0, 7);
+        if(isEdit){
+          // Simplest: delete old, add new (handles month change too)
+          const oldMonth = (evt.date || month).slice(0,7);
+          deleteRevenueEvent(oldMonth, evt.id);
+        }
+        addRevenueEvent(targetMonth, record);
+        modal.remove();
+        if(onSaved) onSaved();
+      } }, 'Save event'),
+    ),
+  );
+  modal.appendChild(panel);
+  document.body.appendChild(modal);
+}
+
+
+/* ============================================================================
  * Add Expense modal — photo capture with AI auto-fill + editable form
  * ============================================================================ */
 function showAddExpenseModal(month, onSaved){
@@ -14169,7 +14632,142 @@ function showCashMovementModal(mode, onSaved){
  * ============================================================================ */
 let _deMonth = null;
 let _deFilterMethod = 'all';
+let _deTab = 'expenses';   // 'expenses' | 'revenues' | 'commissions'
 function _curDeMonth(){ return _deMonth || _curFinMonth(); }
+
+/* ============================================================================
+ * DE > Revenues tab — log of revenue-generating events for the month
+ * ============================================================================ */
+function _renderDeRevenuesTab(container, month, rerender, fmt, sym){
+  const events = getRevenueEventsForMonth(month)
+    .slice()
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+  const total = events.reduce((s, e) => s + (parseFloat(e.revenue) || 0), 0);
+
+  // KPI header
+  container.appendChild(el('section', {
+    style: 'background:linear-gradient(135deg,#059669,#0EA5A9);color:#fff;padding:20px;border-radius:16px;margin-bottom:16px;box-shadow:0 12px 32px rgba(5,150,105,0.25);display:grid;grid-template-columns:1fr 1fr;gap:16px'
+  },
+    el('div', {},
+      el('div', { style: 'font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.85;margin-bottom:4px' }, '💰 Total revenue'),
+      el('div', { style: 'font-size:32px;font-weight:900;line-height:1' }, fmt(total)),
+      el('div', { style: 'font-size:11px;margin-top:6px;opacity:.75' }, events.length + ' event' + (events.length === 1 ? '' : 's')),
+    ),
+    el('div', { style: 'text-align:right' },
+      el('div', { style: 'font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.85;margin-bottom:4px' }, 'Log an event'),
+      el('div', { style: 'font-size:13px;line-height:1.4;opacity:.9' }, 'Weddings, ticket sales,<br/>rentals, F&B service…'),
+    ),
+  ));
+
+  const addBtn = el('button', {
+    style: 'width:100%;padding:14px;font-weight:800;background:linear-gradient(135deg,#059669,#0EA5A9);color:#fff;border:0;border-radius:12px;font-size:15px;cursor:pointer;box-shadow:0 6px 16px rgba(5,150,105,.25);margin-bottom:16px'
+  }, '➕ Log revenue event');
+  addBtn.addEventListener('click', () => showAddRevenueEventModal(month, null, rerender));
+  container.appendChild(addBtn);
+
+  if(events.length === 0){
+    container.appendChild(el('div', {
+      style: 'padding:32px;text-align:center;color:var(--muted,#666);font-size:14px;background:#F7F5F0;border-radius:12px'
+    }, 'No revenue events this month yet.'));
+    return;
+  }
+
+  const list = el('div', { style: 'display:flex;flex-direction:column;gap:6px' });
+  for(const e of events){
+    const k = _revenueKind(e.kind);
+    const row = el('div', {
+      style: 'display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--border,#E8E0D8);background:#fff;border-radius:10px;cursor:pointer;transition:transform 140ms'
+    },
+      el('div', { style: 'font-size:24px' }, k.em),
+      el('div', {},
+        el('div', { style: 'font-weight:700;color:var(--fg,#1A1A2E)' }, e.label),
+        el('div', { style: 'font-size:11px;color:var(--muted,#666)' },
+          (e.date || '?') + ' · ' + k.label +
+          (e.tag ? ' · tag:' + e.tag : '') +
+          (e.units ? ' · ' + e.units + ' units' : '') +
+          (e.cost ? ' · cost ' + fmt(e.cost) : '')),
+      ),
+      el('div', {
+        style: 'font-weight:800;color:#059669;text-align:right;white-space:nowrap'
+      }, fmt(e.revenue) + (e.currency && e.currency !== ((getHotelSettings().currency_code || '').toUpperCase()) ? ' ' + e.currency : '')),
+      el('div', { style: 'color:#999;font-size:11px' }, '✏️'),
+    );
+    row.addEventListener('mouseenter', () => row.style.transform = 'translateY(-1px)');
+    row.addEventListener('mouseleave', () => row.style.transform = 'translateY(0)');
+    row.addEventListener('click', () => showAddRevenueEventModal(month, e, rerender));
+    list.appendChild(row);
+  }
+  container.appendChild(list);
+}
+
+/* ============================================================================
+ * DE > Commissions tab — per-employee commission breakdown for the month
+ * ============================================================================ */
+function _renderDeCommissionsTab(container, month, rerender, fmt, sym){
+  const roll = computeCommissionsForMonth(month);
+
+  container.appendChild(el('section', {
+    style: 'background:linear-gradient(135deg,#7E22CE,#C026D3);color:#fff;padding:20px;border-radius:16px;margin-bottom:16px;box-shadow:0 12px 32px rgba(126,34,206,0.25);display:grid;grid-template-columns:1fr 1fr;gap:16px'
+  },
+    el('div', {},
+      el('div', { style: 'font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;opacity:.85;margin-bottom:4px' }, '🤝 Total commissions owed'),
+      el('div', { style: 'font-size:32px;font-weight:900;line-height:1' }, fmt(roll.total)),
+      el('div', { style: 'font-size:11px;margin-top:6px;opacity:.75' }, roll.rows.length + ' employee' + (roll.rows.length === 1 ? '' : 's')),
+    ),
+    el('div', { style: 'text-align:right;font-size:12px;opacity:.9;line-height:1.5' },
+      'Computed from each employee\'s',
+      el('br'),
+      'commission rules × logged events.',
+    ),
+  ));
+
+  if(roll.rows.length === 0){
+    container.appendChild(el('div', {
+      style: 'padding:32px;text-align:center;color:var(--muted,#666);font-size:14px;background:#F7F5F0;border-radius:12px'
+    },
+      el('div', { style: 'margin-bottom:8px' }, 'No commissions computed this month.'),
+      el('div', { style: 'font-size:12px' }, 'Add rules on employee fiches and log revenue events → commissions appear here automatically.')));
+    return;
+  }
+
+  const list = el('div', { style: 'display:flex;flex-direction:column;gap:8px' });
+  for(const r of roll.rows){
+    const card = el('div', {
+      style: 'border:1px solid var(--border,#E8E0D8);background:#fff;border-radius:12px;overflow:hidden'
+    });
+    const head = el('div', {
+      style: 'display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 16px;background:#FAF7FF;cursor:pointer'
+    },
+      el('div', {
+        style: 'width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7E22CE,#C026D3);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800'
+      }, (r.emp.first_name || '?').slice(0,1).toUpperCase()),
+      el('div', {},
+        el('div', { style: 'font-weight:700' }, `${r.emp.first_name || ''} ${r.emp.last_name || ''}`.trim() || '—'),
+        el('div', { style: 'font-size:11px;color:var(--muted,#666)' }, r.emp.role || ''),
+      ),
+      el('div', { style: 'font-size:18px;font-weight:800;color:#7E22CE' }, fmt(r.total)),
+    );
+    const details = el('div', { style: 'padding:8px 16px 14px;display:none' });
+    head.addEventListener('click', () => {
+      details.style.display = details.style.display === 'none' ? 'block' : 'none';
+    });
+    for(const b of r.byRule){
+      details.appendChild(el('div', { style: 'padding:8px 0;border-top:1px solid #F0EDF7' },
+        el('div', { style: 'display:flex;justify-content:space-between;align-items:center' },
+          el('div', { style: 'font-size:13px;font-weight:700' }, b.rule.label),
+          el('div', { style: 'font-size:14px;font-weight:800;color:#059669' }, fmt(b.total)),
+        ),
+        el('div', { style: 'font-size:11px;color:var(--muted,#666);margin-top:2px' },
+          b.matches.length + ' matching event' + (b.matches.length === 1 ? '' : 's')),
+      ));
+    }
+    card.appendChild(head);
+    card.appendChild(details);
+    list.appendChild(card);
+  }
+  container.appendChild(list);
+}
+
 
 function renderDailyExpensesLedger(body){
   body.innerHTML = '';
@@ -14177,6 +14775,63 @@ function renderDailyExpensesLedger(body){
   const sym = (typeof curSym === 'function') ? curSym() : '฿';
   const fmt = (n) => sym + ' ' + Math.round(n || 0).toLocaleString('en-US');
   const rerender = () => renderDailyExpensesLedger(body);
+
+  const wrapOuter = el('div', { style: 'padding:16px;max-width:900px;margin:0 auto' });
+
+  // ── Tab strip ──
+  const revEvents = getRevenueEventsForMonth(month);
+  const commRoll = computeCommissionsForMonth(month);
+  const monthExpensesForCount = getExpensesForMonth(month);
+  const tabs = [
+    { id: 'expenses',    label: '📸 Expenses',    count: monthExpensesForCount.length },
+    { id: 'revenues',    label: '💰 Revenues',    count: revEvents.length },
+    { id: 'commissions', label: '🤝 Commissions', count: commRoll.rows.length },
+  ];
+  const tabStrip = el('div', {
+    style: 'display:flex;gap:4px;background:#F7F5F0;border-radius:12px;padding:4px;margin-bottom:16px'
+  });
+  for(const tb of tabs){
+    const active = _deTab === tb.id;
+    const btn = el('button', {
+      style: 'flex:1;padding:10px 12px;border-radius:8px;border:0;font-weight:700;font-size:13px;cursor:pointer;'
+             + 'background:' + (active ? 'linear-gradient(135deg,#FF6B00,#FF1F70)' : 'transparent') + ';'
+             + 'color:' + (active ? '#fff' : '#1A1A2E') + ';'
+             + 'box-shadow:' + (active ? '0 4px 12px rgba(255,31,112,.25)' : 'none')
+    }, tb.label + (tb.count > 0 ? ' (' + tb.count + ')' : ''));
+    btn.addEventListener('click', () => { _deTab = tb.id; rerender(); });
+    tabStrip.appendChild(btn);
+  }
+  wrapOuter.appendChild(tabStrip);
+
+  // Period switcher (visible on all tabs)
+  wrapOuter.appendChild(el('div', { class: 'finance-period', style: 'margin-bottom:16px' },
+    el('button', { class: 'finance-period-nav',
+      onclick: () => { _deMonth = _shiftMonthKey(month, -1); rerender(); } }, '←'),
+    el('div', { class: 'finance-period-label' }, _fmtMonthLabel(month)),
+    el('button', { class: 'finance-period-nav',
+      onclick: () => { _deMonth = _shiftMonthKey(month, +1); rerender(); } }, '→'),
+    el('button', { class: 'finance-period-nav today',
+      onclick: () => { _deMonth = null; rerender(); } }, 'This month'),
+  ));
+
+  // ── Route to active tab ──
+  if(_deTab === 'revenues'){
+    _renderDeRevenuesTab(wrapOuter, month, rerender, fmt, sym);
+    body.appendChild(wrapOuter);
+    return;
+  }
+  if(_deTab === 'commissions'){
+    _renderDeCommissionsTab(wrapOuter, month, rerender, fmt, sym);
+    body.appendChild(wrapOuter);
+    return;
+  }
+  // Default: 'expenses' tab — continue with the existing render below
+
+  // Redirect the rest of the existing render into wrapOuter.
+  body.appendChild(wrapOuter);
+  // Continue building INSIDE wrapOuter by swapping the reference.
+  body = wrapOuter;
+
 
   const cb = getCashbook();
   const cashBalance = computeCashBalance();
@@ -14190,24 +14845,10 @@ function renderDailyExpensesLedger(body){
 
   const byMethod = sumExpensesByMethodForMonth(month);
 
-  const wrap = el('div', { class: 'finance-wrap', style: 'padding:16px;max-width:900px;margin:0 auto' });
+  const wrap = el('div', { class: 'finance-wrap', style: 'padding:0' });
 
-  // ── Period switcher ──
-  wrap.appendChild(el('div', { class: 'finance-period', style: 'margin-bottom:16px' },
-    el('button', {
-      class: 'finance-period-nav',
-      onclick: () => { _deMonth = _shiftMonthKey(month, -1); rerender(); }
-    }, '←'),
-    el('div', { class: 'finance-period-label' }, _fmtMonthLabel(month)),
-    el('button', {
-      class: 'finance-period-nav',
-      onclick: () => { _deMonth = _shiftMonthKey(month, +1); rerender(); }
-    }, '→'),
-    el('button', {
-      class: 'finance-period-nav today',
-      onclick: () => { _deMonth = null; rerender(); }
-    }, 'This month'),
-  ));
+  // (Period switcher lives in the outer wrap now — shared across all three
+  // tabs so switching Expenses ↔ Revenues ↔ Commissions keeps the month.)
 
   // ── Cash register KPI card ──
   const kpiCard = el('section', {
@@ -16838,6 +17479,79 @@ function renderEmployeeForm(root,emp){
     // The empty wrapper is filled by recomputeShiftBanner() right after mount,
     // and refreshed on every input change to the two number fields.
     el('div',{id:'emp-shift-auto-banner', style:'margin:2px 0'}),
+
+    // ── Revenus extra (commissions) ────────────────────────────────
+    // Optional variable-earnings rules layered on top of the base salary.
+    // The Save handler saves the base emp fields; rules are edited via
+    // their own modal (upsertEmployee) and re-rendered here.
+    (() => {
+      const section = el('div', { style: 'margin:14px 0' });
+      const rerender = () => {
+        // Fetch the latest emp state (upsertEmployee mutates in place +
+        // saves — reload from DB to pick up any modal-side edits).
+        const fresh = findEmployee(emp.id) || emp;
+        emp.extra_revenues = fresh.extra_revenues || [];
+        section.replaceWith(buildSection());
+      };
+      const buildSection = () => {
+        const wrap = el('div', { style: 'margin:14px 0' });
+        wrap.appendChild(el('div', { class: 'sec-title' }, '💰 Revenus extra (commissions)'));
+        const rules = emp.extra_revenues || [];
+        const sym = (typeof curSym === 'function') ? curSym() : '฿';
+        if(rules.length === 0){
+          wrap.appendChild(el('div', {
+            style: 'padding:14px;text-align:center;background:#F7F5F0;border-radius:10px;font-size:13px;color:var(--muted,#666);margin-bottom:8px'
+          }, 'No commission rules yet. Add one to declare event / F&B margin / ticket / rental earnings.'));
+        } else {
+          const grid = el('div', { style: 'display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:8px' });
+          for(const r of rules){
+            const k = _revenueKind(r.source_kind);
+            const rateText = r.rate_kind === 'percent'
+              ? (r.rate_value + '% of ' + (r.basis === 'margin' ? 'margin' : r.basis === 'unit' ? 'unit' : 'revenue'))
+              : (sym + ' ' + r.rate_value + (r.basis === 'unit' ? ' / unit' : ' fixed'));
+            const partnerText = r.shared_with_employee_id ? (() => {
+              const p = findEmployee(r.shared_with_employee_id);
+              const pname = p ? (`${p.first_name || ''} ${p.last_name || ''}`.trim() || 'partner') : 'partner';
+              return ' · shared ' + (r.shared_pct || 0) + '% with ' + pname;
+            })() : '';
+            const card = el('div', {
+              style: 'padding:12px 14px;border:1px solid var(--border,#E8E0D8);border-radius:10px;background:#fff;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;transition:transform 140ms'
+                     + (r.active === false ? ';opacity:.55' : '')
+            },
+              el('div', { style: 'font-size:22px' }, k.em),
+              el('div', {},
+                el('div', { style: 'font-weight:700;color:var(--fg,#1A1A2E)' }, r.label),
+                el('div', { style: 'font-size:11px;color:var(--muted,#666);margin-top:2px' },
+                  k.label + ' · ' + rateText + partnerText
+                  + (r.filter_tag ? ' · tag:' + r.filter_tag : '')),
+                r.note ? el('div', { style: 'font-size:11px;color:var(--muted,#888);font-style:italic;margin-top:2px' }, r.note) : null,
+              ),
+              el('div', { style: 'font-size:12px;color:' + (r.active === false ? '#999' : '#059669') + ';font-weight:800' },
+                r.active === false ? '⏸ paused' : '● active'),
+            );
+            card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-1px)');
+            card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+            card.addEventListener('click', () => {
+              showExtraRevenueRuleModal(emp, r, rerender);
+            });
+            grid.appendChild(card);
+          }
+          wrap.appendChild(grid);
+        }
+        const addBtn = el('button', {
+          type: 'button',
+          style: 'padding:10px 16px;font-weight:700;background:transparent;color:#7E22CE;border:1.5px dashed #C4A6E6;border-radius:10px;font-size:13px;cursor:pointer'
+        }, '+ Add commission rule');
+        addBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          showExtraRevenueRuleModal(emp, null, rerender);
+        });
+        wrap.appendChild(addBtn);
+        return wrap;
+      };
+      section.replaceWith = section.replaceWith || function(){};
+      return buildSection();
+    })(),
 
     // ── Identity: everything on a single dense row (6 cols) ──
     el('div',{class:'sec-title'},t('app.roster_fiche.sec_identity')),
