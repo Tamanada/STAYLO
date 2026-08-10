@@ -2151,6 +2151,60 @@ body.view-de .channels-pane{display:none}
 .day-head-compact{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:1px;line-height:1;min-height:48px}
 .day-head-compact .dow{font-size:9px;opacity:.6;font-weight:700}
 .day-head-compact .dnum{font-size:14px;font-weight:800;color:var(--navy)}
+
+/* ============================================================================
+ * MOBILE OPTIMISATIONS — Planning grid (< 640 px viewport)
+ * ============================================================================
+ * The default day-grid uses 170 px name column + 80 px total column, which
+ * leaves ~150 px for 24 hourly columns on a 400 px phone — every hour is
+ * 6 px wide, labels stack on top of each other ("00h01h02h..."), shift
+ * text is truncated to unreadable slivers.
+ *
+ * Mobile tweaks:
+ *   · Name column 170 → 88 px
+ *   · Total column 80 → 52 px
+ *   · Hour labels: show only every 3 h (00 03 06 09 12 15 18 21)
+ *   · Shift bars: hide hour text (color + position speak for themselves;
+ *     tap opens the editor for details)
+ *   · Row height tightened for higher information density
+ *   · Table-view schedule gets horizontal scroll so wide grids stay usable
+ * ============================================================================ */
+@media (max-width: 640px){
+  .day-grid .row-name,
+  .day-grid .hour-labels .name-spacer,
+  .day-coverage .name-spacer{
+    width: 88px; padding: 6px 6px; font-size: 10px; letter-spacing: .3px;
+  }
+  .day-grid .row-name{ font-size: 11px }
+  .day-grid .row-name .sub{ font-size: 9px; margin-top: 1px }
+  .day-grid .row-total,
+  .day-grid .hour-labels .total-spacer,
+  .day-coverage .total-spacer{
+    width: 52px; padding: 6px 2px; font-size: 11px;
+  }
+  .day-grid .hour-labels .hours-row{ font-size: 8px }
+  .day-grid .hour-labels .hours-row > div{ padding: 4px 0 }
+  /* Hide every hour label except 00, 03, 06, 09, 12, 15, 18, 21 (index 0,3,6,9,12,15,18,21) */
+  .day-grid .hour-labels .hours-row > div:not(:nth-child(3n+1)){ color: transparent }
+  .day-grid .hour-labels .hours-row > div.now{ color: var(--orange) !important; font-weight: 900 }
+  .day-grid .day-row{ min-height: 42px }
+  /* Shift bars — text hidden; the coloured block IS the info. Tap to edit. */
+  .day-grid .shift-bar{ font-size: 0; padding: 0; border-radius: 4px }
+  .day-grid .shift-bar.continues::after,
+  .day-grid .shift-bar.continued::before{ display: none }
+  .day-coverage{ height: 42px }
+  .day-coverage .bars .h-bar .ct{ font-size: 7px; top: -10px }
+  /* Table-view schedule: horizontal scroll instead of squeezing */
+  .sched-grid{ display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch }
+  .sched-grid.fortnight, .sched-grid.month{ min-width: auto }
+  /* CV header (Planning · Tâches · Fiches tabs) — reduce padding so the row fits */
+  .cv-head{ padding: 6px 10px !important }
+  .cv-tab{ padding: 6px 10px !important; font-size: 12px !important }
+  /* Period switcher tighter */
+  .finance-period{ gap: 4px }
+  .finance-period-nav{ padding: 6px 8px !important; font-size: 12px !important }
+  .finance-period-label{ font-size: 13px !important }
+}
 /* MONTH view — date stacked on the LEFT, the 3 occupancy pills stacked
    VERTICALLY on the RIGHT. Lets us pack 31 columns into the typical
    viewport width without forcing horizontal scroll.
