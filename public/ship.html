@@ -24972,7 +24972,34 @@ async function init(){
         return;
       }
     } else {
-      alert(t('app.dialogs.invite_unrecognized',{hotel:inviteHotel}));
+      // Invite token has no matching employee row in this device's local
+      // storage. Two common causes:
+      //   1. Cross-device scan — manager created the staff on Device A, staff
+      //      opens QR on Device B. The employees list wasn't synced to B
+      //      (localStorage only — cross-device sync ships when we back
+      //      staff records with Supabase).
+      //   2. The invite was reissued or the employee was deleted after the
+      //      QR was printed.
+      //
+      // Either way, DO NOT fall through to the normal boot flow — that
+      // would silently sign the visitor into whichever old account happens
+      // to sit in this device's localStorage. Clear any prior session and
+      // force a clean state so it's obvious the invite didn't work.
+      try { localStorage.removeItem('staylo_user'); } catch(_) {}
+      State.user = null;
+      alert(
+        (t('app.dialogs.invite_unrecognized',{hotel:inviteHotel}) || 'Invite link not recognised.') +
+        '\n\n' +
+        'This device doesn\'t have the hotel data. Ask the manager who ' +
+        'created your account to open the invite on their device first, or ' +
+        'have them hand you their device for the initial scan.'
+      );
+      history.replaceState({},'',location.pathname);
+      // Show onboarding fresh so the visitor lands on something meaningful
+      // instead of a blank screen or the wrong account.
+      const _obEl = document.getElementById('onboarding');
+      if(_obEl){ _obEl.style.display = 'flex'; }
+      return;
     }
   }
 
