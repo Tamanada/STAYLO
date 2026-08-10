@@ -2072,16 +2072,38 @@ body.view-de .channels-pane{display:none}
 .event-row.custom{cursor:default}
 
 /* ============== DAY VIEW (Gantt-style hourly timeline) ============== */
+/* Draggable name column — width driven by a CSS variable so the resize
+ * handle can change it live. Persisted to localStorage as
+ * ship_daygrid_name_w so the manager's chosen width sticks per device.
+ * Default 170 px desktop, overridden to 88 px in the mobile @media block
+ * below. */
+:root{--daygrid-name-w:170px}
 .day-grid{display:flex;flex-direction:column;font-size:11px;border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;background:#fff}
-.day-grid .hour-labels{display:flex;align-items:stretch;background:var(--light);border-bottom:1px solid var(--border)}
-.day-grid .hour-labels .name-spacer{width:170px;flex-shrink:0;padding:6px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray);font-weight:700}
+.day-grid .hour-labels{display:flex;align-items:stretch;background:var(--light);border-bottom:1px solid var(--border);position:relative}
+.day-grid .hour-labels .name-spacer{width:var(--daygrid-name-w);flex-shrink:0;padding:6px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray);font-weight:700;position:relative}
+/* Drag handle at the right edge of the name-spacer. 12 px wide target
+ * (thumb-friendly on mobile), 2 px visible line that highlights on hover.
+ * Fires the shipDayGridResize.startFromEvent() handler wired in JS. */
+.day-grid .hour-labels .name-spacer .name-resize{
+  position:absolute;top:0;right:-6px;bottom:0;width:12px;cursor:col-resize;
+  z-index:5;touch-action:none;
+}
+.day-grid .hour-labels .name-spacer .name-resize::after{
+  content:'';position:absolute;top:20%;bottom:20%;left:5px;width:2px;
+  background:var(--border);border-radius:2px;transition:background var(--t-fast),width var(--t-fast);
+}
+.day-grid .hour-labels .name-spacer .name-resize:hover::after,
+.day-grid .hour-labels .name-spacer .name-resize.dragging::after{
+  background:var(--orange);width:3px;left:4px;
+}
+body.daygrid-resizing{cursor:col-resize !important;user-select:none}
 .day-grid .hour-labels .hours-row{flex:1;display:grid;grid-template-columns:repeat(24,1fr);font-size:9px;color:var(--gray);font-weight:700}
 .day-grid .hour-labels .hours-row > div{padding:6px 0;text-align:center;border-left:1px solid var(--border)}
 .day-grid .hour-labels .hours-row > div.now{color:var(--orange);background:#FFF4EA}
 .day-grid .hour-labels .total-spacer{width:80px;flex-shrink:0;padding:6px;text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray);font-weight:700;background:#FFF8EE}
 .day-grid .day-row{display:flex;align-items:stretch;border-bottom:1px solid var(--border);min-height:46px}
 .day-grid .day-row:last-child{border-bottom:0}
-.day-grid .row-name{width:170px;flex-shrink:0;padding:8px 12px;font-weight:700;color:var(--navy);background:#fff;position:sticky;left:0;z-index:1;box-shadow:1px 0 0 var(--border)}
+.day-grid .row-name{width:var(--daygrid-name-w);flex-shrink:0;padding:8px 12px;font-weight:700;color:var(--navy);background:#fff;position:sticky;left:0;z-index:1;box-shadow:1px 0 0 var(--border)}
 .day-grid .row-name .sub{font-size:10px;color:var(--gray);font-weight:600;margin-top:2px}
 .day-grid .row-track{position:relative;flex:1;background:repeating-linear-gradient(to right,#fafafa 0,#fafafa calc(100%/24 - 1px),#e8e8e8 calc(100%/24 - 1px),#e8e8e8 calc(100%/24));}
 .day-grid .row-track .now-line{position:absolute;top:0;bottom:0;width:2px;background:var(--orange);z-index:2;pointer-events:none}
@@ -2141,7 +2163,7 @@ body.view-de .channels-pane{display:none}
   display:flex;align-items:flex-end;height:60px;margin-top:6px;
   border-top:1px solid var(--border);background:#fff;border-radius:0 0 var(--r-md) var(--r-md);overflow:hidden;
 }
-.day-coverage .name-spacer{width:170px;flex-shrink:0;padding:6px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray);font-weight:700;display:flex;align-items:flex-end}
+.day-coverage .name-spacer{width:var(--daygrid-name-w);flex-shrink:0;padding:6px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray);font-weight:700;display:flex;align-items:flex-end}
 .day-coverage .bars{flex:1;display:grid;grid-template-columns:repeat(24,1fr);align-items:flex-end;height:100%;background:#fafafa;position:relative}
 .day-coverage .bars .h-bar{align-self:end;background:linear-gradient(to top,var(--teal),#00D9A0);min-height:1px;margin:0 1px;border-radius:2px 2px 0 0;transition:height var(--t-fast);position:relative}
 .day-coverage .bars .h-bar.zero{background:var(--red);opacity:.4;height:3px}
@@ -2170,10 +2192,14 @@ body.view-de .channels-pane{display:none}
  *   · Table-view schedule gets horizontal scroll so wide grids stay usable
  * ============================================================================ */
 @media (max-width: 640px){
+  /* Set the CSS var here so all three name-column selectors pick it up
+   * (row-name, hour-labels .name-spacer, day-coverage .name-spacer).
+   * The resize handle will still let the user override this. */
+  :root{--daygrid-name-w:88px}
   .day-grid .row-name,
   .day-grid .hour-labels .name-spacer,
   .day-coverage .name-spacer{
-    width: 88px; padding: 6px 6px; font-size: 10px; letter-spacing: .3px;
+    padding: 6px 6px; font-size: 10px; letter-spacing: .3px;
   }
   .day-grid .row-name{ font-size: 11px }
   .day-grid .row-name .sub{ font-size: 9px; margin-top: 1px }
@@ -4201,6 +4227,66 @@ const State = {
  * which returns true/false so the caller can warn the user instead of
  * losing data. See saveEmployees() for the canonical pattern. */
 function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}}
+/* ============================================================================
+ * Day-grid name-column resize handle
+ * ============================================================================
+ * Self-installing pointer handler that lets the user drag the vertical
+ * divider between the "Team member" column and the hourly grid. Width is
+ * stored in localStorage as `ship_daygrid_name_w_px` and re-applied on
+ * every boot via the --daygrid-name-w CSS variable. Clamped to [60, 300]
+ * to prevent broken layouts.
+ * ============================================================================ */
+const _DAYGRID_NAME_W_KEY = 'ship_daygrid_name_w_px';
+const _DAYGRID_NAME_MIN = 60;
+const _DAYGRID_NAME_MAX = 300;
+function _applyDaygridNameWidth(px){
+  const clamped = Math.max(_DAYGRID_NAME_MIN, Math.min(_DAYGRID_NAME_MAX, px));
+  document.documentElement.style.setProperty('--daygrid-name-w', clamped + 'px');
+  return clamped;
+}
+(function _initDaygridResize(){
+  // Hydrate saved width (persists per device — not per hotel; managers rarely
+  // need different widths across hotels).
+  try {
+    const saved = parseInt(localStorage.getItem(_DAYGRID_NAME_W_KEY), 10);
+    if(saved && saved >= _DAYGRID_NAME_MIN && saved <= _DAYGRID_NAME_MAX){
+      _applyDaygridNameWidth(saved);
+    }
+  } catch(_) {}
+
+  // Global delegated pointer handler — works for any .name-resize handle
+  // in the DOM, present or future.
+  let _dragState = null;
+  document.addEventListener('pointerdown', (ev) => {
+    const handle = ev.target && ev.target.closest && ev.target.closest('.name-resize');
+    if(!handle) return;
+    ev.preventDefault();
+    const spacer = handle.closest('.name-spacer');
+    if(!spacer) return;
+    const rect = spacer.getBoundingClientRect();
+    _dragState = { startX: ev.clientX, startW: rect.width, pointerId: ev.pointerId, handle };
+    handle.setPointerCapture(ev.pointerId);
+    handle.classList.add('dragging');
+    document.body.classList.add('daygrid-resizing');
+  });
+  document.addEventListener('pointermove', (ev) => {
+    if(!_dragState || ev.pointerId !== _dragState.pointerId) return;
+    const dx = ev.clientX - _dragState.startX;
+    _applyDaygridNameWidth(_dragState.startW + dx);
+  });
+  const _end = (ev) => {
+    if(!_dragState || ev.pointerId !== _dragState.pointerId) return;
+    const finalRect = _dragState.handle.closest('.name-spacer').getBoundingClientRect();
+    try { localStorage.setItem(_DAYGRID_NAME_W_KEY, String(Math.round(finalRect.width))); } catch(_) {}
+    try { _dragState.handle.releasePointerCapture(ev.pointerId); } catch(_) {}
+    _dragState.handle.classList.remove('dragging');
+    document.body.classList.remove('daygrid-resizing');
+    _dragState = null;
+  };
+  document.addEventListener('pointerup', _end);
+  document.addEventListener('pointercancel', _end);
+})();
+
 function lsSet(k,v){
   try{ localStorage.setItem(k,JSON.stringify(v)); _maybeQueueStateSync(k); }
   catch(_){}
@@ -21816,10 +21902,12 @@ function renderDayView(visibleEmps, dayDate, canEdit){
   const wrap = el('div',{class:'day-grid'});
   outer.appendChild(wrap);
 
-  // Hours header row
-  const hourLabels = el('div',{class:'hour-labels'},
-    el('div',{class:'name-spacer'},'TEAM MEMBER'),
-  );
+  // Hours header row — includes the resize handle that lets the user drag
+  // the name column wider or narrower. See wireDayGridResize() for the
+  // pointer plumbing; the handle element itself is created here.
+  const _nameSpacer = el('div',{class:'name-spacer'},'TEAM MEMBER');
+  _nameSpacer.appendChild(el('div',{class:'name-resize', title:'Drag to resize the name column', 'aria-hidden':'true'}));
+  const hourLabels = el('div',{class:'hour-labels'}, _nameSpacer);
   const hoursRow = el('div',{class:'hours-row'});
   const nowH = new Date().getHours();
   for(let h=0; h<24; h++){
