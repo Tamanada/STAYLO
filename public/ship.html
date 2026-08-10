@@ -2224,9 +2224,13 @@ body.daygrid-resizing{cursor:col-resize !important;user-select:none}
   .day-grid .shift-bar.continued::before{ display: none }
   .day-coverage{ height: 42px }
   .day-coverage .bars .h-bar .ct{ font-size: 7px; top: -10px }
-  /* Table-view schedule: horizontal scroll instead of squeezing */
-  .sched-grid{ display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch }
-  .sched-grid.fortnight, .sched-grid.month{ min-width: auto }
+  /* Table-view schedule: horizontal scroll happens on the WRAPPER, not
+   * on the <table> itself. Setting display:block on the table would
+   * disable its table-layout algorithm and misalign columns with the
+   * date-strip header. The wrapper (.sched-grid-wrap) is a plain div,
+   * safe to make scrollable. */
+  .sched-grid-wrap{ max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch }
+  .date-strip-wrap{ max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch }
   /* CV header (Planning · Tâches · Fiches tabs) — reduce padding so the row fits */
   .cv-head{ padding: 6px 10px !important }
   .cv-tab{ padding: 6px 10px !important; font-size: 12px !important }
@@ -2433,7 +2437,7 @@ body.daygrid-resizing{cursor:col-resize !important;user-select:none}
 .sched-grid .emp-cell .outlet-line{font-size:10px;color:var(--orange);font-weight:700;margin-top:3px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* Legacy .sub kept for compatibility (other places might still use the old shape) */
 .sched-grid .emp-cell .sub{font-size:10px;color:var(--gray);font-weight:600;margin-top:2px}
-.sched-grid .total-cell{font-weight:800;color:var(--orange);background:#FFF8EE;min-width:80px;font-size:11px;text-align:center}
+.sched-grid .total-cell{font-weight:800;color:var(--orange);background:#FFF8EE;width:80px;min-width:80px;font-size:11px;text-align:center}
 .sched-grid .total-cell .planned{display:block;font-size:13px}
 .sched-grid .total-cell .actual{display:block;font-size:10px;color:var(--teal);font-weight:700;margin-top:2px}
 .sched-grid .total-cell .actual.over{color:var(--orange)}
@@ -19990,9 +19994,12 @@ function renderScheduleTab(){
   // grid's "1fr" — without this, sub-pixel rounding differences accumulate
   // over 31 columns (Month view) and the date strip drifts visibly off
   // the table cells underneath.
+  // <colgroup> defines the definitive column widths for a table-layout:fixed
+  // grid. Use the same --daygrid-name-w CSS var as the date-strip header so
+  // the two stay in perfect alignment when the user drags the resize handle.
   const colgroup = document.createElement('colgroup');
-  colgroup.appendChild(el('col',{style:'width:170px'}));
-  const dayWidthCalc = `calc((100% - 250px) / ${days.length})`;
+  colgroup.appendChild(el('col',{style:'width:var(--daygrid-name-w, 170px)'}));
+  const dayWidthCalc = `calc((100% - var(--daygrid-name-w, 170px) - 80px) / ${days.length})`;
   for(let i=0; i<days.length; i++){
     colgroup.appendChild(el('col',{style:`width:${dayWidthCalc}`}));
   }
