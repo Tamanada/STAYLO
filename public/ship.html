@@ -13510,8 +13510,17 @@ function deleteExpense(month, id){
 /* Downscale + JPEG-compress an image File to a data URL fit for the
  * Claude Vision request. Keeps aspect ratio; longest edge capped at
  * `maxDim` (default 1400 px). Quality 0.85 → ~150-400 KB per receipt. */
-async function _downscaleImageFile(file, maxDim){
-  maxDim = maxDim || 1400;
+async function _downscaleImageFile(file, maxDim, quality){
+  // Downscale + JPEG-compress a File to a data URL. Defaults tuned for
+  // receipt photos:
+  //   · 1100 px longest edge — enough resolution for Claude Vision to
+  //     read every printed character while cutting most cameras' output
+  //     by 3-4×.
+  //   · Quality 0.72 — visually indistinguishable for text-heavy receipts
+  //     but ~35% smaller than 0.85.
+  //   · Typical result: 60-150 KB per photo (was 150-400 KB @ 1400/0.85).
+  maxDim = maxDim || 1100;
+  quality = (typeof quality === 'number') ? quality : 0.72;
   const dataUrl = await new Promise((resolve, reject) => {
     const r = new FileReader();
     r.onload = () => resolve(r.result);
@@ -13528,11 +13537,48 @@ async function _downscaleImageFile(file, maxDim){
       canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      resolve(canvas.toDataURL('image/jpeg', 0.85));
+      resolve(canvas.toDataURL('image/jpeg', quality));
     };
     img.onerror = reject;
     img.src = dataUrl;
   });
+}
+
+/* ============================================================================
+ * Upload a receipt / bank-proof image to Supabase Storage → return public URL
+ * ============================================================================
+ * localStorage can't hold base64 photos at scale — each downscaled JPEG is
+ * 150-400 KB and the browser quota is ~5-10 MB. Store the photo in the
+ * public `ship-receipts` bucket instead and keep only the URL in the ship_
+ * expenses record. URL paths embed a UUID so they're unguessable, and the
+ * bucket policy lets any authenticated user upload while everyone can GET.
+ * ============================================================================ */
+async function shipUploadReceiptImage(dataUrl, kind){
+  if(!dataUrl) return null;
+  if(!State.supa){ throw new Error('No Supabase client available'); }
+  const hotelSlug = (State.user && State.user.hotelCode) || 'unknown';
+  const yyyymm = new Date().toISOString().slice(0, 7);
+  const uid = (crypto.randomUUID ? crypto.randomUUID() : 'r-' + Date.now() + Math.random().toString(36).slice(2, 10));
+  const objectPath = `${hotelSlug}/${yyyymm}/${(kind || 'receipt')}-${uid}.jpg`;
+
+  // Convert data URL to a Blob before upload — supabase-js's upload() wants
+  // a File / Blob, not a raw base64 string.
+  const m = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
+  if(!m) throw new Error('Not a data URL');
+  const mime = m[1];
+  const b64 = m[2];
+  const bin = atob(b64);
+  const buf = new Uint8Array(bin.length);
+  for(let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  const blob = new Blob([buf], { type: mime });
+
+  const { error: upErr } = await State.supa.storage
+    .from('ship-receipts')
+    .upload(objectPath, blob, { cacheControl: '31536000', contentType: mime, upsert: false });
+  if(upErr){ throw upErr; }
+
+  const { data: pub } = State.supa.storage.from('ship-receipts').getPublicUrl(objectPath);
+  return pub && pub.publicUrl ? pub.publicUrl : null;
 }
 
 async function parseReceiptWithAI(dataUrl, currencyHint){
@@ -13757,7 +13803,7 @@ function showAddExpenseModal(month, onSaved){
     const f = ev.target.files && ev.target.files[0];
     if(!f) return;
     try {
-      const thumb = await _downscaleImageFile(f, 1200);
+      const thumb = await _downscaleImageFile(f);   // defaults: 1100px / q0.72
       state.payment_proof_thumb = thumb;
       updateProofPreview();
     } catch(err){
@@ -13823,7 +13869,7 @@ function showAddExpenseModal(month, onSaved){
     if(!f) return;
     setAIStatus('📸 Preparing image…');
     try {
-      const thumb = await _downscaleImageFile(f, 1400);
+      const thumb = await _downscaleImageFile(f);   // defaults: 1100px / q0.72
       state.photo_thumb = thumb;
       updatePreview(thumb);
       setAIStatus('🤖 Asking Claude to read the receipt…', '#7E22CE');
@@ -13895,32 +13941,59 @@ function showAddExpenseModal(month, onSaved){
 
     el('div', { class: 'row-actions', style: 'margin-top:20px' },
       el('button', { class: 'btn-secondary', onclick: () => modal.remove() }, 'Cancel'),
-      el('button', { class: 'btn-primary', onclick: () => {
-        const amount = parseFloat(amountIn.value);
-        if(!vendorIn.value.trim()){ alert('Vendor is required.'); return; }
-        if(!(amount > 0)){ alert('Amount must be greater than 0.'); return; }
-        if(paySel.value === 'bank_transfer' && !state.payment_proof_thumb){
-          if(!confirm('No bank transfer screenshot attached. Save without proof?')) return;
-        }
-        const exp = {
-          date: dateIn.value || new Date().toISOString().slice(0,10),
-          vendor: vendorIn.value.trim(),
-          amount: amount,
-          currency: (currencyIn.value || defaultCur).toUpperCase().slice(0,3),
-          category: catSel.value,
-          description: descIn.value.trim() || null,
-          photo_thumb: state.photo_thumb || null,
-          payment_method: paySel.value || 'cash',
-          payment_proof_thumb: paySel.value === 'bank_transfer' ? state.payment_proof_thumb : null,
-          ai_confidence: state.ai_confidence,
-        };
-        // File into the month of the receipt date, not the current month —
-        // so a January receipt entered in March lands in January's ledger.
-        const targetMonth = (exp.date || month).slice(0, 7);
-        addExpense(targetMonth, exp);
-        modal.remove();
-        if(onSaved) onSaved(exp, targetMonth);
-      } }, 'Save expense'),
+      (() => {
+        const saveBtn = el('button', { class: 'btn-primary' }, 'Save expense');
+        saveBtn.addEventListener('click', async () => {
+          const amount = parseFloat(amountIn.value);
+          if(!vendorIn.value.trim()){ alert('Vendor is required.'); return; }
+          if(!(amount > 0)){ alert('Amount must be greater than 0.'); return; }
+          if(paySel.value === 'bank_transfer' && !state.payment_proof_thumb){
+            if(!confirm('No bank transfer screenshot attached. Save without proof?')) return;
+          }
+
+          // Photos live in Supabase Storage, NOT in localStorage (base64 photos
+          // maxed out the 5-10 MB browser quota after just a few receipts). We
+          // upload each attached image, keep only the returned URL on the row.
+          saveBtn.disabled = true; saveBtn.textContent = '⬆ Uploading photos…';
+          let photo_url = null;
+          let payment_proof_url = null;
+          try {
+            if(state.photo_thumb){
+              photo_url = await shipUploadReceiptImage(state.photo_thumb, 'receipt');
+            }
+            if(paySel.value === 'bank_transfer' && state.payment_proof_thumb){
+              payment_proof_url = await shipUploadReceiptImage(state.payment_proof_thumb, 'proof');
+            }
+          } catch(err){
+            console.error('[expense] photo upload failed', err);
+            const msg = (err && err.message) || String(err);
+            if(!confirm('Photo upload failed (' + msg + ').\n\nSave the expense without the photo?')){
+              saveBtn.disabled = false; saveBtn.textContent = 'Save expense';
+              return;
+            }
+          }
+
+          const exp = {
+            date: dateIn.value || new Date().toISOString().slice(0,10),
+            vendor: vendorIn.value.trim(),
+            amount: amount,
+            currency: (currencyIn.value || defaultCur).toUpperCase().slice(0,3),
+            category: catSel.value,
+            description: descIn.value.trim() || null,
+            photo_url: photo_url,
+            payment_method: paySel.value || 'cash',
+            payment_proof_url: paySel.value === 'bank_transfer' ? payment_proof_url : null,
+            ai_confidence: state.ai_confidence,
+          };
+          // File into the month of the receipt date, not the current month —
+          // so a January receipt entered in March lands in January's ledger.
+          const targetMonth = (exp.date || month).slice(0, 7);
+          addExpense(targetMonth, exp);
+          modal.remove();
+          if(onSaved) onSaved(exp, targetMonth);
+        });
+        return saveBtn;
+      })(),
     ),
   );
   modal.appendChild(panel);
@@ -14226,8 +14299,8 @@ function renderDailyExpensesLedger(body){
               el('span', {}, e.date || '?'),
               el('span', { style: 'color:#7E22CE;font-weight:700' }, p.em + ' ' + p.label),
               e.description ? el('span', {}, '· ' + e.description) : null,
-              e.payment_proof_thumb ? el('span', { style: 'color:#059669;font-weight:700' }, '🏦 proof') : null,
-              e.photo_thumb ? el('span', { style: 'color:#7E22CE' }, '📸') : null,
+              (e.payment_proof_url || e.payment_proof_thumb) ? el('span', { style: 'color:#059669;font-weight:700' }, '🏦 proof') : null,
+              (e.photo_url || e.photo_thumb) ? el('span', { style: 'color:#7E22CE' }, '📸') : null,
             ),
           ),
           el('div', {
