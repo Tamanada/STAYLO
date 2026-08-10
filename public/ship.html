@@ -2278,6 +2278,35 @@ body.daygrid-resizing{cursor:col-resize !important;user-select:none}
   .finance-period-nav{ padding: 6px 8px !important; font-size: 12px !important }
   .finance-period-label{ font-size: 13px !important }
 }
+
+/* ============================================================================
+ * Landscape fullscreen for the Schedule view (any viewport width, gated by
+ * JS: body class only added when phone is in landscape + on Schedule tab).
+ * Rotate to landscape → chrome disappears → grid fills the screen.
+ * Rotate back to portrait → class removed by orientationchange listener →
+ * chrome reappears. No exit button needed.
+ * ============================================================================ */
+body.sched-landscape-fs .bottom-bar,
+body.sched-landscape-fs .rail,
+body.sched-landscape-fs #bottom-nav,
+body.sched-landscape-fs .cv-head,
+body.sched-landscape-fs .cv-tabs,
+body.sched-landscape-fs .cv-user,
+body.sched-landscape-fs .hr-dashboard,
+body.sched-landscape-fs .hr-filters,
+body.sched-landscape-fs .cp-hotel,
+body.sched-landscape-fs .rail-btn,
+body.sched-landscape-fs #global-mobile-menu-btn{ display: none !important; }
+body.sched-landscape-fs #hr-modal,
+body.sched-landscape-fs #hr-body,
+body.sched-landscape-fs .content-view{
+  position: fixed !important; inset: 0 !important;
+  padding: 0 !important; margin: 0 !important;
+  width: 100vw !important; height: 100dvh !important; max-width: none !important;
+  z-index: 9990 !important; background: #fff !important;
+  overflow: auto !important;
+}
+body.sched-landscape-fs .sched-grid-wrap{ max-height: 100dvh; }
 /* MONTH view — date stacked on the LEFT, the 3 occupancy pills stacked
    VERTICALLY on the RIGHT. Lets us pack 31 columns into the typical
    viewport width without forcing horizontal scroll.
@@ -17545,6 +17574,7 @@ let _rosterFilterDept = 'all';
 function renderRosterTab(){
   const root = $('#hr-body'); if(!root) return; root.innerHTML='';
   root.classList.remove('tab-schedule');
+  try { _clearScheduleFullscreenIfLeaving(); } catch(_){}
   applyHRModalWidth();   // reset to default narrow width when on roster
   const isHR = canManageHR();
   const allEmps = getEmployees();
@@ -19810,11 +19840,52 @@ function applyHRModalWidth(){
   if(_schedViewMode === 'month') panel.classList.add('panel-extra-wide');
 }
 
+/* ============================================================================
+ * Auto-fullscreen the Schedule when the phone rotates to landscape
+ * ============================================================================
+ * Bind once. Whenever the phone is in landscape AND the currently-visible
+ * HR tab is the schedule, add body.sched-landscape-fs → CSS in
+ * @media (orientation: landscape) uses that class to hide app chrome
+ * (rail, tabs, header, filters) and let the grid take the whole viewport.
+ * Rotating back to portrait or switching tabs strips the class instantly.
+ * ============================================================================ */
+let _schedFSWired = false;
+function _wireScheduleLandscapeFullscreen(){
+  if(_schedFSWired) { _updateScheduleFullscreenClass(); return; }
+  _schedFSWired = true;
+  const mq = window.matchMedia && window.matchMedia('(orientation: landscape)');
+  if(!mq) return;
+  const update = () => _updateScheduleFullscreenClass();
+  if(mq.addEventListener) mq.addEventListener('change', update);
+  else if(mq.addListener) mq.addListener(update);
+  window.addEventListener('orientationchange', update);
+  window.addEventListener('resize', update);
+  update();
+}
+function _updateScheduleFullscreenClass(){
+  const isLandscape = window.matchMedia && window.matchMedia('(orientation: landscape)').matches;
+  const isSmall = window.matchMedia && window.matchMedia('(max-height: 600px)').matches;
+  const onSched = !!document.querySelector('#hr-body.tab-schedule');
+  const shouldEnter = isLandscape && isSmall && onSched;
+  document.body.classList.toggle('sched-landscape-fs', shouldEnter);
+}
+// Hook the class off when the user leaves the schedule tab. Called from
+// renderRosterTab / renderTasksTab / renderFichesTab etc via a small mixin.
+function _clearScheduleFullscreenIfLeaving(){
+  const onSched = !!document.querySelector('#hr-body.tab-schedule');
+  if(!onSched) document.body.classList.remove('sched-landscape-fs');
+}
+
 function renderScheduleTab(){
   const root = $('#hr-body'); if(!root) return; root.innerHTML='';
   // Tag the body so CSS can zero its top padding — the sched-sticky-head
   // takes over the top edge and we don't want any "dead strip" gap.
   root.classList.add('tab-schedule');
+  // Rotate-to-landscape → auto fullscreen. Bind once per session; the CSS
+  // (body.sched-landscape-fs, @media orientation) does the hiding. We just
+  // track when the schedule is the ACTIVE view and when the phone is in
+  // landscape, and combine the two into a single body class.
+  _wireScheduleLandscapeFullscreen();
   // Clear the cv-head action slot — renderScheduleTab runs on every nav
   // click (week prev/next, view-mode toggle, dept filter…) WITHOUT going
   // through renderActiveView, so the Print button would otherwise
@@ -22609,6 +22680,7 @@ let _tasksRange = null;        // 'day' | '1w' | '2w' | '1m' | 'all'
 function renderTasksTab(){
   const root = $('#hr-body'); if(!root) return; root.innerHTML='';
   root.classList.remove('tab-schedule');
+  try { _clearScheduleFullscreenIfLeaving(); } catch(_){}
   applyHRModalWidth();
   if(!_tasksDate) _tasksDate = new Date().toISOString().slice(0,10);
 
