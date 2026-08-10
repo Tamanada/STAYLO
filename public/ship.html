@@ -15371,8 +15371,30 @@ function renderDailyExpensesLedger(body){
               el('span', {}, e.date || '?'),
               el('span', { style: 'color:#7E22CE;font-weight:700' }, p.em + ' ' + p.label),
               e.description ? el('span', {}, '· ' + e.description) : null,
-              (e.payment_proof_url || e.payment_proof_thumb) ? el('span', { style: 'color:#059669;font-weight:700' }, '🏦 proof') : null,
-              (e.photo_url || e.photo_thumb) ? el('span', { style: 'color:#7E22CE' }, '📸') : null,
+              (e.payment_proof_url || e.payment_proof_thumb) ? (() => {
+                const src = e.payment_proof_url || e.payment_proof_thumb;
+                const s = el('span', {
+                  style: 'color:#059669;font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:2px',
+                  title: 'Tap to view the bank transfer proof',
+                }, '🏦 proof');
+                s.addEventListener('click', (ev) => {
+                  ev.stopPropagation();
+                  try { showPhotoLightbox(src); } catch(_){ window.open(src, '_blank'); }
+                });
+                return s;
+              })() : null,
+              (e.photo_url || e.photo_thumb) ? (() => {
+                const src = e.photo_url || e.photo_thumb;
+                const s = el('span', {
+                  style: 'color:#7E22CE;cursor:pointer;text-decoration:underline;text-underline-offset:2px',
+                  title: 'Tap to view the receipt photo',
+                }, '📸');
+                s.addEventListener('click', (ev) => {
+                  ev.stopPropagation();
+                  try { showPhotoLightbox(src); } catch(_){ window.open(src, '_blank'); }
+                });
+                return s;
+              })() : null,
             ),
           ),
           el('div', {
