@@ -8991,75 +8991,50 @@ function renderStockView(body){
 }
 
 function renderAlertsView(body){
+  // Alerts is a MANAGER VERIFICATION QUEUE now — only task completions
+  // (staff finished a tracked task, may have attached a done-photo). The
+  // old "channel unread" section was removed 2026-08-10 (David's feedback:
+  // 100% redundant with the Chat rail badge). Chat is for conversation;
+  // Alerts is for actionable items requiring a manager check.
   const taskAlerts = (typeof getTaskAlerts === 'function') ? getTaskAlerts() : [];
-  const entries = [];
-  for(const k in State.unread){
-    const ct = State.unread[k] || 0;
-    if(ct > 0) entries.push({channelId:k, ct});
-  }
 
-  if(!taskAlerts.length && !entries.length){
+  if(!taskAlerts.length){
     body.appendChild(el('div',{class:'alerts-empty'}, t('app.alerts_view.empty')));
     try { markTaskAlertsRead(); refreshAlerts(); } catch(e){}
     return;
   }
 
-  // ── Task-completion alerts: a staff member finished a tracked task. The
-  //    manager can verify the end photo or walk to the zone. Newest first. ──
-  if(taskAlerts.length){
-    body.appendChild(el('div',{class:'ship-alert-head'}, shipT('app.ship.alert_completions','Task completions')));
-    const tlist = el('div');
-    for(const a of taskAlerts){
-      const card = el('div',{class:'ship-alert' + (a.read ? '' : ' unread')});
-      if(a.photo){
-        card.appendChild(el('img',{class:'ship-alert-thumb', src:a.photo, alt:'',
-          onclick:e=>{ e.stopPropagation(); try{ showPhotoLightbox(a.photo); }catch(err){} }}));
-      } else {
-        card.appendChild(el('div',{class:'ship-alert-ic'}, '✅'));
-      }
-      const txt = el('div',{class:'ship-alert-txt'});
-      txt.appendChild(el('div',{class:'ship-alert-title'}, a.title));
-      const bits = [];
-      if(a.by) bits.push(a.by);
-      if(a.duration_min != null) bits.push('⏱ ' + (a.duration_min < 60 ? a.duration_min + ' min' : fmtDuration(a.duration_min)));
-      if(a.zone) bits.push('📍 ' + a.zone);
-      txt.appendChild(el('div',{class:'ship-alert-meta'}, bits.join(' · ')));
-      card.appendChild(txt);
-      if(a.photo){
-        card.appendChild(el('button',{class:'ship-alert-btn',
-          onclick:e=>{ e.stopPropagation(); try{ showPhotoLightbox(a.photo); }catch(err){} }},
-          shipT('app.ship.alert_view_photo','📷 Verify')));
-      }
-      // Tap the card → open the task fiche for the full picture.
-      card.addEventListener('click', () => {
-        const tk = getTasks().find(x => x.id === a.taskId);
-        if(tk) showShipFiche(tk);
-      });
-      tlist.appendChild(card);
+  body.appendChild(el('div',{class:'ship-alert-head'}, shipT('app.ship.alert_completions','Task completions')));
+  const tlist = el('div');
+  for(const a of taskAlerts){
+    const card = el('div',{class:'ship-alert' + (a.read ? '' : ' unread')});
+    if(a.photo){
+      card.appendChild(el('img',{class:'ship-alert-thumb', src:a.photo, alt:'',
+        onclick:e=>{ e.stopPropagation(); try{ showPhotoLightbox(a.photo); }catch(err){} }}));
+    } else {
+      card.appendChild(el('div',{class:'ship-alert-ic'}, '✅'));
     }
-    body.appendChild(tlist);
-  }
-
-  // ── Channel unread (existing chat alerts) ──
-  if(entries.length){
-    entries.sort((a,b) => b.ct - a.ct);
-    const list = el('div',{class:'alerts-list'});
-    for(const e of entries){
-      const msgs = State.messages[e.channelId] || [];
-      const last = msgs[msgs.length-1];
-      const preview = last ? `${last.name}: ${textPreview(last)}` : '';
-      list.appendChild(el('div',{
-        class:'alert-row',
-        onclick:()=>{ setView('channel'); try { switchChannel(e.channelId); } catch {} },
-      },
-        el('span',{class:'em'}, '#'),
-        el('div',{class:'nm'}, e.channelId),
-        el('div',{class:'preview'}, preview),
-        el('div',{class:'ct'}, String(e.ct)),
-      ));
+    const txt = el('div',{class:'ship-alert-txt'});
+    txt.appendChild(el('div',{class:'ship-alert-title'}, a.title));
+    const bits = [];
+    if(a.by) bits.push(a.by);
+    if(a.duration_min != null) bits.push('⏱ ' + (a.duration_min < 60 ? a.duration_min + ' min' : fmtDuration(a.duration_min)));
+    if(a.zone) bits.push('📍 ' + a.zone);
+    txt.appendChild(el('div',{class:'ship-alert-meta'}, bits.join(' · ')));
+    card.appendChild(txt);
+    if(a.photo){
+      card.appendChild(el('button',{class:'ship-alert-btn',
+        onclick:e=>{ e.stopPropagation(); try{ showPhotoLightbox(a.photo); }catch(err){} }},
+        shipT('app.ship.alert_view_photo','📷 Verify')));
     }
-    body.appendChild(list);
+    // Tap the card → open the task fiche for the full picture.
+    card.addEventListener('click', () => {
+      const tk = getTasks().find(x => x.id === a.taskId);
+      if(tk) showShipFiche(tk);
+    });
+    tlist.appendChild(card);
   }
+  body.appendChild(tlist);
 
   // Viewing the Alerts tab clears the task-completion badge.
   try { markTaskAlertsRead(); refreshAlerts(); } catch(e){}
@@ -9659,10 +9634,11 @@ function persistMessages(){
 }
 
 function refreshAlerts(){
+  // Alerts badge tracks ONLY task-completion notifications now — the old
+  // channel-unread count was double-badged (Chat rail also shows it) and
+  // the Alerts view stopped rendering that section on 2026-08-10.
   let total = 0;
-  for(const k in State.unread) total += State.unread[k]||0;
   try { total += unreadTaskAlerts(); } catch(e){}
-  // Only #rail-alerts exists now (#tab-alerts was on the removed mobile-tabs).
   const badge = $('#rail-alerts');
   if(!badge) return;
   if(total>0){ badge.style.display='flex'; badge.textContent=total; }
