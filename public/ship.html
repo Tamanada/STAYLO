@@ -1252,6 +1252,29 @@ body.view-de .channels-pane{display:none}
   transition:transform var(--t-fast),box-shadow var(--t-fast);
 }
 .cv-action-btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,31,46,.25)}
+/* Mobile-only Floating Action Button. Tasks + Fiches views squeeze their
+   "+ New …" button into #cv-actions (in the .cv-head bar), and on mobile
+   the tabs strip pushes that slot off-screen — the manager sees the list
+   but no way to add anything. FAB stays thumb-reachable above the bottom
+   rail, mounted per-view via _mountMobileFAB() and torn down on every
+   view switch by renderActiveView(). Hidden on ≥901px so desktop keeps
+   the in-header button. */
+.mobile-fab{
+  position:fixed;right:16px;
+  bottom:calc(env(safe-area-inset-bottom, 0px) + 88px);
+  z-index:80;display:none;align-items:center;gap:8px;
+  padding:14px 20px;border:0;border-radius:999px;
+  background:linear-gradient(135deg,var(--orange),var(--pink));
+  color:#fff;font-size:14px;font-weight:800;letter-spacing:.3px;
+  box-shadow:0 8px 24px rgba(255,60,180,.35),0 3px 8px rgba(255,107,0,.25);
+  cursor:pointer;
+  transition:transform var(--t-fast),box-shadow var(--t-fast);
+}
+.mobile-fab:hover,.mobile-fab:active{transform:translateY(-2px);box-shadow:0 12px 30px rgba(255,60,180,.45),0 4px 10px rgba(255,107,0,.3)}
+.mobile-fab .fab-plus{font-size:20px;line-height:1;font-weight:900}
+@media (max-width: 900px){
+  .mobile-fab{display:inline-flex}
+}
 /* "Signed in as" pill in the cv-head — mirrors .cp-user from the channels-pane,
    so the user identity stays visible on every sub-view (Schedule / Roster / etc.)
    even though the channels-pane is hidden outside Chat. */
@@ -5617,6 +5640,30 @@ function setView(view, args){
   try { renderChannels(); } catch {}
 }
 
+// Mobile-only Floating Action Button. Views that need a discoverable
+// "+ New …" affordance on phones (Tasks, Fiches) call this AFTER they've
+// populated #cv-actions. The FAB is a fixed pill above the bottom rail,
+// visible only ≤900px via CSS. renderActiveView() removes it on every
+// view switch, so callers don't need to clean up when the user tabs away
+// — but a caller re-mounting inside its own render loop should still be
+// safe: we delete-and-recreate by ID.
+function _mountMobileFAB(label, onClick){
+  const old = document.getElementById('mobile-fab');
+  if(old) old.remove();
+  const btn = document.createElement('button');
+  btn.id = 'mobile-fab';
+  btn.className = 'mobile-fab';
+  btn.type = 'button';
+  btn.title = label;
+  btn.setAttribute('aria-label', label);
+  btn.innerHTML = '<span class="fab-plus" aria-hidden="true">+</span><span>'
+    + label.replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s])
+    + '</span>';
+  btn.addEventListener('click', (e) => { e.preventDefault(); onClick(); });
+  document.body.appendChild(btn);
+  return btn;
+}
+
 function renderActiveView(){
   const body = $('#cv-body');
   const title = $('#cv-title');
@@ -5629,6 +5676,11 @@ function renderActiveView(){
   // on view switch so stale buttons from a previous view don't leak.
   const actions = $('#cv-actions');
   if(actions) actions.innerHTML = '';
+  // Mobile FAB — same rationale: only the view that mounts it should show
+  // it. Any tab switch tears it down; the sub-view renderer re-adds it via
+  // _mountMobileFAB() if it wants one.
+  const _oldFab = document.getElementById('mobile-fab');
+  if(_oldFab) _oldFab.remove();
   // The Pierre Martin badge (#cv-user) can be re-parented by a sub-tab
   // (e.g. Fiches drops it into the chip strip so it aligns with the
   // "85 fiches techniques" row). Restore it to its canonical home in
@@ -21472,6 +21524,12 @@ function renderRecipesTab(){
       }, t('app.recipes.btn_new')));
     }
   }
+  // Mobile-only FAB — same rationale as Tasks: cv-actions gets clipped by
+  // the top tab strip on phones. Pin a fixed pill above the bottom rail so
+  // creating a new fiche is always one thumb-tap away.
+  if(isMgr){
+    _mountMobileFAB(t('app.recipes.btn_new') || '+ New fiche', () => showRecipeEditor(null));
+  }
 
   // ── Auto-detect Loyverse items NOT yet in fiches ──
   // Placeholder host — we render synchronously below from the items
@@ -23498,6 +23556,12 @@ function renderTasksTab(){
         onclick: () => showTaskEditor(null)
       }, t('app.tasks_tab.new_task')));
     }
+  }
+  // Mobile-only FAB: the cv-actions "+ New task" button above gets pushed
+  // off-screen by the tab strip on phones. Duplicate the create affordance
+  // as a fixed pill above the bottom rail so managers can always reach it.
+  if(isMgr){
+    _mountMobileFAB(t('app.tasks_tab.new_task') || '+ New task', () => showTaskEditor(null));
   }
 
   if(!filteredTasks.length){
