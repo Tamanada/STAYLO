@@ -18223,6 +18223,13 @@ function renderRosterTab(){
       onclick: () => { _hrEmployeeId='__new__'; renderRosterTab(); }
     }, t('app.roster.new_employee_btn')));
   }
+  // Mobile FAB — same rationale as Tasks + Fiches: the cv-actions slot
+  // gets pushed off-screen by the top tab strip on phones, so managers
+  // couldn't reach "+ Nouvel employé". Only mounted on the LIST view;
+  // not shown when the employee edit form takes over (that path returns
+  // above via renderEmployeeForm before we get here).
+  _mountMobileFAB(t('app.roster.new_employee_btn') || '+ New employee',
+    () => { _hrEmployeeId='__new__'; renderRosterTab(); });
   const list = el('div',{class:'roster-list'});
   if(!emps.length){
     const emptyMsg = (isHR && _rosterFilterDept !== 'all')
