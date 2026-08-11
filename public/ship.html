@@ -19980,7 +19980,7 @@ function doUndo(){
   const snap = _scheduleUndoStack.pop();
   if(!snap) return;
   saveSchedules(snap.data);
-  if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+  if($('#hr-body') && _hrTab === 'schedule') renderScheduleTab();
   // Brief teal confirmation toast
   const ex = $('#undo-toast'); if(ex) ex.remove();
   const t = el('div',{class:'undo-toast confirmed',id:'undo-toast'},
@@ -23204,7 +23204,7 @@ function renderEventsModal(){
           if(cb.checked) cur.add(e.id); else cur.delete(e.id);
           setEnabledEventIds([...cur]);
           // Live update — refresh schedule view if open
-          if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+          if($('#hr-body') && _hrTab === 'schedule') renderScheduleTab();
         });
         const dateLbl = e.recurring === 'lunar'
           ? `lunar — ${e.dates.length} dates this year`
@@ -23230,7 +23230,7 @@ function renderEventsModal(){
             const next = custom.filter((_,j)=>j!==i);
             saveCustomEvents(next);
             renderEventsModal();
-            if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+            if($('#hr-body') && _hrTab === 'schedule') renderScheduleTab();
           }},'×'),
         ))
       ),
@@ -23261,7 +23261,7 @@ function renderEventsModal(){
         }];
         saveCustomEvents(next);
         renderEventsModal();
-        if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+        if($('#hr-body') && _hrTab === 'schedule') renderScheduleTab();
       }},'+ Add event'),
     );
     body = el('div',{}, list, addForm);
@@ -25688,7 +25688,7 @@ function showSkipBreakRequestModal(shift){
         modal.remove();
         renderClockWidget();
         // Refresh the schedule view if it's open so the badge appears
-        if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+        if($('#hr-body') && _hrTab === 'schedule') renderScheduleTab();
       }},'📨 Send request'),
     ),
   );
@@ -25737,7 +25737,7 @@ function showSkipBreakReviewModal(){
             if(why === null) return;   // cancelled
             denyBreakSkip(sh.id, State.user?.employee_id, why);
             showSkipBreakReviewModal();   // refresh
-            if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+            if($('#hr-body') && _hrTab === 'schedule') renderScheduleTab();
           }},'✗ Deny'),
           el('button',{class:'btn-primary',
             style:'background:linear-gradient(135deg,var(--teal),#00D9A0)',
@@ -25745,7 +25745,7 @@ function showSkipBreakReviewModal(){
               if(!confirm(`Approve break skip for ${emp.first_name} on ${fmtShiftDay(sh.date)}?\n\nThe ${sh.break_minutes||0} min of break time will be paid as worked time on this shift.`)) return;
               approveBreakSkip(sh.id, State.user?.employee_id);
               showSkipBreakReviewModal();   // refresh
-              if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+              if($('#hr-body') && _hrTab === 'schedule') renderScheduleTab();
             },
           },'✓ Approve'),
         ),
@@ -25849,7 +25849,7 @@ function findNextShiftLabel(emp){
 // preserve in-flight work AND skip a useless re-render that the
 // manager couldn't see anyway (the modal covers the schedule).
 window._stayloSchedTick = setInterval(()=>{
-  if(!$('#hr-modal') || _hrTab !== 'schedule') return;
+  if(!$('#hr-body') || _hrTab !== 'schedule') return;
   // Modal selectors that, if present, mean the schedule is occluded
   // and a refresh would destroy in-progress work.
   const blockers = [
@@ -25892,7 +25892,7 @@ function showClockReminderBanner(shift, minsToStart){
       removeClockReminderBanner();
       renderClockWidget();
       // refresh the schedule grid if it's open
-      if($('#hr-modal') && _hrTab==='schedule') renderScheduleTab();
+      if($('#hr-body') && _hrTab==='schedule') renderScheduleTab();
     }
   };
   if(!banner){
@@ -26692,7 +26692,7 @@ function showSettingsModal(){
               try { seedDemoSchedules(); } catch {}
               try { seedDemoTimesheets(); } catch {}
               alert(`🏰 Seeded ${n} staff across 9 departments. 90-day schedule + 75-day clocked events generated. Open the Roster tab and use the dept filter to navigate.`);
-              if($('#hr-modal') && _hrTab==='roster') renderRosterTab();
+              if($('#hr-body') && _hrTab==='roster') renderRosterTab();
             }
           },'🏰 Seed BIG hotel (~140 staff)'),
           // ── Demo Reset button — for demo dress rehearsals ────────────
@@ -26727,8 +26727,8 @@ function showSettingsModal(){
                 // first boot only; reset doesn't need the visual fanfare).
                 seedDemoDataIfNeeded();
                 // Re-render whatever HR tab is open
-                if($('#hr-modal') && _hrTab === 'roster') renderRosterTab();
-                else if($('#hr-modal') && _hrTab === 'schedule') renderScheduleTab();
+                if($('#hr-body') && _hrTab === 'roster') renderRosterTab();
+                else if($('#hr-body') && _hrTab === 'schedule') renderScheduleTab();
                 alert(`🔁 Demo reset complete for hotel "${code}".\n\nReady for the next rehearsal pass.`);
               } catch(err){
                 console.error('Demo reset failed:', err);
@@ -26800,7 +26800,7 @@ function showSettingsModal(){
             saveHotelSettings(next);
             alert('🚀 Switched to LIVE mode. Demo data removed — your records kept.\n\nA JSON snapshot of the wiped demo data was downloaded for safekeeping.');
             modal.remove();
-            if($('#hr-modal') && _hrTab==='roster') renderRosterTab();
+            if($('#hr-body') && _hrTab==='roster') renderRosterTab();
           }},'🚀 Switch to LIVE'),
         ) : null,
       );
