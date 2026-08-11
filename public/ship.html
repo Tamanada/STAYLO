@@ -2706,6 +2706,15 @@ body.sched-landscape-fs .sched-grid-wrap{ max-height: calc(100dvh - 60px); }
     max-width:1100px;
     padding:28px 32px;
   }
+  /* Shift editor on desktop — the default 540px card looked lost inside
+     the dimmed viewport (huge dead margins on both sides). Bump to a
+     comfortable 900px so the Horaires two-column grid + day picker + copy-
+     from-a-colleague strip breathe without wrapping. Phones keep 540px. */
+  #shift-editor.shift-editor-bg{padding:24px}
+  #shift-editor .shift-editor-panel{
+    max-width:900px;
+    padding:24px 28px;
+  }
 }
 /* Color-coded section blocks inside the shift editor — give each logical
    group (timing, tasks, scope) its own subtle background so the eye groups
