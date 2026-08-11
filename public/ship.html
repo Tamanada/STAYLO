@@ -2519,6 +2519,33 @@ body.sched-landscape-fs .sched-grid-wrap{ max-height: calc(100dvh - 60px); }
   box-shadow:inset 2px 0 0 var(--orange), inset -2px 0 0 var(--orange);
 }
 .sched-grid th.today{color:var(--orange);font-weight:800}
+/* SPECIAL DAY column — soft purple band across the whole column when the
+   day has one or more calendar events pinned (📌). `:not(.today)` so the
+   TODAY orange always wins for the collision case (today AND a holiday). */
+.sched-date-strip .cell.has-event:not(.today){
+  background:#F0E7FA;
+  box-shadow:inset 0 -3px 0 var(--purple);
+}
+.sched-date-strip .cell.has-event:not(.today) .dow,
+.sched-date-strip .cell.has-event:not(.today) .dnum,
+.sched-date-strip .cell.has-event:not(.today) .dh-wk,
+.sched-date-strip .cell.has-event:not(.today) .dh-dn{color:var(--purple)}
+.sched-grid th.has-event:not(.today),
+.sched-grid td.has-event:not(.today){
+  background:#F7F1FE;
+  box-shadow:inset 2px 0 0 var(--purple), inset -2px 0 0 var(--purple);
+}
+.sched-grid th.has-event:not(.today){color:var(--purple);font-weight:800}
+/* Both today AND a special event — keep orange bg, add purple bottom
+   accent on the strip + a purple dashed top ring on the grid cells so the
+   double signal is visible without breaking the "today" cue. */
+.sched-date-strip .cell.today.has-event{
+  box-shadow:inset 0 -3px 0 var(--orange), inset 0 3px 0 var(--purple);
+}
+.sched-grid th.today.has-event,
+.sched-grid td.today.has-event{
+  box-shadow:inset 2px 0 0 var(--orange), inset -2px 0 0 var(--orange), inset 0 3px 0 var(--purple);
+}
 .sched-grid .emp-cell{text-align:left;padding:8px 12px;font-size:12px;background:#fff;color:var(--navy);position:sticky;left:0;z-index:1;width:var(--daygrid-name-w);min-width:var(--daygrid-name-w);max-width:var(--daygrid-name-w);box-shadow:1px 0 0 var(--border)}
 /* Role on top (small caps, gray, light), name below (bold, navy). The
    role line lives next to the drag handle dots — at-a-glance the manager
@@ -20671,9 +20698,14 @@ function renderScheduleTab(){
   _teamStrip.style.position = 'sticky'; _teamStrip.style.left = '0';   // ensure handle stays visible
   _teamStrip.appendChild(el('div',{class:'name-resize', title:'Drag to resize the name column', 'aria-hidden':'true'}));
   dateStrip.appendChild(_teamStrip);
+  // Pre-compute event dates once so we can tint the whole column (date-
+  // strip header + every emp cell + total) with `.has-event`. Iterating
+  // getEventsOnDate() 31×3 times per render is fine, but the Set keeps the
+  // per-cell class-decision to a hash lookup.
+  const _eventDates = new Set(days.filter(d => getEventsOnDate(d).length > 0));
   for(const d of days){
     dateStrip.appendChild(el('div',{
-      class:'cell'+(d===today?' today':''),
+      class:'cell'+(d===today?' today':'')+(_eventDates.has(d)?' has-event':''),
       title:'Click to open this day in detail (hourly Gantt view)',
       onclick:()=>{ _schedViewMode='day'; _schedWeekStart=d; renderScheduleTab(); },
     }, dayHeaderContent(d)));
@@ -20709,8 +20741,9 @@ function renderScheduleTab(){
   const head = el('tr',{}, el('th',{},'Team member'));
   for(const d of days){
     // Click any day header to drill down into the Day view (Gantt timeline)
+    const _cls = [d===today?'today':'', _eventDates.has(d)?'has-event':''].filter(Boolean).join(' ');
     head.appendChild(el('th',{
-      class:d===today?'today':'',
+      class:_cls,
       title:'Click to open this day in detail (hourly Gantt view)',
       onclick:()=>{ _schedViewMode='day'; _schedWeekStart=d; renderScheduleTab(); },
     }, dayHeaderContent(d)));
@@ -20892,8 +20925,9 @@ function renderScheduleTab(){
       // listeners in Month view — instead we attach ONE delegated listener
       // on tbody after the loop and recover (empId, date, hasShift) from
       // these data attributes.
+      const _tdCls = [day===today?'today':'', _eventDates.has(day)?'has-event':''].filter(Boolean).join(' ');
       const td = el('td',{
-        class:day===today?'today':'',
+        class:_tdCls,
         'data-emp-id': emp.id,
         'data-date': day,
         'data-has-shift': shift ? '1' : '',
