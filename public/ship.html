@@ -24530,22 +24530,9 @@ function showShiftEditor(emp, day, shift){
     });
     return { days, repeat };
   })();
-  const _briefingScope = (() => {
-    const days = buildDaysPicker('briefing', () => false);
-    const repeat = buildRepeatPicker('briefing', 'today', (newKey) => {
-      if(newKey === 'today') days.setOnlyCurrent();
-      else days.setAll();
-    });
-    return { days, repeat };
-  })();
-  const _tasksScope = (() => {
-    const days = buildDaysPicker('tasks', () => false);
-    const repeat = buildRepeatPicker('tasks', 'today', (newKey) => {
-      if(newKey === 'today') days.setOnlyCurrent();
-      else days.setAll();
-    });
-    return { days, repeat };
-  })();
+  // _briefingScope + _tasksScope removed 2026-08-11 (David): the briefing
+  // and tasks sections were retired from the shift editor, so their per-
+  // section day+repeat pickers are no longer built.
 
   // Reusable section-scope hint banner. Tells the manager exactly what
   // the picker below applies to, in plain language. Shown above the
@@ -24599,299 +24586,12 @@ function showShiftEditor(emp, day, shift){
         ),
       ),
     ),
-    // ── Section: Briefing (notes-yellow) ──
-    // Personalised note the manager writes for THIS shift. Visible by the
-    // employee when they open the day in their own planning. Free-form —
-    // VIP arrivals, who's covering whom, special instructions, etc.
-    //
-    // Two persistence layers prevent loss of work:
-    //   1. Auto-saved DRAFT per (emp, day) on every keystroke (debounced)
-    //      → re-opening the same shift restores the typed text even if the
-    //        manager hit Cancel before saving.
-    //   2. Template LIBRARY: any briefing that gets saved (via the main Save)
-    //      is added to staylo_briefing_tpls — chips above the textarea let
-    //      the manager re-pick a past briefing in one click ("recettes" of
-    //      common situations: VIP arrival pack, group breakfast pack, etc.)
-    (() => {
-      const TPLKEY    = _hkey('staylo_briefing_tpls');
-      const DRAFTKEY  = _hkey('staylo_briefing_draft_'+emp.id+'_'+day);
-      const tpls      = lsGet(TPLKEY, []);
-      // Initial value priority: existing shift.briefing > draft > empty.
-      const draft     = lsGet(DRAFTKEY, '');
-      const initial   = (shift?.briefing != null && shift.briefing !== '')
-                      ? shift.briefing
-                      : (draft || '');
-      const ta = document.createElement('textarea');
-      ta.id = 'se-briefing';
-      ta.className = 'shift-briefing-input';
-      ta.placeholder = t('app.shift_editor.briefing_placeholder');
-      ta.value = initial;
-      ta.rows = 3;
-      // Debounced auto-save of the draft as the manager types.
-      let _draftTimer = null;
-      ta.addEventListener('input', () => {
-        if(_draftTimer) clearTimeout(_draftTimer);
-        _draftTimer = setTimeout(() => {
-          try {
-            const v = ta.value || '';
-            if(v) lsSet(DRAFTKEY, v);
-            else  localStorage.removeItem(DRAFTKEY);
-          } catch {}
-        }, 400);
-      });
-      // Template chip row — pick a past briefing in one click.
-      const chipRow = el('div',{class:'tpl-chips'});
-      if(tpls.length){
-        chipRow.appendChild(el('span',{class:'tpl-chips-lbl'}, t('app.shift_editor.briefing_reuse_label')));
-        for(const tpl of tpls){
-          const text = (typeof tpl === 'string') ? tpl : (tpl.text || '');
-          if(!text) continue;
-          const preview = text.length > 60 ? text.slice(0, 57) + '…' : text;
-          const chip = document.createElement('button');
-          chip.type = 'button';
-          chip.className = 'tpl-chip';
-          chip.title = text + '\n\nClick to fill this briefing into the textarea.';
-          chip.textContent = preview;
-          chip.addEventListener('click', () => {
-            ta.value = text;
-            ta.focus();
-            try { lsSet(DRAFTKEY, text); } catch {}
-          });
-          chipRow.appendChild(chip);
-        }
-      }
-      // Explicit "Save as template" button — useful to bank a draft as a
-      // re-usable recipe without committing the whole shift edit.
-      const bankBtn = document.createElement('button');
-      bankBtn.type = 'button';
-      bankBtn.className = 'shift-briefing-bank';
-      bankBtn.textContent = t('app.shift_editor.briefing_bank');
-      bankBtn.title = 'Save this briefing to your reusable templates list (top 10 most-recent). Reuse it later on any employee, any day, via the chips above.';
-      bankBtn.addEventListener('click', () => {
-        const v = (ta.value || '').trim();
-        if(v.length < 8){ alert(t('app.shift_editor.briefing_too_short')); return; }
-        const cur = (lsGet(TPLKEY, []) || []).filter(x => {
-          const t = (typeof x === 'string') ? x : (x && x.text);
-          return t !== v;
-        });
-        cur.unshift(v);
-        if(cur.length > 10) cur.length = 10;
-        lsSet(TPLKEY, cur);
-        bankBtn.textContent = t('app.shift_editor.briefing_bank_saved');
-        setTimeout(() => { bankBtn.textContent = '💾 Save as template'; }, 1500);
-      });
-      return el('section',{class:'se-section briefing'},
-        el('div',{class:'se-section-title'}, t('app.shift_editor.section_briefing')),
-        chipRow,
-        ta,
-        el('div',{class:'shift-briefing-foot'},
-          el('span',{class:'shift-briefing-hint'},
-            t('app.shift_editor.briefing_hint')),
-          bankBtn,
-        ),
-        // Embedded scope picker. Briefings default to today-only because
-        // they are 99% day-specific (VIP arrivals, group breakfast pack…)
-        _scopeHint(t('app.shift_editor.scope_hint_briefing', {default: 'Saving will write the briefing to the days selected below. Days without an existing shift are skipped.'})),
-        _briefingScope.days.root,
-        _briefingScope.repeat.root,
-      );
-    })(),
-    // ── Plan the day: one-off tasks attached to THIS employee on THIS date ──
-    // Lists existing assignments first (with × delete) then offers a single
-    // inline row to add new ones. Stored in the same Tasks store the daily
-    // task list reads from, so they show up in the regular Tasks tab too.
-    //
-    // IMPORTANT: add/delete only re-renders THE LIST inside this section,
-    // not the whole shift editor. Otherwise unsaved changes to Start Time /
-    // End Time / Outlet / etc. would be lost on every task tweak.
-    (() => {
-      const list = el('div',{class:'shift-tasks-list'});
-      const renderList = () => {
-        list.innerHTML = '';
-        const dayTasks = getTasks().filter(t =>
-          t.assign_kind === 'employee' && t.assign_value === emp.id &&
-          t.recurrence === 'once' && t.due_date === day);
-        if(!dayTasks.length){
-          list.appendChild(el('div',{class:'shift-task-empty'},
-            t('app.shift_editor.tasks_empty')));
-          return;
-        }
-        for(const t of dayTasks){
-          const prioEm = t.priority === 'urgent' ? '🚨'
-                       : t.priority === 'high'   ? '⚡'
-                       : '·';
-          list.appendChild(el('div',{class:'shift-task-row prio-'+(t.priority||'normal')},
-            el('span',{class:'shift-task-prio'}, prioEm),
-            el('span',{class:'shift-task-title'}, t.title),
-            t.due_time ? el('span',{class:'shift-task-time'}, t.due_time) : null,
-            el('button',{type:'button', class:'shift-task-del', title:'Delete this task',
-              onclick:()=>{
-                // AUDIT-FIX: silent delete was demo-hostile. Snapshot the
-                // task BEFORE deleting so the undo toast can restore it.
-                const _snap = getTasks().find(x => x.id === t.id);
-                if(!_snap) return;
-                if(!confirm(`Delete task "${_snap.title}"?\n\nYou can undo from the toast.`)) return;
-                deleteTask(_snap.id);
-                renderList();
-                try {
-                  showUndoToast(`🗑 Task deleted · ${_snap.title}`, () => {
-                    upsertTask(_snap);
-                    renderList();
-                  });
-                } catch {}
-              }
-            },'×'),
-          ));
-        }
-      };
-      renderList();
-      // Add row inputs — title + time + priority + button. Inputs persist
-      // across renderList() calls because the list re-render only swaps the
-      // .shift-tasks-list contents, leaving these add-row inputs intact.
-      const titleIn = document.createElement('input');
-      titleIn.type = 'text';
-      titleIn.placeholder = t('app.shift_editor.tasks_placeholder');
-      titleIn.className = 'shift-task-input';
-      titleIn.setAttribute('autocomplete', 'off');
-      const timeIn = document.createElement('input');
-      timeIn.type = 'time'; timeIn.step = '900';
-      timeIn.className = 'shift-task-input shift-task-input-time';
-      const prioSel = document.createElement('select');
-      prioSel.className = 'shift-task-input';
-      for(const [v,l] of [['normal',t('app.shift_editor.tasks_prio_normal')],['high',t('app.shift_editor.tasks_prio_high')],['urgent',t('app.shift_editor.tasks_prio_urgent')]]){
-        const o = document.createElement('option');
-        o.value = v; o.textContent = l;
-        prioSel.appendChild(o);
-      }
-      const addBtn = el('button',{type:'button', class:'shift-task-add'}, t('app.shift_editor.tasks_add'));
-
-      // Optional recipe attachment for the inline task being created.
-      // Previously the recipe selector existed ONLY in the full task editor
-      // (showTaskEditor), so adding a quick task from the shift editor could
-      // not link a fiche technique. Now there's a 4th input in the add row:
-      // a recipe select. Empty option = no attachment. Declared HERE (above
-      // the library-cards loop) so card click handlers can pre-fill it.
-      const _recipes = getRecipes();
-      const recipeIn = (() => {
-        const s = document.createElement('select');
-        s.className = 'shift-task-input shift-task-input-recipe';
-        s.title = t('app.shift_editor.tasks_recipe_attach', {default: 'Attach a recipe (fiche technique)'});
-        const noneOpt = document.createElement('option');
-        noneOpt.value = ''; noneOpt.textContent = '📔 —';
-        s.appendChild(noneOpt);
-        for(const r of _recipes){
-          const opt = document.createElement('option');
-          opt.value = r.id;
-          opt.textContent = '📔 ' + r.name + (r.pos_sku ? ` (${r.pos_sku})` : '');
-          s.appendChild(opt);
-        }
-        return s;
-      })();
-
-      // Library cards — visual picker above the input row. Filtered to tasks
-      // this employee is eligible for (role / dept / all / direct-employee).
-      // Excludes one-off tasks already attached to this emp+day. Click a card
-      // → fills title + priority + time + recipe fields, ready to Add or adjust.
-      const libraryCards = el('div',{class:'shift-task-cards'});
-      const seenTitles = new Set();
-      let cardCount = 0;
-      for(const t of getTasks()){
-        if(t.active === false) continue;
-        if(t.recurrence === 'once' && t.due_date === day && t.assign_value === emp.id) continue;
-        // Unassigned library templates carry an optional `service` field
-        // (= owning department: F&B, Housekeeping, Spa, etc.). The card only
-        // shows for employees in that service — so a chef no longer sees
-        // "Change light bulbs in the ballroom" alongside their kitchen tasks.
-        // service==='all' means cross-department (daily briefing etc.).
-        // No service field at all → backward-compatible "show everywhere".
-        const unassignedMatch = (t.assign_kind === 'unassigned') && (
-              !t.service
-           || t.service === 'all'
-           || t.service === emp.department
-        );
-        const eligible = unassignedMatch
-          || (t.assign_kind === 'all')
-          || (t.assign_kind === 'dept'     && t.assign_value === emp.department)
-          || (t.assign_kind === 'role'     && t.assign_value === emp.role)
-          || (t.assign_kind === 'employee' && t.assign_value === emp.id);
-        if(!eligible) continue;
-        if(!t.title || seenTitles.has(t.title)) continue;
-        seenTitles.add(t.title);
-        const prioEm = t.priority === 'urgent' ? '🚨'
-                     : t.priority === 'high'   ? '⚡'
-                     : '·';
-        const card = el('button',{
-          type:'button',
-          class:'shift-task-card prio-'+(t.priority||'normal'),
-          title:(t.description || t.title) + '\n\nClick to fill the form below with this task.',
-        },
-          el('span',{class:'stc-prio'}, prioEm),
-          el('span',{class:'stc-title'}, t.title),
-          t.due_time ? el('span',{class:'stc-time'}, t.due_time) : null,
-        );
-        card.addEventListener('click', () => {
-          titleIn.value  = t.title;
-          timeIn.value   = t.due_time || '';
-          prioSel.value  = t.priority || 'normal';
-          // Pre-fill the recipe selector if the library task carries one.
-          // Falls back to "— None —" (value='') when absent.
-          if(recipeIn) recipeIn.value = t.recipe_id || '';
-          // Optional flash feedback so manager sees the form has been pre-filled
-          titleIn.focus();
-        });
-        libraryCards.appendChild(card);
-        cardCount++;
-      }
-      const libraryHeader = cardCount > 0
-        ? el('div',{class:'shift-task-cards-head'},
-            el('span',{class:'stch-lbl'}, t('app.shift_editor.tasks_library_label')),
-            el('span',{class:'stch-count'}, t('app.shift_editor.tasks_library_count', {n: cardCount})))
-        : null;
-      const submit = () => {
-        const title = titleIn.value.trim();
-        if(!title) return;
-        upsertTask({
-          title, description:'',
-          assign_kind:'employee', assign_value: emp.id,
-          recurrence:'once', due_date: day,
-          priority: prioSel.value, due_time: timeIn.value || '',
-          // NEW: persist optional recipe attachment from inline add row
-          recipe_id: recipeIn.value || '',
-          active: true,
-        });
-        // Reset just the new-task inputs; leave the user's other fields alone.
-        titleIn.value = ''; timeIn.value = ''; prioSel.value = 'normal';
-        recipeIn.value = '';
-        renderList();
-        titleIn.focus();   // ready for the next task
-      };
-      addBtn.addEventListener('click', submit);
-      titleIn.addEventListener('keydown', (e) => { if(e.key === 'Enter'){ e.preventDefault(); submit(); } });
-      return el('section',{class:'se-section tasks'},
-        el('div',{class:'se-section-title'}, t('app.shift_editor.section_tasks')),
-        list,
-        // Library cards picker (visible only when at least one template
-        // matches this employee). Click a card → form below pre-fills.
-        libraryHeader,
-        cardCount > 0 ? libraryCards : null,
-        // Add row: title + time + priority + recipe + add. Recipe selector
-        // is hidden if the hotel has zero recipes (otherwise it's just an
-        // empty dropdown that takes space).
-        el('div',{class:'shift-task-add-row'},
-          titleIn,
-          timeIn,
-          prioSel,
-          _recipes.length > 0 ? recipeIn : null,
-          addBtn,
-        ),
-        // Embedded scope picker. Tasks default to today-only because cloning
-        // a task to a whole week is a deliberate opt-in (vs. quickly adding
-        // a one-off note for today's shift).
-        _scopeHint(t('app.shift_editor.scope_hint_tasks', {default: 'Saving will clone today\'s tasks to the days selected below. Tasks already present on a target day are not duplicated.'})),
-        _tasksScope.days.root,
-        _tasksScope.repeat.root,
-      );
-    })(),
+    // Briefing + Tasks sections removed 2026-08-11 (David): they belong
+    // in their own dedicated tabs, not inside the shift timing editor.
+    // The bare shift editor now only carries TIMING (start/end/break/
+    // outlet + days-of-week + repeat + replace-week toggle). Tasks stay
+    // manageable via the Tasks tab; per-shift briefing can come back as
+    // a lighter one-liner if a manager asks.
   );
   const absSelect = document.createElement('select');
   absSelect.id='se-abs-type';
@@ -25148,82 +24848,9 @@ function showShiftEditor(emp, day, shift){
           }
         });
 
-        const saveBriefingBtn = el('button',{class:'btn-primary',style:'background:linear-gradient(135deg,#FDCB6E,#E8B042)',title:'Save the BRIEFING to the selected days. Timing and Tasks on those days are NOT touched. Days without an existing shift are skipped.'}, t('app.shift_editor.save_briefing'));
-        saveBriefingBtn.addEventListener('click', () => {
-          const briefingTxt = ($('#se-briefing')?.value || '').trim() || null;
-          const dates = resolveScope(_briefingScope.days, _briefingScope.repeat);
-          if(dates.length === 0){ alert(t('app.dialogs.select_at_least_one_day')); return; }
-          snapshotSchedule(`Briefing on ${dates.length} day${dates.length>1?'s':''}`);
-          let applied = 0, skipped = 0;
-          for(const d of dates){
-            const ok = mergeShiftFields(emp.id, d, {briefing: briefingTxt});
-            if(ok) applied++; else skipped++;
-          }
-          // Bank into templates if non-empty (same logic as before)
-          if(briefingTxt && briefingTxt.length >= 8){
-            try {
-              const TPLKEY = _hkey('staylo_briefing_tpls');
-              const cur = (lsGet(TPLKEY, []) || []).filter(x => {
-                const tt = (typeof x === 'string') ? x : (x && x.text);
-                return tt !== briefingTxt;
-              });
-              cur.unshift(briefingTxt);
-              if(cur.length > 10) cur.length = 10;
-              lsSet(TPLKEY, cur);
-            } catch {}
-          }
-          try { localStorage.removeItem(_hkey('staylo_briefing_draft_'+emp.id+'_'+day)); } catch {}
-          editor.remove(); renderScheduleTab();
-          const msg = `✓ Briefing applied to ${applied} day${applied>1?'s':''}`
-                    + (skipped > 0 ? ` · ${skipped} skipped (no shift)` : '');
-          showUndoToast(msg);
-        });
-
-        const saveTasksBtn = el('button',{class:'btn-primary',style:'background:linear-gradient(135deg,#00B894,#00A185)',title:'Clone today\'s tasks to the selected days. Timing and Briefing on those days are NOT touched. Tasks already present on a target day are not duplicated.'}, t('app.shift_editor.save_tasks'));
-        saveTasksBtn.addEventListener('click', () => {
-          const dates = resolveScope(_tasksScope.days, _tasksScope.repeat);
-          if(dates.length === 0){ alert(t('app.dialogs.select_at_least_one_day')); return; }
-          const sourceTasks = getTasks().filter(t =>
-            t.assign_kind === 'employee' && t.assign_value === emp.id &&
-            t.recurrence === 'once' && t.due_date === day);
-          if(sourceTasks.length === 0){
-            alert(t('app.dialogs.no_oneoff_to_clone'));
-            return;
-          }
-          let applied = 0;
-          for(const d of dates){
-            if(d === day) continue;   // source day already has them
-            for(const t of sourceTasks){
-              const exists = getTasks().some(x =>
-                x.assign_kind === 'employee' && x.assign_value === emp.id &&
-                x.recurrence === 'once' && x.due_date === d &&
-                x.title === t.title);
-              if(exists) continue;
-              upsertTask({
-                title: t.title, description: t.description||'',
-                assign_kind:'employee', assign_value: emp.id,
-                recurrence:'once', due_date: d,
-                priority: t.priority, due_time: t.due_time||'',
-                // Propagate the recipe attachment when cloning across days
-                recipe_id: t.recipe_id || '',
-                active: true,
-              });
-              applied++;
-            }
-          }
-          editor.remove(); renderScheduleTab();
-          showUndoToast(`✓ Cloned ${applied} task${applied===1?'':'s'} across ${dates.length-1} other day${(dates.length-1)===1?'':'s'}`);
-        });
-
-        // Stash in the outer `_scopedSaves` so we can move them into their
-        // sections after editor.appendChild(panel) below. We CANNOT use
-        // `panel.<x>` here because `panel` is in its temporal dead zone
-        // mid-construction (the IIFE runs as a child of the el() call that
-        // itself produces panel). Returning null here means the row-actions
-        // bar at the bottom only shows Delete / Clear / Cancel.
-        _scopedSaves.timing   = saveTimingBtn;
-        _scopedSaves.briefing = saveBriefingBtn;
-        _scopedSaves.tasks    = saveTasksBtn;
+        // Briefing + Tasks save buttons removed 2026-08-11 (David): those
+        // sections were retired from the shift editor. Only Timing survives.
+        _scopedSaves.timing = saveTimingBtn;
         return null;
       })(),
     ),
@@ -25247,15 +24874,12 @@ function showShiftEditor(emp, day, shift){
       sec.appendChild(wrap);
     }
   };
-  place('.se-section.timing',   _scopedSaves.timing);
-  place('.se-section.briefing', _scopedSaves.briefing);
-  place('.se-section.tasks',    _scopedSaves.tasks);
+  place('.se-section.timing', _scopedSaves.timing);
 
-  // ── Single-open accordion behavior on the 3 boxes ──
-  // Click a header → that box opens, the other two collapse. Default state:
-  // only Timing is open (the most common edit). Box headers (.se-section-title)
-  // get cursor:pointer + a chevron arrow via CSS.
-  const accordionBoxes = panel.querySelectorAll('.se-section.timing, .se-section.briefing, .se-section.tasks');
+  // Accordion is now single-box (Timing) — the briefing + tasks accordion
+  // siblings were removed 2026-08-11. Keeping the query on .timing alone so
+  // the header still gets the chevron / open-by-default behavior.
+  const accordionBoxes = panel.querySelectorAll('.se-section.timing');
   accordionBoxes.forEach((sec, i) => {
     if(i > 0) sec.classList.add('collapsed');   // Timing open, others closed
     const head = sec.querySelector('.se-section-title');
