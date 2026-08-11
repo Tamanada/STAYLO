@@ -24582,6 +24582,22 @@ function showShiftEditor(emp, day, shift){
       _scopeHint(t('app.shift_editor.scope_hint_timing', {default: 'Saving will apply Start / End / Break / Outlet to the days selected below.'})),
       _timingScope.days.root,
       _timingScope.repeat.root,
+      // "Replace week pattern" toggle — when ON, saving ALSO deletes any
+      // existing shifts on the UN-CHECKED days-of-week within the applied
+      // date range. Solves the common "I changed my rest day but the old
+      // rest-day shifts stayed as work shifts" bug David hit. Default OFF
+      // so single-day tweaks don't accidentally wipe adjacent shifts.
+      el('label',{
+        style:'display:flex;align-items:flex-start;gap:8px;padding:8px 10px;margin-top:6px;background:#FFF4EA;border:1px dashed var(--orange);border-radius:6px;font-size:12px;color:var(--navy);cursor:pointer',
+        title:'When enabled, existing shifts on the days you UN-check within the same date range are DELETED. Use this to change a rest day cleanly.',
+      },
+        el('input',{type:'checkbox', id:'se-replace-week', style:'margin-top:2px;flex-shrink:0'}),
+        el('div',{},
+          el('div',{style:'font-weight:800;color:var(--orange)'}, '🔄 Replace whole week pattern'),
+          el('div',{style:'color:var(--gray);font-size:11px;margin-top:2px'},
+            'Also DELETE existing shifts on days you UN-check in the same range. Turn ON to change a rest day cleanly.'),
+        ),
+      ),
     ),
     // ── Section: Briefing (notes-yellow) ──
     // Personalised note the manager writes for THIS shift. Visible by the
@@ -25088,9 +25104,44 @@ function showShiftEditor(emp, day, shift){
               });
               applied++;
             }
-            console.log('[saveTimingBtn] applied', applied, 'shifts');
+            // "Replace whole week pattern" — delete existing shifts on the
+            // UN-checked days-of-week within the same date range. Fixes the
+            // "changed rest day but old shifts stayed" bug David hit.
+            let deleted = 0;
+            if($('#se-replace-week')?.checked && dates.length > 0){
+              const checkedSet = new Set(dates);
+              const first = dates[0];
+              const last = dates[dates.length - 1];
+              // Widen the sweep window to full weeks so we catch un-checked
+              // days that sit OUTSIDE the pushed dates but INSIDE the intent.
+              const sweepStart = first < last ? first : last;
+              const sweepEnd = first > last ? first : last;
+              // Get all existing shifts for this employee in the range and
+              // delete those whose date isn't in the freshly-pushed set.
+              try {
+                const all = getSchedules();
+                const kept = [];
+                for(const s of all){
+                  if(s.employee_id !== emp.id){ kept.push(s); continue; }
+                  if(s.date < sweepStart || s.date > sweepEnd){ kept.push(s); continue; }
+                  if(checkedSet.has(s.date)){ kept.push(s); continue; }
+                  // In-range + un-checked day → drop it
+                  deleted++;
+                }
+                if(deleted > 0){
+                  saveSchedules(all.filter(s => {
+                    if(s.employee_id !== emp.id) return true;
+                    if(s.date < sweepStart || s.date > sweepEnd) return true;
+                    return checkedSet.has(s.date);
+                  }));
+                }
+              } catch(err){ console.warn('[saveTimingBtn] replace-week sweep failed', err); }
+            }
+            console.log('[saveTimingBtn] applied', applied, 'shifts, deleted', deleted);
             editor.remove(); renderScheduleTab();
-            showUndoToast(`✓ Timing applied to ${applied} day${applied>1?'s':''}`);
+            const msg = `✓ Timing applied to ${applied} day${applied>1?'s':''}` +
+                        (deleted > 0 ? ` · ${deleted} day${deleted>1?'s':''} cleared` : '');
+            showUndoToast(msg);
           } catch(err){
             console.error('[saveTimingBtn] FAILED', err);
             alert('Save failed: ' + (err && err.message ? err.message : err));
