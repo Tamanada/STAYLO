@@ -15923,7 +15923,10 @@ function showMonthlyReportModal(month){
   modal.addEventListener('click', (ev) => { if(ev.target === modal) modal.remove(); });
 
   const panel = document.createElement('div');
-  panel.style.cssText = 'width:100%;max-width:920px;max-height:92vh;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)';
+  // Explicit height (not just max-height) so the flex-child iframe has a
+  // definite size to fill. Without height:… the panel would collapse to
+  // the iframe's intrinsic ~150 px and the report would render clipped.
+  panel.style.cssText = 'width:100%;max-width:920px;height:92dvh;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)';
 
   const toolbar = document.createElement('div');
   toolbar.style.cssText = 'padding:14px 18px;background:linear-gradient(135deg,#FF6B00,#FF1F70);color:#fff;display:flex;gap:8px;flex-wrap:wrap;align-items:center';
