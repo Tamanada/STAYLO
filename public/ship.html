@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#FF6B00" />
+<!-- theme-color drives the Android Chrome browser toolbar tint. Was #FF6B00
+     (orange) which painted the entire top of the phone screen orange and
+     visually competed with the app's own header. #FFFFFF makes the Chrome
+     bar blend into the page's white cv-head so only the SHIP UI shows. -->
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#1A1F2E" media="(prefers-color-scheme: dark)" />
 <!-- Content Security Policy — defense-in-depth.
      'unsafe-inline' is required because the entire app is a single-file
      inline JS+CSS bundle (~14k lines). It does NOT prevent inline XSS but:
