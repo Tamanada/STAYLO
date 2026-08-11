@@ -120,7 +120,7 @@
     "mod_fiches_desc": "Fiches recettes et de préparation pour chaque point de vente — cuisine et bar toujours cohérents.",
     "mod_payroll_title": "Paie",
     "mod_payroll_desc": "Heures, salaires et versements calculés depuis le planning — fini les tableurs.",
-    "mod_charges_title": "Charges & P&L",
+    "mod_charges_title": "Comptabilité",
     "mod_charges_desc": "Suivez coûts et revenus sur tous vos points de vente et visualisez votre résultat en un coup d'œil.",
     "mod_pulse_title": "Staylo Pulse",
     "mod_pulse_desc": "Un tableau de bord en direct au-dessus de chaque POS — les ventes en temps réel sur tous vos points de vente.",
@@ -3859,8 +3859,8 @@
         "profile_d": "Mes infos, mon contrat, mon historique.",
         "timesheet_t": "Mon pointage",
         "timesheet_d": "Mes heures travaillées, pauses, OT.",
-        "charges_t": "Charges",
-        "charges_d": "Vue d'ensemble des dépenses et revenus.",
+        "charges_t": "Comptabilité",
+        "charges_d": "Reçus, dépenses, paie, P&L.",
         "settings_t": "Paramètres hôtel",
         "settings_d": "Configuration générale (managers).",
         "inventory_t": "Inventaire",
@@ -3874,7 +3874,7 @@
       "tab": {
         "profile": "👤 Profil",
         "timesheet": "⏱️ Pointage",
-        "finance": "💶 Charges",
+        "finance": "📒 Comptabilité",
         "settings": "⚙️ Paramètres"
       },
       "head_title_profile": "Mon profil",
@@ -4430,9 +4430,9 @@
       "dash_absences": "Absences {period}"
     },
     "charges": {
-      "title": "Charges & P&L",
-      "tile_desc": "Vue d'ensemble des dépenses, revenus et marge nette.",
-      "subtitle": "Aperçu mensuel — éditable en temps réel.",
+      "title": "Comptabilité",
+      "tile_desc": "Reçus, dépenses quotidiennes, paie et P&L.",
+      "subtitle": "Livre de comptes mensuel — {hotelCode}",
       "total_expenses": "Total des dépenses",
       "total_revenues": "Total des revenus",
       "net_profit": "Bénéfice net",
