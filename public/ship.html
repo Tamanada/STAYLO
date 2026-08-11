@@ -2509,7 +2509,13 @@ body.sched-landscape-fs .sched-grid-wrap{ max-height: calc(100dvh - 60px); }
 .sched-date-strip{
   display:grid;background:var(--light);min-width:100%;
 }
+/* box-sizing:border-box so each grid child's 1px right border is
+   INCLUDED in its track width, not added to it. Without this the child
+   overflows its track by 1px per cell → over 31 columns in Month view
+   the strip headers drift right of the shift cells underneath (which
+   use table border-collapse and don't have the same overflow). */
 .sched-date-strip .cell{
+  box-sizing:border-box;
   padding:5px 3px;text-align:center;
   border-right:1px solid var(--border);border-bottom:1px solid var(--border);
   cursor:pointer;transition:background .15s;
@@ -20756,7 +20762,13 @@ function renderScheduleTab(){
   // Left "TEAM MEMBER" column uses the --daygrid-name-w CSS var so a drag
   // on its resize handle live-updates both the date-strip header AND the
   // .sched-grid .emp-cell columns in one go.
-  const stripCols = `var(--daygrid-name-w, 170px) repeat(${days.length}, 1fr) 80px`;
+  // Day columns use the SAME calc() formula as the table's <colgroup>
+  // (see dayWidthCalc below). Was `1fr` — mathematically identical but
+  // browsers can round grid tracks and table calc tracks differently,
+  // producing a ½-column visual drift by day 31 in Month view. Using the
+  // exact same expression on both sides guarantees identical widths.
+  const _stripDayW = `calc((100% - var(--daygrid-name-w, 170px) - 80px) / ${days.length})`;
+  const stripCols = `var(--daygrid-name-w, 170px) repeat(${days.length}, ${_stripDayW}) 80px`;
   const dateStrip = el('div',{class:'sched-date-strip'+(_schedViewMode==='month'?' month':''),style:`grid-template-columns:${stripCols};min-width:${stripMinW}px`});
   const _teamStrip = el('div',{class:'cell side'},'TEAM MEMBER');
   _teamStrip.style.position = 'sticky'; _teamStrip.style.left = '0';   // ensure handle stays visible
