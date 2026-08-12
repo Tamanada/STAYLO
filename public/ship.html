@@ -5572,7 +5572,11 @@ function initOnboarding(){
 function visibleChannels(){
   /* Strict whitelist (KISS, role-grained):
    * 1. Audience gate: only groups with audience===user.audience pass
-   * 2. Inside staff:
+   * 2. Hotel-fit gate (applies to EVERYONE, managers included): a channel
+   *    that only makes sense for a role or department the hotel does not
+   *    staff is hidden. "No valet on the payroll → no #valet-desk channel."
+   *    Auto-appears the moment a matching employee is added.
+   * 3. Inside staff:
    *    - mgmt channels   → managers only
    *    - dept channels   → only matching department
    *    - roles[] channels → only listed roles (managers always bypass)
@@ -5580,13 +5584,27 @@ function visibleChannels(){
    * Anything not explicitly opened stays invisible. */
   const u = State.user;
   const isMgr = MGMT_ROLES.includes(u.role);
+  // Snapshot the hotel's actual staffing so the fit-gate below is a hash
+  // lookup, not a per-channel O(emps) scan. Managers-only groups skip the
+  // gate — mgmt channels stay available even at a solo-founder hotel with
+  // no ops staff yet.
+  const _emps = (typeof getEmployees === 'function') ? getEmployees() : [];
+  const _rolesInHouse = new Set(_emps.map(e => e.role).filter(Boolean));
+  const _deptsInHouse = new Set(_emps.map(e => e.department).filter(Boolean));
+  const hotelFits = (c) => {
+    if(c.mgmt) return true;               // managers channels stay always-on
+    if(c.dept && !_deptsInHouse.has(c.dept)) return false;
+    if(c.roles && !c.roles.some(r => _rolesInHouse.has(r))) return false;
+    return true;
+  };
   const out = [];
   for(const g of CHANNEL_GROUPS){
     if(g.audience !== u.audience) continue;
     const items = g.items.filter(c=>{
       if(u.audience !== 'staff') return true;
+      if(!hotelFits(c)) return false;
       if(c.mgmt && !isMgr) return false;
-      if(c.dept && c.dept !== u.department) return false;
+      if(c.dept && c.dept !== u.department && !isMgr) return false;
       if(c.roles && !isMgr && !c.roles.includes(u.role)) return false;
       return true;
     });
@@ -12349,6 +12367,11 @@ function saveEmployees(a){
       warnStorageFullOnce('roster save');
     }catch(_){}
   }
+  // Roster composition drives visibleChannels() (hire the first Valet →
+  // #valet-desk appears; fire the last Housekeeper → #housekeeping
+  // hides). Refresh the sidebar so the channel list tracks the payroll
+  // without waiting for the next view switch.
+  try { if(typeof renderChannels === 'function') renderChannels(); } catch(_){}
   return ok;
 }
 function findEmployee(id){return getEmployees().find(e=>e.id===id)||null}
