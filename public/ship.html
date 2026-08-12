@@ -2567,19 +2567,11 @@ body.sched-landscape-fs .sched-grid-wrap{ max-height: calc(100dvh - 60px); }
 .sched-grid th.has-event:not(.today),
 .sched-grid td.has-event:not(.today){
   background:#F7F1FE;
-  box-shadow:inset 2px 0 0 var(--purple), inset -2px 0 0 var(--purple);
 }
 .sched-grid th.has-event:not(.today){color:var(--purple);font-weight:800}
-/* Both today AND a special event — keep orange bg, add purple bottom
-   accent on the strip + a purple dashed top ring on the grid cells so the
-   double signal is visible without breaking the "today" cue. */
-.sched-date-strip .cell.today.has-event{
-  box-shadow:inset 0 -3px 0 var(--orange), inset 0 3px 0 var(--purple);
-}
-.sched-grid th.today.has-event,
-.sched-grid td.today.has-event{
-  box-shadow:inset 2px 0 0 var(--orange), inset -2px 0 0 var(--orange), inset 0 3px 0 var(--purple);
-}
+/* Both today AND a special event — orange bg keeps the today cue (via
+   the existing today rules); no extra chrome to avoid visual noise.
+   The purple pin still shows in the day header itself. */
 .sched-grid .emp-cell{text-align:left;padding:8px 12px;font-size:12px;background:#fff;color:var(--navy);position:sticky;left:0;z-index:1;width:var(--daygrid-name-w);min-width:var(--daygrid-name-w);max-width:var(--daygrid-name-w);box-shadow:1px 0 0 var(--border)}
 /* Role on top (small caps, gray, light), name below (bold, navy). The
    role line lives next to the drag handle dots — at-a-glance the manager
