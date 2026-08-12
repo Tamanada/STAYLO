@@ -32,6 +32,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { useParams, useNavigate, useOutletContext, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { AMENITY_META } from '../../lib/amenityIcons'
+import AnnualCalendarImportModal from '../../components/rooms/AnnualCalendarImportModal'
 
 // Tiny helper — turn "king" / "extra_bed" into "King", "Extra bed"
 const prettyLabel = k => (k || '').replace(/_/g, ' ').replace(/^\w/, c => c.toUpperCase())
@@ -422,6 +423,10 @@ export default function RoomManagement() {
   const bookings = ctx.bookings || []
   const packages = ctx.packages || []
   const refetchBookings = ctx.refetchBookings || (() => {})
+  const refetchRooms    = ctx.refetchRooms    || (() => {})
+  // Google Sheets annual calendar importer — modal opened from the empty
+  // state (and once we ship a header action, from a menu too).
+  const [importOpen, setImportOpen] = useState(false)
   // Upcoming rewards/specials per room — fetched from room_availability
   // for the next 60 days. The hover popover surfaces them so the
   // receptionist sees "Early bird ×3 days, Free spa Jun 8" without
@@ -827,6 +832,15 @@ export default function RoomManagement() {
   return (
     <>
       <style>{STYLES}</style>
+      <AnnualCalendarImportModal
+        propertyId={propertyId}
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={async ({ rooms: nR, availability: nA }) => {
+          await refetchRooms()
+          try { window.alert(`✓ Import réussi — ${nR} chambres · ${nA.toLocaleString('fr-FR')} lignes de prix.`) } catch(_){}
+        }}
+      />
       <div className={`rm-shell ${sidebarOpen ? '' : 'collapsed'}`}>
         {/* ── SIDEBAR ─────────────────────────────────────────── */}
         <div className="rm-sidebar">
@@ -973,7 +987,32 @@ export default function RoomManagement() {
               <div style={{ padding: 60, textAlign: 'center', color: '#636E72' }}>Loading rooms…</div>
             ) : rooms.length === 0 ? (
               <div style={{ padding: 60, textAlign: 'center', color: '#636E72' }}>
-                No rooms configured yet. <Link to={`/dashboard/property/${propertyId}/manage`}>Add rooms in Manage → Chambres</Link>.
+                <div style={{ fontSize: 15, marginBottom: 16 }}>No rooms configured yet.</div>
+                <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => setImportOpen(true)}
+                    style={{
+                      background: 'linear-gradient(135deg,#FF6B00,#FF1F70)', color: '#fff', border: 0,
+                      padding: '12px 22px', borderRadius: 10, fontWeight: 800, cursor: 'pointer',
+                      fontSize: 14, boxShadow: '0 6px 16px rgba(255,31,112,.3)',
+                    }}
+                  >
+                    📥 Importer depuis Google Sheets
+                  </button>
+                  <Link
+                    to={`/dashboard/property/${propertyId}/manage`}
+                    style={{
+                      background: '#F7F5F0', color: '#1A1F2E', textDecoration: 'none',
+                      padding: '12px 22px', borderRadius: 10, fontWeight: 700, fontSize: 14,
+                      display: 'inline-flex', alignItems: 'center',
+                    }}
+                  >
+                    + Ajouter manuellement
+                  </Link>
+                </div>
+                <div style={{ fontSize: 11, marginTop: 14, color: '#9CA3AF' }}>
+                  Import = 1 ligne par chambre + 365 prix par ligne. Ta feuille doit être partagée « Anyone with the link → Viewer » (ou publiée sur le web).
+                </div>
               </div>
             ) : view === 'timeline' ? (
               <TimelineView rooms={filteredRooms} bookings={bookings}
