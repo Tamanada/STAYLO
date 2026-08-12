@@ -10557,6 +10557,18 @@ const DEFAULT_HOTEL_SETTINGS = {
   hotel_legal_info: '',     // free text — Tax ID / SIRET / VAT / Company N° / etc.
   hotel_logo:       '',     // base64 data URL (PNG/JPG/SVG) — capped at 500KB
 
+  // ── Hotel physical inventory (drives RevPAR / occupancy ceiling in report) ──
+  // total_rooms = number of guest rooms in inventory (sellable keys).
+  //   0 → report skips ADR / RevPAR / Occupancy sections with a "set
+  //   total_rooms in Settings" note.
+  total_rooms: 0,
+
+  // ── Accounting: monthly depreciation charge (informational) ──
+  // Simple flat number the accountant sets once (asset register lives in
+  // their software). Appears as a Depreciation line in the monthly report
+  // so net income reflects it. Zero → line hidden.
+  monthly_depreciation: 0,
+
   // ── Payroll policy: how to treat hours where worked < planned ──
   //   'tolerate' → absorb shortfalls within X hours/month, no deduction
   //   'deduct'   → any shortfall billed at the hourly rate
@@ -15802,12 +15814,38 @@ function renderDailyExpensesLedger(body){
 // manually. This is INFORMATIONAL, not a tax filing.
 const VAT_RATES = { TH: 7, ID: 11, MY: 6, PH: 12, VN: 10, SG: 9, KH: 10, LA: 10, MM: 5, JP: 10 };
 
+// Country-specific statutory payroll & tax constants — the monthly report
+// derives its Withholding Tax / Social Security / Provident Fund lines
+// from these so accountants get filing-ready figures without a plugin
+// per country. Defaults come from the local Revenue Code:
+//   · TH: WHT 3% on services (PND.53), SSF 5% employer capped 750 THB/mo/emp,
+//         Service Charge 10% (Labor Protection Act — pooled to staff, not
+//         house revenue; shown for reference), PF 0% (opt-in per hotel)
+//   · Other countries fall back to no statutory lines (report degrades gracefully)
+const STATUTORY_BY_COUNTRY = {
+  TH: {
+    wht_service_pct:      3,     // withholding on service payments (PND.53)
+    ssf_employer_pct:     5,     // employer social security contribution
+    ssf_cap_per_emp_thb: 750,    // monthly cap per employee
+    service_charge_pct:  10,     // pooled to staff — shown for reference
+    pf_employer_pct:      0,     // provident fund, opt-in
+  },
+  // Add other jurisdictions as we validate their statutory frameworks.
+};
+
 function buildMonthlyReport(month){
   const sym = (typeof curSym === 'function') ? curSym() : '฿';
   const settings = (typeof getHotelSettings === 'function') ? getHotelSettings() : {};
   const currencyCode = (settings.currency || 'THB').toUpperCase();
   const country = (settings.country || 'TH').toUpperCase();
   const vatRate = VAT_RATES[country] || 0;
+  const statutory = STATUTORY_BY_COUNTRY[country] || null;
+  const totalRooms = parseInt(settings.total_rooms, 10) || 0;
+  const monthlyDepreciation = parseFloat(settings.monthly_depreciation) || 0;
+  const daysInMonth = (() => {
+    const [y, m] = month.split('-').map(Number);
+    return new Date(Date.UTC(y, m, 0)).getUTCDate();
+  })();
 
   const cur = (getFinanceData().months || {})[month] || _emptyFinMonth();
   const emps = getEmployees().filter(e => !e.is_self_user);
@@ -15884,11 +15922,120 @@ function buildMonthlyReport(month){
     autoFixed:   sumDeFixedForMonth(month),
     payroll,
     dailyOps:    sumDeNonFixedForMonth(month),
+    depreciation: monthlyDepreciation,
   };
   expensesTotals.total = expensesTotals.manualFixed + expensesTotals.autoFixed
-                       + expensesTotals.payroll + expensesTotals.dailyOps;
+                       + expensesTotals.payroll + expensesTotals.dailyOps
+                       + expensesTotals.depreciation;
 
   const net = revenues.total - expensesTotals.total;
+
+  // ── Hotel operational KPIs (industry standard) ──
+  // ADR = Room Revenue ÷ Rooms Sold — needs PMS bookings data (which lives
+  //   in ship_bookings, not queried here yet). Marked "requires PMS".
+  // Occupancy = Rooms Sold ÷ (Rooms Available × Days) — same requirement.
+  // RevPAR = Room Revenue ÷ (Rooms Available × Days). Computable from
+  //   just total_rooms + revenues.lodging. Renders when total_rooms > 0.
+  const roomsAvailable = totalRooms * daysInMonth;
+  const hotelKPIs = {
+    totalRooms,
+    daysInMonth,
+    roomsAvailable,
+    revPAR: (totalRooms > 0 && roomsAvailable > 0) ? (revenues.lodging / roomsAvailable) : null,
+    adr:      null,   // needs rooms_sold from PMS
+    occupancyPct: null,   // needs rooms_sold from PMS
+    // What we're missing to unlock ADR/occupancy — surfaced in the report
+    // so the accountant knows why the cell says "—".
+    pmsIntegrated: false,
+  };
+
+  // ── COGS F&B breakdown ──
+  // Isolates food_beverage category expenses so the F&B gross margin can
+  // be computed (industry standard: 30–35% food cost). Uses the existing
+  // "food_beverage" DE category — no schema change.
+  const cogsFnb = expenses
+    .filter(e => (e.category || 'other') === 'food_beverage')
+    .reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
+  const fnbGrossMargin = revenues.fnb > 0 ? (revenues.fnb - cogsFnb) : 0;
+  const fnbGrossMarginPct = revenues.fnb > 0 ? Math.round(((revenues.fnb - cogsFnb) / revenues.fnb) * 100) : null;
+
+  // ── Statutory payroll charges (Thailand default; extendable per country) ──
+  // These are the OWNER-side (employer) contributions — the employee also
+  // pays their share via withholding, but that's separately deducted on
+  // the payslip. Numbers here represent what the HOTEL owes on top of the
+  // gross payroll, so they belong in the expense-side of the P&L.
+  const nEmps = emps.length;
+  const stat = statutory ? {
+    country,
+    // Social Security Fund: 5% of gross salary, capped at 750 THB/mo/emp
+    ssf: emps.reduce((s, e) => {
+      const gross = parseFloat(e.monthly_salary_thb) || 0;
+      const contrib = Math.min(gross * (statutory.ssf_employer_pct / 100), statutory.ssf_cap_per_emp_thb);
+      return s + contrib;
+    }, 0),
+    ssfRate: statutory.ssf_employer_pct,
+    ssfCap:  statutory.ssf_cap_per_emp_thb,
+    // Withholding Tax on service payments (informational — the accountant
+    // typically extracts this from vendor invoices, we surface the rate)
+    whtRate: statutory.wht_service_pct,
+    // Service charge — pooled to staff by law (TH LPA), shown for context
+    serviceChargeRate: statutory.service_charge_pct,
+    serviceCharge: (revenues.fnb + revenues.ancillary) * (statutory.service_charge_pct / 100),
+    // Provident Fund — opt-in per hotel; 0 unless the hotel enrolls
+    pfRate: statutory.pf_employer_pct,
+    pf: payroll * (statutory.pf_employer_pct / 100),
+  } : null;
+
+  // ── Cash-flow statement (3 sections — IFRS/TFRS standard) ──
+  // Operating: cash generated by the business (revenues net of operational
+  //   expenses paid in cash).
+  // Investing: cash used for or generated by asset transactions. We don't
+  //   have an asset register yet — set to 0, surface note in report.
+  // Financing: owner top-ups / withdrawals from the cash register.
+  const cashInflowOps  = revenues.total;                    // simplified: revenues assumed collected in period
+  const cashOutflowOps = expensesTotals.dailyOps + expensesTotals.payroll
+                       + expensesTotals.manualFixed + expensesTotals.autoFixed;
+  const cashflow = {
+    operating: cashInflowOps - cashOutflowOps,
+    investing: 0,                                          // needs asset register
+    financing: cashMovements.reduce((s, m) => s + (parseFloat(m.amount) || 0), 0),
+  };
+  cashflow.net = cashflow.operating + cashflow.investing + cashflow.financing;
+
+  // ── Year-to-date cumul (Jan → current month) ──
+  const monthsInYear = (() => {
+    const list = [];
+    const [y, m] = month.split('-').map(Number);
+    for(let i = 1; i <= m; i++){
+      list.push(y + '-' + String(i).padStart(2, '0'));
+    }
+    return list;
+  })();
+  const ytd = monthsInYear.reduce((acc, mo) => {
+    const md = (getFinanceData().months || {})[mo] || _emptyFinMonth();
+    const rev = sumOf(md.rev_lodging) + sumOf(md.rev_fnb)
+              + sumOf(md.rev_ancillary) + sumOf(md.rev_shop);
+    const exp = sumOf(md.fixed) + sumDeFixedForMonth(mo)
+              + payroll + sumDeNonFixedForMonth(mo) + monthlyDepreciation;
+    acc.revenues += rev;
+    acc.expenses += exp;
+    acc.months.push({ month: mo, revenues: rev, expenses: exp, net: rev - exp });
+    return acc;
+  }, { revenues: 0, expenses: 0, months: [] });
+  ytd.net = ytd.revenues - ytd.expenses;
+  // Same period last year — same subset of months, previous year
+  const lyMonths = monthsInYear.map(mo => (Number(mo.slice(0,4)) - 1) + mo.slice(4));
+  const ytdLY = lyMonths.reduce((acc, mo) => {
+    const md = (getFinanceData().months || {})[mo] || _emptyFinMonth();
+    const rev = sumOf(md.rev_lodging) + sumOf(md.rev_fnb)
+              + sumOf(md.rev_ancillary) + sumOf(md.rev_shop);
+    const exp = sumOf(md.fixed) + sumDeFixedForMonth(mo)
+              + payroll + sumDeNonFixedForMonth(mo);
+    acc.revenues += rev;
+    acc.expenses += exp;
+    return acc;
+  }, { revenues: 0, expenses: 0 });
+  ytdLY.net = ytdLY.revenues - ytdLY.expenses;
 
   // ── VAT split (informational) ──
   // Assume revenues and DE expenses are shown VAT-inclusive. Compute the
@@ -15957,6 +16104,25 @@ function buildMonthlyReport(month){
     },
     revenueEvents: revEvents,
     commissions,
+    // Extended sections (2026-08-12) — hotel operational KPIs, F&B COGS,
+    // Thai statutory payroll charges, 3-section cash-flow, YTD comparative.
+    hotelKPIs,
+    fnb: {
+      revenue: revenues.fnb,
+      cogs: cogsFnb,
+      grossMargin: fnbGrossMargin,
+      grossMarginPct: fnbGrossMarginPct,
+    },
+    statutory: stat,
+    cashflow,
+    ytd: {
+      current: ytd,
+      lastYear: ytdLY,
+      months: monthsInYear,
+      deltaRevPct:  ytdLY.revenues ? Math.round(((ytd.revenues - ytdLY.revenues) / ytdLY.revenues) * 100) : null,
+      deltaExpPct:  ytdLY.expenses ? Math.round(((ytd.expenses - ytdLY.expenses) / ytdLY.expenses) * 100) : null,
+      deltaNetPct:  ytdLY.net ? Math.round(((ytd.net - ytdLY.net) / Math.abs(ytdLY.net)) * 100) : null,
+    },
     // Compliance / audit flags — what's missing that a real accountant
     // would flag. Rendered as a "Data quality" section in the report.
     missing: {
@@ -15967,6 +16133,8 @@ function buildMonthlyReport(month){
       revenues:     revenues.total === 0,
       payrollDetail: payrollRows.length === 0,
       receiptNumbers: expenses.length > 0 && expenses.every(e => !e.receipt_no),
+      totalRooms:   totalRooms === 0,
+      depreciation: monthlyDepreciation === 0,
     },
   };
 }
@@ -16097,18 +16265,27 @@ footer .fkey{font-family:ui-monospace,'SF Mono',Menlo,monospace}
 </style></head><body>`;
 
   // ─── Cover page ───────────────────────────────────────────────────
+  // Logo (if uploaded to Settings) → left of the hotel name. Fixed 96px
+  // box so a large logo doesn't push the ref-box off screen.
+  const logoBlock = r.hotel.logo
+    ? `<img class="hotel-logo" src="${esc(r.hotel.logo)}" alt="Hotel logo" style="max-width:96px;max-height:96px;object-fit:contain;border-radius:8px;flex-shrink:0">`
+    : '';
   html += `<section class="cover">
-    <div>
-      <div class="brand">SHIP · Monthly accounting report</div>
-      <h1>${esc(r.hotel.name)}</h1>
-      <div class="period">${esc(r.period.label)} · ${esc(r.period.startDate)} → ${esc(r.period.endDate)}</div>
-      ${r.hotel.address ? `<div class="hotel-addr">${esc(r.hotel.address)}</div>` : ''}
-      ${r.hotel.legalInfo ? `<div class="hotel-legal">${esc(r.hotel.legalInfo)}</div>` : ''}
+    <div style="display:flex;gap:20px;align-items:flex-start;min-width:0">
+      ${logoBlock}
+      <div style="min-width:0">
+        <div class="brand">SHIP · Monthly accounting report</div>
+        <h1>${esc(r.hotel.name)}</h1>
+        <div class="period">${esc(r.period.label)} · ${esc(r.period.startDate)} → ${esc(r.period.endDate)}</div>
+        ${r.hotel.address ? `<div class="hotel-addr">${esc(r.hotel.address)}</div>` : ''}
+        ${r.hotel.legalInfo ? `<div class="hotel-legal">${esc(r.hotel.legalInfo)}</div>` : ''}
+      </div>
     </div>
     <div class="ref-box">
       <div class="ref-lbl">Report reference</div>
       <div class="ref-val">${esc(r.period.reference)}</div>
       <div class="meta-line">Currency: <strong>${esc(cur)}</strong>${r.hotel.vatRate ? ` · VAT ${r.hotel.vatRate}%` : ''}</div>
+      ${r.hotelKPIs.totalRooms ? `<div class="meta-line">Rooms: <strong>${r.hotelKPIs.totalRooms}</strong> · ${r.hotelKPIs.daysInMonth}d</div>` : ''}
       <div class="meta-line">Generated ${new Date(r.period.generatedAt).toLocaleString('en-GB', {dateStyle:'medium', timeStyle:'short'})}</div>
       ${r.period.generatedBy ? `<div class="meta-line">By ${esc(r.period.generatedBy)}</div>` : ''}
     </div>
@@ -16122,6 +16299,9 @@ footer .fkey{font-family:ui-monospace,'SF Mono',Menlo,monospace}
   if(r.missing.openingBal)   missingList.push('Cashbook opening balance — set it to anchor the cash trail.');
   if(r.missing.revenues)     missingList.push('No revenue entries recorded this month — add revenues in Comptabilité.');
   if(r.missing.receiptNumbers && r.de.expenses.length) missingList.push('No receipt numbers on any of this month\'s expenses — capture them for tax audit.');
+  if(r.missing.totalRooms)   missingList.push('Total room count not set — unlocks RevPAR / occupancy KPIs. Settings → Hotel inventory.');
+  if(r.missing.depreciation) missingList.push('Monthly depreciation not set — net profit is overstated without it. Ask your accountant for the flat figure.');
+  if(!r.hotelKPIs.pmsIntegrated && r.hotelKPIs.totalRooms > 0) missingList.push('PMS integration not connected — ADR & occupancy stay blank until room-nights-sold flows in.');
   if(missingList.length){
     html += `<div class="dq">
       <h3>⚠︎ Data quality — ${missingList.length} item${missingList.length > 1 ? 's' : ''} to fix before filing</h3>
@@ -16149,6 +16329,38 @@ footer .fkey{font-family:ui-monospace,'SF Mono',Menlo,monospace}
     </div>
   </section>`;
 
+  // ─── Hotel operational KPIs (industry standard) ────────────────────
+  html += `<h2>Hotel operational KPIs <span class="h2-sub">${r.hotelKPIs.totalRooms ? r.hotelKPIs.totalRooms + ' rooms · ' + r.hotelKPIs.daysInMonth + ' days · ' + fmtN(r.hotelKPIs.roomsAvailable) + ' available room-nights' : 'set total_rooms in Settings to unlock'}</span></h2>
+    <table class="summary">
+      <tr>
+        <td>RevPAR <span style="color:var(--muted);font-size:10px">Revenue per Available Room</span></td>
+        <td class="right num">${r.hotelKPIs.revPAR != null ? fmtN(r.hotelKPIs.revPAR) : '—'}</td>
+        <td class="note">${r.hotelKPIs.revPAR != null ? 'Room revenue ÷ (rooms × days)' : 'Requires total_rooms > 0'}</td>
+      </tr>
+      <tr>
+        <td>ADR <span style="color:var(--muted);font-size:10px">Average Daily Rate</span></td>
+        <td class="right num">—</td>
+        <td class="note">Requires PMS integration (room-nights sold)</td>
+      </tr>
+      <tr>
+        <td>Occupancy</td>
+        <td class="right num">—</td>
+        <td class="note">Requires PMS integration (room-nights sold)</td>
+      </tr>
+    </table>`;
+
+  // ─── F&B gross margin ──────────────────────────────────────────────
+  if(r.fnb.revenue > 0 || r.fnb.cogs > 0){
+    const marginColor = (r.fnb.grossMarginPct != null && r.fnb.grossMarginPct >= 60) ? 'var(--ok)'
+                       : (r.fnb.grossMarginPct != null && r.fnb.grossMarginPct >= 50) ? 'var(--warn)' : 'var(--danger)';
+    html += `<h2>F&B gross margin <span class="h2-sub">industry benchmark: 65–70% food margin</span></h2>
+      <table class="summary">
+        ${rowMoney('F&B revenue', r.fnb.revenue)}
+        ${rowMoney('F&B cost of goods sold', -r.fnb.cogs, 'food_beverage category from DE')}
+        <tr class="grand"><td>Gross margin${r.fnb.grossMarginPct != null ? ` (<span style="color:${marginColor}">${r.fnb.grossMarginPct}%</span>)` : ''}</td><td class="right num">${fmtN(r.fnb.grossMargin)}</td><td></td></tr>
+      </table>`;
+  }
+
   // ─── VAT snapshot (informational) ──────────────────────────────────
   if(r.hotel.vatRate){
     html += `<h2>Value-Added Tax snapshot <span class="h2-sub">${r.hotel.vatRate}% — informational, not a filing</span></h2>
@@ -16156,6 +16368,21 @@ footer .fkey{font-family:ui-monospace,'SF Mono',Menlo,monospace}
         ${rowMoney(`VAT collected on revenues (${r.hotel.vatRate}% of gross)`, r.vat.fromRevenues, 'Base ex-VAT: ' + fmtN(r.vat.revenueExVat))}
         ${rowMoney(`VAT paid on daily expenses (${r.hotel.vatRate}% of gross)`, r.vat.fromExpenses, 'Base ex-VAT: ' + fmtN(r.vat.expenseExVat))}
         <tr class="grand"><td>Net VAT payable (indicative)</td><td class="right num">${fmtN(r.vat.netPayable)}</td><td></td></tr>
+      </table>`;
+  }
+
+  // ─── Statutory payroll charges (country-specific) ──────────────────
+  if(r.statutory){
+    html += `<h2>Statutory payroll charges <span class="h2-sub">${esc(r.statutory.country)} — employer side</span></h2>
+      <table class="summary">
+        ${rowMoney(`Social Security Fund contribution (${r.statutory.ssfRate}% of salary, cap ${fmtN(r.statutory.ssfCap)}/emp)`, r.statutory.ssf, r.payroll.employees + ' employee(s)')}
+        ${r.statutory.pfRate > 0 ? rowMoney(`Provident Fund contribution (${r.statutory.pfRate}% of salary)`, r.statutory.pf, 'employer share') : `<tr><td>Provident Fund contribution</td><td class="right num">—</td><td class="note">Not enrolled (opt-in per hotel)</td></tr>`}
+        ${rowMoney(`Service charge (${r.statutory.serviceChargeRate}% of F&B + ancillary)`, r.statutory.serviceCharge, 'Pooled to staff per LPA — reference only')}
+        <tr>
+          <td>Withholding tax rate (services, PND.53)</td>
+          <td class="right num">${r.statutory.whtRate}%</td>
+          <td class="note">Applied at invoice time — see vendor invoices</td>
+        </tr>
       </table>`;
   }
 
@@ -16177,6 +16404,7 @@ footer .fkey{font-family:ui-monospace,'SF Mono',Menlo,monospace}
       ${rowMoney('Fixed from DE (rent / utilities / insurance)', r.expenses.autoFixed)}
       ${rowMoney('Payroll', r.expenses.payroll, r.payroll.employees + ' employee(s)')}
       ${rowMoney('Daily operational expenses', r.expenses.dailyOps, r.de.expenses.length + ' receipt(s)')}
+      ${r.expenses.depreciation > 0 ? rowMoney('Depreciation & amortization', r.expenses.depreciation, 'non-cash — flat monthly per Settings') : ''}
       <tr class="grand"><td>Total expenses</td><td class="right num">${fmtN(r.expenses.total)}</td><td></td></tr>
     </table>`;
 
@@ -16248,6 +16476,31 @@ footer .fkey{font-family:ui-monospace,'SF Mono',Menlo,monospace}
     }
     html += `</tbody></table>`;
   }
+
+  // ─── Cash-flow statement (3 sections — IFRS/TFRS standard) ────────
+  html += `<h2>Cash-flow statement <span class="h2-sub">operating · investing · financing</span></h2>
+    <table class="summary">
+      ${rowMoney('Cash from operating activities', r.cashflow.operating, 'Revenues − opex (excl. depreciation)')}
+      ${rowMoney('Cash from investing activities', r.cashflow.investing, 'Requires asset register — 0 for now')}
+      ${rowMoney('Cash from financing activities', r.cashflow.financing, r.cashbook.movements.length + ' owner top-up/withdrawal')}
+      <tr class="grand"><td>Net change in cash</td><td class="right num">${fmtN(r.cashflow.net)}</td><td></td></tr>
+    </table>`;
+
+  // ─── Year-to-date comparative ──────────────────────────────────────
+  const ytdRevD = r.ytd.deltaRevPct;
+  const ytdExpD = r.ytd.deltaExpPct;
+  const ytdNetD = r.ytd.deltaNetPct;
+  const deltaCell = (v) => v == null ? '—' :
+    `<span style="color:${v >= 0 ? 'var(--ok)' : 'var(--danger)'}">${v >= 0 ? '+' : ''}${v}%</span>`;
+  html += `<h2>Year-to-date <span class="h2-sub">Jan → ${esc(r.period.label)} · vs same period last year</span></h2>
+    <table>
+      <thead><tr><th></th><th class="right">This year (${esc(cur)})</th><th class="right">Last year (${esc(cur)})</th><th class="right">Δ %</th></tr></thead>
+      <tbody>
+        <tr><td>Revenues</td><td class="right num">${fmtN(r.ytd.current.revenues)}</td><td class="right num">${fmtN(r.ytd.lastYear.revenues)}</td><td class="right">${deltaCell(ytdRevD)}</td></tr>
+        <tr><td>Expenses</td><td class="right num">${fmtN(r.ytd.current.expenses)}</td><td class="right num">${fmtN(r.ytd.lastYear.expenses)}</td><td class="right">${deltaCell(ytdExpD)}</td></tr>
+        <tr class="grand"><td>Net ${r.ytd.current.net >= 0 ? 'profit' : 'loss'}</td><td class="right num">${fmtN(r.ytd.current.net)}</td><td class="right num">${fmtN(r.ytd.lastYear.net)}</td><td class="right">${deltaCell(ytdNetD)}</td></tr>
+      </tbody>
+    </table>`;
 
   // ─── Detailed DE list (with receipt #) ─────────────────────────────
   if(r.de.expenses.length){
@@ -16335,6 +16588,43 @@ function _reportToCSV(r){
   for(const c of r.commissions.rows){
     push((c.emp.first_name || '') + ' ' + (c.emp.last_name || ''), c.emp.role || '', c.total);
   }
+  push('');
+  push('');
+  push('=== Hotel operational KPIs ===');
+  push('Metric', 'Value', 'Note');
+  push('Total rooms', r.hotelKPIs.totalRooms || 0, r.hotelKPIs.totalRooms ? '' : 'set total_rooms in Settings');
+  push('Room-nights available', r.hotelKPIs.roomsAvailable || 0, r.hotelKPIs.daysInMonth + ' days');
+  push('RevPAR', r.hotelKPIs.revPAR != null ? r.hotelKPIs.revPAR : '', 'Room revenue / room-nights available');
+  push('ADR',    '', 'Requires PMS integration');
+  push('Occupancy %', '', 'Requires PMS integration');
+  push('');
+  push('=== F&B gross margin ===');
+  push('Line', 'Amount', 'Note');
+  push('F&B revenue', r.fnb.revenue);
+  push('F&B COGS',    r.fnb.cogs, 'food_beverage category');
+  push('Gross margin', r.fnb.grossMargin, r.fnb.grossMarginPct != null ? r.fnb.grossMarginPct + '%' : '');
+  if(r.statutory){
+    push('');
+    push('=== Statutory payroll (' + r.statutory.country + ', employer side) ===');
+    push('Line', 'Amount', 'Note');
+    push('Social Security Fund', r.statutory.ssf, r.statutory.ssfRate + '% capped at ' + r.statutory.ssfCap + '/emp');
+    push('Provident Fund',       r.statutory.pf, r.statutory.pfRate + '%');
+    push('Service charge',       r.statutory.serviceCharge, r.statutory.serviceChargeRate + '% (pooled to staff)');
+    push('Withholding tax rate', r.statutory.whtRate + '%', 'PND.53, applied on services');
+  }
+  push('');
+  push('=== Cash-flow statement ===');
+  push('Activity', 'Amount');
+  push('Operating', r.cashflow.operating);
+  push('Investing', r.cashflow.investing);
+  push('Financing', r.cashflow.financing);
+  push('Net change in cash', r.cashflow.net);
+  push('');
+  push('=== Year-to-date comparative ===');
+  push('Line', 'This year', 'Last year', 'Delta %');
+  push('Revenues', r.ytd.current.revenues, r.ytd.lastYear.revenues, r.ytd.deltaRevPct == null ? '' : r.ytd.deltaRevPct + '%');
+  push('Expenses', r.ytd.current.expenses, r.ytd.lastYear.expenses, r.ytd.deltaExpPct == null ? '' : r.ytd.deltaExpPct + '%');
+  push('Net',      r.ytd.current.net,      r.ytd.lastYear.net,      r.ytd.deltaNetPct == null ? '' : r.ytd.deltaNetPct + '%');
   push('');
   push('=== Detailed expenses ===');
   push('Date', 'Vendor', 'Receipt #', 'Category', 'Payment', 'Amount', 'Currency', 'Description', 'Photo URL', 'Proof URL');
