@@ -20988,9 +20988,13 @@ function renderScheduleTab(){
         const cls = planned===0 ? '' : (actual > planned ? ' over' : (actual < planned-15 ? ' under' : ''));
         cellChildren.push(el('div',{class:'cell-actual'+cls,title:`Actually worked ${fmtDuration(actual)} (clocked in/out)`}, '✓ '+fmtDuration(actual)));
       }
-      // Task badge if the employee has any tasks scheduled for this day
+      // Task badge — only if the employee is actually working that day.
+      // No shift or an absence → no task badge: showing tasks on a day-off
+      // was noise (the person isn't there to do them). Manager can still
+      // assign tasks in the Tasks tab; if a shift is added later, the
+      // badge appears automatically on next render.
       const empTasks = tasksAssignedToEmployee(_tasksByDate.get(day) || [], emp);
-      if(empTasks.length){
+      if(empTasks.length && shift && shift.kind !== 'absence'){
         cellChildren.push(el('div',{
           class:'cell-tasks',
           title: `${empTasks.length} task${empTasks.length>1?'s':''}:\n` + empTasks.map(t => '• '+t.title).join('\n') + '\n\nClick to open',
