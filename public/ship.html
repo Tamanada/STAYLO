@@ -14910,6 +14910,7 @@ function showAddExpenseModal(month, onSaved){
     parsing: false,
     date: new Date().toISOString().slice(0, 10),
     vendor: '',
+    receipt_no: '',
     amount: '',
     currency: defaultCur,
     category: 'other',
@@ -14932,6 +14933,7 @@ function showAddExpenseModal(month, onSaved){
 
   const dateIn   = input('exp-date', state.date, { type: 'date' });
   const vendorIn = input('exp-vendor', state.vendor, { type: 'text', placeholder: 'e.g. Big C, Global House…' });
+  const receiptNoIn = input('exp-receipt-no', state.receipt_no, { type: 'text', placeholder: 'e.g. 000-123456, INV-2026-089' });
   const amountIn = input('exp-amount', state.amount, { type: 'number', placeholder: '0', step: '0.01', min: '0' });
   const currencyIn = input('exp-currency', state.currency, { type: 'text', maxLength: 3, style: 'text-transform:uppercase' });
   currencyIn.style.cssText += ';text-transform:uppercase;font-family:monospace';
@@ -15080,6 +15082,7 @@ function showAddExpenseModal(month, onSaved){
       // Populate fields; user can still edit before Save.
       if(d.date)        { state.date = d.date;         dateIn.value = d.date; }
       if(d.vendor)      { state.vendor = d.vendor;     vendorIn.value = d.vendor; }
+      if(d.receipt_no)  { state.receipt_no = d.receipt_no; receiptNoIn.value = d.receipt_no; }
       if(typeof d.amount === 'number') { state.amount = d.amount; amountIn.value = d.amount; }
       if(d.currency)    { state.currency = d.currency; currencyIn.value = d.currency; }
       if(d.category)    { state.category = d.category; catSel.value = d.category; }
@@ -15114,7 +15117,10 @@ function showAddExpenseModal(month, onSaved){
       el('div', {}, label('Category'), catSel),
     ),
 
-    el('div', { style: 'margin-top:12px' }, label('Vendor / merchant'), vendorIn),
+    el('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px' },
+      el('div', {}, label('Vendor / merchant'), vendorIn),
+      el('div', {}, label('Receipt # (from vendor)'), receiptNoIn),
+    ),
 
     el('div', { style: 'display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:12px' },
       el('div', {}, label('Total amount'), amountIn),
@@ -15168,6 +15174,7 @@ function showAddExpenseModal(month, onSaved){
           const exp = {
             date: dateIn.value || new Date().toISOString().slice(0,10),
             vendor: vendorIn.value.trim(),
+            receipt_no: receiptNoIn.value.trim() || null,
             amount: amount,
             currency: (currencyIn.value || defaultCur).toUpperCase().slice(0,3),
             category: catSel.value,
@@ -15700,6 +15707,7 @@ function renderDailyExpensesLedger(body){
             el('div', { style: 'font-weight:700;color:var(--fg,#1A1A2E);white-space:nowrap;overflow:hidden;text-overflow:ellipsis' }, e.vendor || '—'),
             el('div', { style: 'font-size:11px;color:var(--muted,#666);display:flex;gap:8px;flex-wrap:wrap' },
               el('span', {}, e.date || '?'),
+              e.receipt_no ? el('span', { style: 'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#1A1A2E;background:#F7F5F0;padding:1px 6px;border-radius:4px;font-weight:700', title: 'Receipt / invoice number as printed on the bill' }, '# ' + e.receipt_no) : null,
               el('span', { style: 'color:#7E22CE;font-weight:700' }, p.em + ' ' + p.label),
               e.description ? el('span', {}, '· ' + e.description) : null,
               (e.payment_proof_url || e.payment_proof_thumb) ? (() => {
@@ -15760,8 +15768,19 @@ function renderDailyExpensesLedger(body){
  * (print / PDF-ready), CSV (accountant-friendly flat), and JSON (raw).
  * The modal shows the HTML preview + three download buttons.
  * ============================================================================ */
+// VAT / GST default rate per country. Used to split VAT from gross totals
+// so an accountant can see the taxable base without re-computing. Simple
+// single-rate lookup — hotels on split rates should edit their receipts
+// manually. This is INFORMATIONAL, not a tax filing.
+const VAT_RATES = { TH: 7, ID: 11, MY: 6, PH: 12, VN: 10, SG: 9, KH: 10, LA: 10, MM: 5, JP: 10 };
+
 function buildMonthlyReport(month){
   const sym = (typeof curSym === 'function') ? curSym() : '฿';
+  const settings = (typeof getHotelSettings === 'function') ? getHotelSettings() : {};
+  const currencyCode = (settings.currency || 'THB').toUpperCase();
+  const country = (settings.country || 'TH').toUpperCase();
+  const vatRate = VAT_RATES[country] || 0;
+
   const cur = (getFinanceData().months || {})[month] || _emptyFinMonth();
   const emps = getEmployees().filter(e => !e.is_self_user);
   const payroll = emps.reduce((s, e) => s + (parseFloat(e.monthly_salary_thb) || 0), 0);
@@ -15773,7 +15792,23 @@ function buildMonthlyReport(month){
   const revEvents = getRevenueEventsForMonth(month);
   const commissions = computeCommissionsForMonth(month);
 
-  // Group DE expenses by category
+  // ── Previous-month comparison (deltas on every KPI) ──
+  const prevMonth = (() => {
+    const [y, m] = month.split('-').map(Number);
+    const d = new Date(Date.UTC(y, m - 2, 1));
+    return d.toISOString().slice(0, 7);
+  })();
+  const prev = (getFinanceData().months || {})[prevMonth] || _emptyFinMonth();
+  const prevRevenues = sumOf(prev.rev_lodging) + sumOf(prev.rev_fnb)
+                     + sumOf(prev.rev_ancillary) + sumOf(prev.rev_shop);
+  const prevExpenses = sumOf(prev.fixed) + sumDeFixedForMonth(prevMonth)
+                     + payroll + sumDeNonFixedForMonth(prevMonth);
+  const pctDelta = (curV, prevV) => {
+    if(!prevV) return null;
+    return Math.round(((curV - prevV) / prevV) * 100);
+  };
+
+  // ── Group DE expenses by CATEGORY (existing) + by PAYMENT METHOD (new) ──
   const byCat = {};
   for(const e of expenses){
     const c = e.category || 'other';
@@ -15784,6 +15819,28 @@ function buildMonthlyReport(month){
     total: byCat[catId].reduce((s, e) => s + (parseFloat(e.amount) || 0), 0),
     count: byCat[catId].length,
   })).sort((a, b) => b.total - a.total);
+
+  const byPay = {};
+  for(const e of expenses){
+    const p = e.payment_method || 'cash';
+    (byPay[p] = byPay[p] || []).push(e);
+  }
+  const perPayTotals = Object.keys(byPay).map(pid => ({
+    pid, def: _paymentMethod(pid),
+    total: byPay[pid].reduce((s, e) => s + (parseFloat(e.amount) || 0), 0),
+    count: byPay[pid].length,
+  })).sort((a, b) => b.total - a.total);
+
+  // ── Payroll per employee (was collapsed to a single number) ──
+  const payrollRows = emps.slice()
+    .sort((a, b) => (parseFloat(b.monthly_salary_thb)||0) - (parseFloat(a.monthly_salary_thb)||0))
+    .map(e => ({
+      id: e.id,
+      name: ((e.first_name||'') + ' ' + (e.last_name||'')).trim() || '—',
+      role: e.role || '—',
+      department: e.department || '—',
+      monthly: parseFloat(e.monthly_salary_thb) || 0,
+    }));
 
   const revenues = {
     lodging: sumOf(cur.rev_lodging),
@@ -15803,23 +15860,56 @@ function buildMonthlyReport(month){
   expensesTotals.total = expensesTotals.manualFixed + expensesTotals.autoFixed
                        + expensesTotals.payroll + expensesTotals.dailyOps;
 
+  const net = revenues.total - expensesTotals.total;
+
+  // ── VAT split (informational) ──
+  // Assume revenues and DE expenses are shown VAT-inclusive. Compute the
+  // VAT portion so the accountant sees the taxable base at a glance.
+  const vatFromRevenues = vatRate ? (revenues.total * vatRate) / (100 + vatRate) : 0;
+  const vatFromExpenses = vatRate ? (expensesTotals.dailyOps * vatRate) / (100 + vatRate) : 0;
+
   return {
     hotel: {
       slug: State.user && State.user.hotelCode,
-      name: (typeof getHotelSettings === 'function') ? (getHotelSettings().name || '') : '',
+      name: settings.hotel_name || State.user?.hotelCode || 'Hotel',
+      address: settings.hotel_address || '',
+      legalInfo: settings.hotel_legal_info || '',
+      logo: settings.hotel_logo || '',
+      country,
       currency: sym,
+      currencyCode,
+      vatRate,
     },
     period: {
       month,
       label: _fmtMonthLabel(month),
+      startDate: month + '-01',
+      endDate: (() => {
+        const [y, m] = month.split('-').map(Number);
+        return new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+      })(),
       generatedAt: new Date().toISOString(),
+      generatedBy: (State.user?.name || '') + ' (' + (State.user?.role || '') + ')',
+      reference: 'SHIP-' + month + '-' + (State.user?.hotelCode || 'HOTEL').toUpperCase(),
     },
     revenues,
+    revenuesPrev: { total: prevRevenues, deltaPct: pctDelta(revenues.total, prevRevenues) },
     expenses: expensesTotals,
-    net: revenues.total - expensesTotals.total,
+    expensesPrev: { total: prevExpenses, deltaPct: pctDelta(expensesTotals.total, prevExpenses) },
+    net,
+    netPrev: { total: prevRevenues - prevExpenses, deltaPct: pctDelta(net, prevRevenues - prevExpenses) },
+    vat: {
+      rate: vatRate,
+      fromRevenues: vatFromRevenues,
+      fromExpenses: vatFromExpenses,
+      netPayable: vatFromRevenues - vatFromExpenses,
+      revenueExVat: revenues.total - vatFromRevenues,
+      expenseExVat: expensesTotals.dailyOps - vatFromExpenses,
+    },
     payroll: {
       total: payroll,
       employees: emps.length,
+      rows: payrollRows,
     },
     fixed: cur.fixed || [],
     revLodging: cur.rev_lodging || [],
@@ -15829,6 +15919,7 @@ function buildMonthlyReport(month){
     de: {
       expenses,
       byCategory: perCatTotals,
+      byPaymentMethod: perPayTotals,
     },
     cashbook: {
       opening: cashbook.opening_balance || 0,
@@ -15838,132 +15929,339 @@ function buildMonthlyReport(month){
     },
     revenueEvents: revEvents,
     commissions,
+    // Compliance / audit flags — what's missing that a real accountant
+    // would flag. Rendered as a "Data quality" section in the report.
+    missing: {
+      hotelName:    !settings.hotel_name,
+      hotelAddress: !settings.hotel_address,
+      hotelLegal:   !settings.hotel_legal_info,
+      openingBal:   !cashbook.opening_balance && !cashbook.opening_date,
+      revenues:     revenues.total === 0,
+      payrollDetail: payrollRows.length === 0,
+      receiptNumbers: expenses.length > 0 && expenses.every(e => !e.receipt_no),
+    },
   };
 }
 
 function _fmtMoney(n, sym){ return sym + ' ' + Math.round(n || 0).toLocaleString('en-US'); }
 
 function _reportToHTML(r){
-  const sym = r.hotel.currency;
-  const fmt = (n) => _fmtMoney(n, sym);
+  const cur = r.hotel.currencyCode;
+  // Money is always shown as monospace + right-aligned so the reader's
+  // eye lines up thousands without re-focusing. We keep the currency
+  // symbol in KPIs (visual) but drop it in tables — the ISO code sits
+  // in the column header once ("Amount (THB)"), a standard accounting
+  // convention that keeps tables scannable.
+  const fmt = (n) => _fmtMoney(n, r.hotel.currency);
+  const fmtN = (n) => Math.round(n || 0).toLocaleString('en-US');
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const netColor = r.net >= 0 ? '#059669' : '#DC2626';
-  const rowSummary = (label, amount, note) =>
-    `<tr><td>${esc(label)}</td><td style="text-align:right;font-weight:700">${fmt(amount)}</td>${note ? `<td style="color:#666;font-size:12px">${esc(note)}</td>` : '<td></td>'}</tr>`;
+  const delta = (pct) => {
+    if(pct == null) return '';
+    const color = pct >= 0 ? '#059669' : '#DC2626';
+    const sign = pct >= 0 ? '+' : '';
+    return ` <span class="delta" style="color:${color}">${sign}${pct}% vs prev</span>`;
+  };
+  const rowMoney = (label, amount, note) =>
+    `<tr><td>${esc(label)}</td><td class="right num">${fmtN(amount)}</td><td class="note">${note ? esc(note) : ''}</td></tr>`;
 
-  let html = `<!doctype html><html><head><meta charset="utf-8"><title>Monthly Report — ${esc(r.hotel.name || r.hotel.slug)} · ${esc(r.period.label)}</title>
+  let html = `<!doctype html><html><head><meta charset="utf-8"><title>Monthly Report — ${esc(r.hotel.name)} · ${esc(r.period.label)}</title>
 <style>
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1A1A2E;background:#fff;padding:24px;max-width:900px;margin:0 auto;font-size:13px;line-height:1.5}
-h1{font-size:26px;margin:0 0 4px;background:linear-gradient(135deg,#FF6B00,#FF1F70);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;font-weight:900}
-h2{font-size:16px;margin:28px 0 10px;padding-bottom:6px;border-bottom:2px solid #E8E0D8;color:#7E22CE;letter-spacing:.5px;text-transform:uppercase}
-.meta{color:#666;font-size:12px;margin-bottom:20px}
-.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0 28px}
-.kpi > div{padding:14px;border:1px solid #E8E0D8;border-radius:10px;background:#FAFAF7}
-.kpi .lbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#666;font-weight:800}
-.kpi .val{font-size:20px;font-weight:900;margin-top:4px}
+:root{
+  --ink:#1A1A2E; --muted:#6B7280; --line:#E5E7EB; --line2:#F3F4F6;
+  --brand-orange:#FF6B00; --brand-pink:#FF1F70; --brand-purple:#7E22CE;
+  --ok:#059669; --danger:#DC2626; --warn:#B45309;
+}
+*{box-sizing:border-box}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  color:var(--ink);background:#fff;padding:32px 40px;max-width:1000px;margin:0 auto;
+  font-size:12.5px;line-height:1.55;
+}
+.num{font-family:ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+
+/* ── Cover header ── */
+.cover{display:grid;grid-template-columns:1fr auto;gap:24px;padding-bottom:24px;border-bottom:3px solid var(--ink);margin-bottom:24px}
+.cover .brand{font-size:11px;font-weight:800;letter-spacing:2px;color:var(--brand-purple);text-transform:uppercase;margin-bottom:4px}
+.cover h1{font-size:28px;margin:0 0 4px;font-weight:900;letter-spacing:-.5px;color:var(--ink)}
+.cover .period{font-size:16px;font-weight:700;color:var(--brand-orange);margin-bottom:14px}
+.cover .hotel-name{font-size:16px;font-weight:800;color:var(--ink);margin-bottom:2px}
+.cover .hotel-addr{font-size:11.5px;color:var(--muted);white-space:pre-line;line-height:1.4}
+.cover .hotel-legal{font-size:11px;color:var(--muted);margin-top:4px;font-style:italic}
+.cover .ref-box{text-align:right;font-size:11px;color:var(--muted);border:1px solid var(--line);padding:10px 14px;border-radius:8px;background:#FAFAFA;min-width:200px}
+.cover .ref-box .ref-lbl{font-weight:800;text-transform:uppercase;letter-spacing:1px;font-size:9px;color:var(--muted);margin-bottom:3px}
+.cover .ref-box .ref-val{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:12px;color:var(--ink);font-weight:700;margin-bottom:8px}
+.cover .ref-box .meta-line{font-size:10.5px;color:var(--muted);margin-top:2px}
+
+/* ── Section headings ── */
+h2{
+  font-size:13px;margin:32px 0 12px;padding:8px 12px;
+  background:linear-gradient(90deg,var(--brand-orange),var(--brand-pink));
+  color:#fff;border-radius:6px;
+  letter-spacing:1px;text-transform:uppercase;font-weight:800;
+  page-break-after:avoid;
+}
+h2 .h2-sub{font-weight:600;opacity:.85;text-transform:none;letter-spacing:0;font-size:11px;margin-left:8px}
+
+/* ── KPI grid ── */
+.kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:8px 0 24px}
+.kpi > div{padding:14px 16px;border:1px solid var(--line);border-radius:10px;background:#FAFAFA;position:relative}
+.kpi .lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);font-weight:800}
+.kpi .val{font-size:22px;font-weight:900;margin-top:4px;letter-spacing:-.5px}
+.kpi .val.num{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace}
 .kpi .net{color:${netColor}}
-table{width:100%;border-collapse:collapse;margin-bottom:8px}
-th,td{padding:6px 8px;border-bottom:1px solid #E8E0D8;text-align:left;vertical-align:top}
-th{background:#F7F5F0;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#666;font-weight:800}
+.kpi .delta{display:block;font-size:10px;font-weight:700;margin-top:2px;letter-spacing:0}
+
+/* ── Tables ── */
+table{width:100%;border-collapse:collapse;margin-bottom:6px;table-layout:fixed}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line2);text-align:left;vertical-align:top;font-size:12px}
+th{background:#F9FAFB;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:800;border-bottom:1.5px solid var(--line)}
 td.right, th.right{text-align:right}
+td.note{color:var(--muted);font-size:11px;width:180px;font-style:italic}
+tbody tr:nth-child(even){background:#FAFBFC}
 .subtotal{background:#FFF9F2;font-weight:800}
-.grand{background:#FFF4EA;font-weight:900;font-size:15px}
-.tag{display:inline-block;padding:1px 6px;border-radius:4px;background:#F0EDF7;color:#7E22CE;font-size:10px;font-weight:700;margin-right:4px}
-footer{margin-top:32px;padding-top:16px;border-top:1px solid #E8E0D8;color:#999;font-size:11px;text-align:center}
-@media print{ body{padding:12px;max-width:none} h2{page-break-after:avoid} table{page-break-inside:avoid} }
+.grand{background:#111827;color:#fff;font-weight:800;font-size:13px}
+.grand td{border-bottom:0;color:#fff}
+.tag{display:inline-block;padding:1px 6px;border-radius:4px;background:#F3F4F6;color:var(--brand-purple);font-size:10px;font-weight:700;margin-right:4px}
+.rcpt-no{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:10.5px;color:var(--ink);background:#F3F4F6;padding:1px 5px;border-radius:3px;font-weight:600}
+
+/* Column widths for the detail expense table — no more auto-collapse. */
+table.expense-detail{table-layout:fixed}
+table.expense-detail th:nth-child(1),table.expense-detail td:nth-child(1){width:82px}      /* Date */
+table.expense-detail th:nth-child(2),table.expense-detail td:nth-child(2){width:auto}      /* Vendor */
+table.expense-detail th:nth-child(3),table.expense-detail td:nth-child(3){width:100px}     /* Receipt # */
+table.expense-detail th:nth-child(4),table.expense-detail td:nth-child(4){width:130px}     /* Category */
+table.expense-detail th:nth-child(5),table.expense-detail td:nth-child(5){width:100px}     /* Paid */
+table.expense-detail th:nth-child(6),table.expense-detail td:nth-child(6){width:110px}     /* Amount */
+table.expense-detail th:nth-child(7),table.expense-detail td:nth-child(7){width:80px}      /* Proof */
+
+/* Payroll table — Name / Role / Dept / Salary */
+table.payroll-detail th:last-child,table.payroll-detail td:last-child{width:130px}
+
+/* Simple 3-col summary tables (label / amount / note) — force amount col right */
+table.summary th:nth-child(2),table.summary td:nth-child(2){width:140px}
+table.summary th:nth-child(3),table.summary td:nth-child(3){width:200px}
+
+/* ── Data quality flags ── */
+.dq{margin:10px 0 24px;padding:14px 18px;border-radius:10px;background:#FFFBEB;border:1px solid #FCD34D}
+.dq h3{margin:0 0 8px;font-size:12px;color:var(--warn);text-transform:uppercase;letter-spacing:1px;font-weight:800}
+.dq ul{margin:0;padding-left:20px;color:var(--warn);font-size:11.5px;line-height:1.6}
+.dq li{margin-bottom:3px}
+
+/* ── Signature block ── */
+.sigs{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin:40px 0 8px;page-break-inside:avoid}
+.sig{border-top:1.5px solid var(--ink);padding-top:6px;text-align:center}
+.sig .role{font-size:9.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:800;margin-bottom:2px}
+.sig .name-line{font-size:11px;color:var(--muted);height:44px}
+
+footer{margin-top:24px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:10px;text-align:center;display:flex;justify-content:space-between}
+footer .fkey{font-family:ui-monospace,'SF Mono',Menlo,monospace}
+
+/* Print — kill white margins added by browsers, keep sections together. */
+@media print{
+  @page{margin:14mm}
+  body{padding:0;max-width:none}
+  h2{page-break-after:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  table,.kpi,.sigs,.dq{page-break-inside:avoid}
+  .cover{page-break-after:avoid}
+  .kpi > div, .grand, h2, .rcpt-no, tbody tr:nth-child(even){-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 </style></head><body>`;
 
-  html += `<h1>Monthly Report</h1>
-<div class="meta">
-  <div><strong>${esc(r.hotel.name || r.hotel.slug || 'Hotel')}</strong> · ${esc(r.period.label)}</div>
-  <div>Generated ${new Date(r.period.generatedAt).toLocaleString()}</div>
-</div>`;
-
-  // KPI row
-  html += `<section class="kpi">
-    <div><div class="lbl">Revenues</div><div class="val">${fmt(r.revenues.total)}</div></div>
-    <div><div class="lbl">Expenses</div><div class="val">${fmt(r.expenses.total)}</div></div>
-    <div><div class="lbl">Net ${r.net >= 0 ? 'Profit' : 'Loss'}</div><div class="val net">${fmt(r.net)}</div></div>
-    <div><div class="lbl">Cash in hand</div><div class="val">${fmt(r.cashbook.balance)}</div></div>
+  // ─── Cover page ───────────────────────────────────────────────────
+  html += `<section class="cover">
+    <div>
+      <div class="brand">SHIP · Monthly accounting report</div>
+      <h1>${esc(r.hotel.name)}</h1>
+      <div class="period">${esc(r.period.label)} · ${esc(r.period.startDate)} → ${esc(r.period.endDate)}</div>
+      ${r.hotel.address ? `<div class="hotel-addr">${esc(r.hotel.address)}</div>` : ''}
+      ${r.hotel.legalInfo ? `<div class="hotel-legal">${esc(r.hotel.legalInfo)}</div>` : ''}
+    </div>
+    <div class="ref-box">
+      <div class="ref-lbl">Report reference</div>
+      <div class="ref-val">${esc(r.period.reference)}</div>
+      <div class="meta-line">Currency: <strong>${esc(cur)}</strong>${r.hotel.vatRate ? ` · VAT ${r.hotel.vatRate}%` : ''}</div>
+      <div class="meta-line">Generated ${new Date(r.period.generatedAt).toLocaleString('en-GB', {dateStyle:'medium', timeStyle:'short'})}</div>
+      ${r.period.generatedBy ? `<div class="meta-line">By ${esc(r.period.generatedBy)}</div>` : ''}
+    </div>
   </section>`;
 
-  // Revenues
-  html += `<h2>💰 Revenues</h2><table>
-    ${rowSummary('Hotel / lodging', r.revenues.lodging)}
-    ${rowSummary('F&B', r.revenues.fnb)}
-    ${rowSummary('Ancillary', r.revenues.ancillary)}
-    ${rowSummary('Shop', r.revenues.shop)}
-    ${rowSummary('Revenue events (from DE)', r.revenues.events, r.revenueEvents.length + ' event(s)')}
-    <tr class="grand"><td>Total</td><td class="right">${fmt(r.revenues.total)}</td><td></td></tr>
-  </table>`;
+  // ─── Data-quality flags (only shown if something is missing) ───────
+  const missingList = [];
+  if(r.missing.hotelName)    missingList.push('Hotel legal name — set it in Settings → Hotel identity.');
+  if(r.missing.hotelAddress) missingList.push('Hotel legal address — required on printed tax reports.');
+  if(r.missing.hotelLegal)   missingList.push('Tax ID / VAT number / company registration — required for filing.');
+  if(r.missing.openingBal)   missingList.push('Cashbook opening balance — set it to anchor the cash trail.');
+  if(r.missing.revenues)     missingList.push('No revenue entries recorded this month — add revenues in Comptabilité.');
+  if(r.missing.receiptNumbers && r.de.expenses.length) missingList.push('No receipt numbers on any of this month\'s expenses — capture them for tax audit.');
+  if(missingList.length){
+    html += `<div class="dq">
+      <h3>⚠︎ Data quality — ${missingList.length} item${missingList.length > 1 ? 's' : ''} to fix before filing</h3>
+      <ul>${missingList.map(m => `<li>${esc(m)}</li>`).join('')}</ul>
+    </div>`;
+  }
 
-  // Expenses
-  html += `<h2>📤 Expenses</h2><table>
-    ${rowSummary('Fixed expenses (manual)', r.expenses.manualFixed)}
-    ${rowSummary('Fixed from DE (rent / utilities / insurance)', r.expenses.autoFixed)}
-    ${rowSummary('Payroll', r.expenses.payroll, r.payroll.employees + ' employee(s)')}
-    ${rowSummary('Daily operational expenses', r.expenses.dailyOps, r.de.expenses.length + ' receipt(s)')}
-    <tr class="grand"><td>Total</td><td class="right">${fmt(r.expenses.total)}</td><td></td></tr>
-  </table>`;
+  // ─── Executive KPI row ─────────────────────────────────────────────
+  html += `<section class="kpi">
+    <div>
+      <div class="lbl">Revenues (${esc(cur)})</div>
+      <div class="val num">${fmtN(r.revenues.total)}</div>${delta(r.revenuesPrev.deltaPct)}
+    </div>
+    <div>
+      <div class="lbl">Expenses (${esc(cur)})</div>
+      <div class="val num">${fmtN(r.expenses.total)}</div>${delta(r.expensesPrev.deltaPct)}
+    </div>
+    <div>
+      <div class="lbl">Net ${r.net >= 0 ? 'Profit' : 'Loss'} (${esc(cur)})</div>
+      <div class="val num net">${fmtN(r.net)}</div>${delta(r.netPrev.deltaPct)}
+    </div>
+    <div>
+      <div class="lbl">Cash in hand (${esc(cur)})</div>
+      <div class="val num">${fmtN(r.cashbook.balance)}</div>
+    </div>
+  </section>`;
 
-  // DE by category
+  // ─── VAT snapshot (informational) ──────────────────────────────────
+  if(r.hotel.vatRate){
+    html += `<h2>Value-Added Tax snapshot <span class="h2-sub">${r.hotel.vatRate}% — informational, not a filing</span></h2>
+      <table class="summary">
+        ${rowMoney(`VAT collected on revenues (${r.hotel.vatRate}% of gross)`, r.vat.fromRevenues, 'Base ex-VAT: ' + fmtN(r.vat.revenueExVat))}
+        ${rowMoney(`VAT paid on daily expenses (${r.hotel.vatRate}% of gross)`, r.vat.fromExpenses, 'Base ex-VAT: ' + fmtN(r.vat.expenseExVat))}
+        <tr class="grand"><td>Net VAT payable (indicative)</td><td class="right num">${fmtN(r.vat.netPayable)}</td><td></td></tr>
+      </table>`;
+  }
+
+  // ─── Revenues ──────────────────────────────────────────────────────
+  html += `<h2>Revenues <span class="h2-sub">gross, VAT-inclusive</span></h2>
+    <table class="summary">
+      ${rowMoney('Hotel / lodging', r.revenues.lodging)}
+      ${rowMoney('Food & Beverage', r.revenues.fnb)}
+      ${rowMoney('Ancillary services', r.revenues.ancillary)}
+      ${rowMoney('Shop / retail', r.revenues.shop)}
+      ${rowMoney('Revenue events (from DE)', r.revenues.events, r.revenueEvents.length + ' event(s)')}
+      <tr class="grand"><td>Total revenues</td><td class="right num">${fmtN(r.revenues.total)}</td><td></td></tr>
+    </table>`;
+
+  // ─── Expenses ──────────────────────────────────────────────────────
+  html += `<h2>Expenses <span class="h2-sub">all channels combined</span></h2>
+    <table class="summary">
+      ${rowMoney('Fixed expenses (manual)', r.expenses.manualFixed)}
+      ${rowMoney('Fixed from DE (rent / utilities / insurance)', r.expenses.autoFixed)}
+      ${rowMoney('Payroll', r.expenses.payroll, r.payroll.employees + ' employee(s)')}
+      ${rowMoney('Daily operational expenses', r.expenses.dailyOps, r.de.expenses.length + ' receipt(s)')}
+      <tr class="grand"><td>Total expenses</td><td class="right num">${fmtN(r.expenses.total)}</td><td></td></tr>
+    </table>`;
+
+  // ─── Payroll detail (per-employee) ─────────────────────────────────
+  if(r.payroll.rows.length){
+    html += `<h2>Payroll detail <span class="h2-sub">${r.payroll.employees} employees</span></h2>
+      <table class="payroll-detail">
+        <thead><tr><th>Employee</th><th>Role</th><th>Department</th><th class="right">Monthly (${esc(cur)})</th></tr></thead><tbody>`;
+    for(const p of r.payroll.rows){
+      html += `<tr><td>${esc(p.name)}</td><td>${esc(p.role)}</td><td>${esc(p.department)}</td><td class="right num">${fmtN(p.monthly)}</td></tr>`;
+    }
+    html += `<tr class="grand"><td colspan="3">Total payroll</td><td class="right num">${fmtN(r.payroll.total)}</td></tr></tbody></table>`;
+  }
+
+  // ─── DE by category ────────────────────────────────────────────────
   if(r.de.byCategory.length){
-    html += `<h2>📸 Daily Expenses by category</h2><table>
-      <thead><tr><th>Category</th><th class="right">Count</th><th class="right">Amount</th></tr></thead><tbody>`;
+    html += `<h2>Daily expenses by category</h2>
+      <table>
+        <thead><tr><th>Category</th><th class="right">Count</th><th class="right">Amount (${esc(cur)})</th></tr></thead><tbody>`;
     for(const x of r.de.byCategory){
-      html += `<tr><td>${x.def.em} ${esc(x.def.label)}</td><td class="right">${x.count}</td><td class="right">${fmt(x.total)}</td></tr>`;
+      html += `<tr><td>${x.def.em} ${esc(x.def.label)}</td><td class="right num">${x.count}</td><td class="right num">${fmtN(x.total)}</td></tr>`;
     }
     html += `</tbody></table>`;
   }
 
-  // Cashbook
-  html += `<h2>💵 Cashbook</h2><table>
-    ${rowSummary('Opening balance', r.cashbook.opening, r.cashbook.openingDate || '—')}`;
-  for(const m of r.cashbook.movements){
-    html += `<tr><td>${esc(m.date)} · ${esc(m.source || (m.kind === 'topup' ? 'Top-up' : 'Adjustment'))}${m.note ? ' <span style="color:#888;font-style:italic">' + esc(m.note) + '</span>' : ''}</td><td class="right" style="color:${m.amount >= 0 ? '#059669' : '#DC2626'}">${m.amount >= 0 ? '+' : ''}${fmt(m.amount)}</td><td></td></tr>`;
-  }
-  html += `<tr class="grand"><td>Balance end of period</td><td class="right">${fmt(r.cashbook.balance)}</td><td></td></tr></table>`;
-
-  // Commissions
-  if(r.commissions.rows.length){
-    html += `<h2>🤝 Commissions owed</h2><table>
-      <thead><tr><th>Employee</th><th>Role</th><th class="right">Total</th></tr></thead><tbody>`;
-    for(const c of r.commissions.rows){
-      html += `<tr><td>${esc((c.emp.first_name || '') + ' ' + (c.emp.last_name || ''))}</td><td>${esc(c.emp.role || '')}</td><td class="right">${fmt(c.total)}</td></tr>`;
+  // ─── DE by payment method ──────────────────────────────────────────
+  if(r.de.byPaymentMethod.length){
+    html += `<h2>Daily expenses by payment method</h2>
+      <table>
+        <thead><tr><th>Payment method</th><th class="right">Count</th><th class="right">Amount (${esc(cur)})</th></tr></thead><tbody>`;
+    for(const x of r.de.byPaymentMethod){
+      html += `<tr><td>${x.def.em} ${esc(x.def.label)}</td><td class="right num">${x.count}</td><td class="right num">${fmtN(x.total)}</td></tr>`;
     }
-    html += `<tr class="grand"><td colspan="2">Total commissions owed</td><td class="right">${fmt(r.commissions.total)}</td></tr></tbody></table>`;
+    html += `</tbody></table>`;
   }
 
-  // Revenue events detail
+  // ─── Cashbook ──────────────────────────────────────────────────────
+  html += `<h2>Cashbook <span class="h2-sub">physical cash register</span></h2>
+    <table class="summary">
+      ${rowMoney('Opening balance', r.cashbook.opening, r.cashbook.openingDate || '—')}`;
+  for(const m of r.cashbook.movements){
+    const src = esc(m.source || (m.kind === 'topup' ? 'Top-up' : 'Adjustment'));
+    const note = m.note ? ` — ${esc(m.note)}` : '';
+    const color = m.amount >= 0 ? 'var(--ok)' : 'var(--danger)';
+    const sign = m.amount >= 0 ? '+' : '';
+    html += `<tr><td>${esc(m.date)} · ${src}${note}</td><td class="right num" style="color:${color}">${sign}${fmtN(m.amount)}</td><td></td></tr>`;
+  }
+  html += `<tr class="grand"><td>Balance end of period</td><td class="right num">${fmtN(r.cashbook.balance)}</td><td></td></tr></table>`;
+
+  // ─── Commissions ───────────────────────────────────────────────────
+  if(r.commissions.rows.length){
+    html += `<h2>Commissions owed</h2>
+      <table>
+        <thead><tr><th>Employee</th><th>Role</th><th class="right">Total (${esc(cur)})</th></tr></thead><tbody>`;
+    for(const c of r.commissions.rows){
+      html += `<tr><td>${esc((c.emp.first_name || '') + ' ' + (c.emp.last_name || ''))}</td><td>${esc(c.emp.role || '')}</td><td class="right num">${fmtN(c.total)}</td></tr>`;
+    }
+    html += `<tr class="grand"><td colspan="2">Total commissions owed</td><td class="right num">${fmtN(r.commissions.total)}</td></tr></tbody></table>`;
+  }
+
+  // ─── Revenue events detail ─────────────────────────────────────────
   if(r.revenueEvents.length){
-    html += `<h2>🎉 Revenue events</h2><table>
-      <thead><tr><th>Date</th><th>Kind</th><th>Label</th><th class="right">Revenue</th><th class="right">Cost</th></tr></thead><tbody>`;
+    html += `<h2>Revenue events</h2>
+      <table>
+        <thead><tr><th>Date</th><th>Kind</th><th>Label</th><th class="right">Revenue (${esc(cur)})</th><th class="right">Cost</th></tr></thead><tbody>`;
     for(const e of r.revenueEvents){
       const k = _revenueKind(e.kind);
-      html += `<tr><td>${esc(e.date)}</td><td>${k.em} ${esc(k.label)}</td><td>${esc(e.label)}${e.tag ? ' <span class="tag">' + esc(e.tag) + '</span>' : ''}</td><td class="right">${fmt(e.revenue)}</td><td class="right">${e.cost ? fmt(e.cost) : '—'}</td></tr>`;
+      html += `<tr><td>${esc(e.date)}</td><td>${k.em} ${esc(k.label)}</td><td>${esc(e.label)}${e.tag ? ' <span class="tag">' + esc(e.tag) + '</span>' : ''}</td><td class="right num">${fmtN(e.revenue)}</td><td class="right num">${e.cost ? fmtN(e.cost) : '—'}</td></tr>`;
     }
     html += `</tbody></table>`;
   }
 
-  // Detailed DE list
+  // ─── Detailed DE list (with receipt #) ─────────────────────────────
   if(r.de.expenses.length){
-    html += `<h2>🧾 Detailed expense list</h2><table>
-      <thead><tr><th>Date</th><th>Vendor</th><th>Category</th><th>Paid</th><th class="right">Amount</th><th>Proof</th></tr></thead><tbody>`;
+    html += `<h2>Detailed expense ledger</h2>
+      <table class="expense-detail">
+        <thead><tr>
+          <th>Date</th><th>Vendor</th><th>Receipt #</th><th>Category</th><th>Paid</th>
+          <th class="right">Amount (${esc(cur)})</th><th>Proof</th>
+        </tr></thead><tbody>`;
     const sortedDE = r.de.expenses.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     for(const e of sortedDE){
       const c = _expenseCategory(e.category);
       const p = _paymentMethod(e.payment_method || 'cash');
-      const photoLink = (e.photo_url || e.photo_thumb) ? '📷' : '';
-      const proofLink = (e.payment_proof_url || e.payment_proof_thumb) ? ' 🏦' : '';
       const urls = [];
-      if(e.photo_url) urls.push(`<a href="${esc(e.photo_url)}" target="_blank" style="color:#7E22CE">receipt</a>`);
-      if(e.payment_proof_url) urls.push(`<a href="${esc(e.payment_proof_url)}" target="_blank" style="color:#059669">proof</a>`);
-      html += `<tr><td>${esc(e.date)}</td><td>${esc(e.vendor || '—')}${e.description ? '<br><span style="color:#888;font-size:11px">' + esc(e.description) + '</span>' : ''}</td><td>${c.em} ${esc(c.label)}</td><td>${p.em} ${esc(p.label)}</td><td class="right">${fmt(e.amount)}</td><td>${urls.join(' · ') || (photoLink + proofLink) || '—'}</td></tr>`;
+      if(e.photo_url) urls.push(`<a href="${esc(e.photo_url)}" target="_blank" style="color:var(--brand-purple)">receipt</a>`);
+      if(e.payment_proof_url) urls.push(`<a href="${esc(e.payment_proof_url)}" target="_blank" style="color:var(--ok)">proof</a>`);
+      const rcpt = e.receipt_no ? `<span class="rcpt-no">${esc(e.receipt_no)}</span>` : '<span style="color:var(--muted)">—</span>';
+      html += `<tr>
+        <td class="num">${esc(e.date)}</td>
+        <td><strong>${esc(e.vendor || '—')}</strong>${e.description ? '<br><span style="color:var(--muted);font-size:11px">' + esc(e.description) + '</span>' : ''}</td>
+        <td>${rcpt}</td>
+        <td>${c.em} ${esc(c.label)}</td>
+        <td>${p.em} ${esc(p.label)}</td>
+        <td class="right num">${fmtN(e.amount)}</td>
+        <td>${urls.join(' · ') || '—'}</td>
+      </tr>`;
     }
-    html += `<tr class="grand"><td colspan="4">Total daily expenses</td><td class="right">${fmt(r.de.expenses.reduce((s,e)=>s+(parseFloat(e.amount)||0),0))}</td><td></td></tr></tbody></table>`;
+    html += `<tr class="grand"><td colspan="5">Total daily expenses</td><td class="right num">${fmtN(r.de.expenses.reduce((s,e)=>s+(parseFloat(e.amount)||0),0))}</td><td></td></tr></tbody></table>`;
   }
 
-  html += `<footer>Generated by SHIP · ${esc(r.hotel.name || r.hotel.slug || '')} · ${new Date(r.period.generatedAt).toLocaleDateString()}</footer></body></html>`;
+  // ─── Signatures ────────────────────────────────────────────────────
+  html += `<div class="sigs">
+    <div class="sig"><div class="role">Prepared by</div><div class="name-line">${esc(r.period.generatedBy || '')}</div></div>
+    <div class="sig"><div class="role">Verified by</div><div class="name-line"></div></div>
+    <div class="sig"><div class="role">Approved by (GM / Owner)</div><div class="name-line"></div></div>
+  </div>`;
+
+  html += `<footer>
+    <span>Generated by SHIP · ${esc(r.hotel.name)}</span>
+    <span class="fkey">${esc(r.period.reference)}</span>
+    <span>${new Date(r.period.generatedAt).toLocaleDateString('en-GB', {dateStyle:'medium'})}</span>
+  </footer></body></html>`;
   return html;
 }
 
@@ -16011,11 +16309,11 @@ function _reportToCSV(r){
   }
   push('');
   push('=== Detailed expenses ===');
-  push('Date', 'Vendor', 'Category', 'Payment', 'Amount', 'Currency', 'Description', 'Photo URL', 'Proof URL');
+  push('Date', 'Vendor', 'Receipt #', 'Category', 'Payment', 'Amount', 'Currency', 'Description', 'Photo URL', 'Proof URL');
   const sortedDE = r.de.expenses.slice().sort((a, b) => (a.date || '').localeCompare(b.date || ''));
   for(const e of sortedDE){
-    push(e.date, e.vendor || '', e.category || '', e.payment_method || '', e.amount, e.currency || '',
-         e.description || '', e.photo_url || '', e.payment_proof_url || '');
+    push(e.date, e.vendor || '', e.receipt_no || '', e.category || '', e.payment_method || '',
+         e.amount, e.currency || '', e.description || '', e.photo_url || '', e.payment_proof_url || '');
   }
   return rows.join('\n');
 }

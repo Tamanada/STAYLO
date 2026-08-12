@@ -53,6 +53,7 @@ Extract the following fields from the receipt image and return ONLY a JSON objec
 
 {
   "vendor": string | null,           // Merchant name as printed on the receipt
+  "receipt_no": string | null,       // Receipt / invoice number as printed (e.g. "000-12345", "INV-2026-089", "TAX #A-4471"). Copy the exact string, keep dashes/prefixes.
   "date": string | null,             // ISO YYYY-MM-DD; null if unreadable
   "amount": number | null,           // Grand total paid, numeric only (no currency symbol)
   "currency": string | null,         // ISO 4217 3-letter code inferred from the receipt (THB, USD, EUR, ...)
@@ -81,7 +82,8 @@ Rules:
 - If you can't read a field, use null (or "other" for category).
 - amount is the FINAL amount charged (tax + tip included). Ignore subtotal.
 - date must be YYYY-MM-DD. Infer year from context if not printed (assume current year).
-- Never invent data. If the image isn't a receipt, return {"vendor":null,"date":null,"amount":null,"currency":null,"category":"other","description":null,"confidence":"low","raw_text":null}.`
+- receipt_no is the vendor's invoice / receipt / tax-invoice number as printed on the paper — usually near words like "Receipt No.", "Invoice #", "Bill No", "TAX INV". Copy the whole string verbatim (keep prefixes, dashes, leading zeros). If no such number is on the receipt, return null.
+- Never invent data. If the image isn't a receipt, return {"vendor":null,"receipt_no":null,"date":null,"amount":null,"currency":null,"category":"other","description":null,"confidence":"low","raw_text":null}.`
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
@@ -181,6 +183,7 @@ serve(async (req: Request) => {
 
   const safe = {
     vendor:      typeof parsed.vendor === 'string' ? parsed.vendor.slice(0, 120) : null,
+    receipt_no:  typeof parsed.receipt_no === 'string' ? parsed.receipt_no.slice(0, 60).trim() || null : null,
     date:        typeof parsed.date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date) ? parsed.date : null,
     amount:      typeof parsed.amount === 'number' && isFinite(parsed.amount) ? parsed.amount : null,
     currency:    typeof parsed.currency === 'string' && /^[A-Z]{3}$/.test(parsed.currency) ? parsed.currency : (payload.currency_hint || null),
