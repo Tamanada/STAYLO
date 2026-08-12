@@ -3715,6 +3715,7 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
     addPackageDateBlock, updatePackageDateBlock, removePackageDateBlock,
     onJumpToPackages,
     longStayEnabled, setLongStayEnabled,
+    hourlyEnabled,   setHourlyEnabled,
   }
 
   return (
@@ -3899,6 +3900,7 @@ function RoomEditFormCard({
   addPackageDateBlock, updatePackageDateBlock, removePackageDateBlock,
   onJumpToPackages,
   longStayEnabled, setLongStayEnabled,
+  hourlyEnabled,   setHourlyEnabled,
 }) {
   return (
     <Card className="mt-4 border-2 border-ocean/20">
