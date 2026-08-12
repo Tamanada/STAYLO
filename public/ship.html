@@ -3791,9 +3791,12 @@ body.off-shift .quick-actions{display:none !important}
   <nav class="rail" id="bottom-nav">
     <button class="rail-btn rail-btn-ship" data-pane="ship" title="STAYLO Ship">
       <!-- Flagship tab: the SHIP brand tile (our "beau bouton") opens the
-           staff home / access page (clock-in, today's shift, tasks). -->
+           staff home / access page (clock-in, today's shift, tasks).
+           Also carries the alerts badge since the Alerts view was folded
+           back into the SHIP hub 2026-08-12. -->
       <img class="ship-rail-icon" src="/SHIP_LOGO.webp" alt="STAYLO Ship">
       <span class="rail-lbl">SHIP</span>
+      <span class="badge" id="rail-ship-alerts" style="display:none">0</span>
     </button>
     <button class="rail-btn active" data-pane="channels" data-i18n-title="app.shell.bottom.chat">
       <!-- MessageCircle (Lucide) -->
@@ -3812,8 +3815,11 @@ body.off-shift .quick-actions{display:none !important}
       </svg>
       <span class="rail-lbl" data-i18n="app.shell.bottom.team">Team</span>
     </button>
-    <button class="rail-btn" data-pane="alerts" data-i18n-title="app.shell.bottom.alerts">
-      <!-- Bell (Lucide) -->
+    <!-- Alerts bottom-nav retired 2026-08-12 — task-completion queue now
+         surfaces at the top of the SHIP hub, badge lives on #rail-ship-alerts.
+         Kept in DOM as display:none so any legacy click handlers still
+         resolve without throwing. -->
+    <button class="rail-btn" data-pane="alerts" data-i18n-title="app.shell.bottom.alerts" style="display:none" aria-hidden="true">
       <svg class="rail-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
         <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
@@ -9669,21 +9675,26 @@ function renderStockView(body){
   }, 1200);
 }
 
-function renderAlertsView(body){
-  // Alerts is a MANAGER VERIFICATION QUEUE now — only task completions
-  // (staff finished a tracked task, may have attached a done-photo). The
-  // old "channel unread" section was removed 2026-08-10 (David's feedback:
-  // 100% redundant with the Chat rail badge). Chat is for conversation;
-  // Alerts is for actionable items requiring a manager check.
+// Alerts is a MANAGER VERIFICATION QUEUE — task completions (staff
+// finished a tracked task, may have attached a done-photo). Chat is for
+// conversation; Alerts is for actionable items requiring a manager check.
+//
+// The dedicated Alerts bottom-nav tab was retired 2026-08-12: David wanted
+// alerts to surface at the TOP of the SHIP hub (the staff/hotel home
+// page) instead of hiding behind a badge on a separate tab. The helper
+// below builds the alert list into any container; renderShipHub calls it
+// on entry, renderAlertsView keeps working for deep-link back-compat.
+//
+// Returns the number of alerts rendered (0 → nothing appended).
+function _renderTaskAlertsInto(container, opts){
+  const compact = opts && opts.compact;
+  const markRead = !opts || opts.markRead !== false;
   const taskAlerts = (typeof getTaskAlerts === 'function') ? getTaskAlerts() : [];
+  if(!taskAlerts.length) return 0;
 
-  if(!taskAlerts.length){
-    body.appendChild(el('div',{class:'alerts-empty'}, t('app.alerts_view.empty')));
-    try { markTaskAlertsRead(); refreshAlerts(); } catch(e){}
-    return;
-  }
-
-  body.appendChild(el('div',{class:'ship-alert-head'}, shipT('app.ship.alert_completions','Task completions')));
+  container.appendChild(el('div',{class:'ship-alert-head'},
+    shipT('app.ship.alert_completions','Task completions')
+      + (compact ? ` · ${taskAlerts.length}` : '')));
   const tlist = el('div');
   for(const a of taskAlerts){
     const card = el('div',{class:'ship-alert' + (a.read ? '' : ' unread')});
@@ -9706,17 +9717,26 @@ function renderAlertsView(body){
         onclick:e=>{ e.stopPropagation(); try{ showPhotoLightbox(a.photo); }catch(err){} }},
         shipT('app.ship.alert_view_photo','📷 Verify')));
     }
-    // Tap the card → open the task fiche for the full picture.
     card.addEventListener('click', () => {
       const tk = getTasks().find(x => x.id === a.taskId);
       if(tk) showShipFiche(tk);
     });
     tlist.appendChild(card);
   }
-  body.appendChild(tlist);
+  container.appendChild(tlist);
 
-  // Viewing the Alerts tab clears the task-completion badge.
-  try { markTaskAlertsRead(); refreshAlerts(); } catch(e){}
+  if(markRead){ try { markTaskAlertsRead(); refreshAlerts(); } catch(e){} }
+  return taskAlerts.length;
+}
+
+function renderAlertsView(body){
+  // Kept for deep-link / back-compat; primary surfacing is now inside
+  // renderShipHub. Rail button was hidden 2026-08-12.
+  const n = _renderTaskAlertsInto(body);
+  if(n === 0){
+    body.appendChild(el('div',{class:'alerts-empty'}, t('app.alerts_view.empty')));
+    try { markTaskAlertsRead(); refreshAlerts(); } catch(e){}
+  }
 }
 
 /* Hook the back arrow in the content-view header. Smart back-target:
@@ -10316,12 +10336,20 @@ function refreshAlerts(){
   // Alerts badge tracks ONLY task-completion notifications now — the old
   // channel-unread count was double-badged (Chat rail also shows it) and
   // the Alerts view stopped rendering that section on 2026-08-10.
+  //
+  // 2026-08-12: badge now lives on the SHIP rail button (#rail-ship-alerts)
+  // since the standalone Alerts view moved back inside the SHIP hub.
+  // The legacy #rail-alerts is still updated for the (hidden) Alerts
+  // button in case any dev-mode override reveals it.
   let total = 0;
   try { total += unreadTaskAlerts(); } catch(e){}
-  const badge = $('#rail-alerts');
-  if(!badge) return;
-  if(total>0){ badge.style.display='flex'; badge.textContent=total; }
-  else { badge.style.display='none'; }
+  const paint = (b) => {
+    if(!b) return;
+    if(total > 0){ b.style.display = 'flex'; b.textContent = total; }
+    else { b.style.display = 'none'; }
+  };
+  paint($('#rail-ship-alerts'));
+  paint($('#rail-alerts'));
 }
 
 function notifyAlert(m){
@@ -25522,6 +25550,13 @@ function renderShipHub(body, title, subtitle){
   const empId = emp ? emp.id : null;
   const wrap = el('div',{class:'ship-hub'});
 
+  /* ---- ALERTS (task completions) — surface AT THE TOP if any ------- */
+  // Retired the dedicated Alerts bottom-nav tab 2026-08-12: David wanted
+  // manager verification queue in the same place as the daily start-of-
+  // shift landing, not behind a badge on a separate rail button. Silent
+  // when zero — no header, no empty state — so the hero stays flush.
+  _renderTaskAlertsInto(wrap, { markRead: false });
+
   /* ---- HERO: brand tile + greeting --------------------------------- */
   const hero = el('div',{class:'ship-hero'});
   hero.appendChild(el('img',{class:'ship-hero-logo', src:'/SHIP_LOGO.webp', alt:'STAYLO Ship', loading:'lazy'}));
@@ -27632,7 +27667,10 @@ function initShell(){
     } else if(pane === 'ship'){
       setView('ship', null);
     } else if(pane === 'alerts'){
-      setView('alerts');
+      // Alerts view was folded into the SHIP hub 2026-08-12. If any
+      // legacy handler (or a keyboard shortcut) still targets 'alerts',
+      // send the user to SHIP where the queue now lives.
+      setView('ship', null);
     } else if(pane === 'de'){
       // Extra defence-in-depth against non-HR staff URL-hacking their way in
       if(canManageHR()) setView('de');
