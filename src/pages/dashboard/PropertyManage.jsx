@@ -3698,6 +3698,14 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
   }
 
   // Props bundle reused at every render site of <RoomEditFormCard />.
+  //
+  // longStayEnabled + setLongStayEnabled were declared in RoomsTab (line
+  // ~3354) but the JSX that references them lives inside RoomEditFormCard
+  // (a separate function component ~180 lines below), so the child threw
+  // `ReferenceError: longStayEnabled is not defined` on every mount and
+  // blanked the whole /manage page. Passing the pair through the shared
+  // props bundle keeps the source of truth in the parent (so switching
+  // between rooms preserves the toggle state) and hydrates the child.
   const formProps = {
     editingRoom, t, form, setForm,
     copiedMedia, copyFromRoom, rooms,
@@ -3706,6 +3714,7 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
     packages, linkedPkgs, togglePackageLink, setPackageQty,
     addPackageDateBlock, updatePackageDateBlock, removePackageDateBlock,
     onJumpToPackages,
+    longStayEnabled, setLongStayEnabled,
   }
 
   return (
@@ -3889,6 +3898,7 @@ function RoomEditFormCard({
   packages = [], linkedPkgs = {}, togglePackageLink, setPackageQty,
   addPackageDateBlock, updatePackageDateBlock, removePackageDateBlock,
   onJumpToPackages,
+  longStayEnabled, setLongStayEnabled,
 }) {
   return (
     <Card className="mt-4 border-2 border-ocean/20">
