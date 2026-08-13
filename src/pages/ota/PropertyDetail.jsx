@@ -981,7 +981,7 @@ export default function PropertyDetail() {
                       <>
                         <p className="text-xs text-gray-500">{t('booking.from', 'From')}</p>
                         <div className="flex items-center gap-2">
-                          <span className="text-3xl font-extrabold text-gray-900">${lowestRoom.price}</span>
+                          <span className="text-3xl font-extrabold text-gray-900">{money(lowestRoom.price)}</span>
                         </div>
                         <p className="text-xs text-gray-500">
                           / {lowestRoom.pricingUnit === 'bed' ? t('booking.bed', 'bed') : ''} {t('booking.night', 'night')}
@@ -1074,7 +1074,7 @@ export default function PropertyDetail() {
                       {' · '}
                       {isReplace
                         ? <span className="text-libre font-semibold">included in package</span>
-                        : <span className="text-gray-500">${selectedRoomData.price}/bed/night</span>}
+                        : <span className="text-gray-500">{money(selectedRoomData.price)}/bed/night</span>}
                     </div>
                   )
                 })()}
@@ -1215,10 +1215,10 @@ export default function PropertyDetail() {
                               <span>
                                 ✨ {pkg.name}
                                 <span className="text-[10px] text-gray-400 ml-1">
-                                  ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'}{pkgQty > 1 ? ` · ${pkgQty}× $${Number(pkg.price).toFixed(0)}` : ''})
+                                  ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'}{pkgQty > 1 ? ` · ${pkgQty}× ${money(Number(pkg.price))}` : ''})
                                 </span>
                               </span>
-                              <span>${packageCost.toFixed(2)}</span>
+                              <span>{money(packageCost)}</span>
                             </div>
                           )}
                           {isAllInclusive && (
@@ -1228,7 +1228,7 @@ export default function PropertyDetail() {
                           )}
                           <div className="flex justify-between font-bold text-gray-900 pt-2 border-t border-gray-200">
                             <span>{t('booking.subtotal', 'Subtotal')}</span>
-                            <span>${subtotal.toFixed(2)}</span>
+                            <span>{money(subtotal)}</span>
                           </div>
                           <p className="text-[11px] text-gray-400 pt-1 leading-snug">
                             {t('booking.fees_at_checkout', 'Payment processing fees added at checkout (free with Bitcoin Lightning).')}
