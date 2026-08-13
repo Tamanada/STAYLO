@@ -14215,6 +14215,12 @@ function getExpensesData(){
   let raw = lsGet(_hkey('staylo_expenses'), null);
   if(!raw) raw = { months: {} };
   if(!raw.months) raw.months = {};
+  // One-time backfill for hotels that had expenses BEFORE ticket_no was
+  // added — walks the whole store, assigns numbers in created_at order,
+  // persists once. From then on every row is numbered and this is a
+  // no-op scan. Kept here (not in a migration) because expenses live
+  // in localStorage per hotel, not in Postgres.
+  if(_backfillTicketNos(raw)) saveExpensesData(raw);
   return raw;
 }
 function saveExpensesData(d){
@@ -14250,11 +14256,61 @@ function sumDeNonFixedForMonth(month){
     .filter(e => !DE_FIXED_CATEGORIES.includes(e.category))
     .reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
 }
+// STAYLO ticket number — short human-writable ID per expense, per hotel.
+// Distinct from `receipt_no` (the VENDOR's invoice number from the paper
+// receipt). This one is the number the manager writes ON the physical
+// paper so audits later can match the paper trail to the app record.
+//
+// Design choices:
+//   · Monotonic per hotel across ALL months — one continuous counter, not
+//     yearly resets. Small hotels do ≪ 9999 expenses/year so 4 digits is
+//     plenty and reads cleanly (#0042).
+//   · Assigned once at addExpense time + backfilled on load for any
+//     legacy row missing the field. Never reassigned — deleting expense
+//     #42 leaves a gap; the next new expense is still the current max+1.
+//     Gaps prove nothing is being reshuffled and keep the paper trail
+//     honest.
+function _maxTicketNo(all){
+  let m = 0;
+  for(const mk in (all.months || {})){
+    for(const e of (all.months[mk] || [])){
+      if(typeof e.ticket_no === 'number' && e.ticket_no > m) m = e.ticket_no;
+    }
+  }
+  return m;
+}
+// Walk every expense in creation order; anything missing ticket_no gets
+// the next number. Returns true when anything changed so the caller can
+// persist. Runs once on first read of a legacy store — subsequent reads
+// short-circuit because every row already has a number.
+function _backfillTicketNos(all){
+  const rows = [];
+  for(const mk in (all.months || {})){
+    for(const e of (all.months[mk] || [])){
+      if(typeof e.ticket_no !== 'number') rows.push(e);
+    }
+  }
+  if(rows.length === 0) return false;
+  rows.sort((a, b) => String(a.created_at || '').localeCompare(String(b.created_at || '')));
+  let next = _maxTicketNo(all) + 1;
+  for(const e of rows){ e.ticket_no = next++; }
+  return true;
+}
+function fmtTicketNo(n){
+  if(typeof n !== 'number' || n <= 0) return '';
+  return '#' + String(n).padStart(4, '0');
+}
+
 function addExpense(month, exp){
   const all = getExpensesData();
   if(!all.months[month]) all.months[month] = [];
   exp.id = exp.id || ('exp-' + Date.now() + '-' + Math.floor(Math.random() * 9999));
   exp.created_at = exp.created_at || new Date().toISOString();
+  // Backfill any legacy expenses first so the new one sits on top of a
+  // fully-numbered history (avoids the "new row = #5 but rows 1-4 are
+  // still bare" case).
+  _backfillTicketNos(all);
+  exp.ticket_no = _maxTicketNo(all) + 1;
   all.months[month].push(exp);
   saveExpensesData(all);
   return exp;
@@ -15731,9 +15787,38 @@ function renderDailyExpensesLedger(body){
         const e = item.data;
         const c = _expenseCategory(e.category);
         const p = _paymentMethod(e.payment_method || 'cash');
+        // Click-to-copy ticket # pill — most important element on this
+        // row for the acheteur/manager workflow: they need to write the
+        // SAME number on the physical receipt so the paper trail matches
+        // the app record. Big, monospace, click = copy to clipboard with
+        // a green "Copied ✓" flash so they know it worked.
+        const ticketPill = e.ticket_no ? (() => {
+          const val = fmtTicketNo(e.ticket_no);
+          const b = el('button', {
+            style: 'background:linear-gradient(135deg,#111827,#374151);color:#fff;'
+                 + 'font-family:ui-monospace,SFMono-Regular,Menlo,monospace;'
+                 + 'font-size:13px;font-weight:900;letter-spacing:.5px;'
+                 + 'padding:6px 10px;border-radius:8px;border:0;cursor:pointer;'
+                 + 'min-width:64px;text-align:center;flex-shrink:0;'
+                 + 'transition:transform 120ms ease, background 120ms ease;'
+                 + 'white-space:nowrap',
+            title: 'Click to copy · write this number on the physical receipt',
+          }, val);
+          b.addEventListener('click', async (ev) => {
+            ev.stopPropagation();
+            try { await navigator.clipboard.writeText(val); } catch(_){}
+            const orig = b.textContent;
+            const origBg = b.style.background;
+            b.style.background = 'linear-gradient(135deg,#059669,#10B981)';
+            b.textContent = '✓ ' + val;
+            setTimeout(() => { b.style.background = origBg; b.textContent = orig; }, 900);
+          });
+          return b;
+        })() : el('div', { style: 'width:64px' });   // spacer so rows stay aligned
         list.appendChild(el('div', {
-          style: 'display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--border,#E8E0D8);background:#fff;border-radius:10px'
+          style: 'display:grid;grid-template-columns:auto auto 1fr auto auto;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--border,#E8E0D8);background:#fff;border-radius:10px'
         },
+          ticketPill,
           el('div', { style: 'font-size:24px', title: c.label }, c.em),
           el('div', { style: 'min-width:0' },
             el('div', { style: 'font-weight:700;color:var(--fg,#1A1A2E);white-space:nowrap;overflow:hidden;text-overflow:ellipsis' }, e.vendor || '—'),
