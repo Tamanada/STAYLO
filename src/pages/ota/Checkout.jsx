@@ -14,6 +14,8 @@ import { useAuth } from '../../hooks/useAuth'
 import { computeRoomPricing } from '../../lib/roomPricing'
 import { applyPackagePricing, formatPackageImpact } from '../../lib/packagePricing'
 import PhoneInput from '../../components/ui/PhoneInput'
+import CurrencyPicker from '../../components/CurrencyPicker'
+import { useDisplayCurrency } from '../../hooks/useDisplayCurrency'
 
 const COMMISSION_RATE = 0.10 // 10% STAYLO commission (on room price, NOT total)
 
@@ -99,6 +101,16 @@ export default function Checkout() {
   const [guestPhone, setGuestPhone] = useState('')
   const [specialRequests, setSpecialRequests] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('card')
+
+  // Guest display currency — mirrors the PropertyDetail setup so a
+  // guest who picked "EUR" on the browse page continues to see EUR at
+  // checkout. Base currency = what the hotelier quoted in
+  // (property.currency); we convert everything to `displayCode` via
+  // `money(x)`. Rates lazy-fetched from Frankfurter + cached 1h.
+  const { format, ensureRates } = useDisplayCurrency()
+  const baseCurrency = (property?.currency || 'USD').toUpperCase()
+  useEffect(() => { if (baseCurrency) ensureRates(baseCurrency) }, [baseCurrency, ensureRates])
+  const money = (amount) => format(amount, baseCurrency)
 
   useEffect(() => {
     if (profile?.full_name && !guestName) setGuestName(profile.full_name)
@@ -444,7 +456,7 @@ export default function Checkout() {
             <div className="flex justify-between"><span className="text-gray-500">{t('checkout.property', 'Property')}</span><span className="font-medium text-deep">{property.name}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">{t('checkout.room', 'Room')}</span><span className="font-medium text-deep">{room.name}</span></div>
             <div className="flex justify-between"><span className="text-gray-500">{t('checkout.dates', 'Dates')}</span><span className="font-medium text-deep">{checkIn} → {checkOut}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">{t('checkout.total', 'Total')}</span><span className="font-bold text-deep">${totalPrice.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-gray-500">{t('checkout.total', 'Total')}</span><span className="font-bold text-deep">{money(totalPrice)}</span></div>
           </div>
         </Card>
         <div className="mt-6 flex gap-3 justify-center">
@@ -512,7 +524,7 @@ export default function Checkout() {
               {submitting ? (
                 <><Loader2 size={20} className="animate-spin" /> {t('checkout.processing', 'Processing...')}</>
               ) : (
-                <><Shield size={20} /> {t('checkout.confirm_pay', 'Confirm & Pay')} — ${totalPrice.toFixed(2)}</>
+                <><Shield size={20} /> {t('checkout.confirm_pay', 'Confirm & Pay')} — {money(totalPrice)}</>
               )}
             </Button>
           </form>
@@ -596,7 +608,7 @@ export default function Checkout() {
                     {(pricing.savings > 0) && (
                       <div className="flex justify-between font-medium pt-1 border-t border-gray-100">
                         <span className="text-deep">Room subtotal</span>
-                        <span className="text-deep">${roomTotal.toFixed(2)}</span>
+                        <span className="text-deep">{money(roomTotal)}</span>
                       </div>
                     )}
                   </>
@@ -609,7 +621,7 @@ export default function Checkout() {
                         ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'} · {pkgQty}× ${Number(pkg.price).toFixed(0)})
                       </span>
                     </span>
-                    <span>{packageMode === 'replace' ? '' : '+'}${packageCost.toFixed(2)}</span>
+                    <span>{packageMode === 'replace' ? '' : '+'}{money(packageCost)}</span>
                   </div>
                 )}
                 {extraBedsCount > 0 && (
@@ -620,16 +632,16 @@ export default function Checkout() {
                         ({room.extra_bed_adults_allowed ? 'adults OK' : `${room.extra_bed_max_age || 10}y & under`})
                       </span>
                     </span>
-                    <span>+${extraBedSubtotal.toFixed(2)}</span>
+                    <span>+{money(extraBedSubtotal)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-xs text-gray-400 pl-3">
                   <span>↳ {t('checkout.staylo_commission', 'STAYLO commission (10%)')}</span>
-                  <span>−${commission.toFixed(2)}</span>
+                  <span>−{money(commission)}</span>
                 </div>
                 <div className="flex justify-between text-xs text-libre pl-3 italic">
                   <span>↳ {t('checkout.hotelier_receives', 'Hotelier receives')}</span>
-                  <span>${hotelierNet.toFixed(2)}</span>
+                  <span>{money(hotelierNet)}</span>
                 </div>
 
                 {/* Payment method selector */}
@@ -669,7 +681,7 @@ export default function Checkout() {
                             )}
                           </span>
                           <span className={`text-xs font-medium ${m.feeRate === 0 ? 'text-libre' : 'text-gray-500'}`}>
-                            {m.feeRate === 0 ? t('checkout.free', 'Free') : `+$${fee.toFixed(2)}`}
+                            {m.feeRate === 0 ? t('checkout.free', 'Free') : `+${money(fee)}`}
                           </span>
                         </label>
                       )
@@ -681,14 +693,14 @@ export default function Checkout() {
                 {processingFee > 0 && (
                   <div className="flex justify-between pt-2 text-gray-500">
                     <span>{t('checkout.processing_fee', 'Processing fee')} ({(selectedMethod.feeRate * 100).toFixed(0)}%)</span>
-                    <span className="text-deep">+${processingFee.toFixed(2)}</span>
+                    <span className="text-deep">+{money(processingFee)}</span>
                   </div>
                 )}
 
                 {/* Total guest pays */}
                 <div className="flex justify-between pt-2 border-t border-gray-100 font-bold">
                   <span className="text-deep">{t('checkout.total_you_pay', 'You pay')}</span>
-                  <span className="text-deep text-lg">${totalPrice.toFixed(2)}</span>
+                  <span className="text-deep text-lg">{money(totalPrice)}</span>
                 </div>
 
                 {/* Trust note */}
