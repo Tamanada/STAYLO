@@ -16,6 +16,7 @@ import DormSubPlanModal from '../../components/dashboard/DormSubPlanModal'
 import { EventsHolidaysModal } from '../../components/dashboard/EventsHolidaysModal'
 import { getEventsOnDate } from '../../lib/events'
 import LittleHotelierCard from '../../components/channels/LittleHotelierCard'
+import { currencies } from '../../lib/currencies'
 
 // Dorm rooms behave differently on the floor plan: ONE marker on the
 // main plan (= the physical dorm room itself), and the room.quantity
@@ -960,8 +961,10 @@ function SettingsTab({ property, onRefresh, rooms = [] }) {
     contact_role:  property.contact_role || '',
     contact_email: property.contact_email || '',
     contact_phone: property.contact_phone || '',
-    check_in_time:  property.check_in_time  || '14:00',
-    check_out_time: property.check_out_time || '12:00',
+    check_in_time:      property.check_in_time      || '14:00',
+    check_in_end_time:  property.check_in_end_time  || '22:00',
+    check_out_time:     property.check_out_time     || '12:00',
+    currency:           property.currency           || 'USD',
     cancellation_policy: property.cancellation_policy || 'flexible',
     smoking_policy:      property.smoking_policy || 'no_smoking',
     star_rating:   property.star_rating ?? 3,
@@ -1026,8 +1029,10 @@ function SettingsTab({ property, onRefresh, rooms = [] }) {
       contact_role:  form.contact_role.trim() || null,
       contact_email: form.contact_email.trim() || null,
       contact_phone: form.contact_phone.trim() || null,
-      check_in_time:  form.check_in_time  || '14:00',
-      check_out_time: form.check_out_time || '12:00',
+      check_in_time:      form.check_in_time      || '14:00',
+      check_in_end_time:  form.check_in_end_time  || '22:00',
+      check_out_time:     form.check_out_time     || '12:00',
+      currency:           (form.currency || 'USD').toUpperCase(),
       cancellation_policy: form.cancellation_policy,
       smoking_policy:      form.smoking_policy,
       star_rating:   Number(form.star_rating) || 3,
@@ -1187,15 +1192,39 @@ function SettingsTab({ property, onRefresh, rooms = [] }) {
           <PhoneInput value={form.contact_phone} onChange={v => update('contact_phone', v)} />
         </div>
 
+        {/* Check-in window — two side-by-side times so the hotelier can
+            declare BOTH the earliest arrival slot and the latest one that
+            still gets the standard reception experience. Late arrivals
+            after check_in_end_time are still accepted by the front desk;
+            the field is nominal, drives guest emails + policy displays. */}
         <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.check_in_time', 'Check-in time')}</label>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.check_in_from', 'Check-in from')}</label>
           <input type="time" value={form.check_in_time} onChange={e => update('check_in_time', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.check_in_until', 'Check-in until')}</label>
+          <input type="time" value={form.check_in_end_time} onChange={e => update('check_in_end_time', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
         </div>
         <div>
           <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.check_out_time', 'Check-out time')}</label>
           <input type="time" value={form.check_out_time} onChange={e => update('check_out_time', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+        </div>
+
+        {/* Currency — every price in the property (base_price, extras,
+            invoices, quoted total on the booking engine) is in this
+            currency. Full ISO 4217 catalog from lib/currencies so
+            managers in Vietnam / Cambodia / etc. aren't stuck on THB. */}
+        <div>
+          <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.currency', 'Currency')}</label>
+          <select value={form.currency} onChange={e => update('currency', e.target.value)}
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
+            {currencies.map(c => (
+              <option key={c.code} value={c.code}>{c.symbol} · {c.code} — {c.name}</option>
+            ))}
+          </select>
         </div>
 
         <div>
