@@ -13,26 +13,59 @@
 // Rate cache: keyed by BASE currency, TTL 1 hour, stored in localStorage
 // under `staylo_fx_<BASE>`. One fetch per (base, hour) per browser.
 // ============================================================================
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { currencies } from '../lib/currencies'
 
 const STORAGE_KEY = 'staylo_display_currency'
 const FX_TTL_MS = 60 * 60 * 1000   // 1 hour
 
-// Currencies Frankfurter doesn't quote. We render prices in the base
-// currency untouched when the target isn't quoted — better than showing
-// zero or a stale rate.
-const UNSUPPORTED_TARGETS = new Set(['KHR', 'LAK', 'MMK', 'MMR'])
+// ─────────────────────────────────────────────────────────────────────────
+// Shared external store for the display-currency choice
+// ─────────────────────────────────────────────────────────────────────────
+// Every component that calls useDisplayCurrency() gets its OWN local state
+// via useState — which means the CurrencyPicker updating its state doesn't
+// notify PropertyDetail / Checkout instances. Prices stayed on the initial
+// displayCode until the user hard-refreshed.
+//
+// useSyncExternalStore fixes this by making localStorage the single source
+// of truth: setter writes + fires an event, every subscriber re-renders.
+// Works same-tab (custom event) AND cross-tab (native `storage` event).
+const CHANGE_EVENT = 'staylo:display_currency_change'
 
-// Read the guest's saved preference, defaulting to USD (a universally
-// meaningful reference — the majority of travellers can eyeball it).
-function readSaved() {
+function readCurrentCode() {
   try {
     const v = localStorage.getItem(STORAGE_KEY)
     if (v && currencies.some(c => c.code === v)) return v
   } catch { /* SSR / private mode */ }
   return 'USD'
 }
+
+// Subscribe function for useSyncExternalStore. Listens to BOTH:
+//   · same-tab dispatch of our custom event (fires on every setter call)
+//   · cross-tab `storage` event (browser-native, fires when another tab
+//     writes to the same localStorage key)
+function subscribeCurrency(onChange) {
+  const handler = () => onChange()
+  window.addEventListener(CHANGE_EVENT, handler)
+  window.addEventListener('storage', handler)
+  return () => {
+    window.removeEventListener(CHANGE_EVENT, handler)
+    window.removeEventListener('storage', handler)
+  }
+}
+
+// Setter — updates localStorage + fires the custom event so every
+// subscribed component re-renders immediately.
+function writeCurrentCode(code) {
+  try { localStorage.setItem(STORAGE_KEY, code) } catch { /* full/blocked */ }
+  try { window.dispatchEvent(new Event(CHANGE_EVENT)) } catch { /* SSR */ }
+}
+
+// Currencies Frankfurter doesn't quote. We render prices in the base
+// currency untouched when the target isn't quoted — better than showing
+// zero or a stale rate.
+const UNSUPPORTED_TARGETS = new Set(['KHR', 'LAK', 'MMK', 'MMR'])
+
 
 // Frankfurter returns { amount, base, date, rates: { EUR: 0.85, THB: 34.5, … } }.
 // The `rates` map does NOT contain the base itself → we add it as 1.0 for
@@ -61,15 +94,26 @@ function writeCachedRates(base, payload) {
 }
 
 export function useDisplayCurrency() {
-  const [displayCode, setDisplayCodeState] = useState(readSaved)
+  // Shared external store — every instance of the hook subscribes to the
+  // same localStorage-backed value. When ANY component (typically the
+  // CurrencyPicker) calls setDisplayCode, every mounted subscriber gets
+  // re-notified via the custom `staylo:display_currency_change` event
+  // AND cross-tab via the native `storage` event. Server snapshot returns
+  // 'USD' for SSR fallback (no localStorage during Node render).
+  const displayCode = useSyncExternalStore(
+    subscribeCurrency,
+    readCurrentCode,
+    () => 'USD',
+  )
   // Cache of { base → { rates, fetchedAt } } for every base we've seen
   // this session. Prevents refetching if the guest jumps between two
-  // properties quoted in different currencies.
+  // properties quoted in different currencies. Kept LOCAL per-component
+  // (not shared) because a stale rate mid-session is cheap to refetch
+  // and duplicating the cache across components is harmless.
   const [ratesByBase, setRatesByBase] = useState({})
 
   const setDisplayCode = useCallback((code) => {
-    setDisplayCodeState(code)
-    try { localStorage.setItem(STORAGE_KEY, code) } catch { /* ignore */ }
+    writeCurrentCode(code)   // fires the event → every subscriber re-renders
   }, [])
 
   // Pre-fetch rates for a given base currency. Called lazily by convert()
