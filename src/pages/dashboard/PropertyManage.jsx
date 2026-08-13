@@ -160,8 +160,15 @@ export default function PropertyManage() {
   const [propertyPackages, setPropertyPackages] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const fetchData = useCallback(async () => {
-    setLoading(true)
+  // `silent`: pass true when the caller doesn't want the loading spinner
+  // to blank the page — e.g. an inline photo upload inside the room edit
+  // form. Without this flag, refetching after upload flips `loading=true`,
+  // the top-level `if (loading) return <spinner />` unmounts the whole
+  // tabs+form tree, and the user loses their open edit panel. Silent
+  // refetch still swaps `rooms` / `bookings` / `property` state so cards
+  // update in place, just without the spinner flash.
+  const fetchData = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true)
     const [propRes, roomsRes, bookingsRes, pkgRes] = await Promise.all([
       supabase.from('properties').select('*').eq('id', propertyId).single(),
       // Order: name only at the DB layer (safe — column always
@@ -3534,11 +3541,18 @@ function RoomsTab({ propertyId, rooms, packages = [], onRefresh, onJumpToPackage
 
   // Refresh single room from DB after a media update inside the form, so
   // the photo strip on the card list is always in sync.
+  //
+  // silent:true on the parent refetch — a photo upload inside the edit
+  // form would otherwise flip PropertyManage.loading=true, which the
+  // top-level `if (loading) return <spinner />` uses to blank the entire
+  // tab tree, taking the open edit form with it. The user'd see the
+  // upload complete and their panel vanish. Silent keeps the panel open;
+  // rooms + property state still swap so the card thumbnails refresh.
   async function refreshRoomMedia(roomId) {
     const { data } = await supabase.from('rooms').select('photo_urls, video_urls').eq('id', roomId).single()
     if (data) {
       setEditingRoom(prev => prev?.id === roomId ? { ...prev, ...data } : prev)
-      onRefresh()
+      onRefresh?.({ silent: true })
     }
   }
 
