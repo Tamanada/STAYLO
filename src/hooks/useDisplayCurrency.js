@@ -70,8 +70,13 @@ const UNSUPPORTED_TARGETS = new Set(['KHR', 'LAK', 'MMK', 'MMR'])
 // Frankfurter returns { amount, base, date, rates: { EUR: 0.85, THB: 34.5, … } }.
 // The `rates` map does NOT contain the base itself → we add it as 1.0 for
 // convenience so lookup is always `rates[target]`.
+//
+// URL: `/v1/latest?base=XXX`. Earlier drafts used `frankfurter.dev/latest?from=`
+// (no /v1 prefix, `from=` param) which is a legacy alias that now returns
+// 404 → the whole hook silently fell back to identity conversion and no
+// price ever changed. Verified against a live curl on 2026-08-13.
 async function fetchRatesFor(base) {
-  const url = `https://api.frankfurter.dev/latest?from=${encodeURIComponent(base)}`
+  const url = `https://api.frankfurter.dev/v1/latest?base=${encodeURIComponent(base)}`
   const res = await fetch(url)
   if (!res.ok) throw new Error(`FX fetch failed: HTTP ${res.status}`)
   const json = await res.json()
