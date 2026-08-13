@@ -5,6 +5,7 @@ import { Menu, X, Globe, ChevronDown } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { changeLanguage } from '../../i18n'
 import { getFeatureFlags } from '../../pages/admin/AdminSettings'
+import CurrencyPicker from '../CurrencyPicker'
 
 const languages = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
@@ -217,6 +218,10 @@ export function Navbar() {
                   surfaces remain reachable from the dashboard sidebar
                   once a user is signed in.) */}
 
+              {/* Currency — sits next to Language per David's UX call
+                  2026-08-13. Both persist across the site via their own
+                  localStorage stores. */}
+              <CurrencyPicker />
               {/* Language */}
               <div className="relative">
                 <button onClick={() => setLangOpen(!langOpen)}
@@ -277,6 +282,7 @@ export function Navbar() {
 
             {/* Mobile */}
             <div className="md:hidden flex items-center gap-2">
+              <CurrencyPicker />
               <div className="relative">
                 <button onClick={() => setLangOpen(!langOpen)}
                   className="flex items-center gap-1 px-3 py-1.5 rounded-full text-sm"

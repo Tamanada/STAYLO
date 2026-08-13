@@ -13,7 +13,6 @@ import { matchRegion, propertyMatchesRegion } from '../../lib/regions'
 import { getAmenityMeta, aggregatePropertyAmenities } from '../../lib/amenityIcons'
 import GuestPicker from '../../components/ota/GuestPicker'
 import FamilyPopup from '../../components/FamilyPopup'
-import CurrencyPicker from '../../components/CurrencyPicker'
 import { useDisplayCurrency } from '../../hooks/useDisplayCurrency'
 
 
@@ -221,15 +220,8 @@ export default function OTASearch() {
         </picture>
         {/* Soft bottom-gradient overlay only (keep banner art visible at top) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/45" />
-        {/* Currency picker — top-right of the hero, sits above the gradient
-            so the pill stays readable on both dark banner tones. Same
-            component as PropertyDetail so the guest's choice persists
-            across pages via useDisplayCurrency's localStorage. */}
-        <div className="absolute top-3 right-3 sm:top-5 sm:right-5 z-20">
-          <div className="rounded-full shadow-xl backdrop-blur-sm">
-            <CurrencyPicker />
-          </div>
-        </div>
+        {/* Currency picker moved to global Navbar 2026-08-13 (next to
+            Language). Was here in the hero; a single instance is enough. */}
 
         <div className="relative max-w-6xl mx-auto w-full px-4 sm:px-6 pb-8 sm:pb-10">
           <div className="text-center mb-6 sm:mb-7">

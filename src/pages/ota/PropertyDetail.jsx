@@ -13,7 +13,6 @@ import { computeRoomPricing } from '../../lib/roomPricing'
 import { applyPackagePricing, formatPackageImpact } from '../../lib/packagePricing'
 import { getAmenityMeta } from '../../lib/amenityIcons'
 import GuestPicker from '../../components/ota/GuestPicker'
-import CurrencyPicker from '../../components/CurrencyPicker'
 import { useDisplayCurrency } from '../../hooks/useDisplayCurrency'
 
 // Local amenityConfig removed — single source of truth lives in
@@ -350,13 +349,8 @@ export default function PropertyDetail() {
               <ArrowLeft size={16} /> {t('booking.back', 'Back to results')}
             </Link>
             <div className="flex items-center gap-2">
-              {/* Guest display-currency picker — same instance shows across
-                  every OTA page (localStorage backing). Wrapped so the
-                  dropdown chip inherits the same white pill styling as the
-                  Share / Heart buttons for visual consistency. */}
-              <div className="bg-white/90 backdrop-blur-sm rounded-full shadow-lg">
-                <CurrencyPicker />
-              </div>
+              {/* Currency picker moved to global Navbar 2026-08-13 (David
+                  UX call — sits next to Language for consistency). */}
               <button
                 type="button"
                 onClick={handleShare}
