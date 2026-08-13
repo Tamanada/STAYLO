@@ -15,6 +15,7 @@ import { centroid as polygonCentroid, polygonArea, verticesToPoints } from '../.
 import DormSubPlanModal from '../../components/dashboard/DormSubPlanModal'
 import { EventsHolidaysModal } from '../../components/dashboard/EventsHolidaysModal'
 import { getEventsOnDate } from '../../lib/events'
+import LittleHotelierCard from '../../components/channels/LittleHotelierCard'
 
 // Dorm rooms behave differently on the floor plan: ONE marker on the
 // main plan (= the physical dorm room itself), and the room.quantity
@@ -346,7 +347,7 @@ export default function PropertyManage() {
       {activeTab === 'calendar' && <CalendarTab rooms={rooms} property={property} onRefresh={fetchData} />}
       {activeTab === 'bookings' && <BookingsTab bookings={bookings} rooms={rooms} onRefresh={fetchData} />}
       {activeTab === 'team' && <TeamTab property={property} />}
-      {activeTab === 'settings' && <SettingsTab property={property} onRefresh={fetchData} />}
+      {activeTab === 'settings' && <SettingsTab property={property} onRefresh={fetchData} rooms={rooms} />}
     </div>
   )
 }
@@ -911,7 +912,7 @@ function OtaChannelCard({ channel, hasKey, form, update, propagate, togglePropag
   )
 }
 
-function SettingsTab({ property, onRefresh }) {
+function SettingsTab({ property, onRefresh, rooms = [] }) {
   const { t } = useTranslation()
   const { user } = useAuth()
   // Lock editing once the property has been verified (status >= validated).
@@ -1407,6 +1408,12 @@ function SettingsTab({ property, onRefresh }) {
               />
             )
           })}
+          {/* Little Hotelier — separate component because iCal integration
+              differs from API-key integration: one URL per room, live sync
+              button that actually invokes an Edge Function, no "early
+              access" gate. Sits in the same grid so the hotelier sees
+              every distribution channel in one place. */}
+          <LittleHotelierCard propertyId={property.id} rooms={rooms} t={t} />
         </div>
 
         <div className="mt-4 p-3 bg-electric/5 border border-electric/20 rounded-lg text-xs text-electric flex items-start gap-2">
