@@ -469,14 +469,20 @@ export default function Checkout() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Back */}
-      <Link
-        to={`/ota/${propertyId}?in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}`}
-        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-ocean transition-colors mb-6 no-underline"
-      >
-        <ArrowLeft size={16} />
-        {t('checkout.back_to_property', 'Back to property')}
-      </Link>
+      {/* Top bar — back link on the left, currency picker on the right.
+          Same picker instance as Search + PropertyDetail (localStorage-
+          backed), so a guest who set EUR on the property page keeps EUR
+          through checkout without re-picking. */}
+      <div className="flex items-center justify-between mb-6">
+        <Link
+          to={`/ota/${propertyId}?in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}`}
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-ocean transition-colors no-underline"
+        >
+          <ArrowLeft size={16} />
+          {t('checkout.back_to_property', 'Back to property')}
+        </Link>
+        <CurrencyPicker />
+      </div>
 
       <h1 className="text-2xl font-bold text-deep mb-6">{t('checkout.title', 'Complete Your Booking')}</h1>
 
