@@ -590,19 +590,19 @@ export default function Checkout() {
                         {roomsCount > 1 && <span className="text-gray-400"> × {roomsCount} rooms</span>}
                       </span>
                       <span className={pricing.hasPromo && pricing.savings > 0 ? 'text-gray-400 line-through' : 'text-deep'}>
-                        ${pricing.originalTotal.toFixed(2)}
+                        {money(pricing.originalTotal)}
                       </span>
                     </div>
                     {pricing.hasPromo && pricing.savings > 0 && !pricing.longStayTier && (
                       <div className="flex justify-between text-orange font-medium text-xs">
                         <span>🔥 {pricing.promoLabel || 'Promo'}{pricing.promoPct > 0 && ` (−${Math.round(pricing.promoPct)}%)`}</span>
-                        <span>−${pricing.savings.toFixed(2)}</span>
+                        <span>−{money(pricing.savings)}</span>
                       </div>
                     )}
                     {pricing.longStayTier && (
                       <div className="flex justify-between text-libre font-medium text-xs">
                         <span>🗓️ {pricing.longStayLabel}</span>
-                        <span>−${pricing.savings.toFixed(2)}</span>
+                        <span>−{money(pricing.savings)}</span>
                       </div>
                     )}
                     {(pricing.savings > 0) && (
@@ -618,7 +618,7 @@ export default function Checkout() {
                     <span>
                       ✨ {pkg.name}
                       <span className="text-[10px] text-gray-400 ml-1">
-                        ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'} · {pkgQty}× ${Number(pkg.price).toFixed(0)})
+                        ({packageMode === 'replace' ? 'all-inclusive' : 'add-on'} · {pkgQty}× {money(Number(pkg.price))})
                       </span>
                     </span>
                     <span>{packageMode === 'replace' ? '' : '+'}{money(packageCost)}</span>
