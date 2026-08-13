@@ -13,6 +13,8 @@ import { computeRoomPricing } from '../../lib/roomPricing'
 import { applyPackagePricing, formatPackageImpact } from '../../lib/packagePricing'
 import { getAmenityMeta } from '../../lib/amenityIcons'
 import GuestPicker from '../../components/ota/GuestPicker'
+import CurrencyPicker from '../../components/CurrencyPicker'
+import { useDisplayCurrency } from '../../hooks/useDisplayCurrency'
 
 // Local amenityConfig removed — single source of truth lives in
 // src/lib/amenityIcons.js (covers every key from PropertyManage's
@@ -99,6 +101,16 @@ export default function PropertyDetail() {
   // Combines videos (first) + photos so prev/next navigates through the whole gallery.
   const [roomLightbox, setRoomLightbox] = useState(null)
   const [shareToast, setShareToast] = useState('')
+
+  // Guest-side display currency. Base = what the hotelier quoted in
+  // (property.currency); we convert to the guest's chosen display code
+  // via `money(amount)`. Rates lazy-loaded from Frankfurter on first
+  // need + cached in localStorage for 1 h. Falls back to identity
+  // (1:1) if the target currency isn't quoted (KHR, LAK, MMK).
+  const { format, ensureRates } = useDisplayCurrency()
+  const baseCurrency = (property?.currency || 'USD').toUpperCase()
+  useEffect(() => { if (baseCurrency) ensureRates(baseCurrency) }, [baseCurrency, ensureRates])
+  const money = (amount) => format(amount, baseCurrency)
 
   // Share the property — uses native Web Share API on supported devices
   // (mobile mostly), falls back to copying the URL to clipboard.
@@ -338,6 +350,13 @@ export default function PropertyDetail() {
               <ArrowLeft size={16} /> {t('booking.back', 'Back to results')}
             </Link>
             <div className="flex items-center gap-2">
+              {/* Guest display-currency picker — same instance shows across
+                  every OTA page (localStorage backing). Wrapped so the
+                  dropdown chip inherits the same white pill styling as the
+                  Share / Heart buttons for visual consistency. */}
+              <div className="bg-white/90 backdrop-blur-sm rounded-full shadow-lg">
+                <CurrencyPicker />
+              </div>
               <button
                 type="button"
                 onClick={handleShare}
@@ -745,24 +764,24 @@ export default function PropertyDetail() {
                                 {/* If a promo is active, show original price strike-through */}
                                 {pricing.hasPromo && pricing.savings > 0 && (
                                   <div className="flex items-center gap-2 justify-end">
-                                    <span className="text-sm text-orange/80 line-through">${original.toFixed(0)}</span>
+                                    <span className="text-sm text-orange/80 line-through">{money(original)}</span>
                                   </div>
                                 )}
-                                <p className="text-2xl font-extrabold text-gray-900">${total.toFixed(0)}</p>
+                                <p className="text-2xl font-extrabold text-gray-900">{money(total)}</p>
                                 <p className="text-[11px] text-gray-400">{t('booking.before_pay_fees', '+ payment fees at checkout')}</p>
                                 {pricing.longStayTier === 'monthly' && (
                                   <p className="text-[11px] text-libre font-semibold mt-0.5 flex items-center gap-1 justify-end">
-                                    <Calendar size={11} /> Monthly: ~${pricing.perNightEffective.toFixed(0)}/night
+                                    <Calendar size={11} /> Monthly: ~{money(pricing.perNightEffective)}/night
                                   </p>
                                 )}
                                 {pricing.longStayTier === 'weekly' && (
                                   <p className="text-[11px] text-libre font-semibold mt-0.5 flex items-center gap-1 justify-end">
-                                    <Calendar size={11} /> Weekly: −${pricing.savings.toFixed(0)}
+                                    <Calendar size={11} /> Weekly: −{money(pricing.savings)}
                                   </p>
                                 )}
                                 {pricing.hasPromo && pricing.savings > 0 && !pricing.longStayTier && (
                                   <p className="text-[11px] text-orange font-semibold mt-0.5">
-                                    🔥 Promo applied: −${pricing.savings.toFixed(0)}
+                                    🔥 Promo applied: −{money(pricing.savings)}
                                   </p>
                                 )}
                               </div>
@@ -784,7 +803,7 @@ export default function PropertyDetail() {
                                   {room.monthlyRate > 0 && (
                                     <div className="flex justify-between text-[11px] text-deep">
                                       <span>Monthly (≥{room.monthlyMinNights} nts)</span>
-                                      <span className="font-semibold">${(room.monthlyRate / 30).toFixed(0)}/night</span>
+                                      <span className="font-semibold">{money(room.monthlyRate / 30)}/night</span>
                                     </div>
                                   )}
                                 </div>

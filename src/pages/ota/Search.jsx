@@ -13,6 +13,8 @@ import { matchRegion, propertyMatchesRegion } from '../../lib/regions'
 import { getAmenityMeta, aggregatePropertyAmenities } from '../../lib/amenityIcons'
 import GuestPicker from '../../components/ota/GuestPicker'
 import FamilyPopup from '../../components/FamilyPopup'
+import CurrencyPicker from '../../components/CurrencyPicker'
+import { useDisplayCurrency } from '../../hooks/useDisplayCurrency'
 
 
 const DESTINATIONS = [
@@ -76,6 +78,21 @@ export default function OTASearch() {
   const [searched, setSearched] = useState(!!searchParams.get('q'))
   const [showGuestPicker, setShowGuestPicker] = useState(false)
 
+  // Guest-side currency display. Each property card carries its own
+  // base currency (`prop.currency`, populated in the mapper above), so
+  // convert per card. `moneyFor(amount, prop)` is the one-call helper
+  // used inline in the JSX.
+  const { format, ensureRates } = useDisplayCurrency()
+  const moneyFor = (amount, prop) => format(amount, (prop?.currency || 'USD').toUpperCase())
+  // Pre-fetch FX for every distinct base currency we're about to render.
+  // Search may show 20 properties, some in THB, some in EUR — batching
+  // ensureRates() here (once per unique base) means the first paint
+  // already has correct converted prices instead of flashing identity.
+  useEffect(() => {
+    const bases = new Set(realProperties.map(p => (p.currency || 'USD').toUpperCase()))
+    for (const b of bases) ensureRates(b)
+  }, [realProperties, ensureRates])
+
   useEffect(() => {
     async function fetchReal() {
       const [propRes, roomsRes] = await Promise.all([
@@ -106,6 +123,12 @@ export default function OTASearch() {
         photo: p.photo_urls?.[0] || null,
         photos: p.photo_urls || [],
         price: lowestPrice,
+        // Carry the hotelier's base currency so the guest-side display
+        // picker can convert per-property. Without this every card would
+        // pretend prices were USD regardless of what the hotel actually
+        // quoted in. Uppercased for defensive matching against the ISO
+        // 4217 catalog.
+        currency: (p.currency || 'USD').toUpperCase(),
         otaPrice: Math.round(lowestPrice * 1.25),
         rating: 8.5,
         reviews: 0,
@@ -198,6 +221,15 @@ export default function OTASearch() {
         </picture>
         {/* Soft bottom-gradient overlay only (keep banner art visible at top) */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/15 via-transparent to-black/45" />
+        {/* Currency picker — top-right of the hero, sits above the gradient
+            so the pill stays readable on both dark banner tones. Same
+            component as PropertyDetail so the guest's choice persists
+            across pages via useDisplayCurrency's localStorage. */}
+        <div className="absolute top-3 right-3 sm:top-5 sm:right-5 z-20">
+          <div className="rounded-full shadow-xl backdrop-blur-sm">
+            <CurrencyPicker />
+          </div>
+        </div>
 
         <div className="relative max-w-6xl mx-auto w-full px-4 sm:px-6 pb-8 sm:pb-10">
           <div className="text-center mb-6 sm:mb-7">
@@ -488,7 +520,7 @@ export default function OTASearch() {
                                 {prop.roomTypes.map(r => (
                                   <div key={r.name} className="bg-gray-50 rounded-lg p-2.5">
                                     <p className="text-xs font-bold text-gray-900 line-clamp-1">{r.name}</p>
-                                    <p className="text-lg font-extrabold text-[#003580]">${r.price}<span className="text-[10px] text-gray-400 font-normal"> /{t('booking.night', 'night')}</span></p>
+                                    <p className="text-lg font-extrabold text-[#003580]">{moneyFor(r.price, prop)}<span className="text-[10px] text-gray-400 font-normal"> /{t('booking.night', 'night')}</span></p>
                                   </div>
                                 ))}
                               </div>
@@ -523,7 +555,7 @@ export default function OTASearch() {
                                 </div>
                                 <div className="text-right">
                                   <p className="text-xs text-gray-500">{t('booking.from', 'From')}</p>
-                                  <p className="text-2xl font-extrabold text-gray-900">${prop.roomTypes[0].price}<span className="text-xs text-gray-400 font-normal"> / {t('booking.night', 'night')}</span></p>
+                                  <p className="text-2xl font-extrabold text-gray-900">{moneyFor(prop.roomTypes[0].price, prop)}<span className="text-xs text-gray-400 font-normal"> / {t('booking.night', 'night')}</span></p>
                                 </div>
                               </div>
                             </div>
@@ -646,15 +678,15 @@ export default function OTASearch() {
                               {hasOtaPrice ? (
                                 <>
                                   <div className="flex items-center gap-2 justify-end">
-                                    <span className="text-sm text-gray-400 line-through">${totalOTA}</span>
-                                    <span className="text-xl font-extrabold text-gray-900">${totalStaylo}</span>
+                                    <span className="text-sm text-gray-400 line-through">{moneyFor(totalOTA, prop)}</span>
+                                    <span className="text-xl font-extrabold text-gray-900">{moneyFor(totalStaylo, prop)}</span>
                                   </div>
                                   <p className="text-[10px] text-[#008009] font-medium">
-                                    {t('booking.you_save', 'You save')} ${savings * nights} ({savingsPercent}%)
+                                    {t('booking.you_save', 'You save')} {moneyFor(savings * nights, prop)} ({savingsPercent}%)
                                   </p>
                                 </>
                               ) : (
-                                <span className="text-xl font-extrabold text-gray-900">${totalStaylo}</span>
+                                <span className="text-xl font-extrabold text-gray-900">{moneyFor(totalStaylo, prop)}</span>
                               )}
                             </div>
                           </div>
