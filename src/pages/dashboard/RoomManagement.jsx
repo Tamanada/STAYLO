@@ -223,7 +223,13 @@ const STYLES = `
   text-decoration:line-through;
   border:1px dashed #D1D5DB !important;
   opacity:.85;
+  /* Sit BEHIND active bars when they overlap on the same row/dates.
+     Active .rm-res-bar has z-index:1; keeping cancelled at 0 means the
+     confirmed booking's colour + guest name reads on top, with the
+     dashed-gray "cancelled" strip peeking around the edges. */
+  z-index:0 !important;
 }
+.rm-rb-cancelled:hover{ z-index:5 !important }
 .rm-rb-cancelled::after{
   content:'✕ cancelled';
   position:absolute;right:6px;top:50%;transform:translateY(-50%);
@@ -1489,15 +1495,26 @@ function TimelineView({ rooms, bookings, packagesByRoom, getRewardsFor, blockedB
     for (const [roomId, list] of byRoom.entries()) {
       const parent = rooms.find(r => r.id === roomId)
       const qty = Math.max(1, Number(parent?.quantity) || 1)
+      // Cancelled bookings do NOT occupy a physical unit — they're
+      // informational overlays. Splitting them out here means the
+      // active distributor doesn't push a real booking down to unit#2
+      // just because a cancelled one existed on the same dates. All
+      // cancelled bookings land on unit#1 (the "primary" row of the
+      // room). If a confirmed also lives on unit#1 on the same day,
+      // they'll visually stack — the cancelled bar's dashed-gray look
+      // + lower z-index keeps them distinguishable.
+      const cancelled = list.filter(b => b.status === 'cancelled')
+      const active    = list.filter(b => b.status !== 'cancelled')
       if (qty <= 1) {
-        m.set(roomId, list)
+        m.set(roomId, [...active, ...cancelled])
         continue
       }
-      // Sort by check-in ascending for stable assignment.
-      const sorted = [...list].sort((a, b) => a._ciTs - b._ciTs)
-      // Walk the sorted bookings and assign each to the next free
-      // virtual unit FOR ITS DATE RANGE. A unit is "free" for a
-      // booking if no already-assigned booking on that unit overlaps.
+      // Sort ACTIVE bookings by check-in ascending for stable assignment.
+      const sorted = [...active].sort((a, b) => a._ciTs - b._ciTs)
+      // Walk the sorted ACTIVE bookings and assign each to the next
+      // free virtual unit FOR ITS DATE RANGE. Cancelled ones are
+      // appended to unit#1 afterwards (see below), independent of
+      // the active-unit fit test.
       const occupancy = new Array(qty + 1).fill(null).map(() => [])
       for (const b of sorted) {
         let placed = false
@@ -1524,6 +1541,14 @@ function TimelineView({ rooms, bookings, packagesByRoom, getRewardsFor, blockedB
           arr.push(b)
           m.set(key, arr)
         }
+      }
+      // Now bolt the cancelled bookings onto unit#1 — outside the
+      // occupancy loop so they never displace an active booking.
+      if (cancelled.length > 0) {
+        const key = `${roomId}#1`
+        const arr = m.get(key) || []
+        arr.push(...cancelled)
+        m.set(key, arr)
       }
     }
     return m
