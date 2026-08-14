@@ -26,9 +26,11 @@ import { useTranslation } from 'react-i18next'
 import { QRCodeSVG } from 'qrcode.react'
 import {
   X, Gift, Receipt, MapPin, Calendar, BedDouble,
-  CheckCircle2, AlertCircle, Loader2, Copy,
+  CheckCircle2, AlertCircle, Loader2, Copy, XCircle,
 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
+import { computeCancellationRefund } from '../../lib/cancellationPolicy'
+import { currencies } from '../../lib/currencies'
 
 // Tiny helper — short human date (e.g. "Jun 5").
 function fmtDay(iso) {
@@ -38,13 +40,35 @@ function fmtDay(iso) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
-export default function MyStayPanel({ booking, property, room, open, onClose }) {
+export default function MyStayPanel({ booking, property, room, open, onClose, onCancelled }) {
   const { t } = useTranslation()
   const [vouchers, setVouchers] = useState([])
   const [charges, setCharges]   = useState([])
   const [loading, setLoading]   = useState(true)
   // Currently zoomed voucher (full-screen QR for scanner). null = list view.
   const [zoomedVoucherId, setZoomedVoucherId] = useState(null)
+  // Cancellation flow — three states:
+  //   'idle'    (default, "Cancel my booking" button visible)
+  //   'confirm' (preview modal open, waiting for guest confirm)
+  //   'busy'    (invoking cancel-booking EF)
+  const [cancelState, setCancelState] = useState('idle')
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelError, setCancelError] = useState('')
+  // Property currency symbol — hotelier's base, mirrors how the folio
+  // renders charges. We don't route through the guest picker here
+  // because a refund preview must match what the bank statement will
+  // show (base currency).
+  const _propSym = useMemo(
+    () => (currencies.find(c => c.code === (property?.currency || 'USD').toUpperCase())?.symbol) || '$',
+    [property?.currency]
+  )
+  // Live refund preview — recomputed every render so a guest looking at
+  // the modal for a few minutes sees the band shift if they cross a
+  // threshold while looking.
+  const refundPreview = useMemo(
+    () => booking && property ? computeCancellationRefund({ booking, property, nowIso: new Date().toISOString() }) : null,
+    [booking, property]
+  )
 
   useEffect(() => {
     if (!open || !booking?.id) return
@@ -314,8 +338,151 @@ export default function MyStayPanel({ booking, property, room, open, onClose }) 
               )}
             </section>
           )}
+
+          {/* ── Cancel my booking ────────────────────────────────────
+              Sits at the bottom of the panel because the primary use of
+              /my-stay is checking vouchers + folio DURING the trip.
+              Cancellation is an exit action. Shown for confirmed / pending
+              bookings only — already-cancelled or completed stays hide it.
+              The refund preview is computed live from the property's
+              cancellation_policy so the guest sees exactly what they
+              would get BEFORE clicking. Same barème the cancel-booking
+              Edge Function re-validates server-side. */}
+          {refundPreview && (
+            <section className="mt-6 pt-5 border-t border-gray-100">
+              {refundPreview.canCancel ? (
+                <>
+                  <div className="flex items-center gap-2 mb-2">
+                    <XCircle size={16} className="text-red-500" />
+                    <h3 className="text-sm font-bold text-deep">Cancel my booking</h3>
+                  </div>
+                  <div className="rounded-xl bg-gray-50 border border-gray-200 px-4 py-3 text-xs">
+                    <div className="text-gray-600 mb-1">
+                      <strong>{refundPreview.policyName}</strong> policy · {refundPreview.thresholds}
+                    </div>
+                    <div className="text-gray-500 mb-2">
+                      Check-in in <strong>{refundPreview.bandLabel}</strong>
+                    </div>
+                    <div className="flex items-baseline justify-between pt-2 border-t border-gray-200">
+                      <span className="text-gray-500">If you cancel now, you get back</span>
+                      <span className={`text-lg font-extrabold ${refundPreview.refundAmountCents > 0 ? 'text-libre' : 'text-red-500'}`}>
+                        {_propSym}{(refundPreview.refundAmountCents / 100).toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-0.5 text-right">
+                      {refundPreview.refundPct}% refund
+                      {refundPreview.processingFeeCents > 0 && ` · payment fee ${_propSym}${(refundPreview.processingFeeCents / 100).toFixed(2)} not refundable`}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setCancelReason(''); setCancelError(''); setCancelState('confirm') }}
+                    className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-red-600 border-2 border-red-200 hover:bg-red-50 hover:border-red-300 transition-colors text-sm font-bold"
+                  >
+                    <XCircle size={14} /> Cancel my booking
+                  </button>
+                </>
+              ) : (
+                <div className="text-xs text-gray-400 italic text-center">
+                  {refundPreview.reason || 'Cancellation not available on this booking.'}
+                </div>
+              )}
+            </section>
+          )}
         </div>
       </div>
+
+      {/* Cancel-confirmation modal — sits ABOVE the panel (higher z-index).
+          Shows the refund amount ONE MORE TIME so the guest can't say
+          "I didn't realise" after the fact. Textarea captures an optional
+          reason that lands on the hotelier's SHIP alert + the audit trail. */}
+      {cancelState !== 'idle' && refundPreview?.canCancel && (
+        <div
+          onClick={() => cancelState !== 'busy' && setCancelState('idle')}
+          className="fixed inset-0 z-[7000] flex items-center justify-center p-4"
+          style={{ background: 'rgba(20,20,30,.7)', backdropFilter: 'blur(4px)' }}
+        >
+          <div onClick={e => e.stopPropagation()} className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div className="flex items-center gap-2 mb-3">
+              <XCircle size={20} className="text-red-500" />
+              <h2 className="text-lg font-extrabold text-deep">Confirm cancellation</h2>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              You're about to cancel your booking at <strong>{property?.name}</strong> for{' '}
+              <strong>{fmtDay(booking.check_in)} → {fmtDay(booking.check_out)}</strong>.
+              This can't be undone.
+            </p>
+
+            <div className="rounded-xl bg-libre/5 border border-libre/20 px-4 py-3 mb-4">
+              <div className="flex items-baseline justify-between">
+                <span className="text-xs text-gray-500">You'll receive back</span>
+                <span className={`text-2xl font-extrabold ${refundPreview.refundAmountCents > 0 ? 'text-libre' : 'text-red-500'}`}>
+                  {_propSym}{(refundPreview.refundAmountCents / 100).toFixed(2)}
+                </span>
+              </div>
+              <div className="text-[11px] text-gray-500 mt-1">
+                {refundPreview.reason}
+              </div>
+            </div>
+
+            <label className="block text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1">
+              Reason (optional — shared with the hotelier)
+            </label>
+            <textarea
+              value={cancelReason}
+              onChange={e => setCancelReason(e.target.value.slice(0, 500))}
+              placeholder="e.g. Change of plans, illness, flight cancelled…"
+              rows={3}
+              disabled={cancelState === 'busy'}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/30"
+            />
+
+            {cancelError && (
+              <div className="mt-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                {cancelError}
+              </div>
+            )}
+
+            <div className="flex gap-2 mt-5">
+              <button
+                type="button"
+                onClick={() => setCancelState('idle')}
+                disabled={cancelState === 'busy'}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-bold text-sm hover:bg-gray-200 disabled:opacity-50"
+              >
+                Keep my booking
+              </button>
+              <button
+                type="button"
+                disabled={cancelState === 'busy'}
+                onClick={async () => {
+                  setCancelState('busy'); setCancelError('')
+                  try {
+                    const { data, error } = await supabase.functions.invoke('cancel-booking', {
+                      body: { booking_id: booking.id, reason: cancelReason.trim() || null },
+                    })
+                    if (error) throw error
+                    if (!data?.ok) throw new Error(data?.error || 'Cancellation failed')
+                    // Success — bubble up so the parent list refetches and
+                    // this booking flips to "cancelled" in place.
+                    onCancelled?.(data)
+                    setCancelState('idle')
+                    onClose?.()
+                  } catch (e) {
+                    setCancelError(String(e?.message || e))
+                    setCancelState('confirm')
+                  }
+                }}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 disabled:opacity-50"
+              >
+                {cancelState === 'busy'
+                  ? <><Loader2 size={14} className="animate-spin" /> Cancelling…</>
+                  : <>Confirm cancellation</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Zoomed QR overlay — fullscreen QR for the receptionist to scan */}
       {zoomedVoucher && (

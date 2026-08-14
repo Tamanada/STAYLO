@@ -11,7 +11,7 @@
 // BookingCard + STATUS_CONFIG are exported so IncomingBookings can reuse
 // them without duplicating the rich card layout.
 // ============================================
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import {
@@ -45,13 +45,17 @@ export default function MyBookings() {
   // on active bookings. State holds the booking the panel is anchored
   // to; null = closed.
   const [stayBooking, setStayBooking] = useState(null)
+  // Ref to fetchAll so the MyStayPanel onCancelled callback can trigger
+  // a silent refetch (no loading flash) — the cancelled booking flips
+  // to the "Past & Cancelled" bucket without the whole list blinking.
+  const fetchAllRef = useRef(null)
 
   useEffect(() => {
     if (!user) return
     let cancelled = false
 
-    async function fetchAll() {
-      setLoading(true)
+    async function fetchAll(silent = false) {
+      if (!silent) setLoading(true)
 
       // Bookings made by the user as a GUEST
       const tripsRes = await supabase
@@ -86,6 +90,9 @@ export default function MyBookings() {
 
       if (!cancelled) setLoading(false)
     }
+    // Expose to the component so the MyStayPanel cancel-callback can
+    // trigger a silent refresh without waiting for a page navigation.
+    fetchAllRef.current = fetchAll
     fetchAll()
     return () => { cancelled = true }
   }, [user])
@@ -199,6 +206,7 @@ export default function MyBookings() {
         property={stayBooking ? properties[stayBooking.property_id] : null}
         room={stayBooking ? rooms[stayBooking.room_id] : null}
         onClose={() => setStayBooking(null)}
+        onCancelled={() => { try { fetchAllRef.current?.(true) } catch(_){} }}
       />
     </div>
   )

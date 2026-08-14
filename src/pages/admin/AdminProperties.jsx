@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { CheckCircle, XCircle, Eye, Rocket, ExternalLink, ImageOff, X, Pencil, Save, Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { CheckCircle, XCircle, Eye, Rocket, ExternalLink, ImageOff, X, Pencil, Save, Loader2, Settings as SettingsIcon } from 'lucide-react'
 import { useAdminData } from '../../hooks/useAdminData'
 import { DataTable } from '../../components/admin/DataTable'
 import { Badge } from '../../components/ui/Badge'
@@ -123,6 +124,21 @@ export default function AdminProperties() {
               <Rocket size={16} />
             </button>
           )}
+          {/* Open this property's full management panel — same page the
+              hotelier lands on from their own dashboard. Admin has RLS
+              bypass on properties, so opening this URL as staff loads the
+              full Settings / Rooms / Calendar / Bookings stack for the
+              client, without needing to impersonate. Shown on EVERY row
+              (any status) so support can jump in at any point of the
+              lifecycle. */}
+          <Link
+            to={`/dashboard/property/${row.id}/manage`}
+            title="Open client's settings + rooms + calendar"
+            className="p-1.5 rounded-lg hover:bg-purple/10 text-purple cursor-pointer"
+            onClick={e => e.stopPropagation()}
+          >
+            <SettingsIcon size={16} />
+          </Link>
         </div>
       )
     }
