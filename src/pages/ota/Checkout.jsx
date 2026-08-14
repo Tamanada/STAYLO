@@ -64,6 +64,22 @@ const PAYMENT_METHODS = [
     descKey:    'checkout.method_onchain_desc',
     descDef:    'Pour les gros montants. Activation prochaine.',
   },
+  {
+    // Solana — near-instant, ~$0.0001 network fee. Marked coming-soon
+    // until the SPL/pay integration lands (parallels the BTC on-chain
+    // stance — visible so guests know it's on the roadmap). Same payout
+    // address model as Bitcoin: property.payment_solana_address holds
+    // the recipient wallet, added by 20260813000002_properties_payment_columns.
+    key:        'sol',
+    feeRate:    0.005,   // 0.5% platform fee — network cost near-zero
+    available:  false,
+    comingSoon: true,
+    icon:       '◎',
+    labelKey:   'checkout.method_sol',
+    labelDef:   'Solana',
+    descKey:    'checkout.method_sol_desc',
+    descDef:    'USDC ou SOL, quasi-instantané, frais réseau minimes.',
+  },
 ]
 
 export default function Checkout() {

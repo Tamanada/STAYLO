@@ -86,6 +86,15 @@ async function fetchCryptoUsdRates() {
   for (const c of currencies) {
     if (c.isCrypto && c.cgId && json[c.cgId]?.usd) perCryptoUsd[c.code] = json[c.cgId].usd
   }
+  // Derived units (SATS from BTC, and any future micro-unit like GWEI
+  // from ETH) — one CoinGecko call, N display currencies. `divisor` is
+  // "how many derived units make one parent unit" (100_000_000 sats per
+  // BTC) → USD-per-derived-unit = parent-USD / divisor.
+  for (const c of currencies) {
+    if (c.isCrypto && c.derivedFrom && c.divisor && perCryptoUsd[c.derivedFrom]) {
+      perCryptoUsd[c.code] = perCryptoUsd[c.derivedFrom] / c.divisor
+    }
+  }
   return { perCryptoUsd, fetchedAt: Date.now() }
 }
 

@@ -47,8 +47,12 @@ export const currencies = [
   //   · BTC decimals=6 → shows down to 1 micro-BTC (0.000001 = 1 μBTC),
   //     plenty for hotel-room-sized prices (a $200 room ≈ 0.003 BTC).
   //   · SOL decimals=3 → 0.001 SOL granularity, matches typical amounts.
-  { code: 'BTC', symbol: '₿',  name: 'Bitcoin',  decimals: 6, isCrypto: true, cgId: 'bitcoin' },
-  { code: 'SOL', symbol: '◎',  name: 'Solana',   decimals: 3, isCrypto: true, cgId: 'solana' },
+  { code: 'BTC',  symbol: '₿',   name: 'Bitcoin',   decimals: 6, isCrypto: true, cgId: 'bitcoin' },
+  // Satoshi — 1 BTC = 100 000 000 sats. Derived from BTC's USD price at
+  // fetch time so we don't call CoinGecko twice. Zero decimals because
+  // sats are already the smallest indivisible unit.
+  { code: 'SATS', symbol: 'sat', name: 'Satoshi',  decimals: 0, isCrypto: true, derivedFrom: 'BTC', divisor: 100000000 },
+  { code: 'SOL',  symbol: '◎',   name: 'Solana',   decimals: 3, isCrypto: true, cgId: 'solana' },
 ]
 
 const byCode = Object.fromEntries(currencies.map(c => [c.code, c]))
