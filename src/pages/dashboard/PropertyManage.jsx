@@ -1231,9 +1231,10 @@ function SettingsTab({ property, onRefresh, rooms = [] }) {
           <label className="block text-xs font-medium text-gray-500 mb-1">{t('manage.cancellation_policy', 'Cancellation policy')}</label>
           <select value={form.cancellation_policy} onChange={e => update('cancellation_policy', e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30">
-            <option value="flexible">{t('manage.cancel_flexible', 'Flexible')}</option>
-            <option value="moderate">{t('manage.cancel_moderate', 'Moderate (48h)')}</option>
-            <option value="strict">{t('manage.cancel_strict', 'Strict (7 days)')}</option>
+            <option value="flexible">{t('manage.cancel_flexible', 'Flexible (24h / 12h / 0)')}</option>
+            <option value="moderate">{t('manage.cancel_moderate', 'Moderate (48h / 24h / 0)')}</option>
+            <option value="strict">{t('manage.cancel_strict', 'Strict (7 days / 3 days / 0)')}</option>
+            <option value="super_strict_30">{t('manage.cancel_super_strict_30', 'Super strict (100% ≥ 30 days · 0% under 30 days)')}</option>
             <option value="non_refundable">{t('manage.cancel_non_refundable', 'Non-refundable')}</option>
           </select>
         </div>

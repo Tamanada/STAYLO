@@ -33,10 +33,11 @@ const STRIPE_SECRET_KEY  = Deno.env.get('STRIPE_SECRET_KEY') || ''
 // If you change the barème, change BOTH files in the same commit.
 // ─────────────────────────────────────────────────────────────────────────
 const POLICY_BANDS: Record<string, Array<[number, number]>> = {
-  flexible:       [[24, 100], [12,  50], [ 0, 0]],
-  moderate:       [[48, 100], [24,  50], [ 0, 0]],
-  strict:         [[7 * 24, 100], [3 * 24, 50], [0, 0]],
-  non_refundable: [[0, 0]],
+  flexible:        [[24, 100], [12,  50], [ 0, 0]],
+  moderate:        [[48, 100], [24,  50], [ 0, 0]],
+  strict:          [[7 * 24, 100], [3 * 24, 50], [0, 0]],
+  super_strict_30: [[30 * 24, 100], [0, 0]],   // no partial band
+  non_refundable:  [[0, 0]],
 }
 
 function computeRefund(booking: any, property: any, nowIso: string) {

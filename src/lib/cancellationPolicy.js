@@ -12,11 +12,17 @@
 // Contract for hoteliers (defined here so we can iterate the barème
 // without touching the DB or the EF):
 //
-//    Policy         100% refund window     50% refund window     0%
-//    flexible       ≥ 24h before check-in  12–24h                <12h
-//    moderate       ≥ 48h                  24–48h                <24h
-//    strict         ≥ 7 days               3–7 days              <3d
-//    non_refundable never                  never                 always
+//    Policy            100% refund window     50% refund window     0%
+//    flexible          ≥ 24h before check-in  12–24h                <12h
+//    moderate          ≥ 48h                  24–48h                <24h
+//    strict            ≥ 7 days               3–7 days              <3d
+//    super_strict_30   ≥ 30 days              (no partial band)     <30d
+//    non_refundable    never                  never                 always
+//
+// The super_strict_30 tier is common for seasonal / villa rentals with
+// long lead times — 100% until you're inside a month of check-in, then
+// 0%. No partial band by design (David's ask: "Cancellation +30 days
+// 100% refundable / less than 30 days 100% non-refundable").
 //
 // Payment-processing fees (3% card / 0% Lightning etc.) are NEVER
 // refunded — they're acquired by the processor at the moment of pay.
@@ -43,6 +49,10 @@ const POLICY_BANDS = {
     [3 * 24,  50],
     [     0,   0],
   ],
+  super_strict_30: [
+    [30 * 24, 100],
+    [      0,   0],
+  ],
   non_refundable: [
     [0, 0],
   ],
@@ -62,6 +72,10 @@ const POLICY_LABELS = {
   strict: {
     name: 'Strict',
     thresholds: '100% refund ≥ 7 days before check-in · 50% between 3 and 7 days · 0% under 3 days',
+  },
+  super_strict_30: {
+    name: 'Super strict — 30 days',
+    thresholds: '100% refund ≥ 30 days before check-in · 0% under 30 days (no partial band).',
   },
   non_refundable: {
     name: 'Non-refundable',
