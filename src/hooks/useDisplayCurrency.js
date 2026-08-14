@@ -66,6 +66,43 @@ function writeCurrentCode(code) {
 // zero or a stale rate.
 const UNSUPPORTED_TARGETS = new Set(['KHR', 'LAK', 'MMK', 'MMR'])
 
+// ─────────────────────────────────────────────────────────────────────────
+// Crypto rates (BTC + SOL) — via CoinGecko public API
+// ─────────────────────────────────────────────────────────────────────────
+// Frankfurter is fiat-only. For crypto display we pull "1 X in USD" from
+// CoinGecko once, cache 1 h, then cross-multiply with any Frankfurter
+// base→USD rate to get base→BTC / base→SOL. Same TTL as fiat so we don't
+// hammer either API. Public tier gives 10-50 req/min — well within reach.
+const CG_STORAGE_KEY = 'staylo_fx_crypto'
+
+async function fetchCryptoUsdRates() {
+  const ids = currencies.filter(c => c.isCrypto && c.cgId).map(c => c.cgId).join(',')
+  const url = `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`Crypto FX fetch failed: HTTP ${res.status}`)
+  const json = await res.json()
+  // Map back to { BTC: 63170, SOL: 75.83 } — the USD-value of ONE crypto unit.
+  const perCryptoUsd = {}
+  for (const c of currencies) {
+    if (c.isCrypto && c.cgId && json[c.cgId]?.usd) perCryptoUsd[c.code] = json[c.cgId].usd
+  }
+  return { perCryptoUsd, fetchedAt: Date.now() }
+}
+
+function readCachedCrypto() {
+  try {
+    const raw = localStorage.getItem(CG_STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (Date.now() - parsed.fetchedAt > FX_TTL_MS) return null
+    return parsed
+  } catch { return null }
+}
+
+function writeCachedCrypto(payload) {
+  try { localStorage.setItem(CG_STORAGE_KEY, JSON.stringify(payload)) } catch { /* full/blocked */ }
+}
+
 
 // Frankfurter returns { amount, base, date, rates: { EUR: 0.85, THB: 34.5, … } }.
 // The `rates` map does NOT contain the base itself → we add it as 1.0 for
@@ -116,6 +153,22 @@ export function useDisplayCurrency() {
   // (not shared) because a stale rate mid-session is cheap to refetch
   // and duplicating the cache across components is harmless.
   const [ratesByBase, setRatesByBase] = useState({})
+  // Crypto USD-rates ({ BTC: 63170, SOL: 75.83 } — "USD-value of 1 unit
+  // of X crypto"). Loaded once on mount, refreshed after 1 h TTL.
+  const [cryptoUsd, setCryptoUsd] = useState(() => readCachedCrypto()?.perCryptoUsd || null)
+
+  useEffect(() => {
+    if (cryptoUsd) return   // already loaded from cache
+    let cancelled = false
+    fetchCryptoUsdRates()
+      .then(payload => {
+        if (cancelled) return
+        writeCachedCrypto(payload)
+        setCryptoUsd(payload.perCryptoUsd)
+      })
+      .catch(() => { /* silent — crypto conversion just falls back to identity */ })
+    return () => { cancelled = true }
+  }, [cryptoUsd])
 
   const setDisplayCode = useCallback((code) => {
     writeCurrentCode(code)   // fires the event → every subscriber re-renders
@@ -143,11 +196,31 @@ export function useDisplayCurrency() {
   // Convert amount FROM base TO the guest's chosen display currency.
   // Returns { amount, from, to, converted, rate, isIdentity }.
   //   · isIdentity=true when from === to OR target is unsupported by Frankfurter
+  //   · crypto targets (BTC, SOL) route: from → USD (Frankfurter) → crypto
+  //     (CoinGecko USD-per-1-crypto rate, inverted)
   const convert = useCallback((amount, fromBase) => {
     const from = (fromBase || 'USD').toUpperCase()
     const to = displayCode
     if (from === to) return { amount, from, to, converted: amount, rate: 1, isIdentity: true }
     if (UNSUPPORTED_TARGETS.has(to)) return { amount, from, to, converted: amount, rate: 1, isIdentity: true }
+
+    // Crypto path: convert to USD first (via Frankfurter), then divide by
+    // the crypto's USD price. Falls back to identity if either leg isn't
+    // loaded yet — the next render (once fetch lands) picks it up.
+    if (cryptoUsd && cryptoUsd[to]) {
+      const cryptoUsdPrice = cryptoUsd[to]        // e.g. BTC = 63170 USD
+      if (from === 'USD') {
+        return { amount, from, to, converted: amount / cryptoUsdPrice, rate: 1 / cryptoUsdPrice, isIdentity: false }
+      }
+      const bag = ratesByBase[from]
+      if (!bag) { ensureRates(from); return { amount, from, to, converted: amount, rate: 1, isIdentity: true } }
+      const usdRate = bag.rates.USD
+      if (!usdRate) return { amount, from, to, converted: amount, rate: 1, isIdentity: true }
+      const inUsd = amount * usdRate
+      const inCrypto = inUsd / cryptoUsdPrice
+      return { amount, from, to, converted: inCrypto, rate: usdRate / cryptoUsdPrice, isIdentity: false }
+    }
+
     const bag = ratesByBase[from]
     if (!bag) {
       // Not loaded yet — kick off the fetch, return identity for now.
@@ -157,7 +230,7 @@ export function useDisplayCurrency() {
     const rate = bag.rates[to]
     if (!rate) return { amount, from, to, converted: amount, rate: 1, isIdentity: true }
     return { amount, from, to, converted: amount * rate, rate, isIdentity: false }
-  }, [displayCode, ratesByBase, ensureRates])
+  }, [displayCode, ratesByBase, ensureRates, cryptoUsd])
 
   const symbolFor = useCallback((code) => {
     const c = currencies.find(x => x.code === code)

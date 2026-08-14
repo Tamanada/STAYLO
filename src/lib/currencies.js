@@ -36,6 +36,19 @@ export const currencies = [
   { code: 'SEK', symbol: 'kr',  name: 'Swedish Krona',      decimals: 2, defaultCountries: ['SE'] },
   { code: 'NOK', symbol: 'kr',  name: 'Norwegian Krone',    decimals: 2, defaultCountries: ['NO'] },
   { code: 'DKK', symbol: 'kr',  name: 'Danish Krone',       decimals: 2, defaultCountries: ['DK'] },
+
+  // ── Crypto — DISPLAY-ONLY on the guest side ─────────────────────────
+  // Rates fetched from CoinGecko in useDisplayCurrency (BTC/USD and
+  // SOL/USD cross-multiplied with Frankfurter's fiat rates). The hotelier
+  // still quotes the property in a fiat base; a crypto-curious guest
+  // just sees "how much BTC would this cost me right now". Payment
+  // methods for crypto exist separately (Lightning + Bitcoin on-chain
+  // in the checkout PAYMENT_METHODS block).
+  //   · BTC decimals=6 → shows down to 1 micro-BTC (0.000001 = 1 μBTC),
+  //     plenty for hotel-room-sized prices (a $200 room ≈ 0.003 BTC).
+  //   · SOL decimals=3 → 0.001 SOL granularity, matches typical amounts.
+  { code: 'BTC', symbol: '₿',  name: 'Bitcoin',  decimals: 6, isCrypto: true, cgId: 'bitcoin' },
+  { code: 'SOL', symbol: '◎',  name: 'Solana',   decimals: 3, isCrypto: true, cgId: 'solana' },
 ]
 
 const byCode = Object.fromEntries(currencies.map(c => [c.code, c]))
