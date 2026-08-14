@@ -4816,6 +4816,11 @@ function RoomMediaUploader({ kind, room, propertyId, onChange }) {
 // ============================================
 function CalendarTab({ rooms, property, onRefresh }) {
   const { t } = useTranslation()
+  // Hotelier-side display uses the PROPERTY's own base currency (what
+  // they quoted their rooms in via Settings) — not the guest's chosen
+  // display currency. Grabbing the symbol from lib/currencies keeps
+  // us consistent with the picker + booking engine.
+  const _propSym = (currencies.find(c => c.code === (property?.currency || 'USD').toUpperCase())?.symbol) || '$'
   // View mode — 'monthly' (per-room 35-day grid, editor) or 'timeline'
   // (all rooms × 14 days, bird's-eye view). The Timeline view is the
   // hotelier's "Réception calendar" for availability: same Gantt-style
@@ -5501,18 +5506,18 @@ function CalendarTab({ rooms, property, onRefresh }) {
                         <div className="flex items-baseline justify-between">
                           <span className="text-[11px] text-gray-500">{t('manage.cal_guest_pays', 'Guest pays')}</span>
                           <span className="text-base font-bold text-ocean">
-                            ${priceAfterPromo.toFixed(0)}
-                            {promoPct > 0 && <span className="ml-1 text-[10px] font-normal text-gray-400 line-through">${priceBrut.toFixed(0)}</span>}
+                            {_propSym}{priceAfterPromo.toFixed(0)}
+                            {promoPct > 0 && <span className="ml-1 text-[10px] font-normal text-gray-400 line-through">{_propSym}{priceBrut.toFixed(0)}</span>}
                             {hasOverride && <span className="ml-1 text-[10px] text-orange" title={t('manage.cal_custom_price', 'Custom price for this day')}>★</span>}
                           </span>
                         </div>
                         <div className="flex items-baseline justify-between">
                           <span className="text-[11px] text-gray-500">You receive (90%)</span>
-                          <span className="text-sm font-semibold text-libre">${netAfterPromo.toFixed(0)}</span>
+                          <span className="text-sm font-semibold text-libre">{_propSym}{netAfterPromo.toFixed(0)}</span>
                         </div>
                         {hasOverride && (
                           <div className="text-[10px] text-orange mt-0.5 italic">
-                            Default base price: ${Number(room.base_price).toFixed(0)}
+                            Default base price: {_propSym}{Number(room.base_price).toFixed(0)}
                           </div>
                         )}
                       </div>
@@ -5637,19 +5642,19 @@ function CalendarTab({ rooms, property, onRefresh }) {
                     {promoPct ? (
                       <>
                         <p className="text-sm font-bold text-ocean">
-                          ${priceAfterPromo.toFixed(0)}
-                          <span className="ml-1 text-[10px] font-normal text-gray-400 line-through">${priceBrut.toFixed(0)}</span>
+                          {_propSym}{priceAfterPromo.toFixed(0)}
+                          <span className="ml-1 text-[10px] font-normal text-gray-400 line-through">{_propSym}{priceBrut.toFixed(0)}</span>
                           {hasOverride && <span className="ml-1 text-[9px] text-orange">★</span>}
                         </p>
-                        <p className="text-[11px] text-libre/90 font-medium">net ${netAfterPromo.toFixed(0)}</p>
+                        <p className="text-[11px] text-libre/90 font-medium">net {_propSym}{netAfterPromo.toFixed(0)}</p>
                       </>
                     ) : (
                       <>
                         <p className="text-sm font-bold text-ocean">
-                          ${priceBrut.toFixed(0)}
+                          {_propSym}{priceBrut.toFixed(0)}
                           {hasOverride && <span className="ml-1 text-[9px] font-normal text-orange">★</span>}
                         </p>
-                        <p className="text-[11px] text-libre/90 font-medium">net ${priceNet.toFixed(0)}</p>
+                        <p className="text-[11px] text-libre/90 font-medium">net {_propSym}{priceNet.toFixed(0)}</p>
                       </>
                     )}
                   </div>
@@ -5673,11 +5678,11 @@ function CalendarTab({ rooms, property, onRefresh }) {
             <span className="w-3 h-3 rounded bg-sunset/10 border border-sunset/20" /> {t('manage.blocked', 'Blocked')}
           </span>
           <span className="flex items-center gap-1">
-            <span className="text-ocean font-bold text-[11px]">$X</span>
+            <span className="text-ocean font-bold text-[11px]">{_propSym}X</span>
             <span className="text-gray-400">price guest pays</span>
           </span>
           <span className="flex items-center gap-1">
-            <span className="text-libre font-bold text-[11px]">net $X</span>
+            <span className="text-libre font-bold text-[11px]">net {_propSym}X</span>
             <span className="text-gray-400">you receive (90%)</span>
           </span>
           <span className="flex items-center gap-1">
@@ -7819,7 +7824,7 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
                 // cell's state without needing to click in.
                 const titleParts = [
                   `${room.name} · ${iso}`,
-                  isBlocked ? 'BLOCKED' : `${stock}/${totalStock} available · $${priceBrut.toFixed(0)} (net $${priceNet.toFixed(0)})`,
+                  isBlocked ? 'BLOCKED' : `${stock}/${totalStock} available · ${_propSym}${priceBrut.toFixed(0)} (net ${_propSym}${priceNet.toFixed(0)})`,
                 ]
                 if (row?.min_stay > 1) titleParts.push(`Min stay: ${row.min_stay} nights`)
                 if (Array.isArray(row?.specials) && row.specials.length > 0) titleParts.push(`🎁 ${row.specials.length} reward(s)`)
@@ -7862,11 +7867,11 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
                       {stock}/{totalStock}
                     </div>
                     <div className="text-xs font-bold text-ocean leading-tight">
-                      ${priceBrut.toFixed(0)}
+                      {_propSym}{priceBrut.toFixed(0)}
                       {hasOverride && <span className="ml-0.5 text-[9px] text-orange">★</span>}
                     </div>
                     <div className="text-[10px] text-libre/90 font-medium leading-tight">
-                      net ${priceNet.toFixed(0)}
+                      net {_propSym}{priceNet.toFixed(0)}
                     </div>
                     {/* At-a-glance badges — only render if any flag is set */}
                     {(hasMinStay || hasReward || hasNote) && (
@@ -7901,11 +7906,11 @@ function TimelineAvailabilityView({ rooms, propertyId, country, viewMode, setVie
           <span className="w-3 h-3 rounded bg-sunset/10 border border-sunset/20" /> {t('manage.blocked', 'Blocked')}
         </span>
         <span className="flex items-center gap-1">
-          <span className="text-ocean font-bold text-[11px]">$X</span>
+          <span className="text-ocean font-bold text-[11px]">{_propSym}X</span>
           <span className="text-gray-400">{t('manage.cal_guest_pays', 'Guest pays')}</span>
         </span>
         <span className="flex items-center gap-1">
-          <span className="text-libre font-bold text-[11px]">net $X</span>
+          <span className="text-libre font-bold text-[11px]">net {_propSym}X</span>
           <span className="text-gray-400">{t('manage.you_receive', 'You receive (90%)')}</span>
         </span>
         <span className="flex items-center gap-1">
