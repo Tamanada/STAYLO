@@ -76,6 +76,10 @@ export default function PropertyDetail() {
 
   const [property, setProperty] = useState(null)
   const [realRooms, setRealRooms] = useState([])
+  // Active bookings on this property — used to subtract already-taken
+  // units from the "max N available" stock number shown next to the
+  // Rooms picker. See maxRoomsAvailable calc below.
+  const [propertyBookings, setPropertyBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [checkIn, setCheckIn] = useState(searchParams.get('in') || getDefaultCheckIn())
   const [checkOut, setCheckOut] = useState(searchParams.get('out') || getDefaultCheckOut())
@@ -138,7 +142,7 @@ export default function PropertyDetail() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true)
-      const [propRes, roomsRes, pkgRes] = await Promise.all([
+      const [propRes, roomsRes, pkgRes, bookingsRes] = await Promise.all([
         supabase.from('properties').select('*').eq('id', id).single(),
         // Order: name at DB layer (always safe). Re-sorted client-side
         // by display_order so the hotelier's manual sequence wins
@@ -148,6 +152,20 @@ export default function PropertyDetail() {
         // Active packages + their room links (with qty + date_blocks).
         // Public read policy lets anonymous browsers fetch this directly.
         supabase.from('packages').select('*, room_packages(room_id, qty, date_blocks)').eq('property_id', id).eq('is_active', true),
+        // Live bookings — needed to compute how many units are LEFT for
+        // the visitor's dates. Without this we happily showed "2 available"
+        // even when a confirmed booking had already taken all 2 units,
+        // producing a double-booking on Reserve. Only "active" statuses
+        // (pending / confirmed / checked_in) count against inventory —
+        // cancelled + completed don't. RLS: bookings has a permissive
+        // SELECT policy for active statuses on properties, so anonymous
+        // guests can read the columns we need here (room_id, dates,
+        // rooms_count, status). No PII leak because we don't select
+        // guest_name / guest_email.
+        supabase.from('bookings')
+          .select('room_id, check_in, check_out, rooms_count, status')
+          .eq('property_id', id)
+          .in('status', ['pending','confirmed','checked_in']),
       ])
       if (propRes.data) {
         setProperty({
@@ -170,6 +188,7 @@ export default function PropertyDetail() {
           return (a?.name || '').localeCompare(b?.name || '')
         })
         setRealRooms(sortedRooms)
+        setPropertyBookings(bookingsRes?.data || [])
         // Index packages by room for O(1) lookup in the room card.
         // Map shape: { roomId: [{ id, qty, dateBlocks }, ...] }
         const pkgs = pkgRes.data || []
@@ -327,9 +346,23 @@ export default function PropertyDetail() {
     : 0
   const extraBedsForAdults      = selectedRoomData?.extraBedAdultsAllowed ? adultsOverflow : 0
   const extraBedsUsed           = Math.min(childrenOverflow + extraBedsForAdults, totalExtraBedsAvailable)
-  // How many of THIS room type can be selected. For per-room: total rooms.
-  // For per-bed: hidden (auto = guests count).
-  const maxRoomsAvailable = selectedRoomData ? (rawRoom?.quantity || 1) : 1
+  // How many of THIS room type can be selected. For per-room: total
+  // stock MINUS units already taken by ACTIVE bookings overlapping the
+  // visitor's date range. Overlap = booking.check_in < visitor.checkOut
+  // AND booking.check_out > visitor.checkIn (open-ended intervals so
+  // same-day back-to-back stays don't collide). Per-bed rooms hide the
+  // picker (auto = guest count).
+  const maxRoomsAvailable = useMemo(() => {
+    if (!selectedRoomData) return 1
+    const totalStock = rawRoom?.quantity || 1
+    if (!checkIn || !checkOut) return totalStock
+    const takenUnits = (propertyBookings || [])
+      .filter(b => b.room_id === selectedRoomData.id
+                && b.check_in  < checkOut
+                && b.check_out > checkIn)
+      .reduce((sum, b) => sum + Math.max(1, Number(b.rooms_count) || 1), 0)
+    return Math.max(0, totalStock - takenUnits)
+  }, [selectedRoomData, rawRoom, checkIn, checkOut, propertyBookings])
 
   const guestsExceedRoom = selectedRoomData && Number(guests) > effectiveMax
 
@@ -1233,26 +1266,41 @@ export default function PropertyDetail() {
                   </div>
                 )}
 
-                {/* Reserve button — also blocked if guest count exceeds room capacity */}
-                <button
-                  disabled={!selectedRoom || guestsExceedRoom || childrenNotAllowed}
-                  onClick={() => {
-                    if (!selectedRoom || guestsExceedRoom || childrenNotAllowed) return
-                    navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}${requestCommunicating ? '&communicating=1' : ''}${selectedPackage ? `&package=${selectedPackage}` : ''}`)
-                  }}
-                  className={`w-full py-3.5 rounded-lg font-bold text-base transition-all ${
-                    selectedRoom && !guestsExceedRoom && !childrenNotAllowed
-                      ? 'bg-[#0071c2] hover:bg-[#005fa8] text-white shadow-lg hover:shadow-xl cursor-pointer'
-                      : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  }`}>
-                  {!selectedRoom
-                    ? t('booking.select_room_first', 'Select a room to book')
-                    : childrenNotAllowed
-                      ? `${property.min_age}+ only`
-                      : guestsExceedRoom
-                        ? t('booking.too_many_guests_short', 'Too many guests for this room')
-                        : t('booking.reserve_now', 'Reserve Now')}
-                </button>
+                {/* Reserve button — also blocked if guest count exceeds
+                    room capacity OR if inventory is fully sold for the
+                    chosen dates. isSoldOut catches both the "no stock at
+                    all" case AND the "asked for N rooms but only M left"
+                    case (roomsCount > maxRoomsAvailable). */}
+                {(() => {
+                  const isSoldOut = selectedRoomData && maxRoomsAvailable <= 0
+                  const notEnoughStock = selectedRoomData && !isSoldOut && roomsCount > maxRoomsAvailable
+                  const blocked = !selectedRoom || guestsExceedRoom || childrenNotAllowed || isSoldOut || notEnoughStock
+                  return (
+                    <button
+                      disabled={blocked}
+                      onClick={() => {
+                        if (blocked) return
+                        navigate(`/ota/${id}/checkout?room=${selectedRoom}&in=${checkIn}&out=${checkOut}&adults=${adults}&children=${children}&rooms=${roomsCount}${requestCommunicating ? '&communicating=1' : ''}${selectedPackage ? `&package=${selectedPackage}` : ''}`)
+                      }}
+                      className={`w-full py-3.5 rounded-lg font-bold text-base transition-all ${
+                        !blocked
+                          ? 'bg-[#0071c2] hover:bg-[#005fa8] text-white shadow-lg hover:shadow-xl cursor-pointer'
+                          : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}>
+                      {!selectedRoom
+                        ? t('booking.select_room_first', 'Select a room to book')
+                        : childrenNotAllowed
+                          ? `${property.min_age}+ only`
+                          : isSoldOut
+                            ? t('booking.sold_out', 'Sold out for these dates')
+                            : notEnoughStock
+                              ? t('booking.only_n_left', { defaultValue: 'Only {{n}} left — reduce rooms', n: maxRoomsAvailable })
+                              : guestsExceedRoom
+                                ? t('booking.too_many_guests_short', 'Too many guests for this room')
+                                : t('booking.reserve_now', 'Reserve Now')}
+                    </button>
+                  )
+                })()}
 
                 <p className="text-center text-[11px] text-gray-400 mt-2">{t('booking.no_charge', "You won't be charged yet")}</p>
 
