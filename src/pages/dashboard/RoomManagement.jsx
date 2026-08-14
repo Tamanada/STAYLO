@@ -212,6 +212,25 @@ const STYLES = `
 .rm-rb-checkin{background:linear-gradient(135deg,#0F766E,#00B894)}
 .rm-rb-checkout{background:linear-gradient(135deg,#C2410C,#FF6B00)}
 .rm-rb-blocked{background:repeating-linear-gradient(45deg,#9CA3AF,#9CA3AF 4px,#D1D5DB 4px,#D1D5DB 8px)}
+/* Cancelled — muted gray + strikethrough on the guest name so the receptionist
+   sees at a glance "there was a reservation, guest cancelled". Kept on the
+   timeline (not filtered out) per David 2026-08-13 — the operator needs the
+   context. Adds a tiny "CANCELLED" pill on hover via the ::after so the state
+   name is explicit without cluttering the bar at rest. */
+.rm-rb-cancelled{
+  background:repeating-linear-gradient(45deg,#F3F4F6,#F3F4F6 6px,#E5E7EB 6px,#E5E7EB 12px);
+  color:#6B7280 !important;
+  text-decoration:line-through;
+  border:1px dashed #D1D5DB !important;
+  opacity:.85;
+}
+.rm-rb-cancelled::after{
+  content:'✕ cancelled';
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  font-size:9px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;
+  color:#DC2626;background:#fff;padding:1px 5px;border-radius:3px;
+  text-decoration:none;line-height:1;
+}
 
 /* Grid */
 .rm-grid-view{padding:20px}
@@ -972,6 +991,7 @@ export default function RoomManagement() {
             <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#0984E3' }}></div>In cleaning</div>
             <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#E74C3C' }}></div>Maintenance</div>
             <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: '#9CA3AF' }}></div>Blocked</div>
+            <div className="rm-legend-item"><div className="rm-legend-dot" style={{ background: 'repeating-linear-gradient(45deg,#F3F4F6,#F3F4F6 3px,#E5E7EB 3px,#E5E7EB 6px)', border: '1px dashed #D1D5DB' }}></div>Cancelled</div>
           </div>
 
           {/* View body — `rm-view--with-popover` class fallback for browsers
@@ -1447,7 +1467,11 @@ function TimelineView({ rooms, bookings, packagesByRoom, getRewardsFor, blockedB
     // Group bookings by raw room_id with their grid indices computed.
     const byRoom = new Map()
     bookings.forEach(b => {
-      if (b.status === 'cancelled') return
+      // Cancelled bookings STAY on the timeline (David 2026-08-13, "Option 1"
+      // pattern from Cloudbeds / Mews / LH). The receptionist needs the
+      // context — "there WAS a reservation here, guest cancelled" — to
+      // avoid surprises when re-selling or discussing with the guest.
+      // Blocked-status ("out of order") rows also stay of course.
       const ci = new Date(b.check_in); ci.setHours(0,0,0,0)
       const co = new Date(b.check_out); co.setHours(0,0,0,0)
       if (co < startDay || ci > endDay) return
@@ -1679,7 +1703,12 @@ function TimelineView({ rooms, bookings, packagesByRoom, getRewardsFor, blockedB
                 const isCheckin = b.check_in === todayISO
                 const isCheckout = b.check_out === todayISO
                 const isBlocked = b.status === 'blocked'
-                const klass = isBlocked ? 'rm-rb-blocked'
+                const isCancelled = b.status === 'cancelled'
+                // Order matters: cancelled trumps everything else — a
+                // cancelled booking on the day of what would have been
+                // check-in is still "cancelled", not "checkin".
+                const klass = isCancelled ? 'rm-rb-cancelled'
+                            : isBlocked ? 'rm-rb-blocked'
                             : isCheckout ? 'rm-rb-checkout'
                             : isCheckin ? 'rm-rb-checkin'
                             : 'rm-rb-confirmed'
@@ -1697,7 +1726,7 @@ function TimelineView({ rooms, bookings, packagesByRoom, getRewardsFor, blockedB
                       if (onBookingClick) onBookingClick({ ...b, _room: room })
                       else onPick(room)
                     }}
-                    title={`${b.guest_name || 'Guest'} · ${b.check_in} → ${b.check_out} — click for full details`}>
+                    title={`${b.guest_name || 'Guest'} · ${b.check_in} → ${b.check_out}${isCancelled ? ' · CANCELLED — click to review + remove from timeline' : ' — click for full details'}`}>
                     {b.guest_name || 'Guest'}
                   </button>
                 )
