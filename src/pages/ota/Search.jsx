@@ -58,6 +58,11 @@ export default function OTASearch() {
   // Also load real properties
   const [realProperties, setRealProperties] = useState([])
   const [realRooms, setRealRooms] = useState([])
+  // Aggregated review stats keyed by property_id. Map so O(1) lookup
+  // per card in the render loop below. Populated by a single RPC call
+  // right after properties land (see fetchReal effect). Missing entries
+  // mean the property has no reviews yet, rendered as a "New" badge.
+  const [ratingStats, setRatingStats] = useState(new Map())
 
   const [searchCity, setSearchCity] = useState(searchParams.get('q') || '')
   const [checkIn, setCheckIn] = useState(searchParams.get('in') || getDefaultCheckIn())
@@ -98,8 +103,23 @@ export default function OTASearch() {
         supabase.from('properties').select('*').in('status', ['live', 'validated']),
         supabase.from('rooms').select('*').eq('is_active', true),
       ])
-      setRealProperties(propRes.data || [])
+      const props = propRes.data || []
+      setRealProperties(props)
       setRealRooms(roomsRes.data || [])
+      // Second round-trip: aggregated review stats for every property
+      // we're about to render. Kept out of the initial Promise.all so
+      // the property list paints even if the RPC is slow or errors;
+      // the "New" badge is the acceptable fallback.
+      if (props.length > 0) {
+        const ids = props.map(p => p.id)
+        const { data: statsRows, error } = await supabase
+          .rpc('get_property_rating_stats', { p_property_ids: ids })
+        if (!error && statsRows) {
+          const map = new Map()
+          for (const row of statsRows) map.set(row.property_id, row)
+          setRatingStats(map)
+        }
+      }
     }
     fetchReal()
   }, [])
@@ -129,8 +149,12 @@ export default function OTASearch() {
         // 4217 catalog.
         currency: (p.currency || 'USD').toUpperCase(),
         otaPrice: Math.round(lowestPrice * 1.25),
-        rating: 8.5,
-        reviews: 0,
+        // Real aggregated review stats when we have some, "New" flag
+        // otherwise. Avoids the misleading "8.5 / 0 reviews" placeholder
+        // that made every listing look scored without any actual rating.
+        rating:  ratingStats.get(p.id)?.avg_rating ? Number(ratingStats.get(p.id).avg_rating) : null,
+        reviews: Number(ratingStats.get(p.id)?.review_count || 0),
+        isNew:   !ratingStats.get(p.id)?.review_count,
         // Real amenities aggregated from every room of this property —
         // unique keys, deterministic order. Empty array if rooms have none.
         amenities: aggregatePropertyAmenities(pRooms),
@@ -143,7 +167,7 @@ export default function OTASearch() {
       }
     })
     return real
-  }, [realProperties, realRooms])
+  }, [realProperties, realRooms, ratingStats])
 
   const filtered = useMemo(() => {
     let result = allProperties
@@ -457,10 +481,18 @@ export default function OTASearch() {
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold text-white">{ratingLabel(prop.rating)}</span>
-                              <div className="bg-[#ffb700] text-[#003580] text-sm font-extrabold w-9 h-9 rounded-lg flex items-center justify-center">
-                                {prop.rating}
-                              </div>
+                              {prop.isNew ? (
+                                <span className="bg-white/15 text-white text-[10px] font-extrabold px-2 py-1 rounded-md uppercase tracking-widest">
+                                  {t('booking.new_property', 'New')}
+                                </span>
+                              ) : (
+                                <>
+                                  <span className="text-xs font-bold text-white">{ratingLabel(prop.rating)}</span>
+                                  <div className="bg-[#ffb700] text-[#003580] text-sm font-extrabold w-9 h-9 rounded-lg flex items-center justify-center">
+                                    {prop.rating}
+                                  </div>
+                                </>
+                              )}
                             </div>
                           </div>
 
@@ -613,15 +645,29 @@ export default function OTASearch() {
                               </p>
                             </div>
 
-                            {/* Rating */}
+                            {/* Rating — hides the label + score badge when the
+                                property has no reviews yet; shows a "New"
+                                pill instead so the card doesn't broadcast
+                                a fake number like the old "8.5 / 0 reviews"
+                                placeholder did. */}
                             <div className="flex items-start gap-1.5 flex-shrink-0">
-                              <div className="text-right">
-                                <p className="text-xs font-semibold text-gray-900">{ratingLabel(prop.rating)}</p>
-                                <p className="text-[10px] text-gray-500">{prop.reviews.toLocaleString()} reviews</p>
-                              </div>
-                              <div className="bg-[#003580] text-white text-sm font-extrabold w-9 h-9 rounded-lg rounded-bl-none flex items-center justify-center">
-                                {prop.rating}
-                              </div>
+                              {prop.isNew ? (
+                                <span className="bg-libre/10 text-libre text-[10px] font-extrabold px-2 py-1 rounded-md uppercase tracking-widest">
+                                  {t('booking.new_property', 'New')}
+                                </span>
+                              ) : (
+                                <>
+                                  <div className="text-right">
+                                    <p className="text-xs font-semibold text-gray-900">{ratingLabel(prop.rating)}</p>
+                                    <p className="text-[10px] text-gray-500">
+                                      {prop.reviews.toLocaleString()} {prop.reviews === 1 ? t('booking.review', 'review') : t('booking.reviews', 'reviews')}
+                                    </p>
+                                  </div>
+                                  <div className="bg-[#003580] text-white text-sm font-extrabold w-9 h-9 rounded-lg rounded-bl-none flex items-center justify-center">
+                                    {prop.rating}
+                                  </div>
+                                </>
+                              )}
                             </div>
                           </div>
 

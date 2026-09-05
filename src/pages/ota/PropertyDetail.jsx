@@ -168,12 +168,24 @@ export default function PropertyDetail() {
           .in('status', ['pending','confirmed','checked_in']),
       ])
       if (propRes.data) {
+        // Aggregated review stats for THIS property. Kept as a
+        // side-fetch (not blocking) so the page paints even if the
+        // RPC is slow. Returns { review_count, avg_rating } or nothing
+        // when the property has no reviews yet (isNew true then).
+        let ratingStats = null
+        try {
+          const { data: statsRows } = await supabase
+            .rpc('get_property_rating_stats', { p_property_ids: [id] })
+          ratingStats = statsRows?.[0] || null
+        } catch (_) { /* fall through to New */ }
+        const hasReviews = !!(ratingStats?.review_count && ratingStats.review_count > 0)
         setProperty({
           ...propRes.data,
           photos: propRes.data.photo_urls || [],
           videos: propRes.data.video_urls || [],
-          rating: 8.5,
-          reviews: 0,
+          rating:  hasReviews ? Number(ratingStats.avg_rating) : null,
+          reviews: hasReviews ? Number(ratingStats.review_count) : 0,
+          isNew:   !hasReviews,
           stars: propRes.data.star_rating || 3,
           amenities: propRes.data.amenities?.length ? propRes.data.amenities : ['wifi'],
           rooms: [],
@@ -522,13 +534,23 @@ export default function PropertyDetail() {
                   </p>
                 </div>
                 <div className="hidden sm:flex items-start gap-2 flex-shrink-0 ml-4">
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-gray-900">{ratingLabel(property.rating)}</p>
-                    <p className="text-xs text-gray-500">{property.reviews.toLocaleString()} reviews</p>
-                  </div>
-                  <div className="bg-[#003580] text-white text-lg font-extrabold w-11 h-11 rounded-lg rounded-bl-none flex items-center justify-center">
-                    {property.rating}
-                  </div>
+                  {property.isNew ? (
+                    <span className="bg-libre/10 text-libre text-[10px] font-extrabold px-2.5 py-1.5 rounded-md uppercase tracking-widest">
+                      {t('booking.new_property', 'New')}
+                    </span>
+                  ) : (
+                    <>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-gray-900">{ratingLabel(property.rating)}</p>
+                        <p className="text-xs text-gray-500">
+                          {property.reviews.toLocaleString()} {property.reviews === 1 ? t('booking.review', 'review') : t('booking.reviews', 'reviews')}
+                        </p>
+                      </div>
+                      <div className="bg-[#003580] text-white text-lg font-extrabold w-11 h-11 rounded-lg rounded-bl-none flex items-center justify-center">
+                        {property.rating}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
@@ -943,57 +965,78 @@ export default function PropertyDetail() {
               )}
             </div>
 
-            {/* ── Guest Reviews ──────────────── */}
-            <div className="bg-white rounded-xl p-5 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold text-gray-900">{t('booking.guest_reviews', 'Guest reviews')}</h2>
-                <div className="flex items-center gap-2">
-                  <div className="bg-[#003580] text-white text-sm font-extrabold px-2.5 py-1 rounded-lg">{property.rating}</div>
-                  <span className="text-sm font-semibold text-gray-900">{ratingLabel(property.rating)}</span>
-                  <span className="text-xs text-gray-500">· {property.reviews.toLocaleString()} reviews</span>
+            {/* ── Guest Reviews ────────────────
+                Real reviews live in stay_reviews (see PublicCheckOut).
+                When a property has none yet we replace the whole block
+                with an empty state that encourages the first stay to be
+                the first review, rather than fabricated per-aspect bars.
+                Individual review rendering is intentionally left as
+                FAKE_REVIEWS for now until the reviews-listing endpoint
+                and moderation flow ship (chunk 2 of the survey feature). */}
+            {property.isNew ? (
+              <div className="bg-white rounded-xl p-6 border border-gray-200 text-center">
+                <div className="text-3xl mb-2">✨</div>
+                <h2 className="text-base font-bold text-gray-900 mb-1">
+                  {t('booking.no_reviews_yet', 'No reviews yet')}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {t('booking.be_first_review', 'Be the first to share your stay experience after check-out.')}
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl p-5 border border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-gray-900">{t('booking.guest_reviews', 'Guest reviews')}</h2>
+                  <div className="flex items-center gap-2">
+                    <div className="bg-[#003580] text-white text-sm font-extrabold px-2.5 py-1 rounded-lg">{property.rating}</div>
+                    <span className="text-sm font-semibold text-gray-900">{ratingLabel(property.rating)}</span>
+                    <span className="text-xs text-gray-500">
+                      {property.reviews.toLocaleString()} {property.reviews === 1 ? t('booking.review', 'review') : t('booking.reviews', 'reviews')}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Review bars */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+                  {[
+                    { label: 'Cleanliness', score: (property.rating + 0.1).toFixed(1) },
+                    { label: 'Location', score: (property.rating - 0.1).toFixed(1) },
+                    { label: 'Service', score: property.rating.toFixed(1) },
+                    { label: 'Value', score: (property.rating + 0.2).toFixed(1) },
+                  ].map(cat => (
+                    <div key={cat.label} className="text-center">
+                      <p className="text-xs text-gray-500 mb-1">{cat.label}</p>
+                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-[#003580] rounded-full" style={{ width: `${cat.score * 10}%` }} />
+                      </div>
+                      <p className="text-xs font-bold text-gray-900 mt-1">{cat.score}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Individual reviews */}
+                <div className="space-y-4">
+                  {FAKE_REVIEWS.map((review, i) => (
+                    <div key={i} className="border-t border-gray-100 pt-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-[#003580]/10 rounded-full flex items-center justify-center text-sm font-bold text-[#003580]">
+                            {review.name[0]}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">{review.name} <span className="text-xs">{review.country}</span></p>
+                            <p className="text-[10px] text-gray-400">{review.date}</p>
+                          </div>
+                        </div>
+                        <div className="bg-[#003580] text-white text-xs font-bold px-2 py-1 rounded-md rounded-bl-none">{review.rating}</div>
+                      </div>
+                      <p className="text-sm font-semibold text-gray-900 mb-0.5">{review.title}</p>
+                      <p className="text-sm text-gray-600">{review.text}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              {/* Review bars */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-                {[
-                  { label: 'Cleanliness', score: (property.rating + 0.1).toFixed(1) },
-                  { label: 'Location', score: (property.rating - 0.1).toFixed(1) },
-                  { label: 'Service', score: property.rating.toFixed(1) },
-                  { label: 'Value', score: (property.rating + 0.2).toFixed(1) },
-                ].map(cat => (
-                  <div key={cat.label} className="text-center">
-                    <p className="text-xs text-gray-500 mb-1">{cat.label}</p>
-                    <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-[#003580] rounded-full" style={{ width: `${cat.score * 10}%` }} />
-                    </div>
-                    <p className="text-xs font-bold text-gray-900 mt-1">{cat.score}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Individual reviews */}
-              <div className="space-y-4">
-                {FAKE_REVIEWS.map((review, i) => (
-                  <div key={i} className="border-t border-gray-100 pt-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-[#003580]/10 rounded-full flex items-center justify-center text-sm font-bold text-[#003580]">
-                          {review.name[0]}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900">{review.name} <span className="text-xs">{review.country}</span></p>
-                          <p className="text-[10px] text-gray-400">{review.date}</p>
-                        </div>
-                      </div>
-                      <div className="bg-[#003580] text-white text-xs font-bold px-2 py-1 rounded-md rounded-bl-none">{review.rating}</div>
-                    </div>
-                    <p className="text-sm font-semibold text-gray-900 mb-0.5">{review.title}</p>
-                    <p className="text-sm text-gray-600">{review.text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
           </div>
 
           {/* ── Right sidebar ───────────────── */}
@@ -1019,8 +1062,16 @@ export default function PropertyDetail() {
                     )}
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Star size={16} className="text-amber-400 fill-amber-400" />
-                    <span className="font-bold text-gray-900">{property.rating}</span>
+                    {property.isNew ? (
+                      <span className="bg-libre/10 text-libre text-[10px] font-extrabold px-2 py-1 rounded-md uppercase tracking-widest">
+                        {t('booking.new_property', 'New')}
+                      </span>
+                    ) : (
+                      <>
+                        <Star size={16} className="text-amber-400 fill-amber-400" />
+                        <span className="font-bold text-gray-900">{property.rating}</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
