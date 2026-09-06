@@ -96,13 +96,22 @@ export default function PublicMyStay() {
     let cancelled = false
     setLoading(true)
     setLoadError('')
+    // Guard against obvious garbage tokens (e.g. a copy-paste of `<token>`)
+    // so we can show a clean message instead of leaking the postgres error.
+    const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRe.test(token)) {
+      setLoadError('This stay link is not valid.')
+      setLoading(false)
+      return () => { cancelled = true }
+    }
     supabase.rpc('get_stay_view', { p_token: token })
       .then(({ data, error }) => {
         if (cancelled) return
         if (error) {
-          setLoadError(error.message || 'Could not load your stay page.')
+          // Never surface raw postgres errors on a public page.
+          setLoadError('Could not load your stay page. Please try again.')
         } else if (!data || data.length === 0) {
-          setLoadError('Stay link not found or expired.')
+          setLoadError('This stay link has expired or the booking was cancelled.')
         } else {
           setStay(data[0])
         }
