@@ -8,26 +8,28 @@
 // come back any time until check-out day. Same token as check-in — the
 // physical QR at the front desk is the one artefact the guest keeps.
 //
-// Sections (Chunk 1 shipping now):
+// Sections (Chunks 1 + 2 live):
 //   1. Hero (property + booking + room + nights + status pill)
-//   2. WiFi (SSID + password with big copy buttons — the #1 thing guests scan for)
+//   2. WiFi (SSID + password with big copy buttons)
 //   3. Essentials (checkout time, contact, address with map link)
 //   4. Amenities badges (visual inventory)
 //   5. House rules (if set)
-//   6. Placeholders for Chunk 2/3/4: vouchers wallet, folio, request extras, cancel
+//   6. My wallet — voucher cards, tap to open full-screen QR for the venue scan
+//   7. My folio — running tab (unpaid highlighted, paid muted)
+//   8. Placeholders for Chunks 3-4: request extras, cancel booking
 //
-// Chunks 2/3/4 will wire the placeholders to real anon RPCs. Design is
-// deliberately "richer than PublicCheckIn" — this is what an investor demo
-// will screen-share for the "hotels lose OTA feel because we replace it"
-// story.
+// Chunks 3-4 will wire the last placeholders. Design deliberately "richer
+// than PublicCheckIn" — investor-demo target.
 // ============================================================================
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { QRCodeSVG } from 'qrcode.react'
 import {
   Loader2, AlertTriangle, MapPin, Calendar, BedDouble, Clock,
   Phone, Mail, Globe, Wifi, Copy, Check, ScrollText, Sparkles,
-  Gift, Receipt, MessageSquare, XCircle, Home,
+  Gift, Receipt, MessageSquare, XCircle, Home, X,
+  Coffee, GlassWater, Flower2, Dumbbell, Car, Sparkle, Package,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import SEO from '../components/SEO'
@@ -60,6 +62,58 @@ function stayDayLabel(checkIn, checkOut) {
   return `Day ${dayIdx} of ${total}`
 }
 
+// Icon per voucher kind — matches SHIP venue taxonomy from
+// project_staylo_vouchers_folio.md. Fallback = Sparkle.
+const VOUCHER_ICON = {
+  restaurant: Coffee,
+  bar:        GlassWater,
+  spa:        Flower2,
+  wellness:   Dumbbell,
+  transport:  Car,
+  tour:       Sparkles,
+  gift_shop:  Package,
+  other:      Sparkle,
+}
+// Accent gradient per voucher kind (matches Card SectionHeader style)
+const VOUCHER_ACCENT = {
+  restaurant: 'from-orange to-pink-500',
+  bar:        'from-libre to-ocean',
+  spa:        'from-pink-500 to-orange',
+  wellness:   'from-ocean to-libre',
+  transport:  'from-libre to-ocean',
+  tour:       'from-orange to-libre',
+  gift_shop:  'from-libre to-pink-500',
+  other:      'from-gray-400 to-gray-500',
+}
+
+// Small currency-symbol map. Falls back to the code itself so hoteliers
+// running exotic currencies still see something readable.
+const CURRENCY_SYMBOL = {
+  USD: '$', EUR: '€', GBP: '£', THB: '฿', JPY: '¥', CNY: '¥',
+  AUD: 'A$', CAD: 'C$', SGD: 'S$', HKD: 'HK$', INR: '₹', KRW: '₩',
+}
+function fmtMoney(amount, code) {
+  const n = Number(amount || 0)
+  const sym = CURRENCY_SYMBOL[code] || code || ''
+  // Compact: 2 decimals when needed, no forced padding.
+  const str = n.toFixed(2).replace(/\.00$/, '')
+  return `${sym}${n < 0 ? '-' : ''}${Math.abs(Number(str)).toFixed(2).replace(/\.00$/, '')}`
+}
+
+// Short human "3h ago" / "just now" for folio charged_at
+function timeAgo(iso) {
+  if (!iso) return ''
+  const now = Date.now()
+  const then = new Date(iso).getTime()
+  const s = Math.floor((now - then) / 1000)
+  if (s < 60) return 'just now'
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`
+  if (s < 86400) return `${Math.floor(s / 3600)} h ago`
+  const d = Math.floor(s / 86400)
+  if (d < 7) return `${d} d ago`
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+}
+
 // Nice human label for common amenity codes (fallback = titlecase)
 const AMENITY_LABEL = {
   wifi: 'WiFi',
@@ -88,8 +142,12 @@ export default function PublicMyStay() {
   const { t } = useTranslation()
   const { token } = useParams()
   const [stay, setStay] = useState(null)
+  const [vouchers, setVouchers] = useState([])
+  const [folio, setFolio] = useState(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
+  // Currently zoomed voucher (full-screen QR for scanning). null = list view.
+  const [zoomedVoucherId, setZoomedVoucherId] = useState(null)
 
   useEffect(() => {
     if (!token) return
@@ -104,21 +162,29 @@ export default function PublicMyStay() {
       setLoading(false)
       return () => { cancelled = true }
     }
-    supabase.rpc('get_stay_view', { p_token: token })
-      .then(({ data, error }) => {
-        if (cancelled) return
-        if (error) {
-          // Never surface raw postgres errors on a public page.
-          setLoadError('Could not load your stay page. Please try again.')
-        } else if (!data || data.length === 0) {
-          setLoadError('This stay link has expired or the booking was cancelled.')
-        } else {
-          setStay(data[0])
-        }
-        setLoading(false)
-      })
+    // Fan out the three RPCs in parallel. Wallet + folio failures are
+    // non-fatal (page still renders) — we only block on get_stay_view.
+    Promise.all([
+      supabase.rpc('get_stay_view',     { p_token: token }),
+      supabase.rpc('get_stay_vouchers', { p_token: token }),
+      supabase.rpc('get_stay_folio',    { p_token: token }),
+    ]).then(([viewRes, vouRes, folRes]) => {
+      if (cancelled) return
+      if (viewRes.error) {
+        setLoadError('Could not load your stay page. Please try again.')
+      } else if (!viewRes.data || viewRes.data.length === 0) {
+        setLoadError('This stay link has expired or the booking was cancelled.')
+      } else {
+        setStay(viewRes.data[0])
+      }
+      if (!vouRes.error && Array.isArray(vouRes.data)) setVouchers(vouRes.data)
+      if (!folRes.error && folRes.data && folRes.data.length > 0) setFolio(folRes.data[0])
+      setLoading(false)
+    })
     return () => { cancelled = true }
   }, [token])
+
+  const zoomedVoucher = vouchers.find(v => v.id === zoomedVoucherId)
 
   if (loading) {
     return (
@@ -303,12 +369,58 @@ export default function PublicMyStay() {
         </Card>
       )}
 
-      {/* ── Coming soon (placeholders for Chunks 2/3/4) ─────────────── */}
+      {/* ── My wallet (vouchers) ─────────────────────────────────────── */}
+      {vouchers.length > 0 && (
+        <Card>
+          <SectionHeader icon={<Gift size={18} />} title="My wallet" accent="from-libre to-ocean" />
+          <p className="text-[11px] text-gray-500 mt-1">Tap a voucher to show its QR at the venue.</p>
+          <div className="mt-3 space-y-2">
+            {vouchers.map(v => (
+              <VoucherRow key={v.id} voucher={v} onOpen={() => setZoomedVoucherId(v.id)} />
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* ── My folio (running tab) ───────────────────────────────────── */}
+      {folio && Array.isArray(folio.charges) && folio.charges.length > 0 && (
+        <Card>
+          <SectionHeader icon={<Receipt size={18} />} title="My folio" accent="from-ocean to-libre" />
+
+          <div className="grid grid-cols-3 gap-2 mt-3">
+            <FolioStat label="Total"  value={fmtMoney(folio.total,  folio.currency)} />
+            <FolioStat label="Paid"   value={fmtMoney(folio.paid,   folio.currency)} tone="paid" />
+            <FolioStat label="Unpaid" value={fmtMoney(folio.unpaid, folio.currency)} tone="unpaid" />
+          </div>
+
+          <div className="mt-3 space-y-1.5">
+            {folio.charges.map(c => (
+              <div key={c.id} className={`flex items-start justify-between gap-2 p-2.5 rounded-xl ${c.paid ? 'bg-gray-50' : 'bg-orange/5 border border-orange/20'}`}>
+                <div className="min-w-0">
+                  <div className="text-sm text-deep truncate">{c.description || c.category}</div>
+                  <div className="text-[10px] text-gray-500 uppercase tracking-wider">
+                    {c.category} · {timeAgo(c.charged_at)}
+                  </div>
+                </div>
+                <div className={`flex-shrink-0 text-sm font-bold ${c.paid ? 'text-gray-500 line-through' : 'text-deep'}`}>
+                  {fmtMoney(c.amount, c.currency || folio.currency)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {Number(folio.unpaid) > 0 && (
+            <p className="mt-3 text-[11px] text-gray-500 italic">
+              Unpaid items settle at check-out.
+            </p>
+          )}
+        </Card>
+      )}
+
+      {/* ── Coming soon (Chunks 3-4) ─────────────────────────────────── */}
       <Card muted>
-        <SectionHeader icon={<Gift size={18} />} title="More coming to this page" accent="from-gray-400 to-gray-500" small />
+        <SectionHeader icon={<Sparkles size={18} />} title="More coming to this page" accent="from-gray-400 to-gray-500" small />
         <ul className="mt-3 space-y-2 text-sm text-gray-500">
-          <li className="flex items-center gap-2"><Gift size={14} className="text-libre" /> My vouchers wallet (breakfast, spa, transport…)</li>
-          <li className="flex items-center gap-2"><Receipt size={14} className="text-ocean" /> Live folio (running tab across venues)</li>
           <li className="flex items-center gap-2"><MessageSquare size={14} className="text-orange" /> Request extras (towels, late check-out…)</li>
           <li className="flex items-center gap-2"><XCircle size={14} className="text-sunset" /> Cancel my booking</li>
         </ul>
@@ -325,6 +437,13 @@ export default function PublicMyStay() {
       <p className="text-[10px] text-gray-400 text-center mt-4">
         Bookmark this page or add it to your home screen. Access lasts until check-out.
       </p>
+
+      {/* Full-screen QR overlay — the guest holds their phone in front of
+          the venue staff who scans. Big code + big QR = readable at arm's
+          length, works even in a bright poolside setting. */}
+      {zoomedVoucher && (
+        <ZoomedVoucher voucher={zoomedVoucher} onClose={() => setZoomedVoucherId(null)} />
+      )}
     </Shell>
   )
 }
@@ -374,6 +493,97 @@ function InfoRow({ icon, label, children }) {
         <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{label}</div>
         <div className="text-sm text-gray-700">{children}</div>
       </div>
+    </div>
+  )
+}
+
+// ── Wallet: single voucher card in the wallet list. Tap to open the
+//    full-screen QR overlay (ZoomedVoucher). Dead when qty_remaining=0.
+function VoucherRow({ voucher, onOpen }) {
+  const Icon = VOUCHER_ICON[voucher.kind] || Sparkle
+  const accent = VOUCHER_ACCENT[voucher.kind] || 'from-orange to-pink-500'
+  const remaining = voucher.qty_remaining ?? (voucher.qty_total - voucher.qty_consumed)
+  const spent = remaining === 0
+  return (
+    <button
+      type="button"
+      disabled={spent}
+      onClick={onOpen}
+      className={`w-full text-left flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+        spent
+          ? 'bg-gray-50 border-gray-100 opacity-60 cursor-not-allowed'
+          : 'bg-white border-gray-100 hover:border-libre/40 hover:shadow-md active:scale-[0.99]'
+      }`}
+    >
+      <span className={`flex-shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${accent} text-white flex items-center justify-center shadow-sm`}>
+        <Icon size={20} />
+      </span>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-bold text-deep truncate">{voucher.label}</div>
+        {voucher.description && (
+          <div className="text-[11px] text-gray-500 truncate">{voucher.description}</div>
+        )}
+      </div>
+      <span className={`flex-shrink-0 text-xs font-bold px-2.5 py-1 rounded-full ${
+        spent
+          ? 'bg-gray-100 text-gray-400'
+          : remaining < voucher.qty_total
+            ? 'bg-orange/10 text-orange'
+            : 'bg-libre/10 text-libre'
+      }`}>
+        {spent ? 'used' : `${remaining} × left`}
+      </span>
+    </button>
+  )
+}
+
+// ── Wallet: full-screen QR overlay for the venue scan. Locked scroll on
+//    open (venue staff usually holds the phone). Tap anywhere to close.
+function ZoomedVoucher({ voucher, onClose }) {
+  const remaining = voucher.qty_remaining ?? (voucher.qty_total - voucher.qty_consumed)
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(26,31,46,.92)', backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 20,
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="bg-white rounded-3xl p-6 max-w-xs w-full text-center shadow-2xl relative"
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center hover:bg-gray-200"
+        >
+          <X size={16} />
+        </button>
+        <div className="text-[10px] uppercase tracking-widest text-libre font-bold mb-1">Show at venue</div>
+        <div className="text-lg font-extrabold text-deep mb-1">{voucher.label}</div>
+        <div className="text-xs text-gray-500 mb-4">{remaining} × remaining</div>
+        <div className="bg-white p-3 rounded-2xl border border-gray-100 inline-block mb-3">
+          <QRCodeSVG value={voucher.voucher_code} size={200} level="M" includeMargin={false} />
+        </div>
+        <div className="text-xs text-gray-500 mb-1">Backup code</div>
+        <div className="font-mono text-base font-bold text-deep tracking-widest">{voucher.voucher_code}</div>
+      </div>
+    </div>
+  )
+}
+
+// ── Folio: single "Total / Paid / Unpaid" stat cell above the charge list.
+function FolioStat({ label, value, tone }) {
+  const cls =
+    tone === 'paid'   ? 'bg-libre/10 text-libre' :
+    tone === 'unpaid' ? 'bg-orange/10 text-orange' :
+                        'bg-ocean/10 text-ocean'
+  return (
+    <div className={`p-2.5 rounded-xl text-center ${cls}`}>
+      <div className="text-[10px] uppercase tracking-wider font-bold opacity-80">{label}</div>
+      <div className="text-sm font-extrabold mt-0.5">{value}</div>
     </div>
   )
 }
