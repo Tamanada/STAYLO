@@ -141,9 +141,18 @@ export default function PublicCheckIn() {
           <h1 className="text-2xl font-bold text-deep mb-2">You're all set, {form.first_name}!</h1>
           <p className="text-sm text-gray-500 mb-6">{t('public_checkin.details_added', 'Your details have been added to the booking.')}</p>
 
+          {/* Primary CTA: land the guest on their stay page (WiFi + concierge). */}
+          <Link
+            to={`/stay/${token}`}
+            className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-ocean to-libre text-white font-bold rounded-full text-sm hover:opacity-90 shadow-md"
+          >
+            🛎️ Open my stay page →
+          </Link>
+          <p className="text-[11px] text-gray-400 mt-2 mb-6">WiFi, house info, and more — bookmark it for your whole stay.</p>
+
           {remaining > 0 ? (
             <button onClick={() => { setSubmitted(false); setForm(f => ({ ...f, first_name: '', last_name: '', passport_number: '', date_of_birth: '' })) }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange to-pink-500 text-white font-bold rounded-full text-sm hover:opacity-90">
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border-2 border-orange text-orange font-bold rounded-full text-sm hover:bg-orange hover:text-white transition-colors">
               ➕ Add another guest ({remaining} remaining)
             </button>
           ) : (
