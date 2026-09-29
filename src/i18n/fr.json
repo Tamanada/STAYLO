@@ -2216,7 +2216,7 @@
         "print": "🖨️ Imprimer",
         "undo": "↶ Annuler ({n})",
         "undo_tooltip": "Annuler : {label} · {n} modification{plural} réversible{plural}",
-        "skip_break_pending": "🚫 {n} demande{plural} de suppression de pause",
+        "skip_break_pending": "🚫 {n} demande(s) de suppression de pause",
         "skip_break_pending_tooltip": "{n} membre{plural} du personnel a demandé à supprimer sa pause — validation requise"
       },
       "dept_filter": {
@@ -2661,7 +2661,7 @@
         "work_days": "Jours travaillés"
       },
       "absence_chip": {
-        "unpaid_suffix": "({count} non payé{plural})",
+        "unpaid_suffix": "({count} non payé(s))",
         "paid_suffix": "(payé)"
       },
       "label": {
@@ -3826,7 +3826,7 @@
     },
     "team": {
       "title": "Équipe",
-      "subtitle": "Gestion de ton équipe et de tes shifts.",
+      "subtitle": "{count} employés · {hotel}",
       "tile": {
         "roster_t": "Liste",
         "roster_d": "Fiches employés, contrats, photos.",
@@ -3887,12 +3887,12 @@
       "empty": "🎉 Tout à jour ! Aucun message non lu."
     },
     "context": {
-      "last_shift": "🕒 Dernier shift : {date} ({hours}h)",
+      "last_shift": "🕒 Dernier shift : {date}",
       "no_recent_shift": "🕒 Pas de shift récent",
       "week_planned": "📅 Cette semaine : {hours}h prévues",
-      "month_absences": "🏖️ Ce mois : {n} jours d'absence",
+      "month_absences": "🏖️ Ce mois : {parts} jours d'absence",
       "month_absences_none": "🏖️ Aucune absence ce mois",
-      "home_venue": "📍 Zone principale : {venue}",
+      "home_venue": "📍 Zone principale : {outlet}",
       "contract_lang": "📄 Langue contrat : {lang}",
       "tooltip": "Ton contexte personnel — connecté en tant que {name}"
     },
@@ -4460,9 +4460,9 @@
       "this_month_title": "Ce mois",
       "prev_month": "← Mois précédent",
       "next_month": "Mois suivant →",
-      "copy_from": "📋 Copier depuis…",
+      "copy_from": "📋 Copier depuis {month}",
       "copy_tooltip": "Copier toutes les lignes de {prev} vers {cur}. Utile pour les charges fixes récurrentes. Remplace les lignes actuelles.",
-      "copy_confirm": "Copier toutes les lignes de {month} vers {target} ? Les lignes existantes seront fusionnées (par catégorie).",
+      "copy_confirm": "Copier toutes les lignes de {prev} vers {cur} ? Les lignes existantes seront fusionnées (par catégorie).",
       "export_csv": "📥 Export CSV",
       "export_tooltip": "Exporter le mois courant + snapshot payroll"
     },

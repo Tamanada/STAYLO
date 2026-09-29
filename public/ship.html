@@ -3707,9 +3707,9 @@ body.off-shift .quick-actions{display:none !important}
       </div>
       <div class="members" id="chat-members"></div>
       <div id="clock-widget"></div>
-      <button class="icon-btn" title="Search">🔎</button>
-      <button class="icon-btn" title="Pin">📌</button>
-      <button class="icon-btn" title="More">⋯</button>
+      <button class="icon-btn" title="Search" style="display:none">🔎</button>
+      <button class="icon-btn" title="Pin" style="display:none">📌</button>
+      <button class="icon-btn" title="More" style="display:none">⋯</button>
       <!-- Mobile hamburger: visible only on mobile via CSS, opens the rail drawer -->
       <button class="icon-btn" id="mobile-menu-btn" title="Menu" style="display:none">☰</button>
     </div>
@@ -3722,10 +3722,10 @@ body.off-shift .quick-actions{display:none !important}
       <div class="quick-actions" id="quick-actions"></div>
       <div class="mention-pop" id="mention-pop"></div>
       <div class="input-row">
-        <button class="icon-btn" title="Attach">📎</button>
+        <button class="icon-btn" title="Attach" style="display:none">📎</button>
         <button class="icon-btn" id="qa-toggle" title="Quick action">+</button>
-        <textarea class="composer" id="composer" rows="1" placeholder="Message #general…"></textarea>
-        <button class="icon-btn" title="Emoji">😊</button>
+        <textarea class="composer" id="composer" rows="1" maxlength="4000" placeholder="Message #general…"></textarea>
+        <button class="icon-btn" title="Emoji" style="display:none">😊</button>
         <button class="send-btn" id="send-btn" title="Send">➤</button>
       </div>
     </div>
@@ -3909,10 +3909,12 @@ function _collectHotelStateFromLocal(hotelCode){
   return state;
 }
 
+const _BLOB_KEY_RE = /^staylo_(employees|schedules|tasks|recipes|messages|timesheet|hotel|charges|pool|events|prefs|tip_config|custom_fiche_cats)_[A-Z0-9_-]{1,20}$/;
 function _writeBlobToLocal(blob){
   if(!blob || typeof blob !== 'object') return 0;
   let n = 0;
   for(const k of Object.keys(blob)){
+    if(!_BLOB_KEY_RE.test(k)){ console.warn('[hydrate] rejected unknown key:', k); continue; }
     try {
       localStorage.setItem(k, JSON.stringify(blob[k]));
       n++;
@@ -8070,10 +8072,11 @@ function pulseConfirmDeleteRecipe(recipe, onDone){
       display:flex;align-items:center;justify-content:center;padding:16px;
       backdrop-filter:blur(4px);`,
   });
+  const _closePulseDelete = () => { bg.remove(); document.removeEventListener('keydown', _escHandler); };
   let _mdTarget = null;
   bg.addEventListener('mousedown', e => { _mdTarget = e.target; });
-  bg.addEventListener('click', e => { if(e.target === bg && _mdTarget === bg) bg.remove(); });
-  const _escHandler = e => { if(e.key === 'Escape'){ bg.remove(); document.removeEventListener('keydown', _escHandler); } };
+  bg.addEventListener('click', e => { if(e.target === bg && _mdTarget === bg) _closePulseDelete(); });
+  const _escHandler = e => { if(e.key === 'Escape') _closePulseDelete(); };
   document.addEventListener('keydown', _escHandler);
   const card = el('div',{
     style:`background:#fff;border-radius:18px;max-width:440px;width:100%;
@@ -8100,7 +8103,7 @@ function pulseConfirmDeleteRecipe(recipe, onDone){
       padding:12px 14px;text-align:left;cursor:pointer;font:inherit;`,
     onclick: () => {
       deleteRecipe(recipe.id);
-      bg.remove();
+      _closePulseDelete();
       pulseShowToast('✓ Fiche deleted · the dish is still on Loyverse');
       onDone && onDone();
     }
@@ -8126,7 +8129,7 @@ function pulseConfirmDeleteRecipe(recipe, onDone){
         await loyverseWrite('DELETE', 'items/' + recipe.loyverse_item_id, undefined);
         _loyverseItemsCache.stamp = 0;
         deleteRecipe(recipe.id);
-        bg.remove();
+        _closePulseDelete();
         pulseShowToast('✓ Deleted in STAYLO and Loyverse');
         onDone && onDone();
       } catch (err){
@@ -8137,7 +8140,7 @@ function pulseConfirmDeleteRecipe(recipe, onDone){
         if(err && err.status === 404){
           _loyverseItemsCache.stamp = 0;
           deleteRecipe(recipe.id);
-          bg.remove();
+          _closePulseDelete();
           pulseShowToast('ℹ Already deleted on Loyverse · cleaned up STAYLO too', 'warn');
           onDone && onDone();
           return;
@@ -8164,7 +8167,7 @@ function pulseConfirmDeleteRecipe(recipe, onDone){
   btnRow.appendChild(el('button',{
     style:`background:transparent;border:0;color:var(--gray);font-weight:700;
       padding:10px;cursor:pointer;font:inherit;`,
-    onclick: () => bg.remove()
+    onclick: () => _closePulseDelete()
   }, 'Cancel'));
 
   card.appendChild(btnRow);
@@ -10321,7 +10324,7 @@ function persistMessages(){
   // Cap at 100/channel to keep localStorage sane
   const out = {};
   for(const k in State.messages) out[k] = State.messages[k].slice(-100);
-  lsSet(_hkey('staylo_messages'),out);
+  if(!lsSetVerify(_hkey('staylo_messages'),out)) warnStorageFullOnce('messages');
 }
 
 function refreshAlerts(){
@@ -11205,12 +11208,13 @@ const EMPTY_EMP = {
 // — staff with accept_status='accepted' but tc_version<this will be re-prompted.
 const STAYLO_TC_VERSION = '2026-05-01';
 function _hkey(prefix){return `${prefix}_${State.user?.hotelCode||'DEFAULT'}`}
-let _empMigrationDone = false;
+let _empMigrationDoneFor = null;  // hotelCode for which migration was last run
 function getEmployees(){
   const arr = lsGet(_hkey('staylo_employees'),[]);
   // Migrations applied transparently on read so old data stays usable.
-  // Guard prevents the O(n) loop from running on every call after first pass.
-  if(!_empMigrationDone){
+  // Guard resets whenever the active hotel changes (multi-hotel device switch).
+  const curHotel = State.user?.hotelCode || 'DEFAULT';
+  if(_empMigrationDoneFor !== curHotel){
     let migrated = false;
     for(const e of arr){
       // Legacy 'Kitchen' department renamed to 'F&B' (covers BoH + FoH F&B).
@@ -11219,7 +11223,7 @@ function getEmployees(){
       if(e.role === "Maître d'"){ e.role = "Maître d'hôtel"; migrated = true; }
     }
     if(migrated) lsSet(_hkey('staylo_employees'), arr);
-    _empMigrationDone = true;
+    _empMigrationDoneFor = curHotel;
   }
   return arr;
 }
@@ -12509,7 +12513,9 @@ function upsertSchedule(s){
       s.id = all[i].id;            // reuse the existing ID
       all[i] = {...all[i],...s};
     } else {
-      s.id = 'sch-'+Date.now()+'-'+Math.floor(Math.random()*9999);
+      s.id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? 'sch-'+crypto.randomUUID()
+        : 'sch-'+performance.now().toString(36)+'-'+Math.random().toString(36).slice(2);
       all.push(s);
     }
   }
@@ -14057,6 +14063,7 @@ function renderTeamView(body, title, subtitle, tabs){
       tabs.querySelectorAll('.cv-tab').forEach(t => t.classList.remove('on'));
       btn.classList.add('on');
       _hrEmployeeId = null;
+      if(id === 'schedule'){ _schedFilterDept = 'all'; _schedFilterOutlet = 'all'; }
       requestAnimationFrame(() => setView('team', id));
     });
     tabs.appendChild(btn);
@@ -23240,10 +23247,11 @@ function openFicheCategoryCreateModal(onCreated){
       display:flex;align-items:center;justify-content:center;padding:16px;
       backdrop-filter:blur(4px);`,
   });
+  const _closeFicheModal = () => { bg.remove(); document.removeEventListener('keydown', _escFiche); };
   let _mdTargetFiche = null;
   bg.addEventListener('mousedown', e => { _mdTargetFiche = e.target; });
-  bg.addEventListener('click', e => { if(e.target === bg && _mdTargetFiche === bg) bg.remove(); });
-  const _escFiche = e => { if(e.key === 'Escape'){ bg.remove(); document.removeEventListener('keydown', _escFiche); } };
+  bg.addEventListener('click', e => { if(e.target === bg && _mdTargetFiche === bg) _closeFicheModal(); });
+  const _escFiche = e => { if(e.key === 'Escape') _closeFicheModal(); };
   document.addEventListener('keydown', _escFiche);
   const card = el('div',{
     style:`background:#fff;border-radius:18px;max-width:440px;width:100%;
@@ -23298,7 +23306,7 @@ function openFicheCategoryCreateModal(onCreated){
   const footer = el('div',{style:'display:flex;gap:8px;justify-content:flex-end'});
   footer.appendChild(el('button',{
     style:'background:transparent;border:0;color:var(--gray);font-weight:700;padding:10px 14px;cursor:pointer;font:inherit',
-    onclick:()=>bg.remove()
+    onclick:()=>_closeFicheModal()
   }, 'Annuler'));
   const createBtn = el('button',{
     class:'btn-primary',
@@ -23314,7 +23322,7 @@ function openFicheCategoryCreateModal(onCreated){
         emoji: emojiInput.value.trim() || '📂',
         dept: deptSel.value || null,
       });
-      bg.remove();
+      _closeFicheModal();
       if(typeof pulseShowToast === 'function'){
         pulseShowToast('✓ Catégorie créée · ' + cat.emoji + ' ' + cat.label);
       }
@@ -23610,6 +23618,23 @@ function renderDayView(visibleEmps, dayDate, canEdit){
   // Coverage counter: people working at each hour (excluding break time)
   const coverageByHour = new Array(24).fill(0);
 
+  // Pre-build shift lookup maps from a single getSchedules() call to avoid O(n²)
+  // (each getEmployeeShifts call was parsing the full localStorage schedule array)
+  const _dvYesterday = addDaysISO(dayDate, -1);
+  const _dvAllSched = getSchedules();
+  const _dvDayMap = new Map();   // empId → shift on dayDate
+  const _dvYestMap = new Map();  // empId → shift on _dvYesterday
+  for(const s of _dvAllSched){
+    if(s.date === dayDate){
+      const c = _dvDayMap.get(s.employee_id);
+      if(!c || (c.kind !== 'absence' && s.kind === 'absence')) _dvDayMap.set(s.employee_id, s);
+    }
+    if(s.date === _dvYesterday){
+      const c = _dvYestMap.get(s.employee_id);
+      if(!c || (c.kind !== 'absence' && s.kind === 'absence')) _dvYestMap.set(s.employee_id, s);
+    }
+  }
+
   // One row per employee
   for(const emp of visibleEmps){
     // Same shortcut as in the table view: click name → open staff fiche
@@ -23643,12 +23668,12 @@ function renderDayView(visibleEmps, dayDate, canEdit){
     }
 
     // Today's shift (the one whose date === dayDate)
-    const shift = getEmployeeShifts(emp.id, dayDate, dayDate)[0];
+    const shift = _dvDayMap.get(emp.id);
     let totalMin = 0;
 
     // Yesterday's overnight shift can bleed into today's morning hours
-    const yesterday = addDaysISO(dayDate, -1);
-    const yShift = getEmployeeShifts(emp.id, yesterday, yesterday)[0];
+    const yesterday = _dvYesterday;
+    const yShift = _dvYestMap.get(emp.id);
     if(yShift && yShift.kind!=='absence' && yShift.start_time && yShift.end_time
        && timeToMinutes(yShift.end_time) <= timeToMinutes(yShift.start_time)){
       // Overnight from yesterday — render its tail (00:00 → end_time today)
@@ -26499,6 +26524,7 @@ function showSkipBreakReviewModal(){
 }
 
 // Refresh clock every minute so on-shift time keeps ticking
+if(window._stayloClockTick) clearInterval(window._stayloClockTick);
 window._stayloClockTick = setInterval(()=>{
   if($('#clock-widget') && State.user){ renderClockWidget(); applyOffShiftMode(); }
 },60000);
@@ -26575,6 +26601,7 @@ function findNextShiftLabel(emp){
 // confusing double-state. By bailing while any modal is mounted, we
 // preserve in-flight work AND skip a useless re-render that the
 // manager couldn't see anyway (the modal covers the schedule).
+if(window._stayloSchedTick) clearInterval(window._stayloSchedTick);
 window._stayloSchedTick = setInterval(()=>{
   if(!$('#hr-body') || _hrTab !== 'schedule') return;
   // Modal selectors that, if present, mean the schedule is occluded
@@ -26759,7 +26786,9 @@ function showBreakReminderBanner(text, shift, level){
 }
 
 // Tick every minute
+if(window._stayloShiftReminderTick) clearInterval(window._stayloShiftReminderTick);
 window._stayloShiftReminderTick = setInterval(evaluateShiftReminder, 60000);
+if(window._stayloBreakReminderTick) clearInterval(window._stayloBreakReminderTick);
 window._stayloBreakReminderTick = setInterval(evaluateBreakReminder, 60000);
 
 /* J-1 reminder: notify the staff member ~24h before their next shift so
@@ -26784,6 +26813,7 @@ function evaluateNextDayShiftReminder(){
     `${dayLbl} · ${tShift.start_time}–${tShift.end_time}. Plan your sleep & transport.`);
   lsSet(`staylo_j1_${emp.id}_${today}`, true);
 }
+if(window._stayloJ1ReminderTick) clearInterval(window._stayloJ1ReminderTick);
 window._stayloJ1ReminderTick = setInterval(evaluateNextDayShiftReminder, 60000);
 
 function showTimesheetModal(){
@@ -26911,16 +26941,27 @@ function showLockScreen(shift){
   const ex = $('#lock-screen'); if(ex) ex.remove();
   const today = new Date().toISOString().slice(0,10);
   const isToday = shift?.date===today;
-  const msg = shift?.no_shift
-    ? 'No shifts scheduled for the next 7 days. Ask your manager to update the schedule for your department.'
-    : isToday
-      ? `Your shift today is <b>${shift.start_time} – ${shift.end_time}</b>. The app unlocks 15 minutes before your start time.`
-      : `Your next shift is <b>${shift.date}</b> from <b>${shift.start_time}</b>. Come back then!`;
+  let lockMsg;
+  if(shift?.no_shift){
+    lockMsg = el('p',{},'No shifts scheduled for the next 7 days. Ask your manager to update the schedule for your department.');
+  } else if(isToday){
+    lockMsg = document.createElement('p');
+    lockMsg.appendChild(document.createTextNode('Your shift today is '));
+    const b1 = document.createElement('b'); b1.textContent = escapeHtml(shift.start_time) + ' – ' + escapeHtml(shift.end_time); lockMsg.appendChild(b1);
+    lockMsg.appendChild(document.createTextNode('. The app unlocks 15 minutes before your start time.'));
+  } else {
+    lockMsg = document.createElement('p');
+    lockMsg.appendChild(document.createTextNode('Your next shift is '));
+    const b2 = document.createElement('b'); b2.textContent = escapeHtml(shift.date); lockMsg.appendChild(b2);
+    lockMsg.appendChild(document.createTextNode(' from '));
+    const b3 = document.createElement('b'); b3.textContent = escapeHtml(shift.start_time); lockMsg.appendChild(b3);
+    lockMsg.appendChild(document.createTextNode('. Come back then!'));
+  }
   const lock = el('div',{class:'lock-screen',id:'lock-screen'},
     el('div',{class:'lock-card'},
       el('div',{class:'lock-icon'},'🔒'),
       el('h2',{},'You\'re off the clock'),
-      el('p',{innerHTML:msg}),
+      lockMsg,
       el('p',{class:'lock-emergency'},'Emergencies still reach you via push. Managers can override the lock if needed.'),
       // "Switch user" removed — the app is personal (1 device = 1 account
       // bound at contract signing). If the wrong person is signed in, the
