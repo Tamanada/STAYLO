@@ -16779,6 +16779,325 @@ function showMonthlyReportModal(month){
   });
 }
 
+/* ============================================================================
+ * OWNER REPORT - monthly report a manager sends to the hotel owner
+ * ============================================================================
+ * Seven sections, the standard layout of a hotel management contract:
+ *   1. Summary of important events      (auto bullets + free text)
+ *   2. Key figures table                (auto, also exported to Excel)
+ *   3. Cash position                    (auto)
+ *   4. Main cash in / cash out          (auto)
+ *   5. Issues encountered               (free text)
+ *   6. Solutions put in place           (free text)
+ *   7. Priorities for next month        (free text, reappears next month)
+ *
+ * The four free-text blocks are saved per month in the hotel-scoped key
+ * staylo_owner_notes_<hotel>, so they sync across devices like the rest of
+ * the hotel state. Numbers come from buildMonthlyReport(), nothing is typed
+ * twice.
+ * ============================================================================ */
+const OWNER_NOTE_FIELDS = ['summary', 'issues', 'solutions', 'priorities'];
+
+function getOwnerNotes(){
+  const raw = lsGet(_hkey('staylo_owner_notes'), null) || {};
+  if(!raw.months) raw.months = {};
+  return raw;
+}
+function getOwnerNotesForMonth(month){
+  const m = getOwnerNotes().months[month] || {};
+  const out = {};
+  for(const f of OWNER_NOTE_FIELDS) out[f] = m[f] || '';
+  return out;
+}
+function saveOwnerNotesForMonth(month, notes){
+  const all = getOwnerNotes();
+  all.months[month] = { ...(all.months[month] || {}), ...notes, updated_at: new Date().toISOString() };
+  if(!lsSetVerify(_hkey('staylo_owner_notes'), all)) warnStorageFullOnce('owner-notes');
+}
+
+/* Everything the 7 sections need, derived from the accounting report. */
+function _ownerReportData(month){
+  const r = buildMonthlyReport(month);
+  const prevMonth = _shiftMonthKey(month, -1);
+  const rev = r.revenues, exp = r.expenses;
+  const revenueLines = [
+    ['Hotel / lodging', rev.lodging],
+    ['F&B', rev.fnb],
+    ['Ancillary (tours, rentals...)', rev.ancillary],
+    ['Shop', rev.shop],
+    ['Other revenue events', rev.events],
+  ];
+  const expenseLines = [
+    ['Fixed charges (manual)', exp.manualFixed],
+    ['Rent, utilities, insurance (receipts)', exp.autoFixed],
+    ['Payroll', exp.payroll],
+    ['Daily operating expenses', exp.dailyOps],
+    ['Depreciation', exp.depreciation],
+  ];
+  const pct = (a, b) => (b ? Math.round(((a - b) / Math.abs(b)) * 100) : null);
+  // Inflows: revenue categories + positive cashbook movements
+  const inflows = [];
+  for(const [label, amount] of revenueLines) if(amount > 0) inflows.push({ label, amount, kind: 'Revenue' });
+  for(const m of r.cashbook.movements){
+    const a = parseFloat(m.amount) || 0;
+    if(a > 0) inflows.push({ label: (m.note || m.source || m.kind || 'Cash movement') + ' (' + (m.date || '') + ')', amount: a, kind: 'Cash register' });
+  }
+  inflows.sort((a, b) => b.amount - a.amount);
+  // Outflows: payroll + biggest receipts + negative cashbook movements
+  const outflows = [];
+  if(exp.payroll > 0) outflows.push({ label: 'Payroll (' + r.payroll.employees + ' staff)', amount: exp.payroll, kind: 'Payroll' });
+  if(exp.manualFixed > 0) outflows.push({ label: 'Fixed charges (manual)', amount: exp.manualFixed, kind: 'Fixed' });
+  for(const e of r.de.expenses){
+    const a = parseFloat(e.amount) || 0;
+    if(a > 0) outflows.push({ label: (e.vendor || e.description || 'Expense') + (e.date ? ' (' + e.date + ')' : ''), amount: a, kind: _expenseCategory(e.category).label });
+  }
+  for(const m of r.cashbook.movements){
+    const a = parseFloat(m.amount) || 0;
+    if(a < 0) outflows.push({ label: (m.note || m.source || m.kind || 'Cash movement') + ' (' + (m.date || '') + ')', amount: -a, kind: 'Cash register' });
+  }
+  outflows.sort((a, b) => b.amount - a.amount);
+
+  // Auto bullets for section 1: facts the owner cares about, no typing needed.
+  const f = (n) => Math.round(n || 0).toLocaleString('en-US');
+  const sym = r.hotel.currency;
+  const bullets = [];
+  if(rev.total > 0 || exp.total > 0){
+    const d = r.revenuesPrev.deltaPct;
+    bullets.push('Revenues ' + sym + ' ' + f(rev.total) + (d == null ? '' : ' (' + (d >= 0 ? '+' : '') + d + '% vs previous month)') + '.');
+    bullets.push('Expenses ' + sym + ' ' + f(exp.total) + ', net ' + (r.net >= 0 ? 'profit ' : 'loss ') + sym + ' ' + f(Math.abs(r.net)) + '.');
+  }
+  if(r.hotelKPIs.revPAR != null) bullets.push('RevPAR ' + sym + ' ' + f(r.hotelKPIs.revPAR) + ' on ' + r.hotelKPIs.totalRooms + ' rooms.');
+  if(outflows[0]) bullets.push('Biggest single outflow: ' + outflows[0].label + ', ' + sym + ' ' + f(outflows[0].amount) + '.');
+  if(r.fnb.grossMarginPct != null) bullets.push('F&B gross margin ' + r.fnb.grossMarginPct + '%.');
+
+  return {
+    r, month, prevMonth, revenueLines, expenseLines, inflows, outflows, bullets,
+    deltas: { rev: pct(rev.total, r.revenuesPrev.total), exp: pct(exp.total, r.expensesPrev.total) },
+    notes: getOwnerNotesForMonth(month),
+    prevNotes: getOwnerNotesForMonth(prevMonth),
+  };
+}
+
+function _ownerReportToHTML(d){
+  const r = d.r;
+  const sym = r.hotel.currency;
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const fN = (n) => Math.round(n || 0).toLocaleString('en-US');
+  const text = (s) => s && s.trim()
+    ? '<div class="free">' + esc(s).replace(/\n/g, '<br>') + '</div>'
+    : '<div class="empty">Nothing to report.</div>';
+  const delta = (p) => p == null ? '' : '<span style="color:' + (p >= 0 ? '#059669' : '#DC2626') + '">' + (p >= 0 ? '+' : '') + p + '%</span>';
+  const netColor = r.net >= 0 ? '#059669' : '#DC2626';
+  const cb = r.cashbook;
+  const cashIn = cb.movements.reduce((s, m) => s + Math.max(0, parseFloat(m.amount) || 0), 0);
+  const cashOut = cb.movements.reduce((s, m) => s + Math.min(0, parseFloat(m.amount) || 0), 0);
+  const topRows = (arr) => arr.slice(0, 10).map((x, i) =>
+    '<tr><td class="num">' + (i + 1) + '</td><td>' + esc(x.label) + '</td><td>' + esc(x.kind) + '</td><td class="right num">' + fN(x.amount) + '</td></tr>').join('')
+    || '<tr><td colspan="4" class="empty">No movement recorded.</td></tr>';
+
+  let h = '<!doctype html><html><head><meta charset="utf-8"><title>Owner report - ' + esc(r.hotel.name) + ' - ' + esc(r.period.label) + '</title><style>' +
+    ':root{--ink:#1A1A2E;--muted:#6B7280;--line:#E5E7EB;--o:#FF6B00;--p:#FF1F70}' +
+    '*{box-sizing:border-box}body{font-family:Inter,-apple-system,Segoe UI,sans-serif;color:var(--ink);padding:32px 40px;max-width:900px;margin:0 auto;font-size:13px;line-height:1.55}' +
+    '.num{font-family:ui-monospace,Menlo,Consolas,monospace;font-variant-numeric:tabular-nums}' +
+    '.cover{border-bottom:3px solid var(--ink);padding-bottom:18px;margin-bottom:8px}.brand{font-size:11px;font-weight:800;letter-spacing:2px;color:#7E22CE;text-transform:uppercase}' +
+    'h1{font-size:28px;margin:4px 0;font-weight:900}.period{font-size:16px;font-weight:700;color:var(--o)}.addr{color:var(--muted);font-size:11.5px;white-space:pre-line}' +
+    'h2{font-size:13px;margin:28px 0 10px;padding:8px 12px;background:linear-gradient(90deg,var(--o),var(--p));color:#fff;border-radius:6px;letter-spacing:1px;text-transform:uppercase;font-weight:800;page-break-after:avoid}' +
+    'table{width:100%;border-collapse:collapse;margin-bottom:8px}th,td{padding:7px 10px;border-bottom:1px solid #F3F4F6;text-align:left;font-size:12px}' +
+    'th{background:#F9FAFB;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);border-bottom:1.5px solid var(--line)}' +
+    '.right{text-align:right}.sub td{background:#FFF9F2;font-weight:800}.grand td{background:#111827;color:#fff;font-weight:800;border:0}' +
+    '.free{white-space:normal;padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:#FAFAFA}.empty{color:var(--muted);font-style:italic;padding:6px 2px}' +
+    '.prev{margin:10px 0;padding:10px 14px;border-left:4px solid var(--o);background:#FFF9F2;border-radius:4px;font-size:12px}.prev b{display:block;margin-bottom:4px;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:#B45309}' +
+    'ul{margin:6px 0 10px;padding-left:20px}li{margin-bottom:3px}' +
+    '.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}.kpis div{padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#FAFAFA}' +
+    '.kpis .l{font-size:9.5px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);font-weight:800}.kpis .v{font-size:20px;font-weight:900;margin-top:3px}' +
+    'footer{margin-top:28px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:10px;display:flex;justify-content:space-between}' +
+    '@media print{@page{margin:14mm}body{padding:0;max-width:none}table,.kpis,.free{page-break-inside:avoid}h2,.sub td,.grand td,.prev{-webkit-print-color-adjust:exact;print-color-adjust:exact}}' +
+    '</style></head><body>';
+
+  h += '<section class="cover"><div class="brand">Monthly owner report</div><h1>' + esc(r.hotel.name) + '</h1>' +
+    '<div class="period">' + esc(r.period.label) + ' &middot; ' + esc(r.period.startDate) + ' to ' + esc(r.period.endDate) + '</div>' +
+    (r.hotel.address ? '<div class="addr">' + esc(r.hotel.address) + '</div>' : '') +
+    '<div class="addr">Currency: ' + esc(r.hotel.currencyCode) + (r.period.generatedBy ? ' &middot; Prepared by ' + esc(r.period.generatedBy) : '') + '</div></section>';
+
+  h += '<div class="kpis">' +
+    '<div><div class="l">Revenues</div><div class="v num">' + fN(r.revenues.total) + '</div>' + delta(d.deltas.rev) + '</div>' +
+    '<div><div class="l">Expenses</div><div class="v num">' + fN(r.expenses.total) + '</div>' + delta(d.deltas.exp) + '</div>' +
+    '<div><div class="l">Net ' + (r.net >= 0 ? 'profit' : 'loss') + '</div><div class="v num" style="color:' + netColor + '">' + fN(r.net) + '</div></div>' +
+    '<div><div class="l">Cash in hand</div><div class="v num">' + fN(cb.balance) + '</div></div></div>';
+
+  // 1. Summary of important events
+  h += '<h2>1. Summary of important events</h2>';
+  if(d.prevNotes.priorities.trim()){
+    h += '<div class="prev"><b>Priorities set last month (' + esc(_fmtMonthLabel(d.prevMonth)) + ')</b>' + esc(d.prevNotes.priorities).replace(/\n/g, '<br>') + '</div>';
+  }
+  if(d.bullets.length) h += '<ul>' + d.bullets.map(b => '<li>' + esc(b) + '</li>').join('') + '</ul>';
+  h += text(d.notes.summary);
+
+  // 2. Key figures
+  h += '<h2>2. Key figures</h2><table><thead><tr><th>Line</th><th class="right">Amount (' + esc(r.hotel.currencyCode) + ')</th></tr></thead><tbody>';
+  for(const [l, a] of d.revenueLines) h += '<tr><td>' + esc(l) + '</td><td class="right num">' + fN(a) + '</td></tr>';
+  h += '<tr class="sub"><td>Total revenues</td><td class="right num">' + fN(r.revenues.total) + '</td></tr>';
+  for(const [l, a] of d.expenseLines) h += '<tr><td>' + esc(l) + '</td><td class="right num">' + fN(-a) + '</td></tr>';
+  h += '<tr class="sub"><td>Total expenses</td><td class="right num">' + fN(-r.expenses.total) + '</td></tr>' +
+    '<tr class="grand"><td>Net ' + (r.net >= 0 ? 'profit' : 'loss') + '</td><td class="right num">' + fN(r.net) + '</td></tr></tbody></table>';
+  if(r.hotelKPIs.revPAR != null) h += '<div class="addr">RevPAR ' + fN(r.hotelKPIs.revPAR) + ' &middot; ' + r.hotelKPIs.totalRooms + ' rooms &middot; ' + r.hotelKPIs.daysInMonth + ' days</div>';
+  h += '<table><thead><tr><th>Year to date</th><th class="right">This year</th><th class="right">Last year</th></tr></thead><tbody>' +
+    '<tr><td>Revenues</td><td class="right num">' + fN(r.ytd.current.revenues) + '</td><td class="right num">' + fN(r.ytd.lastYear.revenues) + '</td></tr>' +
+    '<tr><td>Expenses</td><td class="right num">' + fN(r.ytd.current.expenses) + '</td><td class="right num">' + fN(r.ytd.lastYear.expenses) + '</td></tr>' +
+    '<tr><td>Net</td><td class="right num">' + fN(r.ytd.current.net) + '</td><td class="right num">' + fN(r.ytd.lastYear.net) + '</td></tr></tbody></table>';
+
+  // 3. Cash position
+  h += '<h2>3. Cash position</h2><table><tbody>' +
+    '<tr><td>Opening balance' + (cb.openingDate ? ' (' + esc(cb.openingDate) + ')' : '') + '</td><td class="right num">' + fN(cb.opening) + '</td></tr>' +
+    '<tr><td>Cash register: money in</td><td class="right num">' + fN(cashIn) + '</td></tr>' +
+    '<tr><td>Cash register: money out</td><td class="right num">' + fN(cashOut) + '</td></tr>' +
+    '<tr class="grand"><td>Cash in hand at month end</td><td class="right num">' + fN(cb.balance) + '</td></tr></tbody></table>' +
+    '<table><tbody><tr><td>Operating cash flow of the month</td><td class="right num">' + fN(r.cashflow.operating) + '</td></tr>' +
+    '<tr><td>Owner top-ups / withdrawals</td><td class="right num">' + fN(r.cashflow.financing) + '</td></tr></tbody></table>';
+
+  // 4. Main cash in / out
+  h += '<h2>4. Main cash in and cash out</h2>' +
+    '<table><thead><tr><th>#</th><th>Main cash in</th><th>Type</th><th class="right">Amount</th></tr></thead><tbody>' + topRows(d.inflows) + '</tbody></table>' +
+    '<table><thead><tr><th>#</th><th>Main cash out</th><th>Type</th><th class="right">Amount</th></tr></thead><tbody>' + topRows(d.outflows) + '</tbody></table>';
+
+  // 5, 6, 7
+  h += '<h2>5. Issues encountered</h2>' + text(d.notes.issues);
+  h += '<h2>6. Solutions put in place</h2>' + text(d.notes.solutions);
+  h += '<h2>7. Priorities for next month (' + esc(_fmtMonthLabel(_shiftMonthKey(d.month, 1))) + ')</h2>' + text(d.notes.priorities);
+
+  h += '<footer><span>Generated by SHIP &middot; ' + esc(r.hotel.name) + '</span><span>' + esc(r.period.reference) + '</span>' +
+    '<span>' + new Date(r.period.generatedAt).toLocaleDateString('en-GB', {dateStyle:'medium'}) + '</span></footer></body></html>';
+  return h;
+}
+
+/* Excel export: a real .xls (HTML table flavour) that Excel and Numbers open
+ * directly, one sheet with the seven sections stacked. No dependency. */
+function _ownerReportToXLS(d){
+  const r = d.r;
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const rows = [];
+  const row = (...c) => rows.push('<tr>' + c.map((x, i) => typeof x === 'number'
+    ? '<td x:num="' + x + '" style="mso-number-format:\'#,##0\'">' + Math.round(x) + '</td>'
+    : '<td>' + esc(x) + '</td>').join('') + '</tr>');
+  const head = (s) => rows.push('<tr><td colspan="4" style="background:#FF6B00;color:#fff;font-weight:bold">' + esc(s) + '</td></tr>');
+  const block = (label, s) => { head(label); (s || 'Nothing to report.').split('\n').forEach(l => row(l)); row(''); };
+  row(r.hotel.name + ' - owner report - ' + r.period.label); row('Currency', r.hotel.currencyCode); row('');
+  head('1. Summary of important events');
+  if(d.prevNotes.priorities.trim()){ row('Priorities set last month:'); d.prevNotes.priorities.split('\n').forEach(l => row(l)); }
+  d.bullets.forEach(b => row(b));
+  (d.notes.summary || '').split('\n').filter(Boolean).forEach(l => row(l)); row('');
+  head('2. Key figures');
+  d.revenueLines.forEach(([l, a]) => row(l, a)); row('Total revenues', r.revenues.total);
+  d.expenseLines.forEach(([l, a]) => row(l, -a)); row('Total expenses', -r.expenses.total);
+  row('Net result', r.net); row('');
+  row('Year to date', 'This year', 'Last year');
+  row('Revenues', r.ytd.current.revenues, r.ytd.lastYear.revenues);
+  row('Expenses', r.ytd.current.expenses, r.ytd.lastYear.expenses);
+  row('Net', r.ytd.current.net, r.ytd.lastYear.net); row('');
+  head('3. Cash position');
+  row('Opening balance', r.cashbook.opening);
+  r.cashbook.movements.forEach(m => row((m.date || '') + ' ' + (m.note || m.source || m.kind || ''), parseFloat(m.amount) || 0));
+  row('Cash in hand at month end', r.cashbook.balance); row('');
+  head('4. Main cash in and cash out');
+  row('Cash in', 'Type', 'Amount'); d.inflows.slice(0, 10).forEach(x => row(x.label, x.kind, x.amount)); row('');
+  row('Cash out', 'Type', 'Amount'); d.outflows.slice(0, 10).forEach(x => row(x.label, x.kind, x.amount)); row('');
+  block('5. Issues encountered', d.notes.issues);
+  block('6. Solutions put in place', d.notes.solutions);
+  block('7. Priorities for next month', d.notes.priorities);
+  return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">' +
+    '<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Owner report</x:Name></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head>' +
+    '<body><table border="0">' + rows.join('') + '</table></body></html>';
+}
+
+function showOwnerReportModal(month){
+  const ex = document.getElementById('owner-report-modal'); if(ex) ex.remove();
+  let d = _ownerReportData(month);
+  const fnameBase = 'owner-report-' + (d.r.hotel.slug || 'hotel') + '-' + month;
+
+  const modal = document.createElement('div');
+  modal.id = 'owner-report-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,8,30,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.addEventListener('click', (ev) => { if(ev.target === modal) modal.remove(); });
+
+  const panel = document.createElement('div');
+  panel.style.cssText = 'width:100%;max-width:1100px;height:92dvh;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)';
+
+  const btn = 'padding:8px 14px;font-weight:800;border-radius:8px;cursor:pointer;';
+  const toolbar = document.createElement('div');
+  toolbar.style.cssText = 'padding:14px 18px;background:linear-gradient(135deg,#FF6B00,#FF1F70);color:#fff;display:flex;gap:8px;flex-wrap:wrap;align-items:center';
+  toolbar.innerHTML =
+    '<div style="flex:1;font-weight:800">📋 Owner report · ' + _fmtMonthLabel(month) + '</div>' +
+    '<button id="_or-print" style="' + btn + 'background:#fff;color:#7E22CE;border:0">🖨 Print / PDF</button>' +
+    '<button id="_or-xls" style="' + btn + 'background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4)">⬇ Excel</button>' +
+    '<button id="_or-close" style="padding:8px 14px;font-weight:800;background:transparent;color:#fff;border:0;font-size:20px;cursor:pointer">×</button>';
+
+  const body = document.createElement('div');
+  body.style.cssText = 'flex:1;display:flex;min-height:0;flex-wrap:wrap';
+
+  // Left: the four free-text blocks
+  const form = document.createElement('div');
+  form.style.cssText = 'flex:0 0 320px;max-width:100%;padding:16px;overflow:auto;border-right:1px solid #eee;background:#FAFAFA';
+  const FIELDS = [
+    ['summary',    '1. Summary of important events', 'Key events of the month, in your words. Figures are added automatically.'],
+    ['issues',     '5. Issues encountered',          'What went wrong or was difficult.'],
+    ['solutions',  '6. Solutions put in place',      'What you did about it.'],
+    ['priorities', '7. Priorities for next month',   'These will be shown again in next month\'s report.'],
+  ];
+  const prevP = d.prevNotes.priorities.trim();
+  if(prevP){
+    const note = document.createElement('div');
+    note.style.cssText = 'margin-bottom:12px;padding:10px 12px;border-left:4px solid #FF6B00;background:#FFF9F2;border-radius:4px;font-size:12px;white-space:pre-wrap';
+    note.textContent = 'Priorities you set last month:\n' + prevP;
+    form.appendChild(note);
+  }
+  const preview = document.createElement('iframe');
+  preview.style.cssText = 'flex:1 1 420px;min-width:0;border:0;background:#F7F5F0;min-height:300px';
+  const refresh = () => { d = _ownerReportData(month); preview.srcdoc = _ownerReportToHTML(d); };
+  let timer = null;
+  const areas = {};
+  for(const [key, label, hint] of FIELDS){
+    const lab = document.createElement('label');
+    lab.style.cssText = 'display:block;font-weight:800;font-size:12px;margin:10px 0 4px';
+    lab.textContent = label;
+    const ta = document.createElement('textarea');
+    ta.rows = key === 'summary' ? 4 : 5;
+    ta.placeholder = hint;
+    ta.value = d.notes[key];
+    ta.style.cssText = 'width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font:inherit;font-size:13px;resize:vertical';
+    ta.addEventListener('input', () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const vals = {}; for(const k of OWNER_NOTE_FIELDS) vals[k] = areas[k].value;
+        saveOwnerNotesForMonth(month, vals);
+        refresh();
+      }, 500);
+    });
+    areas[key] = ta;
+    form.appendChild(lab); form.appendChild(ta);
+  }
+  const tip = document.createElement('div');
+  tip.style.cssText = 'margin-top:12px;font-size:11px;color:#6B7280';
+  tip.textContent = 'Saved automatically for this month. The numbers come from Charges, Daily expenses and the cash register.';
+  form.appendChild(tip);
+
+  body.appendChild(form); body.appendChild(preview);
+  panel.appendChild(toolbar); panel.appendChild(body);
+  modal.appendChild(panel);
+  document.body.appendChild(modal);
+  refresh();
+
+  document.getElementById('_or-close').addEventListener('click', () => modal.remove());
+  document.getElementById('_or-xls').addEventListener('click', () => {
+    d = _ownerReportData(month);
+    _downloadFile(fnameBase + '.xls', 'application/vnd.ms-excel;charset=utf-8', _ownerReportToXLS(d));
+  });
+  document.getElementById('_or-print').addEventListener('click', () => {
+    try { const win = preview.contentWindow; if(win){ win.focus(); win.print(); } }
+    catch(err){ console.warn('[owner-report] print failed', err); alert('Could not open the print dialog. Use the Excel export instead.'); }
+  });
+}
+
+
 function renderFinanceView(body){
   body.innerHTML = '';
   const month = _curFinMonth();
@@ -16898,6 +17217,10 @@ function renderFinanceView(body){
       title:'Full monthly report — print, PDF, CSV or JSON',
       onclick:()=>showMonthlyReportModal(month),
     }, '📊 Monthly report'),
+    el('button',{class:'finance-action',
+      title:'Monthly report for the hotel owner: 7 sections, PDF and Excel',
+      onclick:()=>showOwnerReportModal(month),
+    }, '📋 Owner report'),
   );
   wrap.appendChild(el('div',{class:'finance-toolbar'}, periodBar, actionBar));
 
