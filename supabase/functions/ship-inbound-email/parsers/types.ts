@@ -22,7 +22,7 @@ export interface PostmarkInboundPayload {
 // What a parser must return. Fields that couldn't be extracted are undefined.
 // The handler checks for the minimum viable set (guest_name + check_in + check_out).
 export interface ParsedBooking {
-  source: 'booking_com' | 'expedia' | 'agoda' | 'airbnb'
+  source: 'booking_com' | 'expedia' | 'agoda' | 'airbnb' | 'little_hotelier'
 
   // Identity (guest_name is required; the rest are best-effort)
   guest_name: string

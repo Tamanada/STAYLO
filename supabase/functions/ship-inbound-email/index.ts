@@ -28,6 +28,7 @@
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4'
 import { parseBookingCom } from './parsers/booking-com.ts'
+import { parseLittleHotelier } from './parsers/little-hotelier.ts'
 import type { ParsedBooking, PostmarkInboundPayload } from './parsers/types.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
@@ -72,7 +73,21 @@ function detectSource(from: string): ParsedBooking['source'] | null {
   if (f.includes('expedia.com') || f.includes('expediapartnercentral')) return 'expedia'
   if (f.includes('agoda.com')) return 'agoda'
   if (f.includes('airbnb.com')) return 'airbnb'
+  // Little Hotelier / SiteMinder notification senders. Hoteliers can also
+  // auto-forward these from their own mailbox; the forwarded From: is then
+  // the hotelier, so we fall back to sniffing the subject for LH wording
+  // in the main handler (see source fallback below the detectSource call).
+  if (f.includes('littlehotelier') || f.includes('siteminder')) return 'little_hotelier'
   return null
+}
+
+// Forwarded LH notifications lose the original From:. Recognise the
+// template from the subject + body instead ("little hotelier" footer,
+// "Channel Property Code", "Booking Confirmation Id" are LH-specific).
+function smellsLikeLittleHotelier(subject: string, payload: PostmarkInboundPayload): boolean {
+  const hay = (subject + ' ' + (payload.TextBody || '') + ' ' + (payload.HtmlBody || '')).toLowerCase()
+  return hay.includes('little hotelier')
+    || (hay.includes('channel property code') && hay.includes('booking confirmation id'))
 }
 
 // ────────── Main handler ──────────
@@ -163,7 +178,12 @@ serve(async (req: Request) => {
     })
   }
 
-  const source = detectSource(fromAddr)
+  let source = detectSource(fromAddr)
+  // Forwarded mail fallback: the hotelier's auto-forward rewrites From:,
+  // so sniff the content for the Little Hotelier template.
+  if (!source && smellsLikeLittleHotelier(subject, payload)) {
+    source = 'little_hotelier'
+  }
   if (!source) {
     return finish('ignored', {
       parse_error: `unknown source: ${fromAddr}`,
@@ -175,6 +195,12 @@ serve(async (req: Request) => {
   try {
     if (source === 'booking_com') {
       parsed = parseBookingCom({
+        subject,
+        text: payload.TextBody || '',
+        html: payload.HtmlBody || '',
+      })
+    } else if (source === 'little_hotelier') {
+      parsed = parseLittleHotelier({
         subject,
         text: payload.TextBody || '',
         html: payload.HtmlBody || '',
