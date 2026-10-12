@@ -3909,7 +3909,7 @@ function _collectHotelStateFromLocal(hotelCode){
   return state;
 }
 
-const _BLOB_KEY_RE = /^staylo_(employees|schedules|tasks|recipes|messages|timesheet|hotel|charges|pool|events|prefs|tip_config|custom_fiche_cats)_[A-Z0-9_-]{1,20}$/;
+const _BLOB_KEY_RE = /^staylo_(employees|schedules|tasks|recipes|messages|timesheet|hotel|charges|pool|events|prefs|tip_config|custom_fiche_cats|owner_notes)_[A-Z0-9_-]{1,20}$/;
 function _writeBlobToLocal(blob){
   if(!blob || typeof blob !== 'object') return 0;
   let n = 0;
@@ -16857,6 +16857,32 @@ function _ownerReportData(month){
   }
   outflows.sort((a, b) => b.amount - a.amount);
 
+  // Cash trail that always adds up: start + money in + money out - expenses
+  // paid in cash = end. computeCashBalance() subtracts cash-paid receipts, so
+  // the table must show them or the reader cannot reproduce the balance.
+  const dayBefore = (() => {
+    const [y, m] = month.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, 0)).toISOString().slice(0, 10);
+  })();
+  const cashMv = r.cashbook.movements;
+  let cashExp = 0;
+  {
+    const allExp = getExpensesData();
+    for(const k of Object.keys(allExp.months)){
+      for(const e of allExp.months[k]){
+        const dt = e.date || '';
+        if(e.payment_method === 'cash' && dt >= r.period.startDate && dt <= r.period.endDate) cashExp += parseFloat(e.amount) || 0;
+      }
+    }
+  }
+  const cash = {
+    start: computeCashBalance(dayBefore),
+    moneyIn: cashMv.reduce((s, m) => s + Math.max(0, parseFloat(m.amount) || 0), 0),
+    moneyOut: cashMv.reduce((s, m) => s + Math.min(0, parseFloat(m.amount) || 0), 0),
+    cashExp,
+    end: computeCashBalance(r.period.endDate),
+  };
+
   // Auto bullets for section 1: facts the owner cares about, no typing needed.
   const f = (n) => Math.round(n || 0).toLocaleString('en-US');
   const sym = r.hotel.currency;
@@ -16871,7 +16897,7 @@ function _ownerReportData(month){
   if(r.fnb.grossMarginPct != null) bullets.push('F&B gross margin ' + r.fnb.grossMarginPct + '%.');
 
   return {
-    r, month, prevMonth, revenueLines, expenseLines, inflows, outflows, bullets,
+    r, month, prevMonth, revenueLines, expenseLines, inflows, outflows, bullets, cash,
     deltas: { rev: pct(rev.total, r.revenuesPrev.total), exp: pct(exp.total, r.expensesPrev.total) },
     notes: getOwnerNotesForMonth(month),
     prevNotes: getOwnerNotesForMonth(prevMonth),
@@ -16889,8 +16915,7 @@ function _ownerReportToHTML(d){
   const delta = (p) => p == null ? '' : '<span style="color:' + (p >= 0 ? '#059669' : '#DC2626') + '">' + (p >= 0 ? '+' : '') + p + '%</span>';
   const netColor = r.net >= 0 ? '#059669' : '#DC2626';
   const cb = r.cashbook;
-  const cashIn = cb.movements.reduce((s, m) => s + Math.max(0, parseFloat(m.amount) || 0), 0);
-  const cashOut = cb.movements.reduce((s, m) => s + Math.min(0, parseFloat(m.amount) || 0), 0);
+  const c = d.cash;
   const topRows = (arr) => arr.slice(0, 10).map((x, i) =>
     '<tr><td class="num">' + (i + 1) + '</td><td>' + esc(x.label) + '</td><td>' + esc(x.kind) + '</td><td class="right num">' + fN(x.amount) + '</td></tr>').join('')
     || '<tr><td colspan="4" class="empty">No movement recorded.</td></tr>';
@@ -16948,10 +16973,11 @@ function _ownerReportToHTML(d){
 
   // 3. Cash position
   h += '<h2>3. Cash position</h2><table><tbody>' +
-    '<tr><td>Opening balance' + (cb.openingDate ? ' (' + esc(cb.openingDate) + ')' : '') + '</td><td class="right num">' + fN(cb.opening) + '</td></tr>' +
-    '<tr><td>Cash register: money in</td><td class="right num">' + fN(cashIn) + '</td></tr>' +
-    '<tr><td>Cash register: money out</td><td class="right num">' + fN(cashOut) + '</td></tr>' +
-    '<tr class="grand"><td>Cash in hand at month end</td><td class="right num">' + fN(cb.balance) + '</td></tr></tbody></table>' +
+    '<tr><td>Cash in hand at start of month</td><td class="right num">' + fN(c.start) + '</td></tr>' +
+    '<tr><td>Cash register: money in</td><td class="right num">' + fN(c.moneyIn) + '</td></tr>' +
+    '<tr><td>Cash register: money out</td><td class="right num">' + fN(c.moneyOut) + '</td></tr>' +
+    '<tr><td>Expenses paid in cash (receipts)</td><td class="right num">' + fN(-c.cashExp) + '</td></tr>' +
+    '<tr class="grand"><td>Cash in hand at month end</td><td class="right num">' + fN(c.end) + '</td></tr></tbody></table>' +
     '<table><tbody><tr><td>Operating cash flow of the month</td><td class="right num">' + fN(r.cashflow.operating) + '</td></tr>' +
     '<tr><td>Owner top-ups / withdrawals</td><td class="right num">' + fN(r.cashflow.financing) + '</td></tr></tbody></table>';
 
@@ -16995,9 +17021,10 @@ function _ownerReportToXLS(d){
   row('Expenses', r.ytd.current.expenses, r.ytd.lastYear.expenses);
   row('Net', r.ytd.current.net, r.ytd.lastYear.net); row('');
   head('3. Cash position');
-  row('Opening balance', r.cashbook.opening);
+  row('Cash in hand at start of month', d.cash.start);
   r.cashbook.movements.forEach(m => row((m.date || '') + ' ' + (m.note || m.source || m.kind || ''), parseFloat(m.amount) || 0));
-  row('Cash in hand at month end', r.cashbook.balance); row('');
+  row('Expenses paid in cash (receipts)', -d.cash.cashExp);
+  row('Cash in hand at month end', d.cash.end); row('');
   head('4. Main cash in and cash out');
   row('Cash in', 'Type', 'Amount'); d.inflows.slice(0, 10).forEach(x => row(x.label, x.kind, x.amount)); row('');
   row('Cash out', 'Type', 'Amount'); d.outflows.slice(0, 10).forEach(x => row(x.label, x.kind, x.amount)); row('');
@@ -17017,7 +17044,8 @@ function showOwnerReportModal(month){
   const modal = document.createElement('div');
   modal.id = 'owner-report-modal';
   modal.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(15,8,30,.55);display:flex;align-items:center;justify-content:center;padding:16px';
-  modal.addEventListener('click', (ev) => { if(ev.target === modal) modal.remove(); });
+  const closeOwner = () => { flushNotes(); modal.remove(); };
+  modal.addEventListener('click', (ev) => { if(ev.target === modal) closeOwner(); });
 
   const panel = document.createElement('div');
   panel.style.cssText = 'width:100%;max-width:1100px;height:92dvh;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.35)';
@@ -17055,6 +17083,13 @@ function showOwnerReportModal(month){
   const refresh = () => { d = _ownerReportData(month); preview.srcdoc = _ownerReportToHTML(d); };
   let timer = null;
   const areas = {};
+  // Save immediately what is typed, cancelling the pending debounce.
+  function flushNotes(){
+    clearTimeout(timer); timer = null;
+    const vals = {}; let any = false;
+    for(const k of OWNER_NOTE_FIELDS){ if(areas[k]){ vals[k] = areas[k].value; any = true; } }
+    if(any) saveOwnerNotesForMonth(month, vals);
+  }
   for(const [key, label, hint] of FIELDS){
     const lab = document.createElement('label');
     lab.style.cssText = 'display:block;font-weight:800;font-size:12px;margin:10px 0 4px';
@@ -17086,12 +17121,14 @@ function showOwnerReportModal(month){
   document.body.appendChild(modal);
   refresh();
 
-  document.getElementById('_or-close').addEventListener('click', () => modal.remove());
+  document.getElementById('_or-close').addEventListener('click', closeOwner);
   document.getElementById('_or-xls').addEventListener('click', () => {
+    flushNotes();
     d = _ownerReportData(month);
     _downloadFile(fnameBase + '.xls', 'application/vnd.ms-excel;charset=utf-8', _ownerReportToXLS(d));
   });
   document.getElementById('_or-print').addEventListener('click', () => {
+    flushNotes();
     try { const win = preview.contentWindow; if(win){ win.focus(); win.print(); } }
     catch(err){ console.warn('[owner-report] print failed', err); alert('Could not open the print dialog. Use the Excel export instead.'); }
   });
