@@ -343,7 +343,10 @@ export default function Checkout() {
       const sharedBody = {
         booking_id:     booking.id,
         booking_ref:    booking.booking_ref,
-        room_amount:    Math.round(roomTotal * 100),
+        // What the guest saw. The server recomputes the same figures from the
+        // database and answers 409 price_changed if they differ: these two
+        // numbers are a cross-check, not the price.
+        room_amount:    Math.round(chargeableSubtotal * 100),
         processing_fee: Math.round(processingFee * 100),
         currency,
         property_id:    propertyId,

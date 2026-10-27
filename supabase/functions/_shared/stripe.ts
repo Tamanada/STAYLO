@@ -2,7 +2,9 @@
 // All Stripe API calls go through `stripeFetch()` which handles auth, encoding,
 // and error parsing.
 
-const STRIPE_API_BASE = 'https://api.stripe.com/v1'
+// STRIPE_API_BASE is overridable so local integration tests can point the
+// functions at a stub (tests/integration/stripeStub.mjs). Unset = real Stripe.
+const STRIPE_API_BASE = Deno.env.get('STRIPE_API_BASE') ?? 'https://api.stripe.com/v1'
 
 export interface StripeError {
   type: string

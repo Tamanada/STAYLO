@@ -14,7 +14,9 @@
     "audit:i18n-fallbacks": "node scripts/audit_i18n_fallbacks.cjs",
     "audit:i18n-raw": "node scripts/audit_i18n_raw_strings.cjs",
     "audit:i18n": "npm run audit:i18n-fallbacks && npm run audit:i18n-raw",
-    "seed:equipment": "node scripts/seed_equipment_library.cjs"
+    "seed:equipment": "node scripts/seed_equipment_library.cjs",
+    "test": "node --test \"tests/unit/*.test.mjs\"",
+    "test:integration": "node tests/integration/run.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.99.3",

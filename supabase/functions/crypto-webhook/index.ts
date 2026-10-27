@@ -1,46 +1,59 @@
 // ============================================
 // Edge function: crypto-webhook
 // ============================================
-// Handles Lightning provider webhooks (invoice paid / expired / refunded).
+// Handles Lightning provider webhooks (invoice paid / expired).
 //
-// Two modes:
-//   1. Provider webhook (production): authenticated by provider signature.
-//      Currently supports OpenNode signature scheme; BTCPay scheme to add.
-//   2. MOCK self-trigger (Alpha): the frontend calls this endpoint with
-//      { invoice_id, mock_action: 'pay' } to simulate a payment after the
-//      MOCK_PAY_DELAY_SEC delay. Authenticated by user JWT.
+// Two modes, selected by LIGHTNING_PROVIDER (default 'mock'):
+//   1. MOCK self-trigger (Alpha, LIGHTNING_PROVIDER=mock): the frontend calls
+//      { invoice_id, mock_action: 'pay' } with the guest's JWT to simulate a
+//      payment. Only the booking owner, only for 'mock' invoices. Closed as
+//      soon as a real provider is configured.
+//   2. Provider webhook (LIGHTNING_PROVIDER=btcpay | opennode): the request
+//      must carry a valid provider signature (_shared/webhookAuth.ts) and the
+//      invoice must belong to that provider. Closed while the provider is the
+//      mock: there is no provider to trust, so nothing is accepted.
 //
-// On invoice.paid:
-//   - Marks btc_invoices.status = 'paid'
-//   - Marks booking.status = 'confirmed', escrow_status = 'held'
-//   - Sets escrow_release_at = now + 24h
-// (All idempotent — safe to call multiple times.)
+// On invoice paid:
+//   - btc_invoices.status = 'paid'
+//   - booking.status = 'confirmed', escrow_status = 'held', escrow_release_at set
+// (confirm_btc_invoice_payment is idempotent; service_role only.)
+//
+// Deploy note: this function must be reachable by the provider without a
+// Supabase JWT (verify_jwt = false in supabase/config.toml); the signature
+// check above is the authentication.
 // ============================================
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { preflight, jsonResponse, errorResponse } from '../_shared/cors.ts'
 import { getServiceClient, getAuthUser } from '../_shared/supabase.ts'
+import { verifyProviderWebhook, secretEnvName } from '../_shared/webhookAuth.ts'
 
 serve(async (req) => {
   const pre = preflight(req); if (pre) return pre
 
   try {
     const supa = getServiceClient()
-    const body = await req.json().catch(() => ({}))
+    const providerName = (Deno.env.get('LIGHTNING_PROVIDER') ?? 'mock').toLowerCase()
+
+    // Raw body first: provider signatures cover the exact bytes received.
+    const rawBody = await req.text()
+    let body: Record<string, unknown> = {}
+    try { body = rawBody ? JSON.parse(rawBody) : {} } catch { body = {} }
 
     // ─── MODE 1: Mock self-trigger (Alpha) ──────────────────
-    // Frontend calls with { invoice_id, mock_action: 'pay' } after the
-    // simulated delay elapses. JWT-authenticated.
     if (body.mock_action === 'pay') {
+      if (providerName !== 'mock') {
+        return errorResponse('Mock payments are disabled', 403, { code: 'mock_disabled' })
+      }
       const user = await getAuthUser(req)
       if (!user) return errorResponse('Unauthorized', 401)
       if (!body.invoice_id) return errorResponse('invoice_id required for mock_action')
 
-      // Verify the user owns this invoice (via booking.guest_id)
+      // The caller must own the booking behind the invoice
       const { data: invoice } = await supa
         .from('btc_invoices')
         .select('id, status, booking_id, provider, bookings!inner(guest_id)')
-        .eq('id', body.invoice_id)
+        .eq('id', body.invoice_id as string)
         .single()
       if (!invoice) return errorResponse('Invoice not found', 404)
       // @ts-expect-error nested join shape
@@ -48,7 +61,6 @@ serve(async (req) => {
       if (invoice.provider !== 'mock')             return errorResponse('Not a mock invoice', 400)
       if (invoice.status === 'paid') return jsonResponse({ ok: true, already_paid: true })
 
-      // Confirm via RPC (idempotent)
       const { data: rpcData, error: rpcErr } = await supa.rpc('confirm_btc_invoice_payment', {
         p_invoice_id: body.invoice_id,
         p_paid_at:    new Date().toISOString(),
@@ -58,33 +70,46 @@ serve(async (req) => {
     }
 
     // ─── MODE 2: Real provider webhook ──────────────────────
-    // Currently only OpenNode signature scheme is implemented.
-    // BTCPay scheme can be added similarly when that path lights up.
-    const eventType = body.type || body.event || 'unknown'
-    const providerInvoiceId = body.id || body.invoice_id || body.charge_id
+    if (providerName === 'mock') {
+      // No real provider is configured: there is nobody to accept a webhook from.
+      return errorResponse('Provider webhooks are disabled', 403, { code: 'provider_webhooks_disabled' })
+    }
 
+    const secretName = secretEnvName(providerName)
+    const verdict = await verifyProviderWebhook({
+      provider: providerName,
+      rawBody,
+      body,
+      headers: req.headers,
+      secret: secretName ? Deno.env.get(secretName) : null,
+    })
+    if (!verdict.ok) {
+      console.warn(`crypto-webhook: rejected ${providerName} webhook (${verdict.reason})`)
+      return errorResponse('Invalid webhook signature', 401, { code: 'invalid_signature' })
+    }
+
+    const eventType = String(body.type || body.event || body.status || 'unknown')
+    const providerInvoiceId = (body.id || body.invoice_id || body.charge_id) as string | undefined
     if (!providerInvoiceId) {
       return errorResponse('Missing provider invoice id', 400)
     }
 
-    // TODO: Verify signature once a real provider is wired
-    // For now, only mock_action=pay is supported in this Alpha.
-
-    // Find the matching invoice in our DB
+    // Only invoices issued through this provider can be settled by it
     const { data: invoice } = await supa
       .from('btc_invoices')
       .select('id, status, booking_id')
+      .eq('provider', providerName)
       .eq('provider_invoice_id', providerInvoiceId)
-      .single()
+      .maybeSingle()
     if (!invoice) {
-      console.warn('Webhook: invoice not found in DB', providerInvoiceId)
-      return jsonResponse({ ok: true, ignored: true })  // Don't 404 → provider would retry
+      console.warn('crypto-webhook: invoice not found for provider', providerName, providerInvoiceId)
+      return jsonResponse({ ok: true, ignored: true })  // 200: the provider must not retry forever
     }
     if (invoice.status === 'paid') return jsonResponse({ ok: true, already_paid: true })
 
-    // Map provider event types to our status transitions
-    const isPaid    = ['paid', 'invoice.paid', 'charge.paid', 'invoice.settled'].some(s => eventType.includes(s))
-    const isExpired = ['expired', 'invoice.expired'].some(s => eventType.includes(s))
+    const lower = eventType.toLowerCase()
+    const isPaid    = ['paid', 'settled', 'invoicesettled', 'invoice.paid', 'charge.paid', 'invoice.settled'].some(s => lower.includes(s))
+    const isExpired = ['expired', 'invoiceexpired', 'invoice.expired'].some(s => lower.includes(s))
 
     if (isPaid) {
       const { data: rpcData, error: rpcErr } = await supa.rpc('confirm_btc_invoice_payment', {
@@ -93,18 +118,16 @@ serve(async (req) => {
       })
       if (rpcErr) {
         console.error('confirm_btc_invoice_payment failed:', rpcErr)
-        // Return 200 so provider doesn't retry forever; we logged it
         return jsonResponse({ ok: true, handler_error: rpcErr.message })
       }
       return jsonResponse({ ok: true, ...rpcData })
     }
 
     if (isExpired) {
-      await supa.from('btc_invoices').update({ status: 'expired' }).eq('id', invoice.id)
+      await supa.from('btc_invoices').update({ status: 'expired' }).eq('id', invoice.id).eq('status', 'pending')
       return jsonResponse({ ok: true, expired: true })
     }
 
-    // Unknown event — acknowledge anyway
     console.log(`crypto-webhook: ignored event ${eventType}`)
     return jsonResponse({ ok: true, ignored: true })
   } catch (err) {

@@ -160,7 +160,8 @@ export function getLightningProvider(): LightningProvider {
     // case 'btcpay':   return new BTCPayProvider()    // chantier #9.X (when STAYLO incorporated)
     // case 'opennode': return new OpenNodeProvider()  // chantier #9.X (after KYC)
     default:
-      console.warn(`Unknown LIGHTNING_PROVIDER=${which}, falling back to mock`)
-      return new MockProvider()
+      // Never fall back to the mock: a misconfigured provider must fail loudly
+      // instead of issuing fake invoices that no webhook can settle.
+      throw new Error(`LIGHTNING_PROVIDER=${which} is not implemented`)
   }
 }
