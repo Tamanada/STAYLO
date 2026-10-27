@@ -39,7 +39,19 @@ export function startStub(port = 4242) {
       if (req.url === '/__calls' && req.method === 'DELETE') { calls.length = 0; return send(200, { ok: true }) }
 
       const body = raw ? parseForm(raw) : {}
-      calls.push({ method: req.method, path: req.url, body, authorization: req.headers.authorization ? 'present' : 'missing' })
+      calls.push({
+        method: req.method, path: req.url, body,
+        authorization: req.headers.authorization ? 'present' : 'missing',
+        idempotencyKey: req.headers['idempotency-key'] ?? null,
+      })
+
+      // Payment intent lookup, delayed so that concurrent release-escrow runs
+      // overlap on the Stripe step (that is where the race in finding #4 lives).
+      const pi = req.url.match(/^\/v1\/payment_intents\/([^/?]+)$/)
+      if (req.method === 'GET' && pi) {
+        setTimeout(() => send(200, { id: pi[1], status: 'succeeded', latest_charge: `ch_stub_${pi[1]}` }), 400)
+        return
+      }
 
       if (req.method === 'POST' && req.url === '/v1/checkout/sessions') {
         n += 1

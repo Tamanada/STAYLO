@@ -42,9 +42,10 @@ function killTree(child) {
 
 function runTests(phase) {
   return new Promise(resolve => {
+    // Files run one at a time: they share the Stripe stub and its call log.
     // No shell: process.execPath may contain spaces (C:\Program Files\...),
     // and node resolves the glob itself.
-    const child = spawn(process.execPath, ['--test', 'tests/integration/*.test.mjs'], {
+    const child = spawn(process.execPath, ['--test', '--test-concurrency=1', 'tests/integration/*.test.mjs'], {
       cwd: repoRoot, stdio: 'inherit',
       env: { ...process.env, LIGHTNING_PROVIDER: phase },
     })

@@ -6,9 +6,9 @@
 // balance.
 //
 // Two modes:
-//   1. Specific booking — POST { booking_id, reason? }
+//   1. Specific booking: POST { booking_id, reason? }
 //      Used by admin UI / questionnaire trigger.
-//   2. Cron mode — POST { cron: true }
+//   2. Cron mode: POST { cron: true }
 //      Reads bookings_due_for_escrow_release() RPC and releases all eligible
 //      bookings whose escrow window has elapsed (T+24h default).
 //
@@ -16,7 +16,14 @@
 //   - Specific mode: requires admin user
 //   - Cron mode: requires header `x-cron-secret` matching CRON_SECRET env var
 //
-// Returns: { released: [{booking_id, transfer_id, amount, currency}], errors: [...] }
+// Concurrency (guardian finding #4, 2026-10-05): before any Stripe call the
+// run claims the booking with claim_escrow_release() (one atomic UPDATE, see
+// migration 20261028000000). A booking already claimed by another run is
+// skipped, never transferred twice and never marked failed. The transfer
+// itself carries Idempotency-Key escrow_release_<booking_id>, so a retry of
+// the same transfer within Stripe's idempotency window returns the first one.
+//
+// Returns: { released: [{booking_id, transfer_id, amount, currency}], skipped: [...], errors: [...] }
 // ============================================
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
@@ -32,31 +39,47 @@ interface BookingToRelease {
   currency: string
 }
 
+/** Thrown when the claim step itself cannot run (RPC missing, DB down). */
+class ClaimError extends Error {}
+
 async function releaseOne(b: BookingToRelease, reason: string) {
   const supa = getServiceClient()
 
-  // 1. Resolve the actual charge id from the payment intent (needed for source_transaction)
-  const pi = await stripeFetch<StripePaymentIntent>(`/payment_intents/${b.stripe_payment_intent_id}`, { method: 'GET' })
-  if (!pi.latest_charge) throw new Error(`PaymentIntent ${pi.id} has no latest_charge`)
+  // 0. Claim the booking. Exactly one concurrent run gets `true`.
+  const { data: claimed, error: claimErr } = await supa.rpc('claim_escrow_release', { p_booking_id: b.booking_id })
+  if (claimErr) throw new ClaimError(`claim_escrow_release failed: ${claimErr.message}`)
+  if (claimed !== true) return { booking_id: b.booking_id, skipped: 'not_claimable' as const }
 
-  // 2. Create the transfer
-  const transfer = await stripeFetch<StripeTransfer>('/transfers', {
-    body: {
-      amount:             b.payout_amount_cents,
-      currency:           b.currency.toLowerCase(),
-      destination:        b.stripe_account_id,
-      source_transaction: pi.latest_charge,
-      transfer_group:     `booking_${b.booking_id}`,
-      description:        `STAYLO payout for booking ${b.booking_id}`,
-      metadata: {
-        booking_id:     b.booking_id,
-        release_reason: reason,
+  let transfer: StripeTransfer
+  try {
+    // 1. Resolve the actual charge id from the payment intent (needed for source_transaction)
+    const pi = await stripeFetch<StripePaymentIntent>(`/payment_intents/${b.stripe_payment_intent_id}`, { method: 'GET' })
+    if (!pi.latest_charge) throw new Error(`PaymentIntent ${pi.id} has no latest_charge`)
+
+    // 2. Create the transfer, idempotent per booking on Stripe's side too
+    transfer = await stripeFetch<StripeTransfer>('/transfers', {
+      idempotencyKey: `escrow_release_${b.booking_id}`,
+      body: {
+        amount:             b.payout_amount_cents,
+        currency:           b.currency.toLowerCase(),
+        destination:        b.stripe_account_id,
+        source_transaction: pi.latest_charge,
+        transfer_group:     `booking_${b.booking_id}`,
+        description:        `STAYLO payout for booking ${b.booking_id}`,
+        metadata: {
+          booking_id:     b.booking_id,
+          release_reason: reason,
+        },
       },
-    },
-  })
+    })
+  } catch (err) {
+    // Nothing was transferred: give the claim back so a later run can retry.
+    await supa.rpc('release_escrow_claim', { p_booking_id: b.booking_id })
+    throw err
+  }
 
   // 3. Update the booking
-  const { error } = await supa
+  const { data: updated, error } = await supa
     .from('bookings')
     .update({
       escrow_status:     'released',
@@ -65,10 +88,12 @@ async function releaseOne(b: BookingToRelease, reason: string) {
       release_reason:    reason,
     })
     .eq('id', b.booking_id)
-    .eq('escrow_status', 'held')  // optimistic lock
-  if (error) {
-    console.error(`DB update failed after transfer ${transfer.id}:`, error)
-    // Transfer already happened — don't fail the whole batch, log loud
+    .eq('escrow_status', 'held')
+    .select('id')
+  if (error || !updated || updated.length === 0) {
+    // The transfer exists but the row did not flip: keep the claim (it blocks
+    // any second transfer) and log loud for a human.
+    console.error(`DB update failed after transfer ${transfer.id} for booking ${b.booking_id}:`, error?.message ?? 'no row matched')
   }
 
   return { booking_id: b.booking_id, transfer_id: transfer.id, amount: transfer.amount, currency: transfer.currency }
@@ -118,14 +143,21 @@ serve(async (req) => {
       // Use LEFT joins so we can return a useful error per missing piece,
       // instead of a generic "Booking not found" when really the hotelier
       // just hasn't completed Stripe Connect onboarding.
+      // stripe_accounts hangs off users (stripe_accounts.user_id), not off
+      // properties: embedding it under the owner is the only join PostgREST
+      // can resolve (the previous shape failed with "Could not find a
+      // relationship between 'properties' and 'stripe_accounts'", so manual
+      // releases always answered 404).
       const { data, error } = await supa
         .from('bookings')
         .select(`
           id, stripe_payment_intent_id, payout_amount_cents, currency, escrow_status,
           properties:properties(
             id, name, user_id,
-            owner:users!properties_user_id_fkey(email, full_name),
-            stripe_accounts(stripe_account_id, charges_enabled, payouts_enabled)
+            owner:users!properties_user_id_fkey(
+              email, full_name,
+              stripe_accounts(stripe_account_id, charges_enabled, payouts_enabled)
+            )
           )
         `)
         .eq('id', body.booking_id)
@@ -142,7 +174,7 @@ serve(async (req) => {
         return errorResponse('Booking has no linked property', 500)
       }
       const owner = props.owner as Record<string, unknown> | null
-      const accts = props.stripe_accounts as Record<string, unknown> | Record<string, unknown>[] | null
+      const accts = owner?.stripe_accounts as Record<string, unknown> | Record<string, unknown>[] | null
       const acct = Array.isArray(accts) ? accts[0] : accts
       if (!acct?.stripe_account_id) {
         return errorResponse(
@@ -171,14 +203,18 @@ serve(async (req) => {
 
     // Process
     const released: unknown[] = []
+    const skipped: unknown[] = []
     const errors: unknown[] = []
     for (const b of toRelease) {
       try {
-        released.push(await releaseOne(b, reason))
+        const result = await releaseOne(b, reason)
+        if ('skipped' in result) skipped.push(result)
+        else released.push(result)
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err)
         console.error(`release failed for booking ${b.booking_id}:`, msg)
         errors.push({ booking_id: b.booking_id, error: msg })
+        if (err instanceof ClaimError) continue   // infrastructure problem, not this booking's
         // Mark as failed so cron doesn't retry forever
         await supa.from('bookings').update({
           escrow_status:  'failed',
@@ -187,7 +223,10 @@ serve(async (req) => {
       }
     }
 
-    return jsonResponse({ released, errors, count: released.length })
+    if (!isCron && released.length === 0 && skipped.length > 0) {
+      return errorResponse('Booking is being released by another run', 409, { skipped })
+    }
+    return jsonResponse({ released, skipped, errors, count: released.length })
   } catch (err) {
     console.error('release-escrow error:', err)
     return errorResponse(err instanceof Error ? err.message : 'Internal error', 500)

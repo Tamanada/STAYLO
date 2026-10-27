@@ -151,6 +151,32 @@ export async function newBooking(guest, property, room, opts = {}) {
   return data
 }
 
+/** A paid card booking whose escrow window has elapsed (ready for release-escrow). */
+export async function newHeldBooking(guest, property, room, opts = {}) {
+  const payout = opts.payout ?? 9000
+  return newBooking(guest, property, room, {
+    checkIn: opts.checkIn ?? futureDate(10),
+    totalPrice: (payout + Math.round(payout / 9)) / 100,
+    extra: {
+      status: 'confirmed',
+      escrow_status: 'held',
+      stripe_payment_intent_id: `pi_test_${rand()}`,
+      stripe_checkout_session_id: `cs_test_${rand()}`,
+      payout_amount_cents: payout,
+      platform_fee_cents: Math.round(payout / 9),
+      currency: 'USD',
+      payment_received_at: new Date(Date.now() - 48 * 3600_000).toISOString(),
+      escrow_release_at: new Date(Date.now() - 3600_000).toISOString(),
+      ...(opts.extra ?? {}),
+    },
+  })
+}
+
+export async function makeAdmin(user) {
+  const { error } = await serviceClient().from('users').update({ role: 'admin' }).eq('id', user.id)
+  if (error) throw error
+}
+
 export async function newInvoice(booking, overrides = {}) {
   const { data, error } = await serviceClient().from('btc_invoices').insert({
     booking_id: booking.id,

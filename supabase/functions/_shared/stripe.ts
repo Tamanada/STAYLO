@@ -52,7 +52,7 @@ export function stripeEncode(obj: Record<string, unknown>, prefix = ''): string 
 
 export async function stripeFetch<T = unknown>(
   path: string,
-  options: { method?: 'GET' | 'POST' | 'DELETE'; body?: Record<string, unknown>; stripeAccount?: string } = {},
+  options: { method?: 'GET' | 'POST' | 'DELETE'; body?: Record<string, unknown>; stripeAccount?: string; idempotencyKey?: string } = {},
 ): Promise<T> {
   const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY')
   if (!STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY env var not set')
@@ -65,6 +65,11 @@ export async function stripeFetch<T = unknown>(
   // For Stripe Connect calls "on behalf of" a connected account
   if (options.stripeAccount) {
     headers['Stripe-Account'] = options.stripeAccount
+  }
+  // Stripe replays the first response for a repeated key (24h window):
+  // used for money-moving calls that must never run twice (transfers).
+  if (options.idempotencyKey) {
+    headers['Idempotency-Key'] = options.idempotencyKey
   }
 
   const url = path.startsWith('http') ? path : `${STRIPE_API_BASE}${path}`
