@@ -1,13 +1,13 @@
 // ============================================================================
-// webhookAuth.ts — signature verification for Lightning provider webhooks
+// webhookAuth.ts: signature verification for Lightning provider webhooks
 // ============================================================================
 // Pure module (Web Crypto only) so tests/unit/webhookAuth.test.mjs can run it
 // in Node. Used by crypto-webhook before any invoice is confirmed.
 //
 // Schemes:
-//   btcpay   — header "BTCPay-Sig: sha256=<hex>", HMAC-SHA256 of the raw
+//   btcpay  : header "BTCPay-Sig: sha256=<hex>", HMAC-SHA256 of the raw
 //              request body with the webhook secret.
-//   opennode — body.hashed_order = HMAC-SHA256(key = API key, message = body.id).
+//   opennode: body.hashed_order = HMAC-SHA256(key = API key, message = body.id).
 // Any other provider, a missing secret, a missing header or a mismatch is a
 // rejection. Comparison is constant-time.
 // ============================================================================

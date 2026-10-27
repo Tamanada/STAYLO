@@ -21,7 +21,7 @@
 // Returns:
 //   {
 //     invoice_id:  uuid,           // STAYLO btc_invoices.id (used to poll status)
-//     bolt11:      string,         // BOLT11 — render as QR code
+//     bolt11:      string,         // BOLT11: render as QR code
 //     amount_sats: number,         // For display
 //     expires_at:  string,         // ISO timestamp
 //     fiat_amount_cents: number,

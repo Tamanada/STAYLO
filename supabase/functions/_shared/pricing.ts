@@ -1,5 +1,5 @@
 // ============================================================================
-// pricing.ts — server-side price derivation for a booking
+// pricing.ts: server-side price derivation for a booking
 // ============================================================================
 // Port of src/lib/roomPricing.js + src/lib/packagePricing.js + the extra-bed
 // math of src/pages/ota/Checkout.jsx. The browser shows a price with those
