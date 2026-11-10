@@ -9,24 +9,21 @@
 //     The EF re-runs the same math server-side so the client can't
 //     inflate its own refund.
 //
-// Contract for hoteliers (defined here so we can iterate the barème
-// without touching the DB or the EF):
+// Contract (CONFIRMED by the founder, see guardian/RULES.md). The server
+// copy is supabase/functions/_shared/refund.ts; tests/unit/refund.test.mjs
+// fails when the two drift. Change both in the same commit.
 //
-//    Policy            100% refund window     50% refund window     0%
-//    flexible          ≥ 24h before check-in  12–24h                <12h
-//    moderate          ≥ 48h                  24–48h                <24h
-//    strict            ≥ 7 days               3–7 days              <3d
-//    super_strict_30   ≥ 30 days              (no partial band)     <30d
-//    non_refundable    never                  never                 always
-//
-// The super_strict_30 tier is common for seasonal / villa rentals with
-// long lead times — 100% until you're inside a month of check-in, then
-// 0%. No partial band by design (David's ask: "Cancellation +30 days
-// 100% refundable / less than 30 days 100% non-refundable").
+//    Policy            100% refund window      50% refund window     0%
+//    flexible          >= 24h before check-in  none                  < 24h
+//    moderate          >= 7 days               48h to 7 days         < 48h
+//    strict            >= 14 days              none                  < 14 days
+//    super_strict_30   >= 30 days              none                  < 30 days
+//    non_refundable    never                   never                 always
 //
 // Payment-processing fees (3% card / 0% Lightning etc.) are NEVER
-// refunded — they're acquired by the processor at the moment of pay.
-// The refund is on `total_price - processing_fee` only.
+// refunded: they are acquired by the processor at the moment of pay.
+// The refund base is the room amount only (total_price - processing_fee),
+// and the amount is Math.round(base * pct / 100).
 // ============================================================================
 
 // Hours-based bands per policy. First tuple entry that the caller's
@@ -36,18 +33,16 @@
 const POLICY_BANDS = {
   flexible: [
     [24, 100],
-    [12,  50],
     [ 0,   0],
   ],
   moderate: [
-    [48, 100],
-    [24,  50],
-    [ 0,   0],
+    [7 * 24, 100],
+    [    48,  50],
+    [     0,   0],
   ],
   strict: [
-    [7 * 24, 100],
-    [3 * 24,  50],
-    [     0,   0],
+    [14 * 24, 100],
+    [      0,   0],
   ],
   super_strict_30: [
     [30 * 24, 100],
@@ -63,19 +58,19 @@ const POLICY_BANDS = {
 const POLICY_LABELS = {
   flexible: {
     name: 'Flexible',
-    thresholds: '100% refund ≥ 24h before check-in · 50% between 12h and 24h · 0% under 12h',
+    thresholds: '100% refund 24h or more before check-in · 0% under 24h',
   },
   moderate: {
     name: 'Moderate',
-    thresholds: '100% refund ≥ 48h before check-in · 50% between 24h and 48h · 0% under 24h',
+    thresholds: '100% refund 7 days or more before check-in · 50% between 48h and 7 days · 0% under 48h',
   },
   strict: {
     name: 'Strict',
-    thresholds: '100% refund ≥ 7 days before check-in · 50% between 3 and 7 days · 0% under 3 days',
+    thresholds: '100% refund 14 days or more before check-in · 0% under 14 days',
   },
   super_strict_30: {
-    name: 'Super strict — 30 days',
-    thresholds: '100% refund ≥ 30 days before check-in · 0% under 30 days (no partial band).',
+    name: 'Super strict, 30 days',
+    thresholds: '100% refund 30 days or more before check-in · 0% under 30 days.',
   },
   non_refundable: {
     name: 'Non-refundable',
@@ -166,7 +161,7 @@ export function computeCancellationRefund({ booking, property, nowIso }) {
   const band = bands.find(([minHours]) => hours >= minHours) || bands[bands.length - 1]
   const refundPct = band[1]
 
-  const refundAmountCents = Math.floor((refundableBaseCents * refundPct) / 100)
+  const refundAmountCents = Math.round((refundableBaseCents * refundPct) / 100)
 
   const bandLabel =
     hours >= 24 ? `${Math.floor(hours / 24)} day${Math.floor(hours / 24) === 1 ? '' : 's'} before check-in`

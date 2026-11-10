@@ -160,11 +160,18 @@ serve(async (req) => {
         if (!piId) break
         const refundsList = (ch.refunds as Record<string, unknown>)?.data as Array<Record<string, unknown>> | undefined
         const refund = refundsList?.[0]
-        await supa.from('bookings').update({
-          status:           'cancelled',
-          escrow_status:    'refunded',
-          stripe_refund_id: refund?.id,
-        }).eq('stripe_payment_intent_id', piId)
+        // A partial refund (policy band 50%, or any refund below the charge)
+        // leaves a remainder owed to the hotelier: the escrow stays as it is
+        // and release-escrow pays the reduced payout later. Only a refund of
+        // the whole charge closes the booking here. The refund id is recorded
+        // in both cases, which also blocks a second refund (claim_booking_refund).
+        const fullRefund = Number(ch.amount_refunded ?? 0) >= Number(ch.amount ?? 0)
+        const updates: Record<string, unknown> = { stripe_refund_id: refund?.id }
+        if (fullRefund) {
+          updates.status = 'cancelled'
+          updates.escrow_status = 'refunded'
+        }
+        await supa.from('bookings').update(updates).eq('stripe_payment_intent_id', piId)
         break
       }
 

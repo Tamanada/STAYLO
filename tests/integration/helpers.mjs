@@ -172,6 +172,31 @@ export async function newHeldBooking(guest, property, room, opts = {}) {
   })
 }
 
+/** A paid card booking: room 30000 (payout 27000 + fee 3000), guest paid 900 processing fee. */
+export async function newPaidBooking(guest, property, room, opts = {}) {
+  return newHeldBooking(guest, property, room, {
+    payout: 27000,
+    checkIn: opts.checkIn ?? futureDate(10),
+    extra: { processing_fee_cents: 900, total_price: 309, ...(opts.extra ?? {}) },
+  })
+}
+
+export async function newCommission(booking, hotelier, property, cents = 600) {
+  const ambassador = await newUser('ambassador')
+  const { data, error } = await serviceClient().from('ambassador_commissions').insert({
+    ambassador_user_id: ambassador.id, booking_id: booking.id, hotelier_user_id: hotelier.id,
+    property_id: property.id, room_amount_cents: 30000, commission_cents: cents, currency: 'USD', status: 'pending',
+  }).select().single()
+  if (error) throw error
+  return data
+}
+
+export async function getCommission(id) {
+  const { data, error } = await serviceClient().from('ambassador_commissions').select('*').eq('id', id).single()
+  if (error) throw error
+  return data
+}
+
 export async function makeAdmin(user) {
   const { error } = await serviceClient().from('users').update({ role: 'admin' }).eq('id', user.id)
   if (error) throw error

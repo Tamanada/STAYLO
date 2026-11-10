@@ -62,6 +62,20 @@ export function startStub(port = 4242) {
         n += 1
         return send(200, { id: `tr_test_stub_${n}`, amount: Number(body.amount), currency: body.currency, destination: body.destination })
       }
+      if (req.method === 'POST' && req.url === '/v1/refunds') {
+        n += 1
+        return send(200, { id: `re_test_stub_${n}`, status: 'succeeded', amount: Number(body.amount), payment_intent: body.payment_intent })
+      }
+      // Transfer reversal (clawback tier 1). A transfer id containing "fail"
+      // simulates a connected account that cannot cover the reversal.
+      const rev = req.url.match(/^\/v1\/transfers\/([^/]+)\/reversals$/)
+      if (req.method === 'POST' && rev) {
+        if (rev[1].includes('fail')) {
+          return send(400, { error: { type: 'invalid_request_error', message: 'Insufficient funds on the connected account (stub)' } })
+        }
+        n += 1
+        return send(200, { id: `trr_test_stub_${n}`, amount: Number(body.amount), transfer: rev[1] })
+      }
       return send(200, { id: 'stub', object: 'unknown' })
     })
   })
