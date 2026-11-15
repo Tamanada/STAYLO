@@ -44,6 +44,6 @@ test('honest Lightning request: invoice carries the server-derived fiat amount',
   assert.equal(res.json.fiat_amount_cents, ROOM_CENTS)
   assert.equal(res.json.provider, 'mock')
   const after = await getBooking(booking.id)
-  assert.equal(after.payout_amount_cents, ROOM_CENTS - Math.round(ROOM_CENTS * 0.10))
+  assert.equal(after.payout_amount_cents, Math.round(ROOM_CENTS * 0.90))
   assert.equal(after.processing_fee_cents, 0)
 })

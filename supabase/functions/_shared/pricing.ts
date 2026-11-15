@@ -253,3 +253,14 @@ export function deriveBookingCharge(input: ChargeInput): BookingCharge {
     minStayRequired: pricing.minStayRequired,
   }
 }
+
+/**
+ * Split of the room amount at booking time, CONFIRMED order (guardian/ACCOUNTING.md):
+ * the hotelier share is rounded first, STAYLO absorbs the remainder. The platform
+ * fee holds STAYLO net plus the ambassador 2% when there is one (the DB trigger
+ * creates that commission row from the same room amount).
+ */
+export function splitBooking(roomCents: number): { payoutCents: number; platformFeeCents: number } {
+  const payoutCents = Math.round(roomCents * 0.90)
+  return { payoutCents, platformFeeCents: roomCents - payoutCents }
+}

@@ -43,9 +43,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { preflight, jsonResponse, errorResponse } from '../_shared/cors.ts'
 import { stripeFetch, StripeCheckoutSession } from '../_shared/stripe.ts'
 import { getServiceClient, getAuthUser } from '../_shared/supabase.ts'
-import { deriveBookingCharge } from '../_shared/pricing.ts'
+import { deriveBookingCharge, splitBooking } from '../_shared/pricing.ts'
 
-const COMMISSION_RATE = 0.10  // 10% to STAYLO
 
 serve(async (req) => {
   const pre = preflight(req); if (pre) return pre
@@ -192,8 +191,8 @@ serve(async (req) => {
     // }
 
     // 6. Split (commission on ROOM AMOUNT, NOT total; processing fee is not split)
-    const platformFee  = Math.round(roomAmt * COMMISSION_RATE)
-    const payoutAmount = roomAmt - platformFee
+    // CONFIRMED order: hotelier rounded first, STAYLO absorbs the remainder.
+    const { payoutCents: payoutAmount, platformFeeCents: platformFee } = splitBooking(roomAmt)
     const totalCharged = roomAmt + procFee
 
     // 7. Checkout Session: one line item with the total the guest pays.

@@ -150,3 +150,14 @@ test('deriveBookingCharge: blocked nights and min stay are reported', () => {
   assert.equal(charge.minStayOK, false)
   assert.equal(charge.minStayRequired, 3)
 })
+
+test('booking split: hotelier rounded first, STAYLO absorbs the remainder, sum exact for 1..20000', async () => {
+  const { splitBooking } = await import('../../supabase/functions/_shared/pricing.ts')
+  for (let r = 1; r <= 20000; r++) {
+    const s = splitBooking(r)
+    assert.equal(s.payoutCents, Math.round(r * 0.9), `payout ${r}`)
+    assert.equal(s.payoutCents + s.platformFeeCents, r, `sum ${r}`)
+  }
+  // 1175: hotelier 1058 (round 1057.5 up), STAYLO 117, not 1057 / 118 as before
+  assert.deepEqual(splitBooking(1175), { payoutCents: 1058, platformFeeCents: 117 })
+})

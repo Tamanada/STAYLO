@@ -80,7 +80,7 @@ test('honest request: Stripe receives the server-derived total and the booking h
   assert.equal(res.status, 200, JSON.stringify(res.json))
   assert.match(res.json.url, /^https:\/\/checkout\.stripe\.test\//)
   assert.equal(res.json.total_charged_cents, ROOM_CENTS + FEE_CENTS)
-  assert.equal(res.json.payout_amount_cents, ROOM_CENTS - Math.round(ROOM_CENTS * 0.10))
+  assert.equal(res.json.payout_amount_cents, Math.round(ROOM_CENTS * 0.90))
   const calls = await stubCalls()
   assert.equal(calls.length, 1)
   const session = calls[0].body
@@ -88,8 +88,8 @@ test('honest request: Stripe receives the server-derived total and the booking h
   assert.equal(session.metadata.hotelier_stripe_account_id, hotelierA.stripe_account_id)
   assert.equal(session.metadata.property_id, propertyA.id)
   const after = await getBooking(booking.id)
-  assert.equal(after.payout_amount_cents, ROOM_CENTS - Math.round(ROOM_CENTS * 0.10))
-  assert.equal(after.platform_fee_cents, Math.round(ROOM_CENTS * 0.10))
+  assert.equal(after.payout_amount_cents, Math.round(ROOM_CENTS * 0.90))
+  assert.equal(after.platform_fee_cents, ROOM_CENTS - Math.round(ROOM_CENTS * 0.90))
   assert.equal(after.processing_fee_cents, FEE_CENTS)
   assert.equal(Number(after.total_price), (ROOM_CENTS + FEE_CENTS) / 100)
 })
@@ -113,11 +113,9 @@ test('extra bed and add-on package are part of the charged amount', only, async 
     extra_bed_available: true, extra_bed_max_qty: 1, extra_bed_price: 20,
   })
   const pkg = await newPackage(propertyA, room, { price: 30, pricing_type: 'per_night', pricing_mode: 'addon' }, 2)
-  // guests = adults only: the DB trigger enforce_booking_max_guests counts
-  // `guests` against max_guests x rooms_count and would refuse the child even
-  // though the extra bed exists for exactly that case (pre-existing product
-  // defect, recorded in guardian/reports/2026-10-27-p0-fixes-local-tests.md).
-  const booking = await newBooking(guest, propertyA, room, { checkIn, nights: 2, adults: 2, children: 1, packageId: pkg.id, extra: { guests: 2 } })
+  // 3 guests in a room for 2: allowed because the booking carries one extra bed
+  // (trigger enforce_booking_max_guests, migration 20261115000000).
+  const booking = await newBooking(guest, propertyA, room, { checkIn, nights: 2, adults: 2, children: 1, packageId: pkg.id, extra: { extra_beds_count: 1 } })
   // room 2 x 100 = 200; extra bed 1 x 20 x 2 nights = 40; package 30 x qty 2 x 2 nights = 120 -> 360.00
   const expectedRoom = 36000
   const expectedFee = Math.round(360 * 0.03 * 100)

@@ -60,12 +60,20 @@ function addDaysISO(dateStr, n) {
   return d.toISOString().slice(0, 10)
 }
 
-// ── Fake reviews ──────────────────────────────────────
-const FAKE_REVIEWS = [
-  { name: 'Sarah M.', country: '🇬🇧', date: 'March 2026', rating: 9, title: 'Wonderful stay!', text: 'Beautiful property, amazing staff. The pool area is stunning and the breakfast buffet was incredible.' },
-  { name: 'Kenji T.', country: '🇯🇵', date: 'February 2026', rating: 10, title: 'Perfect in every way', text: 'Could not have asked for a better experience. Will definitely come back. Saved a lot booking through STAYLO!' },
-  { name: 'Marie L.', country: '🇫🇷', date: 'January 2026', rating: 8, title: 'Très bien', text: 'Great location, clean rooms, friendly staff. The only downside was the slow elevator during peak hours.' },
+// Review aspects shown as bars, in display order. Scores come from
+// get_property_review_breakdown (real stay_reviews, /10 scale).
+const REVIEW_ASPECTS = [
+  { key: 'cleanliness', labelKey: 'booking.aspect_cleanliness', labelDef: 'Cleanliness' },
+  { key: 'location',    labelKey: 'booking.aspect_location',    labelDef: 'Location' },
+  { key: 'service',     labelKey: 'booking.aspect_service',     labelDef: 'Service' },
+  { key: 'value',       labelKey: 'booking.aspect_value',       labelDef: 'Value' },
+  { key: 'vibe',        labelKey: 'booking.aspect_vibe',        labelDef: 'Vibe' },
 ]
+
+function reviewMonth(iso) {
+  try { return new Date(iso).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }) }
+  catch { return '' }
+}
 
 // ── Component ─────────────────────────────────────────
 export default function PropertyDetail() {
@@ -80,6 +88,10 @@ export default function PropertyDetail() {
   // units from the "max N available" stock number shown next to the
   // Rooms picker. See maxRoomsAvailable calc below.
   const [propertyBookings, setPropertyBookings] = useState([])
+  // Real guest reviews (stay_reviews via public RPCs). Empty until the
+  // property has at least one review; the block then shows the empty state.
+  const [reviewList, setReviewList] = useState([])
+  const [reviewBreakdown, setReviewBreakdown] = useState(null)
   const [loading, setLoading] = useState(true)
   const [checkIn, setCheckIn] = useState(searchParams.get('in') || getDefaultCheckIn())
   const [checkOut, setCheckOut] = useState(searchParams.get('out') || getDefaultCheckOut())
@@ -179,6 +191,19 @@ export default function PropertyDetail() {
           ratingStats = statsRows?.[0] || null
         } catch (_) { /* fall through to New */ }
         const hasReviews = !!(ratingStats?.review_count && ratingStats.review_count > 0)
+        if (hasReviews) {
+          // Latest reviews + per-aspect averages. Both tolerate a database
+          // where the RPCs are not deployed yet: the block then shows the
+          // overall score only.
+          try {
+            const [{ data: list }, { data: breakdown }] = await Promise.all([
+              supabase.rpc('get_property_reviews', { p_property_id: id, p_limit: 10 }),
+              supabase.rpc('get_property_review_breakdown', { p_property_id: id }),
+            ])
+            setReviewList(Array.isArray(list) ? list : [])
+            setReviewBreakdown(breakdown?.[0] || null)
+          } catch { /* keep empty */ }
+        }
         setProperty({
           ...propRes.data,
           photos: propRes.data.photo_urls || [],
@@ -966,13 +991,11 @@ export default function PropertyDetail() {
             </div>
 
             {/* ── Guest Reviews ────────────────
-                Real reviews live in stay_reviews (see PublicCheckOut).
-                When a property has none yet we replace the whole block
-                with an empty state that encourages the first stay to be
-                the first review, rather than fabricated per-aspect bars.
-                Individual review rendering is intentionally left as
-                FAKE_REVIEWS for now until the reviews-listing endpoint
-                and moderation flow ship (chunk 2 of the survey feature). */}
+                Real reviews live in stay_reviews (written at check-out).
+                No reviews yet: empty state inviting the first one.
+                Otherwise: overall score, per-aspect averages and the latest
+                reviews, all from the public RPCs (migration 20261115000001).
+                Reviews with an open complaint stay private. */}
             {property.isNew ? (
               <div className="bg-white rounded-xl p-6 border border-gray-200 text-center">
                 <div className="text-3xl mb-2">✨</div>
@@ -996,44 +1019,53 @@ export default function PropertyDetail() {
                   </div>
                 </div>
 
-                {/* Review bars */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
-                  {[
-                    { label: 'Cleanliness', score: (property.rating + 0.1).toFixed(1) },
-                    { label: 'Location', score: (property.rating - 0.1).toFixed(1) },
-                    { label: 'Service', score: property.rating.toFixed(1) },
-                    { label: 'Value', score: (property.rating + 0.2).toFixed(1) },
-                  ].map(cat => (
-                    <div key={cat.label} className="text-center">
-                      <p className="text-xs text-gray-500 mb-1">{cat.label}</p>
-                      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#003580] rounded-full" style={{ width: `${cat.score * 10}%` }} />
-                      </div>
-                      <p className="text-xs font-bold text-gray-900 mt-1">{cat.score}</p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Individual reviews */}
-                <div className="space-y-4">
-                  {FAKE_REVIEWS.map((review, i) => (
-                    <div key={i} className="border-t border-gray-100 pt-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-[#003580]/10 rounded-full flex items-center justify-center text-sm font-bold text-[#003580]">
-                            {review.name[0]}
+                {/* Review bars: real per-aspect averages, only the aspects guests rated */}
+                {reviewBreakdown && REVIEW_ASPECTS.some(a => reviewBreakdown[a.key] != null) && (
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5">
+                    {REVIEW_ASPECTS.filter(a => reviewBreakdown[a.key] != null).map(a => {
+                      const score = Number(reviewBreakdown[a.key])
+                      return (
+                        <div key={a.key} className="text-center">
+                          <p className="text-xs text-gray-500 mb-1">{t(a.labelKey, a.labelDef)}</p>
+                          <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div className="h-full bg-[#003580] rounded-full" style={{ width: `${Math.min(100, score * 10)}%` }} />
                           </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-900">{review.name} <span className="text-xs">{review.country}</span></p>
-                            <p className="text-[10px] text-gray-400">{review.date}</p>
-                          </div>
+                          <p className="text-xs font-bold text-gray-900 mt-1">{score.toFixed(1)}</p>
                         </div>
-                        <div className="bg-[#003580] text-white text-xs font-bold px-2 py-1 rounded-md rounded-bl-none">{review.rating}</div>
+                      )
+                    })}
+                  </div>
+                )}
+                {reviewBreakdown?.recommend_pct != null && (
+                  <p className="text-xs text-gray-500 mb-4">
+                    {t('booking.would_recommend_pct', '{{pct}}% of guests would recommend this place', { pct: Number(reviewBreakdown.recommend_pct) })}
+                  </p>
+                )}
+
+                {/* Latest reviews */}
+                <div className="space-y-4">
+                  {reviewList.map(review => {
+                    const name = review.reviewer_name || t('booking.anonymous_guest', 'Guest')
+                    return (
+                      <div key={review.id} className="border-t border-gray-100 pt-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-[#003580]/10 rounded-full flex items-center justify-center text-sm font-bold text-[#003580]">
+                              {name[0]}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">{name}</p>
+                              <p className="text-[10px] text-gray-400">{reviewMonth(review.created_at)}</p>
+                            </div>
+                          </div>
+                          {review.rating != null && (
+                            <div className="bg-[#003580] text-white text-xs font-bold px-2 py-1 rounded-md rounded-bl-none">{Number(review.rating).toFixed(1)}</div>
+                          )}
+                        </div>
+                        {review.review_text && <p className="text-sm text-gray-600">{review.review_text}</p>}
                       </div>
-                      <p className="text-sm font-semibold text-gray-900 mb-0.5">{review.title}</p>
-                      <p className="text-sm text-gray-600">{review.text}</p>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             )}

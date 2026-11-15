@@ -36,9 +36,8 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { preflight, jsonResponse, errorResponse } from '../_shared/cors.ts'
 import { getServiceClient, getAuthUser } from '../_shared/supabase.ts'
 import { getLightningProvider } from '../_shared/lightning.ts'
-import { deriveBookingCharge } from '../_shared/pricing.ts'
+import { deriveBookingCharge, splitBooking } from '../_shared/pricing.ts'
 
-const COMMISSION_RATE = 0.10
 
 serve(async (req) => {
   const pre = preflight(req); if (pre) return pre
@@ -192,8 +191,8 @@ serve(async (req) => {
     }
 
     // 6. Booking breakdown (server-derived)
-    const platformFee  = Math.round(roomAmt * COMMISSION_RATE)
-    const payoutAmount = roomAmt - platformFee
+    // CONFIRMED order: hotelier rounded first, STAYLO absorbs the remainder.
+    const { payoutCents: payoutAmount, platformFeeCents: platformFee } = splitBooking(roomAmt)
     await supa.from('bookings').update({
       payment_method,
       currency:             cur,
