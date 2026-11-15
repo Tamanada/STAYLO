@@ -37,7 +37,7 @@ const LOCAL_FIXES = {
 const NOT_IN_PRODUCTION = new Set([
   '20260602000000_checkin_v2_and_engagement.sql',
   '20260603000000_checkin_v2_bridge.sql',
-  '20260604010000_voucher_auto_issue.sql',   // no issue_vouchers_for_booking() and no trigger in production
+  // 20260604010000_voucher_auto_issue.sql: absent from production until 2026-11-15, now applied locally and handed to the founder for production
 ])
 
 // Text replacements applied to a migration before it runs, where production
