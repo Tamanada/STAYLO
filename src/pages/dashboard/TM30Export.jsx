@@ -1,69 +1,54 @@
 // ============================================================================
-// Dashboard — TM30 Export (Phase 1 of docs/TM30_COMPLIANCE.md)
+// Dashboard: TM30 export (Phase 1 of docs/TM30_COMPLIANCE.md)
 // ============================================================================
-// Per the TM30 roadmap, Phase 1 ships a CSV that the hotelier downloads
-// manually and uploads to https://extranet.immigration.go.th. This is the
-// route that ships that CSV.
+// The hotelier downloads the Immigration import file and uploads it on
+// https://extranet.immigration.go.th. The file is the official template
+// (Template-InformAccom-ImportExcel.xls): one sheet, nine columns, at most
+// 1,000 guests per file. Column rules and nationality codes live in
+// src/lib/tm30Template.js; the rows are built by src/lib/tm30Excel.js and
+// written by src/lib/tm30Workbook.js.
 //
 //   URL:  /dashboard/property/:id/tm30
-//   View: pick a date → list of foreign guests checked in that day → click
-//         "Download CSV" → file matches Immigration's expected column order.
-//         A daily PDF (per booking) is also downloadable from the row's
-//         inline action — uses the existing pdf-lib generator in
-//         src/lib/tm30.js (kept for printable archives).
+//   View: pick a date -> foreign guests who checked in that day -> the
+//         guests Immigration would reject are listed with what is missing ->
+//         "Download" writes the .xls with the complete guests.
+//         A per-guest PDF (printable archive) stays available on each row.
 //
-// What counts as "foreign" for TM30 purposes
-//   Any booking_guest with `nationality` ≠ 'TH'. Thai nationals are out
-//   of scope (no immigration notification required). If nationality is
-//   NULL we INCLUDE the row but flag it so the hotelier knows to confirm
-//   before submitting.
+// Thai nationals are out of scope (no notification required). Guests with
+// no nationality are shown with what is missing so the desk can fix them.
 // ============================================================================
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Download, Calendar, AlertCircle, FileText, Loader2 } from 'lucide-react'
+import { ArrowLeft, Download, Calendar, AlertCircle, FileText, Loader2, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
-import { useAuth } from '../../hooks/useAuth'
 import { Card } from '../../components/ui/Card'
 import { Button } from '../../components/ui/Button'
 import { Badge } from '../../components/ui/Badge'
 import { downloadTM30 } from '../../lib/tm30'
+import { buildTm30Rows, tm30Date, TM30_MAX_ROWS } from '../../lib/tm30Excel'
+import { downloadTm30Files } from '../../lib/tm30Workbook'
 
-// Immigration Bureau column order (approximate spec — confirm with the
-// portal sample CSV before going live). Header row is included to make
-// the file self-documenting; the IB portal accepts it.
-const CSV_HEADERS = [
-  'HotelID', 'GuestSeq', 'FamilyName', 'GivenName', 'Sex', 'DOB',
-  'Nationality', 'PassportNo', 'DocType', 'ThailandArrival',
-  'PortOfEntry', 'VisaType', 'VisaNo', 'CheckIn', 'CheckOut', 'Phone',
-]
+const ISSUE_LABELS = {
+  first_name:  'first name',
+  gender:      'sex (M or F)',
+  passport:    'passport number',
+  nationality: 'nationality',
+}
 
 function isoToday() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-// Properly quote a CSV cell — escapes embedded quotes, wraps when needed.
-function csvCell(value) {
-  if (value == null) return ''
-  const s = String(value)
-  if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`
-  return s
-}
-
-function buildCSV(rows) {
-  const lines = [CSV_HEADERS.join(',')]
-  for (const r of rows) lines.push(r.map(csvCell).join(','))
-  return lines.join('\r\n')   // CRLF — Windows-friendly, IB portal-friendly
-}
-
 export default function TM30Export() {
   const { id: propertyId } = useParams()
-  const { user } = useAuth()
   const [property, setProperty] = useState(null)
   const [date, setDate] = useState(isoToday())
   const [guests, setGuests] = useState([])
   const [bookingsByGuest, setBookingsByGuest] = useState({})
   const [loading, setLoading] = useState(true)
+  const [downloading, setDownloading] = useState(false)
+  const [downloadNote, setDownloadNote] = useState('')
 
   // Load the property (TM30 license, name, etc.) once.
   useEffect(() => {
@@ -78,8 +63,7 @@ export default function TM30Export() {
     return () => { cancelled = true }
   }, [propertyId])
 
-  // Load the foreign guests checked in on the chosen date. We JOIN to
-  // bookings to filter by property + check_in date.
+  // Load the guests of the bookings that checked in on the chosen date.
   useEffect(() => {
     if (!propertyId) return
     let cancelled = false
@@ -97,14 +81,10 @@ export default function TM30Export() {
       ;(bookings || []).forEach(b => { map[b.id] = b })
       const { data: guestRows } = await supabase
         .from('booking_guests')
-        .select('id, booking_id, first_name, last_name, sex, nationality, passport_number, date_of_birth, travel_doc_type, thailand_arrival_date, thailand_port_of_entry, visa_type, visa_number, is_child')
+        .select('id, booking_id, first_name, last_name, sex, nationality, passport_number, date_of_birth, travel_doc_type, is_child')
         .in('booking_id', bookingIds)
       if (cancelled) return
-      // Filter out Thai nationals — TM30 only requires foreign guest
-      // notification. Rows with NULL nationality kept with a flag so
-      // the hotelier knows to confirm before exporting.
-      const foreign = (guestRows || []).filter(g => !g.nationality || g.nationality.toUpperCase() !== 'TH')
-      setGuests(foreign)
+      setGuests(guestRows || [])
       setBookingsByGuest(map)
       setLoading(false)
     })()
@@ -113,44 +93,24 @@ export default function TM30Export() {
 
   const hasLicense = !!property?.tm30_license_number
 
-  const csvRows = useMemo(() => {
-    return guests.map((g, i) => {
-      const b = bookingsByGuest[g.booking_id] || {}
-      return [
-        property?.tm30_license_number || '',                  // HotelID
-        i + 1,                                                 // GuestSeq
-        g.last_name || '',                                     // FamilyName
-        g.first_name || '',                                    // GivenName
-        g.sex || '',                                           // Sex
-        g.date_of_birth || '',                                 // DOB (YYYY-MM-DD)
-        g.nationality || '',                                   // Nationality (alpha-2)
-        g.passport_number || '',                               // PassportNo
-        g.travel_doc_type || 'passport',                       // DocType
-        g.thailand_arrival_date || '',                         // ThailandArrival
-        g.thailand_port_of_entry || '',                        // PortOfEntry
-        g.visa_type || '',                                     // VisaType
-        g.visa_number || '',                                   // VisaNo
-        b.check_in  || '',                                     // CheckIn
-        b.check_out || '',                                     // CheckOut
-        b.guest_phone || '',                                   // Phone (from booking, not per-guest)
-      ]
-    })
-  }, [guests, bookingsByGuest, property])
+  // Rows as Immigration will read them. Thai nationals are left out here.
+  const rows = useMemo(() => buildTm30Rows(guests, bookingsByGuest), [guests, bookingsByGuest])
+  const readyRows = rows.filter(r => r.issues.length === 0)
+  const toFix = rows.filter(r => r.issues.length > 0)
 
-  function handleDownloadCSV() {
-    if (csvRows.length === 0) return
-    const csv = buildCSV(csvRows)
-    // BOM for Excel UTF-8 compatibility (the IB portal also handles BOM cleanly).
-    const blob = new Blob(['﻿', csv], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const safeName = (property?.name || 'property').replace(/[^a-z0-9-_]+/gi, '_')
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `TM30_${safeName}_${date}.csv`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    setTimeout(() => URL.revokeObjectURL(url), 1000)
+  async function handleDownload() {
+    if (readyRows.length === 0 || downloading) return
+    setDownloading(true)
+    setDownloadNote('')
+    try {
+      const files = await downloadTm30Files(readyRows, property?.name, date)
+      const skipped = toFix.length ? `, ${toFix.length} guest${toFix.length === 1 ? '' : 's'} left out until fixed` : ''
+      setDownloadNote(`${readyRows.length} guest${readyRows.length === 1 ? '' : 's'} in ${files} file${files === 1 ? '' : 's'}${skipped}.`)
+    } catch (err) {
+      setDownloadNote(`Could not build the file: ${err?.message || err}`)
+    } finally {
+      setDownloading(false)
+    }
   }
 
   function handleDownloadPDF(guest) {
@@ -192,7 +152,7 @@ export default function TM30Export() {
           </div>
           <h1 className="text-2xl font-bold text-deep">Daily TM30 export</h1>
           <p className="text-xs text-gray-500 mt-0.5">
-            {property?.name || '—'} · Generate the CSV, upload at{' '}
+            {property?.name || '...'} · Download the Immigration Excel file, upload it at{' '}
             <a href="https://extranet.immigration.go.th" target="_blank" rel="noopener noreferrer"
               className="text-orange font-semibold">extranet.immigration.go.th</a> within 24h of arrival.
           </p>
@@ -221,7 +181,7 @@ export default function TM30Export() {
             ) : (
               <span className="flex items-center gap-1.5 text-sunset">
                 <AlertCircle size={14} />
-                No TM30 license set —{' '}
+                No TM30 license set:{' '}
                 <Link to={`/dashboard/property/${propertyId}/manage`} className="underline">
                   add it in Property settings
                 </Link>
@@ -234,10 +194,10 @@ export default function TM30Export() {
       {/* Stats strip */}
       <Card className="mb-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-          <Stat label="Foreign guests" value={guests.length} color="ocean" />
-          <Stat label="Bookings" value={Object.keys(bookingsByGuest).length} color="electric" />
-          <Stat label="Missing passport" value={guests.filter(g => !g.passport_number).length} color="sunset" />
-          <Stat label="Children" value={guests.filter(g => g.is_child).length} color="libre" />
+          <Stat label="Foreign guests" value={rows.length} color="ocean" />
+          <Stat label="Ready to upload" value={readyRows.length} color="libre" />
+          <Stat label="To fix first" value={toFix.length} color="sunset" />
+          <Stat label="Children" value={rows.filter(r => r.guest.is_child).length} color="electric" />
         </div>
       </Card>
 
@@ -245,25 +205,27 @@ export default function TM30Export() {
       <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
         <div className="text-xs text-gray-500">
           {loading ? <Loader2 size={14} className="inline animate-spin mr-1" /> : null}
-          {loading ? 'Loading guests…' : `${guests.length} foreign guest${guests.length === 1 ? '' : 's'} ready for export.`}
+          {loading
+            ? 'Loading guests...'
+            : downloadNote || `${readyRows.length} guest${readyRows.length === 1 ? '' : 's'} ready, ${toFix.length} to fix.`}
         </div>
         <Button
-          onClick={handleDownloadCSV}
-          disabled={guests.length === 0 || !hasLicense}
+          onClick={handleDownload}
+          disabled={readyRows.length === 0 || downloading}
           variant="orange"
         >
-          <Download size={16} />
-          Download TM30 CSV ({guests.length})
+          {downloading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+          Download Immigration file ({readyRows.length})
         </Button>
       </div>
 
       {/* Guest table */}
-      {guests.length === 0 ? (
+      {rows.length === 0 ? (
         <Card className="p-12 text-center">
           <FileText size={48} className="mx-auto text-gray-300 mb-3" />
           <h3 className="text-lg font-bold text-deep mb-1">No foreign guests for this date</h3>
           <p className="text-sm text-gray-500">
-            Either all your arrivals are Thai nationals (TM30 doesn't apply),
+            Either all your arrivals are Thai nationals (TM30 does not apply),
             or no bookings checked in on this day. Pick another date above.
           </p>
         </Card>
@@ -274,42 +236,41 @@ export default function TM30Export() {
               <tr className="bg-deep/[0.03] border-b border-gray-100 text-deep/60 uppercase tracking-wider">
                 <th className="text-left px-3 py-2 font-bold">#</th>
                 <th className="text-left px-3 py-2 font-bold">Name</th>
-                <th className="text-left px-3 py-2 font-bold">Nat.</th>
-                <th className="text-left px-3 py-2 font-bold">Passport</th>
                 <th className="text-left px-3 py-2 font-bold">Sex</th>
-                <th className="text-left px-3 py-2 font-bold">DOB</th>
-                <th className="text-left px-3 py-2 font-bold">Visa</th>
-                <th className="text-left px-3 py-2 font-bold">Port</th>
-                <th className="text-left px-3 py-2 font-bold">Stay</th>
-                <th className="text-right px-3 py-2 font-bold">Per-row PDF</th>
+                <th className="text-left px-3 py-2 font-bold">Passport</th>
+                <th className="text-left px-3 py-2 font-bold">Nationality</th>
+                <th className="text-left px-3 py-2 font-bold">Birth date</th>
+                <th className="text-left px-3 py-2 font-bold">Check-out</th>
+                <th className="text-left px-3 py-2 font-bold">Phone</th>
+                <th className="text-left px-3 py-2 font-bold">Status</th>
+                <th className="text-right px-3 py-2 font-bold">PDF</th>
               </tr>
             </thead>
             <tbody>
-              {guests.map((g, i) => {
-                const b = bookingsByGuest[g.booking_id] || {}
-                const missingPassport = !g.passport_number
-                const missingNat = !g.nationality
+              {rows.map((r, i) => {
+                const g = r.guest
+                const [first, , last, sex, passport, nat, dob, checkOut, phone] = r.cells
+                const miss = key => r.issues.includes(key)
+                const cell = (value, missing) => missing
+                  ? <span className="text-sunset font-bold">missing</span>
+                  : (value || <span className="text-gray-300">...</span>)
                 return (
                   <tr key={g.id} className="border-b border-gray-50 hover:bg-deep/[0.02]">
                     <td className="px-3 py-2 text-gray-400 font-mono">{i + 1}</td>
                     <td className="px-3 py-2 font-semibold text-deep">
-                      {g.first_name} {g.last_name}
+                      {cell(`${first} ${last}`.trim(), miss('first_name'))}
                       {g.is_child && <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded bg-libre/15 text-libre font-bold">child</span>}
                     </td>
+                    <td className="px-3 py-2">{cell(sex, miss('gender'))}</td>
+                    <td className="px-3 py-2 font-mono">{cell(passport, miss('passport'))}</td>
+                    <td className="px-3 py-2 font-mono">{cell(nat, miss('nationality'))}{miss('nationality') && g.nationality ? <span className="ml-1 text-gray-400">({g.nationality})</span> : null}</td>
+                    <td className="px-3 py-2 font-mono">{dob || <span className="text-gray-300">...</span>}</td>
+                    <td className="px-3 py-2 font-mono">{checkOut || tm30Date(bookingsByGuest[g.booking_id]?.check_out) || '...'}</td>
+                    <td className="px-3 py-2 font-mono">{phone || <span className="text-gray-300">...</span>}</td>
                     <td className="px-3 py-2">
-                      {missingNat ? <span className="text-sunset font-bold">?</span> : <span className="font-mono">{g.nationality}</span>}
-                    </td>
-                    <td className="px-3 py-2 font-mono">
-                      {missingPassport
-                        ? <span className="text-sunset">missing</span>
-                        : g.passport_number}
-                    </td>
-                    <td className="px-3 py-2">{g.sex || '—'}</td>
-                    <td className="px-3 py-2 font-mono">{g.date_of_birth || '—'}</td>
-                    <td className="px-3 py-2">{g.visa_type || '—'}{g.visa_number ? ` · ${g.visa_number}` : ''}</td>
-                    <td className="px-3 py-2 font-mono">{g.thailand_port_of_entry || '—'}</td>
-                    <td className="px-3 py-2 text-gray-500">
-                      {b.check_in} → {b.check_out}
+                      {r.issues.length === 0
+                        ? <span className="inline-flex items-center gap-1 text-libre font-bold"><CheckCircle2 size={12} /> ready</span>
+                        : <span className="text-sunset">needs {r.issues.map(k => ISSUE_LABELS[k] || k).join(', ')}</span>}
                     </td>
                     <td className="px-3 py-2 text-right">
                       <button
@@ -318,7 +279,7 @@ export default function TM30Export() {
                         className="px-2 py-1 rounded-lg text-[11px] font-bold bg-deep/[0.04] text-deep hover:bg-deep/10 transition-all"
                         title="Download per-guest TM30 PDF (printable backup)"
                       >
-                        📄 PDF
+                        PDF
                       </button>
                     </td>
                   </tr>
@@ -332,16 +293,17 @@ export default function TM30Export() {
       {/* Footer notes */}
       <div className="mt-6 text-[11px] text-gray-500 space-y-1">
         <p>
-          <strong className="text-deep">CSV columns:</strong>{' '}
-          <code className="font-mono">{CSV_HEADERS.join(', ')}</code>
+          <strong className="text-deep">File:</strong> the official Immigration template (Template-InformAccom-ImportExcel.xls),
+          columns First Name, Middle Name, Last Name, Gender, Passport No., Nationality, Birth Date, Check-out Date, Phone No.
+          Dates as DD/MM/YYYY, nationality as the Immigration three-letter code, at most {TM30_MAX_ROWS.toLocaleString()} guests per file
+          (more arrivals give several files).
         </p>
         <p>
-          <strong className="text-deep">Workflow:</strong> Download CSV → open extranet.immigration.go.th → log in →
-          "Bulk upload" → select the file. STAYLO archives the export under the booking;
-          drop the receipt PDF back into STAYLO when you have it.
+          <strong className="text-deep">Workflow:</strong> fix the guests marked "needs ...", download, open extranet.immigration.go.th,
+          log in, choose the Excel import and select the file. Keep the receipt with the booking.
         </p>
         <p className="italic text-gray-400">
-          Phase 2 (browser auto-upload) and Phase 3 (Immigration API) are on the roadmap — see <code>docs/TM30_COMPLIANCE.md</code>.
+          Phase 2 (browser auto-upload) and Phase 3 (Immigration API) are on the roadmap, see <code>docs/TM30_COMPLIANCE.md</code>.
         </p>
       </div>
     </div>

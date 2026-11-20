@@ -12,6 +12,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { Modal } from '../../components/ui/Modal'
 import { Button } from '../../components/ui/Button'
 import PhoneInput from '../../components/ui/PhoneInput'
+import NationalitySelect from '../../components/ui/NationalitySelect'
 import UndoToast from '../../components/ui/UndoToast'
 import { downloadCheckoutBill } from '../../lib/bill'
 
@@ -2459,11 +2460,10 @@ function WalkInForm({ room, propertyId, userId, existingBookings, walkinContext,
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">
                   {t('pms_frontdesk.nationality', 'Nationality')}
                 </label>
-                <input type="text" value={g.nationality}
-                  onChange={e => updateGuest(idx, 'nationality', e.target.value.toUpperCase().slice(0, 2))}
-                  placeholder="FR / TH"
-                  maxLength={2}
-                  className={`${guestInputCls} uppercase font-mono tracking-wider text-center`} />
+                <NationalitySelect value={g.nationality || ''}
+                  onChange={v => updateGuest(idx, 'nationality', v)}
+                  placeholder={t('pms_frontdesk.nationality_pick', 'Country')}
+                  className={guestInputCls} />
               </div>
               <div className="col-span-8 sm:col-span-2">
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1">

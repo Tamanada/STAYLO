@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next'
 import { Loader2, CheckCircle2, AlertTriangle, MapPin, Calendar, Hotel } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import SEO from '../components/SEO'
+import NationalitySelect from '../components/ui/NationalitySelect'
 
 export default function PublicCheckIn() {
   const { t } = useTranslation()
@@ -231,12 +232,10 @@ export default function PublicCheckIn() {
                 onChange={e => set('date_of_birth', e.target.value)}
                 className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </Field>
-            <Field label={t('public_checkin.nationality', 'Nationality (2-letter)')}>
-              <input type="text" value={form.nationality}
-                placeholder="FR, TH, US…"
-                maxLength={2}
-                onChange={e => set('nationality', e.target.value.toUpperCase().slice(0, 2))}
-                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-ocean/30" />
+            <Field label={t('public_checkin.nationality', 'Nationality')}>
+              <NationalitySelect value={form.nationality} onChange={v => set('nationality', v)}
+                placeholder={t('public_checkin.nationality_pick', 'Select your country')}
+                className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-white text-deep text-sm focus:outline-none focus:ring-2 focus:ring-ocean/30" />
             </Field>
             <Field label={t('public_checkin.passport_number', 'Passport number')}>
               <input type="text" value={form.passport_number}

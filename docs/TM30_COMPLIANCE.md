@@ -11,7 +11,21 @@ Legal basis: Immigration Act B.E. 2522 (1979), Section 38.
 
 **Short answer: yes, in three phases, the first of which we ship today.**
 
-### Phase 1 — CSV export (now, manual portal upload)
+### Phase 1 (now): Immigration Excel file, manual portal upload
+
+> Update 2026-11-20: the portal imports the official Excel template
+> `Template-InformAccom-ImportExcel.xls` (version 2023-09-29, kept in
+> `tests/fixtures/`), not a CSV of our own. STAYLO now writes exactly that
+> file: first sheet only, nine columns (First Name, Middle Name, Last Name,
+> Gender M/F, Passport No., Nationality as the Immigration three-letter code,
+> Birth Date and Check-out Date as DD/MM/YYYY, Phone No.), at most 1,000
+> guests per file. Required: first name, gender, passport, nationality. Code:
+> `src/lib/tm30Template.js` (generated from the template), `src/lib/tm30Excel.js`
+> (rows), `src/lib/tm30Workbook.js` (SheetJS, .xls). The nationality pickers
+> of the check-in page and the front desk offer the countries of that list.
+> The text below predates this update where it says CSV.
+
+### Phase 1, original note: CSV export
 
 The Immigration Bureau's TM30 portal accepts **batch CSV uploads** from
 hoteliers via:
